@@ -1,0 +1,24 @@
+<!--
+
+/* PAYPAL paypal.htm PAYMENT PAGE CODE */
+
+.payform	{
+		font: 13px arial, verdana, sans-serif;
+		background-color: #F0F6F9;
+		text-align: left;
+		width: 125px;
+		overflow: auto;
+		border: #99A8AF 1px solid;
+		}
+
+.payformbox	{
+		background-color: transparent;
+		border: #CFD7DF 1px solid;
+		}
+
+.payformmargin	{ margin: 0px; }
+
+.payformbutton	{ width: 125px; }
+
+
+-->

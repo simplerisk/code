@@ -1,0 +1,19 @@
+.align-left { text-align: left; }
+.align-right { text-align: right; }
+.align-center { text-align: center; }
+.align-justify { text-align: justify; }
+
+.push-down { margin-bottom: 1em; }
+.push-left { margin-left: 1em; }
+.push-right { margin-right: 1em; }
+.push-up { margin-top: 1em; }
+
+@media(min-width: 980px) {
+  .navbar-fixed-top + * {
+    margin-top: 60px;
+  }
+
+  .navbar-fixed-bottom + *{
+    margin-bottom: 60px;
+  }
+}

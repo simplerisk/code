@@ -1,0 +1,69 @@
+
+.style1 {
+	color: #012745;
+	font-weight: bold;
+	font-family: Arial,Verdana, Helvetica, sans-serif;
+	font-size:12px;
+	text-decoration:underline;
+}
+
+.style2 {
+	color: #012745;
+	font-weight: bold;
+	font-family: Arial,Verdana, Helvetica, sans-serif;
+	font-size:12px;
+}
+
+.heading {
+	font-family: Arial,Verdana, Helvetica, sans-serif;
+	color: #ffffff;
+	font-weight: bold;
+	font-size:20px;
+}
+
+.cal-head {
+	color: #012745;
+	font-weight: bold;
+	font-family: Arial,Verdana, Helvetica, sans-serif;
+	font-size:11px;
+	text-decoration:underline;
+	}
+
+.cal-text {
+	color: #012745;
+    font-family: Arial,Verdana, Helvetica, sans-serif;
+	font-size:11px;
+	text-decoration:none;
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.form-field{
+font-family:Arial, Helvetica, sans-serif;
+font-size:11px;
+background-color:#cde6fb;
+border:1px groove #1c6fad;}
+
+
+
+
+.button{
+font-family:Arial, Helvetica, sans-serif;
+font-size:11px;
+background-color:#0265b0;
+color:#FFFFFF;}
+/*border:1px groove #1c6fad;}*/
+
+

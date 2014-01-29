@@ -1,0 +1,50 @@
+ul {
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+    overflow: hidden;
+}
+
+#prioritize.li {
+    list-style-type: none;
+    margin: 1px;
+    width: 130px;
+    padding:2px;
+    vertical-align:middle;
+}
+
+#prioritize.li span {
+    color: gray;
+    font-size: 1.1em;
+    margin-right: 5px;
+    margin-left: 5px;
+    cursor: pointer;
+    height:100%;
+}
+
+#prioritize input[type="text"] {
+    width: 32px;
+    margin-right: 5px;
+    border: 1px solid lightgay;
+    color: blue;
+    text-align: center;
+}
+
+.red {
+    background: repeat-x scroll 50% 50% red;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: left;
+}
+.orange {
+    background: repeat-x scroll 50% 50% orange;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: left;
+}
+.yellow {
+    background: repeat-x scroll 50% 50% yellow;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: left;
+}
