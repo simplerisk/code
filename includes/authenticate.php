@@ -8,14 +8,35 @@
 require_once('config.php');
 require_once('functions.php');
 
-/***************************
- * FUNCTION: GENERATE SALT *
- ***************************/
-function generateSalt($username)
+/*******************************
+ * FUNCTION: OLD GENERATE SALT *
+ *******************************/
+function oldGenerateSalt($username)
 {
 	$salt = '$2a$15$';
 	$salt = $salt . md5(strtolower($username));
 	return $salt;
+}
+
+/*******************************
+ * FUNCTION: GENERATE SALT *
+ *******************************/
+function generateSalt($username)
+{
+        // Open the database connection
+        $db = db_open();
+
+	// Get the users unique salt
+	$stmt = $db->prepare("SELECT salt FROM user WHERE username = :username");
+	$stmt->bindParam(":username", $username, PDO::PARAM_STR, 20);
+	$stmt->execute();
+	$values = $stmt->fetchAll();
+	$salt = '$2a$15$' . md5($values[0]['salt']);
+
+        // Close the database connection
+        db_close($db);
+
+        return $salt;
 }
 
 /***************************
@@ -89,7 +110,7 @@ function is_valid_user($user, $pass)
                 if (custom_authentication_extra())
                 {
                         // Include the custom authentication extra
-			require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/custom_authentication/custom_authentication.php");
+			require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/authentication/index.php");
 
 			// Check for a valid Active Directory user
 			$valid_ad = is_valid_ad_user($user, $pass);
@@ -101,6 +122,31 @@ function is_valid_user($user, $pass)
 	{
 		// Set the user permissions
 		set_user_permissions($user);
+
+        	// If the encryption extra is enabled
+        	if (encryption_extra())
+        	{
+                	// Load the extra
+                	require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/encryption/index.php");
+
+			// If the user has been activated
+			if (activated_user($user))
+			{
+				$encrypted_pass = get_enc_pass($user, $pass);
+			}
+			// The user has not yet been activated
+			else
+			{
+				// Get the current password encrypted with the temp key
+				$encrypted_pass = get_enc_pass($user, fetch_tmp_pass());
+
+				// Set the new encrypted password
+				set_enc_pass($user, $pass, $encrypted_pass);
+			}
+
+			// Set the encrypted pass in the session
+			$_SESSION['encrypted_pass'] = $encrypted_pass;
+        	}
 
 		return true;
 	}
@@ -159,6 +205,11 @@ function grant_access()
  **************************************/
 function is_valid_simplerisk_user($user, $pass)
 {
+	// Old password hash format
+	$salt = oldGenerateSalt($user);
+	$oldProvidedPassword = generateHash($salt, $pass);
+
+	// New password hash format
 	$salt = generateSalt($user);
 	$providedPassword = generateHash($salt, $pass);
 
@@ -180,7 +231,7 @@ function is_valid_simplerisk_user($user, $pass)
         db_close($db);
 
 	// If the passwords are equal
-	if ($providedPassword == $storedPassword)
+	if (($providedPassword == $storedPassword) || ($oldProvidedPassword == $storedPassword))
 	{
 		return true;
 	}

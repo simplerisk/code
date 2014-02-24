@@ -151,8 +151,8 @@
             <form name="password_reset" method="post" action="">
             Username: <input class="input-medium" name="user" id="user" type="text" maxlength="20" /><br />
             Reset Token: <input class="input-medium" name="token" id="token" type="password" maxlength="20" /><br />
-            Password: <input class="input-medium" name="password" id="password" type="password" maxlength="50" /><br />
-            Repeat Password: <input class="input-medium" name="repeat_password" id="repeat_password" type="password" maxlength="50" />
+            Password: <input class="input-medium" name="password" id="password" type="password" maxlength="50" autocomplete="off" /><br />
+            Repeat Password: <input class="input-medium" name="repeat_password" id="repeat_password" type="password" maxlength="50" autocomplete="off" />
             <div class="form-actions">
               <button type="submit" name="password_reset" class="btn btn-primary">Submit</button>
               <input class="btn" value="Reset" type="reset">

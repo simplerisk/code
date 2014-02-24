@@ -27,6 +27,7 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+        require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
         session_check();
@@ -168,14 +169,39 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
             <div class="span12">
               <div class="hero-unit">
                 <h4>Custom Extras</h4>
-                <p>It would be awesome if everything were free, right?  Hopefully the base SimpleRisk platform is able to serve all of your risk management needs.  But, if you find yourself still wanting more functionality, I've developed a series of &quot;Extras&quot; that will do just that for just a few hundred bucks each (perpetual use license).
+                <p>It would be awesome if everything were free, right?  Hopefully the core SimpleRisk platform is able to serve all of your risk management needs.  But, if you find yourself still wanting more functionality, we&#39;ve developed a series of &quot;Extras&quot; that will do just that for just a few hundred bucks each for a perpetual license.
                 </p>
-                <ul>
-                  <li><b>Custom Authentication Extra:</b> Currently provides support for Active Directory Authentication and Duo Security multi-factor authentication, but will have other custom authentication types in the future.</li>
-                  <li><b>Team Based Separation Extra:</b> Restriction of risk viewing to team members the risk is categorized as.</li>
-                  <li><b>Notification Extra:</b> Email notifications when risks are updated or due for action.</li>
-                  <li><b>Encrypted Database Extra:</b> Encryption of sensitive text fields in the database.</li>
-                </ul>
+                <table width="100%" class="table table-bordered table-condensed">
+                <thead>
+                <tr>
+                  <td width="155px"><b><u>Extra Name</u></b></td>
+                  <td><b><u>Description</u></b></td>
+                  <td width="60px"><b><u>Enabled</u></b></td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                  <td width="155px"><b>Custom Authentication</b></td>
+                  <td>Currently provides support for Active Directory Authentication and Duo Security multi-factor authentication, but will have other custom authentication types in the future.</td>
+                  <td width="60px"><?php echo (custom_authentication_extra() ? 'Yes' : 'No'); ?></td>
+                </tr>
+                <tr>
+                  <td width="155px"><b>Team-Based Separation</b></td>
+                  <td>Restriction of risk viewing to team members the risk is categorized as.</td>
+                  <td width="60px"><?php echo (team_separation_extra() ? 'Yes' : 'No'); ?></td>
+                </tr>
+                <tr>
+                  <td width="155px"><b>Notifications</b></td>
+                  <td>Email notifications when risks are updated or due for action.</td>
+                  <td width="60px"><?php echo (notification_extra() ? 'Yes' : 'No'); ?></td>
+                </tr>
+                <tr>
+                  <td width="155px"><b>Encrypted Database</b></td>
+                  <td>Encryption of sensitive text fields in the database.</td>
+                  <td width="60px"><?php echo (encryption_extra() ? 'Yes' : 'No'); ?></td>
+                </tr>
+                <tbody>
+                </table>
                 <p>If you are interested in adding these or other custom functionality to your SimpleRisk installation, please send an e-mail to <a href="mailto:extras@simplerisk.org?Subject=Interest%20in%20SimpleRisk%20Extras" target="_top">extras@simplerisk.org</a>.</p>
               </div>
             </div>

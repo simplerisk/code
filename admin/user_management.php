@@ -27,6 +27,7 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+        require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
         session_check();
@@ -86,11 +87,14 @@
                         // Verify that the user does not exist
                         if (!user_exist($user))
                         {
-				// Generate the salt
-				$salt = generateSalt($user);
+				// Create a unique salt for the user
+                                $salt = generate_token(20);
+
+				// Hash the salt
+				$salt_hash = '$2a$15$' . md5($salt);
 
 				// Generate the password hash
-				$hash = generateHash($salt, $pass);
+				$hash = generateHash($salt_hash, $pass);
 
 				// Create a boolean for all
 				$all = false;
@@ -122,7 +126,7 @@
 				if ($none) $team = "none";
 
                                 // Insert a new user
-                                add_user($type, $user, $email, $name, $hash, $team, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
+                                add_user($type, $user, $email, $name, $salt, $hash, $team, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
                         	// Audit log
                         	$risk_id = 1000;
@@ -368,14 +372,21 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                 <h4>Add a New User:</h4>
 		Type: <select name="type" id="select" onChange="handleSelection(value)">
                 <option selected value="1">SimpleRisk</option>
-                <option value="2">LDAP</option>
+		<?php
+			// If the custom authentication extra is enabeld
+			if (custom_authentication_extra())
+			{
+				// Display the LDAP option
+				echo "<option value=\"2\">LDAP</option>\n";
+			}
+		?>
                 </select><br />
                 Full Name: <input name="name" type="text" maxlength="50" size="20" /><br />
                 E-mail Address: <input name="email" type="text" maxlength="200" size="20" /><br />
                 Username: <input name="new_user" type="text" maxlength="20" size="20" /><br />
 		<div id="simplerisk">
-                Password: <input name="password" type="password" maxlength="50" size="20" /><br />
-                Repeat Password: <input name="repeat_password" type="password" maxlength="50" size="20" /><br />
+                Password: <input name="password" type="password" maxlength="50" size="20" autocomplete="off" /><br />
+                Repeat Password: <input name="repeat_password" type="password" maxlength="50" size="20" autocomplete="off" /><br />
 		</div>
                 <h6><u>Team(s)</u></h6>
                 <?php create_multiple_dropdown("team"); ?>
@@ -397,7 +408,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         if (custom_authentication_extra())
         {
                 // Include the custom authentication extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/custom_authentication/custom_authentication.php");
+                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/authentication/index.php");
 
                 // Display the multi factor authentication options
                 multi_factor_authentication_options(1);

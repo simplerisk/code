@@ -19,14 +19,15 @@
         }
 
         // Database version to upgrade
-        $version_to_upgrade = "20131117-001";
+        $version_to_upgrade = "20131231-001";
 
         // Database version upgrading to
-        $version_upgrading_to = "20131231-001";
+        $version_upgrading_to = "20140224-001";
 
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRiskDBUpgrade');
+        require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
         session_check();
@@ -40,11 +41,12 @@
         	// Reset the session data
         	$_SESSION = array();
 
+
         	// Send a Set-Cookie to invalidate the session cookie
-        	if (isset($_COOKIES["session_name90"]))
+        	if (ini_get("session.use_cookies"))
         	{
                 	$params = session_get_cookie_params();
-                	setcookie(session_name(), '', 1, $params['path'], $params['domain'], $params['secure'], isset($params['httponly']));
+                	setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], isset($params['httponly']));
         	}
 
         	// Destroy the session
@@ -60,20 +62,20 @@
         // If the login form was posted
         if (isset($_POST['submit']))
         {
-		/*** NEED TO REMOVE AFTER 20131231-001 RELEASE ***/
+		/*** NEED TO REMOVE AFTER 20130224-001 RELEASE ***/
 		$db = db_open();
 		$database = DB_DATABASE;
-		// Check to see if the close_risks column already exists
-		$stmt = $db->prepare("SELECT null FROM INFORMATION_SCHEMA.COLUMNS WHERE `table_schema` = :database AND `table_name` = 'user' AND `column_name` = 'close_risks';");
+		// Check to see if the salt column already exists
+		$stmt = $db->prepare("SELECT null FROM INFORMATION_SCHEMA.COLUMNS WHERE `table_schema` = :database AND `table_name` = 'user' AND `column_name` = 'salt';");
 		$stmt->bindParam(":database", $database, PDO::PARAM_STR);
                 $stmt->execute();
         	$array = $stmt->fetchAll();
         	// If the column does not already exist
         	if (empty($array))
         	{
-			// Add the close_risks column
-			$stmt = $db->prepare("ALTER TABLE `user` ADD `close_risks` TINYINT( 1 ) NOT NULL DEFAULT '1';");
-			$stmt->execute();
+                        // Add salt table
+                        $stmt = $db->prepare("ALTER TABLE `user` ADD `salt` VARCHAR( 20 ) NULL DEFAULT NULL AFTER `email` ;");
+                        $stmt->execute();
         	}
 		db_close($db);
 		/*** END REMOVE ***/
@@ -187,7 +189,7 @@
       		echo "<p><label><u>Log In Here</u></label></p>\n";
       		echo "<form name=\"authenticate\" method=\"post\" action=\"\">\n";
       		echo "Username: <input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /><br />\n";
-      		echo "Password: <input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" />\n";
+      		echo "Password: <input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" />\n";
 		echo "<br />\n";
       		echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">Login</button>\n";
       		echo "</form>\n";
@@ -241,61 +243,30 @@
                  	* DATABASE CHANGES GO HERE *
 		 	****************************/
 
-			// Create a new table to track control regulations
-			echo "Creating a new table to track control regulations.<br />\n";
-			$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `regulation` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(50) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;");
+			// Add salt values for each user
+			echo "Adding salt values for users in the user table.<br />\n";
+
+			// Get the current users
+			$stmt = $db->prepare("SELECT value, username FROM user");
 			$stmt->execute();
+			$users = $stmt->fetchAll();
 
-			// Populate the control regulation table
-			echo "Populating the control regulation table.<br />\n";
-			$stmt = $db->prepare("INSERT INTO regulation (`value`, `name`) VALUES (NULL, 'PCI DSS'), (NULL, 'Sarbanes-Oxley (SOX)'), (NULL, 'HIPAA'), (NULL, 'ISO 27001')");
-			$stmt->execute();
+			// For each user
+        		foreach ($users as $user)
+        		{
+                		// Get the current values
+                		$value = $user['value'];
+                		$username = $user['username'];
 
-			// Add columns to track control regulation and control number in risk table
-			echo "Adding columns to track control regulation and control number in the risk table.<br />\n";
-			$stmt = $db->prepare("ALTER TABLE `risks` ADD `regulation` INT( 11 ) NULL DEFAULT NULL AFTER `reference_id`, ADD `control_number` VARCHAR( 20 ) NULL DEFAULT NULL AFTER `regulation` ;");
-			$stmt->execute();
+                		// Create a unique salt
+                		$salt = generate_token(20);
 
-			// Add columns for DREAD, OWASP, and Custom risk rating
-			echo "Adding columns for DREAD, OWASP, and Custom risk rating.<br />\n";
-			$stmt = $db->prepare("ALTER TABLE `risk_scoring`  ADD `DREAD_DamagePotential` INT NULL DEFAULT NULL,  ADD `DREAD_Reproducibility` INT NULL DEFAULT NULL,  ADD `DREAD_Exploitability` INT NULL DEFAULT NULL,  ADD `DREAD_AffectedUsers` INT NULL DEFAULT NULL,  ADD `DREAD_Discoverability` INT NULL DEFAULT NULL,  ADD `OWASP_SkillLevel` INT NULL DEFAULT NULL,  ADD `OWASP_Motive` INT NULL DEFAULT NULL,  ADD `OWASP_Opportunity` INT NULL DEFAULT NULL,  ADD `OWASP_Size` INT NULL DEFAULT NULL,  ADD `OWASP_EaseOfDiscovery` INT NULL DEFAULT NULL,  ADD `OWASP_EaseOfExploit` INT NULL DEFAULT NULL,  ADD `OWASP_Awareness` INT NULL DEFAULT NULL,  ADD `OWASP_IntrusionDetection` INT NULL DEFAULT NULL,  ADD `OWASP_LossOfConfidentiality` INT NULL DEFAULT NULL,  ADD `OWASP_LossOfIntegrity` INT NULL DEFAULT NULL,  ADD `OWASP_LossOfAvailability` INT NULL DEFAULT NULL,  ADD `OWASP_LossOfAccountability` INT NULL DEFAULT NULL,  ADD `OWASP_FinancialDamage` INT NULL DEFAULT NULL,  ADD `OWASP_ReputationDamage` INT NULL DEFAULT NULL,  ADD `OWASP_NonCompliance` INT NULL DEFAULT NULL,  ADD `OWASP_PrivacyViolation` INT NULL DEFAULT NULL,  ADD `Custom` FLOAT NULL DEFAULT NULL;");
-			$stmt->execute();
-
-			// Set default values for classic risk scoring
-			echo "Setting default values for classic risk scoring.<br />\n";
-			$stmt = $db->prepare("ALTER TABLE `risk_scoring` CHANGE `CLASSIC_likelihood` `CLASSIC_likelihood` FLOAT NOT NULL DEFAULT '5', CHANGE `CLASSIC_impact` `CLASSIC_impact` FLOAT NOT NULL DEFAULT '5';");
-			$stmt->execute();
-
-
-                        // Set default values for cvss risk scoring
-                        echo "Setting default values for cvss risk scoring.<br />\n";
-                        $stmt = $db->prepare("ALTER TABLE `risk_scoring` CHANGE `CVSS_AccessVector` `CVSS_AccessVector` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'N', CHANGE `CVSS_AccessComplexity` `CVSS_AccessComplexity` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'L', CHANGE `CVSS_Authentication` `CVSS_Authentication` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'N', CHANGE `CVSS_ConfImpact` `CVSS_ConfImpact` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'C', CHANGE `CVSS_IntegImpact` `CVSS_IntegImpact` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'C', CHANGE `CVSS_AvailImpact` `CVSS_AvailImpact` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'C', CHANGE `CVSS_Exploitability` `CVSS_Exploitability` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'ND', CHANGE `CVSS_RemediationLevel` `CVSS_RemediationLevel` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'ND', CHANGE `CVSS_ReportConfidence` `CVSS_ReportConfidence` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'ND', CHANGE `CVSS_CollateralDamagePotential` `CVSS_CollateralDamagePotential` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'ND', CHANGE `CVSS_TargetDistribution` `CVSS_TargetDistribution` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'ND', CHANGE `CVSS_ConfidentialityRequirement` `CVSS_ConfidentialityRequirement` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'ND', CHANGE `CVSS_IntegrityRequirement` `CVSS_IntegrityRequirement` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'ND', CHANGE `CVSS_AvailabilityRequirement` `CVSS_AvailabilityRequirement` VARCHAR(3) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'ND';");
-                        $stmt->execute();
-
-                        // Set default values for dread risk scoring
-                        echo "Setting default values for dread risk scoring.<br />\n";
-			$stmt = $db->prepare("ALTER TABLE `risk_scoring` CHANGE `DREAD_DamagePotential` `DREAD_DamagePotential` INT(11) NULL DEFAULT '10', CHANGE `DREAD_Reproducibility` `DREAD_Reproducibility` INT(11) NULL DEFAULT '10', CHANGE `DREAD_Exploitability` `DREAD_Exploitability` INT(11) NULL DEFAULT '10', CHANGE `DREAD_AffectedUsers` `DREAD_AffectedUsers` INT(11) NULL DEFAULT '10', CHANGE `DREAD_Discoverability` `DREAD_Discoverability` INT(11) NULL DEFAULT '10';");
-                        $stmt->execute();
-
-                        // Set default values for owasp risk scoring
-                        echo "Setting default values for owasp risk scoring.<br />\n";
-			$stmt = $db->prepare("ALTER TABLE `risk_scoring` CHANGE `OWASP_SkillLevel` `OWASP_SkillLevel` INT(11) NULL DEFAULT '10', CHANGE `OWASP_Motive` `OWASP_Motive` INT(11) NULL DEFAULT '10', CHANGE `OWASP_Opportunity` `OWASP_Opportunity` INT(11) NULL DEFAULT '10', CHANGE `OWASP_Size` `OWASP_Size` INT(11) NULL DEFAULT '10', CHANGE `OWASP_EaseOfDiscovery` `OWASP_EaseOfDiscovery` INT(11) NULL DEFAULT '10', CHANGE `OWASP_EaseOfExploit` `OWASP_EaseOfExploit` INT(11) NULL DEFAULT '10', CHANGE `OWASP_Awareness` `OWASP_Awareness` INT(11) NULL DEFAULT '10', CHANGE `OWASP_IntrusionDetection` `OWASP_IntrusionDetection` INT(11) NULL DEFAULT '10', CHANGE `OWASP_LossOfConfidentiality` `OWASP_LossOfConfidentiality` INT(11) NULL DEFAULT '10', CHANGE `OWASP_LossOfIntegrity` `OWASP_LossOfIntegrity` INT(11) NULL DEFAULT '10', CHANGE `OWASP_LossOfAvailability` `OWASP_LossOfAvailability` INT(11) NULL DEFAULT '10', CHANGE `OWASP_LossOfAccountability` `OWASP_LossOfAccountability` INT(11) NULL DEFAULT '10', CHANGE `OWASP_FinancialDamage` `OWASP_FinancialDamage` INT(11) NULL DEFAULT '10', CHANGE `OWASP_ReputationDamage` `OWASP_ReputationDamage` INT(11) NULL DEFAULT '10', CHANGE `OWASP_NonCompliance` `OWASP_NonCompliance` INT(11) NULL DEFAULT '10', CHANGE `OWASP_PrivacyViolation` `OWASP_PrivacyViolation` INT(11) NULL DEFAULT '10';");
-                        $stmt->execute();
-
-                        // Set default values for custom risk scoring
-                        echo "Setting default values for custom risk scoring.<br />\n";
-			$stmt = $db->prepare("ALTER TABLE `risk_scoring` CHANGE `Custom` `Custom` FLOAT NULL DEFAULT '10';");
-                        $stmt->execute();
-
-			// Increase settings to allow 40 character values
-			echo "Increasing setting value size.<br />\n";
-			$stmt = $db->prepare("ALTER TABLE `settings` CHANGE `value` `value` VARCHAR( 40 ) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL ;");
-			$stmt->execute();
-
-			// Adding new user column to track multi factor authentication
-			echo "Adding multi-factor tracking to user table.<br />\n";
-			$stmt = $db->prepare("ALTER TABLE `user` ADD `multi_factor` INT NOT NULL DEFAULT '1';");
-			$stmt->execute();
+				// Add the salt for the user
+				$stmt = $db->prepare("UPDATE `user` SET salt = :salt WHERE value = :value");
+				$stmt->bindParam(":value", $value, PDO::PARAM_INT, 11);
+				$stmt->bindParam(":salt", $salt, PDO::PARAM_STR, 20);
+				$stmt->execute();
+        		}
 
 			/************************
 		 	 * END DATABASE CHANGES *

@@ -41,7 +41,7 @@
                 	if (custom_authentication_extra())
                 	{
                         	// Include the custom authentication extra
-                        	require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/custom_authentication/custom_authentication.php");
+                        	require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/authentication/index.php");
 
 				// Get the enabled authentication for the user
 				$enabled_auth = enabled_auth($user);
@@ -88,7 +88,7 @@
 		if (isset($_POST['sig_response']))
 		{
 	                // Include the custom authentication extra
-        	        require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/custom_authentication/custom_authentication.php");
+        	        require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/authentication/index.php");
 
 			// Get the response back from Duo
         		$resp = Duo::verifyResponse(IKEY, SKEY, get_duo_akey(), $_POST['sig_response']);
@@ -193,7 +193,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                 echo "<div class=\"well\">\n";
 
                 // Include the custom authentication extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/custom_authentication/custom_authentication.php");
+                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/authentication/index.php");
 
         	// Perform a duo authentication request for the user
         	duo_authentication($_SESSION["user"]);
@@ -211,7 +211,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
       		echo "<p><label><u>Log In Here</u></label></p>\n";
       		echo "<form name=\"authenticate\" method=\"post\" action=\"\">\n";
       		echo "Username: <input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /><br />\n";
-      		echo "Password: <input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" />\n";
+      		echo "Password: <input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" />\n";
       		echo "<label><a href=\"reset.php\">Forgot your password?</a></label>\n";
       		echo "<div class=\"form-actions\">\n";
       		echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">Login</button>\n";

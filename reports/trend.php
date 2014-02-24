@@ -28,6 +28,7 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+        require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
         session_check();
@@ -125,10 +126,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               <a href="production_issues.php">All Open Risks to Submit as a Production Issue by Risk Level</a>
             </li>
             <li>
-              <a href="cvss_scored.php">All Open Risks Scored Using CVSS Scoring by Risk Level</a>
-            </li>
-            <li>
-              <a href="classic_scored.php">All Open Risks Scored Using Classic Scoring by Risk Level</a>
+              <a href="risk_scoring.php">All Open Risks by Scoring Method</a>
             </li>
             <li>
               <a href="closed.php">All Closed Risks by Risk Level</a>

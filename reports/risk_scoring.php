@@ -126,7 +126,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
             <li>
               <a href="production_issues.php">All Open Risks to Submit as a Production Issue by Risk Level</a>
             </li>
-            <li>
+            <li class="active">
               <a href="risk_scoring.php">All Open Risks by Scoring Method</a>
             </li>
             <li>
@@ -138,7 +138,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
             <li>
               <a href="mitigations_by_date.php">Mitigations By Date</a>
             </li>
-            <li class="active">
+            <li>
               <a href="mgmt_reviews_by_date.php">Management Reviews By Date</a>
             </li>
             <li>
@@ -147,8 +147,8 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           </ul>
         </div>
         <div class="span9">
-          <div class="row-fluid"><p>This report shows all management reviews ordered by review date.</p></div>
-	  <?php get_reviewed_risk_table(); ?>
+          <div class="row-fluid"><p>This report shows all risk scoring methods and the risks scored using each.</p></div>
+	  <?php get_risk_scoring_table(); ?>
         </div>
       </div>
     </div>

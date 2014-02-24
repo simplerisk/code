@@ -28,6 +28,7 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+        require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
         session_check();

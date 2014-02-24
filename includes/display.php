@@ -34,7 +34,7 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 	echo "</tr>\n";
         echo "<tr>\n";
         echo "<td width=\"75\"><h4>Subject:</h4></td>\n";
-	echo "<td><h4>" . htmlentities(stripslashes($subject)) . "</h4></td>\n";
+	echo "<td><h4>" . $subject . "</h4></td>\n";
         echo "</tr>\n";
         echo "<tr>\n";
         echo "<td width=\"75\"><h4>Status:</h4></td>\n";
@@ -96,39 +96,39 @@ function view_risk_details($submission_date, $subject, $reference_id, $regulatio
         echo "<input type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $submission_date . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "Subject: \n";
-        echo "<input type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . htmlentities(stripslashes($subject), ENT_QUOTES) . "\" disabled=\"disabled\" />\n";
+        echo "<input type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . $subject . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "External Reference ID: \n";
-        echo " <input type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . htmlentities($reference_id, ENT_QUOTES) . "\" disabled=\"disabled\" />\n";
+        echo " <input type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . $reference_id . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "Control Regulation: \n";
-        echo "<input type=\"text\" name=\"regulation\" id=\"regulation\" size=\"50\" value=\"" . htmlentities(get_name_by_value("regulation", $regulation), ENT_QUOTES) . "\" disabled=\"disabled\" />\n";
+        echo "<input type=\"text\" name=\"regulation\" id=\"regulation\" size=\"50\" value=\"" . get_name_by_value("regulation", $regulation) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "Control Number: \n";
-        echo " <input type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . htmlentities($control_number, ENT_QUOTES) . "\" disabled=\"disabled\" />\n";
+        echo " <input type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $control_number . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "Site/Location: \n";
-        echo "<input type=\"text\" name=\"location\" id=\"location\" size=\"50\" value=\"" . htmlentities(get_name_by_value("location", $location), ENT_QUOTES) . "\" disabled=\"disabled\" />\n";
+        echo "<input type=\"text\" name=\"location\" id=\"location\" size=\"50\" value=\"" . get_name_by_value("location", $location) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "Category: \n";
-        echo "<input type=\"text\" name=\"category\" id=\"category\" size=\"50\" value=\"" . htmlentities(get_name_by_value("category", $category), ENT_QUOTES) . "\" disabled=\"disabled\" />\n";
+        echo "<input type=\"text\" name=\"category\" id=\"category\" size=\"50\" value=\"" . get_name_by_value("category", $category) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "Team: \n";
-        echo "<input type=\"text\" name=\"team\" id=\"team\" size=\"50\" value=\"" . htmlentities(get_name_by_value("team", $team), ENT_QUOTES) . "\" disabled=\"disabled\" />\n";
+        echo "<input type=\"text\" name=\"team\" id=\"team\" size=\"50\" value=\"" . get_name_by_value("team", $team) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "Technology: \n";
-        echo "<input type=\"text\" name=\"technology\" id=\"technology\" size=\"50\" value=\"" . htmlentities(get_name_by_value("technology", $technology), ENT_QUOTES) . "\" disabled=\"disabled\" />\n";
+        echo "<input type=\"text\" name=\"technology\" id=\"technology\" size=\"50\" value=\"" . get_name_by_value("technology", $technology) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "Owner: \n";
-        echo "<input type=\"text\" name=\"owner\" id=\"owner\" size=\"50\" value=\"" . htmlentities(get_name_by_value("user", $owner), ENT_QUOTES) . "\" disabled=\"disabled\" />\n";
+        echo "<input type=\"text\" name=\"owner\" id=\"owner\" size=\"50\" value=\"" . get_name_by_value("user", $owner) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "Owner&#39;s Manager: \n";
-        echo "<input type=\"text\" name=\"manager\" id=\"manager\" size=\"50\" value=\"" . htmlentities(get_name_by_value("user", $manager), ENT_QUOTES) . "\" disabled=\"disabled\" />\n";
+        echo "<input type=\"text\" name=\"manager\" id=\"manager\" size=\"50\" value=\"" . get_name_by_value("user", $manager) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "<label>Risk Assessment</label>\n";
-        echo "<textarea name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\" disabled=\"disabled\">" . htmlentities(stripslashes($assessment), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\" disabled=\"disabled\">" . $assessment . "</textarea>\n";
         echo "<label>Additional Notes</label>\n";
-        echo "<textarea name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" disabled=\"disabled\">" . htmlentities(stripslashes($notes), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" disabled=\"disabled\">" . $notes . "</textarea>\n";
 
 	// If the page is the view.php page
 	if (basename($_SERVER['PHP_SELF']) == "view.php")
@@ -147,16 +147,16 @@ function edit_risk_details($submission_date, $subject, $reference_id, $regulatio
 {
 	echo "<h4>Details</h4>\n";
         echo "Submission Date: \n";
-        echo "<input type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . htmlentities($submission_date, ENT_QUOTES) . "\" disabled=\"disabled\" />\n";
+        echo "<input type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $submission_date . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo "Subject: <input type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . htmlentities(stripslashes($subject), ENT_QUOTES) . "\" />\n";
+        echo "Subject: <input type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . $subject . "\" />\n";
         echo "<br />\n";
-        echo "External Reference ID: <input type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . htmlentities($reference_id, ENT_QUOTES) . "\" />\n";
+        echo "External Reference ID: <input type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . $reference_id . "\" />\n";
         echo "<br />\n";
         echo "Control Regulation: \n";
         create_dropdown("regulation", $regulation);
         echo "<br />\n";
-        echo "Control Number: <input type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . htmlentities($control_number, ENT_QUOTES) . "\" />\n";
+        echo "Control Number: <input type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $control_number . "\" />\n";
         echo "<br />\n";
         echo "Site/Location: \n";
         create_dropdown("location", $location);
@@ -177,9 +177,9 @@ function edit_risk_details($submission_date, $subject, $reference_id, $regulatio
         create_dropdown("user", $manager, "manager");
         echo "<br />\n";
         echo "<label>Risk Assessment</label>\n";
-        echo "<textarea name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\">" . htmlentities(stripslashes($assessment), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\">" . $assessment . "</textarea>\n";
         echo "<label>Additional Notes</label>\n";
-        echo "<textarea name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\">" . htmlentities(stripslashes($notes), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\">" . $notes . "</textarea>\n";
         echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"update_details\" class=\"btn btn-primary\">Update</button>\n";
         echo "</div>\n";
@@ -201,11 +201,11 @@ function view_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         echo "<input type=\"text\" name=\"mitigation_effort\" id=\"mitigation_effort\" size=\"50\" value=\"" . get_name_by_value("mitigation_effort", $mitigation_effort) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "<label>Current Solution</label>\n";
-        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" disabled=\"disabled\">" . htmlentities(stripslashes($current_solution), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" disabled=\"disabled\">" . $current_solution . "</textarea>\n";
         echo "<label>Security Requirements</label>\n";
-        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" disabled=\"disabled\">" . htmlentities(stripslashes($security_requirements), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" disabled=\"disabled\">" . $security_requirements . "</textarea>\n";
         echo "<label>Security Recommendations</label>\n";
-        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" disabled=\"disabled\">" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" disabled=\"disabled\">" . $security_recommendations . "</textarea>\n";
 
         // If the page is the view.php page
         if (basename($_SERVER['PHP_SELF']) == "view.php")
@@ -233,11 +233,11 @@ function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         create_dropdown("mitigation_effort", $mitigation_effort);
         echo "<br />\n";
         echo "<label>Current Solution</label>\n";
-        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . htmlentities(stripslashes($current_solution), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $current_solution . "</textarea>\n";
         echo "<label>Security Requirements</label>\n";
-        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . htmlentities(stripslashes($security_requirements), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . $security_requirements . "</textarea>\n";
         echo "<label>Security Recommendations</label>\n";
-        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . $security_recommendations . "</textarea>\n";
         echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"update_mitigation\" class=\"btn btn-primary\">Update</button>\n";
         echo "</div>\n";
@@ -262,7 +262,7 @@ function view_review_details($id, $review_date, $reviewer, $review, $next_step, 
         echo "<input type=\"text\" name=\"next_step\" id=\"next_step\" size=\"50\" value=\"" . get_name_by_value("next_step", $next_step) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo "<label>Comments</label>\n";
-        echo "<textarea name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\" disabled=\"disabled\">" . htmlentities(stripslashes($comments), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\" disabled=\"disabled\">" . $comments . "</textarea>\n";
         echo "<p><a href=\"reviews.php?id=".$id."\">View All Reviews</a></p>";
 }
 
@@ -281,11 +281,11 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $cur
 	create_dropdown("mitigation_effort", $mitigation_effort, NULL, true);
         echo "<br />\n";
         echo "<label>Current Solution</label>\n";
-        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . htmlentities(stripslashes($current_solution), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $current_solution . "</textarea>\n";
         echo "<label>Security Requirements</label>\n";
-        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . htmlentities(stripslashes($security_requirements), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . $security_requirements . "</textarea>\n";
         echo "<label>Security Recommendations</label>\n";
-        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . $security_recommendations . "</textarea>\n";
         echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">Submit</button>\n";
         echo "<input class=\"btn\" value=\"Reset\" type=\"reset\">\n";
@@ -307,7 +307,7 @@ function edit_review_submission($review, $next_step, $comments)
 	create_dropdown("next_step", $next_step, NULL, true);
 	echo "<br />\n";
         echo "<label>Comments</label>\n";
-        echo "<textarea name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\">" . htmlentities(stripslashes($comments), ENT_QUOTES) . "</textarea>\n";
+        echo "<textarea name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\">" . $comments . "</textarea>\n";
         echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">Submit</button>\n";
         echo "<input class=\"btn\" value=\"Reset\" type=\"reset\">\n";
@@ -820,15 +820,15 @@ function classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLAS
 
         echo "<tr>\n";
         echo "<td width=\"90\">Likelihood:</td>\n";
-        echo "<td width=\"25\">[ " . htmlentities($CLASSIC_likelihood) . " ]</td>\n";
-        echo "<td>" . htmlentities(get_name_by_value("likelihood", $CLASSIC_likelihood), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"25\">[ " . $CLASSIC_likelihood . " ]</td>\n";
+        echo "<td>" . get_name_by_value("likelihood", $CLASSIC_likelihood) . "</td>\n";
 	echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"90\">Impact:</td>\n";
-        echo "<td width=\"25\">[ " . htmlentities($CLASSIC_impact) . " ]</td>\n";
-        echo "<td>" . htmlentities(get_name_by_value("impact", $CLASSIC_impact), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"25\">[ " . $CLASSIC_impact . " ]</td>\n";
+        echo "<td>" . get_name_by_value("impact", $CLASSIC_impact) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
@@ -892,15 +892,15 @@ function cvss_scoring_table($id, $calculated_risk, $AccessVector, $AccessComplex
         echo "</tr>\n";
 
 	echo "<tr>\n";
-	echo "<td colspan=\"7\">Base Vector: AV:" . htmlentities(stripslashes($AccessVector), ENT_QUOTES) . "/AC:" . htmlentities(stripslashes($AccessComplexity), ENT_QUOTES) . "/Au:" . htmlentities(stripslashes($Authentication), ENT_QUOTES) . "/C:" . htmlentities(stripslashes($ConfImpact), ENT_QUOTES) . "/I:" . htmlentities(stripslashes($IntegImpact), ENT_QUOTES) . "/A:" . htmlentities(stripslashes($AvailImpact), ENT_QUOTES) . "</td>\n";
+	echo "<td colspan=\"7\">Base Vector: AV:" . $AccessVector . "/AC:" . $AccessComplexity . "/Au:" . $Authentication . "/C:" . $ConfImpact . "/I:" . $IntegImpact . "/A:" . $AvailImpact . "</td>\n";
 	echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"7\">Temporal Vector: E:" . htmlentities(stripslashes($Exploitability), ENT_QUOTES) . "/RL:" . htmlentities(stripslashes($RemediationLevel), ENT_QUOTES) . "/RC:" . htmlentities(stripslashes($ReportConfidence), ENT_QUOTES) . "</td>\n";
+        echo "<td colspan=\"7\">Temporal Vector: E:" . $Exploitability . "/RL:" . $RemediationLevel . "/RC:" . $ReportConfidence . "</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"7\">Environmental Vector: CDP:" . htmlentities(stripslashes($CollateralDamagePotential), ENT_QUOTES) . "/TD:" . htmlentities(stripslashes($TargetDistribution), ENT_QUOTES) . "/CR:" . htmlentities(stripslashes($ConfidentialityRequirement), ENT_QUOTES) . "/IR:" . htmlentities(stripslashes($IntegrityRequirement), ENT_QUOTES) . "/AR:" . htmlentities(stripslashes($AvailabilityRequirement), ENT_QUOTES) . "</td>\n";
+        echo "<td colspan=\"7\">Environmental Vector: CDP:" . $CollateralDamagePotential . "/TD:" . $TargetDistribution . "/CR:" . $ConfidentialityRequirement . "/IR:" . $IntegrityRequirement . "/AR:" . $AvailabilityRequirement . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
@@ -915,57 +915,57 @@ function cvss_scoring_table($id, $calculated_risk, $AccessVector, $AccessComplex
 
         echo "<tr>\n";
         echo "<td width=\"175\">Attack Vector:</td>\n";
-	echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("AccessVector", $AccessVector)), ENT_QUOTES) . "</td>\n";
+	echo "<td width=\"100\">" . get_cvss_name("AccessVector", $AccessVector) . "</td>\n";
         echo "<td width=\"150\">Exploitability:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("Exploitability", $Exploitability)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("Exploitability", $Exploitability) . "</td>\n";
         echo "<td width=\"200\">Collateral Damage Potential:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("CollateralDamagePotential", $CollateralDamagePotential)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("CollateralDamagePotential", $CollateralDamagePotential) . "</td>\n";
 	echo "<td>&nbsp</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"175\">Attack Complexity:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("AccessComplexity", $AccessComplexity)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("AccessComplexity", $AccessComplexity) . "</td>\n";
         echo "<td width=\"150\">Remediation Level:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("RemediationLevel", $RemediationLevel)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("RemediationLevel", $RemediationLevel) . "</td>\n";
         echo "<td width=\"200\">Target Distribution:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("TargetDistribution", $TargetDistribution)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("TargetDistribution", $TargetDistribution) . "</td>\n";
         echo "<td>&nbsp</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"175\">Authentication:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("Authentication", $Authentication)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("Authentication", $Authentication) . "</td>\n";
         echo "<td width=\"150\">Report Confidence:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("ReportConfidence", $ReportConfidence)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("ReportConfidence", $ReportConfidence) . "</td>\n";
         echo "<td width=\"200\">Confidentiality Requirement:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("ConfidentialityRequirement", $ConfidentialityRequirement)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("ConfidentialityRequirement", $ConfidentialityRequirement) . "</td>\n";
         echo "<td>&nbsp</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"175\">Confidentiality Impact:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("ConfImpact", $ConfImpact)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("ConfImpact", $ConfImpact) . "</td>\n";
         echo "<td width=\"150\">&nbsp;</td>\n";
 	echo "<td width=\"100\">&nbsp</td>\n";
         echo "<td width=\"200\">Integrity Requirement:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("IntegrityRequirement", $IntegrityRequirement)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("IntegrityRequirement", $IntegrityRequirement) . "</td>\n";
         echo "<td>&nbsp</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"175\">Integrity Impact:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("IntegImpact", $IntegImpact)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("IntegImpact", $IntegImpact) . "</td>\n";
         echo "<td width=\"150\">&nbsp;</td>\n";
         echo "<td width=\"100\">&nbsp</td>\n";
         echo "<td width=\"200\">Availability Requirement:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("AvailabilityRequirement", $AvailabilityRequirement)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("AvailabilityRequirement", $AvailabilityRequirement) . "</td>\n";
         echo "<td>&nbsp</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"175\">Availability Impact:</td>\n";
-        echo "<td width=\"100\">" . htmlentities(stripslashes(get_cvss_name("AvailImpact", $AvailImpact)), ENT_QUOTES) . "</td>\n";
+        echo "<td width=\"100\">" . get_cvss_name("AvailImpact", $AvailImpact) . "</td>\n";
         echo "<td width=\"150\">&nbsp;</td>\n";
         echo "<td width=\"100\">&nbsp</td>\n";
         echo "<td width=\"200\">&nbsp;</td>\n";
@@ -1009,31 +1009,31 @@ function dread_scoring_table($id, $calculated_risk, $DREADDamagePotential, $DREA
 
         echo "<tr>\n";
         echo "<td width=\"150\">Damage Potential:</td>\n";
-        echo "<td>" . htmlentities($DREADDamagePotential) . "</td>\n";
+        echo "<td>" . $DREADDamagePotential . "</td>\n";
 	echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"150\">Reproducibility:</td>\n";
-        echo "<td>" . htmlentities($DREADReproducibility) . "</td>\n";
+        echo "<td>" . $DREADReproducibility . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"150\">Exploitability:</td>\n";
-        echo "<td>" . htmlentities($DREADExploitability) . "</td>\n";
+        echo "<td>" . $DREADExploitability . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"150\">Affected Users:</td>\n";
-        echo "<td>" . htmlentities($DREADAffectedUsers) . "</td>\n";
+        echo "<td>" . $DREADAffectedUsers . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"150\">Discoverability:</td>\n";
-        echo "<td>" . htmlentities($DREADDiscoverability) . "</td>\n";
+        echo "<td>" . $DREADDiscoverability . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
@@ -1042,7 +1042,7 @@ function dread_scoring_table($id, $calculated_risk, $DREADDamagePotential, $DREA
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"3\"><b>RISK = ( " . htmlentities($DREADDamagePotential) . " + " . htmlentities($DREADReproducibility) . " + " . htmlentities($DREADExploitability) . " + " . htmlentities($DREADAffectedUsers) . " + " . htmlentities($DREADDiscoverability) . " ) / 5 = " . $calculated_risk . "</b></td>\n";
+        echo "<td colspan=\"3\"><b>RISK = ( " . $DREADDamagePotential . " + " . $DREADReproducibility . " + " . $DREADExploitability . " + " . $DREADAffectedUsers . " + " . $DREADDiscoverability . " ) / 5 = " . $calculated_risk . "</b></td>\n";
         echo "</tr>\n";
 
         echo "</table>\n";
@@ -1081,49 +1081,49 @@ function owasp_scoring_table($id, $calculated_risk, $OWASPSkillLevel, $OWASPEase
 
         echo "<tr>\n";
         echo "<td width=\"175\">Skill Level:</td>\n";
-        echo "<td width=\"50\">" . htmlentities($OWASPSkillLevel) . "</td>\n";
+        echo "<td width=\"50\">" . $OWASPSkillLevel . "</td>\n";
         echo "<td width=\"175\">Ease of Discovery:</td>\n";
-        echo "<td width=\"50\">" . htmlentities($OWASPEaseOfDiscovery) . "</td>\n";
+        echo "<td width=\"50\">" . $OWASPEaseOfDiscovery . "</td>\n";
         echo "<td width=\"175\">Loss of Confidentiality:</td>\n";
-        echo "<td width=\"50\">" . htmlentities($OWASPLossOfConfidentiality) . "</td>\n";
+        echo "<td width=\"50\">" . $OWASPLossOfConfidentiality . "</td>\n";
         echo "<td width=\"175\">Financial Damage:</td>\n";
-        echo "<td width=\"50\">" . htmlentities($OWASPFinancialDamage) . "</td>\n";
+        echo "<td width=\"50\">" . $OWASPFinancialDamage . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"125\">Motive:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($OWASPMotive) . "</td>\n";
+        echo "<td width=\"10\">" . $OWASPMotive . "</td>\n";
         echo "<td width=\"125\">Ease of Exploit:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($OWASPEaseOfExploit) . "</td>\n";
+        echo "<td width=\"10\">" . $OWASPEaseOfExploit . "</td>\n";
         echo "<td width=\"125\">Loss of Integrity:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($OWASPLossOfIntegrity) . "</td>\n";
+        echo "<td width=\"10\">" . $OWASPLossOfIntegrity . "</td>\n";
         echo "<td width=\"125\">Reputation Damage:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($OWASPReputationDamage) . "</td>\n";
+        echo "<td width=\"10\">" . $OWASPReputationDamage . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"125\">Opportunity:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($OWASPOpportunity) . "</td>\n";
+        echo "<td width=\"10\">" . $OWASPOpportunity . "</td>\n";
         echo "<td width=\"125\">Awareness:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($OWASPAwareness) . "</td>\n";
+        echo "<td width=\"10\">" . $OWASPAwareness . "</td>\n";
         echo "<td width=\"125\">Loss Of Availability:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($OWASPLossOfAvailability) . "</td>\n";
+        echo "<td width=\"10\">" . $OWASPLossOfAvailability . "</td>\n";
         echo "<td width=\"125\">Non-Compliance:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($OWASPNonCompliance) . "</td>\n";
+        echo "<td width=\"10\">" . $OWASPNonCompliance . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
         echo "<td width=\"125\">Size:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($OWASPSize) . "</td>\n";
+        echo "<td width=\"10\">" . $OWASPSize . "</td>\n";
         echo "<td width=\"125\">Intrusion Detection:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($OWASPIntrusionDetection) . "</td>\n";
+        echo "<td width=\"10\">" . $OWASPIntrusionDetection . "</td>\n";
         echo "<td width=\"125\">Loss of Accountability:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($OWASPLossOfAccountability) . "</td>\n";
+        echo "<td width=\"10\">" . $OWASPLossOfAccountability . "</td>\n";
         echo "<td width=\"125\">Privacy Violation:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($OWASPPrivacyViolation) . "</td>\n";
+        echo "<td width=\"10\">" . $OWASPPrivacyViolation . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
@@ -1138,14 +1138,14 @@ function owasp_scoring_table($id, $calculated_risk, $OWASPSkillLevel, $OWASPEase
         echo "<tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"4\">Threat Agent Factors = ( " . htmlentities($OWASPSkillLevel) . " + " . htmlentities($OWASPMotive) . " + " . htmlentities($OWASPOpportunity) . " + " . htmlentities($OWASPSize) . " ) / 4</td>\n";
-        echo "<td colspan=\"4\">Technical Impact = ( " . htmlentities($OWASPLossOfConfidentiality) . " + " . htmlentities($OWASPLossOfIntegrity) . " + " . htmlentities($OWASPLossOfAvailability) . " + " . htmlentities($OWASPLossOfAccountability) . " ) / 4</td>\n";
+        echo "<td colspan=\"4\">Threat Agent Factors = ( " . $OWASPSkillLevel . " + " . $OWASPMotive . " + " . $OWASPOpportunity . " + " . $OWASPSize . " ) / 4</td>\n";
+        echo "<td colspan=\"4\">Technical Impact = ( " . $OWASPLossOfConfidentiality . " + " . $OWASPLossOfIntegrity . " + " . $OWASPLossOfAvailability . " + " . $OWASPLossOfAccountability . " ) / 4</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"4\">Vulnerability Factors = ( " . htmlentities($OWASPEaseOfDiscovery) . " + " . htmlentities($OWASPEaseOfExploit) . " + " . htmlentities($OWASPAwareness) . " + " . htmlentities($OWASPIntrusionDetection) . " ) / 4</td>\n";
-        echo "<td colspan=\"4\">Business Impact = ( " . htmlentities($OWASPFinancialDamage) . " + " . htmlentities($OWASPReputationDamage) . " + " . htmlentities($OWASPNonCompliance) . " + " . htmlentities($OWASPPrivacyViolation) . " ) / 4</td>\n";
+        echo "<td colspan=\"4\">Vulnerability Factors = ( " . $OWASPEaseOfDiscovery . " + " . $OWASPEaseOfExploit . " + " . $OWASPAwareness . " + " . $OWASPIntrusionDetection . " ) / 4</td>\n";
+        echo "<td colspan=\"4\">Business Impact = ( " . $OWASPFinancialDamage . " + " . $OWASPReputationDamage . " + " . $OWASPNonCompliance . " + " . $OWASPPrivacyViolation . " ) / 4</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<tr>\n";
 
@@ -1185,7 +1185,7 @@ function custom_scoring_table($id, $custom)
 
         echo "<tr>\n";
         echo "<td width=\"175\">Manually Entered Value:</td>\n";
-        echo "<td width=\"10\">" . htmlentities($custom) . "</td>\n";
+        echo "<td width=\"10\">" . $custom . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<tr>\n";
 

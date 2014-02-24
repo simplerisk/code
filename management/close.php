@@ -28,6 +28,7 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+        require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
         session_check();
@@ -67,8 +68,8 @@
                 if (count($risk) != 0)
                 {
                         $status = htmlentities($risk[0]['status'], ENT_QUOTES);
-                        $subject = $risk[0]['subject'];
-                        $calculated_risk = $risk[0]['calculated_risk'];
+                        $subject = htmlentities($risk[0]['subject'], ENT_QUOTES);
+                        $calculated_risk = htmlentities($risk[0]['calculated_risk'], ENT_QUOTES);
                 }
                 // If the risk was not found use null values
                 else

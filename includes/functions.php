@@ -304,13 +304,20 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
 /************************************
  * FUNCTION: CREATE SELECT DROPDOWN *
  ************************************/
-function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true)
+function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false)
 {
+	// If we want to update the helper when selected
+	if ($help == true)
+	{
+		$helper = "  onClick=\"javascript:showHelp('" . htmlentities($rename, ENT_QUOTES) . "Help');updateScore();\"";
+	}
+	else $helper = "";
+
 	if ($rename != NULL)
 	{
-		echo "<select id=\"" . htmlentities($rename, ENT_QUOTES) . "\" name=\"" . htmlentities($rename, ENT_QUOTES) . "\" class=\"form-field\" style=\"width:120px;\" onClick=\"javascript:showHelp('" . htmlentities($rename, ENT_QUOTES) . "Help');updateScore();\">\n";
+		echo "<select id=\"" . htmlentities($rename, ENT_QUOTES) . "\" name=\"" . htmlentities($rename, ENT_QUOTES) . "\" class=\"form-field\" style=\"width:120px;\"" . $helper . ">\n";
 	}
-	else echo "<select id=\"" . htmlentities($name, ENT_QUOTES) . "\" name=\"" . htmlentities($name, ENT_QUOTES) . "\" class=\"form-field\" style=\"width:120px;\" onClick=\"javascript:showHelp('" . htmlentities($name, ENT_QUOTES) . "Help');updateScore();\">\n";
+	else echo "<select id=\"" . htmlentities($name, ENT_QUOTES) . "\" name=\"" . htmlentities($name, ENT_QUOTES) . "\" class=\"form-field\" style=\"width:120px;\"" . $helper . ">\n";
 
 	// If the blank is true
 	if ($blank == true)
@@ -811,17 +818,18 @@ function user_exist($user)
 /**********************
  * FUNCTION: ADD USER *
  **********************/
-function add_user($type, $user, $email, $name, $hash, $teams, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
+function add_user($type, $user, $email, $name, $salt, $hash, $teams, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
 {
         // Open the database connection
         $db = db_open();
 
         // Insert the new user
-        $stmt = $db->prepare("INSERT INTO user (`type`, `username`, `name`, `email`, `password`, `teams`, `admin`, `review_high`, `review_medium`, `review_low`, `submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`) VALUES (:type, :user, :name, :email, :hash, :teams, :admin, :review_high, :review_medium, :review_low, :submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor)");
+        $stmt = $db->prepare("INSERT INTO user (`type`, `username`, `name`, `email`, `salt`, `password`, `teams`, `admin`, `review_high`, `review_medium`, `review_low`, `submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`) VALUES (:type, :user, :name, :email, :salt, :hash, :teams, :admin, :review_high, :review_medium, :review_low, :submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor)");
 	$stmt->bindParam(":type", $type, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
 	$stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
+	$stmt->bindParam(":salt", $salt, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":hash", $hash, PDO::PARAM_STR, 60);
 	$stmt->bindParam(":teams", $teams, PDO::PARAM_STR, 200);
         $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
@@ -961,7 +969,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/notification.php");
+                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/index.php");
 
 		// Send the notification
 		notify_new_risk($last_insert_id, $subject);
@@ -1607,7 +1615,7 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/notification.php");
+                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/index.php");
 
 		// Send the notification
 		notify_new_mitigation($risk_id);
@@ -1661,7 +1669,7 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/notification.php");
+                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/index.php");
 
 		// Send the notification
 		notify_new_review($risk_id);
@@ -1710,7 +1718,7 @@ function update_risk($id, $subject, $reference_id, $regulation, $control_number,
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/notification.php");
+                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/index.php");
 
 		// Send the notification
 		notify_risk_update($id);
@@ -1984,6 +1992,39 @@ function get_risks($sort_order=0)
                 $array = $stmt->fetchAll();
         }
 
+        // 14 = Show open risks scored by DREAD Scoring
+        else if ($sort_order == 14)
+        {
+                // Query the database
+                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 3 ORDER BY calculated_risk DESC");
+                $stmt->execute();
+
+                // Store the list in the array
+                $array = $stmt->fetchAll();
+        }
+
+        // 15 = Show open risks scored by OWASP Scoring
+        else if ($sort_order == 15)
+        {
+                // Query the database
+                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 4 ORDER BY calculated_risk DESC");
+                $stmt->execute();
+
+                // Store the list in the array
+                $array = $stmt->fetchAll();
+        }
+
+        // 16 = Show open risks scored by Custom Scoring
+        else if ($sort_order == 16)
+        {
+                // Query the database
+                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 5 ORDER BY calculated_risk DESC");
+                $stmt->execute();
+
+                // Store the list in the array
+                $array = $stmt->fetchAll();
+        }
+
         // Close the database connection
         db_close($db);
 
@@ -1991,7 +2032,7 @@ function get_risks($sort_order=0)
 	if (team_separation_extra())
 	{
 		// Include the team separation extra
-		require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/team_separation/team_separation.php");
+		require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/separation/index.php");
 
 		// Strip out risks the user should not have access to
 		$array = strip_no_access_risks($array);
@@ -2168,6 +2209,213 @@ function get_reviewed_risk_table($sort_order=12)
         echo "</table>\n";
 
         return true;
+}
+
+/************************************
+ * FUNCTION: GET RISK SCORING TABLE *
+ ************************************/
+function get_risk_scoring_table()
+{
+	echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        echo "<thead>\n";
+        echo "<tr>\n";
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">Classic Risk Scoring</font></center></th>\n";
+        echo "</tr>\n";
+        echo "<tr>\n";
+        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
+        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
+        echo "<th align=\"left\" width=\"100px\">Risk</th>\n";
+        echo "<th align=\"left\" width=\"150px\">Date Submitted</th>\n";
+        echo "</tr>\n";
+        echo "</thead>\n";
+        echo "<tbody>\n";
+
+        // Get risks marked as consider for projects
+        $risks = get_risks(10);
+
+        // For each risk
+        foreach ($risks as $risk)
+        {
+        	$subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES);
+                $risk_id = (int)$risk['id'];
+                $project_id = (int)$risk['project_id'];
+                $color = get_risk_color($risk['calculated_risk']);
+
+                // If the risk is assigned to that project id
+                if ($id == $project_id)
+                {
+                	echo "<tr>\n";
+                        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
+                        echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
+                        echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
+                        echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
+                        echo "</tr>\n";
+                }
+        }
+
+        echo "</tbody>\n";
+        echo "</table>\n";
+        echo "<br />\n";
+
+        echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        echo "<thead>\n";
+        echo "<tr>\n";  
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">CVSS Risk Scoring</font></center></th>\n";
+        echo "</tr>\n"; 
+        echo "<tr>\n";  
+        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
+        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
+        echo "<th align=\"left\" width=\"100px\">Risk</th>\n";
+        echo "<th align=\"left\" width=\"150px\">Date Submitted</th>\n";
+        echo "</tr>\n"; 
+        echo "</thead>\n";
+        echo "<tbody>\n";
+
+        // Get risks marked as consider for projects
+        $risks = get_risks(9);
+
+        // For each risk
+        foreach ($risks as $risk)
+        {               
+                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES);
+                $risk_id = (int)$risk['id'];
+                $project_id = (int)$risk['project_id'];
+                $color = get_risk_color($risk['calculated_risk']);
+
+                // If the risk is assigned to that project id
+                if ($id == $project_id) 
+                {               
+                        echo "<tr>\n";  
+                        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
+                        echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";                        echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
+                        echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
+                        echo "</tr>\n"; 
+                }       
+        }               
+
+        echo "</tbody>\n";
+        echo "</table>\n";
+        echo "<br />\n";
+
+        echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        echo "<thead>\n";
+        echo "<tr>\n";  
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">DREAD Risk Scoring</font></center></th>\n";
+        echo "</tr>\n"; 
+        echo "<tr>\n";  
+        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
+        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
+        echo "<th align=\"left\" width=\"100px\">Risk</th>\n";
+        echo "<th align=\"left\" width=\"150px\">Date Submitted</th>\n";
+        echo "</tr>\n"; 
+        echo "</thead>\n";
+        echo "<tbody>\n";
+
+        // Get risks marked as consider for projects
+        $risks = get_risks(14);
+
+        // For each risk
+        foreach ($risks as $risk)
+        {               
+                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES);
+                $risk_id = (int)$risk['id'];
+                $project_id = (int)$risk['project_id'];
+                $color = get_risk_color($risk['calculated_risk']);
+
+                // If the risk is assigned to that project id
+                if ($id == $project_id) 
+                {               
+                        echo "<tr>\n";  
+                        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
+                        echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";                        echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
+                        echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
+                        echo "</tr>\n"; 
+                }       
+        }               
+
+        echo "</tbody>\n";
+        echo "</table>\n";
+        echo "<br />\n";
+
+        echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        echo "<thead>\n";
+        echo "<tr>\n";  
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">OWASP Risk Scoring</font></center></th>\n";
+        echo "</tr>\n"; 
+        echo "<tr>\n";  
+        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
+        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
+        echo "<th align=\"left\" width=\"100px\">Risk</th>\n";
+        echo "<th align=\"left\" width=\"150px\">Date Submitted</th>\n";
+        echo "</tr>\n"; 
+        echo "</thead>\n";
+        echo "<tbody>\n";
+
+        // Get risks marked as consider for projects
+        $risks = get_risks(15);
+
+        // For each risk
+        foreach ($risks as $risk)
+        {               
+                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES);
+                $risk_id = (int)$risk['id'];
+                $project_id = (int)$risk['project_id'];
+                $color = get_risk_color($risk['calculated_risk']);
+
+                // If the risk is assigned to that project id
+                if ($id == $project_id) 
+                {               
+                        echo "<tr>\n";  
+                        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
+                        echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";                        echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
+                        echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
+                        echo "</tr>\n"; 
+                }       
+        }               
+
+        echo "</tbody>\n";
+        echo "</table>\n";
+        echo "<br />\n";
+
+        echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        echo "<thead>\n";
+        echo "<tr>\n";  
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">Custom Risk Scoring</font></center></th>\n";
+        echo "</tr>\n"; 
+        echo "<tr>\n";  
+        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
+        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
+        echo "<th align=\"left\" width=\"100px\">Risk</th>\n";
+        echo "<th align=\"left\" width=\"150px\">Date Submitted</th>\n";
+        echo "</tr>\n"; 
+        echo "</thead>\n";
+        echo "<tbody>\n";
+
+        // Get risks marked as consider for projects
+        $risks = get_risks(16);
+
+        // For each risk
+        foreach ($risks as $risk)
+        {               
+                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES);
+                $risk_id = (int)$risk['id'];
+                $project_id = (int)$risk['project_id'];
+                $color = get_risk_color($risk['calculated_risk']);
+
+                // If the risk is assigned to that project id
+                if ($id == $project_id) 
+                {               
+                        echo "<tr>\n";  
+                        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
+                        echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";                        echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
+                        echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
+                        echo "</tr>\n"; 
+                }       
+        }               
+
+        echo "</tbody>\n";
+        echo "</table>\n";
+        echo "<br />\n";
 }
 
 /******************************************
@@ -2992,7 +3240,7 @@ function update_mitigation($id, $planning_strategy, $mitigation_effort, $current
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/notification.php");
+                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/index.php");
 
 		// Send the notification
 		notify_mitigation_update($id);
@@ -3053,7 +3301,7 @@ function get_reviews($id)
  ****************************/
 function latest_version($param)
 {
-	$version_page = file('http://updates.simplerisk.org/Current_Version.xml');
+	$version_page = file('https://updates.simplerisk.it/Current_Version.xml');
  
 	if ($param == "app")
 	{
@@ -3083,7 +3331,7 @@ function current_version($param)
 {
         if ($param == "app")
         {
-		require_once('../includes/version.php');
+		require_once($_SERVER{'DOCUMENT_ROOT'} . "/includes/version.php");
 
 		return APP_VERSION;
         }
@@ -3162,7 +3410,7 @@ function get_announcements()
 {
 	$announcements = "<ul>\n";
 
-        $announcement_file = file('http://updates.simplerisk.org/announcements.xml');
+        $announcement_file = file('https://updates.simplerisk.it/announcements.xml');
 
 	$regex_pattern = "/<announcement>(.*)<\/announcement>/";
 

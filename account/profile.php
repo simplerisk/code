@@ -27,6 +27,7 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+        require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
         session_check();
@@ -222,9 +223,9 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         	echo "<div class=\"hero-unit\">\n";
                 echo "<h4>Change Password</h4><br />\n";
                 echo "<form name=\"change_password\" method=\"post\" action=\"\">\n";
-                echo "Current Password: <input maxlength=\"100\" name=\"current_pass\" id=\"current_pass\" class=\"input-medium\" type=\"password\"><br />\n";
-		echo "New Password: <input maxlength=\"100\" name=\"new_pass\" id=\"new_pass\" class=\"input-medium\" type=\"password\"><br />\n";
-		echo "Confirm Password: <input maxlength=\"100\" name=\"confirm_pass\" id=\"confirm_pass\" class=\"input-medium\" type=\"password\"><br />\n";
+                echo "Current Password: <input maxlength=\"100\" name=\"current_pass\" id=\"current_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
+		echo "New Password: <input maxlength=\"100\" name=\"new_pass\" id=\"new_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
+		echo "Confirm Password: <input maxlength=\"100\" name=\"confirm_pass\" id=\"confirm_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
                 echo "<div class=\"form-actions\">\n";
                 echo "<button type=\"submit\" name=\"change_password\" class=\"btn btn-primary\">Submit</button>\n";
                 echo "<input class=\"btn\" value=\"Reset\" type=\"reset\">\n";

@@ -27,6 +27,7 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+        require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
         session_check();
@@ -305,7 +306,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 	if (custom_authentication_extra())
 	{
                 // Include the custom authentication extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/custom_authentication/custom_authentication.php");
+                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/authentication/index.php");
 
 		// Display the multi factor authentication options
 		multi_factor_authentication_options($multi_factor);

@@ -28,6 +28,7 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+        require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
         session_check();
@@ -67,10 +68,10 @@
         	if (team_separation_extra())
         	{
                 	// Include the team separation extra
-			require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/team_separation/team_separation.php");
+			require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/separation/index.php");
 
                 	// If the user does not have access to the risk
-                	if (!grant_access($_SESSION['uid'], $id))
+                	if (!extra_grant_access($_SESSION['uid'], $id))
                 	{
                                 // Redirect back to the page the workflow started on
                                 header("Location: " . $_SESSION["workflow_start"]);
@@ -166,53 +167,53 @@
                 $technology = htmlentities($risk[0]['technology'], ENT_QUOTES);
                 $owner = htmlentities($risk[0]['owner'], ENT_QUOTES);
                 $manager = htmlentities($risk[0]['manager'], ENT_QUOTES);
-                $assessment = htmlentities($risk[0]['assessment'], ENT_QUOTES);
-                $notes = htmlentities($risk[0]['notes'], ENT_QUOTES);
+                $assessment = htmlentities(stripslashes($risk[0]['assessment']), ENT_QUOTES);
+                $notes = htmlentities(stripslashes($risk[0]['notes']), ENT_QUOTES);
                 $submission_date = htmlentities($risk[0]['submission_date'], ENT_QUOTES);
                 $mitigation_id = htmlentities($risk[0]['mitigation_id'], ENT_QUOTES);
                 $mgmt_review = htmlentities($risk[0]['mgmt_review'], ENT_QUOTES);
-                $calculated_risk = $risk[0]['calculated_risk'];
-                $risk_level = get_risk_level_name($calculated_risk);
+                $calculated_risk = htmlentities($risk[0]['calculated_risk'], ENT_QUOTES);
+                $risk_level = htmlentities(get_risk_level_name($calculated_risk), ENT_QUOTES);
 
-                $scoring_method = $risk[0]['scoring_method'];
-                $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
-                $CLASSIC_impact = $risk[0]['CLASSIC_impact'];
-                $AccessVector = $risk[0]['CVSS_AccessVector'];
-                $AccessComplexity = $risk[0]['CVSS_AccessComplexity'];
-                $Authentication = $risk[0]['CVSS_Authentication'];
-                $ConfImpact = $risk[0]['CVSS_ConfImpact'];
-                $IntegImpact = $risk[0]['CVSS_IntegImpact'];
-                $AvailImpact = $risk[0]['CVSS_AvailImpact'];
-                $Exploitability = $risk[0]['CVSS_Exploitability'];
-                $RemediationLevel = $risk[0]['CVSS_RemediationLevel'];
-                $ReportConfidence = $risk[0]['CVSS_ReportConfidence'];
-                $CollateralDamagePotential = $risk[0]['CVSS_CollateralDamagePotential'];
-                $TargetDistribution = $risk[0]['CVSS_TargetDistribution'];
-                $ConfidentialityRequirement = $risk[0]['CVSS_ConfidentialityRequirement'];
-                $IntegrityRequirement = $risk[0]['CVSS_IntegrityRequirement'];
-                $AvailabilityRequirement = $risk[0]['CVSS_AvailabilityRequirement'];
-                $DREADDamagePotential = $risk[0]['DREAD_DamagePotential'];
-                $DREADReproducibility = $risk[0]['DREAD_Reproducibility'];
-                $DREADExploitability = $risk[0]['DREAD_Exploitability'];
-                $DREADAffectedUsers = $risk[0]['DREAD_AffectedUsers'];
-                $DREADDiscoverability = $risk[0]['DREAD_Discoverability'];
-                $OWASPSkillLevel = $risk[0]['OWASP_SkillLevel'];
-                $OWASPMotive = $risk[0]['OWASP_Motive'];
-                $OWASPOpportunity = $risk[0]['OWASP_Opportunity'];
-                $OWASPSize = $risk[0]['OWASP_Size'];
-                $OWASPEaseOfDiscovery = $risk[0]['OWASP_EaseOfDiscovery'];
-                $OWASPEaseOfExploit = $risk[0]['OWASP_EaseOfExploit'];
-                $OWASPAwareness = $risk[0]['OWASP_Awareness'];
-                $OWASPIntrusionDetection = $risk[0]['OWASP_IntrusionDetection'];
-                $OWASPLossOfConfidentiality = $risk[0]['OWASP_LossOfConfidentiality'];
-                $OWASPLossOfIntegrity = $risk[0]['OWASP_LossOfIntegrity'];
-                $OWASPLossOfAvailability = $risk[0]['OWASP_LossOfAvailability'];
-                $OWASPLossOfAccountability = $risk[0]['OWASP_LossOfAccountability'];
-                $OWASPFinancialDamage = $risk[0]['OWASP_FinancialDamage'];
-                $OWASPReputationDamage = $risk[0]['OWASP_ReputationDamage'];
-                $OWASPNonCompliance = $risk[0]['OWASP_NonCompliance'];
-                $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
-                $custom = $risk[0]['Custom'];
+                $scoring_method = htmlentities($risk[0]['scoring_method'], ENT_QUOTES);
+                $CLASSIC_likelihood = htmlentities($risk[0]['CLASSIC_likelihood'], ENT_QUOTES);
+                $CLASSIC_impact = htmlentities($risk[0]['CLASSIC_impact'], ENT_QUOTES);
+                $AccessVector = htmlentities($risk[0]['CVSS_AccessVector'], ENT_QUOTES);
+                $AccessComplexity = htmlentities($risk[0]['CVSS_AccessComplexity'], ENT_QUOTES);
+                $Authentication = htmlentities($risk[0]['CVSS_Authentication'], ENT_QUOTES);
+                $ConfImpact = htmlentities($risk[0]['CVSS_ConfImpact'], ENT_QUOTES);
+                $IntegImpact = htmlentities($risk[0]['CVSS_IntegImpact'], ENT_QUOTES);
+                $AvailImpact = htmlentities($risk[0]['CVSS_AvailImpact'], ENT_QUOTES);
+                $Exploitability = htmlentities($risk[0]['CVSS_Exploitability'], ENT_QUOTES);
+                $RemediationLevel = htmlentities($risk[0]['CVSS_RemediationLevel'], ENT_QUOTES);
+                $ReportConfidence = htmlentities($risk[0]['CVSS_ReportConfidence'], ENT_QUOTES);
+                $CollateralDamagePotential = htmlentities($risk[0]['CVSS_CollateralDamagePotential'], ENT_QUOTES);
+                $TargetDistribution = htmlentities($risk[0]['CVSS_TargetDistribution'], ENT_QUOTES);
+                $ConfidentialityRequirement = htmlentities($risk[0]['CVSS_ConfidentialityRequirement'], ENT_QUOTES);
+                $IntegrityRequirement = htmlentities($risk[0]['CVSS_IntegrityRequirement'], ENT_QUOTES);
+                $AvailabilityRequirement = htmlentities($risk[0]['CVSS_AvailabilityRequirement'], ENT_QUOTES);
+                $DREADDamagePotential = htmlentities($risk[0]['DREAD_DamagePotential'], ENT_QUOTES);
+                $DREADReproducibility = htmlentities($risk[0]['DREAD_Reproducibility'], ENT_QUOTES);
+                $DREADExploitability = htmlentities($risk[0]['DREAD_Exploitability'], ENT_QUOTES);
+                $DREADAffectedUsers = htmlentities($risk[0]['DREAD_AffectedUsers'], ENT_QUOTES);
+                $DREADDiscoverability = htmlentities($risk[0]['DREAD_Discoverability'], ENT_QUOTES);
+                $OWASPSkillLevel = htmlentities($risk[0]['OWASP_SkillLevel'], ENT_QUOTES);
+                $OWASPMotive = htmlentities($risk[0]['OWASP_Motive'], ENT_QUOTES);
+                $OWASPOpportunity = htmlentities($risk[0]['OWASP_Opportunity'], ENT_QUOTES);
+                $OWASPSize = htmlentities($risk[0]['OWASP_Size'], ENT_QUOTES);
+                $OWASPEaseOfDiscovery = htmlentities($risk[0]['OWASP_EaseOfDiscovery'], ENT_QUOTES);
+                $OWASPEaseOfExploit = htmlentities($risk[0]['OWASP_EaseOfExploit'], ENT_QUOTES);
+                $OWASPAwareness = htmlentities($risk[0]['OWASP_Awareness'], ENT_QUOTES);
+                $OWASPIntrusionDetection = htmlentities($risk[0]['OWASP_IntrusionDetection'], ENT_QUOTES);
+                $OWASPLossOfConfidentiality = htmlentities($risk[0]['OWASP_LossOfConfidentiality'], ENT_QUOTES);
+                $OWASPLossOfIntegrity = htmlentities($risk[0]['OWASP_LossOfIntegrity'], ENT_QUOTES);
+                $OWASPLossOfAvailability = htmlentities($risk[0]['OWASP_LossOfAvailability'], ENT_QUOTES);
+                $OWASPLossOfAccountability = htmlentities($risk[0]['OWASP_LossOfAccountability'], ENT_QUOTES);
+                $OWASPFinancialDamage = htmlentities($risk[0]['OWASP_FinancialDamage'], ENT_QUOTES);
+                $OWASPReputationDamage = htmlentities($risk[0]['OWASP_ReputationDamage'], ENT_QUOTES);
+                $OWASPNonCompliance = htmlentities($risk[0]['OWASP_NonCompliance'], ENT_QUOTES);
+                $OWASPPrivacyViolation = htmlentities($risk[0]['OWASP_PrivacyViolation'], ENT_QUOTES);
+                $custom = htmlentities($risk[0]['Custom'], ENT_QUOTES);
 
                 if ($submission_date == "")
                 {
