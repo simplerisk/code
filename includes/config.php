@@ -27,8 +27,12 @@ define('SESSION_RENEG_TIMEOUT', '600');
 // Use database for sessions
 define('USE_DATABASE_FOR_SESSIONS', 'true');
 
-// Enable Content Security Policy (this has broken Chrome in the past)
+// Enable Content Security Policy (This has broken Chrome in the past)
 define('CSP_ENABLED', 'false');
+
+// Set the default language (Can be overridden per user)
+// Options: bp, en
+define('LANG_DEFAULT', 'en');
 
 // Set the default Timezone
 // List of supported timezones here: http://www.php.net/manual/en/timezones.php

@@ -27,6 +27,10 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+
+        // Include the language file
+        require_once(language_file());
+
         require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
@@ -44,11 +48,11 @@
         {
                 if (isset($_GET['id']))
 		{
-			$id = htmlentities($_GET['id'], ENT_QUOTES);
+			$id = htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8');
 		}
 		else if (isset($_POST['id']))
 		{
-			$id = htmlentities($_POST['id'], ENT_QUOTES);
+			$id = htmlentities($_POST['id'], ENT_QUOTES, 'UTF-8');
 		}
 
 		// Reopen the risk

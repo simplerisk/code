@@ -9,6 +9,8 @@
  ****************************/
 function view_top_table($id, $calculated_risk, $subject, $status, $show_details = false)
 {
+	global $lang;
+	
 	echo "<table width=\"100%\" cellpadding=\"10\" cellspacing=\"0\" style=\"border:none;\">\n";
         echo "<tr>\n";
         echo "<td width=\"100\" valign=\"middle\" halign=\"center\">\n";
@@ -29,15 +31,15 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 
 	echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
         echo "<tr>\n";
-        echo "<td width=\"75\"><h4>Risk ID:</h4></td>\n";
+        echo "<td width=\"100\"><h4>". $lang['RiskId'] .":</h4></td>\n";
 	echo "<td><h4>" . $id . "</h4></td>\n";
 	echo "</tr>\n";
         echo "<tr>\n";
-        echo "<td width=\"75\"><h4>Subject:</h4></td>\n";
+        echo "<td width=\"100\"><h4>". $lang['Subject'] .":</h4></td>\n";
 	echo "<td><h4>" . $subject . "</h4></td>\n";
         echo "</tr>\n";
         echo "<tr>\n";
-        echo "<td width=\"75\"><h4>Status:</h4></td>\n";
+        echo "<td width=\"100\"><h4>". $lang['Status'] .":</h4></td>\n";
 	echo "<td><h4>" . $status . "</h4></td>\n";
 	echo "</tr>\n";
 	echo "</table>\n";
@@ -45,13 +47,13 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
         echo "</td>\n";
         echo "<td valign=\"top\">\n";
         echo "<div class=\"btn-group pull-right\">\n";
-        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Risk Actions<span class=\"caret\"></span></a>\n";
+        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">". $lang['RiskActions'] ."<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
 
         // If the risk is closed, offer to reopen
         if ($status == "Closed")
         {
-        	echo "<li><a href=\"reopen.php?id=".$id."\">Reopen Risk</a></li>\n";
+        	echo "<li><a href=\"reopen.php?id=".$id."\">". $lang['ReopenRisk'] ."</a></li>\n";
         }
         // Otherwise, offer to close
         else
@@ -59,14 +61,14 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
         	// If the user has permission to close risks
                 if (isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1)
                 {
-                	echo "<li><a href=\"close.php?id=".$id."\">Close Risk</a></li>\n";
+                	echo "<li><a href=\"close.php?id=".$id."\">". $lang['CloseRisk'] ."</a></li>\n";
                 }
         }
 
-	echo "<li><a href=\"view.php?id=" . $id . "\">Edit Risk</a></li>\n";
-        echo "<li><a href=\"mitigate.php?id=".$id."\">Plan a Mitigation</a></li>\n";
-        echo "<li><a href=\"mgmt_review.php?id=" . $id . "\">Perform a Review</a></li>\n";
-        echo "<li><a href=\"comment.php?id=" . $id . "\">Add a Comment</a></li>\n";
+	echo "<li><a href=\"view.php?id=" . $id . "\">". $lang['EditRisk'] ."</a></li>\n";
+        echo "<li><a href=\"mitigate.php?id=".$id."\">". $lang['PlanAMitigation'] ."</a></li>\n";
+        echo "<li><a href=\"mgmt_review.php?id=" . $id . "\">". $lang['PerformAReview'] ."</a></li>\n";
+        echo "<li><a href=\"comment.php?id=" . $id . "\">". $lang['AddAComment'] ."</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
@@ -77,8 +79,8 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 	{
 		echo "<tr>\n";
 		echo "<td colspan=\"3\">\n";
-		echo "<a href=\"#\" id=\"show\" onclick=\"javascript: showScoreDetails();\">Show Risk Scoring Details</a>\n";
-        	echo "<a href=\"#\" id=\"hide\" style=\"display: none;\" onclick=\"javascript: hideScoreDetails();\">Hide Risk Scoring Details</a>\n";
+		echo "<a href=\"#\" id=\"show\" onclick=\"javascript: showScoreDetails();\">". $lang['ShowRiskScoringDetails'] ."</a>\n";
+        	echo "<a href=\"#\" id=\"hide\" style=\"display: none;\" onclick=\"javascript: hideScoreDetails();\">". $lang['HideRiskScoringDetails'] ."</a>\n";
 		echo "</td>\n";
 		echo "</tr>\n";
 	}
@@ -91,51 +93,67 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
  *******************************/
 function view_risk_details($submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
 {
-	echo "<h4>Details</h4>\n";
-        echo "Submission Date: \n";
-        echo "<input type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $submission_date . "\" disabled=\"disabled\" />\n";
+	global $lang;
+	
+	echo "<h4>". $lang['Details'] ."</h4>\n";
+        echo $lang['SubmissionDate'] .": \n";
         echo "<br />\n";
-        echo "Subject: \n";
-        echo "<input type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . $subject . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $submission_date . "\" title=\"" . $submission_date . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo "External Reference ID: \n";
-        echo " <input type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . $reference_id . "\" disabled=\"disabled\" />\n";
+        echo $lang['Subject'] .": \n";
         echo "<br />\n";
-        echo "Control Regulation: \n";
-        echo "<input type=\"text\" name=\"regulation\" id=\"regulation\" size=\"50\" value=\"" . get_name_by_value("regulation", $regulation) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . $subject . "\" title=\"" . $subject . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo "Control Number: \n";
-        echo " <input type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $control_number . "\" disabled=\"disabled\" />\n";
+        echo $lang['ExternalReferenceId'] .": \n";
         echo "<br />\n";
-        echo "Site/Location: \n";
-        echo "<input type=\"text\" name=\"location\" id=\"location\" size=\"50\" value=\"" . get_name_by_value("location", $location) . "\" disabled=\"disabled\" />\n";
+        echo " <input style=\"cursor: default;\" type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . $reference_id . "\" title=\"" . $reference_id . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo "Category: \n";
-        echo "<input type=\"text\" name=\"category\" id=\"category\" size=\"50\" value=\"" . get_name_by_value("category", $category) . "\" disabled=\"disabled\" />\n";
+        echo $lang['ControlRegulation'] .": \n";
         echo "<br />\n";
-        echo "Team: \n";
-        echo "<input type=\"text\" name=\"team\" id=\"team\" size=\"50\" value=\"" . get_name_by_value("team", $team) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"regulation\" id=\"regulation\" size=\"50\" value=\"" . get_name_by_value("regulation", $regulation) . "\" title=\"" . get_name_by_value("regulation", $regulation) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo "Technology: \n";
-        echo "<input type=\"text\" name=\"technology\" id=\"technology\" size=\"50\" value=\"" . get_name_by_value("technology", $technology) . "\" disabled=\"disabled\" />\n";
+        echo $lang['ControlNumber'] .": \n";
         echo "<br />\n";
-        echo "Owner: \n";
-        echo "<input type=\"text\" name=\"owner\" id=\"owner\" size=\"50\" value=\"" . get_name_by_value("user", $owner) . "\" disabled=\"disabled\" />\n";
+        echo " <input style=\"cursor: default;\" type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $control_number . "\" title=\"" . $control_number . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo "Owner&#39;s Manager: \n";
-        echo "<input type=\"text\" name=\"manager\" id=\"manager\" size=\"50\" value=\"" . get_name_by_value("user", $manager) . "\" disabled=\"disabled\" />\n";
+        echo $lang['SiteLocation'] .": \n";
         echo "<br />\n";
-        echo "<label>Risk Assessment</label>\n";
-        echo "<textarea name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\" disabled=\"disabled\">" . $assessment . "</textarea>\n";
-        echo "<label>Additional Notes</label>\n";
-        echo "<textarea name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" disabled=\"disabled\">" . $notes . "</textarea>\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"location\" id=\"location\" size=\"50\" value=\"" . get_name_by_value("location", $location) . "\" title=\"" . get_name_by_value("location", $location) . "\" disabled=\"disabled\" />\n";
+        echo "<br />\n";
+        echo $lang['Category'] .": \n";
+        echo "<br />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"category\" id=\"category\" size=\"50\" value=\"" . get_name_by_value("category", $category) . "\" title=\"" . get_name_by_value("category", $category) . "\" disabled=\"disabled\" />\n";
+        echo "<br />\n";
+        echo $lang['Team'] .": \n";
+        echo "<br />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"team\" id=\"team\" size=\"50\" value=\"" . get_name_by_value("team", $team) . "\" title=\"" . get_name_by_value("team", $team) . "\" disabled=\"disabled\" />\n";
+        echo "<br />\n";
+        echo $lang['Technology'] .": \n";
+        echo "<br />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"technology\" id=\"technology\" size=\"50\" value=\"" . get_name_by_value("technology", $technology) . "\" title=\"" . get_name_by_value("technology", $technology) . "\" disabled=\"disabled\" />\n";
+        echo "<br />\n";
+        echo $lang['Owner'] .": \n";
+        echo "<br />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"owner\" id=\"owner\" size=\"50\" value=\"" . get_name_by_value("user", $owner) . "\" title=\"" . get_name_by_value("user", $owner) . "\" disabled=\"disabled\" />\n";
+        echo "<br />\n";
+        echo $lang['OwnersManager'] .": \n";
+        echo "<br />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"manager\" id=\"manager\" size=\"50\" value=\"" . get_name_by_value("user", $manager) . "\" title=\"" . get_name_by_value("user", $manager) . "\" disabled=\"disabled\" />\n";
+        echo "<br />\n";
+        echo $lang['RiskAssessment'] .": \n";
+	echo "<br />\n";
+        echo "<textarea style=\"cursor: default;\" name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\" title=\"" . $assessment . "\" disabled=\"disabled\">" . $assessment . "</textarea>\n";
+	echo "<br />\n";
+        echo $lang['AdditionalNotes'] .": \n";
+	echo "<br />\n";
+        echo "<textarea style=\"cursor: default;\" name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" title=\"" . $notes . "\" disabled=\"disabled\">" . $notes . "</textarea>\n";
 
 	// If the page is the view.php page
 	if (basename($_SERVER['PHP_SELF']) == "view.php")
 	{
 		// Give the option to edit the risk details
         	echo "<div class=\"form-actions\">\n";
-        	echo "<button type=\"submit\" name=\"edit_details\" class=\"btn btn-primary\">Edit Details</button>\n";
+        	echo "<button type=\"submit\" name=\"edit_details\" class=\"btn btn-primary\">". $lang['EditDetails'] ."</button>\n";
         	echo "</div>\n";
 	}
 }
@@ -145,43 +163,53 @@ function view_risk_details($submission_date, $subject, $reference_id, $regulatio
  *******************************/
 function edit_risk_details($submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $assessment, $notes)
 {
-	echo "<h4>Details</h4>\n";
-        echo "Submission Date: \n";
-        echo "<input type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $submission_date . "\" disabled=\"disabled\" />\n";
+	global $lang;
+	
+	echo "<h4>". $lang['Details'] ."</h4>\n";
+        echo $lang['SubmissionDate'] .": \n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $submission_date . "\" title=\"" . $submission_date . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo "Subject: <input type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . $subject . "\" />\n";
+        echo $lang['Subject'] .": <input type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . $subject . "\" />\n";
         echo "<br />\n";
-        echo "External Reference ID: <input type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . $reference_id . "\" />\n";
+        echo $lang['ExternalReferenceId'] .": <input type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . $reference_id . "\" />\n";
         echo "<br />\n";
-        echo "Control Regulation: \n";
+        echo $lang['ControlRegulation'] .": \n";
         create_dropdown("regulation", $regulation);
         echo "<br />\n";
-        echo "Control Number: <input type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $control_number . "\" />\n";
+        echo $lang['ControlNumber'] .": <input type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $control_number . "\" />\n";
         echo "<br />\n";
-        echo "Site/Location: \n";
+        echo $lang['SiteLocation'] .": \n";
+        echo "<br />\n";
         create_dropdown("location", $location);
         echo "<br />\n";
-        echo "Category: \n";
+        echo $lang['Category'] .": \n";
+        echo "<br />\n";
         create_dropdown("category", $category);
         echo "<br />\n";
-        echo "Team: \n";
+        echo $lang['Team'] .": \n";
+        echo "<br />\n";
         create_dropdown("team", $team);
         echo "<br />\n";
-        echo "Technology: \n";
+        echo $lang['Technology'] .": \n";
+        echo "<br />\n";
         create_dropdown("technology", $technology);
         echo "<br />\n";
-        echo "Owner: \n";
+        echo $lang['Owner'] .": \n";
+        echo "<br />\n";
         create_dropdown("user", $owner, "owner");
         echo "<br />\n";
-        echo "Owner&#39;s Manager: \n";
+        echo $lang['OwnersManager'] .": \n";
+        echo "<br />\n";
         create_dropdown("user", $manager, "manager");
         echo "<br />\n";
-        echo "<label>Risk Assessment</label>\n";
+        echo $lang['RiskAssessment'] .": \n";
+        echo "<br />\n";
         echo "<textarea name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\">" . $assessment . "</textarea>\n";
-        echo "<label>Additional Notes</label>\n";
+        echo $lang['AdditionalNotes'] .": \n";
+        echo "<br />\n";
         echo "<textarea name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\">" . $notes . "</textarea>\n";
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"update_details\" class=\"btn btn-primary\">Update</button>\n";
+        echo "<button type=\"submit\" name=\"update_details\" class=\"btn btn-primary\">". $lang['Update'] ."</button>\n";
         echo "</div>\n";
 }
 
@@ -190,29 +218,39 @@ function edit_risk_details($submission_date, $subject, $reference_id, $regulatio
  *************************************/
 function view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
 {
-        echo "<h4>Mitigation</h4>\n";
-        echo "Mitigation Date: \n";
-        echo "<input type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $mitigation_date . "\" disabled=\"disabled\" />\n";
+	global $lang;
+	
+        echo "<h4>". $lang['Mitigation'] ."</h4>\n";
+        echo $lang['MitigationDate'] .": \n";
         echo "<br />\n";
-        echo "Planning Strategy: \n";
-        echo "<input type=\"text\" name=\"planning_strategy\" id=\"planning_strategy\" size=\"50\" value=\"" . get_name_by_value("planning_strategy", $planning_strategy) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $mitigation_date . "\" title=\"" . $mitigation_date . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo "Mitigation Effort: \n";
-        echo "<input type=\"text\" name=\"mitigation_effort\" id=\"mitigation_effort\" size=\"50\" value=\"" . get_name_by_value("mitigation_effort", $mitigation_effort) . "\" disabled=\"disabled\" />\n";
+        echo $lang['PlanningStrategy'] .": \n";
         echo "<br />\n";
-        echo "<label>Current Solution</label>\n";
-        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" disabled=\"disabled\">" . $current_solution . "</textarea>\n";
-        echo "<label>Security Requirements</label>\n";
-        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" disabled=\"disabled\">" . $security_requirements . "</textarea>\n";
-        echo "<label>Security Recommendations</label>\n";
-        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" disabled=\"disabled\">" . $security_recommendations . "</textarea>\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"planning_strategy\" id=\"planning_strategy\" size=\"50\" value=\"" . get_name_by_value("planning_strategy", $planning_strategy) . "\" title=\"" . get_name_by_value("planning_strategy", $planning_strategy) . "\" disabled=\"disabled\" />\n";
+        echo "<br />\n";
+        echo $lang['MitigationEffort'] .": \n";
+        echo "<br />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_effort\" id=\"mitigation_effort\" size=\"50\" value=\"" . get_name_by_value("mitigation_effort", $mitigation_effort) . "\" title=\"" . get_name_by_value("mitigation_effort", $mitigation_effort) . "\" disabled=\"disabled\" />\n";
+        echo "<br />\n";
+        echo $lang['CurrentSolution'] .": \n";
+        echo "<br />\n";
+        echo "<textarea style=\"cursor: default;\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" title=\"" . $current_solution . "\" disabled=\"disabled\">" . $current_solution . "</textarea>\n";
+        echo "<br />\n";
+        echo $lang['SecurityRequirements'] .": \n";
+        echo "<br />\n";
+        echo "<textarea style=\"cursor: default;\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" title=\"" . $security_requirements . "\" disabled=\"disabled\">" . $security_requirements . "</textarea>\n";
+        echo "<br />\n";
+        echo $lang['SecurityRecommendations'] .": \n";
+        echo "<br />\n";
+        echo "<textarea style=\"cursor: default;\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" title=\"" . $security_recommendations . "\" disabled=\"disabled\">" . $security_recommendations . "</textarea>\n";
 
         // If the page is the view.php page
         if (basename($_SERVER['PHP_SELF']) == "view.php")
         {
                 // Give the option to edit the mitigation details
 	        echo "<div class=\"form-actions\">\n";
-        	echo "<button type=\"submit\" name=\"edit_mitigation\" class=\"btn btn-primary\">Edit Mitigation</button>\n";
+        	echo "<button type=\"submit\" name=\"edit_mitigation\" class=\"btn btn-primary\">". $lang['EditMitigation'] ."</button>\n";
         	echo "</div>\n";
         }
 }
@@ -222,24 +260,31 @@ function view_mitigation_details($mitigation_date, $planning_strategy, $mitigati
  *************************************/
 function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
 {
-	echo "<h4>Mitigation</h4>\n";
-        echo "Mitigation Date: \n";
-        echo "<input type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $mitigation_date . "\" disabled=\"disabled\" />\n";
+	global $lang;
+	
+	echo "<h4>". $lang['Mitigation'] ."</h4>\n";
+        echo $lang['MitigationDate'] .": \n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $mitigation_date . "\" title=\"" . $mitigation_date . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo "Planning Strategy: \n";
+        echo $lang['PlanningStrategy'] .": \n";
+        echo "<br />\n";
         create_dropdown("planning_strategy", $planning_strategy);
         echo "<br />\n";
-        echo "Mitigation Effort: \n";
+        echo $lang['MitigationEffort'] .": \n";
+        echo "<br />\n";
         create_dropdown("mitigation_effort", $mitigation_effort);
         echo "<br />\n";
-        echo "<label>Current Solution</label>\n";
+        echo $lang['CurrentSolution'] .": \n";
+        echo "<br />\n";
         echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $current_solution . "</textarea>\n";
-        echo "<label>Security Requirements</label>\n";
+        echo $lang['SecurityRequirements'] .": \n";
+        echo "<br />\n";
         echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . $security_requirements . "</textarea>\n";
-        echo "<label>Security Recommendations</label>\n";
+        echo $lang['SecurityRecommendations'] .": \n";
+        echo "<br />\n";
         echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . $security_recommendations . "</textarea>\n";
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"update_mitigation\" class=\"btn btn-primary\">Update</button>\n";
+        echo "<button type=\"submit\" name=\"update_mitigation\" class=\"btn btn-primary\">". $lang['Update'] ."</button>\n";
         echo "</div>\n";
 }
 
@@ -248,22 +293,29 @@ function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigati
  *********************************/
 function view_review_details($id, $review_date, $reviewer, $review, $next_step, $comments)
 {
-	echo "<h4>Last Review</h4>\n";
-        echo "Review Date: \n";
-        echo "<input type=\"text\" name=\"review_date\" id=\"review_date\" size=\"50\" value=\"" . $review_date . "\" disabled=\"disabled\" />\n";
+	global $lang;
+	
+	echo "<h4>". $lang['LastReview'] ."</h4>\n";
+        echo $lang['ReviewDate'] .": \n";
         echo "<br />\n";
-        echo "Reviewer: \n";
-        echo "<input type=\"text\" name=\"reviewer\" id=\"reviewer\" size=\"50\" value=\"" . get_name_by_value("user", $reviewer) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"review_date\" id=\"review_date\" size=\"50\" value=\"" . $review_date . "\" title=\"" . $review_date . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo "Review: \n";
-        echo "<input type=\"text\" name=\"review\" id=\"review\" size=\"50\" value=\"" . get_name_by_value("review", $review) . "\" disabled=\"disabled\" />\n";
+        echo $lang['Reviewer'] .": \n";
         echo "<br />\n";
-        echo "Next Step: \n";
-        echo "<input type=\"text\" name=\"next_step\" id=\"next_step\" size=\"50\" value=\"" . get_name_by_value("next_step", $next_step) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"reviewer\" id=\"reviewer\" size=\"50\" value=\"" . get_name_by_value("user", $reviewer) . "\" title=\"" . get_name_by_value("user", $reviewer) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo "<label>Comments</label>\n";
-        echo "<textarea name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\" disabled=\"disabled\">" . $comments . "</textarea>\n";
-        echo "<p><a href=\"reviews.php?id=".$id."\">View All Reviews</a></p>";
+        echo $lang['Review'] .": \n";
+        echo "<br />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"review\" id=\"review\" size=\"50\" value=\"" . get_name_by_value("review", $review) . "\" title=\"" . get_name_by_value("review", $review) . "\" disabled=\"disabled\" />\n";
+        echo "<br />\n";
+        echo $lang['NextStep'] .": \n";
+        echo "<br />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"next_step\" id=\"next_step\" size=\"50\" value=\"" . get_name_by_value("next_step", $next_step) . "\" title=\"" . get_name_by_value("next_step", $next_step) . "\" disabled=\"disabled\" />\n";
+        echo "<br />\n";
+        echo $lang['Comments'] .": \n";
+        echo "<br />\n";
+        echo "<textarea style=\"cursor: default;\" name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\" title=\"" . $comments . "\" disabled=\"disabled\">" . $comments . "</textarea>\n";
+        echo "<p><a href=\"reviews.php?id=".$id."\">". $lang['ViewAllReviews'] ."</a></p>";
 }
 
 /****************************************
@@ -271,24 +323,34 @@ function view_review_details($id, $review_date, $reviewer, $review, $next_step, 
  ****************************************/
 function edit_mitigation_submission($planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
 {
-	echo "<h4>Submit Risk Mitigation</h4>\n";
+	global $lang;
+	
+	echo "<h4>". $lang['SubmitRiskMitigation'] ."</h4>\n";
         echo "<form name=\"submit_mitigation\" method=\"post\" action=\"\">\n";
 	
-        echo "Planning Strategy: \n";
+        echo $lang['PlanningStrategy'] .": \n";
+        echo "<br />\n";
 	create_dropdown("planning_strategy", $planning_strategy, NULL, true);
         echo "<br />\n";
-        echo "Mitigation Effort: \n";
+        echo $lang['MitigationEffort'] .": \n";
+        echo "<br />\n";
 	create_dropdown("mitigation_effort", $mitigation_effort, NULL, true);
         echo "<br />\n";
-        echo "<label>Current Solution</label>\n";
+        echo $lang['CurrentSolution'] .": \n";
+        echo "<br />\n";
         echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $current_solution . "</textarea>\n";
-        echo "<label>Security Requirements</label>\n";
+        echo "<br />\n";
+        echo $lang['SecurityRequirements'] .": \n";
+        echo "<br />\n";
         echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . $security_requirements . "</textarea>\n";
-        echo "<label>Security Recommendations</label>\n";
+        echo "<br />\n";
+        echo $lang['SecurityRecommendations'] .": \n";
+        echo "<br />\n";
         echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . $security_recommendations . "</textarea>\n";
+        echo "<br />\n";
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">Submit</button>\n";
-        echo "<input class=\"btn\" value=\"Reset\" type=\"reset\">\n";
+        echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">". $lang['Submit'] ."</button>\n";
+        echo "<input class=\"btn\" value=\"". $lang['Reset'] ."\" type=\"reset\">\n";
         echo "</div>\n";
         echo "</form>\n";
 }
@@ -298,19 +360,24 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $cur
  ************************************/
 function edit_review_submission($review, $next_step, $comments)
 {
-	echo "<h4>Submit Management Review</h4>\n";
+	global $lang;
+	
+	echo "<h4>". $lang['SubmitManagementReview'] ."</h4>\n";
         echo "<form name=\"submit_management_review\" method=\"post\" action=\"\">\n";
-        echo "Review: \n";
+        echo $lang['Review'] .": \n";
+        echo "<br />\n";
 	create_dropdown("review", $review, NULL, true);
         echo "<br />\n";
-        echo "Next Step: \n";
+        echo $lang['NextStep'] .": \n";
+        echo "<br />\n";
 	create_dropdown("next_step", $next_step, NULL, true);
 	echo "<br />\n";
-        echo "<label>Comments</label>\n";
+        echo $lang['Comments'] .": \n";
+        echo "<br />\n";
         echo "<textarea name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\">" . $comments . "</textarea>\n";
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">Submit</button>\n";
-        echo "<input class=\"btn\" value=\"Reset\" type=\"reset\">\n";
+        echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">". $lang['Submit'] ."</button>\n";
+        echo "<input class=\"btn\" value=\"". $lang['Reset'] ."\" type=\"reset\">\n";
         echo "</div>\n";
         echo "</form>\n";
 }
@@ -799,19 +866,21 @@ function edit_custom_score($custom)
  ***********************************/
 function classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLASSIC_impact)
 {
+	global $lang;
+	
         echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"3\"><h4>Classic Risk Scoring</h4></td>\n";
+        echo "<td colspan=\"3\"><h4>". $lang['ClassicRiskScoring'] ."</h4></td>\n";
         echo "<td colspan=\"1\" style=\"vertical-align:top;\">\n";
         echo "<div class=\"btn-group pull-right\">\n";
-        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Risk Scoring Actions<span class=\"caret\"></span></a>\n";
+        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">". $lang['RiskScoringActions'] ."<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
-        echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">Update Classic Score</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=2\">Score by CVSS</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=3\">Score by DREAD</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=4\">Score by OWASP</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=5\">Score by Custom</a></li>\n";
+        echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">". $lang['UpdateClassicScore'] ."</a></li>\n";
+        echo "<li><a href=\"view.php?id=".$id."&scoring_method=2\">". $lang['ScoreBy'] ." CVSS</a></li>\n";
+        echo "<li><a href=\"view.php?id=".$id."&scoring_method=3\">". $lang['ScoreBy'] ." DREAD</a></li>\n";
+        echo "<li><a href=\"view.php?id=".$id."&scoring_method=4\">". $lang['ScoreBy'] ." OWASP</a></li>\n";
+        echo "<li><a href=\"view.php?id=".$id."&scoring_method=5\">". $lang['ScoreBy'] ." Custom</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
@@ -819,14 +888,14 @@ function classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLAS
 
 
         echo "<tr>\n";
-        echo "<td width=\"90\">Likelihood:</td>\n";
+        echo "<td width=\"90\">". $lang['Likelihood'] .":</td>\n";
         echo "<td width=\"25\">[ " . $CLASSIC_likelihood . " ]</td>\n";
         echo "<td>" . get_name_by_value("likelihood", $CLASSIC_likelihood) . "</td>\n";
 	echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"90\">Impact:</td>\n";
+        echo "<td width=\"90\">". $lang['Impact'] .":</td>\n";
         echo "<td width=\"25\">[ " . $CLASSIC_impact . " ]</td>\n";
         echo "<td>" . get_name_by_value("impact", $CLASSIC_impact) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
@@ -837,31 +906,31 @@ function classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLAS
         if (get_setting("risk_model") == 1)
         {
         	echo "<tr>\n";
-        	echo "<td colspan=\"3\"><b>RISK = ( Likelihood x Impact + 2(Impact) ) x ( 10 / 35 ) = " . $calculated_risk . "</b></td>\n";
+        	echo "<td colspan=\"3\"><b>". $lang['RISKClassicExp1'] ." x ( 10 / 35 ) = " . $calculated_risk . "</b></td>\n";
         	echo "</tr>\n";
         }
         else if (get_setting("risk_model") == 2)
         {
                 echo "<tr>\n";
-                echo "<td colspan=\"3\"><b>RISK = ( Likelihood x Impact + Impact ) x ( 10 / 30 ) = " . $calculated_risk . "</b></td>\n";
+                echo "<td colspan=\"3\"><b>". $lang['RISKClassicExp2'] ." x ( 10 / 30 ) = " . $calculated_risk . "</b></td>\n";
                 echo "</tr>\n";
         }
         else if (get_setting("risk_model") == 3)
         {
                 echo "<tr>\n";
-                echo "<td colspan=\"3\"><b>RISK = ( Likelihood x Impact ) x ( 10 / 25 ) = " . $calculated_risk . "</b></td>\n";
+                echo "<td colspan=\"3\"><b>". $lang['RISKClassicExp3'] ." x ( 10 / 25 ) = " . $calculated_risk . "</b></td>\n";
                 echo "</tr>\n";
         }
         else if (get_setting("risk_model") == 4)
         {
                 echo "<tr>\n";
-                echo "<td colspan=\"3\"><b>RISK = ( Likelihood x Impact + Likelihood ) x ( 10 / 30 ) = " . $calculated_risk . "</b></td>\n";
+                echo "<td colspan=\"3\"><b>". $lang['RISKClassicExp4'] ." x ( 10 / 30 ) = " . $calculated_risk . "</b></td>\n";
                 echo "</tr>\n";
         }
         else if (get_setting("risk_model") == 5)
         {
                 echo "<tr>\n";
-                echo "<td colspan=\"3\"><b>RISK = ( Likelihood x Impact + 2(Likelihood) ) x ( 10 / 35 ) = " . $calculated_risk . "</b></td>\n";
+                echo "<td colspan=\"3\"><b>". $lang['RISKClassicExp5'] ." x ( 10 / 35 ) = " . $calculated_risk . "</b></td>\n";
                 echo "</tr>\n";
         }
 
@@ -1249,11 +1318,11 @@ function view_owasp_help()
         echo "<tr>\n";
         echo "<td class=\"cal-text\">\n";
         echo "<br /><p><b>How technically skilled is this group of threat agents?</b></p>\n";
-        echo "<p>1 = No Technical Skills</p>\n";
-        echo "<p>3 = Some Technical Skills</p>\n";
-        echo "<p>4 = Advanced Computer User</p>\n";
-        echo "<p>6 = Network and Programming Skills</p>\n";
-        echo "<p>9 = Security Penetration Skills</p>\n";
+        echo "<p>1 = Security Penetration Skills</p>\n";
+        echo "<p>4 = Network and Programming Skills</p>\n";
+        echo "<p>6 = Advanced Computer User</p>\n";
+        echo "<p>7 = Some Technical Skills</p>\n";
+        echo "<p>9 = No Technical Skills</p>\n";
         echo "</td>\n";
         echo "</tr>\n";
         echo "</table>\n";

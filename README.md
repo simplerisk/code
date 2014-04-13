@@ -8,7 +8,7 @@ After starting a Risk Management program from scratch at a $1B/yr company, Josh 
 
 If you would like to try out SimpleRisk, you may use our demo instance available at:
 
-http://demo.simplerisk.org
+https://demo.simplerisk.it
 Username: user
 Password: user
 
@@ -16,8 +16,8 @@ Note that this is a restricted basic user account and it does not have the abili
 
 If you're ready to get started, head on over to our download page to get the latest version:
 
-http://www.simplerisk.it/?q=downloads
+http://www.simplerisk.it/downloads
 
 Then check out the SimpleRisk Installation Guide to get started:
 
-https://github.com/simplerisk/documentation/blob/master/SimpleRisk%20Installation%20Guide.pdf
+http://www.simplerisk.it/documentation

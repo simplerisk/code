@@ -28,10 +28,17 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+
+        // Include the language file
+        require_once(language_file());
+
         require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
         session_check();
+
+        // Default is no alert
+        $alert = false;
 
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
@@ -54,11 +61,11 @@
         {
                 if (isset($_GET['id']))
 		{
-			$id = htmlentities($_GET['id'], ENT_QUOTES);
+			$id = htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8');
 		}
 		else if (isset($_POST['id']))
 		{
-			$id = htmlentities($_POST['id'], ENT_QUOTES);
+			$id = htmlentities($_POST['id'], ENT_QUOTES, 'UTF-8');
 		}
 
                 // Get the details of the risk
@@ -67,9 +74,9 @@
                 // If the risk was found use the values for the risk
                 if (count($risk) != 0)
                 {
-                        $status = htmlentities($risk[0]['status'], ENT_QUOTES);
-                        $subject = htmlentities($risk[0]['subject'], ENT_QUOTES);
-                        $calculated_risk = htmlentities($risk[0]['calculated_risk'], ENT_QUOTES);
+                        $status = htmlentities($risk[0]['status'], ENT_QUOTES, 'UTF-8');
+                        $subject = htmlentities($risk[0]['subject'], ENT_QUOTES, 'UTF-8');
+                        $calculated_risk = htmlentities($risk[0]['calculated_risk'], ENT_QUOTES, 'UTF-8');
                 }
                 // If the risk was not found use null values
                 else
@@ -136,19 +143,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php">Home</a> 
+                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
               </li>
               <li class="active">
-                <a href="index.php">Risk Management</a> 
+                <a href="index.php"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php">Reporting</a> 
+                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">Configure</a>\n";
+          echo "<a href=\"../admin/index.php\">". $lang['Configure'] ."</a>\n";
           echo "</li>\n";
 }
           echo "</ul>\n";
@@ -160,10 +167,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">My Profile</a>\n";
+          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">Logout</a>\n";
+          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -197,19 +204,19 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li>
-              <a href="index.php">I. Submit Your Risks</a> 
+              <a href="index.php">I. <?php echo $lang['SubmitYourRisks']; ?></a> 
             </li>
             <li>
-              <a href="plan_mitigations.php">II. Plan Your Mitigations</a> 
+              <a href="plan_mitigations.php">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
             </li>
             <li>
-              <a href="management_review.php">III. Perform Management Reviews</a> 
+              <a href="management_review.php">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
             </li>
             <li>
-              <a href="prioritize_planning.php">IV. Prioritize for Project Planning</a> 
+              <a href="prioritize_planning.php">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
             </li>
             <li class="active">
-              <a href="review_risks.php">V. Review Risks Regularly</a>
+              <a href="review_risks.php">V. <?php echo $lang['ReviewRisksRegularly']; ?></a>
             </li>
           </ul>
         </div>
@@ -222,13 +229,13 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <div class="row-fluid">
             <div class="well">
               <form name="close_risk" method="post" action="">
-                <h4>Close Risk</h4>
-                Reason: <?php create_dropdown("close_reason"); ?><br />
-                <label>Close-Out Information</label>
+                <h4><?php echo $lang['CloseRisk']; ?></h4>
+                <?php echo $lang['Reason']; ?>: <?php create_dropdown("close_reason"); ?><br />
+                <label><?php echo $lang['CloseOutInformation']; ?></label>
                 <textarea name="note" cols="50" rows="3" id="note"></textarea>
                 <div class="form-actions">
-                  <button type="submit" name="submit" class="btn btn-primary">Submit</button>
-                  <input class="btn" value="Reset" type="reset">
+                  <button type="submit" name="submit" class="btn btn-primary"><?php echo $lang['Submit']; ?></button>
+                  <input class="btn" value="<?php echo $lang['Reset']; ?>" type="reset">
                 </div>
               </form>
             </div>

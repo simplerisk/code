@@ -27,6 +27,10 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+
+        // Include the language file
+        require_once(language_file());
+
         require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
@@ -278,19 +282,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php">Home</a> 
+                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
               </li>
               <li class="active">
-                <a href="index.php">Risk Management</a> 
+                <a href="index.php"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php">Reporting</a> 
+                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">Configure</a>\n";
+          echo "<a href=\"../admin/index.php\">". $lang['Configure'] ."</a>\n";
           echo "</li>\n";
 }
           echo "</ul>\n";
@@ -302,10 +306,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">My Profile</a>\n";
+          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">Logout</a>\n";
+          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -339,19 +343,19 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li>
-              <a href="index.php">I. Submit Your Risks</a> 
+              <a href="index.php">I. <?php echo $lang['SubmitYourRisks']; ?></a> 
             </li>
             <li>
-              <a href="plan_mitigations.php">II. Plan Your Mitigations</a> 
+              <a href="plan_mitigations.php">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
             </li>
             <li>
-              <a href="management_review.php">III. Perform Management Reviews</a> 
+              <a href="management_review.php">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
             </li>
             <li class="active">
-              <a href="prioritize_planning.php">IV. Prioritize for Project Planning</a> 
+              <a href="prioritize_planning.php">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
             </li>
             <li>
-              <a href="review_risks.php">V. Review Risks Regularly</a>     
+              <a href="review_risks.php">V. <?php echo $lang['ReviewRisksRegularly']; ?></a>     
             </li>
           </ul>
         </div>
@@ -359,23 +363,23 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <h4>1) Add and Remove Projects</h4>
-                <p>Add and remove projects in order to associate multiple risks together for prioritization.</p>
+                <h4>1) <?php echo $lang['AddAndRemoveProjects']; ?></h4>
+                <p><?php echo $lang['AddAndRemoveProjectsHelp']; ?>.</p>
                 <form name="project" method="post" action="">
                 <p>
-                Add new project named <input name="new_project" type="text" maxlength="100" size="20" />&nbsp;&nbsp;<input type="submit" value="Add" name="add_project" /><br />
-                Delete current project named <?php create_dropdown("projects"); ?>&nbsp;&nbsp;<input type="submit" value="Delete" name="delete_project" />
+                <?php echo $lang['AddNewProjectNamed']; ?> <input name="new_project" type="text" maxlength="100" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Add']; ?>" name="add_project" /><br />
+                <?php echo $lang['DeleteCurrentProjectNamed']; ?> <?php create_dropdown("projects"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Delete']; ?>" name="delete_project" />
                 </p>
                 </form>
               </div>
               <div class="hero-unit">
-                <h4>2) Add Unassigned Risks to Projects</h4>
-                <p>Drag and drop unassigned risks marked for consideration as a project into the appropriate project tab.</p>
+                <h4>2) <?php echo $lang['AddUnassignedRisksToProjects']; ?></h4>
+                <p><?php echo $lang['AddUnassignedRisksToProjectsHelp']; ?>.</p>
                 <?php get_project_tabs() ?>
               </div>
               <div class="hero-unit">
-                <h4>3) Prioritize Projects</h4>
-                <p>Move projects around and change the order of prioritization.  Once finished, don't forget to press the &quot;Update&quot; button to save your changes.</p>
+                <h4>3) <?php echo $lang['PrioritizeProjects']; ?></h4>
+                <p><?php echo $lang['PrioritizeProjectsHelp']; ?>.</p>
                 <?php get_project_list(); ?>
               </div>
 <!--

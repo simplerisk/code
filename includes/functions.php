@@ -8,6 +8,9 @@
 require_once('config.php');
 require_once('cvss.php');
 
+// Include the language file
+require_once(language_file());
+
 /******************************
  * FUNCTION: DATABASE CONNECT *
  ******************************/
@@ -17,6 +20,7 @@ function db_open()
         try
         {
                 $db = new PDO("mysql:dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+		$db->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
 
                 return $db;
         }
@@ -242,7 +246,7 @@ function update_review_settings($high, $medium, $low)
  **********************************/
 function create_cvss_dropdown($name, $selected = NULL, $blank = true)
 {
-	echo "<select id=\"" . htmlentities($name, ENT_QUOTES) . "\" name=\"" . htmlentities($name, ENT_QUOTES) . "\" class=\"form-field\" style=\"width:120px;\" onClick=\"javascript:showHelp('" . htmlentities($name, ENT_QUOTES) . "Help');updateScore();\">\n";
+	echo "<select id=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8') . "\" name=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8') . "\" class=\"form-field\" style=\"width:120px;\" onClick=\"javascript:showHelp('" . htmlentities($name, ENT_QUOTES, 'UTF-8') . "Help');updateScore();\">\n";
 
         // If the blank is true
         if ($blank == true)
@@ -266,7 +270,7 @@ function create_cvss_dropdown($name, $selected = NULL, $blank = true)
                 }
                 else $text = "";
 
-                echo "    <option value=\"" . $value . "\"" . $text . ">" . htmlentities($option['metric_value'], ENT_QUOTES) . "</option>\n";
+                echo "    <option value=\"" . $value . "\"" . $text . ">" . htmlentities($option['metric_value'], ENT_QUOTES, 'UTF-8') . "</option>\n";
         }
 
         echo "  </select>\n";
@@ -277,7 +281,7 @@ function create_cvss_dropdown($name, $selected = NULL, $blank = true)
  *************************************/
 function create_numeric_dropdown($name, $selected = NULL, $blank = true)
 {
-        echo "<select id=\"" . htmlentities($name, ENT_QUOTES) . "\" name=\"" . htmlentities($name, ENT_QUOTES) . "\" class=\"form-field\" style=\"width:50px;\" onClick=\"javascript:showHelp('" . htmlentities($name, ENT_QUOTES) . "Help');updateScore();\">\n";
+        echo "<select id=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8') . "\" name=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8') . "\" class=\"form-field\" style=\"width:50px;\" onClick=\"javascript:showHelp('" . htmlentities($name, ENT_QUOTES, 'UTF-8') . "Help');updateScore();\">\n";
 
         // If the blank is true
         if ($blank == true)
@@ -309,15 +313,15 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 	// If we want to update the helper when selected
 	if ($help == true)
 	{
-		$helper = "  onClick=\"javascript:showHelp('" . htmlentities($rename, ENT_QUOTES) . "Help');updateScore();\"";
+		$helper = "  onClick=\"javascript:showHelp('" . htmlentities($rename, ENT_QUOTES, 'UTF-8') . "Help');updateScore();\"";
 	}
 	else $helper = "";
 
 	if ($rename != NULL)
 	{
-		echo "<select id=\"" . htmlentities($rename, ENT_QUOTES) . "\" name=\"" . htmlentities($rename, ENT_QUOTES) . "\" class=\"form-field\" style=\"width:120px;\"" . $helper . ">\n";
+		echo "<select id=\"" . htmlentities($rename, ENT_QUOTES, 'UTF-8') . "\" name=\"" . htmlentities($rename, ENT_QUOTES, 'UTF-8') . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
 	}
-	else echo "<select id=\"" . htmlentities($name, ENT_QUOTES) . "\" name=\"" . htmlentities($name, ENT_QUOTES) . "\" class=\"form-field\" style=\"width:120px;\"" . $helper . ">\n";
+	else echo "<select id=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8') . "\" name=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8') . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
 
 	// If the blank is true
 	if ($blank == true)
@@ -326,7 +330,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 	}
 
 	// If we want a table that should be ordered by name instead of value
-	if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation")
+	if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation" || $name == "languages")
 	{
 		$options = get_table_ordered_by_name($name);
 	}
@@ -357,7 +361,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 		}
 		else $text = "";
 
-                echo "    <option value=\"" . $option['value'] . "\"" . $text . ">" . htmlentities($option['name'], ENT_QUOTES) . "</option>\n";
+                echo "    <option value=\"" . $option['value'] . "\"" . $text . ">" . htmlentities($option['name'], ENT_QUOTES, 'UTF-8') . "</option>\n";
         }
 
 	echo "  </select>\n";
@@ -368,15 +372,17 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
  **************************************/
 function create_multiple_dropdown($name, $selected = NULL, $rename = NULL)
 {
+	global $lang;
+	
         if ($rename != NULL)
         {
-                echo "<select multiple id=\"" . htmlentities($rename, ENT_QUOTES) . "\" name=\"" . htmlentities($rename, ENT_QUOTES) . "[]\">\n";
+                echo "<select multiple id=\"" . htmlentities($rename, ENT_QUOTES, 'UTF-8') . "\" name=\"" . htmlentities($rename, ENT_QUOTES, 'UTF-8') . "[]\">\n";
         }
-        else echo "<select multiple id=\"" . htmlentities($name, ENT_QUOTES) . "\" name=\"" . htmlentities($name, ENT_QUOTES) . "[]\">\n";
+        else echo "<select multiple id=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8') . "\" name=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8') . "[]\">\n";
 
 	// Create all or none options
-	echo "    <option value=\"all\">ALL</option>\n";
-	echo "    <option value=\"none\">NONE</option>\n";
+	echo "    <option value=\"all\">". $lang['ALL'] ."</option>\n";
+	echo "    <option value=\"none\">". $lang['NONE'] ."</option>\n";
 
         // Get the list of options
         $options = get_table($name);
@@ -394,7 +400,7 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL)
                 }
                 else $text = "";
 
-                echo "    <option value=\"" . $option['value'] . "\"" . $text . ">" . htmlentities($option['name'], ENT_QUOTES) . "</option>\n";
+                echo "    <option value=\"" . $option['value'] . "\"" . $text . ">" . htmlentities($option['name'], ENT_QUOTES, 'UTF-8') . "</option>\n";
         }
 
         echo "  </select>\n";
@@ -405,6 +411,8 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL)
  *******************************/
 function create_risk_table()
 {
+	global $lang;
+	
 	$impacts = get_table("impact");
 	$likelihoods = get_table("likelihood");
 
@@ -412,16 +420,16 @@ function create_risk_table()
 	echo "<table>\n";
 	echo "<tr height=\"20px\">\n";
 	echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:red;\" /></td>\n";
-	echo "<td>High Risk</td>\n";
+	echo "<td>". $lang['HighRisk'] ."</td>\n";
 	echo "<td>&nbsp;</td>\n";
 	echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:orange;\" /></td>\n";
-	echo "<td>Medium Risk</td>\n";
+	echo "<td>". $lang['MediumRisk'] ."</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:yellow;\" /></td>\n";
-        echo "<td>Low Risk</td>\n";
+        echo "<td>". $lang['LowRisk'] ."</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:white;\" /></td>\n";
-        echo "<td>Irrelevant</td>\n";
+        echo "<td>". $lang['Irrelevant'] ."</td>\n";
 	echo "</tr>\n";
 	echo "</table>\n";
 
@@ -437,11 +445,11 @@ function create_risk_table()
 		// If this is the first row add the y-axis label
 		if ($i == 4)
 		{
-			echo "<td rowspan=\"5\"><div class=\"text-rotation\"><b>Impact</b></div></td>\n";
+			echo "<td rowspan=\"5\"><div class=\"text-rotation\"><b>". $lang['Impact'] ."</b></div></td>\n";
 		}
 
 		// Add the y-axis values
-        	echo "<td bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . htmlentities($impacts[$i]['name'], ENT_QUOTES) . "</td>\n";
+        	echo "<td bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . htmlentities($impacts[$i]['name'], ENT_QUOTES, 'UTF-8') . "</td>\n";
         	echo "<td bgcolor=\"silver\" align=\"center\" height=\"50px\" width=\"100px\">" . $impacts[$i]['value'] . "</td>\n";
 
 		// For each likelihood level
@@ -467,7 +475,7 @@ function create_risk_table()
 	// Add the x-axis values
 	for ($x=0; $x<=4; $x++)
 	{
-		echo "<td align=\"center\" bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . $likelihoods[$x]['value'] . "<br />" . htmlentities($likelihoods[$x]['name'], ENT_QUOTES) . "</td>\n";
+		echo "<td align=\"center\" bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . $likelihoods[$x]['value'] . "<br />" . htmlentities($likelihoods[$x]['name'], ENT_QUOTES, 'UTF-8') . "</td>\n";
 	}
 
 	echo "</tr>\n";
@@ -475,7 +483,7 @@ function create_risk_table()
 	echo "<td>&nbsp;</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<td>&nbsp;</td>\n";
-	echo "<td colspan=\"5\" align=\"center\"><b>Likelihood</b></td>\n";
+	echo "<td colspan=\"5\" align=\"center\"><b>". $lang['Likelihood'] ."</b></td>\n";
 	echo "</tr>\n";
 	echo "</table>\n";
 }
@@ -852,17 +860,18 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $admin, $re
 /*************************
  * FUNCTION: UPDATE USER *
  *************************/
-function update_user($user_id, $name, $email, $teams, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
+function update_user($user_id, $name, $email, $teams, $lang, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
 {
         // Open the database connection
         $db = db_open();
 
         // Update the user
-        $stmt = $db->prepare("UPDATE user set `name`=:name, `email`=:email, `teams`=:teams, `admin`=:admin, `review_high`=:review_high, `review_medium`=:review_medium, `review_low`=:review_low, `submit_risks`=:submit_risks, `modify_risks`=:modify_risks, `plan_mitigations`=:plan_mitigations, `close_risks`=:close_risks, `multi_factor`=:multi_factor WHERE `value`=:user_id");
+        $stmt = $db->prepare("UPDATE user set `name`=:name, `email`=:email, `teams`=:teams, `lang` =:lang, `admin`=:admin, `review_high`=:review_high, `review_medium`=:review_medium, `review_low`=:review_low, `submit_risks`=:submit_risks, `modify_risks`=:modify_risks, `plan_mitigations`=:plan_mitigations, `close_risks`=:close_risks, `multi_factor`=:multi_factor WHERE `value`=:user_id");
 	$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
         $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
         $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":teams", $teams, PDO::PARAM_STR, 200);
+	$stmt->bindParam(":lang", $lang, PDO::PARAM_STR, 2);
         $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
         $stmt->bindParam(":review_high", $review_high, PDO::PARAM_INT);
         $stmt->bindParam(":review_medium", $review_medium, PDO::PARAM_INT);
@@ -889,6 +898,7 @@ function update_user($user_id, $name, $email, $teams, $admin, $review_high, $rev
         	$_SESSION['modify_risks'] = (int)$modify_risks;
         	$_SESSION['close_risks'] = (int)$close_risks;
         	$_SESSION['plan_mitigations'] = (int)$plan_mitigations;
+		$_SESSION['lang'] = $lang;
 	}
 
         return true;
@@ -914,6 +924,35 @@ function get_user_by_id($id)
 	db_close($db);
 
 	return $array[0];
+}
+
+/*******************************
+ * FUNCTION: GET VALUE BY NAME *
+ *******************************/
+function get_value_by_name($table, $name)
+{
+        // Open the database connection
+        $db = db_open();
+
+        // Get the user information
+        $stmt = $db->prepare("SELECT value FROM $table WHERE name = :name");
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+	// If the array is empty
+	if (empty($array))
+	{
+		// Return null
+		return null;
+	}
+	// Otherwise, return the first value in the array
+        else return $array[0]['value'];
 }
 
 /*****************************
@@ -964,16 +1003,6 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
 
 	// Get the id of the risk
 	$last_insert_id = $db->lastInsertId();
-
-        // If notification is enabled
-        if (notification_extra())
-        {
-                // Include the team separation extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/index.php");
-
-		// Send the notification
-		notify_new_risk($last_insert_id, $subject);
-        }
 
         // Close the database connection
         db_close($db);
@@ -1101,8 +1130,8 @@ function submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIC_likeliho
 		// Average the technical and business impacts to get the impact
 		$OWASP_impact = ($technical_impact + $business_impact)/2;
 
-                // Calculate the risk via classic method
-                $calculated_risk = calculate_risk($OWASP_impact, $OWASP_likelihood);
+                // Calculate the overall OWASP risk score
+		$calculated_risk = round((($OWASP_impact * $OWASP_likelihood) / 10), 1);
 
                 // Create the database query
                 $stmt = $db->prepare("INSERT INTO risk_scoring (`id`, `scoring_method`, `calculated_risk`, `OWASP_SkillLevel`, `OWASP_Motive`, `OWASP_Opportunity`, `OWASP_Size`, `OWASP_EaseOfDiscovery`, `OWASP_EaseOfExploit`, `OWASP_Awareness`, `OWASP_IntrusionDetection`, `OWASP_LossOfConfidentiality`, `OWASP_LossOfIntegrity`, `OWASP_LossOfAvailability`, `OWASP_LossOfAccountability`, `OWASP_FinancialDamage`, `OWASP_ReputationDamage`, `OWASP_NonCompliance`, `OWASP_PrivacyViolation`) VALUES (:last_insert_id, :scoring_method, :calculated_risk, :OWASP_SkillLevel, :OWASP_Motive, :OWASP_Opportunity, :OWASP_Size, :OWASP_EaseOfDiscovery, :OWASP_EaseOfExploit, :OWASP_Awareness, :OWASP_IntrusionDetection, :OWASP_LossOfConfidentiality, :OWASP_LossOfIntegrity, :OWASP_LossOfAvailability, :OWASP_LossOfAccountability, :OWASP_FinancialDamage, :OWASP_ReputationDamage, :OWASP_NonCompliance, :OWASP_PrivacyViolation)");
@@ -1329,7 +1358,7 @@ function update_owasp_score($id, $OWASPSkill, $OWASPMotive, $OWASPOpportunity, $
         // Average the technical and business impacts to get the impact
         $OWASP_impact = ($technical_impact + $business_impact)/2;
 
-        // Calculate the risk
+        // Calculate the overall OWASP risk score
         $calculated_risk = round((($OWASP_impact * $OWASP_likelihood) / 10), 1);
 
         // Create the database query
@@ -1513,8 +1542,8 @@ function update_risk_scoring($id, $scoring_method, $CLASSIC_likelihood, $CLASSIC
                 // Average the technical and business impacts to get the impact
                 $OWASP_impact = ($technical_impact + $business_impact)/2;
 
-                // Calculate the risk via classic method
-                $calculated_risk = calculate_risk($OWASP_impact, $OWASP_likelihood);
+                // Calculate the overall OWASP risk score
+		$calculated_risk = round((($OWASP_impact * $OWASP_likelihood) / 10), 1);
 
                 // Create the database query
 		$stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, OWASP_SkillLevel=:OWASP_SkillLevel, OWASP_Motive=:OWASP_Motive, OWASP_Opportunity=:OWASP_Opportunity, OWASP_Size=:OWASP_Size, OWASP_EaseOfDiscovery=:OWASP_EaseOfDiscovery, OWASP_EaseOfExploit=:OWASP_EaseOfExploit, OWASP_Awareness=:OWASP_Awareness, OWASP_IntrusionDetection=:OWASP_IntrusionDetection, OWASP_LossOfConfidentiality=:OWASP_LossOfConfidentiality, OWASP_LossOfIntegrity=:OWASP_LossOfIntegrity, OWASP_LossOfAvailability=:OWASP_LossOfAvailability, OWASP_LossOfAccountability=:OWASP_LossOfAccountability, OWASP_FinancialDamage=:OWASP_FinancialDamage, OWASP_ReputationDamage=:OWASP_ReputationDamage, OWASP_NonCompliance=:OWASP_NonCompliance, OWASP_PrivacyViolation=:OWASP_PrivacyViolation WHERE id=:id");
@@ -1615,7 +1644,7 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/index.php");
+                require_once(__DIR__ . "/../extras/notification/index.php");
 
 		// Send the notification
 		notify_new_mitigation($risk_id);
@@ -1669,7 +1698,7 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/index.php");
+                require_once(__DIR__ . "/../extras/notification/index.php");
 
 		// Send the notification
 		notify_new_review($risk_id);
@@ -1718,7 +1747,7 @@ function update_risk($id, $subject, $reference_id, $regulation, $control_number,
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/index.php");
+                require_once(__DIR__ . "/../extras/notification/index.php");
 
 		// Send the notification
 		notify_risk_update($id);
@@ -2032,7 +2061,7 @@ function get_risks($sort_order=0)
 	if (team_separation_extra())
 	{
 		// Include the team separation extra
-		require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/separation/index.php");
+		require_once(__DIR__ . "/../extras/separation/index.php");
 
 		// Strip out risks the user should not have access to
 		$array = strip_no_access_risks($array);
@@ -2046,19 +2075,21 @@ function get_risks($sort_order=0)
  ****************************/
 function get_risk_table($sort_order=0)
 {
+	global $lang;
+	
         // Get risks
         $risks = get_risks($sort_order);
 
 	echo "<table class=\"table table-bordered table-condensed sortable\">\n";
 	echo "<thead>\n";
 	echo "<tr>\n";
-	echo "<th align=\"left\" width=\"50px\">ID</th>\n";
-	echo "<th align=\"left\" width=\"150px\">Status</th>\n";
-	echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
-	echo "<th align=\"center\" width=\"100px\">Risk</th>\n";
-	echo "<th align=\"center\" width=\"150px\">Submitted</th>\n";
-	echo "<th align=\"center\" width=\"100px\">Mitigation Planned</th>\n";
-	echo "<th align=\"center\" width=\"100px\">Management Review</th>\n";
+	echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+	echo "<th align=\"left\" width=\"150px\">". $lang['Status'] ."</th>\n";
+	echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+	echo "<th align=\"center\" width=\"100px\">". $lang['Risk'] ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $lang['Submitted'] ."</th>\n";
+	echo "<th align=\"center\" width=\"100px\">". $lang['MitigationPlanned'] ."</th>\n";
+	echo "<th align=\"center\" width=\"100px\">". $lang['ManagementReview'] ."</th>\n";
 	echo "</tr>\n";
 	echo "</thead>\n";
 	echo "<tbody>\n";
@@ -2070,13 +2101,13 @@ function get_risk_table($sort_order=0)
 		$color = get_risk_color($risk['calculated_risk']);
 
 		echo "<tr>\n";
-		echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES) . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES) . "</a></td>\n";
-		echo "<td align=\"left\" width=\"150px\">" . htmlentities($risk['status'], ENT_QUOTES) . "</td>\n";
-		echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES) . "</td>\n";
-		echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
-		echo "<td align=\"center\" width=\"100px\">" . planned_mitigation(htmlentities(convert_id($risk['id']), ENT_QUOTES), htmlentities($risk['mitigation_id'], ENT_QUOTES)) . "</td>\n";
-		echo "<td align=\"center\" width=\"100px\">" . management_review(htmlentities(convert_id($risk['id']), ENT_QUOTES), htmlentities($risk['mgmt_review'], ENT_QUOTES)) . "</td>\n";
+		echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "</a></td>\n";
+		echo "<td align=\"left\" width=\"150px\">" . htmlentities($risk['status'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"100px\">" . planned_mitigation(htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8'), htmlentities($risk['mitigation_id'], ENT_QUOTES, 'UTF-8')) . "</td>\n";
+		echo "<td align=\"center\" width=\"100px\">" . management_review(htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8'), htmlentities($risk['mgmt_review'], ENT_QUOTES, 'UTF-8')) . "</td>\n";
 		echo "</tr>\n";
 	}
 
@@ -2091,19 +2122,21 @@ function get_risk_table($sort_order=0)
  ***************************************/
 function get_submitted_risks_table($sort_order=11)
 {
+	global $lang;
+	
         // Get risks
         $risks = get_risks($sort_order);
 
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
-        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
-	echo "<th align=\"center\" width=\"150px\">Submission Date</th>\n";
-        echo "<th align=\"left\" width=\"150px\">Calculated Risk</th>\n";
-        echo "<th align=\"left\" width=\"150px\">Status</th>\n";
-        echo "<th align=\"center\" width=\"150px\">Team</th>\n";
-        echo "<th align=\"center\" width=\"150px\">Submitted By</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $lang['SubmissionDate'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['CalculatedRisk'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['Status'] ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $lang['Team'] ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $lang['SubmittedBy'] ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2115,13 +2148,13 @@ function get_submitted_risks_table($sort_order=11)
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES) . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
-		echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"150px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['status'], ENT_QUOTES) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['team'], ENT_QUOTES) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['name'], ENT_QUOTES) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"150px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['status'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['team'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['name'], ENT_QUOTES, 'UTF-8') . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -2136,18 +2169,20 @@ function get_submitted_risks_table($sort_order=11)
  ***********************************/
 function get_mitigations_table($sort_order=13)
 {
+	global $lang;
+	
         // Get risks
         $risks = get_risks($sort_order);
 
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
-        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
-        echo "<th align=\"left\" width=\"150px\">Mitigation Date</th>\n";
-        echo "<th align=\"left\" width=\"150px\">Planning Strategy</th>\n";
-        echo "<th align=\"center\" width=\"150px\">Mitigation Effort</th>\n";
-        echo "<th align=\"center\" width=\"150px\">Submitted By</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['MitigationDate'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['PlanningStrategy'] ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $lang['MitigationEffort'] ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $lang['SubmittedBy'] ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2156,12 +2191,12 @@ function get_mitigations_table($sort_order=13)
         foreach ($risks as $risk)
         {
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES) . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['planning_strategy'], ENT_QUOTES) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['mitigation_effort'], ENT_QUOTES) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['name'], ENT_QUOTES) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['planning_strategy'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['mitigation_effort'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['name'], ENT_QUOTES, 'UTF-8') . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -2176,18 +2211,20 @@ function get_mitigations_table($sort_order=13)
  *************************************/
 function get_reviewed_risk_table($sort_order=12)
 {
+	global $lang;
+	
         // Get risks
         $risks = get_risks($sort_order);
 
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
-	echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
-        echo "<th align=\"left\" width=\"150px\">Review Date</th>\n";
-        echo "<th align=\"left\" width=\"150px\">Review</th>\n";
-        echo "<th align=\"center\" width=\"150px\">Next Step</th>\n";
-	echo "<th align=\"center\" width=\"150px\">Reviewer</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+	echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['ReviewDate'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['Review'] ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $lang['NextStep'] ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $lang['Reviewer'] ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2196,12 +2233,12 @@ function get_reviewed_risk_table($sort_order=12)
         foreach ($risks as $risk)
         {
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES) . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['review'], ENT_QUOTES) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['next_step'], ENT_QUOTES) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['name'], ENT_QUOTES) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['review'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['next_step'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['name'], ENT_QUOTES, 'UTF-8') . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -2216,16 +2253,18 @@ function get_reviewed_risk_table($sort_order=12)
  ************************************/
 function get_risk_scoring_table()
 {
+	global $lang;
+	
 	echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">Classic Risk Scoring</font></center></th>\n";
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $lang['ClassicRiskScoring'] ."</font></center></th>\n";
         echo "</tr>\n";
         echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
-        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
-        echo "<th align=\"left\" width=\"100px\">Risk</th>\n";
-        echo "<th align=\"left\" width=\"150px\">Date Submitted</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+        echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2236,21 +2275,17 @@ function get_risk_scoring_table()
         // For each risk
         foreach ($risks as $risk)
         {
-        	$subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES);
+        	$subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8');
                 $risk_id = (int)$risk['id'];
                 $project_id = (int)$risk['project_id'];
                 $color = get_risk_color($risk['calculated_risk']);
 
-                // If the risk is assigned to that project id
-                if ($id == $project_id)
-                {
-                	echo "<tr>\n";
-                        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                        echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                        echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
-                        echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
-                        echo "</tr>\n";
-                }
+                echo "<tr>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "</tr>\n";
         }
 
         echo "</tbody>\n";
@@ -2260,13 +2295,13 @@ function get_risk_scoring_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";  
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">CVSS Risk Scoring</font></center></th>\n";
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $lang['CVSSRiskScoring'] ."</font></center></th>\n";
         echo "</tr>\n"; 
         echo "<tr>\n";  
-        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
-        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
-        echo "<th align=\"left\" width=\"100px\">Risk</th>\n";
-        echo "<th align=\"left\" width=\"150px\">Date Submitted</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+        echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
         echo "</tr>\n"; 
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2277,20 +2312,17 @@ function get_risk_scoring_table()
         // For each risk
         foreach ($risks as $risk)
         {               
-                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES);
+                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8');
                 $risk_id = (int)$risk['id'];
                 $project_id = (int)$risk['project_id'];
                 $color = get_risk_color($risk['calculated_risk']);
 
-                // If the risk is assigned to that project id
-                if ($id == $project_id) 
-                {               
-                        echo "<tr>\n";  
-                        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                        echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";                        echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
-                        echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
-                        echo "</tr>\n"; 
-                }       
+                echo "<tr>\n";  
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "</tr>\n"; 
         }               
 
         echo "</tbody>\n";
@@ -2300,13 +2332,13 @@ function get_risk_scoring_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";  
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">DREAD Risk Scoring</font></center></th>\n";
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $lang['DREADRiskScoring'] ."</font></center></th>\n";
         echo "</tr>\n"; 
         echo "<tr>\n";  
-        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
-        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
-        echo "<th align=\"left\" width=\"100px\">Risk</th>\n";
-        echo "<th align=\"left\" width=\"150px\">Date Submitted</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+        echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
         echo "</tr>\n"; 
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2317,20 +2349,17 @@ function get_risk_scoring_table()
         // For each risk
         foreach ($risks as $risk)
         {               
-                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES);
+                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8');
                 $risk_id = (int)$risk['id'];
                 $project_id = (int)$risk['project_id'];
                 $color = get_risk_color($risk['calculated_risk']);
 
-                // If the risk is assigned to that project id
-                if ($id == $project_id) 
-                {               
-                        echo "<tr>\n";  
-                        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                        echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";                        echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
-                        echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
-                        echo "</tr>\n"; 
-                }       
+                echo "<tr>\n";  
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "</tr>\n"; 
         }               
 
         echo "</tbody>\n";
@@ -2340,13 +2369,13 @@ function get_risk_scoring_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";  
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">OWASP Risk Scoring</font></center></th>\n";
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $lang['OWASPRiskScoring'] ."</font></center></th>\n";
         echo "</tr>\n"; 
         echo "<tr>\n";  
-        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
-        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
-        echo "<th align=\"left\" width=\"100px\">Risk</th>\n";
-        echo "<th align=\"left\" width=\"150px\">Date Submitted</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+        echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
         echo "</tr>\n"; 
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2357,20 +2386,17 @@ function get_risk_scoring_table()
         // For each risk
         foreach ($risks as $risk)
         {               
-                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES);
+                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8');
                 $risk_id = (int)$risk['id'];
                 $project_id = (int)$risk['project_id'];
                 $color = get_risk_color($risk['calculated_risk']);
 
-                // If the risk is assigned to that project id
-                if ($id == $project_id) 
-                {               
-                        echo "<tr>\n";  
-                        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                        echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";                        echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
-                        echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
-                        echo "</tr>\n"; 
-                }       
+                echo "<tr>\n";  
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "</tr>\n"; 
         }               
 
         echo "</tbody>\n";
@@ -2380,13 +2406,13 @@ function get_risk_scoring_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";  
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">Custom Risk Scoring</font></center></th>\n";
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $lang['CustomRiskScoring'] ."</font></center></th>\n";
         echo "</tr>\n"; 
         echo "<tr>\n";  
-        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
-        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
-        echo "<th align=\"left\" width=\"100px\">Risk</th>\n";
-        echo "<th align=\"left\" width=\"150px\">Date Submitted</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+        echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
         echo "</tr>\n"; 
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2397,20 +2423,17 @@ function get_risk_scoring_table()
         // For each risk
         foreach ($risks as $risk)
         {               
-                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES);
+                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8');
                 $risk_id = (int)$risk['id'];
                 $project_id = (int)$risk['project_id'];
                 $color = get_risk_color($risk['calculated_risk']);
 
-                // If the risk is assigned to that project id
-                if ($id == $project_id) 
-                {               
-                        echo "<tr>\n";  
-                        echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                        echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";                        echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
-                        echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
-                        echo "</tr>\n"; 
-                }       
+                echo "<tr>\n";  
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "</tr>\n"; 
         }               
 
         echo "</tbody>\n";
@@ -2423,6 +2446,8 @@ function get_risk_scoring_table()
  ******************************************/
 function get_projects_and_risks_table()
 {
+	global $lang;
+	
 	// Get projects
 	$projects = get_projects();
 
@@ -2430,7 +2455,7 @@ function get_projects_and_risks_table()
 	foreach ($projects as $project)
 	{
                 $id = (int)$project['value'];
-                $name = htmlentities(stripslashes($project['name']), ENT_QUOTES);
+                $name = htmlentities(stripslashes($project['name']), ENT_QUOTES, 'UTF-8');
                 $order = (int)$project['order'];
 
                 // If the project is not 0 (ie. Unassigned Risks)
@@ -2442,10 +2467,10 @@ function get_projects_and_risks_table()
         		echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">" . $name . "</font></center></th>\n";
         		echo "</tr>\n";
 		        echo "<tr>\n";
-        		echo "<th align=\"left\" width=\"50px\">ID</th>\n";
-        		echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
-        		echo "<th align=\"left\" width=\"100px\">Risk</th>\n";
-        		echo "<th align=\"left\" width=\"150px\">Date Submitted</th>\n";
+        		echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+        		echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+        		echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
+        		echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
         		echo "</tr>\n";
         		echo "</thead>\n";
         		echo "<tbody>\n";
@@ -2456,7 +2481,7 @@ function get_projects_and_risks_table()
                 	// For each risk
                 	foreach ($risks as $risk)
                 	{
-                        	$subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES);
+                        	$subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8');
                         	$risk_id = (int)$risk['id'];
                         	$project_id = (int)$risk['project_id'];
                         	$color = get_risk_color($risk['calculated_risk']);
@@ -2467,8 +2492,8 @@ function get_projects_and_risks_table()
 					echo "<tr>\n";
                 			echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
                 			echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                			echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
-                			echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['submission_date'], ENT_QUOTES) . "</td>\n";
+                			echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+					echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8') . "</td>\n";
 					echo "</tr>\n";
 				}
 			}
@@ -2486,11 +2511,13 @@ function get_projects_and_risks_table()
  ******************************/
 function get_project_list()
 {
+	global $lang;
+	
         // Get projects
         $projects = get_projects();
 
 	echo "<form action=\"\" method=\"post\">\n";
-	echo "<input type=\"submit\" name=\"update_order\" value=\"Update\" /><br /><br />\n";
+	echo "<input type=\"submit\" name=\"update_order\" value=\"". $lang[ 'Update'] ."\" /><br /><br />\n";
 	echo "<ul id=\"prioritize\">\n";
 
         // For each project
@@ -2504,7 +2531,7 @@ function get_project_list()
 		if ($id != 0)
 		{
 			echo "<li class=\"ui-state-default\" id=\"sort_" . $id . "\">\n";
-			echo "<span>&#x21C5;</span>&nbsp;" . htmlentities($name, ENT_QUOTES) . "\n";
+			echo "<span>&#x21C5;</span>&nbsp;" . htmlentities($name, ENT_QUOTES, 'UTF-8') . "\n";
 			echo "<input type=\"hidden\" id=\"order" . $id . "\" name=\"order_" . $id . "\" value=\"" . $order . "\" />\n";
 			echo "<input type=\"hidden\" name=\"ids[]\" value=\"" . $id . "\" />\n";
 			echo "</li>\n";
@@ -2512,7 +2539,7 @@ function get_project_list()
 	}
 
 	echo "</ul>\n";
-	echo "<br /><input type=\"submit\" name=\"update_order\" value=\"Update\" />\n";
+	echo "<br /><input type=\"submit\" name=\"update_order\" value=\"". $lang[ 'Update'] ."\" />\n";
 	echo "</form>\n";
 
 	return true;
@@ -2621,6 +2648,8 @@ function update_risk_project($project_id, $risk_id)
  ******************************/
 function get_project_tabs()
 {
+	global $lang;
+	
 	$projects = get_projects();
 
 	echo "<form action=\"\" method=\"post\">\n";
@@ -2632,7 +2661,7 @@ function get_project_tabs()
 		$id = $project['value'];
 		$name = $project['name'];
 
-		echo "<li><a href=\"#tabs-" . $id . "\">" . htmlentities($name, ENT_QUOTES) . "</a></li>\n";
+		echo "<li><a href=\"#tabs-" . $id . "\">" . htmlentities($name, ENT_QUOTES, 'UTF-8') . "</a></li>\n";
 	}
 
 	echo "</ul>\n";
@@ -2660,7 +2689,7 @@ function get_project_tabs()
 			// If the risk is assigned to that project id
 			if ($id == $project_id)
 			{
-				echo "<li id=\"" . $risk_id . "\" class=\"" . $color . "\">" . htmlentities($subject, ENT_QUOTES) . "\n";
+				echo "<li id=\"" . $risk_id . "\" class=\"" . $color . "\">" . htmlentities($subject, ENT_QUOTES, 'UTF-8') . "\n";
 				echo "<input class=\"assoc-risk-with-project\" type=\"hidden\" id=\"risk" . $risk_id . "\" name=\"risk_" . $risk_id . "\" value=\"" . $project_id . "\" />\n";
                         	echo "<input id=\"all-risk-ids\" class=\"all-risk-ids\" type=\"hidden\" name=\"ids[]\" value=\"" . $risk_id . "\" />\n";
                         	echo "</li>\n";
@@ -2672,7 +2701,7 @@ function get_project_tabs()
 	}
 
 	echo "</div>\n";
-	echo "<br /><input type=\"submit\" name=\"update_projects\" value=\"Save Risks to Projects\" />\n";
+	echo "<br /><input type=\"submit\" name=\"update_projects\" value=\"". $lang['SaveRisksToProjects'] ."\" />\n";
 	echo "</form>\n";
 }
 
@@ -2732,18 +2761,20 @@ function project_has_risks($project_id)
  *******************************/
 function get_reviews_table($sort_order=3)
 {
+	global $lang;
+	
         // Get risks
         $risks = get_risks($sort_order);
 
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">ID</th>\n";
-        echo "<th align=\"left\" width=\"150px\">Status</th>\n";
-        echo "<th align=\"left\" width=\"300px\">Subject</th>\n";
-        echo "<th align=\"center\" width=\"100px\">Risk</th>\n";
-        echo "<th align=\"center\" width=\"100px\">Days Open</th>\n";
-        echo "<th align=\"center\" width=\"150px\">Next Review Date</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['Status'] ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+        echo "<th align=\"center\" width=\"100px\">". $lang['Risk'] ."</th>\n";
+        echo "<th align=\"center\" width=\"100px\">". $lang['DaysOpen'] ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $lang['NextReviewDate'] ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2755,10 +2786,10 @@ function get_reviews_table($sort_order=3)
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES) . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"150px\">" . htmlentities($risk['status'], ENT_QUOTES) . "</td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES) . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "</a></td>\n";
+                echo "<td align=\"left\" width=\"150px\">" . htmlentities($risk['status'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
                 echo "<td align=\"center\" width=\"100px\">" . dayssince($risk['submission_date']) . "</td>\n";
                 echo "<td align=\"center\" width=\"150px\">" . next_review($color, $risk['id']) . "</td>\n";
                 echo "</tr>\n";
@@ -2775,12 +2806,14 @@ function get_reviews_table($sort_order=3)
  *******************************/
 function management_review($risk_id, $mgmt_review)
 {
+	global $lang;
+	
 	// If the review hasn't happened
 	if ($mgmt_review == "0")
 	{
-		$value = "<a href=\"../management/mgmt_review.php?id=" . $risk_id . "\">No</a>";
+		$value = "<a href=\"../management/mgmt_review.php?id=" . $risk_id . "\">". $lang['No'] ."</a>";
 	}
-	else $value = "Yes";
+	else $value = $lang['Yes'];
 
 	return $value;
 }
@@ -2790,12 +2823,14 @@ function management_review($risk_id, $mgmt_review)
  ********************************/
 function planned_mitigation($risk_id, $mitigation_id)
 {
+	global $lang;
+	
         // If the review hasn't happened
         if ($mitigation_id == "0")
         {
-                $value = "<a href=\"../management/mitigate.php?id=" . $risk_id . "\">No</a>";
+                $value = "<a href=\"../management/mitigate.php?id=" . $risk_id . "\">". $lang['No'] ."</a>";
         }
-        else $value = "Yes";
+        else $value = $lang['Yes'];
 
         return $value;
 }
@@ -2829,6 +2864,32 @@ function get_name_by_value($table, $value)
 	// Otherwise, return an empty string
 	else return "";
 } 
+
+/*****************************
+ * FUNCTION: UPDATE LANGUAGE *
+ *****************************/
+function update_language($uid, $language)
+{
+	// Open the database connection
+        $db = db_open();
+
+        // Query the database
+        $stmt = $db->prepare("UPDATE user SET lang = :language WHERE value = :uid");
+	$stmt->bindParam(":language", $language, PDO::PARAM_STR);
+	$stmt->bindParam(":uid", $uid, PDO::PARAM_INT);
+
+	$stmt->execute();
+
+        // Close the database connection
+        db_close($db);
+
+	// If the session belongs to the same UID as the one we are updating
+	if ($_SESSION['uid'] == $uid)
+	{
+		// Update the language for the session
+		$_SESSION['lang'] = $language;
+	}
+}
 
 /***************************
  * FUNCTION: GET CVSS NAME *
@@ -2949,15 +3010,17 @@ function get_last_review($risk_id)
 /**********************************
  * FUNCTION: GET NEXT REVIEW DATE *
  **********************************/
-function next_review($color, $risk_id)
+function next_review($color, $risk_id, $html = true)
 {
+	global $lang;
+	
 	// Get the last review for this risk
 	$last_review = get_last_review($risk_id);
 
 	// If the risk is unreviewed
 	if ($last_review == "")
 	{
-		$text = "UNREVIEWED";
+		$text = $lang['UNREVIEWED'];
 	}
 	else
 	{
@@ -2990,16 +3053,22 @@ function next_review($color, $risk_id)
 		// If the next review date is after today
 		if (strtotime($next_review->format('Y-m-d')) > time())
 		{
-                	$text = $next_review->format('Y-m-d');
+			$text = $next_review->format(DATESIMPLE);
 		}
-		else $text = "PAST DUE";
+		else $text = $lang['PASTDUE'];
 	}
 
-	// Add the href tag to make it HTML
-	$html = "<a href=\"../management/mgmt_review.php?id=" . convert_id($risk_id) . "\">" . $text . "</a>";
+	// If we want to include the HTML code
+	if ($html == true)
+	{
+		// Add the href tag to make it HTML
+		$html = "<a href=\"../management/mgmt_review.php?id=" . convert_id($risk_id) . "\">" . $text . "</a>";
 
-	// Return the HTML code
-	return $html;
+		// Return the HTML code
+		return $html;
+	}
+	// Otherwise just return the text
+	else return $text;
 }
 
 /************************
@@ -3156,9 +3225,9 @@ function get_comments($id)
 
         foreach ($comments as $comment)
         {
-		$text = htmlentities(stripslashes($comment['comment']), ENT_QUOTES);
-		$date = htmlentities(date('Y-m-d g:i A T', strtotime($comment['date'])), ENT_QUOTES);
-		$user = htmlentities(stripslashes($comment['name']), ENT_QUOTES);
+		$text = htmlentities(stripslashes($comment['comment']), ENT_QUOTES, 'UTF-8');
+		$date = htmlentities(date(DATETIME, strtotime($comment['date'])), ENT_QUOTES, 'UTF-8');
+		$user = htmlentities(stripslashes($comment['name']), ENT_QUOTES, 'UTF-8');
 
 		echo "<p>".$date." > ".$user.": ".$text."</p>\n";
 	}
@@ -3201,8 +3270,8 @@ function get_audit_trail($id = NULL)
         
         foreach ($logs as $log)
         {       
-                $text = htmlentities(stripslashes($log['message']), ENT_QUOTES);
-                $date = htmlentities(date('Y-m-d g:i A T', strtotime($log['timestamp'])), ENT_QUOTES); 
+                $text = htmlentities(stripslashes($log['message']), ENT_QUOTES, 'UTF-8');
+                $date = htmlentities(date(DATETIME, strtotime($log['timestamp'])), ENT_QUOTES, 'UTF-8'); 
                 
                 echo "<p>".$date." > ".$text."</p>\n";
         }
@@ -3240,7 +3309,7 @@ function update_mitigation($id, $planning_strategy, $mitigation_effort, $current
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/notification/index.php");
+                require_once(__DIR__ . "/../extras/notification/index.php");
 
 		// Send the notification
 		notify_mitigation_update($id);
@@ -3257,6 +3326,8 @@ function update_mitigation($id, $planning_strategy, $mitigation_effort, $current
  **************************/
 function get_reviews($id)
 {
+	global $lang;
+	
         // Subtract 1000 from id
         $id = $id - 1000;
 
@@ -3278,18 +3349,18 @@ function get_reviews($id)
 
         foreach ($reviews as $review)
         {
-                $date = htmlentities(date('Y-m-d g:i A T', strtotime($review['submission_date'])), ENT_QUOTES);
+                $date = htmlentities(date(DATETIME, strtotime($review['submission_date'])), ENT_QUOTES, 'UTF-8');
 		$reviewer =  get_name_by_value("user", $review['reviewer']);
 		$review_value = get_name_by_value("review", $review['review']);
 		$next_step = get_name_by_value("next_step", $review['next_step']);
-		$comment = htmlentities(stripslashes($review['comments']), ENT_QUOTES);
+		$comment = htmlentities(stripslashes($review['comments']), ENT_QUOTES, 'UTF-8');
 
 		echo "<p>\n";
 		echo "<u>".$date."</u><br />\n";
-		echo "Reviewer: ".$reviewer."<br />\n";
-		echo "Review: ".$review_value."<br />\n";
-		echo "Next Step: ".$next_step."<br />\n";
-		echo "Comment: ".$comment."\n";
+		echo $lang['Reviewer'] .": ".$reviewer."<br />\n";
+		echo $lang['Review'] .": ".$review_value."<br />\n";
+		echo $lang['NextStep'] .": ".$next_step."<br />\n";
+		echo $lang['Comment'] .": ".$comment."\n";
 		echo "</p>\n";
         }
 
@@ -3321,7 +3392,7 @@ function latest_version($param)
 	}      
 
 	// Return the latest version HTML encoded
-	return htmlentities($latest_version, ENT_QUOTES);
+	return htmlentities($latest_version, ENT_QUOTES, 'UTF-8');
 }
 
 /*****************************
@@ -3331,7 +3402,7 @@ function current_version($param)
 {
         if ($param == "app")
         {
-		require_once($_SERVER{'DOCUMENT_ROOT'} . "/includes/version.php");
+		require_once(__DIR__ . "/version.php");
 
 		return APP_VERSION;
         }
@@ -3418,7 +3489,7 @@ function get_announcements()
         {
                 if (preg_match($regex_pattern, $line, $matches))
                 {
-                        $announcements .= "<li>" . htmlentities($matches[1], ENT_QUOTES) . "</li>\n";
+                        $announcements .= "<li>" . htmlentities($matches[1], ENT_QUOTES, 'UTF-8') . "</li>\n";
                 }
         }
 
@@ -3426,6 +3497,27 @@ function get_announcements()
 
         // Return the announcement
         return $announcements;
+}
+
+/***************************
+ * FUNCTION: LANGUAGE FILE *
+ ***************************/
+function language_file()
+{
+	// If the language is set for the user
+	if (isset($_SESSION['lang']))
+	{
+		// Use the users language
+		return __DIR__ . '/../languages/' . $_SESSION['lang'] . '/lang.' . $_SESSION['lang'] . '.php';
+	}
+	// If the default language is defined in the config file
+	else if (defined('LANG_DEFAULT'))
+	{
+		// Use the default language
+		return __DIR__ . '/../languages/' . LANG_DEFAULT . '/lang.' . LANG_DEFAULT . '.php';
+	}
+	// Otherwise, use english
+	else return __DIR__ . '/../languages/en/lang.en.php';
 }
 
 /*****************************************

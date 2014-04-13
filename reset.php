@@ -28,6 +28,9 @@
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 	session_start('SimpleRisk');
 
+        // Include the language file
+        require_once(language_file());
+
 	// Default is no alert
 	$alert = false;
 
@@ -96,13 +99,13 @@
           <div class="navbar-content">
             <ul class="nav">
               <li class="active">
-                <a href="index.php">Home</a> 
+                <a href="index.php"><?php echo $lang['Home']; ?></a> 
               </li>
               <li>
-                <a href="management/index.php">Risk Management</a> 
+                <a href="management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li>
-                <a href="reports/index.php">Reporting</a> 
+                <a href="reports/index.php"><?php echo $lang['Reporting']; ?></a> 
               </li>
             </ul>
           </div>
@@ -133,12 +136,12 @@
       <div class="row-fluid">
         <div class="span9">
           <div class="well">
-            <p><label><u>Send Password Reset Email</u></label></p>
+            <p><label><u><?php echo $lang['SendPasswordResetEmail']; ?></u></label></p>
             <form name="send_reset_email" method="post" action="">
-            Username: <input class="input-medium" name="user" id="user" type="text" maxlength="20" />
+            <?php echo $lang['Username']; ?>: <input class="input-medium" name="user" id="user" type="text" maxlength="20" />
             <div class="form-actions">
-              <button type="submit" name="send_reset_email" class="btn btn-primary">Send</button>
-              <input class="btn" value="Reset" type="reset">
+              <button type="submit" name="send_reset_email" class="btn btn-primary"><?php echo $lang['Send']; ?></button>
+              <input class="btn" value="<?php echo $lang['Reset']; ?>" type="reset">
             </div>
             </form>
           </div>
@@ -147,15 +150,15 @@
       <div class="row-fluid">
         <div class="span9">
           <div class="well">
-            <p><label><u>Password Reset</u></label></p>
+            <p><label><u><?php echo $lang['PasswordReset']; ?></u></label></p>
             <form name="password_reset" method="post" action="">
-            Username: <input class="input-medium" name="user" id="user" type="text" maxlength="20" /><br />
-            Reset Token: <input class="input-medium" name="token" id="token" type="password" maxlength="20" /><br />
-            Password: <input class="input-medium" name="password" id="password" type="password" maxlength="50" autocomplete="off" /><br />
-            Repeat Password: <input class="input-medium" name="repeat_password" id="repeat_password" type="password" maxlength="50" autocomplete="off" />
+            <?php echo $lang['Username']; ?>: <input class="input-medium" name="user" id="user" type="text" maxlength="20" /><br />
+            <?php echo $lang['ResetToken']; ?>: <input class="input-medium" name="token" id="token" type="password" maxlength="20" /><br />
+            <?php echo $lang['Password']; ?>: <input class="input-medium" name="password" id="password" type="password" maxlength="50" autocomplete="off" /><br />
+            <?php echo $lang['RepeatPassword']; ?>: <input class="input-medium" name="repeat_password" id="repeat_password" type="password" maxlength="50" autocomplete="off" />
             <div class="form-actions">
-              <button type="submit" name="password_reset" class="btn btn-primary">Submit</button>
-              <input class="btn" value="Reset" type="reset">
+              <button type="submit" name="password_reset" class="btn btn-primary"><?php echo $lang['Submit']; ?></button>
+              <input class="btn" value="<?php echo $lang['Reset']; ?>" type="reset">
             </div>
             </form>
           </div>

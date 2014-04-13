@@ -6,6 +6,7 @@
 	// Include required functions file
         require_once('../includes/functions.php');
 	require_once('../includes/authenticate.php');
+	require_once('../includes/reporting.php');
 
         // Add various security headers
         header("X-Frame-Options: DENY");
@@ -133,13 +134,13 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
             <li>
               <a href="risk_scoring.php"><?php echo $lang['AllOpenRisksByScoringMethod']; ?></a>
             </li>
-            <li>
+            <li class="active">
               <a href="review_needed.php"><?php echo $lang['AllOpenRisksNeedingReview']; ?></a>
             </li>
             <li>
               <a href="closed.php"><?php echo $lang['AllClosedRisksByRiskLevel']; ?></a>
             </li>
-            <li class="active">
+            <li>
               <a href="submitted_by_date.php"><?php echo $lang['SubmittedRisksByDate']; ?></a>
             </li>
             <li>
@@ -154,8 +155,8 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           </ul>
         </div>
         <div class="span9">
-          <div class="row-fluid"><p><?php echo $lang['ReportSubmittedByDateHelp']; ?>.</p></div>
-	  <?php get_submitted_risks_table(); ?>
+          <div class="row-fluid"><p><?php echo $lang['ReportReviewNeededHelp']; ?>.</p></div>
+	  <?php get_review_needed_table(); ?>
         </div>
       </div>
     </div>

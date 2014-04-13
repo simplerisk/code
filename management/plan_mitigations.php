@@ -27,6 +27,10 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+
+        // Include the language file
+        require_once(language_file());
+
         require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
@@ -87,19 +91,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php">Home</a> 
+                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
               </li>
               <li class="active">
-                <a href="index.php">Risk Management</a> 
+                <a href="index.php"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php">Reporting</a> 
+                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">Configure</a>\n";
+          echo "<a href=\"../admin/index.php\">". $lang['Configure'] ."</a>\n";
           echo "</li>\n";
 }
           echo "</ul>\n";
@@ -111,10 +115,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">My Profile</a>\n";
+          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">Logout</a>\n";
+          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -148,26 +152,26 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li>
-              <a href="index.php">I. Submit Your Risks</a> 
+              <a href="index.php">I. <?php echo $lang['SubmitYourRisks']; ?></a> 
             </li>
             <li class="active">
-              <a href="plan_mitigations.php">II. Plan Your Mitigations</a> 
+              <a href="plan_mitigations.php">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
             </li>
             <li>
-              <a href="management_review.php">III. Perform Management Reviews</a> 
+              <a href="management_review.php">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
             </li>
             <li>
-              <a href="prioritize_planning.php">IV. Prioritize for Project Planning</a> 
+              <a href="prioritize_planning.php">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
             </li>
             <li>
-              <a href="review_risks.php">V. Review Risks Regularly</a>     
+              <a href="review_risks.php">V. <?php echo $lang['ReviewRisksRegularly']; ?></a>     
             </li>
           </ul>
         </div>
         <div class="span9">
           <div class="row-fluid">
             <div class="span12">
-              <p>Below is the list of submitted risks that require mitigation planning.</p>
+              <p><?php echo $lang['MitigationPlanningHelp']; ?>.</p>
               <?php get_risk_table(1); ?>
             </div>
           </div>

@@ -27,6 +27,10 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+
+        // Include the language file
+        require_once(language_file());
+
         require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
@@ -352,16 +356,16 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php">Home</a> 
+                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
               </li>
               <li>
-                <a href="../management/index.php">Risk Management</a> 
+                <a href="../management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php">Reporting</a> 
+                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
               </li>
               <li class="active">
-                <a href="index.php">Configure</a>
+                <a href="index.php"><?php echo $lang['Configure']; ?></a>
               </li>
             </ul>
           </div>
@@ -372,10 +376,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">My Profile</a>\n";
+          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">Logout</a>\n";
+          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -409,31 +413,31 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li>
-              <a href="index.php">Configure Risk Formula</a> 
+              <a href="index.php"><?php echo $lang['ConfigureRiskFormula']; ?></a> 
             </li>
             <li>
-              <a href="review_settings.php">Configure Review Settings</a>
+              <a href="review_settings.php"><?php echo $lang['ConfigureReviewSettings']; ?></a>
             </li>
             <li class="active">
-              <a href="add_remove_values.php">Add and Remove Values</a> 
+              <a href="add_remove_values.php"><?php echo $lang['AddAndRemoveValues']; ?></a> 
             </li>
             <li>
-              <a href="user_management.php">User Management</a> 
+              <a href="user_management.php"><?php echo $lang['UserManagement']; ?></a> 
             </li>
             <li>
-              <a href="custom_names.php">Redefine Naming Conventions</a> 
+              <a href="custom_names.php"><?php echo $lang['RedefineNamingConventions']; ?></a> 
             </li>
             <li>
-              <a href="audit_trail.php">Audit Trail</a>
+              <a href="audit_trail.php"><?php echo $lang['AuditTrail']; ?></a>
             </li>
             <li>
-              <a href="extras.php">Extras</a>
+              <a href="extras.php"><?php echo $lang['Extras']; ?></a>
             </li>
             <li>
-              <a href="announcements.php">Announcements</a>
+              <a href="announcements.php"><?php echo $lang['Announcements']; ?></a>
             </li>
             <li>
-              <a href="about.php">About</a>        
+              <a href="about.php"><?php echo $lang['About']; ?></a>        
             </li>
           </ul>
         </div>
@@ -443,63 +447,63 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               <div class="hero-unit">
                 <form name="category" method="post" action="">
                 <p>
-                <h4>Category:</h4>
-                Add new category named <input name="new_category" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="Add" name="add_category" /><br />
-                Delete current category named <?php create_dropdown("category"); ?>&nbsp;&nbsp;<input type="submit" value="Delete" name="delete_category" />
+                <h4><?php echo $lang['Category']; ?>:</h4>
+                <?php echo $lang['AddNewCategoryNamed']; ?> <input name="new_category" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Add']; ?>" name="add_category" /><br />
+                <?php echo $lang['DeleteCurrentCategoryNamed']; ?> <?php create_dropdown("category"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Delete']; ?>" name="delete_category" />
                 </p>
                 </form>
               </div>
               <div class="hero-unit">
                 <form name="team" method="post" action="">
                 <p>
-                <h4>Team:</h4>
-                Add new team named <input name="new_team" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="Add" name="add_team" /><br />
-                Delete current team named <?php create_dropdown("team"); ?>&nbsp;&nbsp;<input type="submit" value="Delete" name="delete_team" />
+                <h4><?php echo $lang['Team']; ?>:</h4>
+                <?php echo $lang['AddNewTeamNamed']; ?> <input name="new_team" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Add']; ?>" name="add_team" /><br />
+                <?php echo $lang['DeleteCurrentTeamNamed']; ?> <?php create_dropdown("team"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Delete']; ?>" name="delete_team" />
                 </p>
                 </form>
               </div>
               <div class="hero-unit">
                 <form name="technology" method="post" action="">
                 <p>
-                <h4>Technology:</h4>
-                Add new technology named <input name="new_technology" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="Add" name="add_technology" /><br />
-                Delete current technology named <?php create_dropdown("technology"); ?>&nbsp;&nbsp;<input type="submit" value="Delete" name="delete_technology" />
+                <h4><?php echo $lang['Technology']; ?>:</h4>
+                <?php echo $lang['AddNewTechnologyNamed']; ?> <input name="new_technology" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Add']; ?>" name="add_technology" /><br />
+                <?php echo $lang['DeleteCurrentTechnologyNamed']; ?> <?php create_dropdown("technology"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Delete']; ?>" name="delete_technology" />
                 </p>
                 </form>
               </div>
               <div class="hero-unit">
                 <form name="location" method="post" action="">
                 <p>
-                <h4>Site/Location:</h4>
-                Add new site/location named <input name="new_location" type="text" maxlength="100" size="20" />&nbsp;&nbsp;<input type="submit" value="Add" name="add_location" /><br />
-                Delete current site/location named <?php create_dropdown("location"); ?>&nbsp;&nbsp;<input type="submit" value="Delete" name="delete_location" />
+                <h4><?php echo $lang['SiteLocation']; ?>:</h4>
+                <?php echo $lang['AddNewSiteLocationNamed']; ?> <input name="new_location" type="text" maxlength="100" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Add']; ?>" name="add_location" /><br />
+                <?php echo $lang['DeleteCurrentSiteLocationNamed']; ?> <?php create_dropdown("location"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Delete']; ?>" name="delete_location" />
                 </p>
                 </form>
               </div>
               <div class="hero-unit">
                 <form name="regulation" method="post" action="">
                 <p>
-                <h4>Control Regulation:</h4>
-                Add new control regulation named <input name="new_regulation" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="Add" name="add_regulation" /><br />
-                Delete current control regulation named <?php create_dropdown("regulation"); ?>&nbsp;&nbsp;<input type="submit" value="Delete" name="delete_regulation" />
+                <h4><?php echo $lang['ControlRegulation']; ?>:</h4>
+                <?php echo $lang['AddNewControlRegulationNamed']; ?> <input name="new_regulation" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Add']; ?>" name="add_regulation" /><br />
+                <?php echo $lang['DeleteCurrentControlRegulationNamed']; ?> <?php create_dropdown("regulation"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Delete']; ?>" name="delete_regulation" />
                 </p>
                 </form>
               </div>
               <div class="hero-unit">
                 <form name="planning_strategy" method="post" action="">
                 <p>
-                <h4>Risk Planning Strategy:</h4>
-                Add new risk planning strategy named <input name="new_planning_strategy" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="Add" name="add_planning_strategy" /><br />
-                Delete current risk planning strategy named <?php create_dropdown("planning_strategy"); ?>&nbsp;&nbsp;<input type="submit" value="Delete" name="delete_planning_strategy" />
+                <h4><?php echo $lang['RiskPlanningStrategy']; ?>:</h4>
+                <?php echo $lang['AddNewRiskPlanningStrategyNamed']; ?> <input name="new_planning_strategy" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Add']; ?>" name="add_planning_strategy" /><br />
+                <?php echo $lang['DeleteCurrentRiskPlanningStrategyNamed']; ?> <?php create_dropdown("planning_strategy"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Delete']; ?>" name="delete_planning_strategy" />
                 </p>
                 </form>
               </div>
               <div class="hero-unit">
                 <form name="close_reason" method="post" action="">
                 <p>
-                <h4>Close Reason:</h4>
-                Add new close reason named <input name="new_close_reason" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="Add" name="add_close_reason" /><br />
-                Delete current close reason named <?php create_dropdown("close_reason"); ?>&nbsp;&nbsp;<input type="submit" value="Delete" name="delete_close_reason" />
+                <h4><?php echo $lang['CloseReason']; ?>:</h4>
+                <?php echo $lang['AddNewCloseReasonNamed']; ?> <input name="new_close_reason" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Add']; ?>" name="add_close_reason" /><br />
+                <?php echo $lang['DeleteCurrentCloseReasonNamed']; ?> <?php create_dropdown("close_reason"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Delete']; ?>" name="delete_close_reason" />
                 </p>
                 </form>
               </div>

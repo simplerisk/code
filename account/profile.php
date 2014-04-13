@@ -27,6 +27,10 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+
+        // Include the language file
+        require_once(language_file());
+
         require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
@@ -42,13 +46,38 @@
                 exit(0);
         }
 
+	// If the language was changed
+	if (isset($_POST['change_language']))
+	{
+		$language = (int)$_POST['languages'];
+
+		// If its not the default selection
+		if ($language != 0)
+		{
+			// Update the language for the current user
+			update_language($_SESSION['uid'], get_name_by_value("languages", $language));
+
+			// Use the new language file
+			require_once(language_file());
+
+                        $alert = "good";
+                        $alert_message = "Your language was updated successfully.";
+		}
+		else
+		{
+                        $alert = "bad";
+                        $alert_message = "You need to select a valid language";
+		}
+	}
+
 	// Get the users information
         $user_info = get_user_by_id($_SESSION['uid']);
         $username = $user_info['username'];
         $name = $user_info['name'];
         $email = $user_info['email'];
-        $last_login = $user_info['last_login'];
+	$last_login = date(DATETIME, strtotime($user_info['last_login']));
 	$teams = $user_info['teams'];
+	$language = $user_info['lang'];
         $admin = $user_info['admin'];
         $review_high = $user_info['review_high'];
         $review_medium = $user_info['review_medium'];
@@ -136,19 +165,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li class="active">
-                <a href="../index.php">Home</a> 
+                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
               </li>
               <li>
-                <a href="../management/index.php">Risk Management</a> 
+                <a href="../management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php">Reporting</a> 
+                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">Configure</a>\n";
+          echo "<a href=\"../admin/index.php\">" . $lang['Configure'] . "</a>\n";
           echo "</li>\n";
 }
 	  echo "</ul>\n";
@@ -160,10 +189,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"profile.php\">My Profile</a>\n";
+          echo "<a href=\"profile.php\">" . $lang['MyProfile'] . "</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">Logout</a>\n";
+          echo "<a href=\"../logout.php\">" . $lang['Logout'] . "</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -198,37 +227,40 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <h4>Profile Details</h4>
-                Full Name: <input name="name" type="text" maxlength="50" size="20" disabled="disabled" value="<?php echo $name; ?>" /><br />
-                E-mail Address: <input name="email" type="text" maxlength="200" size="20" disabled="disabled" value="<?php echo $email; ?>" /><br />
-                Username: <input name="username" type="text" maxlength="20" size="20" disabled="disabled" value="<?php echo $username; ?>" /><br />
-                Last Login: <input name="last_login" type="text" maxlength="20" size="20" disabled="disabled" value="<?php echo $last_login; ?>" /><br />
-                <h6><u>Team(s)</u></h6>
+                <h4><?php echo $lang['ProfileDetails']; ?></h4>
+                <?php echo $lang['FullName']; ?>: <input style="cursor: default;" name="name" type="text" maxlength="50" size="20" title="<?php echo $name; ?>" disabled="disabled" value="<?php echo $name; ?>" /><br />
+                <?php echo $lang['EmailAddress']; ?>: <input style="cursor: default;" name="email" type="text" maxlength="200" size="20" title="<?php echo $email; ?>"disabled="disabled" value="<?php echo $email; ?>" /><br />
+                <?php echo $lang['Username']; ?>: <input style="cursor: default;" name="username" type="text" maxlength="20" size="20" title="<?php echo $username; ?>" disabled="disabled" value="<?php echo $username; ?>" /><br />
+                <?php echo $lang['LastLogin']; ?>: <input style="cursor: default;" name="last_login" type="text" maxlength="20" size="20" title="<?php echo $last_login; ?>" disabled="disabled" value="<?php echo $last_login; ?>" /><br />
+		<form name="change_language" method="post" action="">
+		<?php echo $lang['Language']; ?>: <?php create_dropdown("languages", get_value_by_name("languages", $language)); ?><input type="submit" name="change_language" value="Update" /><br />
+		</form>
+                <h6><u><?php echo $lang['Teams']; ?></u></h6>
                 <?php create_multiple_dropdown("team", $teams); ?>
-                <h6><u>User Responsibilities</u></h6>
+                <h6><u><?php echo $lang['UserResponsibilities']; ?></u></h6>
                 <ul>
-                  <li><input name="submit_risks" type="checkbox"<?php if ($submit_risks) echo " checked" ?> />&nbsp;Able to Submit New Risks</li>
-                  <li><input name="modify_risks" type="checkbox"<?php if ($modify_risks) echo " checked" ?> />&nbsp;Able to Modify Existing Risks</li>
-                  <li><input name="close_risks" type="checkbox"<?php if ($close_risks) echo " checked" ?> />&nbsp;Able to Close Risks</li>
-                  <li><input name="plan_mitigations" type="checkbox"<?php if ($plan_mitigations) echo " checked" ?> />&nbsp;Able to Plan Mitigations</li>
-                  <li><input name="review_low" type="checkbox"<?php if ($review_low) echo " checked" ?> />&nbsp;Able to Review Low Risks</li>
-                  <li><input name="review_medium" type="checkbox"<?php if ($review_medium) echo " checked" ?> />&nbsp;Able to Review Medium Risks</li>
-                  <li><input name="review_high" type="checkbox"<?php if ($review_high) echo " checked" ?> />&nbsp;Able to Review High Risks</li>
-                  <li><input name="admin" type="checkbox"<?php if ($admin) echo " checked" ?> />&nbsp;Allow Access to &quot;Configure&quot; Menu</li>
+                  <li><input name="submit_risks" type="checkbox"<?php if ($submit_risks) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToSubmitNewRisks']; ?></li>
+                  <li><input name="modify_risks" type="checkbox"<?php if ($modify_risks) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToModifyExistingRisks']; ?></li>
+                  <li><input name="close_risks" type="checkbox"<?php if ($close_risks) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToCloseRisks']; ?></li>
+                  <li><input name="plan_mitigations" type="checkbox"<?php if ($plan_mitigations) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToPlanMitigations']; ?></li>
+                  <li><input name="review_low" type="checkbox"<?php if ($review_low) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToReviewLowRisks']; ?></li>
+                  <li><input name="review_medium" type="checkbox"<?php if ($review_medium) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToReviewMediumRisks']; ?></li>
+                  <li><input name="review_high" type="checkbox"<?php if ($review_high) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToReviewHighRisks']; ?></li>
+                  <li><input name="admin" type="checkbox"<?php if ($admin) echo " checked" ?> />&nbsp;<?php echo $lang['AllowAccessToConfigureMenu']; ?></li>
                 </ul>
               </div>
 <?php
 	if (isset($_SESSION['user_type']) && $_SESSION['user_type'] != "ldap")
 	{
         	echo "<div class=\"hero-unit\">\n";
-                echo "<h4>Change Password</h4><br />\n";
+                echo "<h4>" . $lang['ChangePassword'] . "</h4><br />\n";
                 echo "<form name=\"change_password\" method=\"post\" action=\"\">\n";
-                echo "Current Password: <input maxlength=\"100\" name=\"current_pass\" id=\"current_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
-		echo "New Password: <input maxlength=\"100\" name=\"new_pass\" id=\"new_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
-		echo "Confirm Password: <input maxlength=\"100\" name=\"confirm_pass\" id=\"confirm_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
+                echo $lang['CurrentPassword'] . ": <input maxlength=\"100\" name=\"current_pass\" id=\"current_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
+		echo $lang['NewPassword'] . ": <input maxlength=\"100\" name=\"new_pass\" id=\"new_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
+		echo $lang['ConfirmPassword'] . ": <input maxlength=\"100\" name=\"confirm_pass\" id=\"confirm_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
                 echo "<div class=\"form-actions\">\n";
-                echo "<button type=\"submit\" name=\"change_password\" class=\"btn btn-primary\">Submit</button>\n";
-                echo "<input class=\"btn\" value=\"Reset\" type=\"reset\">\n";
+                echo "<button type=\"submit\" name=\"change_password\" class=\"btn btn-primary\">" . $lang['Submit'] . "</button>\n";
+                echo "<input class=\"btn\" value=\"" . $lang['Reset'] . "\" type=\"reset\">\n";
                 echo "</div>\n";
                 echo "</form>\n";
                 echo "</div>\n";

@@ -27,6 +27,10 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+
+        // Include the language file
+        require_once(language_file());
+
         require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
@@ -65,19 +69,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php">Home</a> 
+                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
               </li>
               <li>
-                <a href="../management/index.php">Risk Management</a> 
+                <a href="../management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li class="active">
-                <a href="index.php">Reporting</a> 
+                <a href="index.php"><?php echo $lang['Reporting']; ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">Configure</a>\n";
+          echo "<a href=\"../admin/index.php\">". $lang['Configure'] ."</a>\n";
           echo "</li>\n";
 }
           echo "</ul>\n";
@@ -89,10 +93,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">My Profile</a>\n";
+          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">Logout</a>\n";
+          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -106,48 +110,51 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li>
-              <a href="index.php">Risk Dashboard</a>      
+              <a href="index.php"><?php echo $lang['RiskDashboard']; ?></a>      
             </li>
             <li>
-              <a href="trend.php">Risk Trend</a>
+              <a href="trend.php"><?php echo $lang['RiskTrend']; ?></a>
             </li>
             <li>
-              <a href="my_open.php">All Open Risks Assigned to Me by Risk Level</a>
+              <a href="my_open.php"><?php echo $lang['AllOpenRisksAssignedToMeByRiskLevel']; ?></a>
             </li>
             <li>
-              <a href="open.php">All Open Risks by Risk Level</a>
+              <a href="open.php"><?php echo $lang['AllOpenRisksByRiskLevel']; ?></a>
             </li>
             <li>
-              <a href="projects.php">All Open Risks Considered for Projects by Risk Level</a>
+              <a href="projects.php"><?php echo $lang['AllOpenRisksConsideredForProjectsByRiskLevel']; ?></a>
             </li>
             <li class="active">
-              <a href="next_review.php">All Open Risks Accepted Until Next Review by Risk Level</a>
+              <a href="next_review.php"><?php echo $lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']; ?></a>
             </li>
             <li>
-              <a href="production_issues.php">All Open Risks to Submit as a Production Issue by Risk Level</a>
+              <a href="production_issues.php"><?php echo $lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']; ?></a>
             </li>
             <li>
-              <a href="risk_scoring.php">All Open Risks by Scoring Method</a>
+              <a href="risk_scoring.php"><?php echo $lang['AllOpenRisksByScoringMethod']; ?></a>
             </li>
             <li>
-              <a href="closed.php">All Closed Risks by Risk Level</a>
+              <a href="review_needed.php"><?php echo $lang['AllOpenRisksNeedingReview']; ?></a>
             </li>
             <li>
-              <a href="submitted_by_date.php">Submitted Risks by Date</a>
+              <a href="closed.php"><?php echo $lang['AllClosedRisksByRiskLevel']; ?></a>
             </li>
             <li>
-              <a href="mitigations_by_date.php">Mitigations By Date</a>
+              <a href="submitted_by_date.php"><?php echo $lang['SubmittedRisksByDate']; ?></a>
             </li>
             <li>
-              <a href="mgmt_reviews_by_date.php">Management Reviews By Date</a>
+              <a href="mitigations_by_date.php"><?php echo $lang['MitigationsByDate']; ?></a>
             </li>
             <li>
-              <a href="projects_and_risks.php">Projects and Risks Assigned</a>
+              <a href="mgmt_reviews_by_date.php"><?php echo $lang['ManagementReviewsByDate']; ?></a>
+            </li>
+            <li>
+              <a href="projects_and_risks.php"><?php echo $lang['ProjectsAndRisksAssigned']; ?></a>
             </li>
           </ul>
         </div>
         <div class="span9">
-          <div class="row-fluid"><p>This report shows all open risks accepted until next review ordered by risk level.</p></div>
+          <div class="row-fluid"><p><?php echo $lang['ReportNextReviewHelp']; ?>.</p></div>
 	  <?php get_risk_table(6); ?>
         </div>
       </div>

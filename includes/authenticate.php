@@ -110,7 +110,7 @@ function is_valid_user($user, $pass)
                 if (custom_authentication_extra())
                 {
                         // Include the custom authentication extra
-			require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/authentication/index.php");
+			require_once(__DIR__ . "/../extras/authentication/index.php");
 
 			// Check for a valid Active Directory user
 			$valid_ad = is_valid_ad_user($user, $pass);
@@ -127,7 +127,7 @@ function is_valid_user($user, $pass)
         	if (encryption_extra())
         	{
                 	// Load the extra
-                	require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/encryption/index.php");
+                	require_once(__DIR__ . "/../extras/encryption/index.php");
 
 			// If the user has been activated
 			if (activated_user($user))
@@ -162,7 +162,7 @@ function set_user_permissions($user)
         $db = db_open();
 
         // Query the DB for the users information
-        $stmt = $db->prepare("SELECT value, type, name, admin, review_high, review_medium, review_low, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
+        $stmt = $db->prepare("SELECT value, type, name, lang, admin, review_high, review_medium, review_low, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
         $stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
         $stmt->execute();
 
@@ -172,7 +172,7 @@ function set_user_permissions($user)
         // Set the session values
         $_SESSION['uid'] = $array[0]['value'];
         $_SESSION['user'] = $user;
-        $_SESSION['name'] = htmlentities($array[0]['name'], ENT_QUOTES);
+        $_SESSION['name'] = htmlentities($array[0]['name'], ENT_QUOTES, 'UTF-8');
         $_SESSION['admin'] = $array[0]['admin'];
         $_SESSION['review_high'] = $array[0]['review_high'];
         $_SESSION['review_medium'] = $array[0]['review_medium'];
@@ -182,6 +182,15 @@ function set_user_permissions($user)
         $_SESSION['close_risks'] = $array[0]['close_risks'];
         $_SESSION['plan_mitigations'] = $array[0]['plan_mitigations'];
         $_SESSION['user_type'] = $array[0]['type'];
+
+	// If the users language is not null
+	if (!is_null($array[0]['lang']))
+	{
+		// Set the session value
+		$_SESSION['lang'] = $array[0]['lang'];
+	}
+	// Otherwise, the session should use the default language
+	else $_SESSION['lang'] = LANG_DEFAULT;
 }
 
 /**************************

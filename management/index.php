@@ -27,6 +27,10 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+
+        // Include the language file
+        require_once(language_file());
+
         require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
@@ -129,6 +133,16 @@
 
 		// Submit risk scoring
 		submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
+
+		// If the notification extra is enabled
+        	if (notification_extra())
+        	{
+                	// Include the team separation extra
+                	require_once(__DIR__ . "/../extras/notification/index.php");
+
+                	// Send the notification
+                	notify_new_risk($last_insert_id, $subject);
+        	}
 
 		// Audit log
 		$risk_id = $last_insert_id + 1000;
@@ -236,19 +250,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php">Home</a> 
+                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
               </li>
               <li class="active">
-                <a href="index.php">Risk Management</a> 
+                <a href="index.php"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php">Reporting</a> 
+                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">Configure</a>\n";
+          echo "<a href=\"../admin/index.php\">". $lang['Configure'] ."</a>\n";
           echo "</li>\n";
 }
           echo "</ul>\n";
@@ -260,10 +274,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">My Profile</a>\n";
+          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">Logout</a>\n";
+          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -297,19 +311,19 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li class="active">
-              <a href="index.php">I. Submit Your Risks</a> 
+              <a href="index.php">I. <?php echo $lang['SubmitYourRisks']; ?></a> 
             </li>
             <li>
-              <a href="plan_mitigations.php">II. Plan Your Mitigations</a> 
+              <a href="plan_mitigations.php">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
             </li>
             <li>
-              <a href="management_review.php">III. Perform Management Reviews</a> 
+              <a href="management_review.php">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
             </li>
             <li>
-              <a href="prioritize_planning.php">IV. Prioritize for Project Planning</a> 
+              <a href="prioritize_planning.php">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
             </li>
             <li>
-              <a href="review_risks.php">V. Review Risks Regularly</a> 
+              <a href="review_risks.php">V. <?php echo $lang['ReviewRisksRegularly']; ?></a> 
             </li>
           </ul>
         </div>
@@ -317,84 +331,154 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <h4>Document a New Risk</h4>
-                <p>Use this form in order to document a new risk for consideration in the Risk Management Process.</p>
+                <h4><?php echo $lang['DocumentANewRisk']; ?></h4>
+                <p><?php echo $lang['UseThisFormHelp']; ?>.</p>
                 <form name="submit_risk" method="post" action="">
-                Subject: <input maxlength="100" name="subject" id="subject" class="input-medium" type="text"><br />
-		External Reference ID: <input maxlength="20" size="20" name="reference_id" id="reference_id" class="input-medium" type="text"><br />
-		Control Regulation: <?php create_dropdown("regulation"); ?><br />
-		Control Number: <input maxlength="20" name="control_number" id="control_number" class="input-medium" type="text"><br />
-                Site/Location: <?php create_dropdown("location"); ?><br />
-		Category: <?php create_dropdown("category"); ?><br />
-		Team: <?php create_dropdown("team"); ?><br />
-		Technology: <?php create_dropdown("technology"); ?><br />
-		Owner: <?php create_dropdown("user", NULL, "owner"); ?><br />
-		Owner&#39;s Manager: <?php create_dropdown("user", NULL, "manager"); ?><br />
-		Risk Scoring Method: <select name="scoring_method" id="select" onChange="handleSelection(value)">
-		<option selected value="1">Classic</option>
-		<option value="2">CVSS</option>
-		<option value="3">DREAD</option>
-		<option value="4">OWASP</option>
-		<option value="5">Custom</option>
-		</select>
-		<div id="classic">
-                Current Likelihood: <?php create_dropdown("likelihood"); ?><br />
-                Current Impact: <?php create_dropdown("impact"); ?><br />
-		</div>
-		<div id="cvss" style="display: none;">
-		<p><input type="button" name="cvssSubmit" id="cvssSubmit" value="Score Using CVSS" onclick="javascript: popupcvss();" /></p>
-                <input type="hidden" name="AccessVector" id="AccessVector" value="N" />
-                <input type="hidden" name="AccessComplexity" id="AccessComplexity" value="L" />
-                <input type="hidden" name="Authentication" id="Authentication" value="N" />
-                <input type="hidden" name="ConfImpact" id="ConfImpact" value="C" />
-                <input type="hidden" name="IntegImpact" id="IntegImpact" value="C" />
-                <input type="hidden" name="AvailImpact" id="AvailImpact" value="C" />
-                <input type="hidden" name="Exploitability" id="Exploitability" value="ND" />
-                <input type="hidden" name="RemediationLevel" id="RemediationLevel" value="ND" />
-                <input type="hidden" name="ReportConfidence" id="ReportConfidence" value="ND" />
-                <input type="hidden" name="CollateralDamagePotential" id="CollateralDamagePotential" value="ND" />
-                <input type="hidden" name="TargetDistribution" id="TargetDistribution" value="ND" />
-                <input type="hidden" name="ConfidentialityRequirement" id="ConfidentialityRequirement" value="ND" />
-                <input type="hidden" name="IntegrityRequirement" id="IntegrityRequirement" value="ND" />
-                <input type="hidden" name="AvailabilityRequirement" id="AvailabilityRequirement" value="ND" />
-		</div>
-		<div id="dread" style="display: none;">
-                <p><input type="button" name="dreadSubmit" id="dreadSubmit" value="Score Using DREAD" onclick="javascript: popupdread();" /></p>
-		<input type="hidden" name="DREADDamage" id="DREADDamage" value="10" />
-		<input type="hidden" name="DREADReproducibility" id="DREADReproducibility" value="10" />
-                <input type="hidden" name="DREADExploitability" id="DREADExploitability" value="10" />
-                <input type="hidden" name="DREADAffectedUsers" id="DREADAffectedUsers" value="10" />
-                <input type="hidden" name="DREADDiscoverability" id="DREADDiscoverability" value="10" />
-		</div>
-		<div id="owasp" style="display: none;">
-                <p><input type="button" name="owaspSubmit" id="owaspSubmit" value="Score Using OWASP" onclick="javascript: popupowasp();" /></p>
-                <input type="hidden" name="OWASPSkillLevel" id="OWASPSkillLevel" value="10" />
-                <input type="hidden" name="OWASPMotive" id="OWASPMotive" value="10" />
-                <input type="hidden" name="OWASPOpportunity" id="OWASPOpportunity" value="10" />
-                <input type="hidden" name="OWASPSize" id="OWASPSize" value="10" />
-                <input type="hidden" name="OWASPEaseOfDiscovery" id="OWASPEaseOfDiscovery" value="10" />
-                <input type="hidden" name="OWASPEaseOfExploit" id="OWASPEaseOfExploit" value="10" />
-                <input type="hidden" name="OWASPAwareness" id="OWASPAwareness" value="10" />
-                <input type="hidden" name="OWASPIntrusionDetection" id="OWASPIntrusionDetection" value="10" />
-                <input type="hidden" name="OWASPLossOfConfidentiality" id="OWASPLossOfConfidentiality" value="10" />
-		<input type="hidden" name="OWASPLossOfIntegrity" id="OWASPLossOfIntegrity" value="10" />
-                <input type="hidden" name="OWASPLossOfAvailability" id="OWASPLossOfAvailability" value="10" />
-                <input type="hidden" name="OWASPLossOfAccountability" id="OWASPLossOfAccountability" value="10" />
-                <input type="hidden" name="OWASPFinancialDamage" id="OWASPFinancialDamage" value="10" />
-                <input type="hidden" name="OWASPReputationDamage" id="OWASPReputationDamage" value="10" />
-                <input type="hidden" name="OWASPNonCompliance" id="OWASPNonCompliance" value="10" />
-                <input type="hidden" name="OWASPPrivacyViolation" id="OWASPPrivacyViolation" value="10" />
-		</div>
-		<div id="custom" style="display: none;">
-		Custom Value: <input type="text" name="Custom" id="Custom" value="" /> (Must be a numeric value between 0 and 10)<br />
-		</div>
-		<label>Risk Assessment</label>
-		<textarea name="assessment" cols="50" rows="3" id="assessment"></textarea>
-		<label>Additional Notes</label>
-		<textarea name="notes" cols="50" rows="3" id="notes"></textarea>
+		<table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td width="200px"><?php echo $lang['Subject']; ?>:</td>
+                  <td><input maxlength="100" name="subject" id="subject" class="input-medium" type="text"></td>
+                </tr>
+                <tr>
+                  <td width="200px"><?php echo $lang['ExternalReferenceId']; ?>:</td>
+                  <td><input maxlength="20" size="20" name="reference_id" id="reference_id" class="input-medium" type="text"></td>
+                </tr>
+                <tr>
+                  <td width="200px"><?php echo $lang['ControlRegulation']; ?>:</td>
+                  <td><?php create_dropdown("regulation"); ?></td>
+                </tr>
+                <tr>
+                  <td width="200px"><?php echo $lang['ControlNumber']; ?>:</td>
+                  <td><input maxlength="20" name="control_number" id="control_number" class="input-medium" type="text"></td>
+                </tr>
+                <tr>
+                  <td width="200px"><?php echo $lang['SiteLocation']; ?>:</td>
+                  <td><?php create_dropdown("location"); ?></td>
+                </tr>
+                <tr>
+                  <td width="200px"><?php echo $lang['Category']; ?>:</td>
+                  <td><?php create_dropdown("category"); ?></td>
+                </tr>
+                <tr>
+                  <td width="200px"><?php echo $lang['Team']; ?>:</td>
+                  <td><?php create_dropdown("team"); ?></td>
+                </tr>
+                <tr>
+                  <td width="200px"><?php echo $lang['Technology']; ?>:</td>
+                  <td><?php create_dropdown("technology"); ?></td>
+                </tr>
+                <tr>
+                  <td width="200px"><?php echo $lang['Owner']; ?>:</td>
+                  <td><?php create_dropdown("user", NULL, "owner"); ?></td>
+                </tr>
+                <tr>
+                  <td width="200px"><?php echo $lang['OwnersManager']; ?>:</td>
+                  <td><?php create_dropdown("user", NULL, "manager"); ?></td>
+                </tr>
+                <tr>
+                  <td width="200px"><?php echo $lang['RiskScoringMethod']; ?>:</td>
+                  <td>
+		    <select name="scoring_method" id="select" onChange="handleSelection(value)">
+		      <option selected value="1">Classic</option>
+		      <option value="2">CVSS</option>
+		      <option value="3">DREAD</option>
+		      <option value="4">OWASP</option>
+		      <option value="5">Custom</option>
+		    </select>
+                  </td>
+                </tr>
+                <tr><td colspan="2">
+		  <div id="classic">
+                    <table width="100%">
+                      <tr>
+                        <td width="197px"><?php echo $lang['CurrentLikelihood']; ?>:</td>
+                        <td><?php create_dropdown("likelihood"); ?></td>
+                      </tr>
+                      <tr>
+                        <td width="197px"><?php echo $lang['CurrentImpact']; ?>:</td>
+                        <td><?php create_dropdown("impact"); ?></td>
+                      </tr>
+                    </table>
+		  </div>
+		  <div id="cvss" style="display: none;">
+                    <table width="100%">
+                      <tr>
+                        <td width="197px">&nbsp;</td>
+                        <td><p><input type="button" name="cvssSubmit" id="cvssSubmit" value="Score Using CVSS" onclick="javascript: popupcvss();" /></p></td>
+                      </tr>
+                    </table>
+                    <input type="hidden" name="AccessVector" id="AccessVector" value="N" />
+                    <input type="hidden" name="AccessComplexity" id="AccessComplexity" value="L" />
+                    <input type="hidden" name="Authentication" id="Authentication" value="N" />
+                    <input type="hidden" name="ConfImpact" id="ConfImpact" value="C" />
+                    <input type="hidden" name="IntegImpact" id="IntegImpact" value="C" />
+                    <input type="hidden" name="AvailImpact" id="AvailImpact" value="C" />
+                    <input type="hidden" name="Exploitability" id="Exploitability" value="ND" />
+                    <input type="hidden" name="RemediationLevel" id="RemediationLevel" value="ND" />
+                    <input type="hidden" name="ReportConfidence" id="ReportConfidence" value="ND" />
+                    <input type="hidden" name="CollateralDamagePotential" id="CollateralDamagePotential" value="ND" />
+                    <input type="hidden" name="TargetDistribution" id="TargetDistribution" value="ND" />
+                    <input type="hidden" name="ConfidentialityRequirement" id="ConfidentialityRequirement" value="ND" />
+                    <input type="hidden" name="IntegrityRequirement" id="IntegrityRequirement" value="ND" />
+                    <input type="hidden" name="AvailabilityRequirement" id="AvailabilityRequirement" value="ND" />
+		  </div>
+		  <div id="dread" style="display: none;">
+                    <table width="100%">
+                      <tr>
+                        <td width="197px">&nbsp;</td>
+                        <td><p><input type="button" name="dreadSubmit" id="dreadSubmit" value="Score Using DREAD" onclick="javascript: popupdread();" /></p></td>
+                      </tr>
+                    </table>
+		    <input type="hidden" name="DREADDamage" id="DREADDamage" value="10" />
+		    <input type="hidden" name="DREADReproducibility" id="DREADReproducibility" value="10" />
+                    <input type="hidden" name="DREADExploitability" id="DREADExploitability" value="10" />
+                    <input type="hidden" name="DREADAffectedUsers" id="DREADAffectedUsers" value="10" />
+                    <input type="hidden" name="DREADDiscoverability" id="DREADDiscoverability" value="10" />
+		  </div>
+		  <div id="owasp" style="display: none;">
+                    <table width="100%">
+                      <tr>
+                        <td width="197px">&nbsp;</td>
+                        <td><p><input type="button" name="owaspSubmit" id="owaspSubmit" value="Score Using OWASP" onclick="javascript: popupowasp();" /></p></td>
+                      </tr>
+                    </table>
+                    <input type="hidden" name="OWASPSkillLevel" id="OWASPSkillLevel" value="10" />
+                    <input type="hidden" name="OWASPMotive" id="OWASPMotive" value="10" />
+                    <input type="hidden" name="OWASPOpportunity" id="OWASPOpportunity" value="10" />
+                    <input type="hidden" name="OWASPSize" id="OWASPSize" value="10" />
+                    <input type="hidden" name="OWASPEaseOfDiscovery" id="OWASPEaseOfDiscovery" value="10" />
+                    <input type="hidden" name="OWASPEaseOfExploit" id="OWASPEaseOfExploit" value="10" />
+                    <input type="hidden" name="OWASPAwareness" id="OWASPAwareness" value="10" />
+                    <input type="hidden" name="OWASPIntrusionDetection" id="OWASPIntrusionDetection" value="10" />
+                    <input type="hidden" name="OWASPLossOfConfidentiality" id="OWASPLossOfConfidentiality" value="10" />
+		    <input type="hidden" name="OWASPLossOfIntegrity" id="OWASPLossOfIntegrity" value="10" />
+                    <input type="hidden" name="OWASPLossOfAvailability" id="OWASPLossOfAvailability" value="10" />
+                    <input type="hidden" name="OWASPLossOfAccountability" id="OWASPLossOfAccountability" value="10" />
+                    <input type="hidden" name="OWASPFinancialDamage" id="OWASPFinancialDamage" value="10" />
+                    <input type="hidden" name="OWASPReputationDamage" id="OWASPReputationDamage" value="10" />
+                    <input type="hidden" name="OWASPNonCompliance" id="OWASPNonCompliance" value="10" />
+                    <input type="hidden" name="OWASPPrivacyViolation" id="OWASPPrivacyViolation" value="10" />
+		  </div>
+		  <div id="custom" style="display: none;">
+                    <table width="100%">
+                      <tr>
+                        <td width="197px"><?php echo $lang['CustomValue']; ?>:</td>
+                        <td><input type="text" name="Custom" id="Custom" value="" /> (Must be a numeric value between 0 and 10)</td>
+                      </tr>
+                    </table>
+		  </div>
+                  <tr>
+                    <td width="200px"><?php echo $lang['RiskAssessment']; ?></td>
+                    <td><textarea name="assessment" cols="50" rows="3" id="assessment"></textarea></td>
+                  </tr>
+                  <tr>
+                    <td width="200px"><?php echo $lang['AdditionalNotes']; ?></td>
+                    <td><textarea name="notes" cols="50" rows="3" id="notes"></textarea></td>
+                  </tr>
+                </table>
                 <div class="form-actions">
-                  <button type="submit" name="submit" class="btn btn-primary">Submit</button>
-                  <input class="btn" value="Reset" type="reset"> 
+                  <button type="submit" name="submit" class="btn btn-primary"><?php echo $lang['Submit']; ?></button>
+                  <input class="btn" value="<?php echo $lang['Reset']; ?>" type="reset"> 
                 </div>
                 </form>
               </div>

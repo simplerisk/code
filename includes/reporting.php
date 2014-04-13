@@ -7,6 +7,7 @@
 // Include required configuration files
 require_once('functions.php');
 require_once('HighchartsPHP/Highchart.php');
+require_once(language_file());
 
 /****************************
  * FUNCTION: GET OPEN RISKS *
@@ -803,6 +804,84 @@ function open_risk_scoring_method_pie()
     echo "<script type=\"text/javascript\">";
     echo $chart->render("open_risk_scoring_method_pie");
     echo "</script>\n";
+}
+
+/*************************************
+ * FUNCTION: GET REVIEW NEEDED TABLE *
+ *************************************/
+function get_review_needed_table()
+{
+        global $lang;
+
+        // Get risks marked as consider for projects
+        $risks = get_risks(3);
+
+	// Start with an empty review status;
+	$review_status = "";
+
+        // For each risk
+        foreach ($risks as $risk)
+        {
+                $risk_id = (int)$risk['id'];
+		$subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8');
+		$status = htmlentities($risk['status'], ENT_QUOTES, 'UTF-8');
+		$calculated_risk = htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8');
+                $color = get_risk_color($risk['calculated_risk']);
+		$dayssince = dayssince($risk['submission_date']);
+		$next_review = next_review($color, $risk['id'], false);
+		$next_review_html = next_review($color, $risk['id']);
+
+		// If we have a new review status and its not a date
+		if (($review_status != $next_review) && (!preg_match('/\d{4}/', $review_status)))
+		{
+			// If its not the first risk
+			if ($review_status != "")
+			{
+				// End the previous table
+        			echo "</tbody>\n";
+        			echo "</table>\n";
+        			echo "<br />\n";
+
+			}
+
+			// Set the new review status
+			$review_status = $next_review;
+
+			// If the review status is not a date
+			if (!preg_match('/\d{4}/', $review_status))
+			{
+				// Start the new table
+        			echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        			echo "<thead>\n";
+        			echo "<tr>\n";
+        			echo "<th bgcolor=\"#0088CC\" colspan=\"6\"><center><font color=\"#FFFFFF\">". $review_status ."</font></center></th>\n";
+        			echo "</tr>\n";
+        			echo "<tr>\n";
+        			echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+        			echo "<th align=\"left\" width=\"150px\">". $lang['Status'] ."</th>\n";
+        			echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+        			echo "<th align=\"center\" width=\"100px\">". $lang['Risk'] ."</th>\n";
+        			echo "<th align=\"center\" width=\"100px\">". $lang['DaysOpen'] ."</th>\n";
+        			echo "<th align=\"center\" width=\"150px\">". $lang['NextReviewDate'] ."</th>\n";
+        			echo "</tr>\n";
+        			echo "</thead>\n";
+        			echo "<tbody>\n";
+			}
+		}
+
+		// If the review status is not a date
+		if (!preg_match('/\d{4}/', $review_status))
+                {
+                	echo "<tr>\n";
+                	echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
+			echo "<td align=\"left\" width=\"150px\">" . $status . "</td>\n";
+                	echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
+                	echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+			echo "<td align=\"center\" width=\"100px\">" . $dayssince . "</td>\n";
+                	echo "<td align=\"center\" width=\"150px\">" . $next_review_html . "</td>\n";
+                	echo "</tr>\n";
+		}
+        }
 }
 
 ?>

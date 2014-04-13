@@ -28,6 +28,9 @@
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 	session_start('SimpleRisk');
 
+        // Include the language file
+        require_once(language_file());
+
 	// Audit log
 	$risk_id = 1000;
 	$message = "Username \"" . $_SESSION['user'] . "\" logged out successfully.";

@@ -28,6 +28,9 @@
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 	session_start('SimpleRisk');
 
+	// Include the language file
+	require_once(language_file());
+
 	// If the login form was posted
 	if (isset($_POST['submit']))
 	{
@@ -41,7 +44,7 @@
                 	if (custom_authentication_extra())
                 	{
                         	// Include the custom authentication extra
-                        	require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/authentication/index.php");
+                        	require_once(__DIR__ . "/extras/authentication/index.php");
 
 				// Get the enabled authentication for the user
 				$enabled_auth = enabled_auth($user);
@@ -88,7 +91,7 @@
 		if (isset($_POST['sig_response']))
 		{
 	                // Include the custom authentication extra
-        	        require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/authentication/index.php");
+        	        require_once(__DIR__ . "/extras/authentication/index.php");
 
 			// Get the response back from Duo
         		$resp = Duo::verifyResponse(IKEY, SKEY, get_duo_akey(), $_POST['sig_response']);
@@ -137,19 +140,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li class="active">
-                <a href="index.php">Home</a> 
+                <a href="index.php"><?php echo $lang['Home']; ?></a> 
               </li>
               <li>
-                <a href="management/index.php">Risk Management</a> 
+                <a href="management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li>
-                <a href="reports/index.php">Reporting</a> 
+                <a href="reports/index.php"><?php echo $lang['Reporting']; ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"admin/index.php\">Configure</a>\n";
+          echo "<a href=\"admin/index.php\">" . $lang['Configure'] . "</a>\n";
           echo "</li>\n";
 }
 	  echo "</ul>\n";
@@ -161,10 +164,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"account/profile.php\">My Profile</a>\n";
+          echo "<a href=\"account/profile.php\">" . $lang['MyProfile'] . "</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"logout.php\">Logout</a>\n";
+          echo "<a href=\"logout.php\">" . $lang['Logout'] . "</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -193,7 +196,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                 echo "<div class=\"well\">\n";
 
                 // Include the custom authentication extra
-                require_once($_SERVER{'DOCUMENT_ROOT'} . "/extras/authentication/index.php");
+                require_once(__DIR__ . "/extras/authentication/index.php");
 
         	// Perform a duo authentication request for the user
         	duo_authentication($_SESSION["user"]);
@@ -208,14 +211,14 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
       		echo "<div class=\"row-fluid\">\n";
       		echo "<div class=\"span9\">\n";
       		echo "<div class=\"well\">\n";
-      		echo "<p><label><u>Log In Here</u></label></p>\n";
+      		echo "<p><label><u>" . $lang['LogInHere'] . "</u></label></p>\n";
       		echo "<form name=\"authenticate\" method=\"post\" action=\"\">\n";
-      		echo "Username: <input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /><br />\n";
-      		echo "Password: <input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" />\n";
-      		echo "<label><a href=\"reset.php\">Forgot your password?</a></label>\n";
+      		echo $lang['Username'] . ": <input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /><br />\n";
+      		echo $lang['Password'] . ": <input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" />\n";
+      		echo "<label><a href=\"reset.php\">" . $lang['ForgotYourPassword'] . "</a></label>\n";
       		echo "<div class=\"form-actions\">\n";
-      		echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">Login</button>\n";
-      		echo "<input class=\"btn\" value=\"Reset\" type=\"reset\">\n";
+      		echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">" . $lang['Login'] . "</button>\n";
+      		echo "<input class=\"btn\" value=\"" . $lang['Reset'] . "\" type=\"reset\">\n";
       		echo "</div>\n";
       		echo "</form>\n";
       		echo "</div>\n";

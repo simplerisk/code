@@ -27,6 +27,10 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+
+        // Include the language file
+        require_once(language_file());
+
         require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
@@ -77,16 +81,16 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php">Home</a> 
+                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
               </li>
               <li>
-                <a href="../management/index.php">Risk Management</a> 
+                <a href="../management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php">Reporting</a> 
+                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
               </li>
               <li class="active">
-                <a href="index.php">Configure</a>
+                <a href="index.php"><?php echo $lang['Configure']; ?></a>
               </li>
             </ul>
           </div>
@@ -97,10 +101,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">My Profile</a>\n";
+          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">Logout</a>\n";
+          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -114,38 +118,38 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li>
-              <a href="index.php">Configure Risk Formula</a> 
+              <a href="index.php"><?php echo $lang['ConfigureRiskFormula']; ?></a> 
             </li>
             <li>
-              <a href="review_settings.php">Configure Review Settings</a>
+              <a href="review_settings.php"><?php echo $lang['ConfigureReviewSettings']; ?></a>
             </li>
             <li>
-              <a href="add_remove_values.php">Add and Remove Values</a> 
+              <a href="add_remove_values.php"><?php echo $lang['AddAndRemoveValues']; ?></a> 
             </li>
             <li>
-              <a href="user_management.php">User Management</a> 
+              <a href="user_management.php"><?php echo $lang['UserManagement']; ?></a> 
             </li>
             <li>
-              <a href="custom_names.php">Redefine Naming Conventions</a> 
+              <a href="custom_names.php"><?php echo $lang['RedefineNamingConventions']; ?></a> 
             </li>
-            <li  class="active">
-              <a href="audit_trail.php">Audit Trail</a>
-            </li>
-            <li>
-              <a href="extras.php">Extras</a>
+            <li class="active">
+              <a href="audit_trail.php"><?php echo $lang['AuditTrail']; ?></a>
             </li>
             <li>
-              <a href="announcements.php">Announcements</a>
+              <a href="extras.php"><?php echo $lang['Extras']; ?></a>
             </li>
             <li>
-              <a href="about.php">About</a>        
+              <a href="announcements.php"><?php echo $lang['Announcements']; ?></a>
+            </li>
+            <li>
+              <a href="about.php"><?php echo $lang['About']; ?></a>        
             </li>
           </ul>
         </div>
         <div class="span9">
           <div class="row-fluid">
             <div class="well">
-              <h4>Audit Trail</h4>
+              <h4><?php echo $lang['AuditTrail']; ?></h4>
               <?php get_audit_trail(); ?>
             </div>
           </div>

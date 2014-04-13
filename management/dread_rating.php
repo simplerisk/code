@@ -28,6 +28,10 @@
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
+
+        // Include the language file
+        require_once(language_file());
+
         require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
@@ -45,7 +49,7 @@
 <head>
 <title>SimpleRisk DREAD Calculator</title>
 <link rel="stylesheet" type="text/css" href="../css/style.css">
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link href="../css/front-style.css" rel="stylesheet" type="text/css">
 <script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
 <script language="javascript" src="../js/dread_scoring.js" type="text/javascript"></script>

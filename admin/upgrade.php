@@ -19,14 +19,18 @@
         }
 
         // Database version to upgrade
-        $version_to_upgrade = "20131231-001";
+        $version_to_upgrade = "20140224-001";
 
         // Database version upgrading to
-        $version_upgrading_to = "20140224-001";
+        $version_upgrading_to = "20140413-001";
 
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRiskDBUpgrade');
+
+        // Include the language file
+        require_once(language_file());
+
         require_once('../includes/csrf-magic/csrf-magic.php');
 
         // Check for session timeout or renegotiation
@@ -62,19 +66,19 @@
         // If the login form was posted
         if (isset($_POST['submit']))
         {
-		/*** NEED TO REMOVE AFTER 20130224-001 RELEASE ***/
+		/*** NEED TO REMOVE AFTER 20140413-001 RELEASE ***/
 		$db = db_open();
 		$database = DB_DATABASE;
-		// Check to see if the salt column already exists
-		$stmt = $db->prepare("SELECT null FROM INFORMATION_SCHEMA.COLUMNS WHERE `table_schema` = :database AND `table_name` = 'user' AND `column_name` = 'salt';");
+		// Check to see if the lang column already exists
+		$stmt = $db->prepare("SELECT null FROM INFORMATION_SCHEMA.COLUMNS WHERE `table_schema` = :database AND `table_name` = 'user' AND `column_name` = 'lang';");
 		$stmt->bindParam(":database", $database, PDO::PARAM_STR);
                 $stmt->execute();
         	$array = $stmt->fetchAll();
         	// If the column does not already exist
         	if (empty($array))
         	{
-                        // Add salt table
-                        $stmt = $db->prepare("ALTER TABLE `user` ADD `salt` VARCHAR( 20 ) NULL DEFAULT NULL AFTER `email` ;");
+                        // Add lang column
+                        $stmt = $db->prepare("ALTER TABLE `user` ADD `lang` VARCHAR( 2 ) NULL DEFAULT NULL AFTER `teams` ;");
                         $stmt->execute();
         	}
 		db_close($db);
@@ -243,30 +247,36 @@
                  	* DATABASE CHANGES GO HERE *
 		 	****************************/
 
-			// Add salt values for each user
-			echo "Adding salt values for users in the user table.<br />\n";
-
-			// Get the current users
-			$stmt = $db->prepare("SELECT value, username FROM user");
+			// Change the database to use UTF-8
+			echo "Changing database to use UTF-8.<br />\n";
+			$stmt = $db->prepare("ALTER DATABASE `" . DB_DATABASE . "` CHARACTER SET utf8 DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT COLLATE utf8_general_ci;");
 			$stmt->execute();
-			$users = $stmt->fetchAll();
 
-			// For each user
-        		foreach ($users as $user)
-        		{
-                		// Get the current values
-                		$value = $user['value'];
-                		$username = $user['username'];
+			// Change the database tables to use UTF-8
+			echo "Changing the database tables to use UTF-8.<br />\n";
+			$stmt = $db->prepare("SHOW TABLES");
+			$stmt->execute();
+			$tables = $stmt->fetchAll();
 
-                		// Create a unique salt
-                		$salt = generate_token(20);
-
-				// Add the salt for the user
-				$stmt = $db->prepare("UPDATE `user` SET salt = :salt WHERE value = :value");
-				$stmt->bindParam(":value", $value, PDO::PARAM_INT, 11);
-				$stmt->bindParam(":salt", $salt, PDO::PARAM_STR, 20);
+			foreach ($tables as $table)
+			{
+				$name = $table[0];
+				echo "Changing table " . $name . ".<br />\n";
+				$stmt = $db->prepare("ALTER TABLE `" . $name . "` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;");
 				$stmt->execute();
-        		}
+				$stmt = $db->prepare("ALTER TABLE `" . $name . "` ENGINE = MYISAM;");
+				$stmt->execute();
+			}
+
+			// Create a table to list supported languages
+			echo "Creating a new table to track supported languages.<br />\n";
+			$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `languages` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(2) NOT NULL, `full` varchar(50) NOT NULL, PRIMARY KEY (`value`)) AUTO_INCREMENT=1 ENGINE = MYISAM");
+			$stmt->execute();
+
+			// Add the supported languages
+			echo "Adding English and Portuguese as supported languages.<br />\n";
+			$stmt = $db->prepare("INSERT INTO `languages` (`name`, `full`) VALUES ('en', 'English'), ('bp', 'Brazilian Portuguese')");
+			$stmt->execute();
 
 			/************************
 		 	 * END DATABASE CHANGES *
