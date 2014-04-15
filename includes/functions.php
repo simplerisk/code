@@ -862,6 +862,13 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $admin, $re
  *************************/
 function update_user($user_id, $name, $email, $teams, $lang, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
 {
+        // If the language is empty
+        if ($lang == "")
+        {
+                // Set the value to null
+                $lang = NULL;
+        }
+
         // Open the database connection
         $db = db_open();
 
