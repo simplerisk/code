@@ -2325,7 +2325,7 @@ function get_risk_teams_table()
         $db = db_open();
 
 	// Get the list of teams
-	$stmt = $db->prepare("SELECT a.id, a.subject, c.name AS team, a.submission_date, b.calculated_risk FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN team c ON a.team = c.value WHERE status != 'Closed' GROUP BY a.team");
+	$stmt = $db->prepare("SELECT a.id, a.subject, c.name AS team, a.submission_date, b.calculated_risk FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN team c ON a.team = c.value WHERE status != 'Closed' ORDER BY a.team");
 	$stmt->execute();
 
         // Store the list in the array
@@ -2335,7 +2335,7 @@ function get_risk_teams_table()
         db_close($db);
 
 	// Set the current team to empty
-	$current_team = "Unassigned";
+	$current_team = "";
 
 	// For each team
 	foreach ($risks as $risk)
@@ -2346,6 +2346,13 @@ function get_risk_teams_table()
 		$submission_date = $risk['submission_date'];
 		$calculated_risk = $risk['calculated_risk'];
 		$color = get_risk_color($risk['calculated_risk']);
+
+		// If the team is empty
+		if ($team == "")
+		{
+			// Team name is Unassigned
+			$team = $lang['Unassigned'];
+		}
 
 		// If the team is not the current team
 		if ($team != $current_team)
