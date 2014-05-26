@@ -4,9 +4,9 @@
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 	// Include required functions file
-        require_once('../includes/functions.php');
-	require_once('../includes/authenticate.php');
-	require_once('../includes/reporting.php');
+        require_once(realpath(__DIR__ . '/../includes/functions.php'));
+        require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+        require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 
         // Add various security headers
         header("X-Frame-Options: DENY");
@@ -32,7 +32,7 @@
         // Include the language file
         require_once(language_file());
 
-        require_once('../includes/csrf-magic/csrf-magic.php');
+        require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
         // Check for session timeout or renegotiation
         session_check();
@@ -132,6 +132,9 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               <a href="production_issues.php"><?php echo $lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']; ?></a>
             </li>
             <li>
+              <a href="teams.php"><?php echo $lang['AllOpenRisksByTeam']; ?></a>
+            </li>
+            <li>
               <a href="risk_scoring.php"><?php echo $lang['AllOpenRisksByScoringMethod']; ?></a>
             </li>
             <li class="active">
@@ -148,6 +151,9 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
             </li>
             <li>
               <a href="mgmt_reviews_by_date.php"><?php echo $lang['ManagementReviewsByDate']; ?></a>
+            </li>
+            <li>
+              <a href="closed_by_date.php"><?php echo $lang['ClosedRisksByDate']; ?></a>
             </li>
             <li>
               <a href="projects_and_risks.php"><?php echo $lang['ProjectsAndRisksAssigned']; ?></a>

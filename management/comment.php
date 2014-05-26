@@ -4,9 +4,9 @@
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
         // Include required functions file
-        require_once('../includes/functions.php');
-        require_once('../includes/authenticate.php');
-	require_once('../includes/display.php');
+        require_once(realpath(__DIR__ . '/../includes/functions.php'));
+        require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+	require_once(realpath(__DIR__ . '/../includes/display.php'));
 
         // Add various security headers
         header("X-Frame-Options: DENY");
@@ -32,7 +32,7 @@
         // Include the language file
         require_once(language_file());
 
-        require_once('../includes/csrf-magic/csrf-magic.php');
+        require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
         // Check for session timeout or renegotiation
         session_check();

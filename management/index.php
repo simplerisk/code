@@ -4,8 +4,8 @@
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
         // Include required functions file
-        require_once('../includes/functions.php');
-        require_once('../includes/authenticate.php');
+        require_once(realpath(__DIR__ . '/../includes/functions.php'));
+        require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 
         // Add various security headers
         header("X-Frame-Options: DENY");
@@ -31,7 +31,7 @@
         // Include the language file
         require_once(language_file());
 
-        require_once('../includes/csrf-magic/csrf-magic.php');
+        require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
         // Check for session timeout or renegotiation
         session_check();
@@ -138,7 +138,7 @@
         	if (notification_extra())
         	{
                 	// Include the team separation extra
-                	require_once(__DIR__ . "/../extras/notification/index.php");
+                	require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
                 	// Send the notification
                 	notify_new_risk($last_insert_id, $subject);

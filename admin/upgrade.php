@@ -3,9 +3,9 @@
          * License, v. 2.0. If a copy of the MPL was not distributed with this
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-        require_once('../includes/functions.php');
-        require_once('../includes/authenticate.php');
-	require_once('../includes/config.php');
+        require_once(realpath(__DIR__ . '/../includes/functions.php'));
+        require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+	require_once(realpath(__DIR__ . '/../includes/config.php'));
 
         // Add various security headers
         header("X-Frame-Options: DENY");
@@ -19,10 +19,10 @@
         }
 
         // Database version to upgrade
-        $version_to_upgrade = "20140224-001";
+        $version_to_upgrade = "20140413-001";
 
         // Database version upgrading to
-        $version_upgrading_to = "20140413-001";
+        $version_upgrading_to = "20140526-001";
 
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
@@ -31,7 +31,7 @@
         // Include the language file
         require_once(language_file());
 
-        require_once('../includes/csrf-magic/csrf-magic.php');
+        require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
         // Check for session timeout or renegotiation
         session_check();
@@ -39,25 +39,8 @@
         // If the user requested a logout
         if (isset($_GET['logout']) && $_GET['logout'] == "true")
         {
-        	// Deny access
-        	$_SESSION["access"] = "denied";
-
-        	// Reset the session data
-        	$_SESSION = array();
-
-
-        	// Send a Set-Cookie to invalidate the session cookie
-        	if (ini_get("session.use_cookies"))
-        	{
-                	$params = session_get_cookie_params();
-                	setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], isset($params['httponly']));
-        	}
-
-        	// Destroy the session
-        	session_destroy();
-
-        	// Redirect to the upgrade login form
-        	header( 'Location: upgrade.php' );
+		// Log the user out
+		logout();
 	}
 
 	// Default is no alert
@@ -66,24 +49,6 @@
         // If the login form was posted
         if (isset($_POST['submit']))
         {
-		/*** NEED TO REMOVE AFTER 20140413-001 RELEASE ***/
-		$db = db_open();
-		$database = DB_DATABASE;
-		// Check to see if the lang column already exists
-		$stmt = $db->prepare("SELECT null FROM INFORMATION_SCHEMA.COLUMNS WHERE `table_schema` = :database AND `table_name` = 'user' AND `column_name` = 'lang';");
-		$stmt->bindParam(":database", $database, PDO::PARAM_STR);
-                $stmt->execute();
-        	$array = $stmt->fetchAll();
-        	// If the column does not already exist
-        	if (empty($array))
-        	{
-                        // Add lang column
-                        $stmt = $db->prepare("ALTER TABLE `user` ADD `lang` VARCHAR( 2 ) NULL DEFAULT NULL AFTER `teams` ;");
-                        $stmt->execute();
-        	}
-		db_close($db);
-		/*** END REMOVE ***/
-
                 $user = $_POST['user'];
                 $pass = $_POST['pass'];
 
@@ -119,6 +84,83 @@
                         $_SESSION["access"] = "denied";
                 }
         }
+
+	// If an API key is set and is valid
+	if (isset($_GET['key']) && check_valid_key($_GET['key']))
+	{
+		// Grant access
+		$_SESSION["access"] = "granted";
+
+		// API key is admin
+		$_SESSION["admin"] = "1";
+	}
+
+/*************************
+ * FUNCTION: GET API KEY *
+ *************************/
+function get_api_key()
+{
+        // Open the database connection
+        $db = db_open();
+
+        // Query the database
+        $stmt = $db->prepare("SELECT value FROM `settings` WHERE `name`='api_key'");
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        // If the array is empty
+        if (empty($array))
+        {
+                // Return false
+                return false;
+        }
+        else return $array[0]['value'];
+}
+
+/*****************************
+ * FUNCTION: CHECK VALID KEY *
+ *****************************/
+function check_valid_key($key)
+{
+        //If the key is correct
+        if ($key == get_api_key())
+        {
+                return true;
+        }
+        else return false;
+}
+
+/********************
+ * FUNCTION: LOGOUT *
+ ********************/
+function logout()
+{
+	// Deny access
+        $_SESSION["access"] = "denied";
+
+        // Reset the session data
+        $_SESSION = array();
+
+
+        // Send a Set-Cookie to invalidate the session cookie
+        if (ini_get("session.use_cookies"))
+        {
+        	$params = session_get_cookie_params();
+                setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], isset($params['httponly']));
+        }
+
+        // Destroy the session
+        session_destroy();
+
+        // Redirect to the upgrade login form
+        header( 'Location: upgrade.php' );
+}
+
 ?>
 
 <!doctype html>
@@ -247,13 +289,8 @@
                  	* DATABASE CHANGES GO HERE *
 		 	****************************/
 
-			// Change the database to use UTF-8
-			echo "Changing database to use UTF-8.<br />\n";
-			$stmt = $db->prepare("ALTER DATABASE `" . DB_DATABASE . "` CHARACTER SET utf8 DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT COLLATE utf8_general_ci;");
-			$stmt->execute();
-
-			// Change the database tables to use UTF-8
-			echo "Changing the database tables to use UTF-8.<br />\n";
+			// Change the database table columns to use UTF-8
+			echo "Changing the table columns to use UTF-8.<br />\n";
 			$stmt = $db->prepare("SHOW TABLES");
 			$stmt->execute();
 			$tables = $stmt->fetchAll();
@@ -262,21 +299,30 @@
 			{
 				$name = $table[0];
 				echo "Changing table " . $name . ".<br />\n";
-				$stmt = $db->prepare("ALTER TABLE `" . $name . "` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;");
-				$stmt->execute();
-				$stmt = $db->prepare("ALTER TABLE `" . $name . "` ENGINE = MYISAM;");
+				$stmt = $db->prepare("ALTER TABLE `" . $name . "` CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;");
 				$stmt->execute();
 			}
 
-			// Create a table to list supported languages
-			echo "Creating a new table to track supported languages.<br />\n";
-			$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `languages` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(2) NOT NULL, `full` varchar(50) NOT NULL, PRIMARY KEY (`value`)) AUTO_INCREMENT=1 ENGINE = MYISAM");
+			// Remove project id for any closed risks
+			echo "Removing project id values for any closed risks.<br />\n";
+			$stmt = $db->prepare("UPDATE `risks` SET project_id=0 WHERE `status`='Closed'");
 			$stmt->execute();
 
-			// Add the supported languages
-			echo "Adding English and Portuguese as supported languages.<br />\n";
-			$stmt = $db->prepare("INSERT INTO `languages` (`name`, `full`) VALUES ('en', 'English'), ('bp', 'Brazilian Portuguese')");
+			// Add rejected as a close reason
+			echo "Adding \"Rejected\" as a close reason.<br />\n";
+			$stmt = $db->prepare("INSERT INTO `close_reason` (`value`, `name`) VALUES ('0', 'Rejected')");
 			$stmt->execute();
+			$stmt = $db->prepare("UPDATE `close_reason` SET value=0 WHERE name='Rejected'");
+			$stmt->execute();
+			$stmt = $db->prepare("ALTER TABLE `close_reason` AUTO_INCREMENT=5");
+			$stmt->execute();
+
+			// If the language is bp
+			if (LANG_DEFAULT == "bp")
+			{
+				$db->prepare("UPDATE `close_reason` SET name='Rejeitado' WHERE name='Rejected'");
+				$stmt->execute();
+			}
 
 			/************************
 		 	 * END DATABASE CHANGES *

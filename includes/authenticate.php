@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once('config.php');
-require_once('functions.php');
+require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/functions.php'));
 
 /*******************************
  * FUNCTION: OLD GENERATE SALT *
@@ -110,7 +110,7 @@ function is_valid_user($user, $pass)
                 if (custom_authentication_extra())
                 {
                         // Include the custom authentication extra
-			require_once(__DIR__ . "/../extras/authentication/index.php");
+			require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
 
 			// Check for a valid Active Directory user
 			$valid_ad = is_valid_ad_user($user, $pass);
@@ -127,7 +127,7 @@ function is_valid_user($user, $pass)
         	if (encryption_extra())
         	{
                 	// Load the extra
-                	require_once(__DIR__ . "/../extras/encryption/index.php");
+                	require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
 			// If the user has been activated
 			if (activated_user($user))

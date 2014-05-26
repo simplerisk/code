@@ -4,8 +4,8 @@
  	 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
         // Include required functions file
-        require_once('includes/functions.php');
-	require_once('includes/authenticate.php');
+        require_once(realpath(__DIR__ . '/includes/functions.php'));
+	require_once(realpath(__DIR__ . '/includes/authenticate.php'));
 
         // Add various security headers
         header("X-Frame-Options: DENY");

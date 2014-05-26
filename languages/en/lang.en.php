@@ -232,9 +232,13 @@ $lang = array(
     'AllOpenRisksNeedingReview'=>'All Open Risks Needing a Review',
     'ReportReviewNeededHelp'=>'This report shows all open risks needing a management review',
     'CustomValue'=>'Custom Value',
-    ''=>'',
-    ''=>'',
-    ''=>'',
+    'ClosedRisksByDate'=>'Closed Risks By Date',
+    'DateClosed'=>'Date Closed',
+    'ClosedBy'=>'Closed By',
+    'ReportClosedByDateHelp'=>'This report shows all risks ordered by closure date',
+    'AllOpenRisksByTeam'=>'All Open Risks by Team',
+    'ReportRiskTeamsHelp'=>'This report shows all teams and the risks assigned to each',
+    'Unassigned'=>'Unassigned',
     ''=>'',
 );
 

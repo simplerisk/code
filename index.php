@@ -4,8 +4,8 @@
  	 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
         // Include required functions file
-        require_once('includes/functions.php');
-	require_once('includes/authenticate.php');
+        require_once(realpath(__DIR__ . '/includes/functions.php'));
+	require_once(realpath(__DIR__ . '/includes/authenticate.php'));
 
         // Add various security headers
         header("X-Frame-Options: DENY");
@@ -44,7 +44,7 @@
                 	if (custom_authentication_extra())
                 	{
                         	// Include the custom authentication extra
-                        	require_once(__DIR__ . "/extras/authentication/index.php");
+                        	require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
 
 				// Get the enabled authentication for the user
 				$enabled_auth = enabled_auth($user);
@@ -91,7 +91,7 @@
 		if (isset($_POST['sig_response']))
 		{
 	                // Include the custom authentication extra
-        	        require_once(__DIR__ . "/extras/authentication/index.php");
+        	        require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
 
 			// Get the response back from Duo
         		$resp = Duo::verifyResponse(IKEY, SKEY, get_duo_akey(), $_POST['sig_response']);
@@ -196,7 +196,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                 echo "<div class=\"well\">\n";
 
                 // Include the custom authentication extra
-                require_once(__DIR__ . "/extras/authentication/index.php");
+                require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
 
         	// Perform a duo authentication request for the user
         	duo_authentication($_SESSION["user"]);

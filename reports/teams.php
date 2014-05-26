@@ -3,7 +3,7 @@
          * License, v. 2.0. If a copy of the MPL was not distributed with this
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-        // Include required functions file
+	// Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 
@@ -36,9 +36,6 @@
         // Check for session timeout or renegotiation
         session_check();
 
-	// Default is no alert
-	$alert = false;
-
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
@@ -47,18 +44,7 @@
         }
 
         // Record the page the workflow started from as a session variable
-	$_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
-
-        // If reviewed is passed via GET
-        if (isset($_GET['reviewed']))
-        {
-                // If it's true
-                if ($_GET['reviewed'] == true)
-                {
-                        $alert = "good";
-                        $alert_message = "Risk review submitted successfully!";
-                }
-        }
+        $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 ?>
 
 <!doctype html>
@@ -76,14 +62,6 @@
   </head>
   
   <body>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
     <div class="navbar">
       <div class="navbar-inner">
         <div class="container">
@@ -93,11 +71,11 @@
               <li>
                 <a href="../index.php"><?php echo $lang['Home']; ?></a> 
               </li>
-              <li class="active">
-                <a href="index.php"><?php echo $lang['RiskManagement']; ?></a> 
-              </li>
               <li>
-                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="../management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
+              </li>
+              <li class="active">
+                <a href="index.php"><?php echo $lang['Reporting']; ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
@@ -109,7 +87,7 @@ if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
           echo "</ul>\n";
           echo "</div>\n";
 
-if (isset($_SESSION["admin"]) && $_SESSION["access"] == "granted")
+if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 {
           echo "<div class=\"btn-group pull-right\">\n";
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
@@ -127,55 +105,66 @@ if (isset($_SESSION["admin"]) && $_SESSION["access"] == "granted")
         </div>
       </div>
     </div>
-<?php
-        if ($alert == "good")
-        {
-                echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 greenalert\">" . $alert_message . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
-        else if ($alert == "bad")
-        {
-                echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $alert_message . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
-?>
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li>
-              <a href="index.php">I. <?php echo $lang['SubmitYourRisks']; ?></a> 
+              <a href="index.php"><?php echo $lang['RiskDashboard']; ?></a>      
             </li>
             <li>
-              <a href="plan_mitigations.php">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
+              <a href="trend.php"><?php echo $lang['RiskTrend']; ?></a>
             </li>
             <li>
-              <a href="management_review.php">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
+              <a href="my_open.php"><?php echo $lang['AllOpenRisksAssignedToMeByRiskLevel']; ?></a>
             </li>
             <li>
-              <a href="prioritize_planning.php">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
+              <a href="open.php"><?php echo $lang['AllOpenRisksByRiskLevel']; ?></a>
+            </li>
+            <li>
+              <a href="projects.php"><?php echo $lang['AllOpenRisksConsideredForProjectsByRiskLevel']; ?></a>
+            </li>
+            <li>
+              <a href="next_review.php"><?php echo $lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']; ?></a>
+            </li>
+            <li>
+              <a href="production_issues.php"><?php echo $lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']; ?></a>
             </li>
             <li class="active">
-              <a href="review_risks.php">V. <?php echo $lang['ReviewRisksRegularly']; ?></a>     
+              <a href="teams.php"><?php echo $lang['AllOpenRisksByTeam']; ?></a>
+            </li>
+            <li>
+              <a href="risk_scoring.php"><?php echo $lang['AllOpenRisksByScoringMethod']; ?></a>
+            </li>
+            <li>
+              <a href="review_needed.php"><?php echo $lang['AllOpenRisksNeedingReview']; ?></a>
+            </li>
+            <li>
+              <a href="closed.php"><?php echo $lang['AllClosedRisksByRiskLevel']; ?></a>
+            </li>
+            <li>
+              <a href="submitted_by_date.php"><?php echo $lang['SubmittedRisksByDate']; ?></a>
+            </li>
+            <li>
+              <a href="mitigations_by_date.php"><?php echo $lang['MitigationsByDate']; ?></a>
+            </li>
+            <li>
+              <a href="mgmt_reviews_by_date.php"><?php echo $lang['ManagementReviewsByDate']; ?></a>
+            </li>
+            <li>
+              <a href="closed_by_date.php"><?php echo $lang['ClosedRisksByDate']; ?></a>
+            </li>
+            <li>
+              <a href="projects_and_risks.php"><?php echo $lang['ProjectsAndRisksAssigned']; ?></a>
             </li>
           </ul>
         </div>
         <div class="span9">
-          <div class="row-fluid">
-            <div class="span12">
-              <?php get_reviews_table(3); ?>
-            </div>
-          </div>
+          <div class="row-fluid"><p><?php echo $lang['ReportRiskTeamsHelp']; ?>.</p></div>
+	  <?php get_risk_teams_table(); ?>
         </div>
       </div>
     </div>
   </body>
+
 </html>

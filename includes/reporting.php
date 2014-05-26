@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once('functions.php');
-require_once('HighchartsPHP/Highchart.php');
+require_once(realpath(__DIR__ . '/functions.php'));
+require_once(realpath(__DIR__ . '/HighchartsPHP/Highchart.php'));
 require_once(language_file());
 
 /****************************

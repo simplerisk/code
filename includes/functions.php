@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required configuration files
-require_once('config.php');
-require_once('cvss.php');
+require_once(realpath(__DIR__ . '/config.php'));
+require_once(realpath(__DIR__ . '/cvss.php'));
 
 // Include the language file
 require_once(language_file());
@@ -21,6 +21,7 @@ function db_open()
         {
                 $db = new PDO("mysql:dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 		$db->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
+		$db->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET CHARACTER SET utf8");
 
                 return $db;
         }
@@ -330,7 +331,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 	}
 
 	// If we want a table that should be ordered by name instead of value
-	if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation" || $name == "languages")
+	if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation" || $name == "languages" || $name == "projects")
 	{
 		$options = get_table_ordered_by_name($name);
 	}
@@ -1651,7 +1652,7 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once(__DIR__ . "/../extras/notification/index.php");
+                require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
 		// Send the notification
 		notify_new_mitigation($risk_id);
@@ -1705,7 +1706,7 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once(__DIR__ . "/../extras/notification/index.php");
+                require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
 		// Send the notification
 		notify_new_review($risk_id);
@@ -1754,7 +1755,7 @@ function update_risk($id, $subject, $reference_id, $regulation, $control_number,
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once(__DIR__ . "/../extras/notification/index.php");
+                require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
 		// Send the notification
 		notify_risk_update($id);
@@ -2061,6 +2062,17 @@ function get_risks($sort_order=0)
                 $array = $stmt->fetchAll();
         }
 
+        // 17 = Show closed risks by date
+        else if ($sort_order == 17)
+        {
+                // Query the database
+		$stmt = $db->prepare("SELECT a.id, a.subject, c.name AS team, d.name AS user, b.closure_date, e.name AS close_reason, f.calculated_risk FROM risks a JOIN closures b ON a.close_id = b.id LEFT JOIN team c ON a.team = c.value LEFT JOIN user d ON b.user_id = d.value LEFT JOIN close_reason e ON b.close_reason = e.value LEFT JOIN risk_scoring f ON a.id = f.id WHERE a.status='Closed' ORDER BY b.closure_date DESC");
+                $stmt->execute();
+
+                // Store the list in the array
+                $array = $stmt->fetchAll();
+        }
+
         // Close the database connection
         db_close($db);
 
@@ -2068,7 +2080,7 @@ function get_risks($sort_order=0)
 	if (team_separation_extra())
 	{
 		// Include the team separation extra
-		require_once(__DIR__ . "/../extras/separation/index.php");
+		require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
 		// Strip out risks the user should not have access to
 		$array = strip_no_access_risks($array);
@@ -2253,6 +2265,131 @@ function get_reviewed_risk_table($sort_order=12)
         echo "</table>\n";
 
         return true;
+}
+
+/***************************************
+ * FUNCTION: GET CLOSED RISKS TABLE *
+ ***************************************/
+function get_closed_risks_table($sort_order=17)
+{
+        global $lang;
+
+        // Get risks
+        $risks = get_risks($sort_order);
+
+        echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        echo "<thead>\n";
+        echo "<tr>\n";
+        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $lang['CalculatedRisk'] ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $lang['Team'] ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $lang['DateClosed'] ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $lang['ClosedBy'] ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $lang['CloseReason'] ."</th>\n";
+        echo "</tr>\n";
+        echo "</thead>\n";
+        echo "<tbody>\n";
+
+        // For each risk
+        foreach ($risks as $risk)
+        {
+                // Get the risk color
+                $color = get_risk_color($risk['calculated_risk']);
+
+                echo "<tr>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"150px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['team'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['closure_date'])), ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['user'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['close_reason'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "</tr>\n";
+        }
+
+        echo "</tbody>\n";
+        echo "</table>\n";
+
+        return true;
+}
+
+/************************************
+ * FUNCTION: GET RISK TEAMS TABLE *
+ ************************************/
+function get_risk_teams_table()
+{
+        global $lang;
+
+        // Open the database connection
+        $db = db_open();
+
+	// Get the list of teams
+	$stmt = $db->prepare("SELECT a.id, a.subject, c.name AS team, a.submission_date, b.calculated_risk FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN team c ON a.team = c.value WHERE status != 'Closed' GROUP BY a.team");
+	$stmt->execute();
+
+        // Store the list in the array
+        $risks = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+	// Set the current team to empty
+	$current_team = "Unassigned";
+
+	// For each team
+	foreach ($risks as $risk)
+	{
+		$risk_id = (int)$risk['id'];
+		$subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8');
+		$team = htmlentities(stripslashes($risk['team']), ENT_QUOTES, 'UTF-8');
+		$submission_date = $risk['submission_date'];
+		$calculated_risk = $risk['calculated_risk'];
+		$color = get_risk_color($risk['calculated_risk']);
+
+		// If the team is not the current team
+		if ($team != $current_team)
+		{
+			// If this is not the first team
+			if ($current_team != "")
+			{
+			        echo "</tbody>\n";
+        			echo "</table>\n";
+        			echo "<br />\n";
+			}
+
+			// If the team is not empty
+			if ($team != "")
+			{
+				// Set the team to the current team
+				$current_team = $team;
+			}
+			else $current_team = $lang['Unassigned'];
+
+			// Display the table header
+        		echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        		echo "<thead>\n";
+        		echo "<tr>\n";
+        		echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $current_team ."</font></center></th>\n";
+        		echo "</tr>\n";
+        		echo "<tr>\n";
+        		echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
+        		echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
+        		echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
+        		echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
+        		echo "</tr>\n";
+        		echo "</thead>\n";
+			echo "<tbody>\n";
+		}
+
+		// Display the risk information
+                echo "<tr>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8') . "</td>\n";
+                echo "</tr>\n";
+	}
 }
 
 /************************************
@@ -2696,7 +2833,7 @@ function get_project_tabs()
 			// If the risk is assigned to that project id
 			if ($id == $project_id)
 			{
-				echo "<li id=\"" . $risk_id . "\" class=\"" . $color . "\">" . htmlentities($subject, ENT_QUOTES, 'UTF-8') . "\n";
+				echo "<li id=\"" . $risk_id . "\" class=\"" . $color . "\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8') . "\">" . htmlentities($subject, ENT_QUOTES, 'UTF-8') . "</a>\n";
 				echo "<input class=\"assoc-risk-with-project\" type=\"hidden\" id=\"risk" . $risk_id . "\" name=\"risk_" . $risk_id . "\" value=\"" . $project_id . "\" />\n";
                         	echo "<input id=\"all-risk-ids\" class=\"all-risk-ids\" type=\"hidden\" name=\"ids[]\" value=\"" . $risk_id . "\" />\n";
                         	echo "</li>\n";
@@ -3106,7 +3243,7 @@ function close_risk($id, $user_id, $status, $close_reason, $note)
         $close_id = get_close_id($id);
 
         // Update the risk
-        $stmt = $db->prepare("UPDATE risks SET status=:status,last_update=:date,close_id=:close_id WHERE id = :id");
+        $stmt = $db->prepare("UPDATE risks SET status=:status,last_update=:date,project_id=0,close_id=:close_id WHERE id = :id");
 
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":status", $status, PDO::PARAM_STR, 50);
@@ -3316,7 +3453,7 @@ function update_mitigation($id, $planning_strategy, $mitigation_effort, $current
         if (notification_extra())
         {
                 // Include the team separation extra
-                require_once(__DIR__ . "/../extras/notification/index.php");
+                require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
 		// Send the notification
 		notify_mitigation_update($id);
@@ -3409,7 +3546,7 @@ function current_version($param)
 {
         if ($param == "app")
         {
-		require_once(__DIR__ . "/version.php");
+		require_once(realpath(__DIR__ . '/version.php'));
 
 		return APP_VERSION;
         }
@@ -3515,16 +3652,16 @@ function language_file()
 	if (isset($_SESSION['lang']))
 	{
 		// Use the users language
-		return __DIR__ . '/../languages/' . $_SESSION['lang'] . '/lang.' . $_SESSION['lang'] . '.php';
+		return realpath(__DIR__ . '/../languages/' . $_SESSION['lang'] . '/lang.' . $_SESSION['lang'] . '.php');
 	}
 	// If the default language is defined in the config file
 	else if (defined('LANG_DEFAULT'))
 	{
 		// Use the default language
-		return __DIR__ . '/../languages/' . LANG_DEFAULT . '/lang.' . LANG_DEFAULT . '.php';
+		return realpath(__DIR__ . '/../languages/' . LANG_DEFAULT . '/lang.' . LANG_DEFAULT . '.php');
 	}
 	// Otherwise, use english
-	else return __DIR__ . '/../languages/en/lang.en.php';
+	else return realpath(__DIR__ . '/../languages/en/lang.en.php');
 }
 
 /*****************************************

@@ -4,8 +4,8 @@
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
         // Include required functions file
-        require_once('../includes/functions.php');
-        require_once('../includes/authenticate.php');
+        require_once(realpath(__DIR__ . '/../includes/functions.php'));
+        require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 
         // Add various security headers
         header("X-Frame-Options: DENY");
@@ -31,7 +31,7 @@
         // Include the language file
         require_once(language_file());
 
-        require_once('../includes/csrf-magic/csrf-magic.php');
+        require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
         // Check for session timeout or renegotiation
         session_check();
@@ -412,7 +412,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         if (custom_authentication_extra())
         {
                 // Include the custom authentication extra
-                require_once(__DIR__ . "/../extras/authentication/index.php");
+                require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
 
                 // Display the multi factor authentication options
                 multi_factor_authentication_options(1);
