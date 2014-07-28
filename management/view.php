@@ -50,7 +50,22 @@
         // Check if a risk ID was sent
         if (isset($_GET['id']))
         {
-                $id = htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8');
+                $id = htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8', false);
+
+        	// If team separation is enabled
+        	if (team_separation_extra())
+        	{
+                	//Include the team separation extra
+                	require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+			// If the user should not have access to the risk
+			if (!extra_grant_access($_SESSION['uid'], $id))
+			{
+                                // Redirect back to the page the workflow started on
+                                header("Location: " . $_SESSION["workflow_start"]);
+				exit(0);
+			}
+        	}
 
         	// If the classic risk was updated and the user has the ability to modify the risk
         	if (isset($_POST['update_classic']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
@@ -132,63 +147,65 @@
 		// If the risk was found use the values for the risk
 		if (count($risk) != 0)
 		{
-                	$status = htmlentities($risk[0]['status'], ENT_QUOTES, 'UTF-8');
-                	$subject = htmlentities(stripslashes($risk[0]['subject']), ENT_QUOTES, 'UTF-8');
-			$reference_id = htmlentities(stripslashes($risk[0]['reference_id']), ENT_QUOTES, 'UTF-8');
-			$regulation = htmlentities($risk[0]['regulation'], ENT_QUOTES, 'UTF-8');
-			$control_number = htmlentities($risk[0]['control_number'], ENT_QUOTES, 'UTF-8');
-			$location = htmlentities($risk[0]['location'], ENT_QUOTES, 'UTF-8');
-                	$category = htmlentities($risk[0]['category'], ENT_QUOTES, 'UTF-8');
-                	$team = htmlentities($risk[0]['team'], ENT_QUOTES, 'UTF-8');
-                	$technology = htmlentities($risk[0]['technology'], ENT_QUOTES, 'UTF-8');
-                	$owner = htmlentities($risk[0]['owner'], ENT_QUOTES, 'UTF-8');
-                	$manager = htmlentities($risk[0]['manager'], ENT_QUOTES, 'UTF-8');
-                	$assessment = htmlentities(stripslashes($risk[0]['assessment']), ENT_QUOTES, 'UTF-8');
-                	$notes = htmlentities(stripslashes($risk[0]['notes']), ENT_QUOTES, 'UTF-8');
-			$submission_date = htmlentities($risk[0]['submission_date'], ENT_QUOTES, 'UTF-8');
-			$mitigation_id = htmlentities($risk[0]['mitigation_id'], ENT_QUOTES, 'UTF-8');
-			$mgmt_review = htmlentities($risk[0]['mgmt_review'], ENT_QUOTES, 'UTF-8');
-			$calculated_risk = htmlentities($risk[0]['calculated_risk'], ENT_QUOTES, 'UTF-8');
+                	$status = htmlentities($risk[0]['status'], ENT_QUOTES, 'UTF-8', false);
+                	$subject = htmlentities(stripslashes($risk[0]['subject']), ENT_QUOTES, 'UTF-8', false);
+			$reference_id = htmlentities(stripslashes($risk[0]['reference_id']), ENT_QUOTES, 'UTF-8', false);
+			$regulation = htmlentities($risk[0]['regulation'], ENT_QUOTES, 'UTF-8', false);
+			$control_number = htmlentities($risk[0]['control_number'], ENT_QUOTES, 'UTF-8', false);
+			$location = htmlentities($risk[0]['location'], ENT_QUOTES, 'UTF-8', false);
+                	$category = htmlentities($risk[0]['category'], ENT_QUOTES, 'UTF-8', false);
+                	$team = htmlentities($risk[0]['team'], ENT_QUOTES, 'UTF-8', false);
+                	$technology = htmlentities($risk[0]['technology'], ENT_QUOTES, 'UTF-8', false);
+                	$owner = htmlentities($risk[0]['owner'], ENT_QUOTES, 'UTF-8', false);
+                	$manager = htmlentities($risk[0]['manager'], ENT_QUOTES, 'UTF-8', false);
+                	$assessment = htmlentities(stripslashes($risk[0]['assessment']), ENT_QUOTES, 'UTF-8', false);
+                	$notes = htmlentities(stripslashes($risk[0]['notes']), ENT_QUOTES, 'UTF-8', false);
+			$submission_date = htmlentities($risk[0]['submission_date'], ENT_QUOTES, 'UTF-8', false);
+			$mitigation_id = htmlentities($risk[0]['mitigation_id'], ENT_QUOTES, 'UTF-8', false);
+			$mgmt_review = htmlentities($risk[0]['mgmt_review'], ENT_QUOTES, 'UTF-8', false);
+			$calculated_risk = htmlentities($risk[0]['calculated_risk'], ENT_QUOTES, 'UTF-8', false);
+			$next_review = htmlentities($risk[0]['next_review'], ENT_QUOTES, 'UTF-8', false);
+			$color = get_risk_color($id);
 
-			$scoring_method = htmlentities($risk[0]['scoring_method'], ENT_QUOTES, 'UTF-8');
-			$CLASSIC_likelihood = htmlentities($risk[0]['CLASSIC_likelihood'], ENT_QUOTES, 'UTF-8');
-			$CLASSIC_impact = htmlentities($risk[0]['CLASSIC_impact'], ENT_QUOTES, 'UTF-8');
-			$AccessVector = htmlentities($risk[0]['CVSS_AccessVector'], ENT_QUOTES, 'UTF-8');
-			$AccessComplexity = htmlentities($risk[0]['CVSS_AccessComplexity'], ENT_QUOTES, 'UTF-8');
-			$Authentication = htmlentities($risk[0]['CVSS_Authentication'], ENT_QUOTES, 'UTF-8');
-			$ConfImpact = htmlentities($risk[0]['CVSS_ConfImpact'], ENT_QUOTES, 'UTF-8');
-			$IntegImpact = htmlentities($risk[0]['CVSS_IntegImpact'], ENT_QUOTES, 'UTF-8');
-			$AvailImpact = htmlentities($risk[0]['CVSS_AvailImpact'], ENT_QUOTES, 'UTF-8');
-			$Exploitability = htmlentities($risk[0]['CVSS_Exploitability'], ENT_QUOTES, 'UTF-8');
-			$RemediationLevel = htmlentities($risk[0]['CVSS_RemediationLevel'], ENT_QUOTES, 'UTF-8');
-			$ReportConfidence = htmlentities($risk[0]['CVSS_ReportConfidence'], ENT_QUOTES, 'UTF-8');
-			$CollateralDamagePotential = htmlentities($risk[0]['CVSS_CollateralDamagePotential'], ENT_QUOTES, 'UTF-8');
-			$TargetDistribution = htmlentities($risk[0]['CVSS_TargetDistribution'], ENT_QUOTES, 'UTF-8');
-			$ConfidentialityRequirement = htmlentities($risk[0]['CVSS_ConfidentialityRequirement'], ENT_QUOTES, 'UTF-8');
-			$IntegrityRequirement = htmlentities($risk[0]['CVSS_IntegrityRequirement'], ENT_QUOTES, 'UTF-8');
-			$AvailabilityRequirement = htmlentities($risk[0]['CVSS_AvailabilityRequirement'], ENT_QUOTES, 'UTF-8');
-                	$DREADDamagePotential = htmlentities($risk[0]['DREAD_DamagePotential'], ENT_QUOTES, 'UTF-8');
-			$DREADReproducibility = htmlentities($risk[0]['DREAD_Reproducibility'], ENT_QUOTES, 'UTF-8');
-			$DREADExploitability = htmlentities($risk[0]['DREAD_Exploitability'], ENT_QUOTES, 'UTF-8');
-			$DREADAffectedUsers = htmlentities($risk[0]['DREAD_AffectedUsers'], ENT_QUOTES, 'UTF-8');
-			$DREADDiscoverability = htmlentities($risk[0]['DREAD_Discoverability'], ENT_QUOTES, 'UTF-8');
-			$OWASPSkillLevel = htmlentities($risk[0]['OWASP_SkillLevel'], ENT_QUOTES, 'UTF-8');
-			$OWASPMotive = htmlentities($risk[0]['OWASP_Motive'], ENT_QUOTES, 'UTF-8');
-			$OWASPOpportunity = htmlentities($risk[0]['OWASP_Opportunity'], ENT_QUOTES, 'UTF-8');
-			$OWASPSize = htmlentities($risk[0]['OWASP_Size'], ENT_QUOTES, 'UTF-8');
-			$OWASPEaseOfDiscovery = htmlentities($risk[0]['OWASP_EaseOfDiscovery'], ENT_QUOTES, 'UTF-8');
-			$OWASPEaseOfExploit = htmlentities($risk[0]['OWASP_EaseOfExploit'], ENT_QUOTES, 'UTF-8');
-			$OWASPAwareness = htmlentities($risk[0]['OWASP_Awareness'], ENT_QUOTES, 'UTF-8');
-			$OWASPIntrusionDetection = htmlentities($risk[0]['OWASP_IntrusionDetection'], ENT_QUOTES, 'UTF-8');
-			$OWASPLossOfConfidentiality = htmlentities($risk[0]['OWASP_LossOfConfidentiality'], ENT_QUOTES, 'UTF-8');
-			$OWASPLossOfIntegrity = htmlentities($risk[0]['OWASP_LossOfIntegrity'], ENT_QUOTES, 'UTF-8');
-			$OWASPLossOfAvailability = htmlentities($risk[0]['OWASP_LossOfAvailability'], ENT_QUOTES, 'UTF-8');
-			$OWASPLossOfAccountability = htmlentities($risk[0]['OWASP_LossOfAccountability'], ENT_QUOTES, 'UTF-8');
-			$OWASPFinancialDamage = htmlentities($risk[0]['OWASP_FinancialDamage'], ENT_QUOTES, 'UTF-8');
-			$OWASPReputationDamage = htmlentities($risk[0]['OWASP_ReputationDamage'], ENT_QUOTES, 'UTF-8');
-			$OWASPNonCompliance = htmlentities($risk[0]['OWASP_NonCompliance'], ENT_QUOTES, 'UTF-8');
-			$OWASPPrivacyViolation = htmlentities($risk[0]['OWASP_PrivacyViolation'], ENT_QUOTES, 'UTF-8');
-			$custom = htmlentities($risk[0]['Custom'], ENT_QUOTES, 'UTF-8');
+			$scoring_method = htmlentities($risk[0]['scoring_method'], ENT_QUOTES, 'UTF-8', false);
+			$CLASSIC_likelihood = htmlentities($risk[0]['CLASSIC_likelihood'], ENT_QUOTES, 'UTF-8', false);
+			$CLASSIC_impact = htmlentities($risk[0]['CLASSIC_impact'], ENT_QUOTES, 'UTF-8', false);
+			$AccessVector = htmlentities($risk[0]['CVSS_AccessVector'], ENT_QUOTES, 'UTF-8', false);
+			$AccessComplexity = htmlentities($risk[0]['CVSS_AccessComplexity'], ENT_QUOTES, 'UTF-8', false);
+			$Authentication = htmlentities($risk[0]['CVSS_Authentication'], ENT_QUOTES, 'UTF-8', false);
+			$ConfImpact = htmlentities($risk[0]['CVSS_ConfImpact'], ENT_QUOTES, 'UTF-8', false);
+			$IntegImpact = htmlentities($risk[0]['CVSS_IntegImpact'], ENT_QUOTES, 'UTF-8', false);
+			$AvailImpact = htmlentities($risk[0]['CVSS_AvailImpact'], ENT_QUOTES, 'UTF-8', false);
+			$Exploitability = htmlentities($risk[0]['CVSS_Exploitability'], ENT_QUOTES, 'UTF-8', false);
+			$RemediationLevel = htmlentities($risk[0]['CVSS_RemediationLevel'], ENT_QUOTES, 'UTF-8', false);
+			$ReportConfidence = htmlentities($risk[0]['CVSS_ReportConfidence'], ENT_QUOTES, 'UTF-8', false);
+			$CollateralDamagePotential = htmlentities($risk[0]['CVSS_CollateralDamagePotential'], ENT_QUOTES, 'UTF-8', false);
+			$TargetDistribution = htmlentities($risk[0]['CVSS_TargetDistribution'], ENT_QUOTES, 'UTF-8', false);
+			$ConfidentialityRequirement = htmlentities($risk[0]['CVSS_ConfidentialityRequirement'], ENT_QUOTES, 'UTF-8', false);
+			$IntegrityRequirement = htmlentities($risk[0]['CVSS_IntegrityRequirement'], ENT_QUOTES, 'UTF-8', false);
+			$AvailabilityRequirement = htmlentities($risk[0]['CVSS_AvailabilityRequirement'], ENT_QUOTES, 'UTF-8',  false);
+                	$DREADDamagePotential = htmlentities($risk[0]['DREAD_DamagePotential'], ENT_QUOTES, 'UTF-8', false);
+			$DREADReproducibility = htmlentities($risk[0]['DREAD_Reproducibility'], ENT_QUOTES, 'UTF-8', false);
+			$DREADExploitability = htmlentities($risk[0]['DREAD_Exploitability'], ENT_QUOTES, 'UTF-8', false);
+			$DREADAffectedUsers = htmlentities($risk[0]['DREAD_AffectedUsers'], ENT_QUOTES, 'UTF-8', false);
+			$DREADDiscoverability = htmlentities($risk[0]['DREAD_Discoverability'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPSkillLevel = htmlentities($risk[0]['OWASP_SkillLevel'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPMotive = htmlentities($risk[0]['OWASP_Motive'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPOpportunity = htmlentities($risk[0]['OWASP_Opportunity'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPSize = htmlentities($risk[0]['OWASP_Size'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPEaseOfDiscovery = htmlentities($risk[0]['OWASP_EaseOfDiscovery'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPEaseOfExploit = htmlentities($risk[0]['OWASP_EaseOfExploit'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPAwareness = htmlentities($risk[0]['OWASP_Awareness'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPIntrusionDetection = htmlentities($risk[0]['OWASP_IntrusionDetection'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPLossOfConfidentiality = htmlentities($risk[0]['OWASP_LossOfConfidentiality'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPLossOfIntegrity = htmlentities($risk[0]['OWASP_LossOfIntegrity'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPLossOfAvailability = htmlentities($risk[0]['OWASP_LossOfAvailability'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPLossOfAccountability = htmlentities($risk[0]['OWASP_LossOfAccountability'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPFinancialDamage = htmlentities($risk[0]['OWASP_FinancialDamage'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPReputationDamage = htmlentities($risk[0]['OWASP_ReputationDamage'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPNonCompliance = htmlentities($risk[0]['OWASP_NonCompliance'], ENT_QUOTES, 'UTF-8', false);
+			$OWASPPrivacyViolation = htmlentities($risk[0]['OWASP_PrivacyViolation'], ENT_QUOTES, 'UTF-8', false);
+			$custom = htmlentities($risk[0]['Custom'], ENT_QUOTES, 'UTF-8', false);
 		}
 		// If the risk was not found use null values
 		else
@@ -231,7 +248,7 @@
 		}
 
 		// If the current scoring method was changed to Classic
-		if (isset($_GET['scoring_method']) && htmlentities($_GET['scoring_method'], ENT_QUOTES, 'UTF-8') == 1)
+		if (isset($_GET['scoring_method']) && htmlentities($_GET['scoring_method'], ENT_QUOTES, 'UTF-8', false) == 1)
 		{
 			// Set the new scoring method
 			$scoring_method = change_scoring_method($id, "1");
@@ -245,7 +262,7 @@
                         $alert_message = "The scoring method has been successfully changed to Classic.";
 		}
                 // If the current scoring method was changed to CVSS
-                else if (isset($_GET['scoring_method']) && htmlentities($_GET['scoring_method'], ENT_QUOTES, 'UTF-8') == 2)
+                else if (isset($_GET['scoring_method']) && htmlentities($_GET['scoring_method'], ENT_QUOTES, 'UTF-8', false) == 2)
                 {
                         // Set the new scoring method
                         $scoring_method = change_scoring_method($id, "2");
@@ -259,7 +276,7 @@
                         $alert_message = "The scoring method has been successfully changed to CVSS.";
                 }
                 // If the current scoring method was changed to DREAD
-                else if (isset($_GET['scoring_method']) && htmlentities($_GET['scoring_method'], ENT_QUOTES, 'UTF-8') == 3)
+                else if (isset($_GET['scoring_method']) && htmlentities($_GET['scoring_method'], ENT_QUOTES, 'UTF-8', false) == 3)
                 {
                         // Set the new scoring method
                         $scoring_method = change_scoring_method($id, "3");
@@ -273,7 +290,7 @@
                         $alert_message = "The scoring method has been successfully changed to DREAD.";
                 }
                 // If the current scoring method was changed to OWASP
-                else if (isset($_GET['scoring_method']) && htmlentities($_GET['scoring_method'], ENT_QUOTES, 'UTF-8') == 4)
+                else if (isset($_GET['scoring_method']) && htmlentities($_GET['scoring_method'], ENT_QUOTES, 'UTF-8', false) == 4)
                 {
                         // Set the new scoring method
                         $scoring_method = change_scoring_method($id, "4");
@@ -287,7 +304,7 @@
                         $alert_message = "The scoring method has been successfully changed to OWASP.";
                 }
                 // If the current scoring method was changed to Custom
-                else if (isset($_GET['scoring_method']) && htmlentities($_GET['scoring_method'], ENT_QUOTES, 'UTF-8') == 5)
+                else if (isset($_GET['scoring_method']) && htmlentities($_GET['scoring_method'], ENT_QUOTES, 'UTF-8', false) == 5)
                 {
                         // Set the new scoring method
                         $scoring_method = change_scoring_method($id, "5");
@@ -326,10 +343,10 @@
 		else
 		{
 			// Set the mitigation values
-			$mitigation_date = htmlentities($mitigation[0]['submission_date'], ENT_QUOTES, 'UTF-8');
+			$mitigation_date = htmlentities($mitigation[0]['submission_date'], ENT_QUOTES, 'UTF-8', false);
 			$mitigation_date = date(DATETIME, strtotime($mitigation_date));
-			$planning_strategy = htmlentities($mitigation[0]['planning_strategy'], ENT_QUOTES, 'UTF-8');
-			$mitigation_effort = htmlentities($mitigation[0]['mitigation_effort'], ENT_QUOTES, 'UTF-8');
+			$planning_strategy = htmlentities($mitigation[0]['planning_strategy'], ENT_QUOTES, 'UTF-8', false);
+			$mitigation_effort = htmlentities($mitigation[0]['mitigation_effort'], ENT_QUOTES, 'UTF-8', false);
 			$current_solution = $mitigation[0]['current_solution'];
 			$security_requirements = $mitigation[0]['security_requirements'];
 			$security_recommendations = $mitigation[0]['security_recommendations'];
@@ -352,11 +369,12 @@
                 else
                 {
                         // Set the mitigation values
-			$review_date = htmlentities($mgmt_reviews[0]['submission_date'], ENT_QUOTES, 'UTF-8');
+			$review_date = htmlentities($mgmt_reviews[0]['submission_date'], ENT_QUOTES, 'UTF-8', false);
 			$review_date = date(DATETIME, strtotime($review_date));
-			$review = htmlentities($mgmt_reviews[0]['review'], ENT_QUOTES, 'UTF-8');
-			$next_step = htmlentities($mgmt_reviews[0]['next_step'], ENT_QUOTES, 'UTF-8');
-			$reviewer = htmlentities($mgmt_reviews[0]['reviewer'], ENT_QUOTES, 'UTF-8');
+			$review = htmlentities($mgmt_reviews[0]['review'], ENT_QUOTES, 'UTF-8', false);
+			$next_step = htmlentities($mgmt_reviews[0]['next_step'], ENT_QUOTES, 'UTF-8', false);
+			$next_review = htmlentities(next_review($color, $id, $next_review, false), ENT_QUOTES, 'UTF-8', false);
+			$reviewer = htmlentities($mgmt_reviews[0]['reviewer'], ENT_QUOTES, 'UTF-8', false);
 			$comments = $mgmt_reviews[0]['comments'];
 		}
         }
@@ -714,7 +732,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               <div class="well">
                 <form name="review" method="post" action="">
 		<?php
-			view_review_details($id, $review_date, $reviewer, $review, $next_step, $comments);
+			view_review_details($id, $review_date, $reviewer, $review, $next_step, $next_review, $comments);
 		?>
                 </form>
               </div>

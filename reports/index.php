@@ -133,6 +133,9 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               <a href="teams.php"><?php echo $lang['AllOpenRisksByTeam']; ?></a>
             </li>
             <li>
+              <a href="technologies.php"><?php echo $lang['AllOpenRisksByTechnology']; ?></a>
+            </li>
+            <li>
               <a href="risk_scoring.php"><?php echo $lang['AllOpenRisksByScoringMethod']; ?></a>
             </li>
             <li>
@@ -140,6 +143,9 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
             </li>
             <li>
               <a href="closed.php"><?php echo $lang['AllClosedRisksByRiskLevel']; ?></a>
+            </li>
+            <li>
+              <a href="high.php"><?php echo $lang['HighRiskReport']; ?></a>
             </li>
             <li>
               <a href="submitted_by_date.php"><?php echo $lang['SubmittedRisksByDate']; ?></a>
@@ -165,51 +171,51 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <div class="row-fluid">
             <div class="span3">
               <div class="well">
-                <?php open_risk_level_pie(); ?>
+                <?php open_risk_level_pie($lang['RiskLevel']); ?>
               </div>
             </div>
             <div class="span3">
               <div class="well">
-                <?php open_risk_status_pie(); ?>
+                <?php open_risk_status_pie($lang['Status']); ?>
               </div>
             </div>
             <div class="span3">
               <div class="well">
-                <?php open_risk_location_pie(); ?>
-              </div>
-            </div>
-          </div>
-          <div class="row-fluid">
-            <div class="span3">
-              <div class="well">
-                <?php open_risk_category_pie(); ?>
-              </div>
-            </div>
-            <div class="span3">
-              <div class="well">
-                <?php open_risk_team_pie(); ?>
-              </div>
-            </div>
-            <div class="span3">
-              <div class="well">
-                <?php open_risk_technology_pie(); ?>
+                <?php open_risk_location_pie($lang['SiteLocation']); ?>
               </div>
             </div>
           </div>
           <div class="row-fluid">
             <div class="span3">
               <div class="well">
-                <?php open_risk_owner_pie(); ?>
+                <?php open_risk_category_pie($lang['Category']); ?>
               </div>
             </div>
             <div class="span3">
               <div class="well">
-                <?php open_risk_owners_manager_pie(); ?>
+                <?php open_risk_team_pie($lang['Team']); ?>
               </div>
             </div>
             <div class="span3">
               <div class="well">
-                <?php open_risk_scoring_method_pie(); ?>
+                <?php open_risk_technology_pie($lang['Technology']); ?>
+              </div>
+            </div>
+          </div>
+          <div class="row-fluid">
+            <div class="span3">
+              <div class="well">
+                <?php open_risk_owner_pie($lang['Owner']); ?>
+              </div>
+            </div>
+            <div class="span3">
+              <div class="well">
+                <?php open_risk_owners_manager_pie($lang['OwnersManager']); ?>
+              </div>
+            </div>
+            <div class="span3">
+              <div class="well">
+                <?php open_risk_scoring_method_pie($lang['RiskScoringMethod']); ?>
               </div>
             </div>
           </div>
@@ -219,7 +225,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <div class="row-fluid">
             <div class="span3">
               <div class="well">
-                <?php closed_risk_reason_pie(); ?>
+                <?php closed_risk_reason_pie($lang['Reason']); ?>
               </div>
             </div>
           </div>

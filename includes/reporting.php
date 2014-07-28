@@ -52,16 +52,44 @@ function get_closed_risks()
 }
 
 /****************************
+ * FUNCTION: GET HIGH RISKS *
+ ****************************/
+function get_high_risks()
+{
+        // Open the database connection
+        $db = db_open();
+
+        // Get the high risk level
+        $stmt = $db->prepare("SELECT value FROM `risk_levels` WHERE name = 'High'");
+        $stmt->execute();
+        $array = $stmt->fetch();
+        $high = $array['value'];
+
+        // Query the database
+        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :high");
+        $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        return count($array);
+}
+
+/****************************
  * FUNCTION: GET RISK TREND *
  ****************************/
-function get_risk_trend()
+function get_risk_trend($title = null)
 {
         $chart = new Highchart();
 	$chart->includeExtraScripts();
 
 	$chart->chart->type = "arearange";
 	$chart->chart->zoomType = "x";
-	$chart->title->text = "Risks Opened and Closed Over Time";
+	$chart->title->text = $title;
 	$chart->xAxis->type = "datetime";
 	$chart->yAxis->title->text = null;
 	$chart->yAxis->min = 0;
@@ -200,7 +228,7 @@ function get_risk_trend()
 /**********************************
  * FUNCTION: OPEN RISK LEVEL PIE *
  **********************************/
-function open_risk_level_pie()
+function open_risk_level_pie($title = null)
 {
         $chart = new Highchart();
 
@@ -208,7 +236,7 @@ function open_risk_level_pie()
         $chart->chart->plotBackgroundColor = null;
         $chart->chart->plotBorderWidth = null;
         $chart->chart->plotShadow = false;
-        $chart->title->text = "Risk Level";
+        $chart->title->text = $title;
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
@@ -217,7 +245,6 @@ function open_risk_level_pie()
         $chart->plotOptions->pie->cursor = "pointer";
         $chart->plotOptions->pie->dataLabels->enabled = false;
         $chart->plotOptions->pie->showInLegend = 1;
-	$chart->plotOptions->pie->colors = array('red', 'orange', 'yellow', 'black');
         $chart->credits->enabled = false;
 
         // Open the database connection
@@ -249,11 +276,47 @@ function open_risk_level_pie()
         // Otherwise
         else
         {
+		// Initialize high, medium, and low
+		$high = false;
+		$medium = false;
+		$low = false;
+		$color_array = array();
+
                 // Create the data array
                 foreach ($array as $row)
                 {
                         $data[] = array($row['level'], (int)$row['num']);
+
+			// If we have at least one high risk
+			if ($row['level'] == "High" && $high != true)
+			{
+				$high = true;
+
+				// Add red to the color array
+				$color_array[] = "red";
+			}
+			// If we have at least one medium risk
+			else if ($row['level'] == "Medium" && $medium != true)
+			{
+				$medium = true;
+
+				// Add orange to the color array
+				$color_array[] = "orange";
+			}
+			// If we have at least one low risk
+			else if ($row['level'] == "Low" && $low != true)
+			{
+				$low = true;
+
+				// Add yellow to the color array
+				$color_array[] = "yellow";
+			}
                 }
+
+		// Add black to color array for insignificant
+		$color_array[] = "lightgrey";
+
+		$chart->plotOptions->pie->colors = $color_array;
 
                 $chart->series[] = array('type' => "pie",
                         'name' => "Level",
@@ -269,7 +332,7 @@ function open_risk_level_pie()
 /**********************************
  * FUNCTION: OPEN RISK STATUS PIE *
  **********************************/
-function open_risk_status_pie()
+function open_risk_status_pie($title = null)
 {
 	$chart = new Highchart();
 
@@ -277,7 +340,7 @@ function open_risk_status_pie()
 	$chart->chart->plotBackgroundColor = null;
 	$chart->chart->plotBorderWidth = null;
 	$chart->chart->plotShadow = false;
-	$chart->title->text = "Status";
+	$chart->title->text = $title;
 
 	$chart->tooltip->formatter = new HighchartJsExpr("function() {
     	return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
@@ -329,7 +392,7 @@ function open_risk_status_pie()
 /************************************
  * FUNCTION: CLOSED RISK REASON PIE *
  ************************************/
-function closed_risk_reason_pie()
+function closed_risk_reason_pie($title = null)
 {
         $chart = new Highchart();
 
@@ -337,7 +400,7 @@ function closed_risk_reason_pie()
         $chart->chart->plotBackgroundColor = null;
         $chart->chart->plotBorderWidth = null;
         $chart->chart->plotShadow = false;
-        $chart->title->text = "Reasons";
+        $chart->title->text = $title;
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
@@ -389,7 +452,7 @@ function closed_risk_reason_pie()
 /************************************
  * FUNCTION: OPEN RISK LOCATION PIE *
  ************************************/
-function open_risk_location_pie()
+function open_risk_location_pie($title = null)
 {
         $chart = new Highchart();
 
@@ -397,7 +460,7 @@ function open_risk_location_pie()
         $chart->chart->plotBackgroundColor = null;
         $chart->chart->plotBorderWidth = null;
         $chart->chart->plotShadow = false;
-        $chart->title->text = "Sites/Locations";
+        $chart->title->text = $title;
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
@@ -449,7 +512,7 @@ function open_risk_location_pie()
 /************************************
  * FUNCTION: OPEN RISK CATEGORY PIE *
  ************************************/
-function open_risk_category_pie()
+function open_risk_category_pie($title = null)
 {
         $chart = new Highchart();
 
@@ -457,7 +520,7 @@ function open_risk_category_pie()
         $chart->chart->plotBackgroundColor = null;
         $chart->chart->plotBorderWidth = null;
         $chart->chart->plotShadow = false;
-        $chart->title->text = "Categories";
+        $chart->title->text = $title;
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
@@ -509,7 +572,7 @@ function open_risk_category_pie()
 /********************************
  * FUNCTION: OPEN RISK TEAM PIE *
  ********************************/
-function open_risk_team_pie()
+function open_risk_team_pie($title = null)
 {
         $chart = new Highchart();
 
@@ -517,7 +580,7 @@ function open_risk_team_pie()
         $chart->chart->plotBackgroundColor = null;
         $chart->chart->plotBorderWidth = null;
         $chart->chart->plotShadow = false;
-        $chart->title->text = "Teams";
+        $chart->title->text = $title;
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
@@ -569,7 +632,7 @@ function open_risk_team_pie()
 /**************************************
  * FUNCTION: OPEN RISK TECHNOLOGY PIE *
  **************************************/
-function open_risk_technology_pie()
+function open_risk_technology_pie($title = null)
 {
         $chart = new Highchart();
 
@@ -577,7 +640,7 @@ function open_risk_technology_pie()
         $chart->chart->plotBackgroundColor = null;
         $chart->chart->plotBorderWidth = null;
         $chart->chart->plotShadow = false;
-        $chart->title->text = "Technologies";
+        $chart->title->text = $title;
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
@@ -629,7 +692,7 @@ function open_risk_technology_pie()
 /**************************************
  * FUNCTION: OPEN RISK OWNER PIE *
  **************************************/
-function open_risk_owner_pie()
+function open_risk_owner_pie($title = null)
 {
         $chart = new Highchart();
 
@@ -637,7 +700,7 @@ function open_risk_owner_pie()
         $chart->chart->plotBackgroundColor = null;
         $chart->chart->plotBorderWidth = null;
         $chart->chart->plotShadow = false;
-        $chart->title->text = "Risk Owners";
+        $chart->title->text = $title;
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
@@ -689,7 +752,7 @@ function open_risk_owner_pie()
 /******************************************
  * FUNCTION: OPEN RISK OWNERS MANAGER PIE *
  ******************************************/
-function open_risk_owners_manager_pie()
+function open_risk_owners_manager_pie($title = null)
 {
         $chart = new Highchart();
 
@@ -697,7 +760,7 @@ function open_risk_owners_manager_pie()
         $chart->chart->plotBackgroundColor = null;
         $chart->chart->plotBorderWidth = null;
         $chart->chart->plotShadow = false;
-        $chart->title->text = "Risk Managers";
+        $chart->title->text = $title;
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
@@ -749,7 +812,7 @@ function open_risk_owners_manager_pie()
 /******************************************
  * FUNCTION: OPEN RISK SCORING METHOD PIE *
  ******************************************/
-function open_risk_scoring_method_pie()
+function open_risk_scoring_method_pie($title = null)
 {
         $chart = new Highchart();
 
@@ -757,7 +820,7 @@ function open_risk_scoring_method_pie()
         $chart->chart->plotBackgroundColor = null;
         $chart->chart->plotBorderWidth = null;
         $chart->chart->plotShadow = false;
-        $chart->title->text = "Scoring Method";
+        $chart->title->text = $title;
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
@@ -816,20 +879,43 @@ function get_review_needed_table()
         // Get risks marked as consider for projects
         $risks = get_risks(3);
 
+        // Initialize the reviews array
+        $reviews = array();
+
+	// Parse through each row in the array
+	foreach ($risks as $key => $row)
+	{
+		// Create arrays for each value
+		$risk_id[$key] = (int)$row['id'];
+		$subject[$key] = htmlentities(stripslashes($row['subject']), ENT_QUOTES, 'UTF-8', false);
+                $status[$key] = htmlentities($row['status'], ENT_QUOTES, 'UTF-8', false);
+                $calculated_risk[$key] = htmlentities($row['calculated_risk'], ENT_QUOTES, 'UTF-8', false);
+                $color[$key] = get_risk_color($row['calculated_risk']);
+                $dayssince[$key] = dayssince($row['submission_date']);
+                $next_review[$key] = next_review($color[$key], $risk_id[$key], $row['next_review'], false);
+                $next_review_html[$key] = next_review($color[$key], $row['id'], $row['next_review']);
+
+		// Create a new array of reviews
+		$reviews[] = array('risk_id' => $risk_id[$key], 'subject' => $subject[$key], 'status' => $status[$key], 'calculated_risk' => $calculated_risk[$key], 'color' => $color[$key], 'dayssince' => $dayssince[$key], 'next_review' => $next_review[$key], 'next_review_html' => $next_review_html[$key]);
+
+		// Sort the reviews array by next_review
+		array_multisort($next_review, SORT_DESC, SORT_STRING, $calculated_risk, SORT_DESC, SORT_NUMERIC, $reviews);
+	}
+
 	// Start with an empty review status;
 	$review_status = "";
 
         // For each risk
-        foreach ($risks as $risk)
+        foreach ($reviews as $review)
         {
-                $risk_id = (int)$risk['id'];
-		$subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8');
-		$status = htmlentities($risk['status'], ENT_QUOTES, 'UTF-8');
-		$calculated_risk = htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8');
-                $color = get_risk_color($risk['calculated_risk']);
-		$dayssince = dayssince($risk['submission_date']);
-		$next_review = next_review($color, $risk['id'], false);
-		$next_review_html = next_review($color, $risk['id']);
+                $risk_id = $review['risk_id'];
+		$subject = $review['subject'];
+		$status = $review['status'];
+		$calculated_risk = $review['calculated_risk'];
+                $color = $review['color'];
+		$dayssince = $review['dayssince'];
+		$next_review = $review['next_review'];
+		$next_review_html = $review['next_review_html'];
 
 		// If we have a new review status and its not a date
 		if (($review_status != $next_review) && (!preg_match('/\d{4}/', $review_status)))
@@ -876,7 +962,7 @@ function get_review_needed_table()
                 	echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
 			echo "<td align=\"left\" width=\"150px\">" . $status . "</td>\n";
                 	echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                	echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8') . "</td>\n";
+                	echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . $calculated_risk . "</td>\n";
 			echo "<td align=\"center\" width=\"100px\">" . $dayssince . "</td>\n";
                 	echo "<td align=\"center\" width=\"150px\">" . $next_review_html . "</td>\n";
                 	echo "</tr>\n";

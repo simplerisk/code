@@ -48,12 +48,27 @@
         {
                 if (isset($_GET['id']))
 		{
-			$id = htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8');
+			$id = htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8', false);
 		}
 		else if (isset($_POST['id']))
 		{
-			$id = htmlentities($_POST['id'], ENT_QUOTES, 'UTF-8');
+			$id = htmlentities($_POST['id'], ENT_QUOTES, 'UTF-8', false);
 		}
+
+                // If team separation is enabled
+                if (team_separation_extra())
+                {
+                        //Include the team separation extra
+                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+                
+                        // If the user should not have access to the risk
+                        if (!extra_grant_access($_SESSION['uid'], $id))
+                        {
+                                // Redirect back to the page the workflow started on
+                                header("Location: " . $_SESSION["workflow_start"]);
+                                exit(0);
+                        }
+                }
 
 		// Reopen the risk
 		reopen_risk($id);

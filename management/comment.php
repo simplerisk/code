@@ -49,12 +49,27 @@
         {
                 if (isset($_GET['id']))
 		{
-			$id = htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8');
+			$id = htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8', false);
 		}
 		else if (isset($_POST['id']))
 		{
-			$id = htmlentities($_POST['id'], ENT_QUOTES, 'UTF-8');
+			$id = htmlentities($_POST['id'], ENT_QUOTES, 'UTF-8', false);
 		}
+
+		// If team separation is enabled
+                if (team_separation_extra())
+                {
+                        //Include the team separation extra
+                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                        // If the user should not have access to the risk
+                        if (!extra_grant_access($_SESSION['uid'], $id))
+                        {
+                                // Redirect back to the page the workflow started on
+                                header("Location: " . $_SESSION["workflow_start"]);
+                                exit(0);
+                        }
+                }
 
                 // Get the details of the risk
                 $risk = get_risk_by_id($id);
@@ -62,9 +77,9 @@
                 // If the risk was found use the values for the risk
                 if (count($risk) != 0)
                 {
-                        $status = htmlentities($risk[0]['status'], ENT_QUOTES, 'UTF-8');
-                        $subject = htmlentities($risk[0]['subject'], ENT_QUOTES, 'UTF-8');
-                        $calculated_risk = htmlentities($risk[0]['calculated_risk'], ENT_QUOTES, 'UTF-8');
+                        $status = htmlentities($risk[0]['status'], ENT_QUOTES, 'UTF-8', false);
+                        $subject = htmlentities($risk[0]['subject'], ENT_QUOTES, 'UTF-8', false);
+                        $calculated_risk = htmlentities($risk[0]['calculated_risk'], ENT_QUOTES, 'UTF-8', false);
                 }
                 // If the risk was not found use null values
                 else

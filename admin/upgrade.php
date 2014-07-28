@@ -19,10 +19,10 @@
         }
 
         // Database version to upgrade
-        $version_to_upgrade = "20140413-001";
+        $version_to_upgrade = "20140526-001";
 
         // Database version upgrading to
-        $version_upgrading_to = "20140526-001";
+        $version_upgrading_to = "20140728-001";
 
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
@@ -257,7 +257,8 @@ function logout()
 			echo "The current database version is: " . $db_version . "<br />\n";
 
 			// If the version to upgrade is the current version
-			if ($db_version == $version_to_upgrade)
+			//if ($db_version == $version_to_upgrade)
+			if ($db_version == $version_to_upgrade || $db_version == "20140413-001")
 			{
 				echo "This script will ugprade your database from version " . $version_to_upgrade . " to the version that goes with these application files.  Click &quot;CONTINUE&quot; to proceed.<br />\n";
 				echo "<br />\n";
@@ -289,40 +290,68 @@ function logout()
                  	* DATABASE CHANGES GO HERE *
 		 	****************************/
 
-			// Change the database table columns to use UTF-8
-			echo "Changing the table columns to use UTF-8.<br />\n";
-			$stmt = $db->prepare("SHOW TABLES");
+			// Add Spanish as a supported language file
+			echo "Adding Spanish as a supported language.<br />\n";
+			$stmt = $db->prepare("INSERT INTO `languages` (`name`, `full`) VALUES ('es', 'Spanish')");
 			$stmt->execute();
-			$tables = $stmt->fetchAll();
 
-			foreach ($tables as $table)
-			{
-				$name = $table[0];
-				echo "Changing table " . $name . ".<br />\n";
-				$stmt = $db->prepare("ALTER TABLE `" . $name . "` CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;");
+                        // If the language is en
+                        if (LANG_DEFAULT == "en")
+                        {
+				// Change "Reject Risk" to "Reject Risk and Close"
+				echo "Changing \"Reject Risk\" to \"Reject Risk and Close\".<br />\n";
+				$stmt = $db->prepare("ALTER TABLE `review` CHANGE `name` `name` VARCHAR( 50 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ;");
+				$stmt->execute();
+				$stmt = $db->prepare("UPDATE `review` SET `name` = 'Reject Risk and Close' WHERE `value` =2;");
 				$stmt->execute();
 			}
+                        // If the language is bp
+                        else if (LANG_DEFAULT == "bp")
+                        {
+                                // Change "Reject Risk" to "Reject Risk and Close"
+                                echo "Changing \"Reject Risk\" to \"Reject Risk and Close\".<br />\n";
+                                $stmt = $db->prepare("ALTER TABLE `review` CHANGE `name` `name` VARCHAR( 50 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ;");
+                                $stmt->execute();
+                                $stmt = $db->prepare("UPDATE `review` SET `name` = 'Rechazar Riesgo y Cerrar' WHERE `value` =2;");
+                                $stmt->execute();
+			}
 
-			// Remove project id for any closed risks
-			echo "Removing project id values for any closed risks.<br />\n";
-			$stmt = $db->prepare("UPDATE `risks` SET project_id=0 WHERE `status`='Closed'");
+			// Update database to allow decimal risk levels
+			echo "Updating database to allow decimal values for risk levels.<br />\n";
+			$stmt = $db->prepare("ALTER TABLE `risk_levels` CHANGE `value` `value` DECIMAL( 2,1 ) NOT NULL ;");
 			$stmt->execute();
 
-			// Add rejected as a close reason
-			echo "Adding \"Rejected\" as a close reason.<br />\n";
-			$stmt = $db->prepare("INSERT INTO `close_reason` (`value`, `name`) VALUES ('0', 'Rejected')");
-			$stmt->execute();
-			$stmt = $db->prepare("UPDATE `close_reason` SET value=0 WHERE name='Rejected'");
-			$stmt->execute();
-			$stmt = $db->prepare("ALTER TABLE `close_reason` AUTO_INCREMENT=5");
+			// Add field to track custom next review date
+			echo "Adding a next review field to the management review table.<br />\n";
+			$stmt = $db->prepare("ALTER TABLE `mgmt_reviews` ADD `next_review` VARCHAR( 10 ) NOT NULL DEFAULT '0000-00-00';");
 			$stmt->execute();
 
+			// Set database to be able to insert a primary key with a value of 0
+			echo "Setting database to accept a primary key with a value of 0.<br />\n";
+			$stmt = $db->prepare("SET SQL_MODE = \"NO_AUTO_VALUE_ON_ZERO\"");
+			$stmt->execute();
+
+			// If the language is en
+			if (LANG_DEFAULT == "en")
+			{
+				// Set the Unassigned Risks project to a value of 0
+				echo "Setting the Unassigned Risks project value to 0.<br />\n";
+				$stmt = $db->prepare("UPDATE `projects` SET value = 0 WHERE name = \"Unassigned Risks\"");
+				$stmt->execute();
+			}
 			// If the language is bp
-			if (LANG_DEFAULT == "bp")
+			else if (LANG_DEFAULT == "bp")
 			{
-				$db->prepare("UPDATE `close_reason` SET name='Rejeitado' WHERE name='Rejected'");
-				$stmt->execute();
+                                // Set the Unassigned Risks project to a value of 0
+                                echo "Setting the Unassigned Risks project value to 0.<br />\n";
+                                $stmt = $db->prepare("UPDATE `projects` SET value = 0 WHERE name = \"Riscos não Atribuídos\"");
+                                $stmt->execute();
 			}
+
+			// Add a column to track project status
+			echo "Adding a column to track project status.<br />\n";
+			$stmt = $db->prepare("ALTER TABLE `projects` ADD `status` INT NOT NULL DEFAULT '1'");
+			$stmt->execute();
 
 			/************************
 		 	 * END DATABASE CHANGES *
@@ -330,7 +359,7 @@ function logout()
 
 			// Update the database version information
 			echo "Updating the database version information.<br />\n";
-			$stmt = $db->prepare("UPDATE `settings` SET `value` = '" . $version_upgrading_to . "' WHERE `settings`.`name` = 'db_version' AND `settings`.`value` = '" . $version_to_upgrade . "' LIMIT 1 ;");
+			$stmt = $db->prepare("UPDATE `settings` SET `value` = '" . $version_upgrading_to . "' WHERE `settings`.`name` = 'db_version' LIMIT 1 ;");
 			$stmt->execute();
 
 			// Disconnect from the database

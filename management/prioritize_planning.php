@@ -75,6 +75,20 @@
                 $alert_message = "The project order was updated successfully.";
 	}
 
+	// If the projects were saved to status
+	if (isset($_POST['update_project_status']))
+	{
+		foreach ($_POST['projects'] as $project_id)
+		{
+			$status_id = $_POST['project_' . $project_id];
+			update_project_status($status_id, $project_id);
+		}
+
+                // There is an alert message
+                $alert = "good";
+                $alert_message = "The project statuses were successfully updated.";
+	}
+
         // Check if a new project was submitted
         if (isset($_POST['add_project']))
         {
@@ -181,6 +195,7 @@
                 }
         }
 
+	echo ", #statussortable-1 li, #statussortable-2 li, #statussortable-3 li, #statussortable-4 li";
 	echo " { margin: 0 5px 5px 5px; padding: 5px; font-size: 0.75em; width: 120px; }\n";
 ?>
     </style>
@@ -208,6 +223,7 @@
                 }
 	}
 
+	echo ", #statussortable-1, #statussortable-2, #statussortable-3, #statussortable-4";
 	echo "\" ).sortable().disableSelection();\n";
 ?>
         var $tabs = $( "#tabs" ).tabs();
@@ -239,6 +255,37 @@
             });
           }
         });
+
+        var $statustabs = $( "#statustabs" ).tabs();
+        var $status_tab_items = $( "ul:first li", $statustabs ).droppable({
+          accept: ".connectedSortable li",
+          hoverClass: "ui-state-hover",
+          drop: function( event, ui ) {
+            var $item = $( this );
+            var $list = $( $item.find( "a" ).attr( "href" ) )
+            .find( ".connectedSortable" );
+            ui.draggable.hide( "slow", function() {
+              $statustabs.tabs( "option", "active", $status_tab_items.index( $item ) );
+              $( this ).appendTo( $list ).show( "slow" );
+            });
+            $list.each(function() {
+              // Get the status ID that was just dropped into
+              var id = $(this).attr("id");
+              var part = id.split("-");
+              var project_id = part[1];
+
+              // Get the project ID that was just dropped
+              var dragged_project_id = $(ui.draggable).attr("id");
+
+              // Project name to update
+              var project_name = "project_" + dragged_project_id;
+
+              // Update the risk input with the proper value
+              document.getElementsByName(project_name)[0].value = project_id;
+            });
+          }
+        });
+
       });
     </script>
     <script>
@@ -382,13 +429,11 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                 <p><?php echo $lang['PrioritizeProjectsHelp']; ?>.</p>
                 <?php get_project_list(); ?>
               </div>
-<!--
               <div class="hero-unit">
-                <h4>4) Determine Project Status</h4>
-                <p>Place projects into buckets based on their current status.</p>
+                <h4>4) <?php echo $lang['DetermineProjectStatus']; ?></h4>
+                <p><?php echo $lang['ProjectStatusHelp']; ?></p>
                 <?php get_project_status(); ?>
               </div>
--->
             </div>
           </div>
         </div>

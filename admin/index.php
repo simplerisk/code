@@ -56,13 +56,13 @@
         // Check if the risk level update was submitted
         if (isset($_POST['update_risk_levels']))
         {
-                $high = (int)$_POST['high'];
-                $medium = (int)$_POST['medium'];
-                $low = (int)$_POST['low'];
+                $high = (float)$_POST['high'];
+                $medium = (float)$_POST['medium'];
+                $low = (float)$_POST['low'];
                 $risk_model = (int)$_POST['risk_models'];
 
                 // Check if all values are integers
-                if (is_int($high) && is_int($medium) && is_int($low) && is_int($risk_model))
+                if (is_float($high) && is_float($medium) && is_float($low) && is_int($risk_model))
                 {
                         // Check if low < medium < high
                         if (($low < $medium) && ($medium < $high))
@@ -247,6 +247,8 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                 </form>
 
                 <?php create_risk_table(); ?>
+
+                <?php echo "<p><font size=\"1\">* " . $lang['AllRiskScoresAreAdjusted'] . "</font></p>"; ?>
               </div>
             </div>
           </div>

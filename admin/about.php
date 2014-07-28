@@ -190,7 +190,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                 <table cellpadding="3" cellspacing="0" border="0"><tr><td align="left">
 
                 Enter amount:<br>
-                <input type="text" name="amount" value="500.00" class="payform"><br>
+                <input type="text" name="amount" value="50.00" class="payform"><br>
 
                 </td><td rowspan="3">
 

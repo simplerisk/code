@@ -288,9 +288,9 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                 <h4>Update an Existing User:</h4>
                 <input name="user" type="hidden" value="<?php echo $user_id; ?>" />
 		<?php echo $lang['Type']; ?>: <input style="cursor: default;" name="type" type="text" maxlength="20" size="20" title="<?php echo $type; ?>" disabled="disabled" value="<?php echo $type; ?>" /><br />
-                <?php echo $lang['FullName']; ?>: <input name="name" type="text" maxlength="50" size="20" value="<?php echo htmlentities($name, ENT_QUOTES, 'UTF-8'); ?>" /><br />
-                <?php echo $lang['EmailAddress']; ?>: <input name="email" type="text" maxlength="200" size="20" value="<?php echo htmlentities($email, ENT_QUOTES, 'UTF-8'); ?>" /><br />
-                <?php echo $lang['Username']; ?>: <input style="cursor: default;" name="username" type="text" maxlength="20" size="20" title="<?php echo htmlentities($username, ENT_QUOTES, 'UTF-8'); ?>" disabled="disabled" value="<?php echo htmlentities($username, ENT_QUOTES, 'UTF-8'); ?>" /><br />
+                <?php echo $lang['FullName']; ?>: <input name="name" type="text" maxlength="50" size="20" value="<?php echo htmlentities($name, ENT_QUOTES, 'UTF-8', false); ?>" /><br />
+                <?php echo $lang['EmailAddress']; ?>: <input name="email" type="text" maxlength="200" size="20" value="<?php echo htmlentities($email, ENT_QUOTES, 'UTF-8', false); ?>" /><br />
+                <?php echo $lang['Username']; ?>: <input style="cursor: default;" name="username" type="text" maxlength="20" size="20" title="<?php echo htmlentities($username, ENT_QUOTES, 'UTF-8', false); ?>" disabled="disabled" value="<?php echo htmlentities($username, ENT_QUOTES, 'UTF-8', false); ?>" /><br />
 		<?php echo $lang['LastLogin']; ?>: <input style="cursor: default;" name="last_login" type="text" maxlength="20" size="20" title="<?php echo $last_login; ?>" disabled="disabled" value="<?php echo $last_login; ?>" /><br />
                 <?php echo $lang['Language']; ?>: <?php create_dropdown("languages", get_value_by_name("languages", $language)); ?>
                 <h6><u><?php echo $lang['Teams']; ?></u></h6>

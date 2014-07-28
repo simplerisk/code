@@ -172,7 +172,7 @@ function set_user_permissions($user)
         // Set the session values
         $_SESSION['uid'] = $array[0]['value'];
         $_SESSION['user'] = $user;
-        $_SESSION['name'] = htmlentities($array[0]['name'], ENT_QUOTES, 'UTF-8');
+        $_SESSION['name'] = htmlentities($array[0]['name'], ENT_QUOTES, 'UTF-8', false);
         $_SESSION['admin'] = $array[0]['admin'];
         $_SESSION['review_high'] = $array[0]['review_high'];
         $_SESSION['review_medium'] = $array[0]['review_medium'];

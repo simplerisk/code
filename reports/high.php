@@ -6,6 +6,7 @@
 	// Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+	require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 
         // Add various security headers
         header("X-Frame-Options: DENY");
@@ -54,6 +55,7 @@
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/sorttable.js"></script>
+    <script src="../js/highcharts.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -118,7 +120,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
             <li>
               <a href="my_open.php"><?php echo $lang['AllOpenRisksAssignedToMeByRiskLevel']; ?></a>
             </li>
-            <li class="active">
+            <li>
               <a href="open.php"><?php echo $lang['AllOpenRisksByRiskLevel']; ?></a>
             </li>
             <li>
@@ -145,7 +147,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
             <li>
               <a href="closed.php"><?php echo $lang['AllClosedRisksByRiskLevel']; ?></a>
             </li>
-            <li>
+            <li class="active">
               <a href="high.php"><?php echo $lang['HighRiskReport']; ?></a>
             </li>
             <li>
@@ -166,8 +168,32 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           </ul>
         </div>
         <div class="span9">
-          <div class="row-fluid"><p><?php echo $lang['ReportOpenHelp']; ?>.</p></div>
-	  <?php get_risk_table(0); ?>
+          <div class="row-fluid">
+            <div class="span6">
+              <div class="well">
+                <?php
+                        $open = get_open_risks();
+                        $high = get_high_risks();
+                        
+                        // If there are not 0 open risks
+                        if ($open != 0)
+                        {
+                                $percent = 100*($high/$open);
+                        }
+                        else $percent = 0;
+                ?>
+                <h3><?php echo $lang['TotalOpenRisks']; ?>: <?php echo $open; ?></h3>
+                <h3><?php echo $lang['TotalHighRisks']; ?>: <?php echo $high; ?></h3>
+                <h3><?php echo $lang['HighRiskPercentage']; ?>: <?php echo round($percent, 2); ?>%</h3>
+              </div>
+            </div>
+            <div class="span6">
+              <div class="well">
+                <?php open_risk_level_pie($lang['RiskLevel']); ?>
+              </div>
+            </div>
+          </div>
+	  <?php get_risk_table(20); ?>
         </div>
       </div>
     </div>

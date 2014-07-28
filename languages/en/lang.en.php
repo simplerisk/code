@@ -1,7 +1,9 @@
 <?php
-        /* This Source Code Form is subject to the terms of the Mozilla Public *
-         * License, v. 2.0. If a copy of the MPL was not distributed with this *
-         * file, You can obtain one at http://mozilla.org/MPL/2.0/.            */
+/***********************************************************************
+ * This Source Code Form is subject to the terms of the Mozilla Public *
+ * License, v. 2.0. If a copy of the MPL was not distributed with this *
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.            *
+ ***********************************************************************/
 
 define('DATETIME', 'Y-m-d g:i A T');
 define('DATETIMESIMPLE', 'Y-m-d H:i');
@@ -124,7 +126,7 @@ $lang = array(
     'ExternalReferenceId'=>'External Reference ID',
     'ControlNumber'=>'Control Number',
     'Owner'=>'Owner',
-    'OwnersManager'=>'Owner&#39;s Manager',
+    'OwnersManager'=>'Owner\'s Manager',
     'RiskScoringMethod'=>'Risk Scoring Method',
     'CurrentLikelihood'=>'Current Likelihood',
     'CurrentImpact'=>'Current Impact',
@@ -239,6 +241,24 @@ $lang = array(
     'AllOpenRisksByTeam'=>'All Open Risks by Team',
     'ReportRiskTeamsHelp'=>'This report shows all teams and the risks assigned to each',
     'Unassigned'=>'Unassigned',
+    'AllOpenRisksByTechnology'=>'All Open Risks By Technology',
+    'ReportRiskTechnologiesHelp'=>'This report shows all technologies and the risks assigned to each',
+    'RiskLevel'=>'Risk Level',
+    'BasedOnTheCurrentRiskScore'=>'Based on the current risk score, the next review date will be ',
+    'WouldYouLikeToUseADifferentDate'=>'Would you like to use a different date instead?',
+    'RisksOpenedAndClosedOverTime'=>'Risks Opened and Closed Over Time',
+    'AllRiskScoresAreAdjusted'=>'All risk scores are adjusted to fit on a 0-10 scale.',
+    'DetermineProjectStatus'=>'Determine Project Status',
+    'ProjectStatusHelp'=>'Place projects into buckets based on their current status.',
+    'ActiveProjects'=>'Active Projects',
+    'OnHoldProjects'=>'On Hold Projects',
+    'CompletedProjects'=>'Completed Projects',
+    'CancelledProjects'=>'Cancelled Projects',
+    'UpdateProjectStatuses'=>'Update Project Statuses',
+    'HighRiskReport'=>'High Risk Report',
+    'TotalOpenRisks'=>'Total Open Risks',
+    'TotalHighRisks'=>'Total High Risks',
+    'HighRiskPercentage'=>'High Risk Percentage',
     ''=>'',
 );
 

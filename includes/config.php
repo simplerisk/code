@@ -31,7 +31,7 @@ define('USE_DATABASE_FOR_SESSIONS', 'true');
 define('CSP_ENABLED', 'false');
 
 // Set the default language (Can be overridden per user)
-// Options: bp, en
+// Options: bp, en, es
 define('LANG_DEFAULT', 'en');
 
 // Set the default Timezone

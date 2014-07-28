@@ -16,6 +16,12 @@
     font-weight: 600;
     float: left;
 }
+.project {
+    background: repeat-x scroll 50% 50% lightgrey;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: left;
+}
 .redalert {
     background: repeat-x scroll 50% 50% #F70D1A;
     border: 1px solid #000000;

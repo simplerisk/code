@@ -135,6 +135,9 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               <a href="teams.php"><?php echo $lang['AllOpenRisksByTeam']; ?></a>
             </li>
             <li>
+              <a href="technologies.php"><?php echo $lang['AllOpenRisksByTechnology']; ?></a>
+            </li>
+            <li>
               <a href="risk_scoring.php"><?php echo $lang['AllOpenRisksByScoringMethod']; ?></a>
             </li>
             <li class="active">
@@ -142,6 +145,9 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
             </li>
             <li>
               <a href="closed.php"><?php echo $lang['AllClosedRisksByRiskLevel']; ?></a>
+            </li>
+            <li>
+              <a href="high.php"><?php echo $lang['HighRiskReport']; ?></a>
             </li>
             <li>
               <a href="submitted_by_date.php"><?php echo $lang['SubmittedRisksByDate']; ?></a>
