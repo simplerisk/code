@@ -46,113 +46,272 @@
                 exit(0);
         }
 
-	// Check if the user has access to submit risks
-	if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1)
-	{
-		$submit_risks = false;
-		$alert = "bad";
-		$alert_message = "You do not have permission to submit new risks.  Any risks that you attempt to submit will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.";
-	}
-	else $submit_risks = true;
-
-        // Check if a new risk was submitted and the user has permissions to submit new risks
-        if ((isset($_POST['submit'])) && $submit_risks)
-        {
-                $status = "New";
-                $subject = addslashes($_POST['subject']);
-		$reference_id = addslashes($_POST['reference_id']);
-		$regulation = (int)$_POST['regulation'];
-		$control_number = addslashes($_POST['control_number']);
-		$location = addslashes($_POST['location']);
-                $category = (int)$_POST['category'];
-                $team = (int)$_POST['team'];
-                $technology = (int)$_POST['technology'];
-                $owner = (int)$_POST['owner'];
-                $manager = (int)$_POST['manager'];
-                $assessment = addslashes($_POST['assessment']);
-                $notes = addslashes($_POST['notes']);
-
-		// Risk scoring method
-		// 1 = Classic
-		// 2 = CVSS
-		// 3 = DREAD
-		// 4 = OWASP
-		// 5 = Custom
-		$scoring_method = (int)$_POST['scoring_method'];
-
-		// Classic Risk Scoring Inputs
-		$CLASSIClikelihood = (int)$_POST['likelihood'];
-                $CLASSICimpact =(int) $_POST['impact'];
-
-		// CVSS Risk Scoring Inputs
-		$CVSSAccessVector = $_POST['AccessVector'];
-		$CVSSAccessComplexity = $_POST['AccessComplexity'];
-		$CVSSAuthentication = $_POST['Authentication'];
-		$CVSSConfImpact = $_POST['ConfImpact'];
-		$CVSSIntegImpact = $_POST['IntegImpact'];
-		$CVSSAvailImpact = $_POST['AvailImpact'];
-		$CVSSExploitability = $_POST['Exploitability'];
-		$CVSSRemediationLevel = $_POST['RemediationLevel'];
-		$CVSSReportConfidence = $_POST['ReportConfidence'];
-		$CVSSCollateralDamagePotential = $_POST['CollateralDamagePotential'];
-		$CVSSTargetDistribution = $_POST['TargetDistribution'];
-		$CVSSConfidentialityRequirement = $_POST['ConfidentialityRequirement'];
-		$CVSSIntegrityRequirement = $_POST['IntegrityRequirement'];
-		$CVSSAvailabilityRequirement = $_POST['AvailabilityRequirement'];
-
-		// DREAD Risk Scoring Inputs
-		$DREADDamage = (int)$_POST['DREADDamage'];
-		$DREADReproducibility = (int)$_POST['DREADReproducibility'];
-		$DREADExploitability = (int)$_POST['DREADExploitability'];
-		$DREADAffectedUsers = (int)$_POST['DREADAffectedUsers'];
-		$DREADDiscoverability = (int)$_POST['DREADDiscoverability'];
-
-		// OWASP Risk Scoring Inputs
-		$OWASPSkillLevel = (int)$_POST['OWASPSkillLevel'];
-		$OWASPMotive = (int)$_POST['OWASPMotive'];
-		$OWASPOpportunity = (int)$_POST['OWASPOpportunity'];
-		$OWASPSize = (int)$_POST['OWASPSize'];
-		$OWASPEaseOfDiscovery = (int)$_POST['OWASPEaseOfDiscovery'];
-		$OWASPEaseOfExploit = (int)$_POST['OWASPEaseOfExploit'];
-		$OWASPAwareness = (int)$_POST['OWASPAwareness'];
-		$OWASPIntrusionDetection = (int)$_POST['OWASPIntrusionDetection'];
-		$OWASPLossOfConfidentiality = (int)$_POST['OWASPLossOfConfidentiality'];
-		$OWASPLossOfIntegrity = (int)$_POST['OWASPLossOfIntegrity'];
-		$OWASPLossOfAvailability = (int)$_POST['OWASPLossOfAvailability'];
-		$OWASPLossOfAccountability = (int)$_POST['OWASPLossOfAccountability'];
-		$OWASPFinancialDamage = (int)$_POST['OWASPFinancialDamage'];
-		$OWASPReputationDamage = (int)$_POST['OWASPReputationDamage'];
-		$OWASPNonCompliance = (int)$_POST['OWASPNonCompliance'];
-		$OWASPPrivacyViolation = (int)$_POST['OWASPPrivacyViolation'];
-
-		// Custom Risk Scoring
-		$custom = $_POST['Custom'];
-
-                // Submit risk and get back the id
-                $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
-
-		// Submit risk scoring
-		submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
-
-		// If the notification extra is enabled
-        	if (notification_extra())
-        	{
-                	// Include the team separation extra
-                	require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-                	// Send the notification
-                	notify_new_risk($last_insert_id, $subject);
-        	}
-
-		// Audit log
-		$risk_id = $last_insert_id + 1000;
-		$message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $_SESSION['user'] . "\".";
-		write_log($risk_id, $_SESSION['uid'], $message);
-
-		// There is an alert message
-		$alert = "good";
-		$alert_message = "Risk submitted successfully!";
+        if(isset($_GET['page']) && ($_GET['page'] == 'plan_mitigations' || $_GET['page'] == 'management_review' || $_GET['page'] == 'review_risks')){
+          // Record the page the workflow started from as a session variable
+          $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
         }
+
+
+  if(!isset($_GET['page'])) {
+    	// Check if the user has access to submit risks
+    	if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1)
+    	{
+    		$submit_risks = false;
+    		$alert = "bad";
+    		$alert_message = "You do not have permission to submit new risks.  Any risks that you attempt to submit will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.";
+    	}
+    	else $submit_risks = true;
+
+            // Check if a new risk was submitted and the user has permissions to submit new risks
+            if ((isset($_POST['submit'])) && $submit_risks)
+            {
+                    $status = "New";
+                    $subject = addslashes($_POST['subject']);
+    		$reference_id = addslashes($_POST['reference_id']);
+    		$regulation = (int)$_POST['regulation'];
+    		$control_number = addslashes($_POST['control_number']);
+    		$location = addslashes($_POST['location']);
+                    $category = (int)$_POST['category'];
+                    $team = (int)$_POST['team'];
+                    $technology = (int)$_POST['technology'];
+                    $owner = (int)$_POST['owner'];
+                    $manager = (int)$_POST['manager'];
+                    $assessment = addslashes($_POST['assessment']);
+                    $notes = addslashes($_POST['notes']);
+
+    		// Risk scoring method
+    		// 1 = Classic
+    		// 2 = CVSS
+    		// 3 = DREAD
+    		// 4 = OWASP
+    		// 5 = Custom
+    		$scoring_method = (int)$_POST['scoring_method'];
+
+    		// Classic Risk Scoring Inputs
+    		$CLASSIClikelihood = (int)$_POST['likelihood'];
+                    $CLASSICimpact =(int) $_POST['impact'];
+
+    		// CVSS Risk Scoring Inputs
+    		$CVSSAccessVector = $_POST['AccessVector'];
+    		$CVSSAccessComplexity = $_POST['AccessComplexity'];
+    		$CVSSAuthentication = $_POST['Authentication'];
+    		$CVSSConfImpact = $_POST['ConfImpact'];
+    		$CVSSIntegImpact = $_POST['IntegImpact'];
+    		$CVSSAvailImpact = $_POST['AvailImpact'];
+    		$CVSSExploitability = $_POST['Exploitability'];
+    		$CVSSRemediationLevel = $_POST['RemediationLevel'];
+    		$CVSSReportConfidence = $_POST['ReportConfidence'];
+    		$CVSSCollateralDamagePotential = $_POST['CollateralDamagePotential'];
+    		$CVSSTargetDistribution = $_POST['TargetDistribution'];
+    		$CVSSConfidentialityRequirement = $_POST['ConfidentialityRequirement'];
+    		$CVSSIntegrityRequirement = $_POST['IntegrityRequirement'];
+    		$CVSSAvailabilityRequirement = $_POST['AvailabilityRequirement'];
+
+    		// DREAD Risk Scoring Inputs
+    		$DREADDamage = (int)$_POST['DREADDamage'];
+    		$DREADReproducibility = (int)$_POST['DREADReproducibility'];
+    		$DREADExploitability = (int)$_POST['DREADExploitability'];
+    		$DREADAffectedUsers = (int)$_POST['DREADAffectedUsers'];
+    		$DREADDiscoverability = (int)$_POST['DREADDiscoverability'];
+
+    		// OWASP Risk Scoring Inputs
+    		$OWASPSkillLevel = (int)$_POST['OWASPSkillLevel'];
+    		$OWASPMotive = (int)$_POST['OWASPMotive'];
+    		$OWASPOpportunity = (int)$_POST['OWASPOpportunity'];
+    		$OWASPSize = (int)$_POST['OWASPSize'];
+    		$OWASPEaseOfDiscovery = (int)$_POST['OWASPEaseOfDiscovery'];
+    		$OWASPEaseOfExploit = (int)$_POST['OWASPEaseOfExploit'];
+    		$OWASPAwareness = (int)$_POST['OWASPAwareness'];
+    		$OWASPIntrusionDetection = (int)$_POST['OWASPIntrusionDetection'];
+    		$OWASPLossOfConfidentiality = (int)$_POST['OWASPLossOfConfidentiality'];
+    		$OWASPLossOfIntegrity = (int)$_POST['OWASPLossOfIntegrity'];
+    		$OWASPLossOfAvailability = (int)$_POST['OWASPLossOfAvailability'];
+    		$OWASPLossOfAccountability = (int)$_POST['OWASPLossOfAccountability'];
+    		$OWASPFinancialDamage = (int)$_POST['OWASPFinancialDamage'];
+    		$OWASPReputationDamage = (int)$_POST['OWASPReputationDamage'];
+    		$OWASPNonCompliance = (int)$_POST['OWASPNonCompliance'];
+    		$OWASPPrivacyViolation = (int)$_POST['OWASPPrivacyViolation'];
+
+    		// Custom Risk Scoring
+    		$custom = $_POST['Custom'];
+
+                    // Submit risk and get back the id
+                    $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+
+    		// Submit risk scoring
+    		submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
+
+    		// If the notification extra is enabled
+            	if (notification_extra())
+            	{
+                    	// Include the team separation extra
+                    	require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+                    	// Send the notification
+                    	notify_new_risk($last_insert_id, $subject);
+            	}
+
+    		// Audit log
+    		$risk_id = $last_insert_id + 1000;
+    		$message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $_SESSION['user'] . "\".";
+    		write_log($risk_id, $_SESSION['uid'], $message);
+
+    		// There is an alert message
+    		$alert = "good";
+    		$alert_message = "Risk submitted successfully!";
+            }
+    }
+
+    else if($_GET['page'] == 'plan_mitigations'){
+        // If mitigated was passed back to the page as a GET parameter
+        if (isset($_GET['mitigated']))
+        {
+          // If its true
+          if ($_GET['mitigated'] == true)
+          {
+            $alert = "good";
+            $alert_message = "Mitigation submitted successfully!";
+          }
+        }
+
+    }
+
+    else if($_GET['page'] == 'management_review'){
+        // If reviewed is passed via GET
+        if (isset($_GET['reviewed']))
+        {
+                // If it's true
+                if ($_GET['reviewed'] == true)
+                {
+                        $alert = "good";
+                        $alert_message = "Management review submitted successfully!";
+                }       
+        }
+
+    }
+
+    else if($_GET['page'] == 'prioritize_planning'){
+        // If the risks were saved to projects
+          if (isset($_POST['update_projects']))
+          {
+            foreach ($_POST['ids'] as $risk_id)
+                        {
+                                $project_id = $_POST['risk_' . $risk_id];
+                                update_risk_project($project_id, $risk_id);
+                        }
+
+            // There is an alert message
+            $alert = "good";
+            $alert_message = "The risks were saved successfully to the projects.";
+                }
+
+
+          // If the order was updated
+          if (isset($_POST['update_order']))
+          {
+            foreach ($_POST['ids'] as $id)
+            {
+              $order = $_POST['order_' . $id];
+              update_project_order($order, $id);
+            }
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The project order was updated successfully.";
+          }
+
+          // If the projects were saved to status
+          if (isset($_POST['update_project_status']))
+          {
+            foreach ($_POST['projects'] as $project_id)
+            {
+              $status_id = $_POST['project_' . $project_id];
+              update_project_status($status_id, $project_id);
+            }
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The project statuses were successfully updated.";
+          }
+
+                // Check if a new project was submitted
+                if (isset($_POST['add_project']))
+                {
+                        $name = $_POST['new_project'];
+
+                        // Insert a new project up to 100 chars
+                        add_name("projects", $name, 100);
+
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "A new project was added by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+            // There is an alert message
+                        $alert = "good";
+                        $alert_message = "A new project was added successfully.";
+                }
+
+                // Check if a project was deleted
+                if (isset($_POST['delete_project']))
+                {
+                        $value = (int)$_POST['projects'];
+
+                        // Verify value is an integer
+                        if (is_int($value))
+                        {
+              // If the project ID is 0 (ie. Unassigned Risks)
+              if ($value == 0)
+              {
+                // There is an alert message
+                $alert = "bad";
+                $alert_message = "You cannot delete the Unassigned Risks project or we will have no place to put unassigned risks.  Sorry.";
+              }
+              // If the project has risks associated with it
+              else if (project_has_risks($value))
+              {
+                // There is an alert message
+                $alert = "bad";
+                $alert_message = "You cannot delete a project that has risks assigned to it.  Drag the risks back to the Unassigned Risks tab, save it, and try again.";
+              }
+              else
+              {
+                                  delete_value("projects", $value);
+
+                                  // Audit log
+                                  $risk_id = 1000;
+                                  $message = "An existing project was removed by the \"" . $_SESSION['user'] . "\" user.";
+                                  write_log($risk_id, $_SESSION['uid'], $message);
+
+                // There is an alert message
+                $alert = "good";
+                            $alert_message = "An existing project was deleted successfully.";
+              }
+                        }
+            // We should never get here as we bound the variable as an int
+            else
+            {
+              // There is an alert message
+              $alert = "bad";
+              $alert_message = "The project ID was not a valid value.  Please try again.";
+            }
+                }
+
+    }
+
+    else if($_GET['page'] == 'review_risks') {
+      // If reviewed is passed via GET
+        if (isset($_GET['reviewed']))
+        {
+                // If it's true
+                if ($_GET['reviewed'] == true)
+                {
+                        $alert = "good";
+                        $alert_message = "Risk review submitted successfully!";
+                }
+        }
+    }
+
 ?>
 
 <!doctype html>
@@ -232,6 +391,153 @@
         }
       }
     </script>
+    <?php 
+      if($_GET['page'] == 'prioritize_planning'){
+    ?>
+        <style>
+        <?php
+          // Get the projects
+                $projects = get_projects();
+
+          // Get the total number of projects
+          $count = count($projects);
+
+          // Initialize the counter
+          $counter = 1;
+
+          // For each project created
+                foreach ($projects as $project)
+                {
+            // Get the project ID
+                        $id = $project['value'];
+
+            echo "#sortable-" . $id . " li";
+
+                        // If it's not the last one
+                        if ($counter != $count)
+                        {
+                                echo ", ";
+              $counter++;
+                        }
+                }
+
+          echo ", #statussortable-1 li, #statussortable-2 li, #statussortable-3 li, #statussortable-4 li";
+          echo " { margin: 0 5px 5px 5px; padding: 5px; font-size: 0.75em; width: 120px; }\n";
+        ?>
+            </style>
+            <script>
+              $(function() {
+        <?php
+          echo "$( \"";
+
+                // Initialize the counter
+                $counter = 1;
+
+          // For each project created
+          foreach ($projects as $project)
+                {
+            // Get the project ID
+                        $id = $project['value'];
+
+            echo "#sortable-" . $id;
+
+                        // If it's not the last one
+                        if ($counter != $count)
+                        {
+                                echo ", ";
+                                $counter++;
+                        }
+          }
+
+          echo ", #statussortable-1, #statussortable-2, #statussortable-3, #statussortable-4";
+          echo "\" ).sortable().disableSelection();\n";
+        ?>
+                var $tabs = $( "#tabs" ).tabs();
+                var $tab_items = $( "ul:first li", $tabs ).droppable({
+                  accept: ".connectedSortable li",
+                  hoverClass: "ui-state-hover",
+                  drop: function( event, ui ) {
+                    var $item = $( this );
+                    var $list = $( $item.find( "a" ).attr( "href" ) )
+                    .find( ".connectedSortable" );
+                    ui.draggable.hide( "slow", function() {
+                      $tabs.tabs( "option", "active", $tab_items.index( $item ) );
+                      $( this ).appendTo( $list ).show( "slow" );
+                    });
+                    $list.each(function() {
+                      // Get the project ID that was just dropped into
+                      var id = $(this).attr("id");
+                      var part = id.split("-");
+                      var project_id = part[1];
+
+                      // Get the risk ID that was just dropped
+                      var dragged_risk_id = $(ui.draggable).attr("id");
+
+                      // Risk name to update
+                      var risk_name = "risk_" + dragged_risk_id;
+
+                      // Update the risk input with the proper value
+                      document.getElementsByName(risk_name)[0].value = project_id;
+                    });
+                  }
+                });
+
+                var $statustabs = $( "#statustabs" ).tabs();
+                var $status_tab_items = $( "ul:first li", $statustabs ).droppable({
+                  accept: ".connectedSortable li",
+                  hoverClass: "ui-state-hover",
+                  drop: function( event, ui ) {
+                    var $item = $( this );
+                    var $list = $( $item.find( "a" ).attr( "href" ) )
+                    .find( ".connectedSortable" );
+                    ui.draggable.hide( "slow", function() {
+                      $statustabs.tabs( "option", "active", $status_tab_items.index( $item ) );
+                      $( this ).appendTo( $list ).show( "slow" );
+                    });
+                    $list.each(function() {
+                      // Get the status ID that was just dropped into
+                      var id = $(this).attr("id");
+                      var part = id.split("-");
+                      var project_id = part[1];
+
+                      // Get the project ID that was just dropped
+                      var dragged_project_id = $(ui.draggable).attr("id");
+
+                      // Project name to update
+                      var project_name = "project_" + dragged_project_id;
+
+                      // Update the risk input with the proper value
+                      document.getElementsByName(project_name)[0].value = project_id;
+                    });
+                  }
+                });
+
+              });
+            </script>
+            <script>
+              $(function() {
+                $( "#prioritize" ).sortable({
+                  update: function(event, ui)
+                  {
+                    // Create an array with the new order
+                    var order = $( "#prioritize" ).sortable('toArray');
+
+                    for(var key in order) {
+                      var val = order[key];
+                      var part = val.split("_");
+
+                      // Update each hidden field used to store the list item position
+                      document.getElementById("order"+part[1]).value = key;
+                    }
+                  }
+                });
+
+                $( "#prioritize" ).disableSelection();
+              });
+            </script>
+    <?php
+      }
+    ?>
   </head>
   
   <body>
@@ -310,24 +616,27 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
       <div class="row-fluid">
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
-            <li class="active">
+            <li <?php if(!isset($_GET['page'])) { ?>class="active"<? } ?>>
               <a href="index.php">I. <?php echo $lang['SubmitYourRisks']; ?></a> 
             </li>
-            <li>
-              <a href="plan_mitigations.php">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
+            <li <?php if($_GET['page'] == 'plan_mitigations') { ?>class="active"<? } ?>>
+              <a href="index.php?page=plan_mitigations">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
             </li>
-            <li>
-              <a href="management_review.php">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
+            <li <?php if($_GET['page'] == 'management_review') { ?>class="active"<? } ?>>
+              <a href="index.php?page=management_review">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
             </li>
-            <li>
-              <a href="prioritize_planning.php">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
+            <li <?php if($_GET['page'] == 'prioritize_planning') { ?>class="active"<? } ?>>
+              <a href="index.php?page=prioritize_planning">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
             </li>
-            <li>
-              <a href="review_risks.php">V. <?php echo $lang['ReviewRisksRegularly']; ?></a> 
+            <li <?php if($_GET['page'] == 'review_risks') { ?>class="active"<? } ?>>
+              <a href="index.php?page=review_risks">V. <?php echo $lang['ReviewRisksRegularly']; ?></a> 
             </li>
           </ul>
         </div>
         <div class="span9">
+          <?php 
+            if(!isset($_GET['page'])) {
+          ?>
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
@@ -484,6 +793,17 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               </div>
             </div>
           </div>
+          <?php
+            } else if($_GET['page'] == 'plan_mitigations') {
+                include 'plan_mitigations.php'; 
+            } else if($_GET['page'] == 'management_review') {
+                include 'management_review.php';
+            } else if($_GET['page'] == 'prioritize_planning') {
+                include 'prioritize_planning.php'; 
+            } else if($_GET['page'] == 'review_risks') {
+                include 'review_risks.php'; 
+            }
+          ?>
         </div>
       </div>
     </div>

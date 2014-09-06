@@ -110,6 +110,564 @@
 			}
                 }
         }
+
+        // Check if the risk level update was submitted
+        if (isset($_POST['update_review_settings']))
+        {
+                $high = (int)$_POST['high'];
+                $medium = (int)$_POST['medium'];
+                $low = (int)$_POST['low'];
+
+                // Check if all values are integers
+                if (is_int($high) && is_int($medium) && is_int($low))
+                {
+                        // Update the review settings
+                        update_review_settings($high, $medium, $low);
+
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "The review settings were modified by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+      $alert = "good";
+      $alert_message = "The review settings have been updated successfully!";
+                }
+    // NOTE: This will never trigger as we bind $high, $medium, and $low to integer values
+    else
+    {
+      $alert = "bad";
+      $alert_message = "One of your review settings is not an integer value.  Please try again.";
+    }
+        }
+
+        // Check if a new category was submitted
+        if (isset($_POST['add_category']))
+        {
+                $name = $_POST['new_category'];
+
+                // Insert a new category up to 50 chars
+                add_name("category", $name, 50);
+
+                // Audit log
+                $risk_id = 1000;
+                $message = "A new category was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+
+    // There is an alert message
+    $alert = "good";
+    $alert_message = "A new category was added successfully.";
+        }
+
+        // Check if a category was deleted
+        if (isset($_POST['delete_category']))
+        {
+                $value = (int)$_POST['category'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        delete_value("category", $value);
+
+                  // Audit log
+                  $risk_id = 1000;
+                  $message = "An existing category was removed by the \"" . $_SESSION['user'] . "\" user.";
+                  write_log($risk_id, $_SESSION['uid'], $message);
+
+                  // There is an alert message
+                  $alert = "good";
+                  $alert_message = "An existing category was removed successfully.";
+                }
+        }
+
+        // Check if a new team was submitted
+        if (isset($_POST['add_team']))
+        {
+                $name = $_POST['new_team'];
+
+                // Insert a new team up to 50 chars
+                add_name("team", $name, 50);
+
+                // Audit log
+                $risk_id = 1000;
+                $message = "A new team was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+
+                // There is an alert message
+                $alert = "good";
+                $alert_message = "A new team was added successfully.";
+        }
+
+        // Check if a team was deleted
+        if (isset($_POST['delete_team']))
+        {
+                $value = (int)$_POST['team'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        delete_value("team", $value);
+
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "An existing team was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "An existing team was removed successfully.";
+                }
+        }
+
+        // Check if a new technology was submitted
+        if (isset($_POST['add_technology']))
+        {
+                $name = $_POST['new_technology'];
+
+                // Insert a new technology up to 50 chars
+                add_name("technology", $name, 50);
+
+                // Audit log
+                $risk_id = 1000;
+                $message = "A new technology was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+
+                // There is an alert message
+                $alert = "good";
+                $alert_message = "A new technology was added successfully.";
+        }
+
+        // Check if a technology was deleted
+        if (isset($_POST['delete_technology']))
+        {
+                $value = (int)$_POST['technology'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        delete_value("technology", $value);
+
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "An existing technology was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "An existing technology was removed successfully.";
+                }
+        }
+
+        // Check if a new location was submitted
+        if (isset($_POST['add_location']))
+        {
+                $name = $_POST['new_location'];
+
+                // Insert a new location up to 100 chars
+                add_name("location", $name, 100);
+
+                // Audit log
+                $risk_id = 1000;
+                $message = "A new location was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+
+                // There is an alert message
+                $alert = "good";
+                $alert_message = "A new location was added successfully.";
+        }
+
+        // Check if a location was deleted
+        if (isset($_POST['delete_location']))
+        {
+                $value = (int)$_POST['location'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        delete_value("location", $value);
+
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "An existing location was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "An existing location was removed successfully.";
+                }
+        }
+
+        // Check if a new control regulation was submitted
+        if (isset($_POST['add_regulation']))
+        {
+                $name = $_POST['new_regulation'];
+
+                // Insert a new regulation up to 50 chars
+                add_name("regulation", $name, 50);
+
+                // Audit log
+                $risk_id = 1000;
+                $message = "A new control regulation was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+
+                // There is an alert message
+                $alert = "good";
+                $alert_message = "A new control regulation was added successfully.";
+        }
+
+        // Check if a control regulation was deleted
+        if (isset($_POST['delete_regulation']))
+        {
+                $value = (int)$_POST['regulation'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        delete_value("regulation", $value);
+
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "An existing control regulation was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "An existing control regulation was removed successfully.";
+                }
+        }
+
+        // Check if a new planning strategy was submitted
+        if (isset($_POST['add_planning_strategy']))
+        {
+                $name = $_POST['new_planning_strategy'];
+
+                // Insert a new planning strategy up to 20 chars
+                add_name("planning_strategy", $name, 20);
+
+                // Audit log
+                $risk_id = 1000;
+                $message = "A new planning strategy was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+
+                // There is an alert message
+                $alert = "good";
+                $alert_message = "A new planning strategy was added successfully.";
+        }
+
+        // Check if a planning strategy was deleted
+        if (isset($_POST['delete_planning_strategy']))
+        {
+                $value = (int)$_POST['planning_strategy'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        delete_value("planning_strategy", $value);
+
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "An existing planning strategy was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "An existing planning strategy was removed successfully.";
+                }
+        }
+
+        // Check if a new close reason was submitted
+        if (isset($_POST['add_close_reason']))
+        {
+                $name = $_POST['new_close_reason'];
+
+                // Insert a new close reason up to 50 chars
+                add_name("close_reason", $name, 50);
+                
+                // Audit log
+                $risk_id = 1000;
+                $message = "A new close reason was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+
+                // There is an alert message
+                $alert = "good";
+                $alert_message = "A new close reason was added successfully.";
+        }
+                        
+        // Check if a close reason was deleted
+        if (isset($_POST['delete_close_reason']))
+        {
+                $value = (int)$_POST['close_reason'];
+        
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        delete_value("close_reason", $value);
+                
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "An existing close reason was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "An existing close reason was removed successfully.";
+                }
+        }
+
+        // Check if a new user was submitted
+        if (isset($_POST['add_user']))
+        {
+    $type = $_POST['type'];
+                $name = addslashes($_POST['name']);
+    $email = addslashes($_POST['email']);
+                $user = addslashes($_POST['new_user']);
+                $pass = $_POST['password'];
+                $repeat_pass = $_POST['repeat_password'];
+    $teams = $_POST['team'];
+                $admin = isset($_POST['admin']) ? '1' : '0';
+    $submit_risks = isset($_POST['submit_risks']) ? '1' : '0';
+    $modify_risks = isset($_POST['modify_risks']) ? '1' : '0';
+    $close_risks = isset($_POST['close_risks']) ? '1' : '0';
+    $plan_mitigations = isset($_POST['plan_mitigations']) ? '1' : '0';
+                $review_high = isset($_POST['review_high']) ? '1' : '0';
+                $review_medium = isset($_POST['review_medium']) ? '1' : '0';
+                $review_low = isset($_POST['review_low']) ? '1' : '0';
+    $multi_factor = (int)$_POST['multi_factor'];
+
+    // If the type is 1
+    if ($type == "1")
+    {
+      $type = "simplerisk";
+    }
+    // If the type is 2
+    else if ($type == "2")
+    {
+      $type = "ldap";
+    }
+    else $type = "INVALID";
+
+                // Verify that the two passwords are the same
+                if ("$pass" == "$repeat_pass")
+                {
+                        // Verify that the user does not exist
+                        if (!user_exist($user))
+                        {
+        // Create a unique salt for the user
+                                $salt = generate_token(20);
+
+        // Hash the salt
+        $salt_hash = '$2a$15$' . md5($salt);
+
+        // Generate the password hash
+        $hash = generateHash($salt_hash, $pass);
+
+        // Create a boolean for all
+        $all = false;
+
+        // Create a boolean for none
+        $none = false;
+
+        // Create the team value
+        foreach ($teams as $value)
+        {
+          // If the selected value is all
+          if ($value == "all") $all = true;
+
+          // If the selected value is none
+          if ($value == "none") $none = true;
+
+          $team .= ":";
+          $team .= $value;
+          $team .= ":";
+        }
+
+        // If no value was submitted then default to none
+        if ($value == "") $none = true;
+
+        // If all was selected then assign all teams
+        if ($all) $team = "all";
+
+        // If none was selected then assign no teams
+        if ($none) $team = "none";
+
+                                // Insert a new user
+                                add_user($type, $user, $email, $name, $salt, $hash, $team, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
+
+                          // Audit log
+                          $risk_id = 1000;
+                          $message = "A new user was added by the \"" . $_SESSION['user'] . "\" user.";
+                          write_log($risk_id, $_SESSION['uid'], $message);
+
+        $alert = "good";
+        $alert_message = "The new user was added successfully.";
+                        }
+      // Otherwise, the user already exists
+      else
+      {
+        $alert = "bad";
+        $alert_message = "The username already exists.  Please try again with a different username.";
+      }
+                }
+    // Otherewise, the two passwords are different
+    else
+    {
+        $alert = "bad";
+        $alert_message = "The password and repeat password entered were different.  Please try again.";
+    }
+        }
+
+  // Check if a user was enabled
+  if (isset($_POST['enable_user']))
+  {
+                $value = (int)$_POST['disabled_users'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        enable_user($value);
+
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "A user was enabled by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The user was enabled successfully.";
+                }
+  }
+
+  // Check if a user was disabled
+  if (isset($_POST['disable_user']))
+  {
+                $value = (int)$_POST['enabled_users'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        disable_user($value);
+
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "A user was disabled by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The user was disabled successfully.";
+                }
+
+  }
+
+        // Check if a user was deleted
+        if (isset($_POST['delete_user']))
+        {
+                $value = (int)$_POST['user'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        delete_value("user", $value);
+
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "An existing user was deleted by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+      // There is an alert message
+      $alert = "good";
+      $alert_message = "The existing user was deleted successfully.";
+                }
+        }
+
+  // Check if a password reset was requeted
+        if (isset($_POST['password_reset']))
+  {
+    $value = (int)$_POST['user'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        password_reset_by_userid($value);
+              
+                        // Audit log
+                        $risk_id = 1000;
+                       $message = "A password reset request was submitted by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "A password reset email was sent to the user.";
+                }
+  }
+
+  // Check if the impact update was submitted
+        if (isset($_POST['update_impact']))
+        {
+                $new_name = $_POST['new_name'];
+                $value = (int)$_POST['impact'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        update_table("impact", $new_name, $value);
+
+                        // Audit log
+                        $risk_id = 1000;
+                       $message = "The impact naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+      // There is an alert message
+      $alert = "good";
+      $alert_message = "The impact naming convention was updated successfully.";
+                }
+        }
+
+        // Check if the likelihood update was submitted
+        if (isset($_POST['update_likelihood']))
+        {
+                $new_name = $_POST['new_name'];
+                $value = (int)$_POST['likelihood'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        update_table("likelihood", $new_name, $value);
+
+                        // Audit log
+                        $risk_id = 1000;
+                       $message = "The likelihood naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+      // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The likelihood naming convention was updated successfully.";
+                }
+        }
+
+        // Check if the mitigation effort update was submitted
+        if (isset($_POST['update_mitigation_effort']))
+        {
+                $new_name = $_POST['new_name'];
+                $value = (int)$_POST['mitigation_effort'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        update_table("mitigation_effort", $new_name, $value);
+
+                        // Audit log
+                        $risk_id = 1000;
+                       $message = "The mitigation effort naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+      // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The mitigation effort naming convention was updated successfully.";
+                }
+        }
+
+
 ?>
 
 <!doctype html>
@@ -198,36 +756,39 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
       <div class="row-fluid">
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
-            <li class="active">
+            <li <?php if(!isset($_GET['page'])) { ?>class="active"<? } ?>>
               <a href="index.php"><?php echo $lang['ConfigureRiskFormula']; ?></a> 
             </li>
-            <li>
-              <a href="review_settings.php"><?php echo $lang['ConfigureReviewSettings']; ?></a>
+            <li <?php if($_GET['page'] == 'review_settings') { ?>class="active"<? } ?>>
+              <a href="index.php?page=review_settings"><?php echo $lang['ConfigureReviewSettings']; ?></a>
             </li>
-            <li>
-              <a href="add_remove_values.php"><?php echo $lang['AddAndRemoveValues']; ?></a> 
+            <li <?php if($_GET['page'] == 'add_remove_values') { ?>class="active"<? } ?>>
+              <a href="index.php?page=add_remove_values"><?php echo $lang['AddAndRemoveValues']; ?></a> 
             </li>
-            <li>
-              <a href="user_management.php"><?php echo $lang['UserManagement']; ?></a> 
+            <li <?php if($_GET['page'] == 'user_management') { ?>class="active"<? } ?>>
+              <a href="index.php?page=user_management"><?php echo $lang['UserManagement']; ?></a> 
             </li>
-            <li>
-              <a href="custom_names.php"><?php echo $lang['RedefineNamingConventions']; ?></a> 
+            <li <?php if($_GET['page'] == 'custom_names') { ?>class="active"<? } ?>>
+              <a href="index.php?page=custom_names"><?php echo $lang['RedefineNamingConventions']; ?></a> 
             </li>
-            <li>
-              <a href="audit_trail.php"><?php echo $lang['AuditTrail']; ?></a>
+            <li <?php if($_GET['page'] == 'audit_trail') { ?>class="active"<? } ?>>
+              <a href="index.php?page=audit_trail"><?php echo $lang['AuditTrail']; ?></a>
             </li>
-            <li>
-              <a href="extras.php"><?php echo $lang['Extras']; ?></a>
+            <li <?php if($_GET['page'] == 'extras') { ?>class="active"<? } ?>>
+              <a href="index.php?page=extras"><?php echo $lang['Extras']; ?></a>
             </li>
-            <li>
-              <a href="announcements.php"><?php echo $lang['Announcements']; ?></a>
+            <li <?php if($_GET['page'] == 'announcements') { ?>class="active"<? } ?>>
+              <a href="index.php?page=announcements"><?php echo $lang['Announcements']; ?></a>
             </li>
-            <li>
-              <a href="about.php"><?php echo $lang['About']; ?></a>        
+            <li <?php if($_GET['page'] == 'about') { ?>class="active"<? } ?>>
+              <a href="index.php?page=about"><?php echo $lang['About']; ?></a>        
             </li>
           </ul>
         </div>
         <div class="span9">
+          <?php 
+            if(!isset($_GET['page'])) {
+          ?>
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
@@ -252,6 +813,25 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               </div>
             </div>
           </div>
+          <?php 
+            } else if($_GET['page'] == 'review_settings') {
+                include 'review_settings.php'; 
+            } else if($_GET['page'] == 'add_remove_values') {
+                include 'add_remove_values.php';
+            } else if($_GET['page'] == 'user_management') {
+                include 'user_management.php'; 
+            } else if($_GET['page'] == 'custom_names') {
+                include 'custom_names.php'; 
+            } else if($_GET['page'] == 'audit_trail') {
+                include 'audit_trail.php'; 
+            } else if($_GET['page'] == 'extras') {
+                include 'extras.php'; 
+            } else if($_GET['page'] == 'announcements') {
+                include 'announcements.php'; 
+            } else if($_GET['page'] == 'about') {
+                include 'about.php'; 
+            }
+          ?>
         </div>
       </div>
     </div>
