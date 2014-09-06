@@ -254,28 +254,28 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               <a href="index.php"><?php echo $lang['ConfigureRiskFormula']; ?></a> 
             </li>
             <li>
-              <a href="review_settings.php"><?php echo $lang['ConfigureReviewSettings']; ?></a>
+              <a href="index.php?page=review_settings"><?php echo $lang['ConfigureReviewSettings']; ?></a>
             </li>
             <li>
-              <a href="add_remove_values.php"><?php echo $lang['AddAndRemoveValues']; ?></a> 
+              <a href="index.php?page=add_remove_values"><?php echo $lang['AddAndRemoveValues']; ?></a> 
             </li>
             <li class="active">
-              <a href="user_management.php"><?php echo $lang['UserManagement']; ?></a> 
+              <a href="index.php?page=user_management"><?php echo $lang['UserManagement']; ?></a> 
             </li>
             <li>
-              <a href="custom_names.php"><?php echo $lang['RedefineNamingConventions']; ?></a> 
+              <a href="index.php?page=custom_names"><?php echo $lang['RedefineNamingConventions']; ?></a> 
             </li>
             <li>
-              <a href="audit_trail.php"><?php echo $lang['AuditTrail']; ?></a>
+              <a href="index.php?page=audit_trail"><?php echo $lang['AuditTrail']; ?></a>
             </li>
             <li>
-              <a href="extras.php"><?php echo $lang['Extras']; ?></a>
+              <a href="index.php?page=extras"><?php echo $lang['Extras']; ?></a>
             </li>
             <li>
-              <a href="announcements.php"><?php echo $lang['Announcements']; ?></a>
+              <a href="index.php?page=announcements"><?php echo $lang['Announcements']; ?></a>
             </li>
             <li>
-              <a href="about.php"><?php echo $lang['About']; ?></a>        
+              <a href="index.php?page=about"><?php echo $lang['About']; ?></a>        
             </li>
           </ul>
         </div>

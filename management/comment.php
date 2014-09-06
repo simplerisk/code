@@ -188,16 +188,16 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               <a href="index.php">I. <?php echo $lang['SubmitYourRisks']; ?></a> 
             </li>
             <li>
-              <a href="plan_mitigations.php">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
+              <a href="index.php?page=plan_mitigations">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
             </li>
             <li>
-              <a href="management_review.php">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
+              <a href="index.php?page=management_review">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
             </li>
             <li>
-              <a href="prioritize_planning.php">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
+              <a href="index.php?page=prioritize_planning">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
             </li>
             <li class="active">
-              <a href="review_risks.php">V. <?php echo $lang['ReviewRisksRegularly']; ?></a>
+              <a href="index.php?page=review_risks">V. <?php echo $lang['ReviewRisksRegularly']; ?></a> 
             </li>
           </ul>
         </div>
