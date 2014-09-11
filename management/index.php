@@ -318,13 +318,16 @@
 <html>
   
   <head>
+    <script src="../js/jquery-1.10.1.min.js"></script>
     <script src="../js/jquery.min.js"></script>
+    <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="../css/jquery-ui.min.css"> 
     <script type="text/javascript">
       function popupcvss()
       {
@@ -397,7 +400,7 @@
         <style>
         <?php
           // Get the projects
-                $projects = get_projects();
+          $projects = get_projects();
 
           // Get the total number of projects
           $count = count($projects);
@@ -406,47 +409,47 @@
           $counter = 1;
 
           // For each project created
-                foreach ($projects as $project)
-                {
-            // Get the project ID
-                        $id = $project['value'];
+          foreach ($projects as $project)
+          {
+                  // Get the project ID
+                  $id = $project['value'];
 
-            echo "#sortable-" . $id . " li";
+                  echo "#sortable-" . $id . " li";
 
-                        // If it's not the last one
-                        if ($counter != $count)
-                        {
-                                echo ", ";
-              $counter++;
-                        }
-                }
+                  // If it's not the last one
+                  if ($counter != $count)
+                  {
+                          echo ", ";
+                          $counter++;
+                  }
+          }
 
           echo ", #statussortable-1 li, #statussortable-2 li, #statussortable-3 li, #statussortable-4 li";
           echo " { margin: 0 5px 5px 5px; padding: 5px; font-size: 0.75em; width: 120px; }\n";
         ?>
-            </style>
-            <script>
+        </style>
+        <script>
               $(function() {
         <?php
           echo "$( \"";
 
-                // Initialize the counter
-                $counter = 1;
+          // Initialize the counter
+          $counter = 1;
 
           // For each project created
           foreach ($projects as $project)
-                {
-            // Get the project ID
-                        $id = $project['value'];
+          {
+                  // Get the project ID
+                  $id = $project['value'];
 
-            echo "#sortable-" . $id;
+                  echo "#sortable-" . $id;
 
-                        // If it's not the last one
-                        if ($counter != $count)
-                        {
-                                echo ", ";
-                                $counter++;
-                        }
+                  // If it's not the last one
+                  if ($counter != $count)
+                  {
+                          echo ", ";
+                          $counter++;
+                  }
           }
 
           echo ", #statussortable-1, #statussortable-2, #statussortable-3, #statussortable-4";
@@ -549,6 +552,8 @@
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
+    <link rel="stylesheet" href="../css/prioritize.css">
+    <link rel="stylesheet" href="../css/jquery-ui.min.css">
     <div class="navbar">
       <div class="navbar-inner">
         <div class="container">
