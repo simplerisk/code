@@ -53,7 +53,7 @@ if (custom_authentication_extra())
       </form>
     </div>
     <div class="hero-unit">
-      <form name="select_user" method="post" action="view_user_details.php">
+      <form name="select_user" method="post" action="index.php?module=3&page=9">
       <p>
       <h4><?php echo $lang['ViewDetailsForUser']; ?>:</h4>
       <?php echo $lang['DetailsForUser']; ?> <?php create_dropdown("user"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Select']; ?>" name="select_user" />

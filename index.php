@@ -1,4 +1,22 @@
 <?php
+switch ($_GET['module']) {
+  case 1:
+    include 'management/index.php'; 
+    break;
+  case 2: 
+    include 'reports/index.php'; 
+    break;
+  case 3:
+    include 'admin/index.php';
+    break;
+  case 4:
+    include 'account/profile.php';
+    break;
+  default:
+    break;
+}
+
+if(!isset($_GET['module']) || $_GET['module'] == '0') {
 	/* This Source Code Form is subject to the terms of the Mozilla Public
  	 * License, v. 2.0. If a copy of the MPL was not distributed with this
  	 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -56,7 +74,7 @@
                                 	grant_access();
 
                                 	// Redirect to the reports index
-                                	header("Location: reports");
+                                	header("Location: index.php?module=2");
 				}
 				// If Duo authentication is enabled for the user
                         	else if ($enabled_auth == 2)
@@ -78,7 +96,7 @@
 				grant_access();
 
 				// Redirect to the reports index
-				header("Location: reports");
+				header("Location: index.php?module=2");
 			}
 		}
 		else $_SESSION["access"] = "denied";
@@ -103,7 +121,7 @@
                         	grant_access();
 
                         	// Redirect to the reports index
-                        	header("Location: reports");
+                        	header("Location: index.php?module=2");
 			}
 		}
 	}
@@ -140,19 +158,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li class="active">
-                <a href="index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="index.php?module=0"><?php echo $lang['Home']; ?></a> 
               </li>
               <li>
-                <a href="management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="index.php?module=1"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li>
-                <a href="reports/index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="index.php?module=2"><?php echo $lang['Reporting']; ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"admin/index.php\">" . $lang['Configure'] . "</a>\n";
+          echo "<a href=\"index.php?module=3\">" . $lang['Configure'] . "</a>\n";
           echo "</li>\n";
 }
 	  echo "</ul>\n";
@@ -230,3 +248,6 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
   </body>
 
 </html>
+<?php
+}
+?>

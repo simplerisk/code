@@ -667,6 +667,116 @@
                 }
         }
 
+        // If the user has been updated
+    if (isset($_POST['update_user']) && isset($_POST['user']))
+    {
+            // Get the user ID
+            $user_id = (int)$_POST['user'];
+
+        // Verify the user ID value is an integer
+        if (is_int($user_id))
+        {
+            // Get the submitted values
+            $name = $_POST['name'];
+            $email = $_POST['email'];
+            $teams = $_POST['team'];
+            $language = get_name_by_value("languages", (int)$_POST['languages']);
+                    $admin = isset($_POST['admin']) ? '1' : '0';
+                    $submit_risks = isset($_POST['submit_risks']) ? '1' : '0';
+                    $modify_risks = isset($_POST['modify_risks']) ? '1' : '0';
+            $close_risks = isset($_POST['close_risks']) ? '1' : '0';
+                    $plan_mitigations = isset($_POST['plan_mitigations']) ? '1' : '0';
+                    $review_high = isset($_POST['review_high']) ? '1' : '0';
+                    $review_medium = isset($_POST['review_medium']) ? '1' : '0';
+                    $review_low = isset($_POST['review_low']) ? '1' : '0';
+            $multi_factor = (int)$_POST['multi_factor'];
+
+                        // Create a boolean for all
+                        $all = false;
+
+                        // Create a boolean for none
+                        $none = false;
+
+            // Set the team to empty to start
+            $team = "";
+
+                        // Create the team value
+                        foreach ($teams as $value)
+                        {
+                                // If the selected value is all
+                                if ($value == "all") $all = true;
+
+                                // If the selected value is none
+                                if ($value == "none") $none = true;
+
+                                $team .= ":";
+                                $team .= $value;
+                                $team .= ":";
+                        }
+
+                        // If all was selected then assign all teams
+                        if ($all) $team = "all";
+
+                        // If none was selected then assign no teams
+                        if ($none) $team = "none";
+
+            // Update the user
+            update_user($user_id, $name, $email, $team, $language, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
+
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "An existing user was modified by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+            $alert = "good";
+                        $alert_message = "The user was updated successfully.";
+        }
+    }
+
+        // Check if a userid was sent
+        if (isset($_POST['user']))
+        {
+            // Get the user ID
+            $user_id = (int)$_POST['user'];
+
+                // Get the users information
+                $user_info = get_user_by_id($user_id);
+        $type = $user_info['type'];
+                $username = $user_info['username'];
+                $name = $user_info['name'];
+                $email = $user_info['email'];
+                $last_login = $user_info['last_login'];
+        $language = $user_info['lang'];
+        $teams = $user_info['teams'];
+                $admin = $user_info['admin'];
+                $review_high = $user_info['review_high'];
+                $review_medium = $user_info['review_medium'];
+                $review_low = $user_info['review_low'];
+                $submit_risks = $user_info['submit_risks'];
+                $modify_risks = $user_info['modify_risks'];
+        $close_risks = $user_info['close_risks'];
+                $plan_mitigations = $user_info['plan_mitigations'];
+        $multi_factor = $user_info['multi_factor'];
+        }
+    else
+    {
+        $user_id = "";
+                $type = "N/A";
+                $username = "N/A";
+                $name = "N/A";
+                $email = "N/A";
+                $last_login = "N/A";
+                $teams = "none";
+                $admin = false;
+                $review_high = false;
+                $review_medium = false;
+                $review_low = false;
+                $submit_risks = false;
+                $modify_risks = false;
+                $close_risks = false;
+                $plan_mitigations = false;
+                $multi_factor = 1;
+    }
 
 ?>
 
@@ -674,13 +784,13 @@
 <html>
   
   <head>
-    <script src="../js/jquery.min.js"></script>
-    <script src="../js/bootstrap.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap-responsive.css"> 
     <style type="text../css">.text-rotation {display: block; -webkit-transform: rotate(-90deg); -moz-transform: rotate(-90deg);}</style>
   </head>
   
@@ -688,11 +798,11 @@
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="css/divshot-util.css">
+    <link rel="stylesheet" href="css/divshot-canvas.css">
+    <link rel="stylesheet" href="css/display.css">
     <div class="navbar">
       <div class="navbar-inner">
         <div class="container">
@@ -700,16 +810,16 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="index.php?module=0"><?php echo $lang['Home']; ?></a> 
               </li>
               <li>
-                <a href="../management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="index.php?module=1"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="index.php?module=2"><?php echo $lang['Reporting']; ?></a> 
               </li>
               <li class="active">
-                <a href="index.php"><?php echo $lang['Configure']; ?></a>
+                <a href="index.php?module=3"><?php echo $lang['Configure']; ?></a>
               </li>
             </ul>
           </div>
@@ -720,10 +830,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
+          echo "<a href=\"index.php?module=4\">". $lang['MyProfile'] ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
+          echo "<a href=\"logout.php\">". $lang['Logout'] ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -757,31 +867,31 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li <?php if(!isset($_GET['page'])) { ?>class="active"<? } ?>>
-              <a href="index.php"><?php echo $lang['ConfigureRiskFormula']; ?></a> 
+              <a href="index.php?module=3"><?php echo $lang['ConfigureRiskFormula']; ?></a> 
             </li>
-            <li <?php if($_GET['page'] == 'review_settings') { ?>class="active"<? } ?>>
-              <a href="index.php?page=review_settings"><?php echo $lang['ConfigureReviewSettings']; ?></a>
+            <li <?php if($_GET['page'] == '1') { ?>class="active"<? } ?>>
+              <a href="index.php?module=3&page=1"><?php echo $lang['ConfigureReviewSettings']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'add_remove_values') { ?>class="active"<? } ?>>
-              <a href="index.php?page=add_remove_values"><?php echo $lang['AddAndRemoveValues']; ?></a> 
+            <li <?php if($_GET['page'] == '2') { ?>class="active"<? } ?>>
+              <a href="index.php?module=3&page=2"><?php echo $lang['AddAndRemoveValues']; ?></a> 
             </li>
-            <li <?php if($_GET['page'] == 'user_management') { ?>class="active"<? } ?>>
-              <a href="index.php?page=user_management"><?php echo $lang['UserManagement']; ?></a> 
+            <li <?php if($_GET['page'] == '3' || $_GET['page'] == '9') { ?>class="active"<? } ?>>
+              <a href="index.php?module=3&page=3"><?php echo $lang['UserManagement']; ?></a> 
             </li>
-            <li <?php if($_GET['page'] == 'custom_names') { ?>class="active"<? } ?>>
-              <a href="index.php?page=custom_names"><?php echo $lang['RedefineNamingConventions']; ?></a> 
+            <li <?php if($_GET['page'] == '4') { ?>class="active"<? } ?>>
+              <a href="index.php?module=3&page=4"><?php echo $lang['RedefineNamingConventions']; ?></a> 
             </li>
-            <li <?php if($_GET['page'] == 'audit_trail') { ?>class="active"<? } ?>>
-              <a href="index.php?page=audit_trail"><?php echo $lang['AuditTrail']; ?></a>
+            <li <?php if($_GET['page'] == '5') { ?>class="active"<? } ?>>
+              <a href="index.php?module=3&page=5"><?php echo $lang['AuditTrail']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'extras') { ?>class="active"<? } ?>>
-              <a href="index.php?page=extras"><?php echo $lang['Extras']; ?></a>
+            <li <?php if($_GET['page'] == '6') { ?>class="active"<? } ?>>
+              <a href="index.php?module=3&page=6"><?php echo $lang['Extras']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'announcements') { ?>class="active"<? } ?>>
-              <a href="index.php?page=announcements"><?php echo $lang['Announcements']; ?></a>
+            <li <?php if($_GET['page'] == '7') { ?>class="active"<? } ?>>
+              <a href="index.php?module=3&page=7"><?php echo $lang['Announcements']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'about') { ?>class="active"<? } ?>>
-              <a href="index.php?page=about"><?php echo $lang['About']; ?></a>        
+            <li <?php if($_GET['page'] == '8') { ?>class="active"<? } ?>>
+              <a href="index.php?module=3&page=8"><?php echo $lang['About']; ?></a>        
             </li>
           </ul>
         </div>
@@ -814,22 +924,38 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
             </div>
           </div>
           <?php 
-            } else if($_GET['page'] == 'review_settings') {
-                include 'review_settings.php'; 
-            } else if($_GET['page'] == 'add_remove_values') {
-                include 'add_remove_values.php';
-            } else if($_GET['page'] == 'user_management') {
-                include 'user_management.php'; 
-            } else if($_GET['page'] == 'custom_names') {
-                include 'custom_names.php'; 
-            } else if($_GET['page'] == 'audit_trail') {
-                include 'audit_trail.php'; 
-            } else if($_GET['page'] == 'extras') {
-                include 'extras.php'; 
-            } else if($_GET['page'] == 'announcements') {
-                include 'announcements.php'; 
-            } else if($_GET['page'] == 'about') {
-                include 'about.php'; 
+            } else {
+                switch ($_GET['page']) {
+                    case 1:
+                      include 'review_settings.php'; 
+                      break;
+                    case 2: 
+                      include 'add_remove_values.php'; 
+                      break;
+                    case 3:
+                      include 'user_management.php';
+                      break;
+                    case 4:
+                      include 'custom_names.php';
+                      break;
+                    case 5:
+                      include 'audit_trail.php';
+                      break;
+                    case 6:
+                      include 'extras.php';
+                      break;
+                    case 7:
+                      include 'announcements.php';
+                      break;
+                    case 8:
+                      include 'about.php';
+                      break;
+                    case 9:
+                      include 'view_user_details.php';
+                      break;
+                    default:
+                      break;
+                }
             }
           ?>
         </div>

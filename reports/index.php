@@ -49,22 +49,21 @@
           $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
         }
 
-
 ?>
 
 <!doctype html>
 <html>
   
   <head>
-    <script src="../js/jquery.min.js"></script>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/sorttable.js"></script>
-    <script src="../js/highcharts.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/sorttable.js"></script>
+    <script src="js/highcharts.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap-responsive.css"> 
   </head>
   
   <body>
@@ -75,19 +74,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="index.php?module=0"><?php echo $lang['Home']; ?></a> 
               </li>
               <li>
-                <a href="../management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="index.php?module=1"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li class="active">
-                <a href="index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="index.php?module=2"><?php echo $lang['Reporting']; ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">". $lang['Configure'] ."</a>\n";
+          echo "<a href=\"index.php?module=3\">". $lang['Configure'] ."</a>\n";
           echo "</li>\n";
 }
           echo "</ul>\n";
@@ -99,10 +98,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
+          echo "<a href=\"index.php?module=4\">". $lang['MyProfile'] ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
+          echo "<a href=\"logout.php\">". $lang['Logout'] ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -116,58 +115,58 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li <?php if(!isset($_GET['page'])) { ?>class="active"<? } ?>>
-              <a href="index.php"><?php echo $lang['RiskDashboard']; ?></a> 
+              <a href="index.php?module=2"><?php echo $lang['RiskDashboard']; ?></a> 
             </li>
-            <li <?php if($_GET['page'] == 'trend') { ?>class="active"<? } ?>>
-              <a href="index.php?page=trend"><?php echo $lang['RiskTrend']; ?></a>
+            <li <?php if($_GET['page'] == '1') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=1"><?php echo $lang['RiskTrend']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'my_open') { ?>class="active"<? } ?>>
-              <a href="index.php?page=my_open"><?php echo $lang['AllOpenRisksAssignedToMeByRiskLevel']; ?></a>
+            <li <?php if($_GET['page'] == '2') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=2"><?php echo $lang['AllOpenRisksAssignedToMeByRiskLevel']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'open') { ?>class="active"<? } ?>>
-              <a href="index.php?page=open"><?php echo $lang['AllOpenRisksByRiskLevel']; ?></a>
+            <li <?php if($_GET['page'] == '3') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=3"><?php echo $lang['AllOpenRisksByRiskLevel']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'projects') { ?>class="active"<? } ?>>
-              <a href="index.php?page=projects"><?php echo $lang['AllOpenRisksConsideredForProjectsByRiskLevel']; ?></a>
+            <li <?php if($_GET['page'] == '4') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=4"><?php echo $lang['AllOpenRisksConsideredForProjectsByRiskLevel']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'next_review') { ?>class="active"<? } ?>>
-              <a href="index.php?page=next_review"><?php echo $lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']; ?></a>
+            <li <?php if($_GET['page'] == '5') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=5"><?php echo $lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'production_issues') { ?>class="active"<? } ?>>
-              <a href="index.php?page=production_issues"><?php echo $lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']; ?></a>
+            <li <?php if($_GET['page'] == '6') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=6"><?php echo $lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'teams') { ?>class="active"<? } ?>>
-              <a href="index.php?page=teams"><?php echo $lang['AllOpenRisksByTeam']; ?></a>
+            <li <?php if($_GET['page'] == '7') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=7"><?php echo $lang['AllOpenRisksByTeam']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'technologies') { ?>class="active"<? } ?>>
-              <a href="index.php?page=technologies"><?php echo $lang['AllOpenRisksByTechnology']; ?></a>
+            <li <?php if($_GET['page'] == '8') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=8"><?php echo $lang['AllOpenRisksByTechnology']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'risk_scoring') { ?>class="active"<? } ?>>
-              <a href="index.php?page=risk_scoring"><?php echo $lang['AllOpenRisksByScoringMethod']; ?></a>
+            <li <?php if($_GET['page'] == '9') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=9"><?php echo $lang['AllOpenRisksByScoringMethod']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'review_needed') { ?>class="active"<? } ?>>
-              <a href="index.php?page=review_needed"><?php echo $lang['AllOpenRisksNeedingReview']; ?></a>
+            <li <?php if($_GET['page'] == '10') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=10"><?php echo $lang['AllOpenRisksNeedingReview']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'closed') { ?>class="active"<? } ?>>
-              <a href="index.php?page=closed"><?php echo $lang['AllClosedRisksByRiskLevel']; ?></a>
+            <li <?php if($_GET['page'] == '11') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=11"><?php echo $lang['AllClosedRisksByRiskLevel']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'high') { ?>class="active"<? } ?>>
-              <a href="index.php?page=high"><?php echo $lang['HighRiskReport']; ?></a>
+            <li <?php if($_GET['page'] == '12') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=12"><?php echo $lang['HighRiskReport']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'submitted_by_date') { ?>class="active"<? } ?>>
-              <a href="index.php?page=submitted_by_date"><?php echo $lang['SubmittedRisksByDate']; ?></a>
+            <li <?php if($_GET['page'] == '13') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=13"><?php echo $lang['SubmittedRisksByDate']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'mitigations_by_date') { ?>class="active"<? } ?>>
-              <a href="index.php?page=mitigations_by_date"><?php echo $lang['MitigationsByDate']; ?></a>
+            <li <?php if($_GET['page'] == '14') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=14"><?php echo $lang['MitigationsByDate']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'mgmt_reviews_by_date') { ?>class="active"<? } ?>>
-              <a href="index.php?page=mgmt_reviews_by_date"><?php echo $lang['ManagementReviewsByDate']; ?></a>
+            <li <?php if($_GET['page'] == '15') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=15"><?php echo $lang['ManagementReviewsByDate']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'closed_by_date') { ?>class="active"<? } ?>>
-              <a href="index.php?page=closed_by_date"><?php echo $lang['ClosedRisksByDate']; ?></a>
+            <li <?php if($_GET['page'] == '16') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=16"><?php echo $lang['ClosedRisksByDate']; ?></a>
             </li>
-            <li <?php if($_GET['page'] == 'projects_and_risks') { ?>class="active"<? } ?>>
-              <a href="index.php?page=projects_and_risks"><?php echo $lang['ProjectsAndRisksAssigned']; ?></a>
+            <li <?php if($_GET['page'] == '17') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=17"><?php echo $lang['ProjectsAndRisksAssigned']; ?></a>
             </li>
           </ul>
         </div>
@@ -240,40 +239,62 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
             </div>
           </div>
           <?php 
-            } else if($_GET['page'] == 'trend') {
-                include 'trend.php';
-            } else if($_GET['page'] == 'my_open') {
-                include 'my_open.php';
-            } else if($_GET['page'] == 'open') {
-                include 'open.php';
-            } else if($_GET['page'] == 'projects') {
-                include 'projects.php';
-            } else if($_GET['page'] == 'next_review') {
-                include 'next_review.php';
-            } else if($_GET['page'] == 'production_issues') {
-                include 'production_issues.php';
-            } else if($_GET['page'] == 'teams') {
-                include 'teams.php'; 
-            } else if($_GET['page'] == 'technologies') {
-                include 'technologies.php';
-            } else if($_GET['page'] == 'risk_scoring') {
-                include 'risk_scoring.php'; 
-            } else if($_GET['page'] == 'review_needed') {
-                include 'review_needed.php'; 
-            } else if($_GET['page'] == 'closed') {
-                include 'closed.php'; 
-            } else if($_GET['page'] == 'high') {
-                include 'high.php';
-            } else if($_GET['page'] == 'submitted_by_date') {
-                include 'submitted_by_date.php'; 
-            } else if($_GET['page'] == 'mitigations_by_date') {
-                include 'mitigations_by_date.php';  
-            } else if($_GET['page'] == 'mgmt_reviews_by_date') {
-                include 'mgmt_reviews_by_date.php';  
-            } else if($_GET['page'] == 'closed_by_date') {
-                include 'closed_by_date.php'; 
-            } else if($_GET['page'] == 'projects_and_risks') {
-                include 'projects_and_risks.php';  
+            } else {
+                switch ($_GET['page']) {
+                    case 1:
+                      include 'trend.php'; 
+                      break;
+                    case 2: 
+                      include 'my_open.php'; 
+                      break;
+                    case 3:
+                      include 'open.php';
+                      break;
+                    case 4:
+                      include 'projects.php';
+                      break;
+                    case 5:
+                      include 'next_review.php';
+                      break;
+                    case 6:
+                      include 'production_issues.php';
+                      break;
+                    case 7:
+                      include 'teams.php';
+                      break;
+                    case 8:
+                      include 'technologies.php';
+                      break;
+                    case 9:
+                      include 'risk_scoring.php';
+                      break;
+                    case 10:
+                      include 'review_needed.php';
+                      break;
+                    case 11:
+                      include 'closed.php';
+                      break;
+                    case 12:
+                      include 'high.php';
+                      break;
+                    case 13:
+                      include 'submitted_by_date.php';
+                      break;
+                    case 14:
+                      include 'mitigations_by_date.php';
+                      break;
+                    case 15:
+                      include 'mgmt_reviews_by_date.php';
+                      break;
+                    case 16:
+                      include 'closed_by_date.php';
+                      break;
+                    case 17:
+                      include 'projects_and_risks.php';
+                      break;
+                    default:
+                      break;
+                }
             }
           ?>
         </div>
