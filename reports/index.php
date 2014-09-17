@@ -7,6 +7,7 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/reporting.php'));
+  include_once(realpath(__DIR__ . '/includes.php'));
 
         // Add various security headers
         header("X-Frame-Options: DENY");
@@ -44,9 +45,9 @@
                 exit(0);
         }
 
-        if(isset($_GET['page']) && ($_GET['page'] != 'trend')){
+        if(isset($_GET['page']) && ($_GET['page'] != '1')){
           // Record the page the workflow started from as a session variable
-          $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
+          $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME']."?module=2&page=".$_GET['page'];
         }
 
 ?>
@@ -241,59 +242,59 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <?php 
             } else {
                 switch ($_GET['page']) {
-                    case 1:
-                      include 'trend.php'; 
-                      break;
-                    case 2: 
-                      include 'my_open.php'; 
-                      break;
-                    case 3:
-                      include 'open.php';
-                      break;
-                    case 4:
-                      include 'projects.php';
-                      break;
-                    case 5:
-                      include 'next_review.php';
-                      break;
-                    case 6:
-                      include 'production_issues.php';
-                      break;
-                    case 7:
-                      include 'teams.php';
-                      break;
-                    case 8:
-                      include 'technologies.php';
-                      break;
-                    case 9:
-                      include 'risk_scoring.php';
-                      break;
-                    case 10:
-                      include 'review_needed.php';
-                      break;
-                    case 11:
-                      include 'closed.php';
-                      break;
-                    case 12:
-                      include 'high.php';
-                      break;
-                    case 13:
-                      include 'submitted_by_date.php';
-                      break;
-                    case 14:
-                      include 'mitigations_by_date.php';
-                      break;
-                    case 15:
-                      include 'mgmt_reviews_by_date.php';
-                      break;
-                    case 16:
-                      include 'closed_by_date.php';
-                      break;
-                    case 17:
-                      include 'projects_and_risks.php';
-                      break;
-                    default:
-                      break;
+                          case 1:
+                            get_trend(); 
+                            break;
+                          case 2: 
+                            get_my_open(); 
+                            break;
+                          case 3:
+                            get_open();
+                            break;
+                          case 4:
+                            get_myprojects();
+                            break;
+                          case 5:
+                            get_next_review();
+                            break;
+                          case 6:
+                            get_production_issues();
+                            break;
+                          case 7:
+                            get_teams();
+                            break;
+                          case 8:
+                            get_technologies();
+                            break;
+                          case 9:
+                            get_risk_scoring();
+                            break;
+                          case 10:
+                            get_review_needed();
+                            break;
+                          case 11:
+                            get_closed();
+                            break;
+                          case 12:
+                            get_high();
+                            break;
+                          case 13:
+                            get_submitted_by_date();
+                            break;
+                          case 14:
+                            get_mitigations_by_date();
+                            break;
+                          case 15:
+                            get_mgmt_reviews_by_date();
+                            break;
+                          case 16:
+                            get_closed_by_date();
+                            break;
+                          case 17:
+                            get_projects_and_risks();
+                            break;
+                          default:
+                            break;
                 }
             }
           ?>

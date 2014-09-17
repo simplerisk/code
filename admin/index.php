@@ -6,6 +6,8 @@
         // Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+        include_once(realpath(__DIR__ . '/includes.php'));
+
 
         // Add various security headers
         header("X-Frame-Options: DENY");
@@ -927,31 +929,32 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
             } else {
                 switch ($_GET['page']) {
                     case 1:
-                      include 'review_settings.php'; 
+                      get_review_settings(); 
                       break;
                     case 2: 
-                      include 'add_remove_values.php'; 
+                      get_add_remove_values(); 
                       break;
                     case 3:
-                      include 'user_management.php';
+                      get_user_management();
                       break;
                     case 4:
-                      include 'custom_names.php';
+                      get_custom_names();
                       break;
                     case 5:
-                      include 'audit_trail.php';
+                      get_admin_audit_trail();
                       break;
                     case 6:
-                      include 'extras.php';
+                      get_extras();
                       break;
                     case 7:
-                      include 'announcements.php';
+                      get_admin_announcements();
                       break;
                     case 8:
-                      include 'about.php';
+                      get_admin_about();
                       break;
                     case 9:
-                      include 'view_user_details.php';
+                      get_view_user_details($type, $name, $email, $username, $last_login, $language, $teams, $submit_risks, $modify_risks, $close_risks, $plan_mitigations,
+$review_low, $review_medium, $review_high, $admin, $multi_factor);
                       break;
                     default:
                       break;

@@ -7,7 +7,7 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
         require_once(realpath(__DIR__ . '/../includes/display.php'));
-        require_once(realpath(__DIR__ . '/includes.php'));
+        include_once(realpath(__DIR__ . '/includes.php'));
 
         
         // Add various security headers
@@ -49,10 +49,12 @@
                 exit(0);
         }
 
-        if(isset($_GET['page']) && ($_GET['page'] == 'plan_mitigations' || $_GET['page'] == 'management_review' || $_GET['page'] == 'review_risks')){
+        if(isset($_GET['page']) && ($_GET['page'] == '1' || $_GET['page'] == '2' || $_GET['page'] == '3')){
           // Record the page the workflow started from as a session variable
-          $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
+          $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME']."?module=1&page=".$_GET['page'];
         }
+
+
 
 
   if(!isset($_GET['page'])) {
@@ -1064,7 +1066,7 @@
       }
 
                         // Redirect back to the page the workflow started on
-                        header("Location: " . $_SESSION["workflow_start"] . "?reviewed=true");
+                        header("Location: " . $_SESSION["workflow_start"] . "&reviewed=true");
     }
     // They do not have permissions to review the risk
     else
@@ -1332,7 +1334,7 @@
                 write_log($risk_id, $_SESSION['uid'], $message);
 
                 // Redirect back to the page the workflow started on
-                header("Location: " . $_SESSION["workflow_start"] . "?mitigated=true");
+                header("Location: " . $_SESSION["workflow_start"] . "&mitigated=true");
         }
 
     }
@@ -2142,24 +2144,61 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                       get_review_risks();
                       break;
                     case 5:
-                      include 'view.php';
+                      get_view($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
+        $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, 
+        $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, 
+        $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, 
+        $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPEaseOfDiscovery, $OWASPLossOfConfidentiality, 
+        $OWASPFinancialDamage, $OWASPMotive, $OWASPEaseOfExploit, $OWASPLossOfIntegrity, $OWASPReputationDamage, $OWASPOpportunity, 
+        $OWASPAwareness, $OWASPLossOfAvailability, $OWASPNonCompliance, $OWASPSize, $OWASPIntrusionDetection, $OWASPLossOfAccountability, 
+        $OWASPPrivacyViolation, $custom, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, 
+        $team, $technology, $owner, $manager, $assessment, $notes, $mitigation_date, $planning_strategy, $mitigation_effort, 
+        $current_solution, $security_requirements, $security_recommendations, $review_date, $reviewer, $review, 
+        $next_step, $next_review, $comments);
                       break;
                     case 6:
-                      include 'mgmt_review.php';
+                      get_mgmt_review($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
+        $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, 
+        $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, 
+        $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, 
+        $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPEaseOfDiscovery, $OWASPLossOfConfidentiality, 
+        $OWASPFinancialDamage, $OWASPMotive, $OWASPEaseOfExploit, $OWASPLossOfIntegrity, $OWASPReputationDamage, $OWASPOpportunity, 
+        $OWASPAwareness, $OWASPLossOfAvailability, $OWASPNonCompliance, $OWASPSize, $OWASPIntrusionDetection, $OWASPLossOfAccountability, 
+        $OWASPPrivacyViolation, $custom, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, 
+        $team, $technology, $owner, $manager, $assessment, $notes, $mitigation_date, $planning_strategy, $mitigation_effort, 
+        $current_solution, $security_requirements, $security_recommendations, $review_date, $reviewer, $review, 
+        $next_step, $next_review, $comments);
                       break;
                     case 7:
-                      include 'mitigate.php';
+                      get_mitigate($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
+        $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, 
+        $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, 
+        $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, 
+        $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPEaseOfDiscovery, $OWASPLossOfConfidentiality, 
+        $OWASPFinancialDamage, $OWASPMotive, $OWASPEaseOfExploit, $OWASPLossOfIntegrity, $OWASPReputationDamage, $OWASPOpportunity, 
+        $OWASPAwareness, $OWASPLossOfAvailability, $OWASPNonCompliance, $OWASPSize, $OWASPIntrusionDetection, $OWASPLossOfAccountability, 
+        $OWASPPrivacyViolation, $custom, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, 
+        $team, $technology, $owner, $manager, $assessment, $notes, $mitigation_date, $planning_strategy, $mitigation_effort, 
+        $current_solution, $security_requirements, $security_recommendations, $review_date, $reviewer, $review, 
+        $next_step, $next_review, $comments);
                       break;
                     case 8:
-                      include 'close.php';
+                      get_close($id, $calculated_risk, $subject, $status);
                       break;
                     case 9:
                       break;
                     case 10:
-                      include 'comment.php';
+                      get_comment($id, $calculated_risk, $subject, $status);
                       break;
                     case 11:
-                      include 'reviews.php';
+                      get_allreviews($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
+        $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, 
+        $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, 
+        $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, 
+        $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPEaseOfDiscovery, $OWASPLossOfConfidentiality, 
+        $OWASPFinancialDamage, $OWASPMotive, $OWASPEaseOfExploit, $OWASPLossOfIntegrity, $OWASPReputationDamage, $OWASPOpportunity, 
+        $OWASPAwareness, $OWASPLossOfAvailability, $OWASPNonCompliance, $OWASPSize, $OWASPIntrusionDetection, $OWASPLossOfAccountability, 
+        $OWASPPrivacyViolation, $custom);
                       break;
                     default:
                       break;

@@ -84,7 +84,7 @@ function get_user_type($user)
  ***************************/
 function is_valid_user($user, $pass)
 {
-	// Default set valid_simplerisk and valid_ad to false
+        // Default set valid_simplerisk and valid_ad to false
 	$valid_simplerisk = false;
 	$valid_ad = false;
 
