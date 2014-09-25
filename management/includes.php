@@ -35,9 +35,9 @@ function get_prioritize_planning()
         echo "<p>". $lang['AddAndRemoveProjectsHelp'] .".</p>\n";
         echo "<form name=\"project\" method=\"post\" action=\"\">\n";
         echo "<p>\n";
-        echo $lang['AddNewProjectNamed'] ."<input name=\"new_project\" type=\"text\" maxlength=\"100\" size=\"20\" />&nbsp;&nbsp;<input type=\"submit\" value=\"". $lang['Add'] ."\" name=\"add_project\" /><br />\n";
-        echo $lang['DeleteCurrentProjectNamed'];
-        create_dropdown("projects") ."&nbsp;&nbsp;<input type=\"submit\" value=\"". $lang['Delete'] ."\" name=\"delete_project\" />\n";
+        echo $lang['AddNewProjectNamed'] ." <input name=\"new_project\" type=\"text\" maxlength=\"100\" size=\"20\" />&nbsp;&nbsp;<input type=\"submit\" value=\"". $lang['Add'] ."\" name=\"add_project\" /><br />\n";
+        echo $lang['DeleteCurrentProjectNamed']." ";
+        echo create_dropdown("projects") ."&nbsp;&nbsp; <input type=\"submit\" value=\"". $lang['Delete'] ."\" name=\"delete_project\" />\n";
         echo "</p>";
         echo "</form>";
         echo "</div>";
@@ -69,7 +69,7 @@ function get_review_risks()
         echo "</div>\n";
 }
 
-function get_view($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
+function get_view($id, $calculated_risk, $subject, $status, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
         $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, 
         $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, 
         $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, 
@@ -92,7 +92,7 @@ function get_view($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood,
         echo "<div class=\"well\">\n";
         // Scoring method is Classic
         if ($scoring_method == "1")
-        {
+        {       
                 classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLASSIC_impact);
         }
         // Scoring method is CVSS
@@ -204,7 +204,7 @@ function get_view($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood,
 }
 
 
-function get_mgmt_review($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
+function get_mgmt_review($id, $calculated_risk, $subject, $status, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
         $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, 
         $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, 
         $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, 
@@ -310,7 +310,7 @@ function get_mgmt_review($id, $calculated_risk, $subject, $status, $CLASSIC_like
 }
 
 
-function get_mitigate($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
+function get_mitigate($id, $calculated_risk, $subject, $status, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
         $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, 
         $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, 
         $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, 
@@ -466,7 +466,7 @@ function get_comment($id, $calculated_risk, $subject, $status)
 }
 
 
-function get_allreviews($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
+function get_allreviews($id, $calculated_risk, $subject, $status, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
         $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, 
         $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, 
         $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, 

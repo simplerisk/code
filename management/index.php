@@ -1535,7 +1535,7 @@
     if (is_numeric($id))
     {
                   // Create the redirection location
-                  $url = "view.php?id=" . $id . "&comment=true";
+                  $url = "index.php?module=1&page=5&id=" . $id . "&comment=true";
 
                   // Redirect to plan mitigations page
                   header("Location: " . $url); 
@@ -1637,17 +1637,17 @@
     <script type="text/javascript">
       function popupcvss()
       {
-        my_window = window.open('cvss_rating.php','popupwindow','width=850,height=680,menu=0,status=0');
+        my_window = window.open('management/cvss_rating.php','popupwindow','width=850,height=680,menu=0,status=0');
       }
 
       function popupdread()
       {
-        my_window = window.open('dread_rating.php','popupwindow','width=660,height=500,menu=0,status=0');
+        my_window = window.open('management/dread_rating.php','popupwindow','width=660,height=500,menu=0,status=0');
       }
 
       function popupowasp()
       {
-        my_window = window.open('owasp_rating.php','popupwindow','width=665,height=570,menu=0,status=0');
+        my_window = window.open('management/owasp_rating.php','popupwindow','width=665,height=570,menu=0,status=0');
       }
 
       function closepopup()
@@ -1866,6 +1866,12 @@
                 document.getElementById("scoredetails").style.display = "none";
           document.getElementById("updatescore").style.display = "";
                 document.getElementById("show").style.display = "none";
+              }
+              function hideNextReview() {
+                document.getElementById("nextreview").style.display = "none";
+              }
+              function showNextReview() {
+                document.getElementById("nextreview").style.display = "";
               }
           </script>
      <?php
@@ -2144,7 +2150,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                       get_review_risks();
                       break;
                     case 5:
-                      get_view($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
+                      get_view($id, $calculated_risk, $subject, $status, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
         $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, 
         $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, 
         $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, 
@@ -2157,7 +2163,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         $next_step, $next_review, $comments);
                       break;
                     case 6:
-                      get_mgmt_review($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
+                      get_mgmt_review($id, $calculated_risk, $subject, $status, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
         $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, 
         $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, 
         $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, 
@@ -2170,7 +2176,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         $next_step, $next_review, $comments);
                       break;
                     case 7:
-                      get_mitigate($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
+                      get_mitigate($id, $calculated_risk, $subject, $status, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
         $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, 
         $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, 
         $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, 
@@ -2191,7 +2197,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                       get_comment($id, $calculated_risk, $subject, $status);
                       break;
                     case 11:
-                      get_allreviews($id, $calculated_risk, $subject, $status, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
+                      get_allreviews($id, $calculated_risk, $subject, $status, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, 
         $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, 
         $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, 
         $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, 

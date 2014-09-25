@@ -371,15 +371,15 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 /**************************************
  * FUNCTION: CREATE MULTIPLE DROPDOWN *
  **************************************/
-function create_multiple_dropdown($name, $selected = NULL, $rename = NULL)
+function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $disabled = NULL)
 {
 	global $lang;
 	
         if ($rename != NULL)
         {
-                echo "<select multiple id=\"" . htmlentities($rename, ENT_QUOTES, 'UTF-8', false) . "\" name=\"" . htmlentities($rename, ENT_QUOTES, 'UTF-8', false) . "[]\">\n";
+                echo "<select multiple". ($disabled != NULL ? " disabled=\"disabled\"" : "") ." id=\"" . htmlentities($rename, ENT_QUOTES, 'UTF-8', false) . "\" name=\"" . htmlentities($rename, ENT_QUOTES, 'UTF-8', false) . "[]\">\n";
         }
-        else echo "<select multiple id=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "\" name=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "[]\">\n";
+        else echo "<select multiple". ($disabled != NULL ? " disabled=\"disabled\"" : "") ." id=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "\" name=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "[]\">\n";
 
 	// Create all or none options
 	echo "    <option value=\"all\">". $lang['ALL'] ."</option>\n";

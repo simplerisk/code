@@ -721,15 +721,14 @@
 
                         // If none was selected then assign no teams
                         if ($none) $team = "none";
-
-            // Update the user
+                                    // Update the user
             update_user($user_id, $name, $email, $team, $language, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
                         // Audit log
                         $risk_id = 1000;
                         $message = "An existing user was modified by the \"" . $_SESSION['user'] . "\" user.";
                         write_log($risk_id, $_SESSION['uid'], $message);
-
+                        
             $alert = "good";
                         $alert_message = "The user was updated successfully.";
         }
@@ -740,7 +739,7 @@
         {
             // Get the user ID
             $user_id = (int)$_POST['user'];
-
+            
                 // Get the users information
                 $user_info = get_user_by_id($user_id);
         $type = $user_info['type'];
@@ -953,7 +952,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                       get_admin_about();
                       break;
                     case 9:
-                      get_view_user_details($type, $name, $email, $username, $last_login, $language, $teams, $submit_risks, $modify_risks, $close_risks, $plan_mitigations,
+                      get_view_user_details($user_id, $type, $name, $email, $username, $last_login, $language, $teams, $submit_risks, $modify_risks, $close_risks, $plan_mitigations,
 $review_low, $review_medium, $review_high, $admin, $multi_factor);
                       break;
                     default:

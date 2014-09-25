@@ -11,7 +11,7 @@ function get_review_settings()
         echo "<div class=\"hero-unit\">\n";
         echo "<form name=\"review_settings\" method=\"post\" action=\"\">\n";
         $review_levels = get_review_levels();
-        echo "<p>". $lang['IWantToReviewHighRiskEvery'] ."<input type=\"text\" name=\"high\" size=\"2\" value=\"". $review_lels[0]['value'] ."\" />". $lang['days'] .".</p>\n";
+        echo "<p>". $lang['IWantToReviewHighRiskEvery'] ." <input type=\"text\" name=\"high\" size=\"2\" value=\"". $review_levels[0]['value'] ."\" />". $lang['days'] .".</p>\n";
         echo "<p>". $lang['IWantToReviewMediumRiskEvery'] ." <input type=\"text\" name=\"medium\" size=\"2\" value=\"". $review_levels[1]['value'] ."\" />". $lang['days'] .".</p>\n";
         echo "<p>". $lang['IWantToReviewLowRiskEvery'] ." <input type=\"text\" name=\"low\" size=\"2\" value=\"". $review_levels[2]['value'] ."\" />". $lang['days'] .".</p>\n";
         echo "<input type=\"submit\" value=\"". $lang['Update'] ."\" name=\"update_review_settings\" />\n";
@@ -379,7 +379,7 @@ function get_admin_about()
 }
 
 
-function get_view_user_details($type, $name, $email, $username, $last_login, $language, $teams, $submit_risks, $modify_risks, $close_risks, $plan_mitigations,
+function get_view_user_details($user_id, $type, $name, $email, $username, $last_login, $language, $teams, $submit_risks, $modify_risks, $close_risks, $plan_mitigations,
 $review_low, $review_medium, $review_high, $admin, $multi_factor)
 {
         global $lang;
