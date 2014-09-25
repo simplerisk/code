@@ -7,6 +7,7 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/reporting.php'));
+  include_once(realpath(__DIR__ . '/includes.php'));
 
         // Add various security headers
         header("X-Frame-Options: DENY");
@@ -43,21 +44,27 @@
                 header("Location: ../index.php");
                 exit(0);
         }
+
+        if(isset($_GET['page']) && ($_GET['page'] != '1')){
+          // Record the page the workflow started from as a session variable
+          $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME']."?module=2&page=".$_GET['page'];
+        }
+
 ?>
 
 <!doctype html>
 <html>
   
   <head>
-    <script src="../js/jquery.min.js"></script>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/sorttable.js"></script>
-    <script src="../js/highcharts.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/sorttable.js"></script>
+    <script src="js/highcharts.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap-responsive.css"> 
   </head>
   
   <body>
@@ -68,19 +75,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="index.php?module=0"><?php echo $lang['Home']; ?></a> 
               </li>
               <li>
-                <a href="../management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="index.php?module=1"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li class="active">
-                <a href="index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="index.php?module=2"><?php echo $lang['Reporting']; ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">". $lang['Configure'] ."</a>\n";
+          echo "<a href=\"index.php?module=3\">". $lang['Configure'] ."</a>\n";
           echo "</li>\n";
 }
           echo "</ul>\n";
@@ -92,10 +99,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
+          echo "<a href=\"index.php?module=4\">". $lang['MyProfile'] ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
+          echo "<a href=\"logout.php\">". $lang['Logout'] ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -108,63 +115,66 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
       <div class="row-fluid">
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
-            <li class="active">
-              <a href="index.php"><?php echo $lang['RiskDashboard']; ?></a> 
+            <li <?php if(!isset($_GET['page'])) { ?>class="active"<? } ?>>
+              <a href="index.php?module=2"><?php echo $lang['RiskDashboard']; ?></a> 
             </li>
-            <li>
-              <a href="trend.php"><?php echo $lang['RiskTrend']; ?></a>
+            <li <?php if($_GET['page'] == '1') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=1"><?php echo $lang['RiskTrend']; ?></a>
             </li>
-            <li>
-              <a href="my_open.php"><?php echo $lang['AllOpenRisksAssignedToMeByRiskLevel']; ?></a>
+            <li <?php if($_GET['page'] == '2') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=2"><?php echo $lang['AllOpenRisksAssignedToMeByRiskLevel']; ?></a>
             </li>
-            <li>
-              <a href="open.php"><?php echo $lang['AllOpenRisksByRiskLevel']; ?></a>
+            <li <?php if($_GET['page'] == '3') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=3"><?php echo $lang['AllOpenRisksByRiskLevel']; ?></a>
             </li>
-            <li>
-              <a href="projects.php"><?php echo $lang['AllOpenRisksConsideredForProjectsByRiskLevel']; ?></a>
+            <li <?php if($_GET['page'] == '4') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=4"><?php echo $lang['AllOpenRisksConsideredForProjectsByRiskLevel']; ?></a>
             </li>
-            <li>
-              <a href="next_review.php"><?php echo $lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']; ?></a>
+            <li <?php if($_GET['page'] == '5') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=5"><?php echo $lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']; ?></a>
             </li>
-            <li>
-              <a href="production_issues.php"><?php echo $lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']; ?></a>
+            <li <?php if($_GET['page'] == '6') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=6"><?php echo $lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']; ?></a>
             </li>
-            <li>
-              <a href="teams.php"><?php echo $lang['AllOpenRisksByTeam']; ?></a>
+            <li <?php if($_GET['page'] == '7') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=7"><?php echo $lang['AllOpenRisksByTeam']; ?></a>
             </li>
-            <li>
-              <a href="technologies.php"><?php echo $lang['AllOpenRisksByTechnology']; ?></a>
+            <li <?php if($_GET['page'] == '8') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=8"><?php echo $lang['AllOpenRisksByTechnology']; ?></a>
             </li>
-            <li>
-              <a href="risk_scoring.php"><?php echo $lang['AllOpenRisksByScoringMethod']; ?></a>
+            <li <?php if($_GET['page'] == '9') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=9"><?php echo $lang['AllOpenRisksByScoringMethod']; ?></a>
             </li>
-            <li>
-              <a href="review_needed.php"><?php echo $lang['AllOpenRisksNeedingReview']; ?></a>
+            <li <?php if($_GET['page'] == '10') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=10"><?php echo $lang['AllOpenRisksNeedingReview']; ?></a>
             </li>
-            <li>
-              <a href="closed.php"><?php echo $lang['AllClosedRisksByRiskLevel']; ?></a>
+            <li <?php if($_GET['page'] == '11') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=11"><?php echo $lang['AllClosedRisksByRiskLevel']; ?></a>
             </li>
-            <li>
-              <a href="high.php"><?php echo $lang['HighRiskReport']; ?></a>
+            <li <?php if($_GET['page'] == '12') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=12"><?php echo $lang['HighRiskReport']; ?></a>
             </li>
-            <li>
-              <a href="submitted_by_date.php"><?php echo $lang['SubmittedRisksByDate']; ?></a>
+            <li <?php if($_GET['page'] == '13') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=13"><?php echo $lang['SubmittedRisksByDate']; ?></a>
             </li>
-            <li>
-              <a href="mitigations_by_date.php"><?php echo $lang['MitigationsByDate']; ?></a>
+            <li <?php if($_GET['page'] == '14') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=14"><?php echo $lang['MitigationsByDate']; ?></a>
             </li>
-            <li>
-              <a href="mgmt_reviews_by_date.php"><?php echo $lang['ManagementReviewsByDate']; ?></a>
+            <li <?php if($_GET['page'] == '15') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=15"><?php echo $lang['ManagementReviewsByDate']; ?></a>
             </li>
-            <li>
-              <a href="closed_by_date.php"><?php echo $lang['ClosedRisksByDate']; ?></a>
+            <li <?php if($_GET['page'] == '16') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=16"><?php echo $lang['ClosedRisksByDate']; ?></a>
             </li>
-            <li>
-              <a href="projects_and_risks.php"><?php echo $lang['ProjectsAndRisksAssigned']; ?></a>
+            <li <?php if($_GET['page'] == '17') { ?>class="active"<? } ?>>
+              <a href="index.php?module=2&page=17"><?php echo $lang['ProjectsAndRisksAssigned']; ?></a>
             </li>
           </ul>
         </div>
         <div class="span9">
+          <?php 
+            if(!isset($_GET['page'])) {
+          ?>
           <div class="row-fluid">
             <h3><?php echo $lang['OpenRisks']; ?> (<?php echo get_open_risks(); ?>)</h3>
           </div>
@@ -229,6 +239,65 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               </div>
             </div>
           </div>
+          <?php 
+            } else {
+                switch ($_GET['page']) {
+                          case 1:
+                            get_trend(); 
+                            break;
+                          case 2: 
+                            get_my_open(); 
+                            break;
+                          case 3:
+                            get_open();
+                            break;
+                          case 4:
+                            get_myprojects();
+                            break;
+                          case 5:
+                            get_next_review();
+                            break;
+                          case 6:
+                            get_production_issues();
+                            break;
+                          case 7:
+                            get_teams();
+                            break;
+                          case 8:
+                            get_technologies();
+                            break;
+                          case 9:
+                            get_risk_scoring();
+                            break;
+                          case 10:
+                            get_review_needed();
+                            break;
+                          case 11:
+                            get_closed();
+                            break;
+                          case 12:
+                            get_high();
+                            break;
+                          case 13:
+                            get_submitted_by_date();
+                            break;
+                          case 14:
+                            get_mitigations_by_date();
+                            break;
+                          case 15:
+                            get_mgmt_reviews_by_date();
+                            break;
+                          case 16:
+                            get_closed_by_date();
+                            break;
+                          case 17:
+                            get_projects_and_risks();
+                            break;
+                          default:
+                            break;
+                }
+            }
+          ?>
         </div>
       </div>
     </div>

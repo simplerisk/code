@@ -53,7 +53,7 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
         // If the risk is closed, offer to reopen
         if ($status == "Closed")
         {
-        	echo "<li><a href=\"reopen.php?id=".$id."\">". $lang['ReopenRisk'] ."</a></li>\n";
+        	echo "<li><a href=\"index.php?module=1&page=9&id=".$id."\">". $lang['ReopenRisk'] ."</a></li>\n";
         }
         // Otherwise, offer to close
         else
@@ -61,14 +61,14 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
         	// If the user has permission to close risks
                 if (isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1)
                 {
-                	echo "<li><a href=\"close.php?id=".$id."\">". $lang['CloseRisk'] ."</a></li>\n";
+                	echo "<li><a href=\"index.php?module=1&page=8&id=".$id."\">". $lang['CloseRisk'] ."</a></li>\n";
                 }
         }
 
-	echo "<li><a href=\"view.php?id=" . $id . "\">". $lang['EditRisk'] ."</a></li>\n";
-        echo "<li><a href=\"mitigate.php?id=".$id."\">". $lang['PlanAMitigation'] ."</a></li>\n";
-        echo "<li><a href=\"mgmt_review.php?id=" . $id . "\">". $lang['PerformAReview'] ."</a></li>\n";
-        echo "<li><a href=\"comment.php?id=" . $id . "\">". $lang['AddAComment'] ."</a></li>\n";
+	echo "<li><a href=\"index.php?module=1&page=5&id=" . $id . "\">". $lang['EditRisk'] ."</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=7&id=".$id."\">". $lang['PlanAMitigation'] ."</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=6&id=" . $id . "\">". $lang['PerformAReview'] ."</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=10&id=" . $id . "\">". $lang['AddAComment'] ."</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
@@ -149,7 +149,7 @@ function view_risk_details($submission_date, $subject, $reference_id, $regulatio
         echo "<textarea style=\"cursor: default;\" name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" title=\"" . htmlentities($notes, ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities($notes, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
 
 	// If the page is the view.php page
-	if (basename($_SERVER['PHP_SELF']) == "view.php")
+	if (basename($_SERVER['PHP_SELF']) == "index.php")
 	{
 		// Give the option to edit the risk details
         	echo "<div class=\"form-actions\">\n";
@@ -250,7 +250,7 @@ function view_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         echo "<textarea style=\"cursor: default;\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" title=\"" . $security_recommendations . "\" disabled=\"disabled\">" . $security_recommendations . "</textarea>\n";
 
         // If the page is the view.php page
-        if (basename($_SERVER['PHP_SELF']) == "view.php")
+        if (basename($_SERVER['PHP_SELF']) == "index.php")
         {
                 // Give the option to edit the mitigation details
 	        echo "<div class=\"form-actions\">\n";
@@ -326,7 +326,7 @@ function view_review_details($id, $review_date, $reviewer, $review, $next_step, 
         echo $lang['Comments'] .": \n";
         echo "<br />\n";
         echo "<textarea style=\"cursor: default;\" name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\" title=\"" . $comments . "\" disabled=\"disabled\">" . $comments . "</textarea>\n";
-        echo "<p><a href=\"reviews.php?id=".$id."\">". $lang['ViewAllReviews'] ."</a></p>";
+        echo "<p><a href=\"index.php?module=1&page=11&id=".$id."\">". $lang['ViewAllReviews'] ."</a></p>";
 }
 
 /****************************************
@@ -898,10 +898,10 @@ function classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLAS
         echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">". $lang['RiskScoringActions'] ."<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
         echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">". $lang['UpdateClassicScore'] ."</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=2\">". $lang['ScoreBy'] ." CVSS</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=3\">". $lang['ScoreBy'] ." DREAD</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=4\">". $lang['ScoreBy'] ." OWASP</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=5\">". $lang['ScoreBy'] ." Custom</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=2\">". $lang['ScoreBy'] ." CVSS</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=3\">". $lang['ScoreBy'] ." DREAD</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=4\">". $lang['ScoreBy'] ." OWASP</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=5\">". $lang['ScoreBy'] ." Custom</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
@@ -972,10 +972,10 @@ function cvss_scoring_table($id, $calculated_risk, $AccessVector, $AccessComplex
         echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Risk Scoring Actions<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
         echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">Update CVSS Score</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=1\">Score by Classic</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=3\">Score by DREAD</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=4\">Score by OWASP</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=5\">Score by Custom</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=1\">Score by Classic</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=3\">Score by DREAD</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=4\">Score by OWASP</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=5\">Score by Custom</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
@@ -1088,10 +1088,10 @@ function dread_scoring_table($id, $calculated_risk, $DREADDamagePotential, $DREA
         echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Risk Scoring Actions<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
         echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">Update DREAD Score</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=1\">Score by Classic</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=2\">Score by CVSS</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=4\">Score by OWASP</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=5\">Score by Custom</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=1\">Score by Classic</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=2\">Score by CVSS</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=4\">Score by OWASP</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=5\">Score by Custom</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
@@ -1152,10 +1152,10 @@ function owasp_scoring_table($id, $calculated_risk, $OWASPSkillLevel, $OWASPEase
         echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Risk Scoring Actions<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
         echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">Update OWASP Score</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=1\">Score by Classic</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=2\">Score by CVSS</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=3\">Score by DREAD</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=5\">Score by Custom</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=1\">Score by Classic</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=2\">Score by CVSS</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=3\">Score by DREAD</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=5\">Score by Custom</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
@@ -1264,10 +1264,10 @@ function custom_scoring_table($id, $custom)
         echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Risk Scoring Actions<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
         echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">Update Custom Score</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=1\">Score by Classic</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=2\">Score by CVSS</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=3\">Score by DREAD</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=4\">Score by OWASP</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=1\">Score by Classic</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=2\">Score by CVSS</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=3\">Score by DREAD</a></li>\n";
+        echo "<li><a href=\"index.php?module=1&page=5&id=".$id."&scoring_method=4\">Score by OWASP</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";

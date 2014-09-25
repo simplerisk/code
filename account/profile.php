@@ -140,24 +140,24 @@
 <html>
   
   <head>
-    <script src="../js/jquery.min.js"></script>
-    <script src="../js/bootstrap.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap-responsive.css"> 
   </head>
   
   <body>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="css/divshot-util.css">
+    <link rel="stylesheet" href="css/divshot-canvas.css">
+    <link rel="stylesheet" href="css/display.css">
     <div class="navbar">
       <div class="navbar-inner">
         <div class="container">
@@ -165,19 +165,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li class="active">
-                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="index.php?module=0"><?php echo $lang['Home']; ?></a> 
               </li>
               <li>
-                <a href="../management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="index.php?module=1"><?php echo $lang['RiskManagement']; ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="index.php?module=2"><?php echo $lang['Reporting']; ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">" . $lang['Configure'] . "</a>\n";
+          echo "<a href=\"index.php?module=3\">" . $lang['Configure'] . "</a>\n";
           echo "</li>\n";
 }
 	  echo "</ul>\n";
@@ -189,10 +189,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"profile.php\">" . $lang['MyProfile'] . "</a>\n";
+          echo "<a href=\"index.php?module=4\">" . $lang['MyProfile'] . "</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">" . $lang['Logout'] . "</a>\n";
+          echo "<a href=\"logout.php\">" . $lang['Logout'] . "</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -236,17 +236,17 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 		<?php echo $lang['Language']; ?>: <?php create_dropdown("languages", get_value_by_name("languages", $language)); ?><input type="submit" name="change_language" value="Update" /><br />
 		</form>
                 <h6><u><?php echo $lang['Teams']; ?></u></h6>
-                <?php create_multiple_dropdown("team", $teams); ?>
+                <?php create_multiple_dropdown("team", $teams, null, "disabled"); ?>
                 <h6><u><?php echo $lang['UserResponsibilities']; ?></u></h6>
                 <ul>
-                  <li><input name="submit_risks" type="checkbox"<?php if ($submit_risks) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToSubmitNewRisks']; ?></li>
-                  <li><input name="modify_risks" type="checkbox"<?php if ($modify_risks) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToModifyExistingRisks']; ?></li>
-                  <li><input name="close_risks" type="checkbox"<?php if ($close_risks) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToCloseRisks']; ?></li>
-                  <li><input name="plan_mitigations" type="checkbox"<?php if ($plan_mitigations) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToPlanMitigations']; ?></li>
-                  <li><input name="review_low" type="checkbox"<?php if ($review_low) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToReviewLowRisks']; ?></li>
-                  <li><input name="review_medium" type="checkbox"<?php if ($review_medium) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToReviewMediumRisks']; ?></li>
-                  <li><input name="review_high" type="checkbox"<?php if ($review_high) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToReviewHighRisks']; ?></li>
-                  <li><input name="admin" type="checkbox"<?php if ($admin) echo " checked" ?> />&nbsp;<?php echo $lang['AllowAccessToConfigureMenu']; ?></li>
+                  <li><input name="submit_risks" disabled="disabled" type="checkbox"<?php if ($submit_risks) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToSubmitNewRisks']; ?></li>
+                  <li><input name="modify_risks" disabled="disabled" type="checkbox"<?php if ($modify_risks) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToModifyExistingRisks']; ?></li>
+                  <li><input name="close_risks" disabled="disabled" type="checkbox"<?php if ($close_risks) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToCloseRisks']; ?></li>
+                  <li><input name="plan_mitigations" disabled="disabled" type="checkbox"<?php if ($plan_mitigations) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToPlanMitigations']; ?></li>
+                  <li><input name="review_low" disabled="disabled" type="checkbox"<?php if ($review_low) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToReviewLowRisks']; ?></li>
+                  <li><input name="review_medium" disabled="disabled" type="checkbox"<?php if ($review_medium) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToReviewMediumRisks']; ?></li>
+                  <li><input name="review_high" disabled="disabled" type="checkbox"<?php if ($review_high) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToReviewHighRisks']; ?></li>
+                  <li><input name="admin" disabled="disabled" type="checkbox"<?php if ($admin) echo " checked" ?> />&nbsp;<?php echo $lang['AllowAccessToConfigureMenu']; ?></li>
                 </ul>
               </div>
 <?php
