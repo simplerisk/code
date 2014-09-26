@@ -183,7 +183,7 @@
         foreach ($projects as $project)
         {
 		// Get the project ID
-                $id = $project['value'];
+                $id = (int)$project['value'];
 
 		echo "#sortable-" . $id . " li";
 
@@ -211,7 +211,7 @@
 	foreach ($projects as $project)
         {
 		// Get the project ID
-                $id = $project['value'];
+                $id = (int)$project['value'];
 
 		echo "#sortable-" . $id;
 

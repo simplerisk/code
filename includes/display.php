@@ -239,15 +239,15 @@ function view_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         echo "<br />\n";
         echo $lang['CurrentSolution'] .": \n";
         echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" title=\"" . $current_solution . "\" disabled=\"disabled\">" . $current_solution . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" title=\"" . htmlentities(stripslashes($current_solution), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities(stripslashes($current_solution), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
         echo "<br />\n";
         echo $lang['SecurityRequirements'] .": \n";
         echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" title=\"" . $security_requirements . "\" disabled=\"disabled\">" . $security_requirements . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" title=\"" . htmlentities(stripslashes($security_requirements), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities(stripslashes($security_requirements), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
         echo "<br />\n";
         echo $lang['SecurityRecommendations'] .": \n";
         echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" title=\"" . $security_recommendations . "\" disabled=\"disabled\">" . $security_recommendations . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" title=\"" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
 
         // If the page is the view.php page
         if (basename($_SERVER['PHP_SELF']) == "view.php")
@@ -281,15 +281,15 @@ function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         echo "<br />\n";
         echo $lang['CurrentSolution'] .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $current_solution . "</textarea>\n";
+        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . htmlentities(stripslashes($current_solution), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
 	echo "<br />\n";
         echo $lang['SecurityRequirements'] .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . $security_requirements . "</textarea>\n";
+        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . htmlentities(stripslashes($security_requirements), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
 	echo "<br />\n";
         echo $lang['SecurityRecommendations'] .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . $security_recommendations . "</textarea>\n";
+        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
         echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"update_mitigation\" class=\"btn btn-primary\">". $lang['Update'] ."</button>\n";
         echo "</div>\n";

@@ -271,7 +271,7 @@ function create_cvss_dropdown($name, $selected = NULL, $blank = true)
                 }
                 else $text = "";
 
-                echo "    <option value=\"" . $value . "\"" . $text . ">" . htmlentities($option['metric_value'], ENT_QUOTES, 'UTF-8', false) . "</option>\n";
+                echo "    <option value=\"" . htmlentities($value, ENT_QUOTES, 'UTF-8', false) . "\"" . $text . ">" . htmlentities($option['metric_value'], ENT_QUOTES, 'UTF-8', false) . "</option>\n";
         }
 
         echo "  </select>\n";
@@ -362,7 +362,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 		}
 		else $text = "";
 
-                echo "    <option value=\"" . $option['value'] . "\"" . $text . ">" . htmlentities($option['name'], ENT_QUOTES, 'UTF-8', false) . "</option>\n";
+                echo "    <option value=\"" . htmlentities($option['value'], ENT_QUOTES, 'UTF-8', false) . "\"" . $text . ">" . htmlentities($option['name'], ENT_QUOTES, 'UTF-8', false) . "</option>\n";
         }
 
 	echo "  </select>\n";
@@ -401,7 +401,7 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL)
                 }
                 else $text = "";
 
-                echo "    <option value=\"" . $option['value'] . "\"" . $text . ">" . htmlentities($option['name'], ENT_QUOTES, 'UTF-8', false) . "</option>\n";
+                echo "    <option value=\"" . htmlentities($option['value'], ENT_QUOTES, 'UTF-8', false) . "\"" . $text . ">" . htmlentities($option['name'], ENT_QUOTES, 'UTF-8', false) . "</option>\n";
         }
 
         echo "  </select>\n";
@@ -545,7 +545,8 @@ function get_risk_color($risk)
         $db = db_open();
 
         // Get the risk levels
-        $stmt = $db->prepare("SELECT name FROM risk_levels WHERE value<=$risk ORDER BY value DESC LIMIT 1");
+        $stmt = $db->prepare("SELECT name FROM risk_levels WHERE value<=:value ORDER BY value DESC LIMIT 1");
+	$stmt->bindParam(":value", $risk, PDO::PARAM_STR, 4);
         $stmt->execute();
 
 	// Store the list in the array
@@ -2809,7 +2810,7 @@ function get_project_list()
         // For each project
         foreach ($projects as $project)
         {
-		$id = $project['value'];
+		$id = (int)$project['value'];
 		$name = $project['name'];
 		$order = $project['order'];
 
@@ -2858,7 +2859,7 @@ function get_project_status()
 
         	foreach ($projects as $project)
         	{
-                	$id = $project['value'];
+                	$id = (int)$project['value'];
                 	$name = $project['name'];
 			$status = $project['status'];
 
@@ -2962,7 +2963,7 @@ function get_project_tabs()
 	
 	foreach ($projects as $project)
 	{
-		$id = $project['value'];
+		$id = (int)$project['value'];
 		$name = $project['name'];
 
 		echo "<li><a href=\"#tabs-" . $id . "\">" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "</a></li>\n";
@@ -2976,7 +2977,7 @@ function get_project_tabs()
 	// For each project
 	foreach ($projects as $project)
 	{
-		$id = $project['value'];
+		$id = (int)$project['value'];
 		$name = $project['name'];
 
 		echo "<div id=\"tabs-" . $id . "\">\n";
@@ -2986,8 +2987,8 @@ function get_project_tabs()
 		foreach ($risks as $risk)
 		{
 			$subject = stripslashes($risk['subject']);
-			$risk_id = $risk['id'];
-			$project_id = $risk['project_id'];
+			$risk_id = (int)$risk['id'];
+			$project_id = (int)$risk['project_id'];
                 	$color = get_risk_color($risk['calculated_risk']);
 
 			// If the risk is assigned to that project id
@@ -3201,7 +3202,7 @@ function get_name_by_value($table, $value)
 	if (isset($array[0]['name']))
 	{
 		// Return that value
-        	return stripslashes($array[0]['name']);
+		return htmlentities(stripslashes($array[0]['name']), ENT_QUOTES, 'UTF-8', false);
 	}
 	// Otherwise, return an empty string
 	else return "";

@@ -61,11 +61,11 @@
         {
                 if (isset($_GET['id']))
 		{
-			$id = htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8', false);
+			$id = (int)htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8', false);
 		}
 		else if (isset($_POST['id']))
 		{
-			$id = htmlentities($_POST['id'], ENT_QUOTES, 'UTF-8', false);
+			$id = (int)htmlentities($_POST['id'], ENT_QUOTES, 'UTF-8', false);
 		}
 
                 // If team separation is enabled

@@ -259,7 +259,10 @@ function open_risk_level_pie($title = null)
 	$low = $array[2][0];
 
         // Query the database
-        $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= " . $high . " THEN 'High' WHEN a.calculated_risk < " . $high . " AND a.calculated_risk >= " . $medium . " THEN 'Medium' WHEN a.calculated_risk < " . $medium . " AND a.calculated_risk >= " . $low . " THEN 'Low' WHEN a.calculated_risk < " . $low . " AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
+        $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
+	$stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
+	$stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
+	$stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
         $stmt->execute();
 
         // Store the list in the array
