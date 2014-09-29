@@ -36,7 +36,7 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 	echo "</tr>\n";
         echo "<tr>\n";
         echo "<td width=\"100\"><h4>". $lang['Subject'] .":</h4></td>\n";
-	echo "<td><h4>" . htmlentities($subject, ENT_QUOTES, 'UTF-8', false) . "</h4></td>\n";
+	echo "<td><h4>" . htmlentities(stripslashes($subject), ENT_QUOTES, 'UTF-8', false) . "</h4></td>\n";
         echo "</tr>\n";
         echo "<tr>\n";
         echo "<td width=\"100\"><h4>". $lang['Status'] .":</h4></td>\n";
@@ -102,11 +102,11 @@ function view_risk_details($submission_date, $subject, $reference_id, $regulatio
         echo "<br />\n";
         echo $lang['Subject'] .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . htmlentities($subject, ENT_QUOTES, 'UTF-8', false) . "\" title=\"" . htmlentities($subject, ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . htmlentities(stripslashes($subject), ENT_QUOTES, 'UTF-8', false) . "\" title=\"" . htmlentities($subject, ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo $lang['ExternalReferenceId'] .": \n";
         echo "<br />\n";
-        echo " <input style=\"cursor: default;\" type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . htmlentities($reference_id, ENT_QUOTES, 'UTF-8', false) . "\" title=\"" . htmlentities($reference_id, ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\" />\n";
+        echo " <input style=\"cursor: default;\" type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . htmlentities(stripslashes($reference_id), ENT_QUOTES, 'UTF-8', false) . "\" title=\"" . htmlentities($reference_id, ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo $lang['ControlRegulation'] .": \n";
         echo "<br />\n";
@@ -142,11 +142,11 @@ function view_risk_details($submission_date, $subject, $reference_id, $regulatio
         echo "<br />\n";
         echo $lang['RiskAssessment'] .": \n";
 	echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\" title=\"" . htmlentities($assessment, ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities($assessment, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\" title=\"" . htmlentities(stripslashes($assessment), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities($assessment, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
 	echo "<br />\n";
         echo $lang['AdditionalNotes'] .": \n";
 	echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" title=\"" . htmlentities($notes, ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities($notes, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" title=\"" . htmlentities(stripslashes($notes), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities($notes, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
 
 	// If the page is the view.php page
 	if (basename($_SERVER['PHP_SELF']) == "index.php")
@@ -171,9 +171,9 @@ function edit_risk_details($submission_date, $subject, $reference_id, $regulatio
         echo "<br />\n";
         echo $lang['Subject'] .": \n";
 	echo "<br />\n";
-	echo "<input type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . htmlentities($subject, ENT_QUOTES, 'UTF-8', false) . "\" />\n";
+	echo "<input type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . htmlentities(stripslashes($subject), ENT_QUOTES, 'UTF-8', false) . "\" />\n";
         echo "<br />\n";
-        echo $lang['ExternalReferenceId'] .": <input type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . htmlentities($reference_id, ENT_QUOTES, 'UTF-8', false) . "\" />\n";
+        echo $lang['ExternalReferenceId'] .": <input type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . htmlentities(stripslashes($reference_id), ENT_QUOTES, 'UTF-8', false) . "\" />\n";
         echo "<br />\n";
         echo $lang['ControlRegulation'] .": \n";
 	echo "<br />\n";
@@ -207,11 +207,11 @@ function edit_risk_details($submission_date, $subject, $reference_id, $regulatio
         echo "<br />\n";
         echo $lang['RiskAssessment'] .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\">" . htmlentities($assessment, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\">" . htmlentities(stripslashes($assessment), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
 	echo "<br />\n";
         echo $lang['AdditionalNotes'] .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\">" . htmlentities($notes, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\">" . htmlentities(stripslashes($notes), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
         echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"update_details\" class=\"btn btn-primary\">". $lang['Update'] ."</button>\n";
         echo "</div>\n";
@@ -239,15 +239,15 @@ function view_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         echo "<br />\n";
         echo $lang['CurrentSolution'] .": \n";
         echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" title=\"" . $current_solution . "\" disabled=\"disabled\">" . $current_solution . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" title=\"" . htmlentities(stripslashes($current_solution), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities(stripslashes($current_solution), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
         echo "<br />\n";
         echo $lang['SecurityRequirements'] .": \n";
         echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" title=\"" . $security_requirements . "\" disabled=\"disabled\">" . $security_requirements . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" title=\"" . htmlentities(stripslashes($security_requirements), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities(stripslashes($security_requirements), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
         echo "<br />\n";
         echo $lang['SecurityRecommendations'] .": \n";
         echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" title=\"" . $security_recommendations . "\" disabled=\"disabled\">" . $security_recommendations . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" title=\"" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
 
         // If the page is the view.php page
         if (basename($_SERVER['PHP_SELF']) == "index.php")
@@ -281,15 +281,15 @@ function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         echo "<br />\n";
         echo $lang['CurrentSolution'] .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $current_solution . "</textarea>\n";
+        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . htmlentities(stripslashes($current_solution), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
 	echo "<br />\n";
         echo $lang['SecurityRequirements'] .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . $security_requirements . "</textarea>\n";
+        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . htmlentities(stripslashes($security_requirements), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
 	echo "<br />\n";
         echo $lang['SecurityRecommendations'] .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . $security_recommendations . "</textarea>\n";
+        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
         echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"update_mitigation\" class=\"btn btn-primary\">". $lang['Update'] ."</button>\n";
         echo "</div>\n";
@@ -325,7 +325,7 @@ function view_review_details($id, $review_date, $reviewer, $review, $next_step, 
         echo "<br />\n";
         echo $lang['Comments'] .": \n";
         echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\" title=\"" . $comments . "\" disabled=\"disabled\">" . $comments . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\" title=\"" . htmlentities(stripslashes($comments), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities(stripslashes($comments), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
         echo "<p><a href=\"index.php?module=1&page=11&id=".$id."\">". $lang['ViewAllReviews'] ."</a></p>";
 }
 
@@ -349,15 +349,15 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $cur
         echo "<br />\n";
         echo $lang['CurrentSolution'] .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . htmlentities($current_solution, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . htmlentities(stripslashes($current_solution), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
         echo "<br />\n";
         echo $lang['SecurityRequirements'] .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . htmlentities($security_requirements, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . htmlentities(stripslashes($security_requirements), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
         echo "<br />\n";
         echo $lang['SecurityRecommendations'] .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . htmlentities($security_recommendations, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
         echo "<br />\n";
         echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">". $lang['Submit'] ."</button>\n";
@@ -385,7 +385,7 @@ function edit_review_submission($review, $next_step, $next_review, $comments)
 	echo "<br />\n";
         echo $lang['Comments'] .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\">" . htmlentities($comments, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\">" . htmlentities(stripslashes($comments), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
 	echo "<br />\n";
 	echo $lang['BasedOnTheCurrentRiskScore'] . $next_review . "<br />\n";
 	echo $lang['WouldYouLikeToUseADifferentDate'] . "&nbsp;<input type=\"radio\" name=\"custom_date\" value=\"no\" onclick=\"hideNextReview()\" checked />&nbsp" . $lang['No'] . "&nbsp;<input type=\"radio\" name=\"custom_date\" value=\"yes\" onclick=\"showNextReview()\" />&nbsp" . $lang['Yes'] . "<br />\n";

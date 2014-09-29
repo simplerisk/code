@@ -391,9 +391,9 @@ $review_low, $review_medium, $review_high, $admin, $multi_factor)
         echo "<h4>Update an Existing User:</h4>\n";
         echo "<input name=\"user\" type=\"hidden\" value=\"". $user_id ."\" />\n";
         echo $lang['Type']. ": <input style=\"cursor: default;\" name=\"type\" type=\"text\" maxlength=\"20\" size=\"20\" title=\"". $type ."\" disabled=\"disabled\" value=\"". $type ."\" /><br />\n";
-        echo $lang['FullName']. ": <input name=\"name\" type=\"text\" maxlength=\"50\" size=\"20\" value=\"". htmlentities($name, ENT_QUOTES, 'UTF-8', false) ."\" /><br />\n";
+        echo $lang['FullName']. ": <input name=\"name\" type=\"text\" maxlength=\"50\" size=\"20\" value=\"". htmlentities(stripslashes($name), ENT_QUOTES, 'UTF-8', false) ."\" /><br />\n";
         echo $lang['EmailAddress']. ": <input name=\"email\" type=\"text\" maxlength=\"200\" size=\"20\" value=\"". htmlentities($email, ENT_QUOTES, 'UTF-8', false) ."\" /><br />\n";
-        echo $lang['Username']. ": <input style=\"cursor: default;\" name=\"username\" type=\"text\" maxlength=\"20\" size=\"20\" title=\"". htmlentities($username, ENT_QUOTES, 'UTF-8', false) ."\" disabled=\"disabled\" value=\"". htmlentities($username, ENT_QUOTES, 'UTF-8', false) ."\" /><br />\n";
+        echo $lang['Username']. ": <input style=\"cursor: default;\" name=\"username\" type=\"text\" maxlength=\"20\" size=\"20\" title=\"". htmlentities(stripslashes($username), ENT_QUOTES, 'UTF-8', false) ."\" disabled=\"disabled\" value=\"". htmlentities(stripslashes($username), ENT_QUOTES, 'UTF-8', false) ."\" /><br />\n";
         echo $lang['LastLogin']. ": <input style=\"cursor: default;\" name=\"last_login\" type=\"text\" maxlength=\"20\" size=\"20\" title=\"". $last_login ."\" disabled=\"disabled\" value=\"". $last_login ."\" /><br />\n";
         echo $lang['Language']. ": ";
         echo create_dropdown("languages", get_value_by_name("languages", $language));

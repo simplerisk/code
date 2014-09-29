@@ -362,7 +362,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 		}
 		else $text = "";
 
-                echo "    <option value=\"" . $option['value'] . "\"" . $text . ">" . htmlentities($option['name'], ENT_QUOTES, 'UTF-8', false) . "</option>\n";
+                echo "    <option value=\"" . $option['value'] . "\"" . $text . ">" . htmlentities(stripslashes($option['name']), ENT_QUOTES, 'UTF-8', false) . "</option>\n";
         }
 
 	echo "  </select>\n";
