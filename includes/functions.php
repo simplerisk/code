@@ -3466,7 +3466,7 @@ function next_review($color, $risk_id, $next_review, $html = true)
 		return $html;
 	}
 	// Otherwise just return the text
-	else return $text;
+	else return $escaper->escapeHtml($text);
 }
 
 /**********************************
