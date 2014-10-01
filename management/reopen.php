@@ -7,6 +7,10 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 
+        // Include Zend Escaper for HTML Output Encoding
+        require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
+        $escaper = new Zend\Escaper\Escaper('utf-8');
+
         // Add various security headers
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");
@@ -48,11 +52,11 @@
         {
                 if (isset($_GET['id']))
 		{
-			$id = (int)htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8', false);
+			$id = (int)$_GET['id'];
 		}
 		else if (isset($_POST['id']))
 		{
-			$id = (int)htmlentities($_POST['id'], ENT_QUOTES, 'UTF-8', false);
+			$id = (int)$_POST['id'];
 		}
 
                 // If team separation is enabled

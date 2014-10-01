@@ -7,6 +7,10 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 
+        // Include Zend Escaper for HTML Output Encoding
+        require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
+        $escaper = new Zend\Escaper\Escaper('utf-8');
+
         // Add various security headers
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");
@@ -185,7 +189,7 @@
 		// Get the project ID
                 $id = (int)$project['value'];
 
-		echo "#sortable-" . $id . " li";
+		echo "#sortable-" . $escaper->escapeHtml($id) . " li";
 
                 // If it's not the last one
                 if ($counter != $count)
@@ -329,19 +333,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="../index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
               </li>
               <li class="active">
-                <a href="index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="../reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">". $lang['Configure'] ."</a>\n";
+          echo "<a href=\"../admin/index.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>\n";
           echo "</li>\n";
 }
           echo "</ul>\n";
@@ -350,13 +354,13 @@ if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 {
           echo "<div class=\"btn-group pull-right\">\n";
-          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
+          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
+          echo "<a href=\"../account/profile.php\">". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
+          echo "<a href=\"../logout.php\">". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -370,7 +374,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 greenalert\">" . $alert_message . "</div>\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
                 echo "</div>\n";
                 echo "</div>\n";
                 echo "<br />\n";
@@ -379,7 +383,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $alert_message . "</div>\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
                 echo "</div>\n";
                 echo "</div>\n";
                 echo "<br />\n";
@@ -390,19 +394,19 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li>
-              <a href="index.php">I. <?php echo $lang['SubmitYourRisks']; ?></a> 
+              <a href="index.php">I. <?php echo $escaper->escapeHtml($lang['SubmitYourRisks']); ?></a> 
             </li>
             <li>
-              <a href="plan_mitigations.php">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
+              <a href="plan_mitigations.php">II. <?php echo $escaper->escapeHtml($lang['PlanYourMitigations']); ?></a> 
             </li>
             <li>
-              <a href="management_review.php">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
+              <a href="management_review.php">III. <?php echo $escaper->escapeHtml($lang['PerformManagementReviews']); ?></a> 
             </li>
             <li class="active">
-              <a href="prioritize_planning.php">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
+              <a href="prioritize_planning.php">IV. <?php echo $escaper->escapeHtml($lang['PrioritizeForProjectPlanning']); ?></a> 
             </li>
             <li>
-              <a href="review_risks.php">V. <?php echo $lang['ReviewRisksRegularly']; ?></a>     
+              <a href="review_risks.php">V. <?php echo $escaper->escapeHtml($lang['ReviewRisksRegularly']); ?></a>     
             </li>
           </ul>
         </div>
@@ -410,28 +414,28 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <h4>1) <?php echo $lang['AddAndRemoveProjects']; ?></h4>
-                <p><?php echo $lang['AddAndRemoveProjectsHelp']; ?>.</p>
+                <h4>1) <?php echo $escaper->escapeHtml($lang['AddAndRemoveProjects']); ?></h4>
+                <p><?php echo $escaper->escapeHtml($lang['AddAndRemoveProjectsHelp']); ?>.</p>
                 <form name="project" method="post" action="">
                 <p>
-                <?php echo $lang['AddNewProjectNamed']; ?> <input name="new_project" type="text" maxlength="100" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Add']; ?>" name="add_project" /><br />
-                <?php echo $lang['DeleteCurrentProjectNamed']; ?> <?php create_dropdown("projects"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Delete']; ?>" name="delete_project" />
+                <?php echo $escaper->escapeHtml($lang['AddNewProjectNamed']); ?> <input name="new_project" type="text" maxlength="100" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_project" /><br />
+                <?php echo $escaper->escapeHtml($lang['DeleteCurrentProjectNamed']); ?> <?php create_dropdown("projects"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_project" />
                 </p>
                 </form>
               </div>
               <div class="hero-unit">
-                <h4>2) <?php echo $lang['AddUnassignedRisksToProjects']; ?></h4>
-                <p><?php echo $lang['AddUnassignedRisksToProjectsHelp']; ?>.</p>
+                <h4>2) <?php echo $escaper->escapeHtml($lang['AddUnassignedRisksToProjects']); ?></h4>
+                <p><?php echo $escaper->escapeHtml($lang['AddUnassignedRisksToProjectsHelp']); ?>.</p>
                 <?php get_project_tabs() ?>
               </div>
               <div class="hero-unit">
-                <h4>3) <?php echo $lang['PrioritizeProjects']; ?></h4>
-                <p><?php echo $lang['PrioritizeProjectsHelp']; ?>.</p>
+                <h4>3) <?php echo $escaper->escapeHtml($lang['PrioritizeProjects']); ?></h4>
+                <p><?php echo $escaper->escapeHtml($lang['PrioritizeProjectsHelp']); ?>.</p>
                 <?php get_project_list(); ?>
               </div>
               <div class="hero-unit">
-                <h4>4) <?php echo $lang['DetermineProjectStatus']; ?></h4>
-                <p><?php echo $lang['ProjectStatusHelp']; ?></p>
+                <h4>4) <?php echo $escaper->escapeHtml($lang['DetermineProjectStatus']); ?></h4>
+                <p><?php echo $escaper->escapeHtml($lang['ProjectStatusHelp']); ?></p>
                 <?php get_project_status(); ?>
               </div>
             </div>

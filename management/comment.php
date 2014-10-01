@@ -8,6 +8,10 @@
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
 
+        // Include Zend Escaper for HTML Output Encoding
+        require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
+        $escaper = new Zend\Escaper\Escaper('utf-8');
+
         // Add various security headers
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");
@@ -49,11 +53,11 @@
         {
                 if (isset($_GET['id']))
 		{
-			$id = (int)htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8', false);
+			$id = (int)$_GET['id'];
 		}
 		else if (isset($_POST['id']))
 		{
-			$id = (int)htmlentities($_POST['id'], ENT_QUOTES, 'UTF-8', false);
+			$id = (int)$_POST['id'];
 		}
 
 		// If team separation is enabled
@@ -77,9 +81,9 @@
                 // If the risk was found use the values for the risk
                 if (count($risk) != 0)
                 {
-                        $status = htmlentities($risk[0]['status'], ENT_QUOTES, 'UTF-8', false);
-                        $subject = htmlentities($risk[0]['subject'], ENT_QUOTES, 'UTF-8', false);
-                        $calculated_risk = htmlentities($risk[0]['calculated_risk'], ENT_QUOTES, 'UTF-8', false);
+                        $status = $risk[0]['status'];
+                        $subject = $risk[0]['subject'];
+                        $calculated_risk = $risk[0]['calculated_risk'];
                 }
                 // If the risk was not found use null values
                 else
@@ -93,7 +97,7 @@
         // Check if a new risk mitigation was submitted
         if (isset($_POST['submit']))
         {
-                $comment = addslashes($_POST['comment']);
+                $comment = $_POST['comment'];
 
                 // Add the comment
                 add_comment($id, $_SESSION['uid'], $comment);
@@ -144,19 +148,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="../index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
               </li>
               <li class="active">
-                <a href="index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="../reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">". $lang['Configure'] ."</a>\n";
+          echo "<a href=\"../admin/index.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>\n";
           echo "</li>\n";
 }
           echo "</ul>\n";
@@ -165,13 +169,13 @@ if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 {
           echo "<div class=\"btn-group pull-right\">\n";
-          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
+          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
+          echo "<a href=\"../account/profile.php\">". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
+          echo "<a href=\"../logout.php\">". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -185,19 +189,19 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li>
-              <a href="index.php">I. <?php echo $lang['SubmitYourRisks']; ?></a> 
+              <a href="index.php">I. <?php echo $escaper->escapeHtml($lang['SubmitYourRisks']); ?></a> 
             </li>
             <li>
-              <a href="plan_mitigations.php">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
+              <a href="plan_mitigations.php">II. <?php echo $escaper->escapeHtml($lang['PlanYourMitigations']); ?></a> 
             </li>
             <li>
-              <a href="management_review.php">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
+              <a href="management_review.php">III. <?php echo $escaper->escapeHtml($lang['PerformManagementReviews']); ?></a> 
             </li>
             <li>
-              <a href="prioritize_planning.php">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
+              <a href="prioritize_planning.php">IV. <?php echo $escaper->escapeHtml($lang['PrioritizeForProjectPlanning']); ?></a> 
             </li>
             <li class="active">
-              <a href="review_risks.php">V. <?php echo $lang['ReviewRisksRegularly']; ?></a>
+              <a href="review_risks.php">V. <?php echo $escaper->escapeHtml($lang['ReviewRisksRegularly']); ?></a>
             </li>
           </ul>
         </div>
@@ -210,11 +214,11 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <div class="row-fluid">
             <div class="well">
               <form name="add_comment" method="post" action="">
-                <label><?php echo $lang['Comment']; ?></label>
+                <label><?php echo $escaper->escapeHtml($lang['Comment']); ?></label>
                 <textarea name="comment" cols="50" rows="3" id="comment"></textarea>
                 <div class="form-actions">
-                  <button type="submit" name="submit" class="btn btn-primary"><?php echo $lang['Submit']; ?></button>
-                  <input class="btn" value="<?php echo $lang['Reset']; ?>" type="reset">
+                  <button type="submit" name="submit" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
+                  <input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
                 </div>
               </form>
             </div>

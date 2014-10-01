@@ -7,6 +7,10 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 
+        // Include Zend Escaper for HTML Output Encoding
+        require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
+        $escaper = new Zend\Escaper\Escaper('utf-8');
+
         // Add various security headers
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");
@@ -165,19 +169,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li class="active">
-                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="../index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
               </li>
               <li>
-                <a href="../management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="../management/index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="../reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">" . $lang['Configure'] . "</a>\n";
+          echo "<a href=\"../admin/index.php\">" . $escaper->escapeHtml($lang['Configure']) . "</a>\n";
           echo "</li>\n";
 }
 	  echo "</ul>\n";
@@ -186,13 +190,13 @@ if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 {
           echo "<div class=\"btn-group pull-right\">\n";
-          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
+          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"profile.php\">" . $lang['MyProfile'] . "</a>\n";
+          echo "<a href=\"profile.php\">" . $escaper->escapeHtml($lang['MyProfile']) . "</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">" . $lang['Logout'] . "</a>\n";
+          echo "<a href=\"../logout.php\">" . $escaper->escapeHtml($lang['Logout']) . "</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -206,7 +210,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 greenalert\">" . $alert_message . "</div>\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
                 echo "</div>\n";
                 echo "</div>\n";
                 echo "<br />\n";
@@ -215,7 +219,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $alert_message . "</div>\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
                 echo "</div>\n";
                 echo "</div>\n";
                 echo "<br />\n";
@@ -227,40 +231,40 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <h4><?php echo $lang['ProfileDetails']; ?></h4>
-                <?php echo $lang['FullName']; ?>: <input style="cursor: default;" name="name" type="text" maxlength="50" size="20" title="<?php echo $name; ?>" disabled="disabled" value="<?php echo $name; ?>" /><br />
-                <?php echo $lang['EmailAddress']; ?>: <input style="cursor: default;" name="email" type="text" maxlength="200" size="20" title="<?php echo $email; ?>"disabled="disabled" value="<?php echo $email; ?>" /><br />
-                <?php echo $lang['Username']; ?>: <input style="cursor: default;" name="username" type="text" maxlength="20" size="20" title="<?php echo $username; ?>" disabled="disabled" value="<?php echo $username; ?>" /><br />
-                <?php echo $lang['LastLogin']; ?>: <input style="cursor: default;" name="last_login" type="text" maxlength="20" size="20" title="<?php echo $last_login; ?>" disabled="disabled" value="<?php echo $last_login; ?>" /><br />
+                <h4><?php echo $escaper->escapeHtml($lang['ProfileDetails']); ?></h4>
+                <?php echo $escaper->escapeHtml($lang['FullName']); ?>: <input style="cursor: default;" name="name" type="text" maxlength="50" size="20" title="<?php echo $escaper->escapeHtml($name); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($name); ?>" /><br />
+                <?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>: <input style="cursor: default;" name="email" type="text" maxlength="200" size="20" title="<?php echo $escaper->escapeHtml($email); ?>"disabled="disabled" value="<?php echo $escaper->escapeHtml($email); ?>" /><br />
+                <?php echo $escaper->escapeHtml($lang['Username']); ?>: <input style="cursor: default;" name="username" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($username); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($username); ?>" /><br />
+                <?php echo $escaper->escapeHtml($lang['LastLogin']); ?>: <input style="cursor: default;" name="last_login" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($last_login); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($last_login); ?>" /><br />
 		<form name="change_language" method="post" action="">
 		<?php echo $lang['Language']; ?>: <?php create_dropdown("languages", get_value_by_name("languages", $language)); ?><input type="submit" name="change_language" value="Update" /><br />
 		</form>
-                <h6><u><?php echo $lang['Teams']; ?></u></h6>
+                <h6><u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u></h6>
                 <?php create_multiple_dropdown("team", $teams); ?>
-                <h6><u><?php echo $lang['UserResponsibilities']; ?></u></h6>
+                <h6><u><?php echo $escaper->escapeHtml($lang['UserResponsibilities']); ?></u></h6>
                 <ul>
-                  <li><input name="submit_risks" type="checkbox"<?php if ($submit_risks) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToSubmitNewRisks']; ?></li>
-                  <li><input name="modify_risks" type="checkbox"<?php if ($modify_risks) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToModifyExistingRisks']; ?></li>
-                  <li><input name="close_risks" type="checkbox"<?php if ($close_risks) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToCloseRisks']; ?></li>
-                  <li><input name="plan_mitigations" type="checkbox"<?php if ($plan_mitigations) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToPlanMitigations']; ?></li>
-                  <li><input name="review_low" type="checkbox"<?php if ($review_low) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToReviewLowRisks']; ?></li>
-                  <li><input name="review_medium" type="checkbox"<?php if ($review_medium) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToReviewMediumRisks']; ?></li>
-                  <li><input name="review_high" type="checkbox"<?php if ($review_high) echo " checked" ?> />&nbsp;<?php echo $lang['AbleToReviewHighRisks']; ?></li>
-                  <li><input name="admin" type="checkbox"<?php if ($admin) echo " checked" ?> />&nbsp;<?php echo $lang['AllowAccessToConfigureMenu']; ?></li>
+                  <li><input name="submit_risks" type="checkbox"<?php if ($submit_risks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToSubmitNewRisks']); ?></li>
+                  <li><input name="modify_risks" type="checkbox"<?php if ($modify_risks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyExistingRisks']); ?></li>
+                  <li><input name="close_risks" type="checkbox"<?php if ($close_risks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCloseRisks']); ?></li>
+                  <li><input name="plan_mitigations" type="checkbox"<?php if ($plan_mitigations) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToPlanMitigations']); ?></li>
+                  <li><input name="review_low" type="checkbox"<?php if ($review_low) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewLowRisks']); ?></li>
+                  <li><input name="review_medium" type="checkbox"<?php if ($review_medium) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></li>
+                  <li><input name="review_high" type="checkbox"<?php if ($review_high) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></li>
+                  <li><input name="admin" type="checkbox"<?php if ($admin) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></li>
                 </ul>
               </div>
 <?php
 	if (isset($_SESSION['user_type']) && $_SESSION['user_type'] != "ldap")
 	{
         	echo "<div class=\"hero-unit\">\n";
-                echo "<h4>" . $lang['ChangePassword'] . "</h4><br />\n";
+                echo "<h4>" . $escaper->escapeHtml($lang['ChangePassword']) . "</h4><br />\n";
                 echo "<form name=\"change_password\" method=\"post\" action=\"\">\n";
-                echo $lang['CurrentPassword'] . ": <input maxlength=\"100\" name=\"current_pass\" id=\"current_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
-		echo $lang['NewPassword'] . ": <input maxlength=\"100\" name=\"new_pass\" id=\"new_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
-		echo $lang['ConfirmPassword'] . ": <input maxlength=\"100\" name=\"confirm_pass\" id=\"confirm_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
+                echo $escaper->escapeHtml($lang['CurrentPassword']) . ": <input maxlength=\"100\" name=\"current_pass\" id=\"current_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
+		echo $escaper->escapeHtml($lang['NewPassword']) . ": <input maxlength=\"100\" name=\"new_pass\" id=\"new_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
+		echo $escaper->escapeHtml($lang['ConfirmPassword']) . ": <input maxlength=\"100\" name=\"confirm_pass\" id=\"confirm_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /><br />\n";
                 echo "<div class=\"form-actions\">\n";
-                echo "<button type=\"submit\" name=\"change_password\" class=\"btn btn-primary\">" . $lang['Submit'] . "</button>\n";
-                echo "<input class=\"btn\" value=\"" . $lang['Reset'] . "\" type=\"reset\">\n";
+                echo "<button type=\"submit\" name=\"change_password\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Submit']) . "</button>\n";
+                echo "<input class=\"btn\" value=\"" . $escaper->escapeHtml($lang['Reset']) . "\" type=\"reset\">\n";
                 echo "</div>\n";
                 echo "</form>\n";
                 echo "</div>\n";

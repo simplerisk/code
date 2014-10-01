@@ -7,6 +7,10 @@
         require_once(realpath(__DIR__ . '/includes/functions.php'));
 	require_once(realpath(__DIR__ . '/includes/authenticate.php'));
 
+        // Include Zend Escaper for HTML Output Encoding
+        require_once(realpath(__DIR__ . '/includes/Component_ZendEscaper/Escaper.php'));
+        $escaper = new Zend\Escaper\Escaper('utf-8');
+
         // Add various security headers
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");

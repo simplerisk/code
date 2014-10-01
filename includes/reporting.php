@@ -9,6 +9,10 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/HighchartsPHP/Highchart.php'));
 require_once(language_file());
 
+// Include Zend Escaper for HTML Output Encoding
+require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
+$escaper = new Zend\Escaper\Escaper('utf-8');
+
 /****************************
  * FUNCTION: GET OPEN RISKS *
  ****************************/
@@ -174,16 +178,16 @@ function get_risk_trend($title = null)
 			else $closed_search = false;
 
 			// If the current date is in the closed array
-			if ($opened_search !== false)
+			if ($closed_search !== false)
                         {
                                 $count = $closed_risks[$closed_search]['count'];
                                 $closed_sum += $count;
                         }
 
 			// Create the data arrays
-			$opened_risk_data[] = array((strtotime($date) + 2*86400) * 1000, $opened_sum);
-			$closed_risk_data[] = array((strtotime($date) + 2*86400) * 1000, $closed_sum);
-			$trend_data[] = array((strtotime($date) + 2*86400) * 1000, $opened_sum - $closed_sum);
+			$opened_risk_data[] = array(strtotime($date) * 1000, $opened_sum);
+			$closed_risk_data[] = array(strtotime($date) * 1000, $closed_sum);
+			$trend_data[] = array(strtotime($date) * 1000, $opened_sum - $closed_sum);
 
 			// Increment the date one day
 			$date = date("Y-m-d", strtotime("+1 day", strtotime($date)));
@@ -878,6 +882,7 @@ function open_risk_scoring_method_pie($title = null)
 function get_review_needed_table()
 {
         global $lang;
+	global $escaper;
 
         // Get risks marked as consider for projects
         $risks = get_risks(3);
@@ -890,9 +895,9 @@ function get_review_needed_table()
 	{
 		// Create arrays for each value
 		$risk_id[$key] = (int)$row['id'];
-		$subject[$key] = htmlentities(stripslashes($row['subject']), ENT_QUOTES, 'UTF-8', false);
-                $status[$key] = htmlentities($row['status'], ENT_QUOTES, 'UTF-8', false);
-                $calculated_risk[$key] = htmlentities($row['calculated_risk'], ENT_QUOTES, 'UTF-8', false);
+		$subject[$key] = $row['subject'];
+                $status[$key] = $row['status'];
+                $calculated_risk[$key] = $row['calculated_risk'];
                 $color[$key] = get_risk_color($row['calculated_risk']);
                 $dayssince[$key] = dayssince($row['submission_date']);
                 $next_review[$key] = next_review($color[$key], $risk_id[$key], $row['next_review'], false);
@@ -943,15 +948,15 @@ function get_review_needed_table()
         			echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         			echo "<thead>\n";
         			echo "<tr>\n";
-        			echo "<th bgcolor=\"#0088CC\" colspan=\"6\"><center><font color=\"#FFFFFF\">". $review_status ."</font></center></th>\n";
+        			echo "<th bgcolor=\"#0088CC\" colspan=\"6\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($review_status) ."</font></center></th>\n";
         			echo "</tr>\n";
         			echo "<tr>\n";
-        			echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-        			echo "<th align=\"left\" width=\"150px\">". $lang['Status'] ."</th>\n";
-        			echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-        			echo "<th align=\"center\" width=\"100px\">". $lang['Risk'] ."</th>\n";
-        			echo "<th align=\"center\" width=\"100px\">". $lang['DaysOpen'] ."</th>\n";
-        			echo "<th align=\"center\" width=\"150px\">". $lang['NextReviewDate'] ."</th>\n";
+        			echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        			echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+        			echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        			echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+        			echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
+        			echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
         			echo "</tr>\n";
         			echo "</thead>\n";
         			echo "<tbody>\n";
@@ -962,11 +967,11 @@ function get_review_needed_table()
 		if (!preg_match('/\d{4}/', $review_status))
                 {
                 	echo "<tr>\n";
-                	echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-			echo "<td align=\"left\" width=\"150px\">" . $status . "</td>\n";
-                	echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                	echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . $calculated_risk . "</td>\n";
-			echo "<td align=\"center\" width=\"100px\">" . $dayssince . "</td>\n";
+                	echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+			echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
+                	echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                	echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($calculated_risk) . "</td>\n";
+			echo "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($dayssince) . "</td>\n";
                 	echo "<td align=\"center\" width=\"150px\">" . $next_review_html . "</td>\n";
                 	echo "</tr>\n";
 		}

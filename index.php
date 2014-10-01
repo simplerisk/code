@@ -7,6 +7,10 @@
         require_once(realpath(__DIR__ . '/includes/functions.php'));
 	require_once(realpath(__DIR__ . '/includes/authenticate.php'));
 
+	// Include Zend Escaper for HTML Output Encoding
+	require_once(realpath(__DIR__ . '/includes/Component_ZendEscaper/Escaper.php'));
+	$escaper = new Zend\Escaper\Escaper('utf-8');
+
         // Add various security headers
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");
@@ -140,19 +144,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li class="active">
-                <a href="index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
               </li>
               <li>
-                <a href="management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="management/index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
               </li>
               <li>
-                <a href="reports/index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"admin/index.php\">" . $lang['Configure'] . "</a>\n";
+          echo "<a href=\"admin/index.php\">" . $escaper->escapeHtml($lang['Configure']) . "</a>\n";
           echo "</li>\n";
 }
 	  echo "</ul>\n";
@@ -161,13 +165,13 @@ if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 {
           echo "<div class=\"btn-group pull-right\">\n";
-          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
+          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"account/profile.php\">" . $lang['MyProfile'] . "</a>\n";
+          echo "<a href=\"account/profile.php\">" . $escaper->escapeHtml($lang['MyProfile']) . "</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"logout.php\">" . $lang['Logout'] . "</a>\n";
+          echo "<a href=\"logout.php\">" . $escaper->escapeHtml($lang['Logout']) . "</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -211,14 +215,14 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
       		echo "<div class=\"row-fluid\">\n";
       		echo "<div class=\"span9\">\n";
       		echo "<div class=\"well\">\n";
-      		echo "<p><label><u>" . $lang['LogInHere'] . "</u></label></p>\n";
+      		echo "<p><label><u>" . $escaper->escapeHtml($lang['LogInHere']) . "</u></label></p>\n";
       		echo "<form name=\"authenticate\" method=\"post\" action=\"\">\n";
-      		echo $lang['Username'] . ": <input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /><br />\n";
-      		echo $lang['Password'] . ": <input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" />\n";
-      		echo "<label><a href=\"reset.php\">" . $lang['ForgotYourPassword'] . "</a></label>\n";
+      		echo $escaper->escapeHtml($lang['Username']) . ": <input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /><br />\n";
+      		echo $escaper->escapeHtml($lang['Password']) . ": <input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" />\n";
+      		echo "<label><a href=\"reset.php\">" . $escaper->escapeHtml($lang['ForgotYourPassword']) . "</a></label>\n";
       		echo "<div class=\"form-actions\">\n";
-      		echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">" . $lang['Login'] . "</button>\n";
-      		echo "<input class=\"btn\" value=\"" . $lang['Reset'] . "\" type=\"reset\">\n";
+      		echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Login']) . "</button>\n";
+      		echo "<input class=\"btn\" value=\"" . $escaper->escapeHtml($lang['Reset']) . "\" type=\"reset\">\n";
       		echo "</div>\n";
       		echo "</form>\n";
       		echo "</div>\n";

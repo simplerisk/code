@@ -7,6 +7,10 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 
+        // Include Zend Escaper for HTML Output Encoding
+        require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
+        $escaper = new Zend\Escaper\Escaper('utf-8');
+
         // Add various security headers
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");
@@ -69,19 +73,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="../index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
               </li>
               <li>
-                <a href="../management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="../management/index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
               </li>
               <li class="active">
-                <a href="index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">". $lang['Configure'] ."</a>\n";
+          echo "<a href=\"../admin/index.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>\n";
           echo "</li>\n";
 }
           echo "</ul>\n";
@@ -90,13 +94,13 @@ if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 {
           echo "<div class=\"btn-group pull-right\">\n";
-          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
+          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
+          echo "<a href=\"../account/profile.php\">". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
+          echo "<a href=\"../logout.php\">". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -110,63 +114,63 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li>
-              <a href="index.php"><?php echo $lang['RiskDashboard']; ?></a>      
+              <a href="index.php"><?php echo $escaper->escapeHtml($lang['RiskDashboard']); ?></a>      
             </li>
             <li>
-              <a href="trend.php"><?php echo $lang['RiskTrend']; ?></a>
+              <a href="trend.php"><?php echo $escaper->escapeHtml($lang['RiskTrend']); ?></a>
             </li>
             <li>
-              <a href="my_open.php"><?php echo $lang['AllOpenRisksAssignedToMeByRiskLevel']; ?></a>
+              <a href="my_open.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksAssignedToMeByRiskLevel']); ?></a>
             </li>
             <li>
-              <a href="open.php"><?php echo $lang['AllOpenRisksByRiskLevel']; ?></a>
+              <a href="open.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksByRiskLevel']); ?></a>
             </li>
             <li>
-              <a href="projects.php"><?php echo $lang['AllOpenRisksConsideredForProjectsByRiskLevel']; ?></a>
+              <a href="projects.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksConsideredForProjectsByRiskLevel']); ?></a>
             </li>
             <li>
-              <a href="next_review.php"><?php echo $lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']; ?></a>
+              <a href="next_review.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']); ?></a>
             </li>
             <li>
-              <a href="production_issues.php"><?php echo $lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']; ?></a>
+              <a href="production_issues.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']); ?></a>
             </li>
             <li>
-              <a href="teams.php"><?php echo $lang['AllOpenRisksByTeam']; ?></a>
+              <a href="teams.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksByTeam']); ?></a>
             </li>
             <li>
-              <a href="technologies.php"><?php echo $lang['AllOpenRisksByTechnology']; ?></a>
+              <a href="technologies.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksByTechnology']); ?></a>
             </li>
             <li>
-              <a href="risk_scoring.php"><?php echo $lang['AllOpenRisksByScoringMethod']; ?></a>
+              <a href="risk_scoring.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksByScoringMethod']); ?></a>
             </li>
             <li>
-              <a href="review_needed.php"><?php echo $lang['AllOpenRisksNeedingReview']; ?></a>
+              <a href="review_needed.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksNeedingReview']); ?></a>
             </li>
             <li>
-              <a href="closed.php"><?php echo $lang['AllClosedRisksByRiskLevel']; ?></a>
+              <a href="closed.php"><?php echo $escaper->escapeHtml($lang['AllClosedRisksByRiskLevel']); ?></a>
             </li>
             <li>
-              <a href="high.php"><?php echo $lang['HighRiskReport']; ?></a>
+              <a href="high.php"><?php echo $escaper->escapeHtml($lang['HighRiskReport']); ?></a>
             </li>
             <li>
-              <a href="submitted_by_date.php"><?php echo $lang['SubmittedRisksByDate']; ?></a>
+              <a href="submitted_by_date.php"><?php echo $escaper->escapeHtml($lang['SubmittedRisksByDate']); ?></a>
             </li>
             <li>
-              <a href="mitigations_by_date.php"><?php echo $lang['MitigationsByDate']; ?></a>
+              <a href="mitigations_by_date.php"><?php echo $escaper->escapeHtml($lang['MitigationsByDate']); ?></a>
             </li>
             <li>
-              <a href="mgmt_reviews_by_date.php"><?php echo $lang['ManagementReviewsByDate']; ?></a>
+              <a href="mgmt_reviews_by_date.php"><?php echo $escaper->escapeHtml($lang['ManagementReviewsByDate']); ?></a>
             </li>
             <li>
-              <a href="closed_by_date.php"><?php echo $lang['ClosedRisksByDate']; ?></a>
+              <a href="closed_by_date.php"><?php echo $escaper->escapeHtml($lang['ClosedRisksByDate']); ?></a>
             </li>
             <li class="active">
-              <a href="projects_and_risks.php"><?php echo $lang['ProjectsAndRisksAssigned']; ?></a>
+              <a href="projects_and_risks.php"><?php echo $escaper->escapeHtml($lang['ProjectsAndRisksAssigned']); ?></a>
             </li>
           </ul>
         </div>
         <div class="span9">
-          <div class="row-fluid"><p><?php echo $lang['ReportProjectsAndRisksHelp']; ?>.</p></div>
+          <div class="row-fluid"><p><?php echo $escaper->escapeHtml($lang['ReportProjectsAndRisksHelp']); ?>.</p></div>
 	  <?php get_projects_and_risks_table(); ?>
         </div>
       </div>

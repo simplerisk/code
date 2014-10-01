@@ -11,6 +11,10 @@ require_once(realpath(__DIR__ . '/cvss.php'));
 // Include the language file
 require_once(language_file());
 
+// Include Zend Escaper for HTML Output Encoding
+require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
+$escaper = new Zend\Escaper\Escaper('utf-8');
+
 /******************************
  * FUNCTION: DATABASE CONNECT *
  ******************************/
@@ -247,7 +251,9 @@ function update_review_settings($high, $medium, $low)
  **********************************/
 function create_cvss_dropdown($name, $selected = NULL, $blank = true)
 {
-	echo "<select id=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "\" name=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "\" class=\"form-field\" style=\"width:120px;\" onClick=\"javascript:showHelp('" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "Help');updateScore();\">\n";
+	global $escaper;
+
+	echo "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:120px;\" onClick=\"javascript:showHelp('" . $escaper->escapeHtml($name) . "Help');updateScore();\">\n";
 
         // If the blank is true
         if ($blank == true)
@@ -271,7 +277,7 @@ function create_cvss_dropdown($name, $selected = NULL, $blank = true)
                 }
                 else $text = "";
 
-                echo "    <option value=\"" . htmlentities($value, ENT_QUOTES, 'UTF-8', false) . "\"" . $text . ">" . htmlentities($option['metric_value'], ENT_QUOTES, 'UTF-8', false) . "</option>\n";
+                echo "    <option value=\"" . $escaper->escapeHtml($value) . "\"" . $text . ">" . $escaper->escapeHtml($option['metric_value']) . "</option>\n";
         }
 
         echo "  </select>\n";
@@ -282,7 +288,9 @@ function create_cvss_dropdown($name, $selected = NULL, $blank = true)
  *************************************/
 function create_numeric_dropdown($name, $selected = NULL, $blank = true)
 {
-        echo "<select id=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "\" name=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "\" class=\"form-field\" style=\"width:50px;\" onClick=\"javascript:showHelp('" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "Help');updateScore();\">\n";
+	global $escaper;
+
+        echo "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:50px;\" onClick=\"javascript:showHelp('" . $escaper->escapeHtml($name) . "Help');updateScore();\">\n";
 
         // If the blank is true
         if ($blank == true)
@@ -300,7 +308,7 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
                 }
                 else $text = "";
 
-                echo "    <option value=\"" . $value . "\"" . $text . ">" . $value . "</option>\n";
+                echo "    <option value=\"" . $escaper->escapeHtml($value) . "\"" . $text . ">" . $escaper->escapeHtml($value) . "</option>\n";
         }
 
         echo "  </select>\n";
@@ -311,18 +319,20 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
  ************************************/
 function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false)
 {
+	global $escaper;
+
 	// If we want to update the helper when selected
 	if ($help == true)
 	{
-		$helper = "  onClick=\"javascript:showHelp('" . htmlentities($rename, ENT_QUOTES, 'UTF-8', false) . "Help');updateScore();\"";
+		$helper = "  onClick=\"javascript:showHelp('" . $escaper->escapeHtml($rename) . "Help');updateScore();\"";
 	}
 	else $helper = "";
 
 	if ($rename != NULL)
 	{
-		echo "<select id=\"" . htmlentities($rename, ENT_QUOTES, 'UTF-8', false) . "\" name=\"" . htmlentities($rename, ENT_QUOTES, 'UTF-8', false) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
+		echo "<select id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
 	}
-	else echo "<select id=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "\" name=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
+	else echo "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
 
 	// If the blank is true
 	if ($blank == true)
@@ -362,7 +372,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 		}
 		else $text = "";
 
-                echo "    <option value=\"" . htmlentities($option['value'], ENT_QUOTES, 'UTF-8', false) . "\"" . $text . ">" . htmlentities($option['name'], ENT_QUOTES, 'UTF-8', false) . "</option>\n";
+                echo "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
         }
 
 	echo "  </select>\n";
@@ -374,16 +384,17 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 function create_multiple_dropdown($name, $selected = NULL, $rename = NULL)
 {
 	global $lang;
+	global $escaper;
 	
         if ($rename != NULL)
         {
-                echo "<select multiple id=\"" . htmlentities($rename, ENT_QUOTES, 'UTF-8', false) . "\" name=\"" . htmlentities($rename, ENT_QUOTES, 'UTF-8', false) . "[]\">\n";
+                echo "<select multiple id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "[]\">\n";
         }
-        else echo "<select multiple id=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "\" name=\"" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "[]\">\n";
+        else echo "<select multiple id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";
 
 	// Create all or none options
-	echo "    <option value=\"all\">". $lang['ALL'] ."</option>\n";
-	echo "    <option value=\"none\">". $lang['NONE'] ."</option>\n";
+	echo "    <option value=\"all\">" . $escaper->escapeHtml($lang['ALL']) . "</option>\n";
+	echo "    <option value=\"none\">" . $escaper->escapeHtml($lang['NONE']) . "</option>\n";
 
         // Get the list of options
         $options = get_table($name);
@@ -401,7 +412,7 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL)
                 }
                 else $text = "";
 
-                echo "    <option value=\"" . htmlentities($option['value'], ENT_QUOTES, 'UTF-8', false) . "\"" . $text . ">" . htmlentities($option['name'], ENT_QUOTES, 'UTF-8', false) . "</option>\n";
+                echo "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
         }
 
         echo "  </select>\n";
@@ -413,6 +424,7 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL)
 function create_risk_table()
 {
 	global $lang;
+	global $escaper;
 	
 	$impacts = get_table("impact");
 	$likelihoods = get_table("likelihood");
@@ -421,16 +433,16 @@ function create_risk_table()
 	echo "<table>\n";
 	echo "<tr height=\"20px\">\n";
 	echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:red;\" /></td>\n";
-	echo "<td>". $lang['HighRisk'] ."</td>\n";
+	echo "<td>". $escaper->escapeHtml($lang['HighRisk']) ."</td>\n";
 	echo "<td>&nbsp;</td>\n";
 	echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:orange;\" /></td>\n";
-	echo "<td>". $lang['MediumRisk'] ."</td>\n";
+	echo "<td>". $escaper->escapeHtml($lang['MediumRisk']) ."</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:yellow;\" /></td>\n";
-        echo "<td>". $lang['LowRisk'] ."</td>\n";
+        echo "<td>". $escaper->escapeHtml($lang['LowRisk']) ."</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:white;\" /></td>\n";
-        echo "<td>". $lang['Irrelevant'] ."</td>\n";
+        echo "<td>". $escaper->escapeHtml($lang['Irrelevant']) ."</td>\n";
 	echo "</tr>\n";
 	echo "</table>\n";
 
@@ -446,12 +458,12 @@ function create_risk_table()
 		// If this is the first row add the y-axis label
 		if ($i == 4)
 		{
-			echo "<td rowspan=\"5\"><div class=\"text-rotation\"><b>". $lang['Impact'] ."</b></div></td>\n";
+			echo "<td rowspan=\"5\"><div class=\"text-rotation\"><b>". $escaper->escapeHtml($lang['Impact']) ."</b></div></td>\n";
 		}
 
 		// Add the y-axis values
-        	echo "<td bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . htmlentities($impacts[$i]['name'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-        	echo "<td bgcolor=\"silver\" align=\"center\" height=\"50px\" width=\"100px\">" . $impacts[$i]['value'] . "</td>\n";
+        	echo "<td bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($impacts[$i]['name']) . "</td>\n";
+        	echo "<td bgcolor=\"silver\" align=\"center\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($impacts[$i]['value']) . "</td>\n";
 
 		// For each likelihood level
 		for ($j=0; $j<=4; $j++)
@@ -462,7 +474,7 @@ function create_risk_table()
 			// Get the risk color
 			$color = get_risk_color($risk);
 
-			echo "<td align=\"center\" bgcolor=\"" . $color . "\" height=\"50px\" width=\"100px\">" . $risk . "</td>\n";
+			echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($risk) . "</td>\n";
 		}
 
 		echo "</tr>\n";
@@ -476,7 +488,7 @@ function create_risk_table()
 	// Add the x-axis values
 	for ($x=0; $x<=4; $x++)
 	{
-		echo "<td align=\"center\" bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . $likelihoods[$x]['value'] . "<br />" . htmlentities($likelihoods[$x]['name'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+		echo "<td align=\"center\" bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($likelihoods[$x]['value']) . "<br />" . $escaper->escapeHtml($likelihoods[$x]['name']) . "</td>\n";
 	}
 
 	echo "</tr>\n";
@@ -484,7 +496,7 @@ function create_risk_table()
 	echo "<td>&nbsp;</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<td>&nbsp;</td>\n";
-	echo "<td colspan=\"5\" align=\"center\"><b>". $lang['Likelihood'] ."</b></td>\n";
+	echo "<td colspan=\"5\" align=\"center\"><b>". $escaper->escapeHtml($lang['Likelihood']) ."</b></td>\n";
 	echo "</tr>\n";
 	echo "</table>\n";
 }
@@ -2166,6 +2178,7 @@ function get_risks($sort_order=0)
 function get_risk_table($sort_order=0)
 {
 	global $lang;
+	global $escaper;
 	
         // Get risks
         $risks = get_risks($sort_order);
@@ -2173,13 +2186,13 @@ function get_risk_table($sort_order=0)
 	echo "<table class=\"table table-bordered table-condensed sortable\">\n";
 	echo "<thead>\n";
 	echo "<tr>\n";
-	echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-	echo "<th align=\"left\" width=\"150px\">". $lang['Status'] ."</th>\n";
-	echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-	echo "<th align=\"center\" width=\"100px\">". $lang['Risk'] ."</th>\n";
-	echo "<th align=\"center\" width=\"150px\">". $lang['Submitted'] ."</th>\n";
-	echo "<th align=\"center\" width=\"100px\">". $lang['MitigationPlanned'] ."</th>\n";
-	echo "<th align=\"center\" width=\"100px\">". $lang['ManagementReview'] ."</th>\n";
+	echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+	echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+	echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+	echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Submitted']) ."</th>\n";
+	echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</th>\n";
+	echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['ManagementReview']) ."</th>\n";
 	echo "</tr>\n";
 	echo "</thead>\n";
 	echo "<tbody>\n";
@@ -2191,13 +2204,13 @@ function get_risk_table($sort_order=0)
 		$color = get_risk_color($risk['calculated_risk']);
 
 		echo "<tr>\n";
-		echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false) . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false) . "</a></td>\n";
-		echo "<td align=\"left\" width=\"150px\">" . htmlentities($risk['status'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"100px\">" . planned_mitigation(htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false), htmlentities($risk['mitigation_id'], ENT_QUOTES, 'UTF-8', false)) . "</td>\n";
-		echo "<td align=\"center\" width=\"100px\">" . management_review(htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false), htmlentities($risk['mgmt_review'], ENT_QUOTES, 'UTF-8', false)) . "</td>\n";
+		echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+		echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
+		echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+		echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
+		echo "<td align=\"center\" width=\"100px\">" . planned_mitigation(convert_id($risk['id']), $risk['mitigation_id']) . "</td>\n";
+		echo "<td align=\"center\" width=\"100px\">" . management_review(convert_id($risk['id']), $risk['mgmt_review']) . "</td>\n";
 		echo "</tr>\n";
 	}
 
@@ -2213,6 +2226,7 @@ function get_risk_table($sort_order=0)
 function get_submitted_risks_table($sort_order=11)
 {
 	global $lang;
+	global $escaper;
 	
         // Get risks
         $risks = get_risks($sort_order);
@@ -2220,13 +2234,13 @@ function get_submitted_risks_table($sort_order=11)
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-	echo "<th align=\"center\" width=\"150px\">". $lang['SubmissionDate'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['CalculatedRisk'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['Status'] ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $lang['Team'] ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $lang['SubmittedBy'] ."</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['SubmissionDate']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['CalculatedRisk']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Team']) ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2238,13 +2252,13 @@ function get_submitted_risks_table($sort_order=11)
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false) . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"150px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['status'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['team'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['name'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
+		echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['team']) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -2260,6 +2274,7 @@ function get_submitted_risks_table($sort_order=11)
 function get_mitigations_table($sort_order=13)
 {
 	global $lang;
+	global $escaper;
 	
         // Get risks
         $risks = get_risks($sort_order);
@@ -2267,12 +2282,12 @@ function get_mitigations_table($sort_order=13)
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['MitigationDate'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['PlanningStrategy'] ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $lang['MitigationEffort'] ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $lang['SubmittedBy'] ."</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationDate']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationEffort']) ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2281,12 +2296,12 @@ function get_mitigations_table($sort_order=13)
         foreach ($risks as $risk)
         {
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false) . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['planning_strategy'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['mitigation_effort'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['name'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['planning_strategy']) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_effort']) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -2302,6 +2317,7 @@ function get_mitigations_table($sort_order=13)
 function get_reviewed_risk_table($sort_order=12)
 {
 	global $lang;
+	global $escaper;
 	
         // Get risks
         $risks = get_risks($sort_order);
@@ -2309,12 +2325,12 @@ function get_reviewed_risk_table($sort_order=12)
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-	echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['ReviewDate'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['Review'] ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $lang['NextStep'] ."</th>\n";
-	echo "<th align=\"center\" width=\"150px\">". $lang['Reviewer'] ."</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+	echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['ReviewDate']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Review']) ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextStep']) ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Reviewer']) ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2323,12 +2339,12 @@ function get_reviewed_risk_table($sort_order=12)
         foreach ($risks as $risk)
         {
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false) . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['review'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['next_step'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['name'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['review']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['next_step']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -2344,6 +2360,7 @@ function get_reviewed_risk_table($sort_order=12)
 function get_closed_risks_table($sort_order=17)
 {
         global $lang;
+	global $escaper;
 
         // Get risks
         $risks = get_risks($sort_order);
@@ -2351,13 +2368,13 @@ function get_closed_risks_table($sort_order=17)
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['CalculatedRisk'] ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $lang['Team'] ."</th>\n";
-	echo "<th align=\"center\" width=\"150px\">". $lang['DateClosed'] ."</th>\n";
-	echo "<th align=\"center\" width=\"150px\">". $lang['ClosedBy'] ."</th>\n";
-	echo "<th align=\"center\" width=\"150px\">". $lang['CloseReason'] ."</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['CalculatedRisk']) ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Team']) ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['DateClosed']) ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['ClosedBy']) ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['CloseReason']) ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2369,13 +2386,13 @@ function get_closed_risks_table($sort_order=17)
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false) . "\">" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"150px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['team'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['closure_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['user'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities($risk['close_reason'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['team']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['closure_date']))) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['user']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['close_reason']) . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -2391,6 +2408,7 @@ function get_closed_risks_table($sort_order=17)
 function get_risk_teams_table($sort_order=18)
 {
         global $lang;
+	global $escaper;
 
 	// Get risks
 	$risks = get_risks($sort_order);
@@ -2402,8 +2420,8 @@ function get_risk_teams_table($sort_order=18)
 	foreach ($risks as $risk)
 	{
 		$risk_id = (int)$risk['id'];
-		$subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false);
-		$team = htmlentities(stripslashes($risk['team']), ENT_QUOTES, 'UTF-8', false);
+		$subject = $risk['subject'];
+		$team = $risk['team'];
 		$submission_date = $risk['submission_date'];
 		$calculated_risk = $risk['calculated_risk'];
 		$color = get_risk_color($risk['calculated_risk']);
@@ -2438,13 +2456,13 @@ function get_risk_teams_table($sort_order=18)
         		echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         		echo "<thead>\n";
         		echo "<tr>\n";
-        		echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $current_team ."</font></center></th>\n";
+        		echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($current_team) ."</font></center></th>\n";
         		echo "</tr>\n";
         		echo "<tr>\n";
-        		echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-        		echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-        		echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
-        		echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
+        		echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        		echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        		echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+        		echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
         		echo "</tr>\n";
         		echo "</thead>\n";
 			echo "<tbody>\n";
@@ -2452,10 +2470,10 @@ function get_risk_teams_table($sort_order=18)
 
 		// Display the risk information
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
 	}
 }
@@ -2466,6 +2484,7 @@ function get_risk_teams_table($sort_order=18)
 function get_risk_technologies_table($sort_order=19)
 {
         global $lang;
+	global $escaper;
 
         // Get risks
         $risks = get_risks($sort_order);
@@ -2477,8 +2496,8 @@ function get_risk_technologies_table($sort_order=19)
         foreach ($risks as $risk)
         {
                 $risk_id = (int)$risk['id'];
-                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false);
-                $technology = htmlentities(stripslashes($risk['technology']), ENT_QUOTES, 'UTF-8', false);
+                $subject = $risk['subject'];
+                $technology = $risk['technology'];
                 $submission_date = $risk['submission_date'];
                 $calculated_risk = $risk['calculated_risk'];
                 $color = get_risk_color($risk['calculated_risk']);
@@ -2513,13 +2532,13 @@ function get_risk_technologies_table($sort_order=19)
                         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
                         echo "<thead>\n";
                         echo "<tr>\n";
-                        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $current_technology ."</font></center></th>\n";
+                        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($current_technology) ."</font></center></th>\n";
                         echo "</tr>\n";
                         echo "<tr>\n";
-                        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-                        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-                        echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
-                        echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
+                        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+                        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+                        echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+                        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
                         echo "</tr>\n";
                         echo "</thead>\n";
                         echo "<tbody>\n";
@@ -2527,10 +2546,10 @@ function get_risk_technologies_table($sort_order=19)
 
                 // Display the risk information
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
 }
@@ -2541,17 +2560,18 @@ function get_risk_technologies_table($sort_order=19)
 function get_risk_scoring_table()
 {
 	global $lang;
+	global $escaper;
 	
 	echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $lang['ClassicRiskScoring'] ."</font></center></th>\n";
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($lang['ClassicRiskScoring']) ."</font></center></th>\n";
         echo "</tr>\n";
         echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-        echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2562,16 +2582,16 @@ function get_risk_scoring_table()
         // For each risk
         foreach ($risks as $risk)
         {
-        	$subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false);
+        	$subject = $risk['subject'];
                 $risk_id = (int)$risk['id'];
                 $project_id = (int)$risk['project_id'];
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -2582,13 +2602,13 @@ function get_risk_scoring_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";  
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $lang['CVSSRiskScoring'] ."</font></center></th>\n";
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($lang['CVSSRiskScoring']) ."</font></center></th>\n";
         echo "</tr>\n"; 
         echo "<tr>\n";  
-        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-        echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
         echo "</tr>\n"; 
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2599,16 +2619,16 @@ function get_risk_scoring_table()
         // For each risk
         foreach ($risks as $risk)
         {               
-                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false);
+                $subject = $risk['subject'];
                 $risk_id = (int)$risk['id'];
                 $project_id = (int)$risk['project_id'];
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";  
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n"; 
         }               
 
@@ -2619,13 +2639,13 @@ function get_risk_scoring_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";  
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $lang['DREADRiskScoring'] ."</font></center></th>\n";
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($lang['DREADRiskScoring']) ."</font></center></th>\n";
         echo "</tr>\n"; 
         echo "<tr>\n";  
-        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-        echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
         echo "</tr>\n"; 
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2636,16 +2656,16 @@ function get_risk_scoring_table()
         // For each risk
         foreach ($risks as $risk)
         {               
-                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false);
+                $subject = $risk['subject'];
                 $risk_id = (int)$risk['id'];
                 $project_id = (int)$risk['project_id'];
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";  
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n"; 
         }               
 
@@ -2656,13 +2676,13 @@ function get_risk_scoring_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";  
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $lang['OWASPRiskScoring'] ."</font></center></th>\n";
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($lang['OWASPRiskScoring']) ."</font></center></th>\n";
         echo "</tr>\n"; 
         echo "<tr>\n";  
-        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-        echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
         echo "</tr>\n"; 
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2673,16 +2693,16 @@ function get_risk_scoring_table()
         // For each risk
         foreach ($risks as $risk)
         {               
-                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false);
+                $subject = $risk['subject'];
                 $risk_id = (int)$risk['id'];
                 $project_id = (int)$risk['project_id'];
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";  
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n"; 
         }               
 
@@ -2693,13 +2713,13 @@ function get_risk_scoring_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";  
-        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $lang['CustomRiskScoring'] ."</font></center></th>\n";
+        echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($lang['CustomRiskScoring']) ."</font></center></th>\n";
         echo "</tr>\n"; 
         echo "<tr>\n";  
-        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-        echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
         echo "</tr>\n"; 
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2710,16 +2730,16 @@ function get_risk_scoring_table()
         // For each risk
         foreach ($risks as $risk)
         {               
-                $subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false);
+                $subject = $risk['subject'];
                 $risk_id = (int)$risk['id'];
                 $project_id = (int)$risk['project_id'];
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";  
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n"; 
         }               
 
@@ -2734,6 +2754,7 @@ function get_risk_scoring_table()
 function get_projects_and_risks_table()
 {
 	global $lang;
+	global $escaper;
 	
 	// Get projects
 	$projects = get_projects();
@@ -2742,7 +2763,7 @@ function get_projects_and_risks_table()
 	foreach ($projects as $project)
 	{
                 $id = (int)$project['value'];
-                $name = htmlentities(stripslashes($project['name']), ENT_QUOTES, 'UTF-8', false);
+                $name = $project['name'];
                 $order = (int)$project['order'];
 
                 // If the project is not 0 (ie. Unassigned Risks)
@@ -2751,13 +2772,13 @@ function get_projects_and_risks_table()
         		echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         		echo "<thead>\n";
         		echo "<tr>\n";
-        		echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">" . $name . "</font></center></th>\n";
+        		echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">" . $escaper->escapeHtml($name) . "</font></center></th>\n";
         		echo "</tr>\n";
 		        echo "<tr>\n";
-        		echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-        		echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-        		echo "<th align=\"left\" width=\"100px\">". $lang['Risk'] ."</th>\n";
-        		echo "<th align=\"left\" width=\"150px\">". $lang['DateSubmitted'] ."</th>\n";
+        		echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        		echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        		echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+        		echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
         		echo "</tr>\n";
         		echo "</thead>\n";
         		echo "<tbody>\n";
@@ -2768,7 +2789,7 @@ function get_projects_and_risks_table()
                 	// For each risk
                 	foreach ($risks as $risk)
                 	{
-                        	$subject = htmlentities(stripslashes($risk['subject']), ENT_QUOTES, 'UTF-8', false);
+                        	$subject = $risk['subject'];
                         	$risk_id = (int)$risk['id'];
                         	$project_id = (int)$risk['project_id'];
                         	$color = get_risk_color($risk['calculated_risk']);
@@ -2777,10 +2798,10 @@ function get_projects_and_risks_table()
                         	if ($id == $project_id)
                         	{
 					echo "<tr>\n";
-                			echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                			echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                			echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . htmlentities($risk['calculated_risk'], ENT_QUOTES, 'UTF-8', false) . "</td>\n";
-					echo "<td align=\"center\" width=\"150px\">" . htmlentities(date(DATETIMESIMPLE, strtotime($risk['submission_date'])), ENT_QUOTES, 'UTF-8', false) . "</td>\n";
+                			echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                			echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                			echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+					echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
 					echo "</tr>\n";
 				}
 			}
@@ -2799,12 +2820,13 @@ function get_projects_and_risks_table()
 function get_project_list()
 {
 	global $lang;
+	global $escaper;
 	
         // Get projects
         $projects = get_projects();
 
 	echo "<form action=\"\" method=\"post\">\n";
-	echo "<input type=\"submit\" name=\"update_order\" value=\"". $lang[ 'Update'] ."\" /><br /><br />\n";
+	echo "<input type=\"submit\" name=\"update_order\" value=\"". $escaper->escapeHtml($lang[ 'Update']) ."\" /><br /><br />\n";
 	echo "<ul id=\"prioritize\">\n";
 
         // For each project
@@ -2817,16 +2839,16 @@ function get_project_list()
 		// If the project is not 0 (ie. Unassigned Risks)
 		if ($id != 0)
 		{
-			echo "<li class=\"ui-state-default\" id=\"sort_" . $id . "\">\n";
-			echo "<span>&#x21C5;</span>&nbsp;" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "\n";
-			echo "<input type=\"hidden\" id=\"order" . $id . "\" name=\"order_" . $id . "\" value=\"" . $order . "\" />\n";
-			echo "<input type=\"hidden\" name=\"ids[]\" value=\"" . $id . "\" />\n";
+			echo "<li class=\"ui-state-default\" id=\"sort_" . $escaper->escapeHtml($id) . "\">\n";
+			echo "<span>&#x21C5;</span>&nbsp;" . $escaper->escapeHtml($name) . "\n";
+			echo "<input type=\"hidden\" id=\"order" . $escaper->escapeHtml($id) . "\" name=\"order_" . $escaper->escapeHtml($id) . "\" value=\"" . $escaper->escapeHtml($order) . "\" />\n";
+			echo "<input type=\"hidden\" name=\"ids[]\" value=\"" . $escaper->escapeHtml($id) . "\" />\n";
 			echo "</li>\n";
 		}
 	}
 
 	echo "</ul>\n";
-	echo "<br /><input type=\"submit\" name=\"update_order\" value=\"". $lang[ 'Update'] ."\" />\n";
+	echo "<br /><input type=\"submit\" name=\"update_order\" value=\"". $escaper->escapeHtml($lang[ 'Update']) ."\" />\n";
 	echo "</form>\n";
 
 	return true;
@@ -2838,6 +2860,7 @@ function get_project_list()
 function get_project_status()
 {
 	global $lang;
+	global $escaper;
 
         // Get projects
         $projects = get_projects();
@@ -2845,10 +2868,10 @@ function get_project_status()
 	echo "<form action=\"\" method=\"post\">\n";
 	echo "<div id=\"statustabs\">\n";
 	echo "<ul>\n";
-        echo "<li><a href=\"#statustabs-1\">". $lang['ActiveProjects'] ."</a></li>\n";
-        echo "<li><a href=\"#statustabs-2\">" .$lang['OnHoldProjects'] ."</a></li>\n";
-        echo "<li><a href=\"#statustabs-3\">" .$lang['CompletedProjects'] ."</a></li>\n";
-        echo "<li><a href=\"#statustabs-4\">" .$lang['CancelledProjects'] ."</a></li>\n";
+        echo "<li><a href=\"#statustabs-1\">". $escaper->escapeHtml($lang['ActiveProjects']) ."</a></li>\n";
+        echo "<li><a href=\"#statustabs-2\">". $escaper->escapeHtml($lang['OnHoldProjects']) ."</a></li>\n";
+        echo "<li><a href=\"#statustabs-3\">". $escaper->escapeHtml($lang['CompletedProjects']) ."</a></li>\n";
+        echo "<li><a href=\"#statustabs-4\">". $escaper->escapeHtml($lang['CancelledProjects']) ."</a></li>\n";
 	echo "</ul>\n";
 
 	// For each of the project status types
@@ -2867,9 +2890,9 @@ function get_project_status()
 			if ($status == $i && $name != "Unassigned Risks")
 			{
 
-                                echo "<li id=\"" . $id . "\" class=\"project\">" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "\n";
-                                echo "<input class=\"assoc-project-with-status\" type=\"hidden\" id=\"project" . $id . "\" name=\"project_" . $id . "\" value=\"" . $status . "\" />\n";
-                                echo "<input id=\"all-project-ids\" class=\"all-project-ids\" type=\"hidden\" name=\"projects[]\" value=\"" . $id . "\" />\n";
+                                echo "<li id=\"" . $escaper->escapeHtml($id) . "\" class=\"project\">" . $escaper->escapeHtml($name) . "\n";
+                                echo "<input class=\"assoc-project-with-status\" type=\"hidden\" id=\"project" . $escaper->escapeHtml($id) . "\" name=\"project_" . $escaper->escapeHtml($id) . "\" value=\"" . $escaper->escapeHtml($status) . "\" />\n";
+                                echo "<input id=\"all-project-ids\" class=\"all-project-ids\" type=\"hidden\" name=\"projects[]\" value=\"" . $escaper->escapeHtml($id) . "\" />\n";
                                 echo "</li>\n";
 			}
 		}
@@ -2879,7 +2902,7 @@ function get_project_status()
         }
 
 	echo "</div>\n";
-	echo "<br /><input type=\"submit\" name=\"update_project_status\" value=\"" .$lang['UpdateProjectStatuses'] ."\" />\n";
+	echo "<br /><input type=\"submit\" name=\"update_project_status\" value=\"" . $escaper->escapeHtml($lang['UpdateProjectStatuses']) ."\" />\n";
 	echo "</form>\n";
 
         return true;
@@ -2954,6 +2977,7 @@ function update_project_status($status_id, $project_id)
 function get_project_tabs()
 {
 	global $lang;
+	global $escaper;
 	
 	$projects = get_projects();
 
@@ -2966,7 +2990,7 @@ function get_project_tabs()
 		$id = (int)$project['value'];
 		$name = $project['name'];
 
-		echo "<li><a href=\"#tabs-" . $id . "\">" . htmlentities($name, ENT_QUOTES, 'UTF-8', false) . "</a></li>\n";
+		echo "<li><a href=\"#tabs-" . $escaper->escapeHtml($id) . "\">" . $escaper->escapeHtml($name) . "</a></li>\n";
 	}
 
 	echo "</ul>\n";
@@ -2980,13 +3004,13 @@ function get_project_tabs()
 		$id = (int)$project['value'];
 		$name = $project['name'];
 
-		echo "<div id=\"tabs-" . $id . "\">\n";
-		echo "<ul id=\"sortable-" . $id . "\" class=\"connectedSortable ui-helper-reset\">\n";
+		echo "<div id=\"tabs-" . $escaper->escapeHtml($id) . "\">\n";
+		echo "<ul id=\"sortable-" . $escaper->escapeHtml($id) . "\" class=\"connectedSortable ui-helper-reset\">\n";
 
 		// For each risk
 		foreach ($risks as $risk)
 		{
-			$subject = stripslashes($risk['subject']);
+			$subject = $risk['subject'];
 			$risk_id = (int)$risk['id'];
 			$project_id = (int)$risk['project_id'];
                 	$color = get_risk_color($risk['calculated_risk']);
@@ -2994,9 +3018,9 @@ function get_project_tabs()
 			// If the risk is assigned to that project id
 			if ($id == $project_id)
 			{
-				echo "<li id=\"" . $risk_id . "\" class=\"" . $color . "\"><a href=\"../management/view.php?id=" . htmlentities(convert_id($risk['id']), ENT_QUOTES, 'UTF-8', false) . "\">" . htmlentities($subject, ENT_QUOTES, 'UTF-8', false) . "</a>\n";
-				echo "<input class=\"assoc-risk-with-project\" type=\"hidden\" id=\"risk" . $risk_id . "\" name=\"risk_" . $risk_id . "\" value=\"" . $project_id . "\" />\n";
-                        	echo "<input id=\"all-risk-ids\" class=\"all-risk-ids\" type=\"hidden\" name=\"ids[]\" value=\"" . $risk_id . "\" />\n";
+				echo "<li id=\"" . $escaper->escapeHtml($risk_id) . "\" class=\"" . $escaper->escapeHtml($color) . "\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml($subject) . "</a>\n";
+				echo "<input class=\"assoc-risk-with-project\" type=\"hidden\" id=\"risk" . $escaper->escapeHtml($risk_id) . "\" name=\"risk_" . $escaper->escapeHtml($risk_id) . "\" value=\"" . $escaper->escapeHtml($project_id) . "\" />\n";
+                        	echo "<input id=\"all-risk-ids\" class=\"all-risk-ids\" type=\"hidden\" name=\"ids[]\" value=\"" . $escaper->escapeHtml($risk_id) . "\" />\n";
                         	echo "</li>\n";
 			}
 		}
@@ -3006,7 +3030,7 @@ function get_project_tabs()
 	}
 
 	echo "</div>\n";
-	echo "<br /><input type=\"submit\" name=\"update_projects\" value=\"". $lang['SaveRisksToProjects'] ."\" />\n";
+	echo "<br /><input type=\"submit\" name=\"update_projects\" value=\"". $escaper->escapeHtml($lang['SaveRisksToProjects']) ."\" />\n";
 	echo "</form>\n";
 }
 
@@ -3076,6 +3100,7 @@ function project_has_risks($project_id)
 function get_reviews_table($sort_order=3)
 {
 	global $lang;
+	global $escaper;
 	
         // Get risks
         $risks = get_risks($sort_order);
@@ -3088,30 +3113,49 @@ function get_reviews_table($sort_order=3)
 	{
 		// Create arrays for each value
                 $risk_id[$key] = (int)$row['id'];
-                $subject[$key] = htmlentities(stripslashes($row['subject']), ENT_QUOTES, 'UTF-8', false);
-                $status[$key] = htmlentities($row['status'], ENT_QUOTES, 'UTF-8', false);
-                $calculated_risk[$key] = htmlentities($row['calculated_risk'], ENT_QUOTES, 'UTF-8', false);
+                $subject[$key] = $row['subject'];
+                $status[$key] = $row['status'];
+                $calculated_risk[$key] = $row['calculated_risk'];
                 $color[$key] = get_risk_color($row['calculated_risk']);
                 $dayssince[$key] = dayssince($row['submission_date']);
                 $next_review[$key] = next_review($color[$key], $risk_id[$key], $row['next_review'], false);
                 $next_review_html[$key] = next_review($color[$key], $row['id'], $row['next_review']);
 
-                // Create a new array of reviews
-                $reviews[] = array('risk_id' => $risk_id[$key], 'subject' => $subject[$key], 'status' => $status[$key], 'calculated_risk' => $calculated_risk[$key], 'color' => $color[$key], 'dayssince' => $dayssince[$key], 'next_review' => $next_review[$key], 'next_review_html' => $next_review_html[$key]);
-
-                // Sort the reviews array by next_review
-                array_multisort($next_review, SORT_DESC, SORT_STRING, $calculated_risk, SORT_DESC, SORT_NUMERIC, $reviews);
+		// If the next review is UNREVIEWED or PAST DUE
+		if ($next_review[$key] == "UNREVIEWED" || $next_review[$key] == "PAST DUE")
+		{
+			// Create an array of the risks needing immediate review
+			$need_reviews[] = array('risk_id' => $risk_id[$key], 'subject' => $subject[$key], 'status' => $status[$key], 'calculated_risk' => $calculated_risk[$key], 'color' => $color[$key], 'dayssince' => $dayssince[$key], 'next_review' => $next_review[$key], 'next_review_html' => $next_review_html[$key]);
+			$need_next_review[] = $next_review[$key];
+			$need_calculated_risk[] = $calculated_risk[$key];
+		}
+		// Otherwise it is an actual review date
+		else {
+                	// Create an array of the risks with future reviews
+                	$reviews[] = array('risk_id' => $risk_id[$key], 'subject' => $subject[$key], 'status' => $status[$key], 'calculated_risk' => $calculated_risk[$key], 'color' => $color[$key], 'dayssince' => $dayssince[$key], 'next_review' => $next_review[$key], 'next_review_html' => $next_review_html[$key]);
+			$date_next_review[] = $next_review[$key];
+			$date_calculated_risk[] = $calculated_risk[$key];
+		}
 	}
+
+        // Sort the need reviews array by next_review
+        array_multisort($need_next_review, SORT_DESC, SORT_STRING, $need_calculated_risk, SORT_DESC, SORT_NUMERIC, $need_reviews);
+
+        // Sort the reviews array by next_review
+        array_multisort($date_next_review, SORT_ASC, SORT_STRING, $date_calculated_risk, SORT_DESC, SORT_NUMERIC, $reviews);
+
+	// Merge the two arrays back together to a single reviews array
+	$reviews = array_merge($need_reviews, $reviews);
 
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">". $lang['ID'] ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $lang['Status'] ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $lang['Subject'] ."</th>\n";
-        echo "<th align=\"center\" width=\"100px\">". $lang['Risk'] ."</th>\n";
-        echo "<th align=\"center\" width=\"100px\">". $lang['DaysOpen'] ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $lang['NextReviewDate'] ."</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+        echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -3129,11 +3173,11 @@ function get_reviews_table($sort_order=3)
                 $next_review_html = $review['next_review_html'];
 
                 echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . convert_id($risk_id) . "\">" . convert_id($risk_id) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"150px\">" . $status . "</td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $subject . "</td>\n";
-                echo "<td align=\"center\" bgcolor=\"" . $color . "\" width=\"100px\">" . $calculated_risk . "</td>\n";
-                echo "<td align=\"center\" width=\"100px\">" . $dayssince . "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($calculated_risk) . "</td>\n";
+                echo "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($dayssince) . "</td>\n";
                 echo "<td align=\"center\" width=\"150px\">" . $next_review_html . "</td>\n";
                 echo "</tr>\n";
         }
@@ -3150,13 +3194,14 @@ function get_reviews_table($sort_order=3)
 function management_review($risk_id, $mgmt_review)
 {
 	global $lang;
+	global $escaper;
 	
 	// If the review hasn't happened
 	if ($mgmt_review == "0")
 	{
-		$value = "<a href=\"../management/mgmt_review.php?id=" . $risk_id . "\">". $lang['No'] ."</a>";
+		$value = "<a href=\"../management/mgmt_review.php?id=" . $escaper->escapeHtml($risk_id) . "\">". $escaper->escapeHtml($lang['No']) ."</a>";
 	}
-	else $value = $lang['Yes'];
+	else $value = $escaper->escapeHtml($lang['Yes']);
 
 	return $value;
 }
@@ -3167,13 +3212,14 @@ function management_review($risk_id, $mgmt_review)
 function planned_mitigation($risk_id, $mitigation_id)
 {
 	global $lang;
+	global $escaper;
 	
         // If the review hasn't happened
         if ($mitigation_id == "0")
         {
-                $value = "<a href=\"../management/mitigate.php?id=" . $risk_id . "\">". $lang['No'] ."</a>";
+                $value = "<a href=\"../management/mitigate.php?id=" . $escaper->escapeHtml($risk_id) . "\">". $escaper->escapeHtml($lang['No']) ."</a>";
         }
-        else $value = $lang['Yes'];
+        else $value = $escaper->escapeHtml($lang['Yes']);
 
         return $value;
 }
@@ -3202,7 +3248,7 @@ function get_name_by_value($table, $value)
 	if (isset($array[0]['name']))
 	{
 		// Return that value
-		return htmlentities(stripslashes($array[0]['name']), ENT_QUOTES, 'UTF-8', false);
+		return $array[0]['name'];
 	}
 	// Otherwise, return an empty string
 	else return "";
@@ -3259,7 +3305,7 @@ function get_cvss_name($metric_name, $abrv_metric_value)
         if (isset($array[0]['metric_value']))
         {
                 // Return that value
-		return stripslashes($array[0]['metric_value']);
+		return $array[0]['metric_value'];
         }
         // Otherwise, return an empty string
         else return "";
@@ -3356,6 +3402,7 @@ function get_last_review($risk_id)
 function next_review($color, $risk_id, $next_review, $html = true)
 {
 	global $lang;
+	global $escaper;
 	
 	// If the next_review is null
 	if ($next_review == null)
@@ -3413,7 +3460,7 @@ function next_review($color, $risk_id, $next_review, $html = true)
 	if ($html == true)
 	{
 		// Add the href tag to make it HTML
-		$html = "<a href=\"../management/mgmt_review.php?id=" . convert_id($risk_id) . "\">" . $text . "</a>";
+		$html = "<a href=\"../management/mgmt_review.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml($text) . "</a>";
 
 		// Return the HTML code
 		return $html;
@@ -3481,7 +3528,7 @@ function close_risk($id, $user_id, $status, $close_reason, $note)
         $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
 	$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
         $stmt->bindParam(":close_reason", $close_reason, PDO::PARAM_INT);
-        $stmt->bindParam(":note", addslashes($note), PDO::PARAM_STR);
+        $stmt->bindParam(":note", $note, PDO::PARAM_STR);
 
         $stmt->execute();
 
@@ -3594,6 +3641,8 @@ function add_comment($id, $user_id, $comment)
  **************************/
 function get_comments($id)
 {
+	global $escaper;
+
         // Subtract 1000 from id
 	$id = $id - 1000;
 
@@ -3615,11 +3664,11 @@ function get_comments($id)
 
         foreach ($comments as $comment)
         {
-		$text = htmlentities(stripslashes($comment['comment']), ENT_QUOTES, 'UTF-8', false);
-		$date = htmlentities(date(DATETIME, strtotime($comment['date'])), ENT_QUOTES, 'UTF-8', false);
-		$user = htmlentities(stripslashes($comment['name']), ENT_QUOTES, 'UTF-8', false);
+		$text = $comment['comment'];
+		$date = date(DATETIME, strtotime($comment['date']));
+		$user = $comment['name'];
 
-		echo "<p>".$date." > ".$user.": ".$text."</p>\n";
+		echo "<p>". $escaper->escapeHtml($date) ." > ". $escaper->escapeHtml($user) .": ". $escaper->escapeHtml($text) ."</p>\n";
 	}
 
         return true;
@@ -3630,6 +3679,8 @@ function get_comments($id)
  *****************************/
 function get_audit_trail($id = NULL)
 {
+	global $escaper;
+
 	// Open the database connection
 	$db = db_open();
 
@@ -3660,10 +3711,10 @@ function get_audit_trail($id = NULL)
         
         foreach ($logs as $log)
         {       
-                $text = htmlentities(stripslashes($log['message']), ENT_QUOTES, 'UTF-8', false);
-                $date = htmlentities(date(DATETIME, strtotime($log['timestamp'])), ENT_QUOTES, 'UTF-8', false); 
+                $text = $log['message'];
+                $date = date(DATETIME, strtotime($log['timestamp'])); 
                 
-                echo "<p>".$date." > ".$text."</p>\n";
+                echo "<p>" . $escaper->escapeHtml($date) . " > " . $escaper->escapeHtml($text) . "</p>\n";
         }
 
         return true;
@@ -3717,6 +3768,7 @@ function update_mitigation($id, $planning_strategy, $mitigation_effort, $current
 function get_reviews($id)
 {
 	global $lang;
+	global $escaper;
 	
         // Subtract 1000 from id
         $id = $id - 1000;
@@ -3739,18 +3791,18 @@ function get_reviews($id)
 
         foreach ($reviews as $review)
         {
-                $date = htmlentities(date(DATETIME, strtotime($review['submission_date'])), ENT_QUOTES, 'UTF-8', false);
+                $date = date(DATETIME, strtotime($review['submission_date']));
 		$reviewer =  get_name_by_value("user", $review['reviewer']);
 		$review_value = get_name_by_value("review", $review['review']);
 		$next_step = get_name_by_value("next_step", $review['next_step']);
-		$comment = htmlentities(stripslashes($review['comments']), ENT_QUOTES, 'UTF-8', false);
+		$comment = $review['comments'];
 
 		echo "<p>\n";
-		echo "<u>".$date."</u><br />\n";
-		echo $lang['Reviewer'] .": ".$reviewer."<br />\n";
-		echo $lang['Review'] .": ".$review_value."<br />\n";
-		echo $lang['NextStep'] .": ".$next_step."<br />\n";
-		echo $lang['Comment'] .": ".$comment."\n";
+		echo "<u>". $escaper->escapeHtml($date) ."</u><br />\n";
+		echo $escaper->escapeHtml($lang['Reviewer']) .": ". $escaper->escapeHtml($reviewer) ."<br />\n";
+		echo $escaper->escapeHtml($lang['Review']) .": ". $escaper->escapeHtml($review_value) ."<br />\n";
+		echo $escaper->escapeHtml($lang['NextStep']) .": ". $escaper->escapeHtml($next_step) ."<br />\n";
+		echo $escaper->escapeHtml($lang['Comment']) .": ". $escaper->escapeHtml($comment) ."\n";
 		echo "</p>\n";
         }
 
@@ -3781,8 +3833,8 @@ function latest_version($param)
         	}   
 	}      
 
-	// Return the latest version HTML encoded
-	return htmlentities($latest_version, ENT_QUOTES, 'UTF-8', false);
+	// Return the latest version
+	return $latest_version;
 }
 
 /*****************************
@@ -3869,6 +3921,8 @@ function update_last_login($user_id)
  *******************************/
 function get_announcements()
 {
+	global $escaper;
+
 	$announcements = "<ul>\n";
 
         $announcement_file = file('https://updates.simplerisk.it/announcements.xml');
@@ -3879,7 +3933,7 @@ function get_announcements()
         {
                 if (preg_match($regex_pattern, $line, $matches))
                 {
-                        $announcements .= "<li>" . htmlentities($matches[1], ENT_QUOTES, 'UTF-8', false) . "</li>\n";
+                        $announcements .= "<li>" . $escaper->escapeHtml($matches[1]) . "</li>\n";
                 }
         }
 

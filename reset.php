@@ -7,6 +7,10 @@
         require_once(realpath(__DIR__ . '/includes/functions.php'));
 	require_once(realpath(__DIR__ . '/includes/authenticate.php'));
 
+        // Include Zend Escaper for HTML Output Encoding
+        require_once(realpath(__DIR__ . '/includes/Component_ZendEscaper/Escaper.php'));
+        $escaper = new Zend\Escaper\Escaper('utf-8');
+
         // Add various security headers
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");
@@ -99,13 +103,13 @@
           <div class="navbar-content">
             <ul class="nav">
               <li class="active">
-                <a href="index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
               </li>
               <li>
-                <a href="management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="management/index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
               </li>
               <li>
-                <a href="reports/index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
               </li>
             </ul>
           </div>
@@ -117,7 +121,7 @@
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 greenalert\">" . $alert_message . "</div>\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
                 echo "</div>\n";
                 echo "</div>\n";
                 echo "<br />\n";
@@ -126,7 +130,7 @@
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $alert_message . "</div>\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
                 echo "</div>\n";
                 echo "</div>\n";
                 echo "<br />\n";
@@ -136,12 +140,12 @@
       <div class="row-fluid">
         <div class="span9">
           <div class="well">
-            <p><label><u><?php echo $lang['SendPasswordResetEmail']; ?></u></label></p>
+            <p><label><u><?php echo $escaper->escapeHtml($lang['SendPasswordResetEmail']); ?></u></label></p>
             <form name="send_reset_email" method="post" action="">
-            <?php echo $lang['Username']; ?>: <input class="input-medium" name="user" id="user" type="text" maxlength="20" />
+            <?php echo $escaper->escapeHtml($lang['Username']); ?>: <input class="input-medium" name="user" id="user" type="text" maxlength="20" />
             <div class="form-actions">
-              <button type="submit" name="send_reset_email" class="btn btn-primary"><?php echo $lang['Send']; ?></button>
-              <input class="btn" value="<?php echo $lang['Reset']; ?>" type="reset">
+              <button type="submit" name="send_reset_email" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Send']); ?></button>
+              <input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
             </div>
             </form>
           </div>
@@ -150,15 +154,15 @@
       <div class="row-fluid">
         <div class="span9">
           <div class="well">
-            <p><label><u><?php echo $lang['PasswordReset']; ?></u></label></p>
+            <p><label><u><?php echo $escaper->escapeHtml($lang['PasswordReset']); ?></u></label></p>
             <form name="password_reset" method="post" action="">
-            <?php echo $lang['Username']; ?>: <input class="input-medium" name="user" id="user" type="text" maxlength="20" /><br />
-            <?php echo $lang['ResetToken']; ?>: <input class="input-medium" name="token" id="token" type="password" maxlength="20" /><br />
-            <?php echo $lang['Password']; ?>: <input class="input-medium" name="password" id="password" type="password" maxlength="50" autocomplete="off" /><br />
-            <?php echo $lang['RepeatPassword']; ?>: <input class="input-medium" name="repeat_password" id="repeat_password" type="password" maxlength="50" autocomplete="off" />
+            <?php echo $escaper->escapeHtml($lang['Username']); ?>: <input class="input-medium" name="user" id="user" type="text" maxlength="20" /><br />
+            <?php echo $escaper->escapeHtml($lang['ResetToken']); ?>: <input class="input-medium" name="token" id="token" type="password" maxlength="20" /><br />
+            <?php echo $escaper->escapeHtml($lang['Password']); ?>: <input class="input-medium" name="password" id="password" type="password" maxlength="50" autocomplete="off" /><br />
+            <?php echo $escaper->escapeHtml($lang['RepeatPassword']); ?>: <input class="input-medium" name="repeat_password" id="repeat_password" type="password" maxlength="50" autocomplete="off" />
             <div class="form-actions">
-              <button type="submit" name="password_reset" class="btn btn-primary"><?php echo $lang['Submit']; ?></button>
-              <input class="btn" value="<?php echo $lang['Reset']; ?>" type="reset">
+              <button type="submit" name="password_reset" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
+              <input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
             </div>
             </form>
           </div>

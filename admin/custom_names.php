@@ -7,6 +7,10 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 
+        // Include Zend Escaper for HTML Output Encoding
+        require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
+        $escaper = new Zend\Escaper\Escaper('utf-8');
+
         // Add various security headers
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");
@@ -149,16 +153,16 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="../index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
               </li>
               <li>
-                <a href="../management/index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="../management/index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="../reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
               </li>
               <li class="active">
-                <a href="index.php"><?php echo $lang['Configure']; ?></a>
+                <a href="index.php"><?php echo $escaper->escapeHtml($lang['Configure']); ?></a>
               </li>
             </ul>
           </div>
@@ -166,13 +170,13 @@
 if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 {
           echo "<div class=\"btn-group pull-right\">\n";
-          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
+          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
+          echo "<a href=\"../account/profile.php\">" . $escaper->escapeHtml($lang['MyProfile']) . "</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
+          echo "<a href=\"../logout.php\">" . $escaper->escapeHtml($lang['Logout']) . "</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -186,7 +190,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 greenalert\">" . $alert_message . "</div>\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
                 echo "</div>\n";
                 echo "</div>\n";
                 echo "<br />\n";
@@ -195,7 +199,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $alert_message . "</div>\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
                 echo "</div>\n";
                 echo "</div>\n";
                 echo "<br />\n";
@@ -206,31 +210,31 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li>
-              <a href="index.php"><?php echo $lang['ConfigureRiskFormula']; ?></a> 
+              <a href="index.php"><?php echo $escaper->escapeHtml($lang['ConfigureRiskFormula']); ?></a> 
             </li>
             <li>
-              <a href="review_settings.php"><?php echo $lang['ConfigureReviewSettings']; ?></a>
+              <a href="review_settings.php"><?php echo $escaper->escapeHtml($lang['ConfigureReviewSettings']); ?></a>
             </li>
             <li>
-              <a href="add_remove_values.php"><?php echo $lang['AddAndRemoveValues']; ?></a> 
+              <a href="add_remove_values.php"><?php echo $escaper->escapeHtml($lang['AddAndRemoveValues']); ?></a> 
             </li>
             <li>
-              <a href="user_management.php"><?php echo $lang['UserManagement']; ?></a> 
+              <a href="user_management.php"><?php echo $escaper->escapeHtml($lang['UserManagement']); ?></a> 
             </li>
             <li class="active">
-              <a href="custom_names.php"><?php echo $lang['RedefineNamingConventions']; ?></a> 
+              <a href="custom_names.php"><?php echo $escaper->escapeHtml($lang['RedefineNamingConventions']); ?></a> 
             </li>
             <li>
-              <a href="audit_trail.php"><?php echo $lang['AuditTrail']; ?></a>
+              <a href="audit_trail.php"><?php echo $escaper->escapeHtml($lang['AuditTrail']); ?></a>
             </li>
             <li>
-              <a href="extras.php"><?php echo $lang['Extras']; ?></a>
+              <a href="extras.php"><?php echo $escaper->escapeHtml($lang['Extras']); ?></a>
             </li>
             <li>
-              <a href="announcements.php"><?php echo $lang['Announcements']; ?></a>
+              <a href="announcements.php"><?php echo $escaper->escapeHtml($lang['Announcements']); ?></a>
             </li>
             <li>
-              <a href="about.php"><?php echo $lang['About']; ?></a>        
+              <a href="about.php"><?php echo $escaper->escapeHtml($lang['About']); ?></a>        
             </li>
           </ul>
         </div>
@@ -240,22 +244,22 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               <div class="hero-unit">
                 <form name="impact" method="post" action="">
                 <p>
-                <h4><?php echo $lang['Impact']; ?>:</h4>
-                <?php echo $lang['Change']; ?> <?php create_dropdown("impact") ?> <?php echo $lang['to']; ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Update']; ?>" name="update_impact" /></p>
+                <h4><?php echo $escaper->escapeHtml($lang['Impact']); ?>:</h4>
+                <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("impact") ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_impact" /></p>
                 </form>
               </div>
               <div class="hero-unit">
                 <form name="likelihood" method="post" action="">
                 <p>
-                <h4><?php echo $lang['Likelihood']; ?>:</h4>
-                <?php echo $lang['Change']; ?> <?php create_dropdown("likelihood") ?> <?php echo $lang['to']; ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Update']; ?>" name="update_likelihood" /></p>
+                <h4><?php echo $escaper->escapeHtml($lang['Likelihood']); ?>:</h4>
+                <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("likelihood") ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_likelihood" /></p>
                 </form>
               </div>
               <div class="hero-unit">
                 <form name="mitigation_effort" method="post" action="">
                 <p>
-                <h4><?php echo $lang['MitigationEffort']; ?>:</h4>
-                <?php echo $lang['Change']; ?> <?php create_dropdown("mitigation_effort") ?> <?php echo $lang['to']; ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $lang['Update']; ?>" name="update_mitigation_effort" /></p>
+                <h4><?php echo $escaper->escapeHtml($lang['MitigationEffort']); ?>:</h4>
+                <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("mitigation_effort") ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_mitigation_effort" /></p>
                 </form>
               </div>
             </div>

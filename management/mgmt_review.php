@@ -8,6 +8,10 @@
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
         require_once(realpath(__DIR__ . '/../includes/display.php'));
 
+        // Include Zend Escaper for HTML Output Encoding
+        require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
+        $escaper = new Zend\Escaper\Escaper('utf-8');
+
         // Add various security headers
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");
@@ -55,11 +59,11 @@
         {
                 if (isset($_GET['id']))
                 {
-                        $id = htmlentities($_GET['id'], ENT_QUOTES, 'UTF-8', false);
+                        $id = (int)$_GET['id'];
                 }
                 else if (isset($_POST['id']))
                 {
-                        $id = htmlentities($_POST['id'], ENT_QUOTES, 'UTF-8', false);
+                        $id = (int)$_POST['id'];
                 }
 
                 // If team separation is enabled
@@ -154,65 +158,65 @@
                 // Get the details of the risk
                 $risk = get_risk_by_id($id);
 
-                $status = htmlentities($risk[0]['status'], ENT_QUOTES, 'UTF-8', false);
-                $subject = htmlentities(stripslashes($risk[0]['subject']), ENT_QUOTES, 'UTF-8', false);
-                $reference_id = htmlentities(stripslashes($risk[0]['reference_id']), ENT_QUOTES, 'UTF-8', false);
-		$regulation = htmlentities($risk[0]['regulation'], ENT_QUOTES, 'UTF-8', false);
-		$control_number = htmlentities($risk[0]['control_number'], ENT_QUOTES, 'UTF-8', false);
-                $location = htmlentities($risk[0]['location'], ENT_QUOTES, 'UTF-8', false);
-                $category = htmlentities($risk[0]['category'], ENT_QUOTES, 'UTF-8', false);
-                $team = htmlentities($risk[0]['team'], ENT_QUOTES, 'UTF-8', false);
-                $technology = htmlentities($risk[0]['technology'], ENT_QUOTES, 'UTF-8', false);
-                $owner = htmlentities($risk[0]['owner'], ENT_QUOTES, 'UTF-8', false);
-                $manager = htmlentities($risk[0]['manager'], ENT_QUOTES, 'UTF-8', false);
-                $assessment = htmlentities(stripslashes($risk[0]['assessment']), ENT_QUOTES, 'UTF-8', false);
-                $notes = htmlentities(stripslashes($risk[0]['notes']), ENT_QUOTES, 'UTF-8', false);
-                $submission_date = htmlentities($risk[0]['submission_date'], ENT_QUOTES, 'UTF-8', false);
-                $mitigation_id = htmlentities($risk[0]['mitigation_id'], ENT_QUOTES, 'UTF-8', false);
-                $mgmt_review = htmlentities($risk[0]['mgmt_review'], ENT_QUOTES, 'UTF-8', false);
-                $calculated_risk = htmlentities($risk[0]['calculated_risk'], ENT_QUOTES, 'UTF-8', false);
-		$risk_level = htmlentities(get_risk_level_name($calculated_risk), ENT_QUOTES, 'UTF-8', false);
+                $status = $risk[0]['status'];
+                $subject = $risk[0]['subject'];
+                $reference_id = $risk[0]['reference_id'];
+		$regulation = $risk[0]['regulation'];
+		$control_number = $risk[0]['control_number'];
+                $location = $risk[0]['location'];
+                $category = $risk[0]['category'];
+                $team = $risk[0]['team'];
+                $technology = $risk[0]['technology'];
+                $owner = $risk[0]['owner'];
+                $manager = $risk[0]['manager'];
+                $assessment = $risk[0]['assessment'];
+                $notes = $risk[0]['notes'];
+                $submission_date = $risk[0]['submission_date'];
+                $mitigation_id = $risk[0]['mitigation_id'];
+                $mgmt_review = $risk[0]['mgmt_review'];
+                $calculated_risk = $risk[0]['calculated_risk'];
+		$risk_level = get_risk_level_name($calculated_risk);
 		$next_review = next_review_by_score($calculated_risk);
 
-                $scoring_method = htmlentities($risk[0]['scoring_method'], ENT_QUOTES, 'UTF-8', false);
-                $CLASSIC_likelihood = htmlentities($risk[0]['CLASSIC_likelihood'], ENT_QUOTES, 'UTF-8', false);
-                $CLASSIC_impact = htmlentities($risk[0]['CLASSIC_impact'], ENT_QUOTES, 'UTF-8', false);
-                $AccessVector = htmlentities($risk[0]['CVSS_AccessVector'], ENT_QUOTES, 'UTF-8', false);
-                $AccessComplexity = htmlentities($risk[0]['CVSS_AccessComplexity'], ENT_QUOTES, 'UTF-8', false);
-                $Authentication = htmlentities($risk[0]['CVSS_Authentication'], ENT_QUOTES, 'UTF-8', false);
-                $ConfImpact = htmlentities($risk[0]['CVSS_ConfImpact'], ENT_QUOTES, 'UTF-8', false);
-                $IntegImpact = htmlentities($risk[0]['CVSS_IntegImpact'], ENT_QUOTES, 'UTF-8', false);
-                $AvailImpact = htmlentities($risk[0]['CVSS_AvailImpact'], ENT_QUOTES, 'UTF-8', false);
-                $Exploitability = htmlentities($risk[0]['CVSS_Exploitability'], ENT_QUOTES, 'UTF-8', false);
-                $RemediationLevel = htmlentities($risk[0]['CVSS_RemediationLevel'], ENT_QUOTES, 'UTF-8', false);
-                $ReportConfidence = htmlentities($risk[0]['CVSS_ReportConfidence'], ENT_QUOTES, 'UTF-8', false);
-                $CollateralDamagePotential = htmlentities($risk[0]['CVSS_CollateralDamagePotential'], ENT_QUOTES, 'UTF-8', false);
-                $TargetDistribution = htmlentities($risk[0]['CVSS_TargetDistribution'], ENT_QUOTES, 'UTF-8', false);
-                $ConfidentialityRequirement = htmlentities($risk[0]['CVSS_ConfidentialityRequirement'], ENT_QUOTES, 'UTF-8', false);
-                $IntegrityRequirement = htmlentities($risk[0]['CVSS_IntegrityRequirement'], ENT_QUOTES, 'UTF-8', false);
-                $AvailabilityRequirement = htmlentities($risk[0]['CVSS_AvailabilityRequirement'], ENT_QUOTES, 'UTF-8', false);
-                $DREADDamagePotential = htmlentities($risk[0]['DREAD_DamagePotential'], ENT_QUOTES, 'UTF-8', false);
-                $DREADReproducibility = htmlentities($risk[0]['DREAD_Reproducibility'], ENT_QUOTES, 'UTF-8', false);
-                $DREADExploitability = htmlentities($risk[0]['DREAD_Exploitability'], ENT_QUOTES, 'UTF-8', false);
-                $DREADAffectedUsers = htmlentities($risk[0]['DREAD_AffectedUsers'], ENT_QUOTES, 'UTF-8', false);
-                $DREADDiscoverability = htmlentities($risk[0]['DREAD_Discoverability'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPSkillLevel = htmlentities($risk[0]['OWASP_SkillLevel'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPMotive = htmlentities($risk[0]['OWASP_Motive'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPOpportunity = htmlentities($risk[0]['OWASP_Opportunity'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPSize = htmlentities($risk[0]['OWASP_Size'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPEaseOfDiscovery = htmlentities($risk[0]['OWASP_EaseOfDiscovery'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPEaseOfExploit = htmlentities($risk[0]['OWASP_EaseOfExploit'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPAwareness = htmlentities($risk[0]['OWASP_Awareness'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPIntrusionDetection = htmlentities($risk[0]['OWASP_IntrusionDetection'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPLossOfConfidentiality = htmlentities($risk[0]['OWASP_LossOfConfidentiality'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPLossOfIntegrity = htmlentities($risk[0]['OWASP_LossOfIntegrity'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPLossOfAvailability = htmlentities($risk[0]['OWASP_LossOfAvailability'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPLossOfAccountability = htmlentities($risk[0]['OWASP_LossOfAccountability'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPFinancialDamage = htmlentities($risk[0]['OWASP_FinancialDamage'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPReputationDamage = htmlentities($risk[0]['OWASP_ReputationDamage'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPNonCompliance = htmlentities($risk[0]['OWASP_NonCompliance'], ENT_QUOTES, 'UTF-8', false);
-                $OWASPPrivacyViolation = htmlentities($risk[0]['OWASP_PrivacyViolation'], ENT_QUOTES, 'UTF-8', false);
-                $custom = htmlentities($risk[0]['Custom'], ENT_QUOTES, 'UTF-8', false);
+                $scoring_method = $risk[0]['scoring_method'];
+                $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
+                $CLASSIC_impact = $risk[0]['CLASSIC_impact'];
+                $AccessVector = $risk[0]['CVSS_AccessVector'];
+                $AccessComplexity = $risk[0]['CVSS_AccessComplexity'];
+                $Authentication = $risk[0]['CVSS_Authentication'];
+                $ConfImpact = $risk[0]['CVSS_ConfImpact'];
+                $IntegImpact = $risk[0]['CVSS_IntegImpact'];
+                $AvailImpact = $risk[0]['CVSS_AvailImpact'];
+                $Exploitability = $risk[0]['CVSS_Exploitability'];
+                $RemediationLevel = $risk[0]['CVSS_RemediationLevel'];
+                $ReportConfidence = $risk[0]['CVSS_ReportConfidence'];
+                $CollateralDamagePotential = $risk[0]['CVSS_CollateralDamagePotential'];
+                $TargetDistribution = $risk[0]['CVSS_TargetDistribution'];
+                $ConfidentialityRequirement = $risk[0]['CVSS_ConfidentialityRequirement'];
+                $IntegrityRequirement = $risk[0]['CVSS_IntegrityRequirement'];
+                $AvailabilityRequirement = $risk[0]['CVSS_AvailabilityRequirement'];
+                $DREADDamagePotential = $risk[0]['DREAD_DamagePotential'];
+                $DREADReproducibility = $risk[0]['DREAD_Reproducibility'];
+                $DREADExploitability = $risk[0]['DREAD_Exploitability'];
+                $DREADAffectedUsers = $risk[0]['DREAD_AffectedUsers'];
+                $DREADDiscoverability = $risk[0]['DREAD_Discoverability'];
+                $OWASPSkillLevel = $risk[0]['OWASP_SkillLevel'];
+                $OWASPMotive = $risk[0]['OWASP_Motive'];
+                $OWASPOpportunity = $risk[0]['OWASP_Opportunity'];
+                $OWASPSize = $risk[0]['OWASP_Size'];
+                $OWASPEaseOfDiscovery = $risk[0]['OWASP_EaseOfDiscovery'];
+                $OWASPEaseOfExploit = $risk[0]['OWASP_EaseOfExploit'];
+                $OWASPAwareness = $risk[0]['OWASP_Awareness'];
+                $OWASPIntrusionDetection = $risk[0]['OWASP_IntrusionDetection'];
+                $OWASPLossOfConfidentiality = $risk[0]['OWASP_LossOfConfidentiality'];
+                $OWASPLossOfIntegrity = $risk[0]['OWASP_LossOfIntegrity'];
+                $OWASPLossOfAvailability = $risk[0]['OWASP_LossOfAvailability'];
+                $OWASPLossOfAccountability = $risk[0]['OWASP_LossOfAccountability'];
+                $OWASPFinancialDamage = $risk[0]['OWASP_FinancialDamage'];
+                $OWASPReputationDamage = $risk[0]['OWASP_ReputationDamage'];
+                $OWASPNonCompliance = $risk[0]['OWASP_NonCompliance'];
+                $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
+                $custom = $risk[0]['Custom'];
 
                 if ($submission_date == "")
                 {
@@ -239,10 +243,10 @@
                 else
                 {
                         // Set the mitigation values
-                        $mitigation_date = htmlentities($mitigation[0]['submission_date'], ENT_QUOTES, 'UTF-8', false);
+                        $mitigation_date = $mitigation[0]['submission_date'];
                         $mitigation_date = date(DATETIME, strtotime($mitigation_date));
-                        $planning_strategy = htmlentities($mitigation[0]['planning_strategy'], ENT_QUOTES, 'UTF-8', false);
-                        $mitigation_effort = htmlentities($mitigation[0]['mitigation_effort'], ENT_QUOTES, 'UTF-8', false);
+                        $planning_strategy = $mitigation[0]['planning_strategy'];
+                        $mitigation_effort = $mitigation[0]['mitigation_effort'];
                         $current_solution = $mitigation[0]['current_solution'];
                         $security_requirements = $mitigation[0]['security_requirements'];
                         $security_recommendations = $mitigation[0]['security_recommendations'];
@@ -265,11 +269,11 @@
                 else
                 {
                         // Set the management review values
-                        $review_date = htmlentities($mgmt_reviews[0]['submission_date'], ENT_QUOTES, 'UTF-8', false);
+                        $review_date = $mgmt_reviews[0]['submission_date'];
                         $review_date = date(DATETIME, strtotime($review_date));
-                        $review = htmlentities($mgmt_reviews[0]['review'], ENT_QUOTES, 'UTF-8', false);
-                        $next_step = htmlentities($mgmt_reviews[0]['next_step'], ENT_QUOTES, 'UTF-8', false);
-                        $reviewer = htmlentities($mgmt_reviews[0]['reviewer'], ENT_QUOTES, 'UTF-8', false);
+                        $review = $mgmt_reviews[0]['review'];
+                        $next_step = $mgmt_reviews[0]['next_step'];
+                        $reviewer = $mgmt_reviews[0]['reviewer'];
                         $comments = $mgmt_reviews[0]['comments'];
                 }
 
@@ -308,10 +312,10 @@
 		if ($approved)
 		{
                 	$status = "Mgmt Reviewed";
-                	$review = (int)addslashes($_POST['review']);
-			$next_step = (int)addslashes($_POST['next_step']);
+                	$review = (int)$_POST['review'];
+			$next_step = (int)$_POST['next_step'];
                 	$reviewer = $_SESSION['uid'];
-                	$comments = addslashes($_POST['comments']);
+                	$comments = $_POST['comments'];
 			$custom_date = $_POST['custom_date'];
 
 			if ($custom_date == "yes")
@@ -420,19 +424,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="../index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
               </li>
               <li class="active">
-                <a href="index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="../reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">". $lang['Configure'] ."</a>\n";
+          echo "<a href=\"../admin/index.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>\n";
           echo "</li>\n";
 }
           echo "</ul>\n";
@@ -441,13 +445,13 @@ if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 {
           echo "<div class=\"btn-group pull-right\">\n";
-          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
+          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
+          echo "<a href=\"../account/profile.php\">". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
+          echo "<a href=\"../logout.php\">". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -461,7 +465,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 greenalert\">" . $alert_message . "</div>\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
                 echo "</div>\n";
                 echo "</div>\n";
                 echo "<br />\n";
@@ -470,7 +474,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $alert_message . "</div>\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
                 echo "</div>\n";
                 echo "</div>\n";
                 echo "<br />\n";
@@ -481,19 +485,19 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li>
-              <a href="index.php">I. <?php echo $lang['SubmitYourRisks']; ?></a> 
+              <a href="index.php">I. <?php echo $escaper->escapeHtml($lang['SubmitYourRisks']); ?></a> 
             </li>
             <li>
-              <a href="plan_mitigations.php">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
+              <a href="plan_mitigations.php">II. <?php echo $escaper->escapeHtml($lang['PlanYourMitigations']); ?></a> 
             </li>
             <li class="active">
-              <a href="management_review.php">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
+              <a href="management_review.php">III. <?php echo $escaper->escapeHtml($lang['PerformManagementReviews']); ?></a> 
             </li>
             <li>
-              <a href="prioritize_planning.php">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
+              <a href="prioritize_planning.php">IV. <?php echo $escaper->escapeHtml($lang['PrioritizeForProjectPlanning']); ?></a> 
             </li>
             <li>
-              <a href="review_risks.php">V. <?php echo $lang['ReviewRisksRegularly']; ?></a>
+              <a href="review_risks.php">V. <?php echo $escaper->escapeHtml($lang['ReviewRisksRegularly']); ?></a>
             </li>
           </ul>
         </div>

@@ -4,23 +4,28 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Include Zend Escaper for HTML Output Encoding
+require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
+$escaper = new Zend\Escaper\Escaper('utf-8');
+
 /****************************
  * FUNCTION: VIEW TOP TABLE *
  ****************************/
 function view_top_table($id, $calculated_risk, $subject, $status, $show_details = false)
 {
 	global $lang;
+	global $escaper;
 	
 	echo "<table width=\"100%\" cellpadding=\"10\" cellspacing=\"0\" style=\"border:none;\">\n";
         echo "<tr>\n";
         echo "<td width=\"100\" valign=\"middle\" halign=\"center\">\n";
 
-        echo "<table width=\"100\" height=\"100\" border=\"10\" class=" . get_risk_color($calculated_risk) . ">\n";
+        echo "<table width=\"100\" height=\"100\" border=\"10\" class=" . $escaper->escapeHtml(get_risk_color($calculated_risk)) . ">\n";
         echo "<tr>\n";
         echo "<td valign=\"middle\" halign=\"center\">\n";
         echo "<center>\n";
-	echo "<font size=\"72\">" . $calculated_risk . "</font><br />\n";
-        echo "(". get_risk_level_name($calculated_risk) . ")\n";
+	echo "<font size=\"72\">" . $escaper->escapeHtml($calculated_risk) . "</font><br />\n";
+        echo "(". $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . ")\n";
         echo "</center>\n";
         echo "</td>\n";
         echo "</tr>\n";
@@ -31,29 +36,29 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 
 	echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
         echo "<tr>\n";
-        echo "<td width=\"100\"><h4>". $lang['RiskId'] .":</h4></td>\n";
-	echo "<td><h4>" . $id . "</h4></td>\n";
+        echo "<td width=\"100\"><h4>". $escaper->escapeHtml($lang['RiskId']) .":</h4></td>\n";
+	echo "<td><h4>" . $escaper->escapeHtml($id) . "</h4></td>\n";
 	echo "</tr>\n";
         echo "<tr>\n";
-        echo "<td width=\"100\"><h4>". $lang['Subject'] .":</h4></td>\n";
-	echo "<td><h4>" . htmlentities($subject, ENT_QUOTES, 'UTF-8', false) . "</h4></td>\n";
+        echo "<td width=\"100\"><h4>". $escaper->escapeHtml($lang['Subject']) .":</h4></td>\n";
+	echo "<td><h4>" . $escaper->escapeHtml($subject) . "</h4></td>\n";
         echo "</tr>\n";
         echo "<tr>\n";
-        echo "<td width=\"100\"><h4>". $lang['Status'] .":</h4></td>\n";
-	echo "<td><h4>" . $status . "</h4></td>\n";
+        echo "<td width=\"100\"><h4>". $escaper->escapeHtml($lang['Status']) .":</h4></td>\n";
+	echo "<td><h4>" . $escaper->escapeHtml($status) . "</h4></td>\n";
 	echo "</tr>\n";
 	echo "</table>\n";
 
         echo "</td>\n";
         echo "<td valign=\"top\">\n";
         echo "<div class=\"btn-group pull-right\">\n";
-        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">". $lang['RiskActions'] ."<span class=\"caret\"></span></a>\n";
+        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">". $escaper->escapeHtml($lang['RiskActions']) ."<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
 
         // If the risk is closed, offer to reopen
         if ($status == "Closed")
         {
-        	echo "<li><a href=\"reopen.php?id=".$id."\">". $lang['ReopenRisk'] ."</a></li>\n";
+        	echo "<li><a href=\"reopen.php?id=".$escaper->escapeHtml($id)."\">". $escaper->escapeHtml($lang['ReopenRisk']) ."</a></li>\n";
         }
         // Otherwise, offer to close
         else
@@ -61,14 +66,14 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
         	// If the user has permission to close risks
                 if (isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1)
                 {
-                	echo "<li><a href=\"close.php?id=".$id."\">". $lang['CloseRisk'] ."</a></li>\n";
+                	echo "<li><a href=\"close.php?id=".$escaper->escapeHtml($id)."\">". $escaper->escapeHtml($lang['CloseRisk']) ."</a></li>\n";
                 }
         }
 
-	echo "<li><a href=\"view.php?id=" . $id . "\">". $lang['EditRisk'] ."</a></li>\n";
-        echo "<li><a href=\"mitigate.php?id=".$id."\">". $lang['PlanAMitigation'] ."</a></li>\n";
-        echo "<li><a href=\"mgmt_review.php?id=" . $id . "\">". $lang['PerformAReview'] ."</a></li>\n";
-        echo "<li><a href=\"comment.php?id=" . $id . "\">". $lang['AddAComment'] ."</a></li>\n";
+	echo "<li><a href=\"view.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['EditRisk']) ."</a></li>\n";
+        echo "<li><a href=\"mitigate.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PlanAMitigation']) ."</a></li>\n";
+        echo "<li><a href=\"mgmt_review.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PerformAReview']) ."</a></li>\n";
+        echo "<li><a href=\"comment.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['AddAComment']) ."</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
@@ -79,8 +84,8 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 	{
 		echo "<tr>\n";
 		echo "<td colspan=\"3\">\n";
-		echo "<a href=\"#\" id=\"show\" onclick=\"javascript: showScoreDetails();\">". $lang['ShowRiskScoringDetails'] ."</a>\n";
-        	echo "<a href=\"#\" id=\"hide\" style=\"display: none;\" onclick=\"javascript: hideScoreDetails();\">". $lang['HideRiskScoringDetails'] ."</a>\n";
+		echo "<a href=\"#\" id=\"show\" onclick=\"javascript: showScoreDetails();\">". $escaper->escapeHtml($lang['ShowRiskScoringDetails']) ."</a>\n";
+        	echo "<a href=\"#\" id=\"hide\" style=\"display: none;\" onclick=\"javascript: hideScoreDetails();\">". $escaper->escapeHtml($lang['HideRiskScoringDetails']) ."</a>\n";
 		echo "</td>\n";
 		echo "</tr>\n";
 	}
@@ -94,66 +99,67 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 function view_risk_details($submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
 {
 	global $lang;
+	global $escaper;
 	
-	echo "<h4>". $lang['Details'] ."</h4>\n";
-        echo $lang['SubmissionDate'] .": \n";
+	echo "<h4>". $escaper->escapeHtml($lang['Details']) ."</h4>\n";
+        echo $escaper->escapeHtml($lang['SubmissionDate']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $submission_date . "\" title=\"" . $submission_date . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $escaper->escapeHtml($submission_date) . "\" title=\"" . $escaper->escapeHtml($submission_date) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['Subject'] .": \n";
+        echo $escaper->escapeHtml($lang['Subject']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . htmlentities($subject, ENT_QUOTES, 'UTF-8', false) . "\" title=\"" . htmlentities($subject, ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . $escaper->escapeHtml($subject) . "\" title=\"" . $escaper->escapeHtml($subject) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['ExternalReferenceId'] .": \n";
+        echo $escaper->escapeHtml($lang['ExternalReferenceId']) .": \n";
         echo "<br />\n";
-        echo " <input style=\"cursor: default;\" type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . htmlentities($reference_id, ENT_QUOTES, 'UTF-8', false) . "\" title=\"" . htmlentities($reference_id, ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\" />\n";
+        echo " <input style=\"cursor: default;\" type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . $escaper->escapeHtml($reference_id) . "\" title=\"" . $escaper->escapeHtml($reference_id) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['ControlRegulation'] .": \n";
+        echo $escaper->escapeHtml($lang['ControlRegulation']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"regulation\" id=\"regulation\" size=\"50\" value=\"" . get_name_by_value("regulation", $regulation) . "\" title=\"" . get_name_by_value("regulation", $regulation) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"regulation\" id=\"regulation\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("regulation", $regulation)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("regulation", $regulation)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['ControlNumber'] .": \n";
+        echo $escaper->escapeHtml($lang['ControlNumber']) .": \n";
         echo "<br />\n";
-        echo " <input style=\"cursor: default;\" type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . htmlentities(stripslashes($control_number), ENT_QUOTES, 'UTF-8', false) . "\" title=\"" . htmlentities(stripslashes($control_number), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\" />\n";
+        echo " <input style=\"cursor: default;\" type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $escaper->escapeHtml($control_number) . "\" title=\"" . $escaper->escapeHtml($control_number) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['SiteLocation'] .": \n";
+        echo $escaper->escapeHtml($lang['SiteLocation']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"location\" id=\"location\" size=\"50\" value=\"" . get_name_by_value("location", $location) . "\" title=\"" . get_name_by_value("location", $location) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"location\" id=\"location\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("location", $location)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("location", $location)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['Category'] .": \n";
+        echo $escaper->escapeHtml($lang['Category']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"category\" id=\"category\" size=\"50\" value=\"" . get_name_by_value("category", $category) . "\" title=\"" . get_name_by_value("category", $category) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"category\" id=\"category\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['Team'] .": \n";
+        echo $escaper->escapeHtml($lang['Team']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"team\" id=\"team\" size=\"50\" value=\"" . get_name_by_value("team", $team) . "\" title=\"" . get_name_by_value("team", $team) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"team\" id=\"team\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("team", $team)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("team", $team)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['Technology'] .": \n";
+        echo $escaper->escapeHtml($lang['Technology']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"technology\" id=\"technology\" size=\"50\" value=\"" . get_name_by_value("technology", $technology) . "\" title=\"" . get_name_by_value("technology", $technology) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"technology\" id=\"technology\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("technology", $technology)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("technology", $technology)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['Owner'] .": \n";
+        echo $escaper->escapeHtml($lang['Owner']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"owner\" id=\"owner\" size=\"50\" value=\"" . get_name_by_value("user", $owner) . "\" title=\"" . get_name_by_value("user", $owner) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"owner\" id=\"owner\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['OwnersManager'] .": \n";
+        echo $escaper->escapeHtml($lang['OwnersManager']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"manager\" id=\"manager\" size=\"50\" value=\"" . get_name_by_value("user", $manager) . "\" title=\"" . get_name_by_value("user", $manager) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"manager\" id=\"manager\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['RiskAssessment'] .": \n";
+        echo $escaper->escapeHtml($lang['RiskAssessment']) .": \n";
 	echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\" title=\"" . htmlentities($assessment, ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities($assessment, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\" title=\"" . $escaper->escapeHtml($assessment) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($assessment) . "</textarea>\n";
 	echo "<br />\n";
-        echo $lang['AdditionalNotes'] .": \n";
+        echo $escaper->escapeHtml($lang['AdditionalNotes']) .": \n";
 	echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" title=\"" . htmlentities($notes, ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities($notes, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" title=\"" . $escaper->escapeHtml($notes) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($notes) . "</textarea>\n";
 
 	// If the page is the view.php page
 	if (basename($_SERVER['PHP_SELF']) == "view.php")
 	{
 		// Give the option to edit the risk details
         	echo "<div class=\"form-actions\">\n";
-        	echo "<button type=\"submit\" name=\"edit_details\" class=\"btn btn-primary\">". $lang['EditDetails'] ."</button>\n";
+        	echo "<button type=\"submit\" name=\"edit_details\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['EditDetails']) ."</button>\n";
         	echo "</div>\n";
 	}
 }
@@ -164,56 +170,62 @@ function view_risk_details($submission_date, $subject, $reference_id, $regulatio
 function edit_risk_details($submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $assessment, $notes)
 {
 	global $lang;
+	global $escaper;
 	
-	echo "<h4>". $lang['Details'] ."</h4>\n";
-        echo $lang['SubmissionDate'] .": \n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $submission_date . "\" title=\"" . $submission_date . "\" disabled=\"disabled\" />\n";
-        echo "<br />\n";
-        echo $lang['Subject'] .": \n";
+	echo "<h4>". $escaper->escapeHtml($lang['Details']) ."</h4>\n";
+        echo $escaper->escapeHtml($lang['SubmissionDate']) .": \n";
 	echo "<br />\n";
-	echo "<input type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . htmlentities($subject, ENT_QUOTES, 'UTF-8', false) . "\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $escaper->escapeHtml($submission_date) . "\" title=\"" . $escaper->escapeHtml($submission_date) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['ExternalReferenceId'] .": <input type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . htmlentities($reference_id, ENT_QUOTES, 'UTF-8', false) . "\" />\n";
+        echo $escaper->escapeHtml($lang['Subject']) .": \n";
+	echo "<br />\n";
+	echo "<input type=\"text\" name=\"subject\" id=\"subject\" size=\"50\" value=\"" . $escaper->escapeHtml($subject) . "\" />\n";
         echo "<br />\n";
-        echo $lang['ControlRegulation'] .": \n";
+        echo $escaper->escapeHtml($lang['ExternalReferenceId']) .": \n";
+	echo "<br />\n";
+	echo "<input type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . $escaper->escapeHtml($reference_id) . "\" />\n";
+        echo "<br />\n";
+        echo $escaper->escapeHtml($lang['ControlRegulation']) .": \n";
 	echo "<br />\n";
         create_dropdown("regulation", $regulation);
         echo "<br />\n";
-        echo $lang['ControlNumber'] .": <input type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . htmlentities(stripslashes($control_number), ENT_QUOTES, 'UTF-8', false) . "\" />\n";
+        echo $escaper->escapeHtml($lang['ControlNumber']) .": \n";
+	echo "<br />\n";
+	echo "<input type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $escaper->escapeHtml($control_number) . "\" />\n";
         echo "<br />\n";
-        echo $lang['SiteLocation'] .": \n";
+        echo $escaper->escapeHtml($lang['SiteLocation']) .": \n";
         echo "<br />\n";
         create_dropdown("location", $location);
         echo "<br />\n";
-        echo $lang['Category'] .": \n";
+        echo $escaper->escapeHtml($lang['Category']) .": \n";
         echo "<br />\n";
         create_dropdown("category", $category);
         echo "<br />\n";
-        echo $lang['Team'] .": \n";
+        echo $escaper->escapeHtml($lang['Team']) .": \n";
         echo "<br />\n";
         create_dropdown("team", $team);
         echo "<br />\n";
-        echo $lang['Technology'] .": \n";
+        echo $escaper->escapeHtml($lang['Technology']) .": \n";
         echo "<br />\n";
         create_dropdown("technology", $technology);
         echo "<br />\n";
-        echo $lang['Owner'] .": \n";
+        echo $escaper->escapeHtml($lang['Owner']) .": \n";
         echo "<br />\n";
         create_dropdown("user", $owner, "owner");
         echo "<br />\n";
-        echo $lang['OwnersManager'] .": \n";
+        echo $escaper->escapeHtml($lang['OwnersManager']) .": \n";
         echo "<br />\n";
         create_dropdown("user", $manager, "manager");
         echo "<br />\n";
-        echo $lang['RiskAssessment'] .": \n";
+        echo $escaper->escapeHtml($lang['RiskAssessment']) .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\">" . htmlentities($assessment, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"assessment\" cols=\"50\" rows=\"3\" id=\"assessment\">" . $escaper->escapeHtml($assessment) . "</textarea>\n";
 	echo "<br />\n";
-        echo $lang['AdditionalNotes'] .": \n";
+        echo $escaper->escapeHtml($lang['AdditionalNotes']) .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\">" . htmlentities($notes, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\">" . $escaper->escapeHtml($notes) . "</textarea>\n";
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"update_details\" class=\"btn btn-primary\">". $lang['Update'] ."</button>\n";
+        echo "<button type=\"submit\" name=\"update_details\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Update']) ."</button>\n";
         echo "</div>\n";
 }
 
@@ -223,38 +235,39 @@ function edit_risk_details($submission_date, $subject, $reference_id, $regulatio
 function view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
 {
 	global $lang;
+	global $escaper;
 	
-        echo "<h4>". $lang['Mitigation'] ."</h4>\n";
-        echo $lang['MitigationDate'] .": \n";
+        echo "<h4>". $escaper->escapeHtml($lang['Mitigation']) ."</h4>\n";
+        echo $escaper->escapeHtml($lang['MitigationDate']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $mitigation_date . "\" title=\"" . $mitigation_date . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $escaper->escapeHtml($mitigation_date) . "\" title=\"" . $escaper->escapeHtml($mitigation_date) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['PlanningStrategy'] .": \n";
+        echo $escaper->escapeHtml($lang['PlanningStrategy']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"planning_strategy\" id=\"planning_strategy\" size=\"50\" value=\"" . get_name_by_value("planning_strategy", $planning_strategy) . "\" title=\"" . get_name_by_value("planning_strategy", $planning_strategy) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"planning_strategy\" id=\"planning_strategy\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['MitigationEffort'] .": \n";
+        echo $escaper->escapeHtml($lang['MitigationEffort']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_effort\" id=\"mitigation_effort\" size=\"50\" value=\"" . get_name_by_value("mitigation_effort", $mitigation_effort) . "\" title=\"" . get_name_by_value("mitigation_effort", $mitigation_effort) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_effort\" id=\"mitigation_effort\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['CurrentSolution'] .": \n";
+        echo $escaper->escapeHtml($lang['CurrentSolution']) .": \n";
         echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" title=\"" . htmlentities(stripslashes($current_solution), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities(stripslashes($current_solution), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" title=\"" . $escaper->escapeHtml($current_solution) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($current_solution) . "</textarea>\n";
         echo "<br />\n";
-        echo $lang['SecurityRequirements'] .": \n";
+        echo $escaper->escapeHtml($lang['SecurityRequirements']) .": \n";
         echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" title=\"" . htmlentities(stripslashes($security_requirements), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities(stripslashes($security_requirements), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" title=\"" . $escaper->escapeHtml($security_requirements) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($security_requirements) . "</textarea>\n";
         echo "<br />\n";
-        echo $lang['SecurityRecommendations'] .": \n";
+        echo $escaper->escapeHtml($lang['SecurityRecommendations']) .": \n";
         echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" title=\"" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES, 'UTF-8', false) . "\" disabled=\"disabled\">" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea style=\"cursor: default;\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" title=\"" . $escaper->escapeHtml($security_recommendations) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>\n";
 
         // If the page is the view.php page
         if (basename($_SERVER['PHP_SELF']) == "view.php")
         {
                 // Give the option to edit the mitigation details
 	        echo "<div class=\"form-actions\">\n";
-        	echo "<button type=\"submit\" name=\"edit_mitigation\" class=\"btn btn-primary\">". $lang['EditMitigation'] ."</button>\n";
+        	echo "<button type=\"submit\" name=\"edit_mitigation\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['EditMitigation']) ."</button>\n";
         	echo "</div>\n";
         }
 }
@@ -265,33 +278,34 @@ function view_mitigation_details($mitigation_date, $planning_strategy, $mitigati
 function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
 {
 	global $lang;
+	global $escaper;
 	
-	echo "<h4>". $lang['Mitigation'] ."</h4>\n";
-        echo $lang['MitigationDate'] .": \n";
+	echo "<h4>". $escaper->escapeHtml($lang['Mitigation']) ."</h4>\n";
+        echo $escaper->escapeHtml($lang['MitigationDate']) .": \n";
 	echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $mitigation_date . "\" title=\"" . $mitigation_date . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $escaper->escapeHtml($mitigation_date) . "\" title=\"" . $escaper->escapeHtml($mitigation_date) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['PlanningStrategy'] .": \n";
+        echo $escaper->escapeHtml($lang['PlanningStrategy']) .": \n";
         echo "<br />\n";
         create_dropdown("planning_strategy", $planning_strategy);
         echo "<br />\n";
-        echo $lang['MitigationEffort'] .": \n";
+        echo $escaper->escapeHtml($lang['MitigationEffort']) .": \n";
         echo "<br />\n";
         create_dropdown("mitigation_effort", $mitigation_effort);
         echo "<br />\n";
-        echo $lang['CurrentSolution'] .": \n";
+        echo $escaper->escapeHtml($lang['CurrentSolution']) .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . htmlentities(stripslashes($current_solution), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $escaper->escapeHtml($current_solution) . "</textarea>\n";
 	echo "<br />\n";
-        echo $lang['SecurityRequirements'] .": \n";
+        echo $escaper->escapeHtml($lang['SecurityRequirements']) .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . htmlentities(stripslashes($security_requirements), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . $escaper->escapeHtml($security_requirements) . "</textarea>\n";
 	echo "<br />\n";
-        echo $lang['SecurityRecommendations'] .": \n";
+        echo $escaper->escapeHtml($lang['SecurityRecommendations']) .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . htmlentities(stripslashes($security_recommendations), ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>\n";
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"update_mitigation\" class=\"btn btn-primary\">". $lang['Update'] ."</button>\n";
+        echo "<button type=\"submit\" name=\"update_mitigation\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Update']) ."</button>\n";
         echo "</div>\n";
 }
 
@@ -301,32 +315,33 @@ function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigati
 function view_review_details($id, $review_date, $reviewer, $review, $next_step, $next_review, $comments)
 {
 	global $lang;
+	global $escaper;
 	
-	echo "<h4>". $lang['LastReview'] ."</h4>\n";
-        echo $lang['ReviewDate'] .": \n";
+	echo "<h4>". $escaper->escapeHtml($lang['LastReview']) ."</h4>\n";
+        echo $escaper->escapeHtml($lang['ReviewDate']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"review_date\" id=\"review_date\" size=\"50\" value=\"" . $review_date . "\" title=\"" . $review_date . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"review_date\" id=\"review_date\" size=\"50\" value=\"" . $escaper->escapeHtml($review_date) . "\" title=\"" . $escaper->escapeHtml($review_date) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['Reviewer'] .": \n";
+        echo $escaper->escapeHtml($lang['Reviewer']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"reviewer\" id=\"reviewer\" size=\"50\" value=\"" . get_name_by_value("user", $reviewer) . "\" title=\"" . get_name_by_value("user", $reviewer) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"reviewer\" id=\"reviewer\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['Review'] .": \n";
+        echo $escaper->escapeHtml($lang['Review']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"review\" id=\"review\" size=\"50\" value=\"" . get_name_by_value("review", $review) . "\" title=\"" . get_name_by_value("review", $review) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"review\" id=\"review\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['NextStep'] .": \n";
+        echo $escaper->escapeHtml($lang['NextStep']) .": \n";
         echo "<br />\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"next_step\" id=\"next_step\" size=\"50\" value=\"" . get_name_by_value("next_step", $next_step) . "\" title=\"" . get_name_by_value("next_step", $next_step) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"next_step\" id=\"next_step\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "\" disabled=\"disabled\" />\n";
 	echo "<br />\n";
-	echo $lang['NextReviewDate'] .": \n";
+	echo $escaper->escapeHtml($lang['NextReviewDate']) .": \n";
 	echo "<br />\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"next_review\" id=\"next_review\" size=\"50\" value=\"" . $next_review . "\" title=\"" . $next_review. "\" disabled=\"disabled\" />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"next_review\" id=\"next_review\" size=\"50\" value=\"" . $escaper->escapeHtml($next_review) . "\" title=\"" . $escaper->escapeHtml($next_review) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
-        echo $lang['Comments'] .": \n";
+        echo $escaper->escapeHtml($lang['Comments']) .": \n";
         echo "<br />\n";
-        echo "<textarea style=\"cursor: default;\" name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\" title=\"" . $comments . "\" disabled=\"disabled\">" . $comments . "</textarea>\n";
-        echo "<p><a href=\"reviews.php?id=".$id."\">". $lang['ViewAllReviews'] ."</a></p>";
+        echo "<textarea style=\"cursor: default;\" name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\" title=\"" . $escaper->escapeHtml($comments) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($comments) . "</textarea>\n";
+        echo "<p><a href=\"reviews.php?id=". $escaper->escapeHtml($id) ."\">". $escaper->escapeHtml($lang['ViewAllReviews']) ."</a></p>";
 }
 
 /****************************************
@@ -335,32 +350,33 @@ function view_review_details($id, $review_date, $reviewer, $review, $next_step, 
 function edit_mitigation_submission($planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
 {
 	global $lang;
+	global $escaper;
 	
-	echo "<h4>". $lang['SubmitRiskMitigation'] ."</h4>\n";
+	echo "<h4>". $escaper->escapeHtml($lang['SubmitRiskMitigation']) ."</h4>\n";
         echo "<form name=\"submit_mitigation\" method=\"post\" action=\"\">\n";
 	
-        echo $lang['PlanningStrategy'] .": \n";
+        echo $escaper->escapeHtml($lang['PlanningStrategy']) .": \n";
         echo "<br />\n";
 	create_dropdown("planning_strategy", $planning_strategy, NULL, true);
         echo "<br />\n";
-        echo $lang['MitigationEffort'] .": \n";
+        echo $escaper->escapeHtml($lang['MitigationEffort']) .": \n";
         echo "<br />\n";
 	create_dropdown("mitigation_effort", $mitigation_effort, NULL, true);
         echo "<br />\n";
-        echo $lang['CurrentSolution'] .": \n";
+        echo $escaper->escapeHtml($lang['CurrentSolution']) .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . htmlentities($current_solution, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $escaper->escapeHtml($current_solution) . "</textarea>\n";
         echo "<br />\n";
-        echo $lang['SecurityRequirements'] .": \n";
+        echo $escaper->escapeHtml($lang['SecurityRequirements']) .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . htmlentities($security_requirements, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . $escaper->escapeHtml($security_requirements) . "</textarea>\n";
         echo "<br />\n";
-        echo $lang['SecurityRecommendations'] .": \n";
+        echo $escaper->escapeHtml($lang['SecurityRecommendations']) .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . htmlentities($security_recommendations, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>\n";
         echo "<br />\n";
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">". $lang['Submit'] ."</button>\n";
+        echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Submit']) ."</button>\n";
         echo "<input class=\"btn\" value=\"". $lang['Reset'] ."\" type=\"reset\">\n";
         echo "</div>\n";
         echo "</form>\n";
@@ -372,33 +388,34 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $cur
 function edit_review_submission($review, $next_step, $next_review, $comments)
 {
 	global $lang;
+	global $escaper;
 	
-	echo "<h4>". $lang['SubmitManagementReview'] ."</h4>\n";
+	echo "<h4>". $escaper->escapeHtml($lang['SubmitManagementReview']) ."</h4>\n";
         echo "<form name=\"submit_management_review\" method=\"post\" action=\"\">\n";
-        echo $lang['Review'] .": \n";
+        echo $escaper->escapeHtml($lang['Review']) .": \n";
         echo "<br />\n";
 	create_dropdown("review", $review, NULL, true);
         echo "<br />\n";
-        echo $lang['NextStep'] .": \n";
+        echo $escaper->escapeHtml($lang['NextStep']) .": \n";
         echo "<br />\n";
 	create_dropdown("next_step", $next_step, NULL, true);
 	echo "<br />\n";
-        echo $lang['Comments'] .": \n";
+        echo $escaper->escapeHtml($lang['Comments']) .": \n";
         echo "<br />\n";
-        echo "<textarea name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\">" . htmlentities($comments, ENT_QUOTES, 'UTF-8', false) . "</textarea>\n";
+        echo "<textarea name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\">" . $escaper->escapeHtml($comments) . "</textarea>\n";
 	echo "<br />\n";
-	echo $lang['BasedOnTheCurrentRiskScore'] . $next_review . "<br />\n";
-	echo $lang['WouldYouLikeToUseADifferentDate'] . "&nbsp;<input type=\"radio\" name=\"custom_date\" value=\"no\" onclick=\"hideNextReview()\" checked />&nbsp" . $lang['No'] . "&nbsp;<input type=\"radio\" name=\"custom_date\" value=\"yes\" onclick=\"showNextReview()\" />&nbsp" . $lang['Yes'] . "<br />\n";
+	echo $escaper->escapeHtml($lang['BasedOnTheCurrentRiskScore']) . $escaper->escapeHtml($next_review) . "<br />\n";
+	echo $escaper->escapeHtml($lang['WouldYouLikeToUseADifferentDate']) . "&nbsp;<input type=\"radio\" name=\"custom_date\" value=\"no\" onclick=\"hideNextReview()\" checked />&nbsp" . $escaper->escapeHtml($lang['No']) . "&nbsp;<input type=\"radio\" name=\"custom_date\" value=\"yes\" onclick=\"showNextReview()\" />&nbsp" . $escaper->escapeHtml($lang['Yes']) . "<br />\n";
 	echo "<div id=\"nextreview\" style=\"display:none;\">\n";
 	echo "<br />\n";
-	echo $lang['NextReviewDate'] .": \n";
+	echo $escaper->escapeHtml($lang['NextReviewDate']) .": \n";
 	echo "<br />\n";
-	echo "<input type=\"text\" name=\"next_review\" value=\"" . $next_review . "\" />\n";
+	echo "<input type=\"text\" name=\"next_review\" value=\"" . $escaper->escapeHtml($next_review) . "\" />\n";
 	echo "<br />\n";
 	echo "</div>\n";
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">". $lang['Submit'] ."</button>\n";
-        echo "<input class=\"btn\" value=\"". $lang['Reset'] ."\" type=\"reset\">\n";
+        echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Submit']) ."</button>\n";
+        echo "<input class=\"btn\" value=\"". $escaper->escapeHtml($lang['Reset']) ."\" type=\"reset\">\n";
         echo "</div>\n";
         echo "</form>\n";
 }
@@ -408,12 +425,15 @@ function edit_review_submission($review, $next_step, $next_review, $comments)
  ********************************/
 function edit_classic_score($CLASSIC_likelihood, $CLASSIC_impact)
 {
-	echo "<h4>Update Classic Score</h4>\n";
+	global $lang;
+	global $escaper;
+
+	echo "<h4>" . $escaper->escapeHtml($lang['UpdateClassicScore']) . "</h4>\n";
 	echo "<form name=\"update_classic\" method=\"post\" action=\"\">\n";
         echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\" height=\"10\">Current Likelihood:</td>\n";
+        echo "<td width=\"150\" height=\"10\">" . $escaper->escapeHtml($lang['CurrentLikelihood']) . ":</td>\n";
 	echo "<td width=\"125\">\n";
         create_dropdown("likelihood", $CLASSIC_likelihood, NULL, false);
 	echo "</td>\n";
@@ -424,7 +444,7 @@ function edit_classic_score($CLASSIC_likelihood, $CLASSIC_impact)
 	echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\" height=\"10\">Current Impact:</td>\n";
+        echo "<td width=\"150\" height=\"10\">" . $escaper->escapeHtml($lang['CurrentImpact']) . ":</td>\n";
         echo "<td width=\"125\">\n";
         create_dropdown("impact", $CLASSIC_impact, NULL, false);
         echo "</td>\n";
@@ -436,7 +456,7 @@ function edit_classic_score($CLASSIC_likelihood, $CLASSIC_impact)
 	echo "</table>\n";
 
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"update_classic\" class=\"btn btn-primary\">Update</button>\n";
+        echo "<button type=\"submit\" name=\"update_classic\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Update']) . "</button>\n";
         echo "</div>\n";
         echo "</form>\n";
 }
@@ -446,19 +466,22 @@ function edit_classic_score($CLASSIC_likelihood, $CLASSIC_impact)
  *****************************/
 function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement)
 {
-        echo "<h4>Update CVSS Score</h4>\n";
+	global $lang;
+	global $escaper;
+
+        echo "<h4>" . $escaper->escapeHtml($lang['UpdateCVSSScore']) . "</h4>\n";
         echo "<form name=\"update_cvss\" method=\"post\" action=\"\">\n";
 	echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
 	echo "<tr>\n";
-        echo "<td colspan=\"4\"><b><u>Base Score Metrics</u></b></td>\n";
+        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['BaseScoreMetrics']) . "</u></b></td>\n";
         echo "<td rowspan=\"19\" style=\"vertical-align:top;\">\n";
         view_cvss_help();
         echo "</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"200\">Attack Vector:</td>\n";
+        echo "<td width=\"200\">" . $escaper->escapeHtml($lang['AttackVector']) . ":</td>\n";
         echo "<td width=\"125\">\n";
         create_cvss_dropdown("AccessVector", $AccessVector, false);
         echo "</td>\n";
@@ -467,7 +490,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Attack Complexity:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['AttackComplexity']) . ":</td>\n";
         echo "<td>\n";
         create_cvss_dropdown("AccessComplexity", $AccessComplexity, false);
         echo "</td>\n";
@@ -476,7 +499,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Authentication:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['Authentication']) . ":</td>\n";
         echo "<td>\n";
         create_cvss_dropdown("Authentication", $Authentication, false);
         echo "</td>\n";
@@ -485,7 +508,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Confidentiality Impact:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['ConfidentialityImpact']) . ":</td>\n";
         echo "<td>\n";
         create_cvss_dropdown("ConfImpact", $ConfImpact, false);
         echo "</td>\n";
@@ -494,7 +517,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Integrity Impact:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['IntegrityImpact']) . ":</td>\n";
         echo "<td>\n";
         create_cvss_dropdown("IntegImpact", $IntegImpact, false);
         echo "</td>\n";
@@ -503,7 +526,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Availability Impact:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['AvailabilityImpact']) . ":</td>\n";
         echo "<td>\n";
         create_cvss_dropdown("AvailImpact", $AvailImpact, false);
         echo "</td>\n";
@@ -516,11 +539,11 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
         echo "</tr>\n";
 
 	echo "<tr>\n";
-        echo "<td colspan=\"4\"><b><u>Temporal Score Metrics</u></b></td>\n";
+        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['TemporalScoreMetrics']) . "</u></b></td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Exploitability:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['Exploitability']) . ":</td>\n";
         echo "<td>\n";
         create_cvss_dropdown("Exploitability", $Exploitability, false);
         echo "</td>\n";
@@ -529,7 +552,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Remediation Level:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['RemediationLevel']) . ":</td>\n";
         echo "<td>\n";
         create_cvss_dropdown("RemediationLevel", $RemediationLevel, false);
         echo "</td>\n";
@@ -538,7 +561,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Report Confidence:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['ReportConfidence']) . ":</td>\n";
         echo "<td>\n";
         create_cvss_dropdown("ReportConfidence", $ReportConfidence, false);
         echo "</td>\n";
@@ -551,11 +574,11 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"4\"><b><u>Environmental Score Metrics</u></b></td>\n";
+        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['EnvironmentalScoreMetrics']) . "</u></b></td>\n";
 	echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Collateral Damage Potential:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['CollateralDamagePotential']) . ":</td>\n";
         echo "<td>\n";
         create_cvss_dropdown("CollateralDamagePotential", $CollateralDamagePotential, false);
         echo "</td>\n";
@@ -564,7 +587,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
 	echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Target Distribution:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['TargetDistribution']) . ":</td>\n";
         echo "<td>\n";
 	create_cvss_dropdown("TargetDistribution", $TargetDistribution, false);
         echo "</td>\n";
@@ -573,7 +596,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
 	echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Confidentiality Requirement:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['ConfidentialityRequirement']) . ":</td>\n";
         echo "<td>\n";
 	create_cvss_dropdown("ConfidentialityRequirement", $ConfidentialityRequirement, false);
         echo "</td>\n";
@@ -582,7 +605,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Integrity Requirement:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['IntegrityRequirement']) . ":</td>\n";
         echo "<td>\n";
 	create_cvss_dropdown("IntegrityRequirement", $IntegrityRequirement, false);
         echo "</td>\n";
@@ -591,7 +614,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Availability Requirement:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['AvailabilityRequirement']) . ":</td>\n";
         echo "<td>\n";
 	create_cvss_dropdown("AvailabilityRequirement", $AvailabilityRequirement, false);
         echo "</td>\n";
@@ -602,7 +625,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
 	echo "</table>\n";
 
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"update_cvss\" class=\"btn btn-primary\">Update</button>\n";
+        echo "<button type=\"submit\" name=\"update_cvss\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Update']) . "</button>\n";
         echo "</div>\n";
         echo "</form>\n";
 }
@@ -612,12 +635,15 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
  ******************************/
 function edit_dread_score($DamagePotential, $Reproducibility, $Exploitability, $AffectedUsers, $Discoverability)
 {
-        echo "<h4>Update DREAD Score</h4>\n";
+	global $lang;
+	global $escaper;
+
+        echo "<h4>" . $escaper->escapeHtml($lang['UpdateDREADScore']) . "</h4>\n";
         echo "<form name=\"update_dread\" method=\"post\" action=\"\">\n";
         echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Damage Potential:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['DamagePotential']) . ":</td>\n";
         echo "<td width=\"75\">\n";
 	create_numeric_dropdown("DamagePotential", $DamagePotential, false);
         echo "</td>\n";
@@ -628,7 +654,7 @@ function edit_dread_score($DamagePotential, $Reproducibility, $Exploitability, $
 	echo "</tr>\n";
 
 	echo "<tr>\n";
-        echo "<td width=\"150\">Reproducibility:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['Reproducibility']) . ":</td>\n";
         echo "<td width=\"75\">\n";
 	create_numeric_dropdown("Reproducibility", $Reproducibility, false);
         echo "</td>\n";
@@ -636,7 +662,7 @@ function edit_dread_score($DamagePotential, $Reproducibility, $Exploitability, $
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Exploitability:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['Exploitability']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("Exploitability", $Exploitability, false);
         echo "</td>\n";
@@ -644,7 +670,7 @@ function edit_dread_score($DamagePotential, $Reproducibility, $Exploitability, $
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Affected Users:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['AffectedUsers']) . ":</td>\n";
         echo "<td width=\"75\">\n";
 	create_numeric_dropdown("AffectedUsers", $AffectedUsers, false);
         echo "</td>\n";
@@ -652,7 +678,7 @@ function edit_dread_score($DamagePotential, $Reproducibility, $Exploitability, $
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Discoverability:</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['Discoverability']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("Discoverability", $Discoverability, false);
         echo "</td>\n";
@@ -662,7 +688,7 @@ function edit_dread_score($DamagePotential, $Reproducibility, $Exploitability, $
         echo "</table>\n";
 
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"update_dread\" class=\"btn btn-primary\">Update</button>\n";
+        echo "<button type=\"submit\" name=\"update_dread\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Update']) . "</button>\n";
         echo "</div>\n";
         echo "</form>\n";
 }
@@ -672,19 +698,22 @@ function edit_dread_score($DamagePotential, $Reproducibility, $Exploitability, $
  ******************************/
 function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation)
 {
-	echo "<h4>Update OWASP Score</h4>\n";
+	global $lang;
+	global $escaper;
+
+	echo "<h4>" . $escaper->escapeHtml($lang['UpdateOWASPScore']) . "</h4>\n";
         echo "<form name=\"update_owasp\" method=\"post\" action=\"\">\n";
         echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"4\"><b><u>Threat Agent Factors</u></b></td>\n";
+        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['ThreatAgentFactors']) . "</u></b></td>\n";
         echo "<td rowspan=\"20\" style=\"vertical-align:top;\">\n";
         view_owasp_help();
         echo "</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Skill Level:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['SkillLevel']) . ":</td>\n";
         echo "<td width=\"75\">\n";
 	create_numeric_dropdown("SkillLevel", $OWASPSkillLevel, false);
         echo "</td>\n";
@@ -693,7 +722,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Motive:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['Motive']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("Motive", $OWASPMotive, false);
         echo "</td>\n";
@@ -702,7 +731,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Opportunity:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['Opportunity']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("Opportunity", $OWASPOpportunity, false);
         echo "</td>\n";
@@ -711,7 +740,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Size:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['Size']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("Size", $OWASPSize, false);
         echo "</td>\n";
@@ -724,11 +753,11 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"4\"><b><u>Vulnerability Factors</u></b></td>\n";
+        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['VulnerabilityFactors']) . "</u></b></td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Ease of Discovery:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['EaseOfDiscovery']) . ":</td>\n";
         echo "<td width=\"75\">\n";
 	create_numeric_dropdown("EaseOfDiscovery", $OWASPEaseOfDiscovery, false);
         echo "</td>\n";
@@ -737,7 +766,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Ease of Exploit:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['EaseOfExploit']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("EaseOfExploit", $OWASPEaseOfExploit, false);
         echo "</td>\n";
@@ -746,7 +775,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Awareness:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['Awareness']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("Awareness", $OWASPAwareness, false);
         echo "</td>\n";
@@ -755,7 +784,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Intrusion Detection:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['IntrusionDetection']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("IntrusionDetection", $OWASPIntrusionDetection, false);
         echo "</td>\n";
@@ -768,11 +797,11 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"4\"><b><u>Technical Impact</u></b></td>\n";
+        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['TechnicalImpact']) . "</u></b></td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Loss of Confidentiality:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['LossOfConfidentiality']) . ":</td>\n";
         echo "<td width=\"75\">\n";
 	create_numeric_dropdown("LossOfConfidentiality", $OWASPLossOfConfidentiality, false);
         echo "</td>\n";
@@ -781,7 +810,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Loss of Integrity:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['LossOfIntegrity']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("LossOfIntegrity", $OWASPLossOfIntegrity, false);
         echo "</td>\n";
@@ -790,7 +819,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Loss of Availaibility:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['LossOfAvailability']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("LossOfAvailability", $OWASPLossOfAvailability, false);
         echo "</td>\n";
@@ -799,7 +828,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Loss of Accountability:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['LossOfAccountability']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("LossOfAccountability", $OWASPLossOfAccountability, false);
         echo "</td>\n";
@@ -812,11 +841,11 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"4\"><b><u>Business Impact</u></b></td>\n";
+        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['BusinessImpact']) . "</u></b></td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Financial Damage:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['FinancialDamage']) . ":</td>\n";
         echo "<td width=\"75\">\n";
 	create_numeric_dropdown("FinancialDamage", $OWASPFinancialDamage, false);
         echo "</td>\n";
@@ -825,7 +854,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">ReputationDamage:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['ReputationDamage']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("ReputationDamage", $OWASPReputationDamage, false);
         echo "</td>\n";
@@ -834,7 +863,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Non-Compliance:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['NonCompliance']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("NonCompliance", $OWASPNonCompliance, false);
         echo "</td>\n";
@@ -843,7 +872,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Privacy Violation:</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['PrivacyViolation']) . ":</td>\n";
         echo "<td width=\"75\">\n";
         create_numeric_dropdown("PrivacyViolation", $OWASPPrivacyViolation, false);
         echo "</td>\n";
@@ -854,7 +883,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "</table>\n";
 
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"update_owasp\" class=\"btn btn-primary\">Update</button>\n";
+        echo "<button type=\"submit\" name=\"update_owasp\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Update']) . "</button>\n";
         echo "</div>\n";
         echo "</form>\n";
 }
@@ -864,20 +893,23 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
  *******************************/
 function edit_custom_score($custom)
 {
-        echo "<h4>Update Custom Score</h4>\n";
+	global $lang;
+	global $escaper;
+
+        echo "<h4>" . $escaper->escapeHtml($lang['UpdateCustomScore']) . "</h4>\n";
         echo "<form name=\"update_custom\" method=\"post\" action=\"\">\n";
         echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
         echo "<tr>\n";
-        echo "<td width=\"165\" height=\"10\">Manually Entered Value:</td>\n";
-        echo "<td width=\"60\"><input type=\"text\" name=\"Custom\" id=\"Custom\" style=\"width:30px;\" value=\"" . $custom . "\"></td>\n";
+        echo "<td width=\"165\" height=\"10\">" . $escaper->escapeHtml($lang['ManuallyEnteredValue']) . ":</td>\n";
+        echo "<td width=\"60\"><input type=\"text\" name=\"Custom\" id=\"Custom\" style=\"width:30px;\" value=\"" . $escaper->escapeHtml($custom) . "\"></td>\n";
 	echo "<td>(Must be a numeric value between 0 and 10)</td>\n";
         echo "</tr>\n";
 
         echo "</table>\n";
 
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"update_custom\" class=\"btn btn-primary\">Update</button>\n";
+        echo "<button type=\"submit\" name=\"update_custom\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Update']) . "</button>\n";
         echo "</div>\n";
         echo "</form>\n";
 }
@@ -888,20 +920,21 @@ function edit_custom_score($custom)
 function classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLASSIC_impact)
 {
 	global $lang;
+	global $escaper;
 	
         echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"3\"><h4>". $lang['ClassicRiskScoring'] ."</h4></td>\n";
+        echo "<td colspan=\"3\"><h4>". $escaper->escapeHtml($lang['ClassicRiskScoring']) ."</h4></td>\n";
         echo "<td colspan=\"1\" style=\"vertical-align:top;\">\n";
         echo "<div class=\"btn-group pull-right\">\n";
-        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">". $lang['RiskScoringActions'] ."<span class=\"caret\"></span></a>\n";
+        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">". $escaper->escapeHtml($lang['RiskScoringActions']) ."<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
-        echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">". $lang['UpdateClassicScore'] ."</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=2\">". $lang['ScoreBy'] ." CVSS</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=3\">". $lang['ScoreBy'] ." DREAD</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=4\">". $lang['ScoreBy'] ." OWASP</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=5\">". $lang['ScoreBy'] ." Custom</a></li>\n";
+        echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">". $escaper->escapeHtml($lang['UpdateClassicScore']) ."</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=2\">". $escaper->escapeHtml($lang['ScoreByCVSS']) ."</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=3\">". $escaper->escapeHtml($lang['ScoreByDREAD']) ."</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=4\">". $escaper->escapeHtml($lang['ScoreByOWASP']) ."</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=5\">". $escaper->escapeHtml($lang['ScoreByCustom']) ."</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
@@ -909,16 +942,16 @@ function classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLAS
 
 
         echo "<tr>\n";
-        echo "<td width=\"90\">". $lang['Likelihood'] .":</td>\n";
-        echo "<td width=\"25\">[ " . $CLASSIC_likelihood . " ]</td>\n";
-        echo "<td>" . get_name_by_value("likelihood", $CLASSIC_likelihood) . "</td>\n";
+        echo "<td width=\"90\">". $escaper->escapeHtml($lang['Likelihood']) .":</td>\n";
+        echo "<td width=\"25\">[ " . $escaper->escapeHtml($CLASSIC_likelihood) . " ]</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "</td>\n";
 	echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"90\">". $lang['Impact'] .":</td>\n";
-        echo "<td width=\"25\">[ " . $CLASSIC_impact . " ]</td>\n";
-        echo "<td>" . get_name_by_value("impact", $CLASSIC_impact) . "</td>\n";
+        echo "<td width=\"90\">". $escaper->escapeHtml($lang['Impact']) .":</td>\n";
+        echo "<td width=\"25\">[ " . $escaper->escapeHtml($CLASSIC_impact) . " ]</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
@@ -927,31 +960,31 @@ function classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLAS
         if (get_setting("risk_model") == 1)
         {
         	echo "<tr>\n";
-        	echo "<td colspan=\"3\"><b>". $lang['RISKClassicExp1'] ." x ( 10 / 35 ) = " . $calculated_risk . "</b></td>\n";
+        	echo "<td colspan=\"3\"><b>". $escaper->escapeHtml($lang['RISKClassicExp1']) ." x ( 10 / 35 ) = " . $escaper->escapeHtml($calculated_risk) . "</b></td>\n";
         	echo "</tr>\n";
         }
         else if (get_setting("risk_model") == 2)
         {
                 echo "<tr>\n";
-                echo "<td colspan=\"3\"><b>". $lang['RISKClassicExp2'] ." x ( 10 / 30 ) = " . $calculated_risk . "</b></td>\n";
+                echo "<td colspan=\"3\"><b>". $escaper->escapeHtml($lang['RISKClassicExp2']) ." x ( 10 / 30 ) = " . $escaper->escapeHtml($calculated_risk) . "</b></td>\n";
                 echo "</tr>\n";
         }
         else if (get_setting("risk_model") == 3)
         {
                 echo "<tr>\n";
-                echo "<td colspan=\"3\"><b>". $lang['RISKClassicExp3'] ." x ( 10 / 25 ) = " . $calculated_risk . "</b></td>\n";
+                echo "<td colspan=\"3\"><b>". $escaper->escapeHtml($lang['RISKClassicExp3']) ." x ( 10 / 25 ) = " . $escaper->escapeHtml($calculated_risk) . "</b></td>\n";
                 echo "</tr>\n";
         }
         else if (get_setting("risk_model") == 4)
         {
                 echo "<tr>\n";
-                echo "<td colspan=\"3\"><b>". $lang['RISKClassicExp4'] ." x ( 10 / 30 ) = " . $calculated_risk . "</b></td>\n";
+                echo "<td colspan=\"3\"><b>". $escaper->escapeHtml($lang['RISKClassicExp4']) ." x ( 10 / 30 ) = " . $escaper->escapeHtml($calculated_risk) . "</b></td>\n";
                 echo "</tr>\n";
         }
         else if (get_setting("risk_model") == 5)
         {
                 echo "<tr>\n";
-                echo "<td colspan=\"3\"><b>". $lang['RISKClassicExp5'] ." x ( 10 / 35 ) = " . $calculated_risk . "</b></td>\n";
+                echo "<td colspan=\"3\"><b>". $escaper->escapeHtml($lang['RISKClassicExp5']) ." x ( 10 / 35 ) = " . $escaper->escapeHtml($calculated_risk) . "</b></td>\n";
                 echo "</tr>\n";
         }
 
@@ -963,99 +996,102 @@ function classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLAS
  ********************************/
 function cvss_scoring_table($id, $calculated_risk, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement)
 {
+	global $lang;
+	global $escaper;
+
         echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"4\"><h4>CVSS Risk Scoring</h4></td>\n";
+        echo "<td colspan=\"4\"><h4>" . $escaper->escapeHtml($lang['CVSSRiskScoring']) . "</h4></td>\n";
         echo "<td colspan=\"3\" style=\"vertical-align:top;\">\n";
         echo "<div class=\"btn-group pull-right\">\n";
-        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Risk Scoring Actions<span class=\"caret\"></span></a>\n";
+        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($lang['RiskScoringActions']) . "<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
-        echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">Update CVSS Score</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=1\">Score by Classic</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=3\">Score by DREAD</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=4\">Score by OWASP</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=5\">Score by Custom</a></li>\n";
+        echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateCVSSScore']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=1\">" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=3\">" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=4\">" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=5\">" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
         echo "</tr>\n";
 
 	echo "<tr>\n";
-	echo "<td colspan=\"7\">Base Vector: AV:" . $AccessVector . "/AC:" . $AccessComplexity . "/Au:" . $Authentication . "/C:" . $ConfImpact . "/I:" . $IntegImpact . "/A:" . $AvailImpact . "</td>\n";
+	echo "<td colspan=\"7\">" . $escaper->escapeHtml($lang['BaseVector']) . ": AV:" . $escaper->escapeHtml($AccessVector) . "/AC:" . $escaper->escapeHtml($AccessComplexity) . "/Au:" . $escaper->escapeHtml($Authentication) . "/C:" . $escaper->escapeHtml($ConfImpact) . "/I:" . $escaper->escapeHtml($IntegImpact) . "/A:" . $escaper->escapeHtml($AvailImpact) . "</td>\n";
 	echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"7\">Temporal Vector: E:" . $Exploitability . "/RL:" . $RemediationLevel . "/RC:" . $ReportConfidence . "</td>\n";
+        echo "<td colspan=\"7\">" . $escaper->escapeHtml($lang['TemporalVector']) . ": E:" . $escaper->escapeHtml($Exploitability) . "/RL:" . $escaper->escapeHtml($RemediationLevel) . "/RC:" . $escaper->escapeHtml($ReportConfidence) . "</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"7\">Environmental Vector: CDP:" . $CollateralDamagePotential . "/TD:" . $TargetDistribution . "/CR:" . $ConfidentialityRequirement . "/IR:" . $IntegrityRequirement . "/AR:" . $AvailabilityRequirement . "</td>\n";
+        echo "<td colspan=\"7\">" . $escaper->escapeHtml($lang['EnvironmentalVector']) . ": CDP:" . $escaper->escapeHtml($CollateralDamagePotential) . "/TD:" . $escaper->escapeHtml($TargetDistribution) . "/CR:" . $escaper->escapeHtml($ConfidentialityRequirement) . "/IR:" . $escaper->escapeHtml($IntegrityRequirement) . "/AR:" . $escaper->escapeHtml($AvailabilityRequirement) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
 	echo "<tr><td colspan=\"8\">&nbsp;</td></tr>\n";
 
 	echo "<tr>\n";
-	echo "<td colspan=\"2\"><b><u>Base Score Metrics</u></b></td>\n";
-	echo "<td colspan=\"2\"><b><u>Temporal Score Metrics</u></b></td>\n";
-        echo "<td colspan=\"2\"><b><u>Environmental Score Metrics</u></b></td>\n";
+	echo "<td colspan=\"2\"><b><u>" . $escaper->escapeHtml($lang['BaseScoreMetrics']) . "</u></b></td>\n";
+	echo "<td colspan=\"2\"><b><u>" . $escaper->escapeHtml($lang['TemporalScoreMetrics']) . "</u></b></td>\n";
+        echo "<td colspan=\"2\"><b><u>" . $escaper->escapeHtml($lang['EnvironmentalScoreMetrics']) . "</u></b></td>\n";
 	echo "<td>&nbsp;</td>\n";
 	echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Attack Vector:</td>\n";
-	echo "<td width=\"100\">" . get_cvss_name("AccessVector", $AccessVector) . "</td>\n";
-        echo "<td width=\"150\">Exploitability:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("Exploitability", $Exploitability) . "</td>\n";
-        echo "<td width=\"200\">Collateral Damage Potential:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("CollateralDamagePotential", $CollateralDamagePotential) . "</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['AttackVector']) . ":</td>\n";
+	echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("AccessVector", $AccessVector)) . "</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['Exploitability']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("Exploitability", $Exploitability)) . "</td>\n";
+        echo "<td width=\"200\">" . $escaper->escapeHtml($lang['CollateralDamagePotential']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("CollateralDamagePotential", $CollateralDamagePotential)) . "</td>\n";
 	echo "<td>&nbsp</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Attack Complexity:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("AccessComplexity", $AccessComplexity) . "</td>\n";
-        echo "<td width=\"150\">Remediation Level:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("RemediationLevel", $RemediationLevel) . "</td>\n";
-        echo "<td width=\"200\">Target Distribution:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("TargetDistribution", $TargetDistribution) . "</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['AttackComplexity']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("AccessComplexity", $AccessComplexity)) . "</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['RemediationLevel']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("RemediationLevel", $RemediationLevel)) . "</td>\n";
+        echo "<td width=\"200\">" . $escaper->escapeHtml($lang['TargetDistribution']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("TargetDistribution", $TargetDistribution)) . "</td>\n";
         echo "<td>&nbsp</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Authentication:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("Authentication", $Authentication) . "</td>\n";
-        echo "<td width=\"150\">Report Confidence:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("ReportConfidence", $ReportConfidence) . "</td>\n";
-        echo "<td width=\"200\">Confidentiality Requirement:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("ConfidentialityRequirement", $ConfidentialityRequirement) . "</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['Authentication']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("Authentication", $Authentication)) . "</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['ReportConfidence']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("ReportConfidence", $ReportConfidence)) . "</td>\n";
+        echo "<td width=\"200\">" . $escaper->escapeHtml($lang['ConfidentialityRequirement']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("ConfidentialityRequirement", $ConfidentialityRequirement)) . "</td>\n";
         echo "<td>&nbsp</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Confidentiality Impact:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("ConfImpact", $ConfImpact) . "</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['ConfidentialityImpact']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("ConfImpact", $ConfImpact)) . "</td>\n";
         echo "<td width=\"150\">&nbsp;</td>\n";
 	echo "<td width=\"100\">&nbsp</td>\n";
-        echo "<td width=\"200\">Integrity Requirement:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("IntegrityRequirement", $IntegrityRequirement) . "</td>\n";
+        echo "<td width=\"200\">" . $escaper->escapeHtml($lang['IntegrityRequirement']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("IntegrityRequirement", $IntegrityRequirement)) . "</td>\n";
         echo "<td>&nbsp</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Integrity Impact:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("IntegImpact", $IntegImpact) . "</td>\n";
+        echo "<td width=\"175\">". $escaper->escapeHtml($lang['IntegrityImpact']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("IntegImpact", $IntegImpact)) . "</td>\n";
         echo "<td width=\"150\">&nbsp;</td>\n";
         echo "<td width=\"100\">&nbsp</td>\n";
-        echo "<td width=\"200\">Availability Requirement:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("AvailabilityRequirement", $AvailabilityRequirement) . "</td>\n";
+        echo "<td width=\"200\">" . $escaper->escapeHtml($lang['AvailabilityRequirement']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("AvailabilityRequirement", $AvailabilityRequirement)) . "</td>\n";
         echo "<td>&nbsp</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Availability Impact:</td>\n";
-        echo "<td width=\"100\">" . get_cvss_name("AvailImpact", $AvailImpact) . "</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['AvailabilityImpact']) . ":</td>\n";
+        echo "<td width=\"100\">" . $escaper->escapeHtml(get_cvss_name("AvailImpact", $AvailImpact)) . "</td>\n";
         echo "<td width=\"150\">&nbsp;</td>\n";
         echo "<td width=\"100\">&nbsp</td>\n";
         echo "<td width=\"200\">&nbsp;</td>\n";
@@ -1079,51 +1115,54 @@ function cvss_scoring_table($id, $calculated_risk, $AccessVector, $AccessComplex
  *********************************/
 function dread_scoring_table($id, $calculated_risk, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability)
 {
+        global $lang;
+        global $escaper;
+
         echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"2\"><h4>DREAD Risk Scoring</h4></td>\n";
+        echo "<td colspan=\"2\"><h4>" . $escaper->escapeHtml($lang['DREADRiskScoring']) . "</h4></td>\n";
         echo "<td colspan=\"1\" style=\"vertical-align:top;\">\n";
         echo "<div class=\"btn-group pull-right\">\n";
-        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Risk Scoring Actions<span class=\"caret\"></span></a>\n";
+        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($lang['RiskScoringActions']) . "<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
-        echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">Update DREAD Score</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=1\">Score by Classic</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=2\">Score by CVSS</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=4\">Score by OWASP</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=5\">Score by Custom</a></li>\n";
+        echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateDREADScore']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=1\">" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=2\">" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=4\">" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=5\">" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Damage Potential:</td>\n";
-        echo "<td>" . $DREADDamagePotential . "</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['DamagePotential']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($DREADDamagePotential) . "</td>\n";
 	echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Reproducibility:</td>\n";
-        echo "<td>" . $DREADReproducibility . "</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['Reproducibility']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($DREADReproducibility) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Exploitability:</td>\n";
-        echo "<td>" . $DREADExploitability . "</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['Exploitability']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($DREADExploitability) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Affected Users:</td>\n";
-        echo "<td>" . $DREADAffectedUsers . "</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['AffectedUsers']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($DREADAffectedUsers) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"150\">Discoverability:</td>\n";
-        echo "<td>" . $DREADDiscoverability . "</td>\n";
+        echo "<td width=\"150\">" . $escaper->escapeHtml($lang['Discoverability']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($DREADDiscoverability) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
@@ -1132,7 +1171,7 @@ function dread_scoring_table($id, $calculated_risk, $DREADDamagePotential, $DREA
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"3\"><b>RISK = ( " . $DREADDamagePotential . " + " . $DREADReproducibility . " + " . $DREADExploitability . " + " . $DREADAffectedUsers . " + " . $DREADDiscoverability . " ) / 5 = " . $calculated_risk . "</b></td>\n";
+        echo "<td colspan=\"3\"><b>RISK = ( " . $escaper->escapeHtml($DREADDamagePotential) . " + " . $escaper->escapeHtml($DREADReproducibility) . " + " . $escaper->escapeHtml($DREADExploitability) . " + " . $escaper->escapeHtml($DREADAffectedUsers) . " + " . $escaper->escapeHtml($DREADDiscoverability) . " ) / 5 = " . $escaper->escapeHtml($calculated_risk) . "</b></td>\n";
         echo "</tr>\n";
 
         echo "</table>\n";
@@ -1143,77 +1182,80 @@ function dread_scoring_table($id, $calculated_risk, $DREADDamagePotential, $DREA
  *********************************/
 function owasp_scoring_table($id, $calculated_risk, $OWASPSkillLevel, $OWASPEaseOfDiscovery, $OWASPLossOfConfidentiality, $OWASPFinancialDamage, $OWASPMotive, $OWASPEaseOfExploit, $OWASPLossOfIntegrity, $OWASPReputationDamage, $OWASPOpportunity, $OWASPAwareness, $OWASPLossOfAvailability, $OWASPNonCompliance, $OWASPSize, $OWASPIntrusionDetection, $OWASPLossOfAccountability, $OWASPPrivacyViolation)
 {
+        global $lang;
+        global $escaper;
+
         echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"4\"><h4>OWASP Risk Scoring</h4></td>\n";
+        echo "<td colspan=\"4\"><h4>" . $escaper->escapeHtml($lang['OWASPRiskScoring']) . "</h4></td>\n";
         echo "<td colspan=\"5\" style=\"vertical-align:top;\">\n";
         echo "<div class=\"btn-group pull-right\">\n";
-        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Risk Scoring Actions<span class=\"caret\"></span></a>\n";
+        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($lang['RiskScoringActions']) . "<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
-        echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">Update OWASP Score</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=1\">Score by Classic</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=2\">Score by CVSS</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=3\">Score by DREAD</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=5\">Score by Custom</a></li>\n";
+        echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateOWASPScore']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=1\">" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=2\">" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=3\">" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=5\">" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"2\"><b><u>Threat Agent Factors</u></b></td>\n";
-        echo "<td colspan=\"2\"><b><u>Vulnerability Factors</u></b></td>\n";
-        echo "<td colspan=\"2\"><b><u>Technical Impact</u></b></td>\n";
-        echo "<td colspan=\"2\"><b><u>Business Impact</u></b></td>\n";
+        echo "<td colspan=\"2\"><b><u>" . $escaper->escapeHtml($lang['ThreatAgentFactors']) . "</u></b></td>\n";
+        echo "<td colspan=\"2\"><b><u>" . $escaper->escapeHtml($lang['VulnerabilityFactors']) . "</u></b></td>\n";
+        echo "<td colspan=\"2\"><b><u>" . $escaper->escapeHtml($lang['TechnicalImpact']) . "</u></b></td>\n";
+        echo "<td colspan=\"2\"><b><u>" . $escaper->escapeHtml($lang['BusinessImpact']) . "</u></b></td>\n";
 	echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Skill Level:</td>\n";
-        echo "<td width=\"50\">" . $OWASPSkillLevel . "</td>\n";
-        echo "<td width=\"175\">Ease of Discovery:</td>\n";
-        echo "<td width=\"50\">" . $OWASPEaseOfDiscovery . "</td>\n";
-        echo "<td width=\"175\">Loss of Confidentiality:</td>\n";
-        echo "<td width=\"50\">" . $OWASPLossOfConfidentiality . "</td>\n";
-        echo "<td width=\"175\">Financial Damage:</td>\n";
-        echo "<td width=\"50\">" . $OWASPFinancialDamage . "</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['SkillLevel']) . ":</td>\n";
+        echo "<td width=\"50\">" . $escaper->escapeHtml($OWASPSkillLevel) . "</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['EaseOfDiscovery']) . ":</td>\n";
+        echo "<td width=\"50\">" . $escaper->escapeHtml($OWASPEaseOfDiscovery) . "</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['LossOfConfidentiality']) . ":</td>\n";
+        echo "<td width=\"50\">" . $escaper->escapeHtml($OWASPLossOfConfidentiality) . "</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['FinancialDamage']) . ":</td>\n";
+        echo "<td width=\"50\">" . $escaper->escapeHtml($OWASPFinancialDamage) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"125\">Motive:</td>\n";
-        echo "<td width=\"10\">" . $OWASPMotive . "</td>\n";
-        echo "<td width=\"125\">Ease of Exploit:</td>\n";
-        echo "<td width=\"10\">" . $OWASPEaseOfExploit . "</td>\n";
-        echo "<td width=\"125\">Loss of Integrity:</td>\n";
-        echo "<td width=\"10\">" . $OWASPLossOfIntegrity . "</td>\n";
-        echo "<td width=\"125\">Reputation Damage:</td>\n";
-        echo "<td width=\"10\">" . $OWASPReputationDamage . "</td>\n";
+        echo "<td width=\"125\">" . $escaper->escapeHtml($lang['Motive']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($OWASPMotive) . "</td>\n";
+        echo "<td width=\"125\">" . $escaper->escapeHtml($lang['EaseOfExploit']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($OWASPEaseOfExploit) . "</td>\n";
+        echo "<td width=\"125\">" . $escaper->escapeHtml($lang['LossOfIntegrity']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($OWASPLossOfIntegrity) . "</td>\n";
+        echo "<td width=\"125\">" . $escaper->escapeHtml($lang['ReputationDamage']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($OWASPReputationDamage) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"125\">Opportunity:</td>\n";
-        echo "<td width=\"10\">" . $OWASPOpportunity . "</td>\n";
-        echo "<td width=\"125\">Awareness:</td>\n";
-        echo "<td width=\"10\">" . $OWASPAwareness . "</td>\n";
-        echo "<td width=\"125\">Loss Of Availability:</td>\n";
-        echo "<td width=\"10\">" . $OWASPLossOfAvailability . "</td>\n";
-        echo "<td width=\"125\">Non-Compliance:</td>\n";
-        echo "<td width=\"10\">" . $OWASPNonCompliance . "</td>\n";
+        echo "<td width=\"125\">" . $escaper->escapeHtml($lang['Opportunity']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($OWASPOpportunity) . "</td>\n";
+        echo "<td width=\"125\">" . $escaper->escapeHtml($lang['Awareness']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($OWASPAwareness) . "</td>\n";
+        echo "<td width=\"125\">" . $escaper->escapeHtml($lang['LossOfAvailability']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($OWASPLossOfAvailability) . "</td>\n";
+        echo "<td width=\"125\">" . $escaper->escapeHtml($lang['NonCompliance']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($OWASPNonCompliance) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"125\">Size:</td>\n";
-        echo "<td width=\"10\">" . $OWASPSize . "</td>\n";
-        echo "<td width=\"125\">Intrusion Detection:</td>\n";
-        echo "<td width=\"10\">" . $OWASPIntrusionDetection . "</td>\n";
-        echo "<td width=\"125\">Loss of Accountability:</td>\n";
-        echo "<td width=\"10\">" . $OWASPLossOfAccountability . "</td>\n";
-        echo "<td width=\"125\">Privacy Violation:</td>\n";
-        echo "<td width=\"10\">" . $OWASPPrivacyViolation . "</td>\n";
+        echo "<td width=\"125\">" . $escaper->escapeHtml($lang['Size']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($OWASPSize) . "</td>\n";
+        echo "<td width=\"125\">" . $escaper->escapeHtml($lang['IntrusionDetection']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($OWASPIntrusionDetection) . "</td>\n";
+        echo "<td width=\"125\">" . $escaper->escapeHtml($lang['LossOfAccountability']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($OWASPLossOfAccountability) . "</td>\n";
+        echo "<td width=\"125\">" . $escaper->escapeHtml($lang['PrivacyViolation']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($OWASPPrivacyViolation) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
@@ -1222,20 +1264,20 @@ function owasp_scoring_table($id, $calculated_risk, $OWASPSkillLevel, $OWASPEase
         echo "<tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"4\"><b><u>Likelihood</u></b></td>\n";
-        echo "<td colspan=\"4\"><b><u>Impact</u></b></td>\n";
+        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['Likelihood']) . "</u></b></td>\n";
+        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['Impact']) . "</u></b></td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"4\">Threat Agent Factors = ( " . $OWASPSkillLevel . " + " . $OWASPMotive . " + " . $OWASPOpportunity . " + " . $OWASPSize . " ) / 4</td>\n";
-        echo "<td colspan=\"4\">Technical Impact = ( " . $OWASPLossOfConfidentiality . " + " . $OWASPLossOfIntegrity . " + " . $OWASPLossOfAvailability . " + " . $OWASPLossOfAccountability . " ) / 4</td>\n";
+        echo "<td colspan=\"4\">" . $escaper->escapeHtml($lang['ThreatAgentFactors']) . " = ( " . $escaper->escapeHtml($OWASPSkillLevel) . " + " . $escaper->escapeHtml($OWASPMotive) . " + " . $escaper->escapeHtml($OWASPOpportunity) . " + " . $escaper->escapeHtml($OWASPSize) . " ) / 4</td>\n";
+        echo "<td colspan=\"4\">" . $escaper->escapeHtml($lang['TechnicalImpact']) . " = ( " . $escaper->escapeHtml($OWASPLossOfConfidentiality) . " + " . $escaper->escapeHtml($OWASPLossOfIntegrity) . " + " . $escaper->escapeHtml($OWASPLossOfAvailability) . " + " . $escaper->escapeHtml($OWASPLossOfAccountability) . " ) / 4</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<tr>\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"4\">Vulnerability Factors = ( " . $OWASPEaseOfDiscovery . " + " . $OWASPEaseOfExploit . " + " . $OWASPAwareness . " + " . $OWASPIntrusionDetection . " ) / 4</td>\n";
-        echo "<td colspan=\"4\">Business Impact = ( " . $OWASPFinancialDamage . " + " . $OWASPReputationDamage . " + " . $OWASPNonCompliance . " + " . $OWASPPrivacyViolation . " ) / 4</td>\n";
+        echo "<td colspan=\"4\">" . $escaper->escapeHtml($lang['VulnerabilityFactors']) . " = ( " . $escaper->escapeHtml($OWASPEaseOfDiscovery) . " + " . $escaper->escapeHtml($OWASPEaseOfExploit) . " + " . $escaper->escapeHtml($OWASPAwareness) . " + " . $escaper->escapeHtml($OWASPIntrusionDetection) . " ) / 4</td>\n";
+        echo "<td colspan=\"4\">" . $escaper->escapeHtml($lang['BusinessImpact']) . " = ( " . $escaper->escapeHtml($OWASPFinancialDamage) . " + " . $escaper->escapeHtml($OWASPReputationDamage) . " + " . $escaper->escapeHtml($OWASPNonCompliance) . " + " . $escaper->escapeHtml($OWASPPrivacyViolation) . " ) / 4</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<tr>\n";
 
@@ -1255,27 +1297,30 @@ function owasp_scoring_table($id, $calculated_risk, $OWASPSkillLevel, $OWASPEase
  **********************************/
 function custom_scoring_table($id, $custom)
 {
+        global $lang;
+        global $escaper;
+
         echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
         echo "<tr>\n";
-        echo "<td colspan=\"2\"><h4>Custom Risk Scoring</h4></td>\n";
+        echo "<td colspan=\"2\"><h4>" . $escaper->escapeHtml($lang['CustomRiskScoring']) . "</h4></td>\n";
         echo "<td colspan=\"1\" style=\"vertical-align:top;\">\n";
         echo "<div class=\"btn-group pull-right\">\n";
-        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">Risk Scoring Actions<span class=\"caret\"></span></a>\n";
+        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($lang['RiskScoringActions']) . "<span class=\"caret\"></span></a>\n";
         echo "<ul class=\"dropdown-menu\">\n";
-        echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">Update Custom Score</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=1\">Score by Classic</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=2\">Score by CVSS</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=3\">Score by DREAD</a></li>\n";
-        echo "<li><a href=\"view.php?id=".$id."&scoring_method=4\">Score by OWASP</a></li>\n";
+        echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateCustomScore']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=1\">" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=2\">" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=3\">" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>\n";
+        echo "<li><a href=\"view.php?id=". $escaper->escapeHtml($id) ."&scoring_method=4\">" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
         echo "</tr>\n";
 
         echo "<tr>\n";
-        echo "<td width=\"175\">Manually Entered Value:</td>\n";
-        echo "<td width=\"10\">" . $custom . "</td>\n";
+        echo "<td width=\"175\">" . $escaper->escapeHtml($lang['ManuallyEnteredValue']) . ":</td>\n";
+        echo "<td width=\"10\">" . $escaper->escapeHtml($custom) . "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<tr>\n";
 

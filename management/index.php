@@ -7,6 +7,10 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 
+        // Include Zend Escaper for HTML Output Encoding
+        require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
+        $escaper = new Zend\Escaper\Escaper('utf-8');
+
         // Add various security headers
         header("X-Frame-Options: DENY");
         header("X-XSS-Protection: 1; mode=block");
@@ -59,18 +63,18 @@
         if ((isset($_POST['submit'])) && $submit_risks)
         {
                 $status = "New";
-                $subject = addslashes($_POST['subject']);
-		$reference_id = addslashes($_POST['reference_id']);
+                $subject = $_POST['subject'];
+		$reference_id = $_POST['reference_id'];
 		$regulation = (int)$_POST['regulation'];
-		$control_number = addslashes($_POST['control_number']);
-		$location = addslashes($_POST['location']);
+		$control_number = $_POST['control_number'];
+		$location = $_POST['location'];
                 $category = (int)$_POST['category'];
                 $team = (int)$_POST['team'];
                 $technology = (int)$_POST['technology'];
                 $owner = (int)$_POST['owner'];
                 $manager = (int)$_POST['manager'];
-                $assessment = addslashes($_POST['assessment']);
-                $notes = addslashes($_POST['notes']);
+                $assessment = $_POST['assessment'];
+                $notes = $_POST['notes'];
 
 		// Risk scoring method
 		// 1 = Classic
@@ -126,7 +130,7 @@
 		$OWASPPrivacyViolation = (int)$_POST['OWASPPrivacyViolation'];
 
 		// Custom Risk Scoring
-		$custom = $_POST['Custom'];
+		$custom = (float)$_POST['Custom'];
 
                 // Submit risk and get back the id
                 $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
@@ -250,19 +254,19 @@
           <div class="navbar-content">
             <ul class="nav">
               <li>
-                <a href="../index.php"><?php echo $lang['Home']; ?></a> 
+                <a href="../index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
               </li>
               <li class="active">
-                <a href="index.php"><?php echo $lang['RiskManagement']; ?></a> 
+                <a href="index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
               </li>
               <li>
-                <a href="../reports/index.php"><?php echo $lang['Reporting']; ?></a> 
+                <a href="../reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 {
           echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">". $lang['Configure'] ."</a>\n";
+          echo "<a href=\"../admin/index.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>\n";
           echo "</li>\n";
 }
           echo "</ul>\n";
@@ -271,13 +275,13 @@ if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
 if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 {
           echo "<div class=\"btn-group pull-right\">\n";
-          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">".$_SESSION['name']."<span class=\"caret\"></span></a>\n";
+          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
           echo "<ul class=\"dropdown-menu\">\n";
           echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">". $lang['MyProfile'] ."</a>\n";
+          echo "<a href=\"../account/profile.php\">". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
           echo "</li>\n";
           echo "<li>\n";
-          echo "<a href=\"../logout.php\">". $lang['Logout'] ."</a>\n";
+          echo "<a href=\"../logout.php\">". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
           echo "</li>\n";
           echo "</ul>\n";
           echo "</div>\n";
@@ -291,7 +295,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 greenalert\">" . $alert_message . "</div>\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
                 echo "</div>\n";
                 echo "</div>\n";
                 echo "<br />\n";
@@ -300,7 +304,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $alert_message . "</div>\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
                 echo "</div>\n";
                 echo "</div>\n";
                 echo "<br />\n";
@@ -311,19 +315,19 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
         <div class="span3">
           <ul class="nav  nav-pills nav-stacked">
             <li class="active">
-              <a href="index.php">I. <?php echo $lang['SubmitYourRisks']; ?></a> 
+              <a href="index.php">I. <?php echo $escaper->escapeHtml($lang['SubmitYourRisks']); ?></a> 
             </li>
             <li>
-              <a href="plan_mitigations.php">II. <?php echo $lang['PlanYourMitigations']; ?></a> 
+              <a href="plan_mitigations.php">II. <?php echo $escaper->escapeHtml($lang['PlanYourMitigations']); ?></a> 
             </li>
             <li>
-              <a href="management_review.php">III. <?php echo $lang['PerformManagementReviews']; ?></a> 
+              <a href="management_review.php">III. <?php echo $escaper->escapeHtml($lang['PerformManagementReviews']); ?></a> 
             </li>
             <li>
-              <a href="prioritize_planning.php">IV. <?php echo $lang['PrioritizeForProjectPlanning']; ?></a> 
+              <a href="prioritize_planning.php">IV. <?php echo $escaper->escapeHtml($lang['PrioritizeForProjectPlanning']); ?></a> 
             </li>
             <li>
-              <a href="review_risks.php">V. <?php echo $lang['ReviewRisksRegularly']; ?></a> 
+              <a href="review_risks.php">V. <?php echo $escaper->escapeHtml($lang['ReviewRisksRegularly']); ?></a> 
             </li>
           </ul>
         </div>
@@ -331,52 +335,52 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <h4><?php echo $lang['DocumentANewRisk']; ?></h4>
-                <p><?php echo $lang['UseThisFormHelp']; ?>.</p>
+                <h4><?php echo $escaper->escapeHtml($lang['DocumentANewRisk']); ?></h4>
+                <p><?php echo $escaper->escapeHtml($lang['UseThisFormHelp']); ?>.</p>
                 <form name="submit_risk" method="post" action="">
 		<table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td width="200px"><?php echo $lang['Subject']; ?>:</td>
+                  <td width="200px"><?php echo $escaper->escapeHtml($lang['Subject']); ?>:</td>
                   <td><input maxlength="100" name="subject" id="subject" class="input-medium" type="text"></td>
                 </tr>
                 <tr>
-                  <td width="200px"><?php echo $lang['ExternalReferenceId']; ?>:</td>
+                  <td width="200px"><?php echo $escaper->escapeHtml($lang['ExternalReferenceId']); ?>:</td>
                   <td><input maxlength="20" size="20" name="reference_id" id="reference_id" class="input-medium" type="text"></td>
                 </tr>
                 <tr>
-                  <td width="200px"><?php echo $lang['ControlRegulation']; ?>:</td>
+                  <td width="200px"><?php echo $escaper->escapeHtml($lang['ControlRegulation']); ?>:</td>
                   <td><?php create_dropdown("regulation"); ?></td>
                 </tr>
                 <tr>
-                  <td width="200px"><?php echo $lang['ControlNumber']; ?>:</td>
+                  <td width="200px"><?php echo $escaper->escapeHtml($lang['ControlNumber']); ?>:</td>
                   <td><input maxlength="20" name="control_number" id="control_number" class="input-medium" type="text"></td>
                 </tr>
                 <tr>
-                  <td width="200px"><?php echo $lang['SiteLocation']; ?>:</td>
+                  <td width="200px"><?php echo $escaper->escapeHtml($lang['SiteLocation']); ?>:</td>
                   <td><?php create_dropdown("location"); ?></td>
                 </tr>
                 <tr>
-                  <td width="200px"><?php echo $lang['Category']; ?>:</td>
+                  <td width="200px"><?php echo $escaper->escapeHtml($lang['Category']); ?>:</td>
                   <td><?php create_dropdown("category"); ?></td>
                 </tr>
                 <tr>
-                  <td width="200px"><?php echo $lang['Team']; ?>:</td>
+                  <td width="200px"><?php echo $escaper->escapeHtml($lang['Team']); ?>:</td>
                   <td><?php create_dropdown("team"); ?></td>
                 </tr>
                 <tr>
-                  <td width="200px"><?php echo $lang['Technology']; ?>:</td>
+                  <td width="200px"><?php echo $escaper->escapeHtml($lang['Technology']); ?>:</td>
                   <td><?php create_dropdown("technology"); ?></td>
                 </tr>
                 <tr>
-                  <td width="200px"><?php echo $lang['Owner']; ?>:</td>
+                  <td width="200px"><?php echo $escaper->escapeHtml($lang['Owner']); ?>:</td>
                   <td><?php create_dropdown("user", NULL, "owner"); ?></td>
                 </tr>
                 <tr>
-                  <td width="200px"><?php echo $lang['OwnersManager']; ?>:</td>
+                  <td width="200px"><?php echo $escaper->escapeHtml($lang['OwnersManager']); ?>:</td>
                   <td><?php create_dropdown("user", NULL, "manager"); ?></td>
                 </tr>
                 <tr>
-                  <td width="200px"><?php echo $lang['RiskScoringMethod']; ?>:</td>
+                  <td width="200px"><?php echo $escaper->escapeHtml($lang['RiskScoringMethod']); ?>:</td>
                   <td>
 		    <select name="scoring_method" id="select" onChange="handleSelection(value)">
 		      <option selected value="1">Classic</option>
@@ -391,11 +395,11 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 		  <div id="classic">
                     <table width="100%">
                       <tr>
-                        <td width="197px"><?php echo $lang['CurrentLikelihood']; ?>:</td>
+                        <td width="197px"><?php echo $escaper->escapeHtml($lang['CurrentLikelihood']); ?>:</td>
                         <td><?php create_dropdown("likelihood"); ?></td>
                       </tr>
                       <tr>
-                        <td width="197px"><?php echo $lang['CurrentImpact']; ?>:</td>
+                        <td width="197px"><?php echo $escaper->escapeHtml($lang['CurrentImpact']); ?>:</td>
                         <td><?php create_dropdown("impact"); ?></td>
                       </tr>
                     </table>
@@ -462,23 +466,23 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
 		  <div id="custom" style="display: none;">
                     <table width="100%">
                       <tr>
-                        <td width="197px"><?php echo $lang['CustomValue']; ?>:</td>
+                        <td width="197px"><?php echo $escaper->escapeHtml($lang['CustomValue']); ?>:</td>
                         <td><input type="text" name="Custom" id="Custom" value="" /> (Must be a numeric value between 0 and 10)</td>
                       </tr>
                     </table>
 		  </div>
                   <tr>
-                    <td width="200px"><?php echo $lang['RiskAssessment']; ?></td>
+                    <td width="200px"><?php echo $escaper->escapeHtml($lang['RiskAssessment']); ?></td>
                     <td><textarea name="assessment" cols="50" rows="3" id="assessment"></textarea></td>
                   </tr>
                   <tr>
-                    <td width="200px"><?php echo $lang['AdditionalNotes']; ?></td>
+                    <td width="200px"><?php echo $escaper->escapeHtml($lang['AdditionalNotes']); ?></td>
                     <td><textarea name="notes" cols="50" rows="3" id="notes"></textarea></td>
                   </tr>
                 </table>
                 <div class="form-actions">
-                  <button type="submit" name="submit" class="btn btn-primary"><?php echo $lang['Submit']; ?></button>
-                  <input class="btn" value="<?php echo $lang['Reset']; ?>" type="reset"> 
+                  <button type="submit" name="submit" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
+                  <input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset"> 
                 </div>
                 </form>
               </div>
