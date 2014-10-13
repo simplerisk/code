@@ -151,6 +151,98 @@ function upgrade_from_20140728001($db)
         echo "Creating a table to store supporting documentation files.<br />\n";
         $stmt = $db->prepare("CREATE TABLE files(id INT NOT NULL AUTO_INCREMENT, risk_id INT NOT NULL, name VARCHAR(100) NOT NULL, unique_name VARCHAR(30) NOT NULL, type VARCHAR(30) NOT NULL, size INT NOT NULL, timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, user INT NOT NULL, content BLOB NOT NULL, PRIMARY KEY(id));");
         $stmt->execute();
+
+	// Strip slashes from user table entries
+	echo "Stripping slashes from the user table entries.<br />\n";
+	$stmt = $db->prepare("SELECT value, name, email, username FROM user");
+	$stmt->execute();
+	$array = $stmt->fetchAll();
+	foreach ($array as $value)
+	{
+		$stmt = $db->prepare("UPDATE user SET name=:name, email=:email, username=:username WHERE value=:value");
+		$stmt->bindParam(":value", $value['value']);
+		$stmt->bindParam(":name", stripslashes($value['name']));
+		$stmt->bindParam(":email", stripslashes($value['email']));
+		$stmt->bindParam(":username", stripslashes($value['username']));
+		$stmt->execute();
+	}
+
+	// Strip slashes from closures table entries
+	echo "Stripping slashes from the closures table entries.<br />\n";
+	$stmt = $db->prepare("SELECT id, close_reason, note FROM closures");
+	$stmt->execute();
+	$array = $stmt->fetchAll();
+	foreach ($array as $value)
+        {
+                $stmt = $db->prepare("UPDATE closures SET close_reason=:close_reason, note=:note WHERE id=:id");
+                $stmt->bindParam(":id", $value['id']);
+                $stmt->bindParam(":close_reason", stripslashes($value['close_reason']));
+                $stmt->bindParam(":note", stripslashes($value['note']));
+                $stmt->execute();
+        }
+
+        // Strip slashes from risks table entries
+        echo "Stripping slashes from the risks table entries.<br />\n";
+        $stmt = $db->prepare("SELECT id, subject, reference_id, control_number, location, assessment, notes FROM risks");
+        $stmt->execute();
+        $array = $stmt->fetchAll();
+        foreach ($array as $value)
+        {
+                $stmt = $db->prepare("UPDATE risks SET subject=:subject, reference_id=:reference_id, control_number=:control_number, location=:location, assessment=:assessment, notes=:notes WHERE id=:id");
+                $stmt->bindParam(":id", $value['id']);
+                $stmt->bindParam(":subject", stripslashes($value['subject']));
+                $stmt->bindParam(":reference_id", stripslashes($value['reference_id']));
+		$stmt->bindParam(":control_number", stripslashes($value['control_number']));
+		$stmt->bindParam(":location", stripslashes($value['location']));
+		$stmt->bindParam(":assessment", stripslashes($value['assessment']));
+		$stmt->bindParam(":notes", stripslashes($value['notes']));
+                $stmt->execute();
+        }
+
+        // Strip slashes from comments table entries
+        echo "Stripping slashes from the comments table entries.<br />\n";
+        $stmt = $db->prepare("SELECT id, comment FROM comments");
+        $stmt->execute();
+        $array = $stmt->fetchAll();
+        foreach ($array as $value)
+        {
+                $stmt = $db->prepare("UPDATE comments SET comment=:comment WHERE id=:id");
+                $stmt->bindParam(":id", $value['id']);
+                $stmt->bindParam(":comment", stripslashes($value['comment']));
+                $stmt->execute();
+        }
+
+        // Strip slashes from mitigations table entries
+        echo "Stripping slashes from the mitigations table entries.<br />\n";
+        $stmt = $db->prepare("SELECT id, planning_strategy, mitigation_effort, current_solution, security_requirements, security_recommendations FROM mitigations");
+        $stmt->execute();
+        $array = $stmt->fetchAll();
+        foreach ($array as $value)
+        {
+                $stmt = $db->prepare("UPDATE mitigations SET planning_strategy=:planning_strategy, mitigation_effort=:mitigation_effort, current_solution=:current_solution, security_requirements=:security_requirements, security_recommendations=:security_recommendations WHERE id=:id");
+                $stmt->bindParam(":id", $value['id']);
+                $stmt->bindParam(":planning_strategy", stripslashes($value['planning_strategy']));
+                $stmt->bindParam(":mitigation_effort", stripslashes($value['mitigation_effort']));
+                $stmt->bindParam(":current_solution", stripslashes($value['current_solution']));
+                $stmt->bindParam(":security_requirements", stripslashes($value['security_requirements']));
+                $stmt->bindParam(":security_recommendations", stripslashes($value['security_recommendations']));
+                $stmt->execute();
+        }
+
+        // Strip slashes from mgmt_reviews table entries
+        echo "Stripping slashes from the mgmt_reviews table entries.<br />\n";
+        $stmt = $db->prepare("SELECT id, review, next_step, comments FROM mgmt_reviews");
+        $stmt->execute();
+        $array = $stmt->fetchAll();
+        foreach ($array as $value)
+        {
+		$stmt = $db->prepare("UPDATE mgmt_reviews SET review=:review, next_step=:next_step, comments=:comments WHERE id=:id");
+                $stmt->bindParam(":id", $value['id']);
+                $stmt->bindParam(":review", stripslashes($value['review']));
+                $stmt->bindParam(":next_step", stripslashes($value['next_step']));
+                $stmt->bindParam(":comments", stripslashes($value['comments']));
+                $stmt->execute();
+        }   
 }
 
 /******************************
