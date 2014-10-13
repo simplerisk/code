@@ -316,6 +316,7 @@ $lang = array(
     'BaseVector'=>'Vector Base',
     'TemporalVector'=>'Vector Temporal',
     'EnvironmentalVector'=>'Vector Ambiental',
+    'SupportingDocumentation'=>'Documentação de Apoio',
     ''=>'',
 );
 

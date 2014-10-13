@@ -283,7 +283,6 @@ $lang = array(
     'UpdateDREADScore'=>'Update DREAD Score',
     'DamagePotential'=>'Damage Potential',
     'Reproducibility'=>'Reproducibility',
-    'Exploitability'=>'Exploitability',
     'AffectedUsers'=>'Affected Users',
     'Discoverability'=>'Discoverability',
     'UpdateOWASPScore'=>'Update OWASP Score',
@@ -317,6 +316,7 @@ $lang = array(
     'BaseVector'=>'Base Vector',
     'TemporalVector'=>'Temporal Vector',
     'EnvironmentalVector'=>'Environmental Vector',
+    'SupportingDocumentation'=>'Supporting Documentation',
     ''=>'',
 );
 

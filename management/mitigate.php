@@ -419,23 +419,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <ul class="nav  nav-pills nav-stacked">
-            <li>
-              <a href="index.php">I. <?php echo $escaper->escapeHtml($lang['SubmitYourRisks']); ?></a> 
-            </li>
-            <li class="active">
-              <a href="plan_mitigations.php">II. <?php echo $escaper->escapeHtml($lang['PlanYourMitigations']); ?></a> 
-            </li>
-            <li>
-              <a href="management_review.php">III. <?php echo $escaper->escapeHtml($lang['PerformManagementReviews']); ?></a> 
-            </li>
-            <li>
-              <a href="prioritize_planning.php">IV. <?php echo $escaper->escapeHtml($lang['PrioritizeForProjectPlanning']); ?></a> 
-            </li>
-            <li>
-              <a href="review_risks.php">V. <?php echo $escaper->escapeHtml($lang['ReviewRisksRegularly']); ?></a>
-            </li>
-          </ul>
+          <?php view_risk_management_menu("PlanYourMitigations"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">
@@ -511,7 +495,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <div class="row-fluid">
             <div class="span6">
               <div class="well">
-		<?php view_risk_details($submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes); ?>
+		<?php view_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes); ?>
               </div>
             </div>
             <div class="span6">

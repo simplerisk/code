@@ -6,6 +6,7 @@
 	// Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+        require_once(realpath(__DIR__ . '/../includes/display.php'));
 	require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 
         // Include Zend Escaper for HTML Output Encoding
@@ -114,62 +115,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <ul class="nav  nav-pills nav-stacked">
-            <li>
-              <a href="index.php"><?php echo $escaper->escapeHtml($lang['RiskDashboard']); ?></a>      
-            </li>
-            <li>
-              <a href="trend.php"><?php echo $escaper->escapeHtml($lang['RiskTrend']); ?></a>
-            </li>
-            <li>
-              <a href="my_open.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksAssignedToMeByRiskLevel']); ?></a>
-            </li>
-            <li>
-              <a href="open.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksByRiskLevel']); ?></a>
-            </li>
-            <li>
-              <a href="projects.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksConsideredForProjectsByRiskLevel']); ?></a>
-            </li>
-            <li>
-              <a href="next_review.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']); ?></a>
-            </li>
-            <li>
-              <a href="production_issues.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']); ?></a>
-            </li>
-            <li>
-              <a href="teams.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksByTeam']); ?></a>
-            </li>
-            <li>
-              <a href="technologies.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksByTechnology']); ?></a>
-            </li>
-            <li>
-              <a href="risk_scoring.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksByScoringMethod']); ?></a>
-            </li>
-            <li>
-              <a href="review_needed.php"><?php echo $escaper->escapeHtml($lang['AllOpenRisksNeedingReview']); ?></a>
-            </li>
-            <li>
-              <a href="closed.php"><?php echo $escaper->escapeHtml($lang['AllClosedRisksByRiskLevel']); ?></a>
-            </li>
-            <li class="active">
-              <a href="high.php"><?php echo $escaper->escapeHtml($lang['HighRiskReport']); ?></a>
-            </li>
-            <li>
-              <a href="submitted_by_date.php"><?php echo $escaper->escapeHtml($lang['SubmittedRisksByDate']); ?></a>
-            </li>
-            <li>
-              <a href="mitigations_by_date.php"><?php echo $escaper->escapeHtml($lang['MitigationsByDate']); ?></a>
-            </li>
-            <li>
-              <a href="mgmt_reviews_by_date.php"><?php echo $escaper->escapeHtml($lang['ManagementReviewsByDate']); ?></a>
-            </li>
-            <li>
-              <a href="closed_by_date.php"><?php echo $escaper->escapeHtml($lang['ClosedRisksByDate']); ?></a>
-            </li>
-            <li>
-              <a href="projects_and_risks.php"><?php echo $escaper->escapeHtml($lang['ProjectsAndRisksAssigned']); ?></a>
-            </li>
-          </ul>
+          <?php view_reporting_menu("HighRiskReport"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">

@@ -6,6 +6,7 @@
         // Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+	require_once(realpath(__DIR__ . '/../includes/display.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -137,6 +138,9 @@
 
 		// Submit risk scoring
 		submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
+
+		// Upload any file that is submitted
+		upload_file($last_insert_id, $_FILES['file']);
 
 		// If the notification extra is enabled
         	if (notification_extra())
@@ -313,23 +317,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <ul class="nav  nav-pills nav-stacked">
-            <li class="active">
-              <a href="index.php">I. <?php echo $escaper->escapeHtml($lang['SubmitYourRisks']); ?></a> 
-            </li>
-            <li>
-              <a href="plan_mitigations.php">II. <?php echo $escaper->escapeHtml($lang['PlanYourMitigations']); ?></a> 
-            </li>
-            <li>
-              <a href="management_review.php">III. <?php echo $escaper->escapeHtml($lang['PerformManagementReviews']); ?></a> 
-            </li>
-            <li>
-              <a href="prioritize_planning.php">IV. <?php echo $escaper->escapeHtml($lang['PrioritizeForProjectPlanning']); ?></a> 
-            </li>
-            <li>
-              <a href="review_risks.php">V. <?php echo $escaper->escapeHtml($lang['ReviewRisksRegularly']); ?></a> 
-            </li>
-          </ul>
+          <?php view_risk_management_menu("SubmitYourRisks"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">
@@ -337,7 +325,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
               <div class="hero-unit">
                 <h4><?php echo $escaper->escapeHtml($lang['DocumentANewRisk']); ?></h4>
                 <p><?php echo $escaper->escapeHtml($lang['UseThisFormHelp']); ?>.</p>
-                <form name="submit_risk" method="post" action="">
+                <form name="submit_risk" method="post" action="" enctype="multipart/form-data">
 		<table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                   <td width="200px"><?php echo $escaper->escapeHtml($lang['Subject']); ?>:</td>
@@ -478,6 +466,10 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
                   <tr>
                     <td width="200px"><?php echo $escaper->escapeHtml($lang['AdditionalNotes']); ?></td>
                     <td><textarea name="notes" cols="50" rows="3" id="notes"></textarea></td>
+                  </tr>
+                  <tr>
+                    <td width="200px"><?php echo $escaper->escapeHtml($lang['SupportingDocumentation']); ?></td>
+                    <td><input type="file" name="file" /></td>
                   </tr>
                 </table>
                 <div class="form-actions">

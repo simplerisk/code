@@ -405,6 +405,19 @@
 			// Update risk
 			update_risk($id, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
 
+			// If the user checked the delete button
+			if (isset($_POST['delete']) && $_POST['delete'] == "YES")
+			{
+				// Delete the file
+				delete_file($id-1000);
+			}
+			// Otherwise
+			else
+			{
+                		// Upload any file that is submitted
+                		upload_file($id-1000, $_FILES['file']);
+			}
+
                 	// Audit log
                 	$risk_id = $id;
                 	$message = "Risk details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
@@ -607,23 +620,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <ul class="nav  nav-pills nav-stacked">
-            <li>
-              <a href="index.php">I. <?php echo $escaper->escapeHtml($lang['SubmitYourRisks']); ?></a> 
-            </li>
-            <li>
-              <a href="plan_mitigations.php">II. <?php echo $escaper->escapeHtml($lang['PlanYourMitigations']); ?></a> 
-            </li>
-            <li>
-              <a href="management_review.php">III. <?php echo $escaper->escapeHtml($lang['PerformManagementReviews']); ?></a> 
-            </li>
-            <li>
-              <a href="prioritize_planning.php">IV. <?php echo $escaper->escapeHtml($lang['PrioritizeForProjectPlanning']); ?></a> 
-            </li>
-            <li class="active">
-              <a href="review_risks.php">V. <?php echo $escaper->escapeHtml($lang['ReviewRisksRegularly']); ?></a>
-            </li>
-          </ul>
+          <?php view_risk_management_menu("ReviewRisksRegularly"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">
@@ -698,17 +695,17 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
           <div class="row-fluid">
             <div class="span4">
               <div class="well">
-                <form name="details" method="post" action="">
+                <form name="details" method="post" action="" enctype="multipart/form-data">
 		<?php
 			// If the user has selected to edit the risk
 			if (isset($_POST['edit_details']))
 			{
-				edit_risk_details($submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $assessment, $notes);
+				edit_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $assessment, $notes);
 			}
 			// Otherwise we are just viewing the risk
 			else
 			{
-				view_risk_details($submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+				view_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
 			}
 		?>
                 </form>

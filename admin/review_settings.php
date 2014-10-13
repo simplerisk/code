@@ -6,6 +6,7 @@
         // Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+	require_once(realpath(__DIR__ . '/../includes/display.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -171,35 +172,7 @@ if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <ul class="nav  nav-pills nav-stacked">
-            <li>
-              <a href="index.php"><?php echo $escaper->escapeHtml($lang['ConfigureRiskFormula']); ?></a> 
-            </li>
-            <li class="active">
-              <a href="review_settings.php"><?php echo $escaper->escapeHtml($lang['ConfigureReviewSettings']); ?></a>
-            </li>
-            <li>
-              <a href="add_remove_values.php"><?php echo $escaper->escapeHtml($lang['AddAndRemoveValues']); ?></a> 
-            </li>
-            <li>
-              <a href="user_management.php"><?php echo $escaper->escapeHtml($lang['UserManagement']); ?></a> 
-            </li>
-            <li>
-              <a href="custom_names.php"><?php echo $escaper->escapeHtml($lang['RedefineNamingConventions']); ?></a> 
-            </li>
-            <li>
-              <a href="audit_trail.php"><?php echo $escaper->escapeHtml($lang['AuditTrail']); ?></a>
-            </li>
-            <li>
-              <a href="extras.php"><?php echo $escaper->escapeHtml($lang['Extras']); ?></a>
-            </li>
-            <li>
-              <a href="announcements.php"><?php echo $escaper->escapeHtml($lang['Announcements']); ?></a>
-            </li>
-            <li>
-              <a href="about.php"><?php echo $escaper->escapeHtml($lang['About']); ?></a>        
-            </li>
-          </ul>
+          <?php view_configure_menu("ConfigureReviewSettings"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">

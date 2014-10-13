@@ -717,7 +717,7 @@ function get_setting($setting)
 
         // Get the risk levels
         $stmt = $db->prepare("SELECT * FROM settings where name=:setting");
-        $stmt->bindParam(":setting", $setting);
+        $stmt->bindParam(":setting", $setting, PDO::PARAM_STR, 40);
         $stmt->execute();
 
         // Store the list in the array
@@ -4086,6 +4086,190 @@ function encryption_extra()
                 return true;
         }
         else return false;
+}
+
+/*************************
+ * FUNCTION: UPLOAD FILE *
+ *************************/
+function upload_file($risk_id, $file)
+{
+	// Allowed file types
+	$allowed_types = array('image/gif', 'image/jpg', 'image/png', 'image/x-png', 'image/jpeg', 'application/x-pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip', 'text/rtf', 'application/octet-stream', 'text/plain', 'text/xml', 'text/comma-separated-values', 'application/vnd.ms-excel', 'application/msword', 'application/x-gzip');
+
+        // If a file was submitted and the name isn't blank
+        if (isset($file) && $file['name'] != "")
+        {
+        	// If the file type is appropriate
+                if (in_array($file['type'], $allowed_types))
+                {
+                	// If the file size is less than 5MB
+                        if ($file['size'] < 5120000)
+                        {
+                        	// If there was no error with the upload
+                                if ($file['error'] == 0)
+                                {
+					// Open the database connection
+					$db = db_open();
+
+					// Read the file
+					$content = fopen($file['tmp_name'], 'rb');
+
+					// Create a unique file name
+					$unique_name = generate_token(30);
+
+        				// Store the file in the database
+        				$stmt = $db->prepare("INSERT INTO files (risk_id, name, unique_name, type, size, user, content) VALUES (:risk_id, :name, :unique_name, :type, :size, :user, :content)");
+					$stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+					$stmt->bindParam(":name", $file['name'], PDO::PARAM_STR, 30);
+					$stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
+					$stmt->bindParam(":type", $file['type'], PDO::PARAM_STR, 30);
+					$stmt->bindParam(":size", $file['size'], PDO::PARAM_INT);
+					$stmt->bindParam(":user", $_SESSION['uid'], PDO::PARAM_INT);
+					$stmt->bindParam(":content", $content, PDO::PARAM_LOB);
+        				$stmt->execute();
+
+        				// Close the database connection
+        				db_close($db);
+
+					// Return a success
+					return 1;
+                                }
+				else return "There was an error with the file upload.";
+                        }
+			else return "The uploaded file was too big to store in the database.";
+                }
+		else return "The file type of the uploaded file is not supported.";
+	}
+	else return "There was an error with the uploaded file.";
+}
+
+/*************************
+ * FUNCTION: DELETE FILE *
+ *************************/
+function delete_file($risk_id)
+{
+        // Open the database connection
+        $db = db_open();
+
+	// Delete the file from the database
+	$stmt = $db->prepare("DELETE FROM files WHERE risk_id=:risk_id");
+	$stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+	$stmt->execute();
+
+        // Close the database connection
+        db_close($db);
+}
+
+/***************************
+ * FUNCTION: DOWNLOAD FILE *
+ ***************************/
+function download_file($unique_name)
+{
+	global $escaper;
+
+	// Open the database connection
+        $db = db_open();
+
+	// Get the file from the database
+	$stmt = $db->prepare("SELECT * FROM files WHERE BINARY unique_name=:unique_name");
+	$stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
+	$stmt->execute();
+
+	// Store the results in an array
+	$array = $stmt->fetch();
+
+        // Close the database connection
+        db_close($db);
+
+	// If the array is empty
+        if (empty($array))
+	{
+		// Do nothing
+		exit;
+	}
+	else
+	{
+        	// If team separation is enabled
+        	if (team_separation_extra())
+        	{
+                	//Include the team separation extra
+                	require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+			// If the user has access to view the risk
+			if (extra_grant_access($_SESSION['uid'], $array['risk_id']))
+			{
+				// Display the file
+				header("Content-length: " . $array['size']);
+				header("Content-type: " . $array['type']);
+				header("Content-Disposition: attachment; filename=" . $escaper->escapeUrl($array['name']));
+				echo $array['content'];
+				exit;
+			}
+        	}
+		// Otherwise display the file
+		else
+		{
+			header("Content-length: " . $array['size']);
+			header("Content-type: " . $array['type']);
+			header("Content-Disposition: attachment; filename=" . $escaper->escapeUrl($array['name']));
+			echo $array['content'];
+			exit;
+		}
+	}
+}
+
+/**************************************
+ * FUNCTION: SUPPORTING DOCUMENTATION *
+ **************************************/
+function supporting_documentation($id, $mode = "view")
+{
+	global $lang;
+        global $escaper;
+
+	// Convert the ID to a database risk id
+	$id = $id-1000;
+
+        // Open the database connection
+        $db = db_open();
+
+        // Get the file from the database
+        $stmt = $db->prepare("SELECT name, unique_name FROM files WHERE risk_id=:id");
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Store the results in an array
+        $array = $stmt->fetch();
+
+        // Close the database connection
+        db_close($db);
+
+	// If the mode is view
+	if ($mode == "view")
+	{
+		// If the array is empty
+		if (empty($array))
+		{
+			echo $escaper->escapeHtml($lang['None']);
+		}
+		else
+		{
+			echo "<a href=\"download.php?id=" . $escaper->escapeHtml($array['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($array['name']) . "</a>\n";
+		}
+	}
+	// If the mode is edit
+	else if ($mode == "edit")
+	{
+		// If the array is empty
+		if (empty($array))
+		{
+			echo "<input type=\"file\" name=\"file\" />\n";
+		}
+		else
+		{
+			echo "<a href=\"download.php?id=" . $escaper->escapeHtml($array['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($array['name']) . "</a>\n";
+			echo "<br />\n";
+			echo "<input type=\"checkbox\" name=\"delete\" value=\"YES\" />&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "?\n";
+		}
+	}
 }
 
 ?>

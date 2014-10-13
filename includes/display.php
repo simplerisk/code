@@ -96,7 +96,7 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 /*******************************
  * FUNCTION: VIEW RISK DETAILS *
  *******************************/
-function view_risk_details($submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
+function view_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
 {
 	global $lang;
 	global $escaper;
@@ -153,6 +153,10 @@ function view_risk_details($submission_date, $subject, $reference_id, $regulatio
         echo $escaper->escapeHtml($lang['AdditionalNotes']) .": \n";
 	echo "<br />\n";
         echo "<textarea style=\"cursor: default;\" name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" title=\"" . $escaper->escapeHtml($notes) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($notes) . "</textarea>\n";
+	echo "<br />\n";
+	echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
+	echo "<br />\n";
+	supporting_documentation($id, "view");
 
 	// If the page is the view.php page
 	if (basename($_SERVER['PHP_SELF']) == "view.php")
@@ -167,7 +171,7 @@ function view_risk_details($submission_date, $subject, $reference_id, $regulatio
 /*******************************
  * FUNCTION: EDIT RISK DETAILS *
  *******************************/
-function edit_risk_details($submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $assessment, $notes)
+function edit_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $assessment, $notes)
 {
 	global $lang;
 	global $escaper;
@@ -224,6 +228,10 @@ function edit_risk_details($submission_date, $subject, $reference_id, $regulatio
         echo $escaper->escapeHtml($lang['AdditionalNotes']) .": \n";
         echo "<br />\n";
         echo "<textarea name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\">" . $escaper->escapeHtml($notes) . "</textarea>\n";
+        echo "<br />\n";
+        echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
+        echo "<br />\n";
+        supporting_documentation($id, "edit");
         echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"update_details\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Update']) ."</button>\n";
         echo "</div>\n";
@@ -2099,3 +2107,137 @@ function view_dread_help()
         echo "}\n";
         echo "</script>\n";
 }
+
+/***************************************
+ * FUNCTION: VIEW RISK MANAGEMENT MENU *
+ ***************************************/
+function view_risk_management_menu($active)
+{
+	global $lang;
+	global $escaper;
+
+        echo "<ul class=\"nav nav-pills nav-stacked\">\n";
+        echo ($active == "SubmitYourRisks" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"index.php\">I. " . $escaper->escapeHtml($lang['SubmitYourRisks']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "PlanYourMitigations" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"plan_mitigations.php\">II. " . $escaper->escapeHtml($lang['PlanYourMitigations']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "PerformManagementReviews" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"management_review.php\">III. " . $escaper->escapeHtml($lang['PerformManagementReviews']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "PrioritizeForProjectPlanning" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"prioritize_planning.php\">IV. " . $escaper->escapeHtml($lang['PrioritizeForProjectPlanning']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "ReviewRisksRegularly" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"review_risks.php\">V. " . $escaper->escapeHtml($lang['ReviewRisksRegularly']) . "</a>\n";
+        echo "</li>\n";
+	echo "</ul>\n";
+}
+
+/*********************************
+ * FUNCTION: VIEW REPORTING MENU *
+ *********************************/
+function view_reporting_menu($active)
+{
+	global $lang;
+	global $escaper;
+
+        echo "<ul class=\"nav nav-pills nav-stacked\">\n";
+        echo ($active == "RiskDashboard" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"index.php\">" . $escaper->escapeHtml($lang['RiskDashboard']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "RiskTrend" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"trend.php\">" . $escaper->escapeHtml($lang['RiskTrend']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksAssignedToMeByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"my_open.php\">" . $escaper->escapeHtml($lang['AllOpenRisksAssignedToMeByRiskLevel']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"open.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByRiskLevel']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksConsideredForProjectsByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"projects.php\">" . $escaper->escapeHtml($lang['AllOpenRisksConsideredForProjectsByRiskLevel']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksAcceptedUntilNextReviewByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"next_review.php\">" . $escaper->escapeHtml($lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksToSubmitAsAProductionIssueByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"production_issues.php\">" . $escaper->escapeHtml($lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksByTeam" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"teams.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByTeam']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksByTechnology" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"technologies.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByTechnology']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksByScoringMethod" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"risk_scoring.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByScoringMethod']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksNeedingReview" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"review_needed.php\">" . $escaper->escapeHtml($lang['AllOpenRisksNeedingReview']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllClosedRisksByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"closed.php\">" . $escaper->escapeHtml($lang['AllClosedRisksByRiskLevel']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "HighRiskReport" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"high.php\">" . $escaper->escapeHtml($lang['HighRiskReport']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "SubmittedRisksByDate" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"submitted_by_date.php\">" . $escaper->escapeHtml($lang['SubmittedRisksByDate']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "MitigationsByDate" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"mitigations_by_date.php\">" . $escaper->escapeHtml($lang['MitigationsByDate']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "ManagementReviewsByDate" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"mgmt_reviews_by_date.php\">" . $escaper->escapeHtml($lang['ManagementReviewsByDate']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "ClosedRisksByDate" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"closed_by_date.php\">" . $escaper->escapeHtml($lang['ClosedRisksByDate']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "ProjectsAndRisksAssigned" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"projects_and_risks.php\">" . $escaper->escapeHtml($lang['ProjectsAndRisksAssigned']) . "</a>\n";
+        echo "</li>\n";
+	echo "</ul>\n";
+}
+
+/*********************************
+ * FUNCTION: VIEW CONFIGURE MENU *
+ *********************************/
+function view_configure_menu($active)
+{
+	global $lang;
+	global $escaper;
+
+	echo "<ul class=\"nav nav-pills nav-stacked\">\n";
+	echo ($active == "ConfigureRiskFormula" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"index.php\">" . $escaper->escapeHtml($lang['ConfigureRiskFormula']) . "</a>\n";
+        echo "</li>\n";
+	echo ($active == "ConfigureReviewSettings" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"review_settings.php\">" . $escaper->escapeHtml($lang['ConfigureReviewSettings']) . "</a>\n";
+        echo "</li>\n";
+	echo ($active == "AddAndRemoveValues" ? "<li class=\"active\">\n" : "<li>\n");
+	echo "<a href=\"add_remove_values.php\">" . $escaper->escapeHtml($lang['AddAndRemoveValues']) . "</a>\n";
+        echo "</li>\n";
+	echo ($active == "UserManagement" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"user_management.php\">" . $escaper->escapeHtml($lang['UserManagement']) . "</a>\n";
+        echo "</li>\n";
+	echo ($active == "RedefineNamingConventions" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"custom_names.php\">" . $escaper->escapeHtml($lang['RedefineNamingConventions']) . "</a>\n";
+        echo "</li>\n";
+	echo ($active == "AuditTrail" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"audit_trail.php\">" . $escaper->escapeHtml($lang['AuditTrail']) . "</a>\n";
+        echo "</li>\n";
+	echo ($active == "Extras" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"extras.php\">" . $escaper->escapeHtml($lang['Extras']) . "</a>\n";
+        echo "</li>\n";
+	echo ($active == "Announcements" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"announcements.php\">" . $escaper->escapeHtml($lang['Announcements']) . "</a>\n";
+        echo "</li>\n";
+	echo ($active == "About" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"about.php\">" . $escaper->escapeHtml($lang['About']) . "</a>\n";
+        echo "</li>\n";
+        echo "</ul>\n";
+}
+
+?>
