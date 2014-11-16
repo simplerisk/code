@@ -123,9 +123,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="css/bootstrap.css">
-    <link rel="stylesheet" href="css/bootstrap-responsive.css"> 
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="css/bootstrap-responsive.css">
+    <link rel="shortcut icon" href="/webapp/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/webapp/favicon.ico" type="image/x-icon">
   </head>
   
   <body>
@@ -147,10 +147,10 @@
                 <a href="index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
               </li>
               <li>
-                <a href="management/index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
+                <a href="management/index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a>
               </li>
               <li>
-                <a href="reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
+                <a href="reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a>
               </li>
 <?php
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
