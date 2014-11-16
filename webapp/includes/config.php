@@ -10,13 +10,13 @@ define('DB_HOSTNAME', '127.0.0.1');
 define('DB_PORT', '3306');
 
 // MySQL Database User Name
-define('DB_USERNAME', 'simplerisk');
+define('DB_USERNAME', 'lessrisk');
 
 // MySQL Database Password
-define('DB_PASSWORD', 'simplerisk');
+define('DB_PASSWORD', 'lessrisk');
 
 // MySQL Database Name
-define('DB_DATABASE', 'simplerisk');
+define('DB_DATABASE', 'lessrisk');
 
 // Session last activity timeout (Default: 3600 = 1h)
 define('LAST_ACTIVITY_TIMEOUT', '3600');
@@ -36,6 +36,6 @@ define('LANG_DEFAULT', 'en');
 
 // Set the default Timezone
 // List of supported timezones here: http://www.php.net/manual/en/timezones.php
-date_default_timezone_set('America/Chicago');
+date_default_timezone_set('America/Sao_Paulo');
 
 ?>
