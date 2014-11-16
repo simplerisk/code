@@ -1,0 +1,15 @@
+{
+    "name": "ffquintella/lessrisk",
+    "description": "LessRisk Risk Management Tool",
+    "minimum-stability": "stable",
+    "license": "Mozilla",
+    "authors": [
+        {
+            "name": "Felipe Quintella",
+            "email": "felipe@quintella.com"
+        }
+    ],
+    "require": {
+        "twig/twig": "1.6.5"
+    }
+}
