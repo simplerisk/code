@@ -321,6 +321,8 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 {
 	global $escaper;
 
+    $result = "";
+
 	// If we want to update the helper when selected
 	if ($help == true)
 	{
@@ -330,14 +332,14 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 
 	if ($rename != NULL)
 	{
-		echo "<select id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
+        $result .= "<select id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
 	}
-	else echo "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
+	else $result .= "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
 
 	// If the blank is true
 	if ($blank == true)
 	{
-		echo "    <option value=\"\">--</option>\n";
+        $result .= "    <option value=\"\">--</option>\n";
 	}
 
 	// If we want a table that should be ordered by name instead of value
@@ -372,10 +374,11 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 		}
 		else $text = "";
 
-                echo "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
+            $result .= "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
         }
 
-	echo "  </select>\n";
+    $result .= "  </select>\n";
+    return $result;
 }
 
 /**************************************

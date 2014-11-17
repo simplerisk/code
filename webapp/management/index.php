@@ -139,6 +139,17 @@ if($alert == "good" || $alert == "bad") {
     $localvars['alert_message'] = $alert_message;
 }
 
+// The  dropdown menus
+$localvars['dd_regulation'] = create_dropdown("regulation");
+$localvars['dd_location'] = create_dropdown("location");
+$localvars['dd_category'] = create_dropdown("category");
+$localvars['dd_team'] = create_dropdown("team");
+$localvars['dd_technology'] = create_dropdown("technology");
+$localvars['dd_owner'] = create_dropdown("user", NULL, "owner");
+$localvars['dd_owner_manager'] = create_dropdown("user", NULL, "manager");
+$localvars['dd_likelihood'] = create_dropdown("likelihood");
+$localvars['dd_impact'] = create_dropdown("impact");
+
 $template = $twig->loadTemplate('management_index.html.twig');
 
 $template->display(array_merge($base_twigvars, $localvars));

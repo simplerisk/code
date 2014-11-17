@@ -104,39 +104,39 @@
             <tr>
                 <td width="200px">{{ ControlRegulation }}:
                 </td>
-                <td><?php create_dropdown("regulation"); ?></td>
+                <td>{{ dd_regulation|raw }}</td>
             </tr>
             <tr>
-                <td width="200px"><?php echo $escaper->escapeHtml($lang['ControlNumber']); ?>:</td>
+                <td width="200px">{{ ControlNumber }}:</td>
                 <td><input maxlength="20" name="control_number" id="control_number"
                            class="input-medium" type="text"></td>
             </tr>
             <tr>
-                <td width="200px"><?php echo $escaper->escapeHtml($lang['SiteLocation']); ?>:</td>
-                <td><?php create_dropdown("location"); ?></td>
+                <td width="200px">{{ SiteLocation }}:</td>
+                <td>{{ dd_location|raw }}</td>
             </tr>
             <tr>
-                <td width="200px"><?php echo $escaper->escapeHtml($lang['Category']); ?>:</td>
-                <td><?php create_dropdown("category"); ?></td>
+                <td width="200px">{{ Category }}:</td>
+                <td>{{ dd_category|raw }}</td>
             </tr>
             <tr>
-                <td width="200px"><?php echo $escaper->escapeHtml($lang['Team']); ?>:</td>
-                <td><?php create_dropdown("team"); ?></td>
+                <td width="200px">{{ Team }}:</td>
+                <td>{{ dd_team|raw }}</td>
             </tr>
             <tr>
-                <td width="200px"><?php echo $escaper->escapeHtml($lang['Technology']); ?>:</td>
-                <td><?php create_dropdown("technology"); ?></td>
+                <td width="200px">{{ Technology }}:</td>
+                <td>{{ dd_technology|raw }}</td>
             </tr>
             <tr>
-                <td width="200px"><?php echo $escaper->escapeHtml($lang['Owner']); ?>:</td>
-                <td><?php create_dropdown("user", NULL, "owner"); ?></td>
+                <td width="200px">{{ Owner }}:</td>
+                <td>{{ dd_owner|raw }}</td>
             </tr>
             <tr>
-                <td width="200px"><?php echo $escaper->escapeHtml($lang['OwnersManager']); ?>:</td>
-                <td><?php create_dropdown("user", NULL, "manager"); ?></td>
+                <td width="200px">{{ OwnersManager }}:</td>
+                <td>{{ dd_owner_manager|raw }}</td>
             </tr>
             <tr>
-                <td width="200px"><?php echo $escaper->escapeHtml($lang['RiskScoringMethod']); ?>:
+                <td width="200px">{{ RiskScoringMethod }}:
                 </td>
                 <td>
                     <select name="scoring_method" id="select" onChange="handleSelection(value)">
@@ -153,16 +153,16 @@
                     <div id="classic">
                         <table width="100%">
                             <tr>
-                                <td width="197px"><?php echo $escaper->escapeHtml($lang['CurrentLikelihood']); ?>
+                                <td width="197px">{{ CurrentLikelihood }}
                                     :
                                 </td>
-                                <td><?php create_dropdown("likelihood"); ?></td>
+                                <td>{{ dd_likelihood|raw }}</td>
                             </tr>
                             <tr>
-                                <td width="197px"><?php echo $escaper->escapeHtml($lang['CurrentImpact']); ?>
+                                <td width="197px">{{ CurrentImpact }}
                                     :
                                 </td>
-                                <td><?php create_dropdown("impact"); ?></td>
+                                <td>{{ dd_impact|raw }}</td>
                             </tr>
                         </table>
                     </div>
@@ -259,7 +259,7 @@
                     <div id="custom" style="display: none;">
                         <table width="100%">
                             <tr>
-                                <td width="197px"><?php echo $escaper->escapeHtml($lang['CustomValue']); ?>
+                                <td width="197px">{{ CustomValue }}
                                     :
                                 </td>
                                 <td><input type="text" name="Custom" id="Custom" value=""/> (Must be
@@ -269,22 +269,22 @@
                         </table>
                     </div>
             <tr>
-                <td width="200px"><?php echo $escaper->escapeHtml($lang['RiskAssessment']); ?></td>
+                <td width="200px">{{ RiskAssessment }}></td>
                 <td><textarea name="assessment" cols="50" rows="3" id="assessment"></textarea></td>
             </tr>
             <tr>
-                <td width="200px"><?php echo $escaper->escapeHtml($lang['AdditionalNotes']); ?></td>
+                <td width="200px">{{ AdditionalNotes }}</td>
                 <td><textarea name="notes" cols="50" rows="3" id="notes"></textarea></td>
             </tr>
             <tr>
-                <td width="200px"><?php echo $escaper->escapeHtml($lang['SupportingDocumentation']); ?></td>
+                <td width="200px">{{ SupportingDocumentation }}</td>
                 <td><input type="file" name="file"/></td>
             </tr>
         </table>
         <div class="form-actions">
             <button type="submit" name="submit"
-                    class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
-            <input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>"
+                    class="btn btn-primary">{{ Submit }}</button>
+            <input class="btn" value="{{ Reset }}"
                    type="reset">
         </div>
     </form>
