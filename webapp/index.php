@@ -4,34 +4,7 @@
   * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Include required functions file
-require_once(realpath(__DIR__ . '/includes/functions.php'));
-require_once(realpath(__DIR__ . '/includes/authenticate.php'));
-
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
-
-// Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (CSP_ENABLED == "true") {
-    // Add the Content-Security-Policy header
-    header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
-}
-
-// Session handler is database
-if (USE_DATABASE_FOR_SESSIONS == "true") {
-    session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-}
-
-// Start session
-session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-session_start('SimpleRisk');
-
-// Include the language file
-require_once(language_file());
+require_once(realpath(__DIR__ . '/includes/libs.php'));
 
 // If the login form was posted
 if (isset($_POST['submit'])) {
@@ -95,123 +68,20 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo")) {
         }
     }
 }
-?>
 
-<!doctype html>
-<html>
+// If the user has authenticated and now we need to authenticate with duo
+if (isset($_SESSION["access"]) && $_SESSION["access"] == "duo") {
+    // Include the custom authentication extra
+    require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
 
-<head>
-    <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <title>LessRisk: Open Source Risk Management</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="css/bootstrap.css">
-    <link rel="stylesheet" href="css/bootstrap-responsive.css">
-    <link rel="shortcut icon" href="/webapp/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/webapp/favicon.ico" type="image/x-icon">
-</head>
+    // Perform a duo authentication request for the user
+    $base_twigvars['duo_value'] = duo_authentication($_SESSION["user"]);
 
-<body>
-<title>LessRisk:Open Source Risk Management</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-<link rel="stylesheet" href="css/bootstrap.css">
-<link rel="stylesheet" href="css/bootstrap-responsive.css">
-<link rel="stylesheet" href="css/divshot-util.css">
-<link rel="stylesheet" href="css/divshot-canvas.css">
-<link rel="stylesheet" href="css/display.css">
-<div class="navbar">
-    <div class="navbar-inner">
-        <div class="container">
-            <a class="brand" href="https://github.com/ffquintella/lessrisk">LessRisk</a>
+    $base_twigvars['session_access_duo'] = true;
 
-            <div class="navbar-content">
-                <ul class="nav">
-                    <li class="active">
-                        <a href="index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a>
-                    </li>
-                    <li>
-                        <a href="management/index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a>
-                    </li>
-                    <li>
-                        <a href="reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a>
-                    </li>
-                    <?php
-                    if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1") {
-                        echo "<li>\n";
-                        echo "<a href=\"admin/index.php\">" . $escaper->escapeHtml($lang['Configure']) . "</a>\n";
-                        echo "</li>\n";
-                    }
-                    echo "</ul>\n";
-                    echo "</div>\n";
+}
 
-                    if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted") {
-                        echo "<div class=\"btn-group pull-right\">\n";
-                        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
-                        echo "<ul class=\"dropdown-menu\">\n";
-                        echo "<li>\n";
-                        echo "<a href=\"account/profile.php\">" . $escaper->escapeHtml($lang['MyProfile']) . "</a>\n";
-                        echo "</li>\n";
-                        echo "<li>\n";
-                        echo "<a href=\"logout.php\">" . $escaper->escapeHtml($lang['Logout']) . "</a>\n";
-                        echo "</li>\n";
-                        echo "</ul>\n";
-                        echo "</div>\n";
-                    }
-                    ?>
-            </div>
-        </div>
-    </div>
-    <div class="container-fluid">
-        <div class="row-fluid">
-            <div class="span9">
-                <div class="hero-unit">
-                    <center>
-                        <img src="images/SimpleRiskLogo.png" style="width:500px;"/>
+$template = $twig->loadTemplate('index.html.twig');
 
-                        <p>Enterprise Risk Management Simplified.</p>
-                    </center>
-                </div>
-            </div>
-        </div>
-        <?php
-        // If the user has authenticated and now we need to authenticate with duo
-        if (isset($_SESSION["access"]) && $_SESSION["access"] == "duo") {
-            echo "<div class=\"row-fluid\">\n";
-            echo "<div class=\"span9\">\n";
-            echo "<div class=\"well\">\n";
 
-            // Include the custom authentication extra
-            require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
-
-            // Perform a duo authentication request for the user
-            duo_authentication($_SESSION["user"]);
-
-            echo "</div>\n";
-            echo "</div>\n";
-            echo "</div>\n";
-        } // If the user has not authenticated
-        else if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted") {
-            echo "<div class=\"row-fluid\">\n";
-            echo "<div class=\"span9\">\n";
-            echo "<div class=\"well\">\n";
-            echo "<p><label><u>" . $escaper->escapeHtml($lang['LogInHere']) . "</u></label></p>\n";
-            echo "<form name=\"authenticate\" method=\"post\" action=\"\">\n";
-            echo $escaper->escapeHtml($lang['Username']) . ": <input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /><br />\n";
-            echo $escaper->escapeHtml($lang['Password']) . ": <input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" />\n";
-            echo "<label><a href=\"reset.php\">" . $escaper->escapeHtml($lang['ForgotYourPassword']) . "</a></label>\n";
-            echo "<div class=\"form-actions\">\n";
-            echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Login']) . "</button>\n";
-            echo "<input class=\"btn\" value=\"" . $escaper->escapeHtml($lang['Reset']) . "\" type=\"reset\">\n";
-            echo "</div>\n";
-            echo "</form>\n";
-            echo "</div>\n";
-            echo "</div>\n";
-            echo "</div>\n";
-        }
-        ?>
-    </div>
-</body>
-
-</html>
+$template->display($base_twigvars);
