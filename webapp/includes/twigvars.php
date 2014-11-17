@@ -2,6 +2,8 @@
 
 $base_twigvars = $lang;
 
+$base_twigvars['base_url'] = BASE_URL;
+
 if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1") {
     $base_twigvars['admin'] = 1;
 }

@@ -2,25 +2,26 @@
 <html>
 
 <head>
-    <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
+    <script src="{{ base_url }}/js/jquery.min.js"></script>
+    <script src="{{ base_url }}/js/bootstrap.min.js"></script>
     <title>{% block title %}LessRisk: Open Source Risk Management{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="css/bootstrap.css">
-    <link rel="stylesheet" href="css/bootstrap-responsive.css">
-    <link rel="shortcut icon" href="/webapp/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="{{ base_url }}/css/bootstrap.css">
+    <link rel="stylesheet" href="{{ base_url }}/css/bootstrap-responsive.css">
+    <link rel="shortcut icon" href="{{ base_url }}/webapp/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="{{ base_url }}/favicon.ico" type="image/x-icon">
+    <script type="text/javascript">
+        {% block javascript %}{% endblock %}
+    </script>
 </head>
 <body>
-<!--title>LessRisk:Open Source Risk Management</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta content="text/html; charset=UTF-8" http-equiv="Content-Type"-->
-<link rel="stylesheet" href="css/bootstrap.css">
-<link rel="stylesheet" href="css/bootstrap-responsive.css">
-<link rel="stylesheet" href="css/divshot-util.css">
-<link rel="stylesheet" href="css/divshot-canvas.css">
-<link rel="stylesheet" href="css/display.css">
+
+<link rel="stylesheet" href="{{ base_url }}/css/bootstrap.css">
+<link rel="stylesheet" href="{{ base_url }}/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="{{ base_url }}/css/divshot-util.css">
+<link rel="stylesheet" href="{{ base_url }}/css/divshot-canvas.css">
+<link rel="stylesheet" href="{{ base_url }}/css/display.css">
 <div class="navbar">
     {% block navbar %}
     <div class="navbar-inner">
@@ -33,14 +34,14 @@
                         <a href="index.php">{{ Home }}</a>
                     </li>
                     <li>
-                        <a href="management/index.php">{{ RiskManagement }}</a>
+                        <a href="{{ base_url }}/management/index.php">{{ RiskManagement }}</a>
                     </li>
                     <li>
-                        <a href="reports/index.php">{{ Reporting }}</a>
+                        <a href="{{ base_url }}/reports/index.php">{{ Reporting }}</a>
                     </li>
                     {% if admin %}
                         <li>
-                        <a href=\"admin/index.php\"> {{ Configure }}</a>
+                        <a href="{{ base_url }}/admin/index.php"> {{ Configure }}</a>
                         </li>
                     {% endif %}
                     </ul>

@@ -1,0 +1,301 @@
+{% extends 'base.html.twig' %}
+
+{% block javascript %}
+    function popupcvss() {
+    my_window = window.open('cvss_rating.php', 'popupwindow', 'width=850,height=680,menu=0,status=0');
+    }
+
+    function popupdread() {
+    my_window = window.open('dread_rating.php', 'popupwindow', 'width=660,height=500,menu=0,status=0');
+    }
+
+    function popupowasp() {
+    my_window = window.open('owasp_rating.php', 'popupwindow', 'width=665,height=570,menu=0,status=0');
+    }
+
+    function closepopup() {
+    if (false == my_window.closed) {
+    my_window.close();
+    }
+    else {
+    alert('Window already closed!');
+    }
+    }
+
+    function handleSelection(choice) {
+    if (choice == "1") {
+    document.getElementById("classic").style.display = "";
+    document.getElementById("cvss").style.display = "none";
+    document.getElementById("dread").style.display = "none";
+    document.getElementById("owasp").style.display = "none";
+    document.getElementById("custom").style.display = "none";
+    }
+    if (choice == "2") {
+    document.getElementById("classic").style.display = "none";
+    document.getElementById("cvss").style.display = "";
+    document.getElementById("dread").style.display = "none";
+    document.getElementById("owasp").style.display = "none";
+    document.getElementById("custom").style.display = "none";
+    }
+    if (choice == "3") {
+    document.getElementById("classic").style.display = "none";
+    document.getElementById("cvss").style.display = "none";
+    document.getElementById("dread").style.display = "";
+    document.getElementById("owasp").style.display = "none";
+    document.getElementById("custom").style.display = "none";
+    }
+    if (choice == "4") {
+    document.getElementById("classic").style.display = "none";
+    document.getElementById("cvss").style.display = "none";
+    document.getElementById("dread").style.display = "none";
+    document.getElementById("owasp").style.display = "";
+    document.getElementById("custom").style.display = "none";
+    }
+    if (choice == "5") {
+    document.getElementById("classic").style.display = "none";
+    document.getElementById("cvss").style.display = "none";
+    document.getElementById("dread").style.display = "none";
+    document.getElementById("owasp").style.display = "none";
+    document.getElementById("custom").style.display = "";
+    }
+    }
+{% endblock %}
+
+{% block content %}
+
+    {% if alert %}
+
+    <div id="alert" class="container-fluid">
+    <div class="row-fluid">
+        {% if alert_type == 'good' %}<div class="span12 greenalert">
+        {% else %}<div class="span12 redalert">{% endif %}{{ alert_message }}</div>
+    </div>
+    </div>
+    <br />
+    {% endif %}
+
+    <div class="container-fluid">
+    <div class="row-fluid">
+    <div class="span3">
+        {% include 'risk_management_menu.html.twig' %}
+    </div>
+    <div class="span9">
+    <div class="row-fluid">
+    <div class="span12">
+    <div class="hero-unit">
+    <h4>{{ DocumentANewRisk }}</h4>
+
+    <p>{{ UseThisFormHelp }}.</p>
+
+    <form name="submit_risk" method="post" action="" enctype="multipart/form-data">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td width="200px">{{ Subject }}:</td>
+                <td><input maxlength="100" name="subject" id="subject" class="input-medium"
+                           type="text"></td>
+            </tr>
+            <tr>
+                <td width="200px">{{ ExternalReferenceId }}
+                    :
+                </td>
+                <td><input maxlength="20" size="20" name="reference_id" id="reference_id"
+                           class="input-medium" type="text"></td>
+            </tr>
+            <tr>
+                <td width="200px">{{ ControlRegulation }}:
+                </td>
+                <td><?php create_dropdown("regulation"); ?></td>
+            </tr>
+            <tr>
+                <td width="200px"><?php echo $escaper->escapeHtml($lang['ControlNumber']); ?>:</td>
+                <td><input maxlength="20" name="control_number" id="control_number"
+                           class="input-medium" type="text"></td>
+            </tr>
+            <tr>
+                <td width="200px"><?php echo $escaper->escapeHtml($lang['SiteLocation']); ?>:</td>
+                <td><?php create_dropdown("location"); ?></td>
+            </tr>
+            <tr>
+                <td width="200px"><?php echo $escaper->escapeHtml($lang['Category']); ?>:</td>
+                <td><?php create_dropdown("category"); ?></td>
+            </tr>
+            <tr>
+                <td width="200px"><?php echo $escaper->escapeHtml($lang['Team']); ?>:</td>
+                <td><?php create_dropdown("team"); ?></td>
+            </tr>
+            <tr>
+                <td width="200px"><?php echo $escaper->escapeHtml($lang['Technology']); ?>:</td>
+                <td><?php create_dropdown("technology"); ?></td>
+            </tr>
+            <tr>
+                <td width="200px"><?php echo $escaper->escapeHtml($lang['Owner']); ?>:</td>
+                <td><?php create_dropdown("user", NULL, "owner"); ?></td>
+            </tr>
+            <tr>
+                <td width="200px"><?php echo $escaper->escapeHtml($lang['OwnersManager']); ?>:</td>
+                <td><?php create_dropdown("user", NULL, "manager"); ?></td>
+            </tr>
+            <tr>
+                <td width="200px"><?php echo $escaper->escapeHtml($lang['RiskScoringMethod']); ?>:
+                </td>
+                <td>
+                    <select name="scoring_method" id="select" onChange="handleSelection(value)">
+                        <option selected value="1">Classic</option>
+                        <option value="2">CVSS</option>
+                        <option value="3">DREAD</option>
+                        <option value="4">OWASP</option>
+                        <option value="5">Custom</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div id="classic">
+                        <table width="100%">
+                            <tr>
+                                <td width="197px"><?php echo $escaper->escapeHtml($lang['CurrentLikelihood']); ?>
+                                    :
+                                </td>
+                                <td><?php create_dropdown("likelihood"); ?></td>
+                            </tr>
+                            <tr>
+                                <td width="197px"><?php echo $escaper->escapeHtml($lang['CurrentImpact']); ?>
+                                    :
+                                </td>
+                                <td><?php create_dropdown("impact"); ?></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id="cvss" style="display: none;">
+                        <table width="100%">
+                            <tr>
+                                <td width="197px">&nbsp;</td>
+                                <td><p><input type="button" name="cvssSubmit" id="cvssSubmit"
+                                              value="Score Using CVSS"
+                                              onclick="javascript: popupcvss();"/></p></td>
+                            </tr>
+                        </table>
+                        <input type="hidden" name="AccessVector" id="AccessVector" value="N"/>
+                        <input type="hidden" name="AccessComplexity" id="AccessComplexity"
+                               value="L"/>
+                        <input type="hidden" name="Authentication" id="Authentication" value="N"/>
+                        <input type="hidden" name="ConfImpact" id="ConfImpact" value="C"/>
+                        <input type="hidden" name="IntegImpact" id="IntegImpact" value="C"/>
+                        <input type="hidden" name="AvailImpact" id="AvailImpact" value="C"/>
+                        <input type="hidden" name="Exploitability" id="Exploitability" value="ND"/>
+                        <input type="hidden" name="RemediationLevel" id="RemediationLevel"
+                               value="ND"/>
+                        <input type="hidden" name="ReportConfidence" id="ReportConfidence"
+                               value="ND"/>
+                        <input type="hidden" name="CollateralDamagePotential"
+                               id="CollateralDamagePotential" value="ND"/>
+                        <input type="hidden" name="TargetDistribution" id="TargetDistribution"
+                               value="ND"/>
+                        <input type="hidden" name="ConfidentialityRequirement"
+                               id="ConfidentialityRequirement" value="ND"/>
+                        <input type="hidden" name="IntegrityRequirement" id="IntegrityRequirement"
+                               value="ND"/>
+                        <input type="hidden" name="AvailabilityRequirement"
+                               id="AvailabilityRequirement" value="ND"/>
+                    </div>
+                    <div id="dread" style="display: none;">
+                        <table width="100%">
+                            <tr>
+                                <td width="197px">&nbsp;</td>
+                                <td><p><input type="button" name="dreadSubmit" id="dreadSubmit"
+                                              value="Score Using DREAD"
+                                              onclick="javascript: popupdread();"/></p></td>
+                            </tr>
+                        </table>
+                        <input type="hidden" name="DREADDamage" id="DREADDamage" value="10"/>
+                        <input type="hidden" name="DREADReproducibility" id="DREADReproducibility"
+                               value="10"/>
+                        <input type="hidden" name="DREADExploitability" id="DREADExploitability"
+                               value="10"/>
+                        <input type="hidden" name="DREADAffectedUsers" id="DREADAffectedUsers"
+                               value="10"/>
+                        <input type="hidden" name="DREADDiscoverability" id="DREADDiscoverability"
+                               value="10"/>
+                    </div>
+                    <div id="owasp" style="display: none;">
+                        <table width="100%">
+                            <tr>
+                                <td width="197px">&nbsp;</td>
+                                <td><p><input type="button" name="owaspSubmit" id="owaspSubmit"
+                                              value="Score Using OWASP"
+                                              onclick="javascript: popupowasp();"/></p></td>
+                            </tr>
+                        </table>
+                        <input type="hidden" name="OWASPSkillLevel" id="OWASPSkillLevel"
+                               value="10"/>
+                        <input type="hidden" name="OWASPMotive" id="OWASPMotive" value="10"/>
+                        <input type="hidden" name="OWASPOpportunity" id="OWASPOpportunity"
+                               value="10"/>
+                        <input type="hidden" name="OWASPSize" id="OWASPSize" value="10"/>
+                        <input type="hidden" name="OWASPEaseOfDiscovery" id="OWASPEaseOfDiscovery"
+                               value="10"/>
+                        <input type="hidden" name="OWASPEaseOfExploit" id="OWASPEaseOfExploit"
+                               value="10"/>
+                        <input type="hidden" name="OWASPAwareness" id="OWASPAwareness" value="10"/>
+                        <input type="hidden" name="OWASPIntrusionDetection"
+                               id="OWASPIntrusionDetection" value="10"/>
+                        <input type="hidden" name="OWASPLossOfConfidentiality"
+                               id="OWASPLossOfConfidentiality" value="10"/>
+                        <input type="hidden" name="OWASPLossOfIntegrity" id="OWASPLossOfIntegrity"
+                               value="10"/>
+                        <input type="hidden" name="OWASPLossOfAvailability"
+                               id="OWASPLossOfAvailability" value="10"/>
+                        <input type="hidden" name="OWASPLossOfAccountability"
+                               id="OWASPLossOfAccountability" value="10"/>
+                        <input type="hidden" name="OWASPFinancialDamage" id="OWASPFinancialDamage"
+                               value="10"/>
+                        <input type="hidden" name="OWASPReputationDamage" id="OWASPReputationDamage"
+                               value="10"/>
+                        <input type="hidden" name="OWASPNonCompliance" id="OWASPNonCompliance"
+                               value="10"/>
+                        <input type="hidden" name="OWASPPrivacyViolation" id="OWASPPrivacyViolation"
+                               value="10"/>
+                    </div>
+                    <div id="custom" style="display: none;">
+                        <table width="100%">
+                            <tr>
+                                <td width="197px"><?php echo $escaper->escapeHtml($lang['CustomValue']); ?>
+                                    :
+                                </td>
+                                <td><input type="text" name="Custom" id="Custom" value=""/> (Must be
+                                    a numeric value between 0 and 10)
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+            <tr>
+                <td width="200px"><?php echo $escaper->escapeHtml($lang['RiskAssessment']); ?></td>
+                <td><textarea name="assessment" cols="50" rows="3" id="assessment"></textarea></td>
+            </tr>
+            <tr>
+                <td width="200px"><?php echo $escaper->escapeHtml($lang['AdditionalNotes']); ?></td>
+                <td><textarea name="notes" cols="50" rows="3" id="notes"></textarea></td>
+            </tr>
+            <tr>
+                <td width="200px"><?php echo $escaper->escapeHtml($lang['SupportingDocumentation']); ?></td>
+                <td><input type="file" name="file"/></td>
+            </tr>
+        </table>
+        <div class="form-actions">
+            <button type="submit" name="submit"
+                    class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
+            <input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>"
+                   type="reset">
+        </div>
+    </form>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </body>
+
+    </html>
+
+{% endblock %}
