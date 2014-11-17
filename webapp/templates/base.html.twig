@@ -66,6 +66,17 @@
 {% endblock %}
 </div>
 <div class="container-fluid">
+
+    {% if alert %}
+
+    <div id="alert" class="container-fluid">
+        <div class="row-fluid">
+            {% if alert_type == 'good' %}<div class="span12 greenalert">
+                {% else %}<div class="span12 redalert">{% endif %}{{ alert_message }}</div>
+            </div>
+        </div>
+        <br />
+        {% endif %}
     {% block content %}
 {% endblock %}
 </div>

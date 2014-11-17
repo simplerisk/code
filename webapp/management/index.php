@@ -139,6 +139,8 @@ if($alert == "good" || $alert == "bad") {
     $localvars['alert_message'] = $alert_message;
 }
 
+$localvars['active_menu'] = "SubmitYourRisks";
+
 // The  dropdown menus
 $localvars['dd_regulation'] = create_dropdown("regulation");
 $localvars['dd_location'] = create_dropdown("location");

@@ -2182,23 +2182,24 @@ function get_risk_table($sort_order=0)
 {
 	global $lang;
 	global $escaper;
+    $result = "";
 	
         // Get risks
         $risks = get_risks($sort_order);
 
-	echo "<table class=\"table table-bordered table-condensed sortable\">\n";
-	echo "<thead>\n";
-	echo "<tr>\n";
-	echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-	echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
-	echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-	echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
-	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Submitted']) ."</th>\n";
-	echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</th>\n";
-	echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['ManagementReview']) ."</th>\n";
-	echo "</tr>\n";
-	echo "</thead>\n";
-	echo "<tbody>\n";
+    $result .= "<table class=\"table table-bordered table-condensed sortable\">\n";
+    $result .= "<thead>\n";
+    $result .= "<tr>\n";
+    $result .= "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+    $result .= "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+    $result .= "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+    $result .= "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+    $result .= "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Submitted']) ."</th>\n";
+    $result .= "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</th>\n";
+    $result .= "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['ManagementReview']) ."</th>\n";
+    $result .= "</tr>\n";
+    $result .= "</thead>\n";
+    $result .= "<tbody>\n";
 
 	// For each risk
 	foreach ($risks as $risk)
@@ -2206,21 +2207,21 @@ function get_risk_table($sort_order=0)
 		// Get the risk color
 		$color = get_risk_color($risk['calculated_risk']);
 
-		echo "<tr>\n";
-		echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-		echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
-		echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
-		echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
-		echo "<td align=\"center\" width=\"100px\">" . planned_mitigation(convert_id($risk['id']), $risk['mitigation_id']) . "</td>\n";
-		echo "<td align=\"center\" width=\"100px\">" . management_review(convert_id($risk['id']), $risk['mgmt_review']) . "</td>\n";
-		echo "</tr>\n";
+        $result .= "<tr>\n";
+        $result .= "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+        $result .= "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
+        $result .= "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+        $result .= "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+        $result .= "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
+        $result .= "<td align=\"center\" width=\"100px\">" . planned_mitigation(convert_id($risk['id']), $risk['mitigation_id']) . "</td>\n";
+        $result .= "<td align=\"center\" width=\"100px\">" . management_review(convert_id($risk['id']), $risk['mgmt_review']) . "</td>\n";
+        $result .= "</tr>\n";
 	}
 
-	echo "</tbody>\n";
-	echo "</table>\n";
+    $result .= "</tbody>\n";
+    $result .= "</table>\n";
 
-	return true;
+	return $result;
 }
 
 /***************************************

@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span3">
+                {% include 'risk_management_menu.html.twig' %}
+                <?php view_risk_management_menu("PlanYourMitigations"); ?>
+            </div>
+            <div class="span9">
+                <div class="row-fluid">
+                    <div class="span12">
+                        <p>{{ MitigationPlanningHelp }}.</p>
+                        {{ tb_risk|raw }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+{% endblock %}

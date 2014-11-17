@@ -1,19 +1,19 @@
 
 <ul class="nav nav-pills nav-stacked">
 
-    {% if active == 'SubmitYourRisks' %}<li class="active">{% else %} <li>{% endif %}
+    {% if active_menu == 'SubmitYourRisks' %}<li class="active">{% else %} <li>{% endif %}
     <a href="index.php">I. {{ SubmitYourRisks }}</a>
     </li>
-    {% if active == 'PlanYourMitigations' %}<li class="active">{% else %} <li>{% endif %}
+    {% if active_menu == 'PlanYourMitigations' %}<li class="active">{% else %} <li>{% endif %}
     <a href="plan_mitigations.php">II.{{ PlanYourMitigations }}</a>
     </li>
-    {% if active == 'PerformManagementReviews' %}<li class="active">{% else %} <li>{% endif %}
+    {% if active_menu == 'PerformManagementReviews' %}<li class="active">{% else %} <li>{% endif %}
     <a href="management_review.php">III. {{ PerformManagementReviews }}</a>
     </li>
-    {% if active == 'PrioritizeForProjectPlanning' %}<li class="active">{% else %} <li>{% endif %}
+    {% if active_menu == 'PrioritizeForProjectPlanning' %}<li class="active">{% else %} <li>{% endif %}
     <a href="prioritize_planning.php">IV. {{ PrioritizeForProjectPlanning }}</a>
     </li>
-    {% if active == 'ReviewRisksRegularly' %}<li class="active">{% else %} <li>{% endif %}
+    {% if active_menu == 'ReviewRisksRegularly' %}<li class="active">{% else %} <li>{% endif %}
     <a href="review_risks.php">V. {{ ReviewRisksRegularly }}</a>
     </li>
 </ul>
