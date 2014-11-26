@@ -3122,6 +3122,13 @@ function get_reviews_table($sort_order=3)
         // Initialize the reviews array
         $reviews = array();
 
+    $date_next_review = array();
+    $need_reviews = array();
+    $need_calculated_risk = array();
+    $date_calculated_risk = array();
+    $reviews = array();
+
+
 	// Parse through each row in the array
 	foreach ($risks as $key => $row)
 	{
@@ -3154,6 +3161,7 @@ function get_reviews_table($sort_order=3)
 
         // Sort the need reviews array by next_review
         array_multisort($need_next_review, SORT_DESC, SORT_STRING, $need_calculated_risk, SORT_DESC, SORT_NUMERIC, $need_reviews);
+
 
         // Sort the reviews array by next_review
         array_multisort($date_next_review, SORT_ASC, SORT_STRING, $date_calculated_risk, SORT_DESC, SORT_NUMERIC, $reviews);
