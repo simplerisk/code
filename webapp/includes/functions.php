@@ -253,12 +253,14 @@ function create_cvss_dropdown($name, $selected = NULL, $blank = true)
 {
 	global $escaper;
 
-	echo "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:120px;\" onClick=\"javascript:showHelp('" . $escaper->escapeHtml($name) . "Help');updateScore();\">\n";
+    $result = "";
+
+	$result .= "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:120px;\" onClick=\"javascript:showHelp('" . $escaper->escapeHtml($name) . "Help');updateScore();\">\n";
 
         // If the blank is true
         if ($blank == true)
         {
-                echo "    <option value=\"\">--</option>\n";
+            $result .= "    <option value=\"\">--</option>\n";
         }
 
         // Get the list of options
@@ -277,10 +279,11 @@ function create_cvss_dropdown($name, $selected = NULL, $blank = true)
                 }
                 else $text = "";
 
-                echo "    <option value=\"" . $escaper->escapeHtml($value) . "\"" . $text . ">" . $escaper->escapeHtml($option['metric_value']) . "</option>\n";
+            $result .= "    <option value=\"" . $escaper->escapeHtml($value) . "\"" . $text . ">" . $escaper->escapeHtml($option['metric_value']) . "</option>\n";
         }
 
-        echo "  </select>\n";
+    $result .= "  </select>\n";
+    return $result;
 }
 
 /*************************************
@@ -290,12 +293,14 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
 {
 	global $escaper;
 
-        echo "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:50px;\" onClick=\"javascript:showHelp('" . $escaper->escapeHtml($name) . "Help');updateScore();\">\n";
+        $result = "";
+
+        $result .=  "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:50px;\" onClick=\"javascript:showHelp('" . $escaper->escapeHtml($name) . "Help');updateScore();\">\n";
 
         // If the blank is true
         if ($blank == true)
         {
-                echo "    <option value=\"\">--</option>\n";
+            $result .=  "    <option value=\"\">--</option>\n";
         }
 
         // For each option
@@ -308,10 +313,12 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
                 }
                 else $text = "";
 
-                echo "    <option value=\"" . $escaper->escapeHtml($value) . "\"" . $text . ">" . $escaper->escapeHtml($value) . "</option>\n";
+            $result .=  "    <option value=\"" . $escaper->escapeHtml($value) . "\"" . $text . ">" . $escaper->escapeHtml($value) . "</option>\n";
         }
 
-        echo "  </select>\n";
+    $result .=  "  </select>\n";
+
+    return $result;
 }
 
 /************************************
@@ -3665,6 +3672,7 @@ function get_comments($id)
 {
 	global $escaper;
 
+    $result = "";
         // Subtract 1000 from id
 	$id = $id - 1000;
 
@@ -3690,10 +3698,10 @@ function get_comments($id)
 		$date = date(DATETIME, strtotime($comment['date']));
 		$user = $comment['name'];
 
-		echo "<p>". $escaper->escapeHtml($date) ." > ". $escaper->escapeHtml($user) .": ". $escaper->escapeHtml($text) ."</p>\n";
+		$result .= "<p>". $escaper->escapeHtml($date) ." > ". $escaper->escapeHtml($user) .": ". $escaper->escapeHtml($text) ."</p>\n";
 	}
 
-        return true;
+        return $result;
 }
 
 /*****************************
@@ -3702,6 +3710,8 @@ function get_comments($id)
 function get_audit_trail($id = NULL)
 {
 	global $escaper;
+
+    $result = "";
 
 	// Open the database connection
 	$db = db_open();
@@ -3736,10 +3746,10 @@ function get_audit_trail($id = NULL)
                 $text = $log['message'];
                 $date = date(DATETIME, strtotime($log['timestamp'])); 
                 
-                echo "<p>" . $escaper->escapeHtml($date) . " > " . $escaper->escapeHtml($text) . "</p>\n";
+                $result .=  "<p>" . $escaper->escapeHtml($date) . " > " . $escaper->escapeHtml($text) . "</p>\n";
         }
 
-        return true;
+        return $result;
 }
 
 /*******************************
@@ -4247,6 +4257,8 @@ function supporting_documentation($id, $mode = "view")
 	global $lang;
         global $escaper;
 
+    $result = "";
+
 	// Convert the ID to a database risk id
 	$id = $id-1000;
 
@@ -4270,11 +4282,11 @@ function supporting_documentation($id, $mode = "view")
 		// If the array is empty
 		if (empty($array))
 		{
-			echo $escaper->escapeHtml($lang['None']);
+            $result .= $escaper->escapeHtml($lang['None']);
 		}
 		else
 		{
-			echo "<a href=\"download.php?id=" . $escaper->escapeHtml($array['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($array['name']) . "</a>\n";
+            $result .=  "<a href=\"download.php?id=" . $escaper->escapeHtml($array['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($array['name']) . "</a>\n";
 		}
 	}
 	// If the mode is edit
@@ -4283,15 +4295,16 @@ function supporting_documentation($id, $mode = "view")
 		// If the array is empty
 		if (empty($array))
 		{
-			echo "<input type=\"file\" name=\"file\" />\n";
+            $result .=  "<input type=\"file\" name=\"file\" />\n";
 		}
 		else
 		{
-			echo "<a href=\"download.php?id=" . $escaper->escapeHtml($array['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($array['name']) . "</a>\n";
-			echo "<br />\n";
-			echo "<input type=\"checkbox\" name=\"delete\" value=\"YES\" />&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "?\n";
+            $result .=  "<a href=\"download.php?id=" . $escaper->escapeHtml($array['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($array['name']) . "</a>\n";
+            $result .=  "<br />\n";
+            $result .=  "<input type=\"checkbox\" name=\"delete\" value=\"YES\" />&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "?\n";
 		}
 	}
+    return $result;
 }
 
 ?>
