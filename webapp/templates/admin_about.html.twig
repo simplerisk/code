@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span3">
+                {{ html_adm_menu|raw }}
+            </div>
+            <div class="span9">
+                <div class="row-fluid">
+                    <div class="span12">
+                        <div class="hero-unit">
+                            <p>The use of this software is subject to the terms of the <a href="http://mozilla.org/MPL/2.0/"
+                                                                                          target="newwindow">Mozilla Public
+                                    License, v. 2.0</a>.</p>
+
+                            <p><h4>Application Version</h4>
+                            <ul>
+                                <li>The latest Application version
+                                    is N/A</li>
+                                <li>You are running Application
+                                    version {{ html_cv_app }}</li>
+                            </ul>
+                            </p>
+                            <p><h4>Database Version</h4>
+                            <ul>
+                                <li>The latest Database version
+                                    is N/A</li>
+                                <li>You are running Database
+                                    version {{ html_cv_db }}</li>
+                            </ul>
+                            </p>
+                            <p>You can download the most recent code <a href="https://github.com/ffquintella/lessrisk"
+                                                                        target="newwindow">here</a>.</p>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

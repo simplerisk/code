@@ -2289,9 +2289,6 @@ function view_configure_menu($active)
     $result .=  ($active == "AuditTrail" ? "<li class=\"active\">\n" : "<li>\n");
     $result .=  "<a href=\"audit_trail.php\">" . $escaper->escapeHtml($lang['AuditTrail']) . "</a>\n";
     $result .=  "</li>\n";
-    $result .=  ($active == "Extras" ? "<li class=\"active\">\n" : "<li>\n");
-    $result .=  "<a href=\"extras.php\">" . $escaper->escapeHtml($lang['Extras']) . "</a>\n";
-    $result .=  "</li>\n";
     $result .=  ($active == "Announcements" ? "<li class=\"active\">\n" : "<li>\n");
     $result .=  "<a href=\"announcements.php\">" . $escaper->escapeHtml($lang['Announcements']) . "</a>\n";
     $result .=  "</li>\n";
