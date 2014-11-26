@@ -2268,35 +2268,40 @@ function view_configure_menu($active)
 	global $lang;
 	global $escaper;
 
-	echo "<ul class=\"nav nav-pills nav-stacked\">\n";
-	echo ($active == "ConfigureRiskFormula" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"index.php\">" . $escaper->escapeHtml($lang['ConfigureRiskFormula']) . "</a>\n";
-        echo "</li>\n";
-	echo ($active == "ConfigureReviewSettings" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"review_settings.php\">" . $escaper->escapeHtml($lang['ConfigureReviewSettings']) . "</a>\n";
-        echo "</li>\n";
-	echo ($active == "AddAndRemoveValues" ? "<li class=\"active\">\n" : "<li>\n");
-	echo "<a href=\"add_remove_values.php\">" . $escaper->escapeHtml($lang['AddAndRemoveValues']) . "</a>\n";
-        echo "</li>\n";
-	echo ($active == "UserManagement" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"user_management.php\">" . $escaper->escapeHtml($lang['UserManagement']) . "</a>\n";
-        echo "</li>\n";
-	echo ($active == "RedefineNamingConventions" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"custom_names.php\">" . $escaper->escapeHtml($lang['RedefineNamingConventions']) . "</a>\n";
-        echo "</li>\n";
-	echo ($active == "AuditTrail" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"audit_trail.php\">" . $escaper->escapeHtml($lang['AuditTrail']) . "</a>\n";
-        echo "</li>\n";
-	echo ($active == "Extras" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"extras.php\">" . $escaper->escapeHtml($lang['Extras']) . "</a>\n";
-        echo "</li>\n";
-	echo ($active == "Announcements" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"announcements.php\">" . $escaper->escapeHtml($lang['Announcements']) . "</a>\n";
-        echo "</li>\n";
-	echo ($active == "About" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"about.php\">" . $escaper->escapeHtml($lang['About']) . "</a>\n";
-        echo "</li>\n";
-        echo "</ul>\n";
+    $result = "";
+
+    $result .=  "<ul class=\"nav nav-pills nav-stacked\">\n";
+    $result .=  ($active == "ConfigureRiskFormula" ? "<li class=\"active\">\n" : "<li>\n");
+    $result .=  "<a href=\"index.php\">" . $escaper->escapeHtml($lang['ConfigureRiskFormula']) . "</a>\n";
+    $result .=  "</li>\n";
+    $result .=  ($active == "ConfigureReviewSettings" ? "<li class=\"active\">\n" : "<li>\n");
+    $result .=  "<a href=\"review_settings.php\">" . $escaper->escapeHtml($lang['ConfigureReviewSettings']) . "</a>\n";
+    $result .=  "</li>\n";
+    $result .=  ($active == "AddAndRemoveValues" ? "<li class=\"active\">\n" : "<li>\n");
+    $result .=  "<a href=\"add_remove_values.php\">" . $escaper->escapeHtml($lang['AddAndRemoveValues']) . "</a>\n";
+    $result .=  "</li>\n";
+    $result .=  ($active == "UserManagement" ? "<li class=\"active\">\n" : "<li>\n");
+    $result .=  "<a href=\"user_management.php\">" . $escaper->escapeHtml($lang['UserManagement']) . "</a>\n";
+    $result .=  "</li>\n";
+    $result .=  ($active == "RedefineNamingConventions" ? "<li class=\"active\">\n" : "<li>\n");
+    $result .=  "<a href=\"custom_names.php\">" . $escaper->escapeHtml($lang['RedefineNamingConventions']) . "</a>\n";
+    $result .=  "</li>\n";
+    $result .=  ($active == "AuditTrail" ? "<li class=\"active\">\n" : "<li>\n");
+    $result .=  "<a href=\"audit_trail.php\">" . $escaper->escapeHtml($lang['AuditTrail']) . "</a>\n";
+    $result .=  "</li>\n";
+    $result .=  ($active == "Extras" ? "<li class=\"active\">\n" : "<li>\n");
+    $result .=  "<a href=\"extras.php\">" . $escaper->escapeHtml($lang['Extras']) . "</a>\n";
+    $result .=  "</li>\n";
+    $result .=  ($active == "Announcements" ? "<li class=\"active\">\n" : "<li>\n");
+    $result .=  "<a href=\"announcements.php\">" . $escaper->escapeHtml($lang['Announcements']) . "</a>\n";
+    $result .=  "</li>\n";
+    $result .=  ($active == "About" ? "<li class=\"active\">\n" : "<li>\n");
+    $result .=  "<a href=\"about.php\">" . $escaper->escapeHtml($lang['About']) . "</a>\n";
+    $result .=  "</li>\n";
+    $result .=  "</ul>\n";
+
+    return $result;
+
 }
 
 ?>

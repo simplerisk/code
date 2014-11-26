@@ -435,80 +435,86 @@ function create_risk_table()
 {
 	global $lang;
 	global $escaper;
+
+    $result = "";
+
+    $impacts = get_table("impact");
+    $likelihoods = get_table("likelihood");
+
+    // Create legend table
+    $result .=  "<table>\n";
+    $result .=  "<tr height=\"20px\">\n";
+    $result .=  "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:red;\" /></td>\n";
+    $result .=  "<td>". $escaper->escapeHtml($lang['HighRisk']) ."</td>\n";
+    $result .=  "<td>&nbsp;</td>\n";
+    $result .=  "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:orange;\" /></td>\n";
+    $result .=  "<td>". $escaper->escapeHtml($lang['MediumRisk']) ."</td>\n";
+    $result .=  "<td>&nbsp;</td>\n";
+    $result .=  "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:yellow;\" /></td>\n";
+    $result .=  "<td>". $escaper->escapeHtml($lang['LowRisk']) ."</td>\n";
+    $result .=  "<td>&nbsp;</td>\n";
+    $result .=  "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:white;\" /></td>\n";
+    $result .=  "<td>". $escaper->escapeHtml($lang['Irrelevant']) ."</td>\n";
+    $result .=  "</tr>\n";
+    $result .=  "</table>\n";
+
+    $result .=  "<br />\n";
+
+    $result .=  "<table border=\"0\" cellspacing=\"0\" cellpadding=\"10\">\n";
+
+    // For each impact level
+    for ($i=4; $i>=0; $i--)
+    {
+        $result .=  "<tr>\n";
+
+        // If this is the first row add the y-axis label
+        if ($i == 4)
+        {
+            $result .=  "<td rowspan=\"5\"><div class=\"text-rotation\"><b>". $escaper->escapeHtml($lang['Impact']) ."</b></div></td>\n";
+        }
+
+        // Add the y-axis values
+        $result .=  "<td bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($impacts[$i]['name']) . "</td>\n";
+        $result .=  "<td bgcolor=\"silver\" align=\"center\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($impacts[$i]['value']) . "</td>\n";
+
+        // For each likelihood level
+        for ($j=0; $j<=4; $j++)
+        {
+            // Calculate risk
+            $risk = calculate_risk($impacts[$i]['value'], $likelihoods[$j]['value']);
+
+            // Get the risk color
+            $color = get_risk_color($risk);
+
+            $result .=  "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($risk) . "</td>\n";
+        }
+
+        $result .=  "</tr>\n";
+    }
+
+    $result .=  "<tr>\n";
+    $result .=  "<td>&nbsp;</td>\n";
+    $result .=  "<td>&nbsp;</td>\n";
+    $result .=  "<td>&nbsp;</td>\n";
+
+    // Add the x-axis values
+    for ($x=0; $x<=4; $x++)
+    {
+        $result .=  "<td align=\"center\" bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($likelihoods[$x]['value']) . "<br />" . $escaper->escapeHtml($likelihoods[$x]['name']) . "</td>\n";
+    }
+
+    $result .=  "</tr>\n";
+    $result .=  "<tr>\n";
+    $result .=  "<td>&nbsp;</td>\n";
+    $result .=  "<td>&nbsp;</td>\n";
+    $result .=  "<td>&nbsp;</td>\n";
+    $result .=  "<td colspan=\"5\" align=\"center\"><b>". $escaper->escapeHtml($lang['Likelihood']) ."</b></td>\n";
+    $result .=  "</tr>\n";
+    $result .=  "</table>\n";
+
+    return $result;
 	
-	$impacts = get_table("impact");
-	$likelihoods = get_table("likelihood");
 
-	// Create legend table
-	echo "<table>\n";
-	echo "<tr height=\"20px\">\n";
-	echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:red;\" /></td>\n";
-	echo "<td>". $escaper->escapeHtml($lang['HighRisk']) ."</td>\n";
-	echo "<td>&nbsp;</td>\n";
-	echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:orange;\" /></td>\n";
-	echo "<td>". $escaper->escapeHtml($lang['MediumRisk']) ."</td>\n";
-        echo "<td>&nbsp;</td>\n";
-        echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:yellow;\" /></td>\n";
-        echo "<td>". $escaper->escapeHtml($lang['LowRisk']) ."</td>\n";
-        echo "<td>&nbsp;</td>\n";
-        echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:white;\" /></td>\n";
-        echo "<td>". $escaper->escapeHtml($lang['Irrelevant']) ."</td>\n";
-	echo "</tr>\n";
-	echo "</table>\n";
-
-	echo "<br />\n";
-
-	echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"10\">\n";
-
-	// For each impact level
-	for ($i=4; $i>=0; $i--)
-	{
-		echo "<tr>\n";
-	
-		// If this is the first row add the y-axis label
-		if ($i == 4)
-		{
-			echo "<td rowspan=\"5\"><div class=\"text-rotation\"><b>". $escaper->escapeHtml($lang['Impact']) ."</b></div></td>\n";
-		}
-
-		// Add the y-axis values
-        	echo "<td bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($impacts[$i]['name']) . "</td>\n";
-        	echo "<td bgcolor=\"silver\" align=\"center\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($impacts[$i]['value']) . "</td>\n";
-
-		// For each likelihood level
-		for ($j=0; $j<=4; $j++)
-		{
-			// Calculate risk
-			$risk = calculate_risk($impacts[$i]['value'], $likelihoods[$j]['value']);
-
-			// Get the risk color
-			$color = get_risk_color($risk);
-
-			echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($risk) . "</td>\n";
-		}
-
-		echo "</tr>\n";
-	}
-
-        echo "<tr>\n";
-	echo "<td>&nbsp;</td>\n";
-	echo "<td>&nbsp;</td>\n";
-	echo "<td>&nbsp;</td>\n";
-
-	// Add the x-axis values
-	for ($x=0; $x<=4; $x++)
-	{
-		echo "<td align=\"center\" bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($likelihoods[$x]['value']) . "<br />" . $escaper->escapeHtml($likelihoods[$x]['name']) . "</td>\n";
-	}
-
-	echo "</tr>\n";
-	echo "<tr>\n";
-	echo "<td>&nbsp;</td>\n";
-        echo "<td>&nbsp;</td>\n";
-        echo "<td>&nbsp;</td>\n";
-	echo "<td colspan=\"5\" align=\"center\"><b>". $escaper->escapeHtml($lang['Likelihood']) ."</b></td>\n";
-	echo "</tr>\n";
-	echo "</table>\n";
 }
 
 /****************************
