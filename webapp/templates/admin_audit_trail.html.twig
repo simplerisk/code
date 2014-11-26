@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block style %}.text-rotation {
+    display: block;
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    }
+{% endblock %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span3">
+                {{ html_adm_menu|raw }}
+            </div>
+            <div class="span9">
+                <div class="row-fluid">
+                    <div class="well">
+                        <h4>{{ AuditTrail }}</h4>
+                        {{ html_audit_trail|raw }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
