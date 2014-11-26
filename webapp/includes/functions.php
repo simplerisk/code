@@ -395,37 +395,42 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL)
 {
 	global $lang;
 	global $escaper;
-	
-        if ($rename != NULL)
+
+    $result = "";
+
+    if ($rename != NULL)
+    {
+        $result .=  "<select multiple id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "[]\">\n";
+    }
+    else $result .=  "<select multiple id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";
+
+    // Create all or none options
+    $result .=  "    <option value=\"all\">" . $escaper->escapeHtml($lang['ALL']) . "</option>\n";
+    $result .=  "    <option value=\"none\">" . $escaper->escapeHtml($lang['NONE']) . "</option>\n";
+
+    // Get the list of options
+    $options = get_table($name);
+
+    // For each option
+    foreach ($options as $option)
+    {
+        // Pattern is a team id surrounded by colons
+        $regex_pattern = "/:" . $option['value'] .":/";
+
+        // If the user belongs to the team or all was selected
+        if (preg_match($regex_pattern, $selected, $matches) || $selected == "all")
         {
-                echo "<select multiple id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "[]\">\n";
+            $text = " selected";
         }
-        else echo "<select multiple id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";
+        else $text = "";
 
-	// Create all or none options
-	echo "    <option value=\"all\">" . $escaper->escapeHtml($lang['ALL']) . "</option>\n";
-	echo "    <option value=\"none\">" . $escaper->escapeHtml($lang['NONE']) . "</option>\n";
+        $result .=  "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
+    }
 
-        // Get the list of options
-        $options = get_table($name);
+    $result .=  "  </select>\n";
 
-        // For each option
-        foreach ($options as $option)
-        {
-		// Pattern is a team id surrounded by colons
-		$regex_pattern = "/:" . $option['value'] .":/";
+    return $result;
 
-                // If the user belongs to the team or all was selected
-                if (preg_match($regex_pattern, $selected, $matches) || $selected == "all")
-                {
-                        $text = " selected";
-                }
-                else $text = "";
-
-                echo "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
-        }
-
-        echo "  </select>\n";
 }
 
 /*******************************
