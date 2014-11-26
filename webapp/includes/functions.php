@@ -2825,13 +2825,15 @@ function get_project_list()
 {
 	global $lang;
 	global $escaper;
+
+    $result = "";
 	
         // Get projects
         $projects = get_projects();
 
-	echo "<form action=\"\" method=\"post\">\n";
-	echo "<input type=\"submit\" name=\"update_order\" value=\"". $escaper->escapeHtml($lang[ 'Update']) ."\" /><br /><br />\n";
-	echo "<ul id=\"prioritize\">\n";
+    $result .= "<form action=\"\" method=\"post\">\n";
+    $result .= "<input type=\"submit\" name=\"update_order\" value=\"". $escaper->escapeHtml($lang[ 'Update']) ."\" /><br /><br />\n";
+    $result .= "<ul id=\"prioritize\">\n";
 
         // For each project
         foreach ($projects as $project)
@@ -2843,19 +2845,20 @@ function get_project_list()
 		// If the project is not 0 (ie. Unassigned Risks)
 		if ($id != 0)
 		{
-			echo "<li class=\"ui-state-default\" id=\"sort_" . $escaper->escapeHtml($id) . "\">\n";
-			echo "<span>&#x21C5;</span>&nbsp;" . $escaper->escapeHtml($name) . "\n";
-			echo "<input type=\"hidden\" id=\"order" . $escaper->escapeHtml($id) . "\" name=\"order_" . $escaper->escapeHtml($id) . "\" value=\"" . $escaper->escapeHtml($order) . "\" />\n";
-			echo "<input type=\"hidden\" name=\"ids[]\" value=\"" . $escaper->escapeHtml($id) . "\" />\n";
-			echo "</li>\n";
+            $result .= "<li class=\"ui-state-default\" id=\"sort_" . $escaper->escapeHtml($id) . "\">\n";
+            $result .= "<span>&#x21C5;</span>&nbsp;" . $escaper->escapeHtml($name) . "\n";
+            $result .= "<input type=\"hidden\" id=\"order" . $escaper->escapeHtml($id) . "\" name=\"order_" . $escaper->escapeHtml($id) . "\" value=\"" . $escaper->escapeHtml($order) . "\" />\n";
+            $result .= "<input type=\"hidden\" name=\"ids[]\" value=\"" . $escaper->escapeHtml($id) . "\" />\n";
+            $result .= "</li>\n";
 		}
 	}
 
-	echo "</ul>\n";
-	echo "<br /><input type=\"submit\" name=\"update_order\" value=\"". $escaper->escapeHtml($lang[ 'Update']) ."\" />\n";
-	echo "</form>\n";
+    $result .= "</ul>\n";
+    $result .= "<br /><input type=\"submit\" name=\"update_order\" value=\"". $escaper->escapeHtml($lang[ 'Update']) ."\" />\n";
+    $result .= "</form>\n";
 
-	return true;
+    return $result;
+	//return true;
 }
 
 /********************************
@@ -2866,23 +2869,25 @@ function get_project_status()
 	global $lang;
 	global $escaper;
 
+    $result = "";
+
         // Get projects
         $projects = get_projects();
 
-	echo "<form action=\"\" method=\"post\">\n";
-	echo "<div id=\"statustabs\">\n";
-	echo "<ul>\n";
-        echo "<li><a href=\"#statustabs-1\">". $escaper->escapeHtml($lang['ActiveProjects']) ."</a></li>\n";
-        echo "<li><a href=\"#statustabs-2\">". $escaper->escapeHtml($lang['OnHoldProjects']) ."</a></li>\n";
-        echo "<li><a href=\"#statustabs-3\">". $escaper->escapeHtml($lang['CompletedProjects']) ."</a></li>\n";
-        echo "<li><a href=\"#statustabs-4\">". $escaper->escapeHtml($lang['CancelledProjects']) ."</a></li>\n";
-	echo "</ul>\n";
+    $result .= "<form action=\"\" method=\"post\">\n";
+    $result .=  "<div id=\"statustabs\">\n";
+    $result .=  "<ul>\n";
+    $result .=  "<li><a href=\"#statustabs-1\">". $escaper->escapeHtml($lang['ActiveProjects']) ."</a></li>\n";
+    $result .=  "<li><a href=\"#statustabs-2\">". $escaper->escapeHtml($lang['OnHoldProjects']) ."</a></li>\n";
+    $result .=  "<li><a href=\"#statustabs-3\">". $escaper->escapeHtml($lang['CompletedProjects']) ."</a></li>\n";
+    $result .=  "<li><a href=\"#statustabs-4\">". $escaper->escapeHtml($lang['CancelledProjects']) ."</a></li>\n";
+    $result .=  "</ul>\n";
 
 	// For each of the project status types
 	for ($i=1; $i <=4; $i++)
 	{
-		echo "<div id=\"statustabs-".$i."\">\n";
-		echo "<ul id=\"statussortable-".$i."\" class=\"connectedSortable ui-helper-reset\">\n";
+        $result .=  "<div id=\"statustabs-".$i."\">\n";
+        $result .=  "<ul id=\"statussortable-".$i."\" class=\"connectedSortable ui-helper-reset\">\n";
 
         	foreach ($projects as $project)
         	{
@@ -2894,22 +2899,23 @@ function get_project_status()
 			if ($status == $i && $name != "Unassigned Risks")
 			{
 
-                                echo "<li id=\"" . $escaper->escapeHtml($id) . "\" class=\"project\">" . $escaper->escapeHtml($name) . "\n";
-                                echo "<input class=\"assoc-project-with-status\" type=\"hidden\" id=\"project" . $escaper->escapeHtml($id) . "\" name=\"project_" . $escaper->escapeHtml($id) . "\" value=\"" . $escaper->escapeHtml($status) . "\" />\n";
-                                echo "<input id=\"all-project-ids\" class=\"all-project-ids\" type=\"hidden\" name=\"projects[]\" value=\"" . $escaper->escapeHtml($id) . "\" />\n";
-                                echo "</li>\n";
+                $result .=  "<li id=\"" . $escaper->escapeHtml($id) . "\" class=\"project\">" . $escaper->escapeHtml($name) . "\n";
+                $result .=  "<input class=\"assoc-project-with-status\" type=\"hidden\" id=\"project" . $escaper->escapeHtml($id) . "\" name=\"project_" . $escaper->escapeHtml($id) . "\" value=\"" . $escaper->escapeHtml($status) . "\" />\n";
+                $result .=  "<input id=\"all-project-ids\" class=\"all-project-ids\" type=\"hidden\" name=\"projects[]\" value=\"" . $escaper->escapeHtml($id) . "\" />\n";
+                $result .=  "</li>\n";
 			}
 		}
 
-        	echo "</ul>\n";
-        	echo "</div>\n";
+        $result .=  "</ul>\n";
+        $result .=  "</div>\n";
         }
 
-	echo "</div>\n";
-	echo "<br /><input type=\"submit\" name=\"update_project_status\" value=\"" . $escaper->escapeHtml($lang['UpdateProjectStatuses']) ."\" />\n";
-	echo "</form>\n";
+    $result .=  "</div>\n";
+    $result .=  "<br /><input type=\"submit\" name=\"update_project_status\" value=\"" . $escaper->escapeHtml($lang['UpdateProjectStatuses']) ."\" />\n";
+    $result .=  "</form>\n";
 
-        return true;
+    return $result;
+
 }
 
 /**********************************
@@ -2982,22 +2988,24 @@ function get_project_tabs()
 {
 	global $lang;
 	global $escaper;
+
+    $result = "";
 	
 	$projects = get_projects();
 
-	echo "<form action=\"\" method=\"post\">\n";
-	echo "<div id=\"tabs\">\n";
-	echo "<ul>\n";
+    $result .= "<form action=\"\" method=\"post\">\n";
+    $result .=  "<div id=\"tabs\">\n";
+    $result .=  "<ul>\n";
 	
 	foreach ($projects as $project)
 	{
 		$id = (int)$project['value'];
 		$name = $project['name'];
 
-		echo "<li><a href=\"#tabs-" . $escaper->escapeHtml($id) . "\">" . $escaper->escapeHtml($name) . "</a></li>\n";
+        $result .=  "<li><a href=\"#tabs-" . $escaper->escapeHtml($id) . "\">" . $escaper->escapeHtml($name) . "</a></li>\n";
 	}
 
-	echo "</ul>\n";
+    $result .=  "</ul>\n";
 
         // Get risks marked as consider for projects
         $risks = get_risks(5);
@@ -3008,8 +3016,8 @@ function get_project_tabs()
 		$id = (int)$project['value'];
 		$name = $project['name'];
 
-		echo "<div id=\"tabs-" . $escaper->escapeHtml($id) . "\">\n";
-		echo "<ul id=\"sortable-" . $escaper->escapeHtml($id) . "\" class=\"connectedSortable ui-helper-reset\">\n";
+        $result .=  "<div id=\"tabs-" . $escaper->escapeHtml($id) . "\">\n";
+        $result .=  "<ul id=\"sortable-" . $escaper->escapeHtml($id) . "\" class=\"connectedSortable ui-helper-reset\">\n";
 
 		// For each risk
 		foreach ($risks as $risk)
@@ -3022,20 +3030,22 @@ function get_project_tabs()
 			// If the risk is assigned to that project id
 			if ($id == $project_id)
 			{
-				echo "<li id=\"" . $escaper->escapeHtml($risk_id) . "\" class=\"" . $escaper->escapeHtml($color) . "\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml($subject) . "</a>\n";
-				echo "<input class=\"assoc-risk-with-project\" type=\"hidden\" id=\"risk" . $escaper->escapeHtml($risk_id) . "\" name=\"risk_" . $escaper->escapeHtml($risk_id) . "\" value=\"" . $escaper->escapeHtml($project_id) . "\" />\n";
+                $result .=  "<li id=\"" . $escaper->escapeHtml($risk_id) . "\" class=\"" . $escaper->escapeHtml($color) . "\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml($subject) . "</a>\n";
+                $result .=  "<input class=\"assoc-risk-with-project\" type=\"hidden\" id=\"risk" . $escaper->escapeHtml($risk_id) . "\" name=\"risk_" . $escaper->escapeHtml($risk_id) . "\" value=\"" . $escaper->escapeHtml($project_id) . "\" />\n";
                         	echo "<input id=\"all-risk-ids\" class=\"all-risk-ids\" type=\"hidden\" name=\"ids[]\" value=\"" . $escaper->escapeHtml($risk_id) . "\" />\n";
                         	echo "</li>\n";
 			}
 		}
 
-		echo "</ul>\n";
-		echo "</div>\n";
+        $result .=  "</ul>\n";
+        $result .=  "</div>\n";
 	}
 
-	echo "</div>\n";
-	echo "<br /><input type=\"submit\" name=\"update_projects\" value=\"". $escaper->escapeHtml($lang['SaveRisksToProjects']) ."\" />\n";
-	echo "</form>\n";
+    $result .=  "</div>\n";
+    $result .=  "<br /><input type=\"submit\" name=\"update_projects\" value=\"". $escaper->escapeHtml($lang['SaveRisksToProjects']) ."\" />\n";
+    $result .=  "</form>\n";
+
+    return $result;
 }
 
 /**************************
