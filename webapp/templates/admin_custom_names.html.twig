@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span3">
+                {{ html_adm_menu|raw }}
+            </div>
+            <div class="span9">
+                <div class="row-fluid">
+                    <div class="span12">
+                        <div class="hero-unit">
+                            <form name="impact" method="post" action="">
+                                <p>
+                                <h4>{{ Impact }}:</h4>
+                                {{ Change }} {{ dd_impact|raw }} {{ to }}
+                                <input name="new_name" type="text" size="20"/>&nbsp;&nbsp;<input type="submit"
+                                                                                                 value="{{ Update }}"
+                                                                                                 name="update_impact"/></p>
+                            </form>
+                        </div>
+
+                        <div class="hero-unit">
+                            <form name="likelihood" method="post" action="">
+                                <p>
+                                <h4>{{ Likelihood }}:</h4>
+                                {{ Change }} {{ dd_likelihood|raw }} {{ to }}
+                                <input name="new_name" type="text" size="20"/>&nbsp;&nbsp;<input type="submit"
+                                                                                                 value="{{ Update }}"
+                                                                                                 name="update_likelihood"/></p>
+                            </form>
+                        </div>
+                        <div class="hero-unit">
+                            <form name="mitigation_effort" method="post" action="">
+                                <p>
+                                <h4>{{ MitigationEffort }}:</h4>
+                                {{ Change }} {{ dd_mitigation_effort|raw }} {{ to }}
+                                <input name="new_name" type="text" size="20"/>&nbsp;&nbsp;<input type="submit"
+                                                                                                 value="{{ Update }}"
+                                                                                                 name="update_mitigation_effort"/></p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
