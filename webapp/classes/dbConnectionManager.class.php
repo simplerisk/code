@@ -29,6 +29,8 @@ class dbConnectionManager extends singleton {
 
     private $initialized = false;
 
+    private $token = "";
+
     private function initialize (){
         if( !$this->initialized ){
             $this->initialized = true;
@@ -60,7 +62,13 @@ class dbConnectionManager extends singleton {
     }
 
 
+    public function setToken($token){
+        $this->$token = $token;
+    }
 
 
+    public function getToken(){
+        return $this->token;
+    }
 
 } 
