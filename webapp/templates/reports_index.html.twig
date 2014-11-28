@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block jsFiles %}
+    <script src="../js/sorttable.js"></script>
+    <script src="../js/highcharts.js"></script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span3">
+                {{ html_reporting_menu|raw }}
+            </div>
+            <div class="span9">
+                <div class="row-fluid">
+                    <h3>{{ OpenRisks }} ({{ html_OpenRisks|raw }})</h3>
+                </div>
+                <div class="row-fluid">
+                    <div class="span3">
+                        <div class="well">
+                            {{ html_RiskLevel|raw }}
+                        </div>
+                    </div>
+                    <div class="span3">
+                        <div class="well">
+                            {{ html_Status|raw }}
+                        </div>
+                    </div>
+                    <div class="span3">
+                        <div class="well">
+                            {{ html_SiteLocation|raw }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span3">
+                        <div class="well">
+                            {{ html_Category|raw }}
+                        </div>
+                    </div>
+                    <div class="span3">
+                        <div class="well">
+                            {{ html_Team|raw }}
+                        </div>
+                    </div>
+                    <div class="span3">
+                        <div class="well">
+                            {{ html_Technology|raw }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span3">
+                        <div class="well">
+                            {{ html_Owner|raw }}
+                        </div>
+                    </div>
+                    <div class="span3">
+                        <div class="well">
+                            {{ html_OwnersManager|raw }}
+                        </div>
+                    </div>
+                    <div class="span3">
+                        <div class="well">
+                            {{ html_RiskScoringMethod|raw }}
+                        </div>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <h3>{{ ClosedRisks }}: ({{ html_ClosedRisks|raw }})</h3>
+                </div>
+                <div class="row-fluid">
+                    <div class="span3">
+                        <div class="well">
+                            {{ html_Reason|raw }}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

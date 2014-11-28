@@ -172,7 +172,7 @@ class Highchart implements ArrayAccess
     public function printScripts()
     {
         foreach ($this->getScripts() as $script) {
-            echo '<script type="text/javascript" src="' . $script . '"></script>';
+            return '<script type="text/javascript" src="' . $script . '"></script>';
         }
     }
 

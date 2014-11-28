@@ -221,12 +221,20 @@ function get_risk_trend($title = null)
                 );
         }
 
-	$chart->printScripts();
-	echo "<div id=\"risk_trend_chart\"></div>\n";
-	echo "<script type=\"text/javascript\">";
-	echo $chart->render("risk_trend_chart");
-	echo "</script>\n";
-	echo "<br /><p><font size=\"1\">* This report requires PHP >= 5.5 in order to run properly.</font></p>\n";
+    $result = "";
+
+	$result .= $chart->printScripts();
+
+
+    $result .=  "<div id=\"risk_trend_chart\"></div>\n";
+    $result .=  "<script type=\"text/javascript\">";
+    $result .=  $chart->render("risk_trend_chart");
+    $result .=  "</script>\n";
+    $result .=  "<br /><p><font size=\"1\">* This report requires PHP >= 5.5 in order to run properly.</font></p>\n";
+
+    return $result;
+
+
 }
 
 /**********************************
@@ -330,10 +338,14 @@ function open_risk_level_pie($title = null)
                         'data' => $data);
         }
 
-    echo "<div id=\"open_risk_level_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_level_pie");
-    echo "</script>\n";
+    $result = "";
+
+    $result .= "<div id=\"open_risk_level_pie\"></div>\n";
+    $result .=  "<script type=\"text/javascript\">";
+    $result .=  $chart->render("open_risk_level_pie");
+    $result .=  "</script>\n";
+
+    return $result;
 }
 
 /**********************************
@@ -390,10 +402,14 @@ function open_risk_status_pie($title = null)
 			'data' => $data);
 	}
 
-    echo "<div id=\"open_risk_status_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_status_pie");
-    echo "</script>\n";
+    $result = "";
+
+    $result .=  "<div id=\"open_risk_status_pie\"></div>\n";
+    $result .=  "<script type=\"text/javascript\">";
+    $result .=  $chart->render("open_risk_status_pie");
+    $result .=  "</script>\n";
+
+    return $result;
 }
 
 /************************************
@@ -450,10 +466,14 @@ function closed_risk_reason_pie($title = null)
                         'data' => $data);
 	}
 
-    echo "<div id=\"closed_risk_reason_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("closed_risk_reason_pie");
-    echo "</script>\n";
+    $result = "";
+
+    $result .= "<div id=\"closed_risk_reason_pie\"></div>\n";
+    $result .= "<script type=\"text/javascript\">";
+    $result .= $chart->render("closed_risk_reason_pie");
+    $result .= "</script>\n";
+
+    return $result;
 }
 
 /************************************
@@ -510,10 +530,14 @@ function open_risk_location_pie($title = null)
                         'data' => $data);
 	}
 
-    echo "<div id=\"open_risk_location_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_location_pie");
-    echo "</script>\n";
+    $result = "";
+
+    $result .= "<div id=\"open_risk_location_pie\"></div>\n";
+    $result .= "<script type=\"text/javascript\">";
+    $result .= $chart->render("open_risk_location_pie");
+    $result .= "</script>\n";
+
+    return $result;
 }
 
 /************************************
@@ -570,10 +594,14 @@ function open_risk_category_pie($title = null)
                         'data' => $data);
 	}
 
-    echo "<div id=\"open_risk_category_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_category_pie");
-    echo "</script>\n";
+    $result = "";
+
+    $result .= "<div id=\"open_risk_category_pie\"></div>\n";
+    $result .= "<script type=\"text/javascript\">";
+    $result .= $chart->render("open_risk_category_pie");
+    $result .= "</script>\n";
+
+    return $result;
 }
 
 /********************************
@@ -630,10 +658,14 @@ function open_risk_team_pie($title = null)
                         'data' => $data);
 	}
 
-    echo "<div id=\"open_risk_team_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_team_pie");
-    echo "</script>\n";
+    $result = "";
+
+    $result .= "<div id=\"open_risk_team_pie\"></div>\n";
+    $result .= "<script type=\"text/javascript\">";
+    $result .= $chart->render("open_risk_team_pie");
+    $result .= "</script>\n";
+
+    return $result;
 }
 
 /**************************************
@@ -690,10 +722,14 @@ function open_risk_technology_pie($title = null)
                         'data' => $data);
 	}
 
-    echo "<div id=\"open_risk_technology_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_technology_pie");
-    echo "</script>\n";
+    $result = "";
+
+    $result .= "<div id=\"open_risk_technology_pie\"></div>\n";
+    $result .= "<script type=\"text/javascript\">";
+    $result .= $chart->render("open_risk_technology_pie");
+    $result .= "</script>\n";
+
+    return $result;
 }
 
 /**************************************
@@ -750,10 +786,14 @@ function open_risk_owner_pie($title = null)
                         'data' => $data);
         }
 
-    echo "<div id=\"open_risk_owner_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_owner_pie");
-    echo "</script>\n";
+    $result = "";
+
+    $result .= "<div id=\"open_risk_owner_pie\"></div>\n";
+    $result .= "<script type=\"text/javascript\">";
+    $result .= $chart->render("open_risk_owner_pie");
+    $result .= "</script>\n";
+
+    return $result;
 }
 
 /******************************************
@@ -810,10 +850,14 @@ function open_risk_owners_manager_pie($title = null)
                         'data' => $data);
         }
 
-    echo "<div id=\"open_risk_owners_manager_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_owners_manager_pie");
-    echo "</script>\n";
+    $result = "";
+
+    $result .= "<div id=\"open_risk_owners_manager_pie\"></div>\n";
+    $result .= "<script type=\"text/javascript\">";
+    $result .= $chart->render("open_risk_owners_manager_pie");
+    $result .= "</script>\n";
+
+    return $result;
 }
 
 /******************************************
@@ -870,10 +914,14 @@ function open_risk_scoring_method_pie($title = null)
                         'data' => $data);
         }
 
-    echo "<div id=\"open_risk_scoring_method_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_scoring_method_pie");
-    echo "</script>\n";
+    $result = "";
+
+    $result .= "<div id=\"open_risk_scoring_method_pie\"></div>\n";
+    $result .= "<script type=\"text/javascript\">";
+    $result .= $chart->render("open_risk_scoring_method_pie");
+    $result .= "</script>\n";
+
+    return $result;
 }
 
 /*************************************
@@ -925,6 +973,8 @@ function get_review_needed_table()
 		$next_review = $review['next_review'];
 		$next_review_html = $review['next_review_html'];
 
+        $result = "";
+
 		// If we have a new review status and its not a date
 		if (($review_status != $next_review) && (!preg_match('/\d{4}/', $review_status)))
 		{
@@ -945,37 +995,39 @@ function get_review_needed_table()
 			if (!preg_match('/\d{4}/', $review_status))
 			{
 				// Start the new table
-        			echo "<table class=\"table table-bordered table-condensed sortable\">\n";
-        			echo "<thead>\n";
-        			echo "<tr>\n";
-        			echo "<th bgcolor=\"#0088CC\" colspan=\"6\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($review_status) ."</font></center></th>\n";
-        			echo "</tr>\n";
-        			echo "<tr>\n";
-        			echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-        			echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
-        			echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-        			echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
-        			echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
-        			echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
-        			echo "</tr>\n";
-        			echo "</thead>\n";
-        			echo "<tbody>\n";
+                $result .= "<table class=\"table table-bordered table-condensed sortable\">\n";
+                $result .= "<thead>\n";
+                $result .= "<tr>\n";
+                $result .= "<th bgcolor=\"#0088CC\" colspan=\"6\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($review_status) ."</font></center></th>\n";
+                $result .= "</tr>\n";
+                $result .= "<tr>\n";
+                $result .= "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+                $result .= "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+                $result .= "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+                $result .= "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+                $result .= "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
+                $result .= "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
+                $result .= "</tr>\n";
+                $result .= "</thead>\n";
+                $result .= "<tbody>\n";
 			}
 		}
 
 		// If the review status is not a date
 		if (!preg_match('/\d{4}/', $review_status))
                 {
-                	echo "<tr>\n";
-                	echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
-			echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
-                	echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                	echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($calculated_risk) . "</td>\n";
-			echo "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($dayssince) . "</td>\n";
-                	echo "<td align=\"center\" width=\"150px\">" . $next_review_html . "</td>\n";
-                	echo "</tr>\n";
+                    $result .= "<tr>\n";
+                    $result .= "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                    $result .= "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
+                    $result .= "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                    $result .= "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($calculated_risk) . "</td>\n";
+                    $result .= "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($dayssince) . "</td>\n";
+                    $result .= "<td align=\"center\" width=\"150px\">" . $next_review_html . "</td>\n";
+                    $result .= "</tr>\n";
 		}
+
         }
+    return $result;
 }
 
-?>
+
