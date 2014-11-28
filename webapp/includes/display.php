@@ -2217,9 +2217,9 @@ function view_reporting_menu($active)
     $result .=  ($active == "AllOpenRisksByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
     $result .=  "<a href=\"open.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByRiskLevel']) . "</a>\n";
     $result .=  "</li>\n";
-    $result .=  ($active == "AllOpenRisksConsideredForProjectsByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
-    $result .=  "<a href=\"projects.php\">" . $escaper->escapeHtml($lang['AllOpenRisksConsideredForProjectsByRiskLevel']) . "</a>\n";
-    $result .=  "</li>\n";
+    //$result .=  ($active == "AllOpenRisksConsideredForProjectsByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
+    //$result .=  "<a href=\"projects.php\">" . $escaper->escapeHtml($lang['AllOpenRisksConsideredForProjectsByRiskLevel']) . "</a>\n";
+    //$result .=  "</li>\n";
     $result .=  ($active == "AllOpenRisksAcceptedUntilNextReviewByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
     $result .=  "<a href=\"next_review.php\">" . $escaper->escapeHtml($lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']) . "</a>\n";
     $result .=  "</li>\n";
@@ -2256,9 +2256,9 @@ function view_reporting_menu($active)
     $result .=  ($active == "ClosedRisksByDate" ? "<li class=\"active\">\n" : "<li>\n");
     $result .=  "<a href=\"closed_by_date.php\">" . $escaper->escapeHtml($lang['ClosedRisksByDate']) . "</a>\n";
     $result .=  "</li>\n";
-    $result .=  ($active == "ProjectsAndRisksAssigned" ? "<li class=\"active\">\n" : "<li>\n");
-    $result .=  "<a href=\"projects_and_risks.php\">" . $escaper->escapeHtml($lang['ProjectsAndRisksAssigned']) . "</a>\n";
-    $result .=  "</li>\n";
+    //$result .=  ($active == "ProjectsAndRisksAssigned" ? "<li class=\"active\">\n" : "<li>\n");
+    //$result .=  "<a href=\"projects_and_risks.php\">" . $escaper->escapeHtml($lang['ProjectsAndRisksAssigned']) . "</a>\n";
+    //$result .=  "</li>\n";
     $result .=  "</ul>\n";
 
     return $result;

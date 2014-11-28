@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="AMMPS-local">
+    <serverData>
+      <paths name="AMMPS-local">
+        <serverdata>
+          <mappings>
+            <mapping deploy="lessrisk" local="$PROJECT_DIR$/webapp" web="/lessrisk" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
+
