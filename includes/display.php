@@ -74,6 +74,7 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
         echo "<li><a href=\"mitigate.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PlanAMitigation']) ."</a></li>\n";
         echo "<li><a href=\"mgmt_review.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PerformAReview']) ."</a></li>\n";
         echo "<li><a href=\"comment.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['AddAComment']) ."</a></li>\n";
+	echo "<li><a href=\"print_view.php?id=" . $escaper->escapeHtml($id) . "\" target=\"_blank\">". $escaper->escapeHtml($lang['PrintableView']) ."</a></li>\n";
         echo "</ul>\n";
         echo "</div>\n";
         echo "</td>\n";
@@ -91,6 +92,51 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 	}
 
         echo "</table>\n";
+}
+
+/**********************************
+ * FUNCTION: VIEW PRINT TOP TABLE *
+ **********************************/
+function view_print_top_table($id, $calculated_risk, $subject, $status)
+{
+        global $lang;
+        global $escaper;
+
+        echo "<table width=\"100%\" cellpadding=\"10\" cellspacing=\"0\" style=\"border:none;\">\n";
+        echo "<tr>\n";
+        echo "<td width=\"100\" valign=\"middle\" halign=\"center\">\n";
+
+        echo "<table width=\"100\" height=\"100\" border=\"10\" class=" . $escaper->escapeHtml(get_risk_color($calculated_risk)) . ">\n";
+        echo "<tr>\n";
+        echo "<td valign=\"middle\" halign=\"center\">\n";
+        echo "<center>\n";
+        echo "<font size=\"72\">" . $escaper->escapeHtml($calculated_risk) . "</font><br />\n";
+        echo "(". $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . ")\n";
+        echo "</center>\n";
+        echo "</td>\n";
+        echo "</tr>\n";
+        echo "</table>\n";
+
+        echo "</td>\n";
+        echo "<td valign=\"left\" halign=\"center\">\n";
+
+        echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
+        echo "<tr>\n";
+        echo "<td width=\"100\"><h4>". $escaper->escapeHtml($lang['RiskId']) .":</h4></td>\n";
+        echo "<td><h4>" . $escaper->escapeHtml($id) . "</h4></td>\n";
+        echo "</tr>\n";
+        echo "<tr>\n";
+        echo "<td width=\"100\"><h4>". $escaper->escapeHtml($lang['Subject']) .":</h4></td>\n";
+        echo "<td><h4>" . $escaper->escapeHtml($subject) . "</h4></td>\n";
+        echo "</tr>\n";
+        echo "<tr>\n";
+        echo "<td width=\"100\"><h4>". $escaper->escapeHtml($lang['Status']) .":</h4></td>\n";
+        echo "<td><h4>" . $escaper->escapeHtml($status) . "</h4></td>\n";
+        echo "</tr>\n";
+        echo "</table>\n";
+
+        echo "</td>\n";
+	echo "</table>\n";
 }
 
 /*******************************
@@ -166,6 +212,85 @@ function view_risk_details($id, $submission_date, $subject, $reference_id, $regu
         	echo "<button type=\"submit\" name=\"edit_details\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['EditDetails']) ."</button>\n";
         	echo "</div>\n";
 	}
+}
+
+/*************************************
+ * FUNCTION: VIEW PRINT RISK DETAILS *
+ *************************************/
+function view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
+{
+        global $lang;
+        global $escaper;
+
+        echo "<h4>" . $escaper->escapeHtml($lang['Details']) . "</h4>\n";
+	echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
+
+	echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SubmissionDate']) . ":</td>\n";
+	echo "<td>" . $escaper->escapeHtml($submission_date) . "</td>\n";
+	echo "</tr>\n";
+
+	echo "<tr>\n";
+	echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Subject']) . ":</td>\n";
+	echo "<td>" . $escaper->escapeHtml($subject) . "</td>\n";
+	echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($reference_id) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ControlRegulation']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("regulation", $regulation)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ControlNumber']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($control_number) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("location", $location)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Category']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Team']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("team", $team)) . "</td>\n";
+        echo "</tr>\n";
+
+	echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Technology']) . ":</td>\n";
+	echo "<td>" . $escaper->escapeHtml(get_name_by_value("technology", $technology)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Owner']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $owner)) . "</td>\n";
+        echo "</tr>\n";
+	
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['OwnersManager']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $manager)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['RiskAssessment']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($assessment) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AdditionalNotes']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($notes) . "</td>\n";
+        echo "</tr>\n";
+
+	echo "</table>\n";
 }
 
 /*******************************
@@ -280,6 +405,50 @@ function view_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         }
 }
 
+/*******************************************
+ * FUNCTION: VIEW PRINT MITIGATION DETAILS *
+ *******************************************/
+function view_print_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
+{
+        global $lang;
+        global $escaper;
+
+        echo "<h4>". $escaper->escapeHtml($lang['Mitigation']) ."</h4>\n";
+        echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationDate']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($mitigation_date) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['PlanningStrategy']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("planning_strategy", $planning_strategy)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['MitigationEffort']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['CurrentSolution']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($current_solution) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SecurityRequirements']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($security_requirements) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SecurityRecommendations']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($security_recommendations) . "</td>\n";
+        echo "</tr>\n";
+
+	echo "</table>\n";
+}
+
 /*************************************
  * FUNCTION: EDIT MITIGATION DETAILS *
  *************************************/
@@ -350,6 +519,50 @@ function view_review_details($id, $review_date, $reviewer, $review, $next_step, 
         echo "<br />\n";
         echo "<textarea style=\"cursor: default;\" name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\" title=\"" . $escaper->escapeHtml($comments) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($comments) . "</textarea>\n";
         echo "<p><a href=\"reviews.php?id=". $escaper->escapeHtml($id) ."\">". $escaper->escapeHtml($lang['ViewAllReviews']) ."</a></p>";
+}
+
+/***************************************
+ * FUNCTION: VIEW PRINT REVIEW DETAILS *
+ ***************************************/
+function view_print_review_details($id, $review_date, $reviewer, $review, $next_step, $next_review, $comments)
+{
+        global $lang;
+        global $escaper;
+
+        echo "<h4>". $escaper->escapeHtml($lang['LastReview']) ."</h4>\n";
+        echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['ReviewDate']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml($review_date) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+	echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Reviewer']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+	echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Review']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+	echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['NextStep']) . ":</td>\n";
+        echo "<td>" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['NextReviewDate']) . ":</td>\n";
+	echo "<td>" . $escaper->escapeHtml($next_review) . "</td>\n";
+        echo "</tr>\n";
+
+        echo "<tr>\n";
+	echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Comments']) . ":</td>\n";
+	echo "<td>" . $escaper->escapeHtml($comments) . "</td>\n";
+	echo "</tr>\n";
+
+	echo "</table>\n";
 }
 
 /****************************************
@@ -482,7 +695,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
 	echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
 	echo "<tr>\n";
-        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['BaseScoreMetrics']) . "</u></b></td>\n";
+        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['BaseScore']) . "</u></b></td>\n";
         echo "<td rowspan=\"19\" style=\"vertical-align:top;\">\n";
         view_cvss_help();
         echo "</td>\n";
@@ -2108,6 +2321,120 @@ function view_dread_help()
         echo "</script>\n";
 }
 
+/***************************
+ * FUNCTION: VIEW TOP MENU *
+ ***************************/
+function view_top_menu($active)
+{
+	global $lang;
+	global $escaper;
+
+	echo "<div class=\"navbar\">\n";
+	echo "<div class=\"navbar-inner\">\n";
+	echo "<div class=\"container\">\n";
+	echo "<a class=\"brand\" href=\"http://www.simplerisk.org/\">SimpleRisk</a>\n";
+	echo "<div class=\"navbar-content\">\n";
+	echo "<ul class=\"nav\">\n";
+
+	// If the page is in the root directory
+	if ($active == "Home")
+	{
+		echo "<li class=\"active\">\n";
+		echo "<a href=\"index.php\">" . $escaper->escapeHtml($lang['Home']) . "</a>\n";
+		echo "</li>\n";
+		echo "<li>\n";
+		echo "<a href=\"management/index.php\">" . $escaper->escapeHtml($lang['RiskManagement']) . "</a>\n";
+		echo "</li>\n";
+		echo "<li>\n";
+		echo "<a href=\"reports/index.php\">" . $escaper->escapeHtml($lang['Reporting']) . "</a>\n";
+		echo "</li>\n";
+
+		// If the user is logged in as an administrator
+		if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
+		{
+			echo ($active == "Configure" ? "<li class=\"active\">\n" : "<li>\n");
+			echo "<a href=\"admin/index.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>\n";
+			echo "</li>\n";
+		}
+
+                echo "</ul>\n";
+                echo "</div>\n";
+
+                // If the user is logged in
+                if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
+                {
+                        // Show the user profile menu
+                        echo "<div class=\"btn-group pull-right\">\n";
+                        echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
+                        echo "<ul class=\"dropdown-menu\">\n";
+                        echo "<li>\n";
+                        echo "<a href=\"account/profile.php\">". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
+                        echo "</li>\n";
+                        echo "<li>\n";
+                        echo "<a href=\"logout.php\">". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
+                        echo "</li>\n";
+                        echo "</ul>\n";
+                        echo "</div>\n";
+                }
+	}
+	// If the page is in another sub-directory
+	else
+	{
+		echo ($active == "Home" ? "<li class=\"active\">\n" : "<li>\n");
+		echo "<a href=\"../index.php\">" . $escaper->escapeHtml($lang['Home']) . "</a>\n";
+		echo "</li>\n";
+
+		echo ($active == "RiskManagement" ? "<li class=\"active\">\n" : "<li>\n");
+		echo "<a href=\"../management/index.php\">" . $escaper->escapeHtml($lang['RiskManagement']) . "</a>\n";
+		echo "</li>\n";
+
+		echo ($active == "Reporting" ? "<li class=\"active\">\n" : "<li>\n");
+		echo "<a href=\"../reports/index.php\">" . $escaper->escapeHtml($lang['Reporting']) . "</a>\n";
+		echo "</li>\n";
+
+		// If the user is logged in as an administrator
+		if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
+		{
+			echo ($active == "Configure" ? "<li class=\"active\">\n" : "<li>\n");
+			echo "<a href=\"../admin/index.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>\n";
+			echo "</li>\n";
+		}
+
+		echo "<li>\n";
+		echo "<div style=\"width:150px; height:35px; line-height:45px; text-align:center;\">\n";
+		echo "<form name=\"search\" action=\"../management/view.php\" method=\"get\">\n";
+		echo "<input type=\"text\" size=\"6\" name=\"id\" value=\"ID#\" style=\"border-style: inset; font-size:10px; height:15px; line-height:35px; width:25px; text-align:center;\" onClick=\"this.setSelectionRange(0, this.value.length)\" />\n";
+		echo "<img src=\"../images/search.png\" width=\"20px\" heigh=\"20px\" style=\"margin-top: -10px;\" />\n";
+		echo "</form>\n";
+		echo "</div>\n";
+		echo "</li>\n";
+
+		echo "</ul>\n";
+		echo "</div>\n";
+
+		// If the user is logged in
+		if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
+		{
+                	// Show the user profile menu
+                	echo "<div class=\"btn-group pull-right\">\n";
+                	echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
+                	echo "<ul class=\"dropdown-menu\">\n";
+                	echo "<li>\n";
+                	echo "<a href=\"../account/profile.php\">". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
+                	echo "</li>\n";
+                	echo "<li>\n";
+                	echo "<a href=\"../logout.php\">". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
+                	echo "</li>\n";
+                	echo "</ul>\n";
+                	echo "</div>\n";
+		}
+	}
+		
+	echo "</div>\n";
+	echo "</div>\n";
+	echo "</div>\n";
+}
+
 /***************************************
  * FUNCTION: VIEW RISK MANAGEMENT MENU *
  ***************************************/
@@ -2150,35 +2477,14 @@ function view_reporting_menu($active)
         echo ($active == "RiskTrend" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"trend.php\">" . $escaper->escapeHtml($lang['RiskTrend']) . "</a>\n";
         echo "</li>\n";
+	echo ($active == "DynamicRiskReport" ? "<li class=\"active\">\n" : "<li>\n");
+	echo "<a href=\"dynamic_risk_report.php\">" . $escaper->escapeHtml($lang['DynamicRiskReport']) . "</a>\n";
+	echo "</li>\n";
         echo ($active == "AllOpenRisksAssignedToMeByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"my_open.php\">" . $escaper->escapeHtml($lang['AllOpenRisksAssignedToMeByRiskLevel']) . "</a>\n";
         echo "</li>\n";
-        echo ($active == "AllOpenRisksByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"open.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByRiskLevel']) . "</a>\n";
-        echo "</li>\n";
-        echo ($active == "AllOpenRisksConsideredForProjectsByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"projects.php\">" . $escaper->escapeHtml($lang['AllOpenRisksConsideredForProjectsByRiskLevel']) . "</a>\n";
-        echo "</li>\n";
-        echo ($active == "AllOpenRisksAcceptedUntilNextReviewByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"next_review.php\">" . $escaper->escapeHtml($lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']) . "</a>\n";
-        echo "</li>\n";
-        echo ($active == "AllOpenRisksToSubmitAsAProductionIssueByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"production_issues.php\">" . $escaper->escapeHtml($lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']) . "</a>\n";
-        echo "</li>\n";
-        echo ($active == "AllOpenRisksByTeam" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"teams.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByTeam']) . "</a>\n";
-        echo "</li>\n";
-        echo ($active == "AllOpenRisksByTechnology" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"technologies.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByTechnology']) . "</a>\n";
-        echo "</li>\n";
-        echo ($active == "AllOpenRisksByScoringMethod" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"risk_scoring.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByScoringMethod']) . "</a>\n";
-        echo "</li>\n";
         echo ($active == "AllOpenRisksNeedingReview" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"review_needed.php\">" . $escaper->escapeHtml($lang['AllOpenRisksNeedingReview']) . "</a>\n";
-        echo "</li>\n";
-        echo ($active == "AllClosedRisksByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"closed.php\">" . $escaper->escapeHtml($lang['AllClosedRisksByRiskLevel']) . "</a>\n";
         echo "</li>\n";
         echo ($active == "HighRiskReport" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"high.php\">" . $escaper->escapeHtml($lang['HighRiskReport']) . "</a>\n";
@@ -2195,9 +2501,36 @@ function view_reporting_menu($active)
         echo ($active == "ClosedRisksByDate" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"closed_by_date.php\">" . $escaper->escapeHtml($lang['ClosedRisksByDate']) . "</a>\n";
         echo "</li>\n";
-        echo ($active == "ProjectsAndRisksAssigned" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"projects_and_risks.php\">" . $escaper->escapeHtml($lang['ProjectsAndRisksAssigned']) . "</a>\n";
+
+	// Obsolete Reports
+	echo "<li id=\"obsolete_menu\"><a href=\"#\" onclick=\"javascript:showObsolete()\">" . $escaper->escapeHtml($lang['ObsoleteReports']) . "</a></li>\n";
+	echo ($active == "AllOpenRisksByRiskLevel" ? "<li class=\"active obsolete\" style=\"display:none;\">\n" : "<li class=\"obsolete\" style=\"display:none;\">\n");
+        echo "<a href=\"open.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByRiskLevel']) . "</a>\n";
         echo "</li>\n";
+	echo ($active == "AllClosedRisksByRiskLevel" ? "<li class=\"active obsolete\" style=\"display:none;\">\n" : "<li class=\"obsolete\" style=\"display:none;\">\n");
+        echo "<a href=\"closed.php\">" . $escaper->escapeHtml($lang['AllClosedRisksByRiskLevel']) . "</a>\n";
+        echo "</li>\n";
+	echo ($active == "AllOpenRisksByTeam" ? "<li class=\"active obsolete\" style=\"display:none;\">\n" : "<li class=\"obsolete\" style=\"display:none;\">\n");
+	echo "<a href=\"teams.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByTeam']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksByTechnology" ? "<li class=\"active obsolete\" style=\"display:none;\">\n" : "<li class=\"obsolete\" style=\"display:none;\">\n");
+        echo "<a href=\"technologies.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByTechnology']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksByScoringMethod" ? "<li class=\"active osbolete\" style=\"display:none;\">\n" : "<li class=\"obsolete\" style=\"display:none;\">\n");
+        echo "<a href=\"risk_scoring.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByScoringMethod']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksConsideredForProjectsByRiskLevel" ? "<li class=\"active osbolete\" style=\"display:none;\">\n" : "<li class=\"obsolete\" style=\"display:none;\">\n");
+        echo "<a href=\"projects.php\">" . $escaper->escapeHtml($lang['AllOpenRisksConsideredForProjectsByRiskLevel']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksAcceptedUntilNextReviewByRiskLevel" ? "<li class=\"active osbolete\" style=\"display:none;\">\n" : "<li class=\"obsolete\" style=\"display:none;\">\n");
+        echo "<a href=\"next_review.php\">" . $escaper->escapeHtml($lang['AllOpenRisksAcceptedUntilNextReviewByRiskLevel']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AllOpenRisksToSubmitAsAProductionIssueByRiskLevel" ? "<li class=\"active osbolete\" style=\"display:none;\">\n" : "<li class=\"obsolete\" style=\"display:none;\">\n");
+        echo "<a href=\"production_issues.php\">" . $escaper->escapeHtml($lang['AllOpenRisksToSubmitAsAProductionIssueByRiskLevel']) . "</a>\n";
+        echo "</li>\n";
+	echo ($active == "ProjectsAndRisksAssigned" ? "<li class=\"active obsolete\" style=\"display:none;\">\n" : "<li class=\"obsolete\" style=\"display:none;\">\n");
+        echo "<a href=\"projects_and_risks.php\">" . $escaper->escapeHtml($lang['ProjectsAndRisksAssigned']) . "</a>\n";
+	echo "</li>\n";
 	echo "</ul>\n";
 }
 
@@ -2228,6 +2561,15 @@ function view_configure_menu($active)
 	echo ($active == "AuditTrail" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"audit_trail.php\">" . $escaper->escapeHtml($lang['AuditTrail']) . "</a>\n";
         echo "</li>\n";
+
+	// If the Import/Export Extra is enabled
+	if (import_export_extra())
+	{
+		echo ($active == "ImportExport" ? "<li class=\"active\">\n" : "<li>\n");
+		echo "<a href=\"importexport.php\">" . $escaper->escapeHtml($lang['Import']) . "/" . $escaper->escapeHtml($lang['Export']) . "</a>\n";
+		echo "</li>\n";
+	}
+
 	echo ($active == "Extras" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"extras.php\">" . $escaper->escapeHtml($lang['Extras']) . "</a>\n";
         echo "</li>\n";
@@ -2238,6 +2580,132 @@ function view_configure_menu($active)
         echo "<a href=\"about.php\">" . $escaper->escapeHtml($lang['About']) . "</a>\n";
         echo "</li>\n";
         echo "</ul>\n";
+}
+
+/******************************************
+ * FUNCTION: VIEW GET RISKS BY SELECTIONS *
+ ******************************************/
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $category=false, $team=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false)
+{
+	global $lang;
+	global $escaper;
+
+	echo "<form name=\"get_risks_by\" method=\"post\" action=\"\">\n";
+	echo "<div class=\"row-fluid\">\n";
+	echo "<div class=\"span12\">\n";
+        echo "<a href=\"javascript:;\" onclick=\"javascript: closeSearchBox()\"><img src=\"../images/X-100.png\" width=\"10\" height=\"10\" align=\"right\" /></a>\n";
+        echo "</div>\n";
+	echo "</div>\n";
+	echo "<div class=\"row-fluid\">\n";
+
+	// Risk Status Selection
+	echo "<div class=\"span4\">\n";
+        echo "<div class=\"well\">\n";
+	echo "<h4>" . $escaper->escapeHtml($lang['Status']) . ":</h4>\n";
+	echo "<select id=\"status\" name=\"status\" onchange=\"javascript: submit()\">\n";
+	echo "<option value=\"0\"" . ($status == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['OpenRisks']) . "</option>\n";
+	echo "<option value=\"1\"" . ($status == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ClosedRisks']) . "</option>\n";
+	echo "<option value=\"2\"" . ($status == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AllRisks']) . "</option>\n";
+	echo "</select>\n";
+        echo "</div>\n";
+	echo "</div>\n";
+
+	// Group By Selection
+        echo "<div class=\"span4\">\n";
+        echo "<div class=\"well\">\n";
+	echo "<h4>" . $escaper->escapeHtml($lang['GroupBy']) . ":</h4>\n";
+        echo "<select id=\"group\" name=\"group\" onchange=\"javascript: submit()\">\n";
+        echo "<option value=\"0\"" . ($group == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['None']) . "</option>\n";
+	echo "<option value=\"1\"" . ($group == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskLevel']) . "</option>\n";
+	echo "<option value=\"2\"" . ($group == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Status']) . "</option>\n";
+	echo "<option value=\"3\"" . ($group == 3 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['SiteLocation']) . "</option>\n";
+	echo "<option value=\"4\"" . ($group == 4 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Category']) . "</option>\n";
+	echo "<option value=\"5\"" . ($group == 5 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Team']) . "</option>\n";
+	echo "<option value=\"6\"" . ($group == 6 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Technology']) . "</option>\n";
+	echo "<option value=\"7\"" . ($group == 7 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Owner']) . "</option>\n";
+	echo "<option value=\"8\"" . ($group == 8 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['OwnersManager']) . "</option>\n";
+	echo "<option value=\"9\"" . ($group == 9 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskScoringMethod']) . "</option>\n";
+	echo "<option value=\"10\"" . ($group == 10 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ControlRegulation']) . "</option>\n";
+	echo "<option value=\"11\"" . ($group == 11 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Project']) . "</option>\n";
+	echo "<option value=\"12\"" . ($group == 12 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['NextStep']) . "</option>\n";
+	echo "<option value=\"13\"" . ($group == 13 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['MonthSubmitted']) . "</option>\n";
+	echo "</select>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+
+	// Sort By Selection
+	echo "<div class=\"span4\">\n";
+	echo "<div class=\"well\">\n";
+	echo "<h4>" . $escaper->escapeHtml($lang['SortBy']) . ":</h4>\n";
+	echo "<select id=\"sort\" name=\"sort\" onchange=\"javascript: submit()\">\n";
+	echo "<option value=\"0\"" . ($sort == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['CalculatedRisk']) . "</option>\n";
+	echo "<option value=\"1\"" . ($sort == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ID']) . "</option>\n";
+	echo "<option value=\"2\"" . ($sort == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Subject']) . "</option>\n";
+	echo "</select>\n";
+	echo "</div>\n";
+	echo "</div>\n";
+
+	echo "</div>\n";
+	echo "<div class=\"row-fluid\">\n";
+
+	// Included Columns Selection
+        echo "<div class=\"span12\">\n";
+        echo "<div class=\"well\">\n";
+	echo "<h4>" . $lang['IncludedColumns'] . ":</h4>\n";
+	echo "<table border=\"0\">\n";
+	echo "<tr>\n";
+	echo "<td><input type=\"checkbox\" name=\"id\" id=\"checkbox_id\"" . ($id == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_id()\" /></td><td>" . $escaper->escapeHtml($lang['ID']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"risk_status\" id=\"checkbox_risk_status\"" . ($risk_status == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_status()\" onchange=\"javascript: submit()\" /></td><td>" . $escaper->escapeHtml($lang['Status']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"subject\" id=\"checkbox_subject\"" . ($subject == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_subject()\" /></td><td>" . $escaper->escapeHtml($lang['Subject']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"reference_id\" id=\"checkbox_reference_id\"" . ($reference_id == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_reference_id()\" /></td><td>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . "</td>\n";
+	echo "<td><input type=\"checkbox\" name=\"regulation\" id=\"checkbox_regulation\"" . ($regulation == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_regulation()\" /></td><td>" . $escaper->escapeHtml($lang['ControlRegulation']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"control_number\" id=\"checkbox_control_number\"" . ($control_number == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_control_number()\" /></td><td>" . $escaper->escapeHtml($lang['ControlNumber']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"location\" id=\"checkbox_location\"" . ($location == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_location()\" /></td><td>" . $escaper->escapeHtml($lang['SiteLocation']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"category\" id=\"checkbox_category\"" . ($category == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_category()\" /></td><td>" . $escaper->escapeHtml($lang['Category']) . "</td>\n";
+	echo "</tr>\n";
+	echo "<tr>\n";
+	echo "<td><input type=\"checkbox\" name=\"team\" id=\"checkbox_team\"" . ($team == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_team()\" /></td><td>" . $escaper->escapeHtml($lang['Team']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"technology\" id=\"checkbox_technology\"" . ($technology == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_technology()\" /></td><td>" . $escaper->escapeHtml($lang['Technology']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"owner\" id=\"checkbox_owner\"" . ($owner == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_owner()\" /></td><td>" . $escaper->escapeHtml($lang['Owner']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"manager\" id=\"checkbox_manager\"" . ($manager == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_manager()\" /></td><td>" . $escaper->escapeHtml($lang['OwnersManager']) . "</td>\n";
+	echo "<td><input type=\"checkbox\" name=\"submitted_by\" id=\"checkbox_submitted_by\"" . ($submitted_by == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_submitted_by()\" /></td><td>" . $escaper->escapeHtml($lang['SubmittedBy']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"scoring_method\" id=\"checkbox_scoring_method\"" . ($scoring_method == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_scoring_method()\" /></td><td>" . $escaper->escapeHtml($lang['RiskScoringMethod']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"calculated_risk\" id=\"checkbox_calculated_risk\"" . ($calculated_risk == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_calculated_risk()\" /></td><td>" . $escaper->escapeHtml($lang['CalculatedRisk']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"submission_date\" id=\"checkbox_submission_date\"" . ($submission_date == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_submission_date()\" /></td><td>" . $escaper->escapeHtml($lang['SubmissionDate']) . "</td>\n";
+	echo "</tr>\n";
+	echo "<tr>\n";
+	echo "<td><input type=\"checkbox\" name=\"review_date\" id=\"checkbox_review_date\"" . ($review_date == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_review_date()\" /></td><td>" . $escaper->escapeHtml($lang['ReviewDate']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"project\" id=\"checkbox_project\"" . ($project == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_project()\" /></td><td>" . $escaper->escapeHtml($lang['Project']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"mitigation_planned\" id=\"checkbox_mitigation_planned\"" . ($mitigation_planned == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_mitigation_planned()\" /></td><td>" . $escaper->escapeHtml($lang['MitigationPlanned']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"management_review\" id=\"checkbox_management_review\"" . ($management_review == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_management_review()\" /></td><td>" . $escaper->escapeHtml($lang['ManagementReview']) . "</td>\n";
+	echo "<td><input type=\"checkbox\" name=\"days_open\" id=\"checkbox_days_open\"" . ($days_open == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_days_open()\" /></td><td>" . $escaper->escapeHtml($lang['DaysOpen']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"next_review_date\" id=\"checkbox_next_review_date\"" . ($next_review_date == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_next_review_date()\" /></td><td>" . $escaper->escapeHtml($lang['NextReviewDate']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"next_step\" id=\"checkbox_next_step\"" . ($next_step == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_next_step()\" /></td><td>" . $escaper->escapeHtml($lang['NextStep']) . "</td>\n";
+	echo "<td width=\"10px\"></td>\n";
+	echo "<td></td><td></td>\n";
+	echo "</table>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+
+	echo "</div>\n";
+	echo "</form>\n";
 }
 
 ?>

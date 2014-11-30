@@ -41,9 +41,6 @@
         // Check for session timeout or renegotiation
         session_check();
 
-	// Default is no alert
-	$alert = false;
-
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
@@ -51,19 +48,86 @@
                 exit(0);
         }
 
-	// Record the page the workflow started from as a session variable
-	$_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
+	// Default is no alert
+	$alert = false;
 
-	// If mitigated was passed back to the page as a GET parameter
-	if (isset($_GET['mitigated']))
+        // Check if access is authorized
+        if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
+        {
+                header("Location: ../index.php");
+                exit(0);
+        }
+
+	// If the user selected to import a CSV
+	if (isset($_POST['import_csv']))
 	{
-		// If its true
-		if ($_GET['mitigated'] == true)
-		{
-			$alert = "good";
-			$alert_message = "Mitigation submitted successfully!";
-		}
+		// Include the Import-Export Extra
+		require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+
+		// Import the CSV file
+		import_csv($_FILES['file']);
 	}
+
+	// If the user selected to export a CSV
+	if (isset($_POST['export_csv']))
+	{
+		// Include the Import-Export Extra
+		require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+
+		// Export the CSV file
+		export_csv();
+	}
+
+/*********************
+ * FUNCTION: DISPLAY *
+ *********************/
+function display()
+{
+	global $lang;
+	global $escaper;
+
+        // If the extra directory exists
+        if (is_dir(realpath(__DIR__ . '/../extras/import-export')))
+        {
+                // But the extra is not activated
+                if (!import_export_extra())
+                {
+			echo "<div class=\"hero-unit\">\n";
+			echo "<h4>" . $escaper->escapeHtml($lang['ActivateTheImportExportExtra']) . "</h4>\n";
+                        echo "<form name=\"activate\" method=\"post\" action=\"../extras/import-export/\">\n";
+                        echo "<input type=\"submit\" value=\"Activate\" name=\"activate\" /><br />";
+                        echo "</form>\n";
+			echo "</div>\n";
+                }
+                // Once it has been activated
+                else
+                {
+			// Show the import form
+			echo "<div class=\"hero-unit\">\n";
+			echo "<h4>" . $escaper->escapeHtml($lang['Import']) . "</h4>\n";
+			echo "<form name=\"import\" method=\"post\" action=\"\" enctype=\"multipart/form-data\">\n";
+			echo "Import the following CSV file into SimpleRisk:<br />\n";
+			echo "<input type=\"file\" name=\"file\" />\n";
+			echo "<div class=\"form-actions\">\n";
+			echo "<button type=\"submit\" name=\"import_csv\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Import']) . "</button>\n";
+			echo "</div>\n";
+			echo "</form>\n";
+			echo "</div>\n";
+
+			// Show the export form
+                        echo "<div class=\"hero-unit\">\n";
+                        echo "<h4>" . $escaper->escapeHtml($lang['Export']) . "</h4>\n";
+                        echo "<form name=\"export\" method=\"post\" action=\"\">\n";
+			echo "Export all risks to a CSV file by clicking below:<br />\n";
+                        echo "<div class=\"form-actions\">\n";
+                        echo "<button type=\"submit\" name=\"export_csv\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Export']) . "</button>\n";
+                        echo "</div>\n";
+                        echo "</form>\n";
+                        echo "</div>\n";
+                }
+        }
+}
+
 ?>
 
 <!doctype html>
@@ -72,7 +136,6 @@
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/sorttable.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -91,7 +154,7 @@
     <link rel="stylesheet" href="../css/display.css">
 
 <?php
-	view_top_menu("RiskManagement");
+	view_top_menu("Configure");
 
         if ($alert == "good")
         {
@@ -115,13 +178,12 @@
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <?php view_risk_management_menu("PlanYourMitigations"); ?>
+          <?php view_configure_menu("ImportExport"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">
             <div class="span12">
-              <p><?php echo $escaper->escapeHtml($lang['MitigationPlanningHelp']); ?>.</p>
-              <?php get_risk_table(1); ?>
+                <?php display(); ?>
             </div>
           </div>
         </div>

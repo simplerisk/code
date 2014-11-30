@@ -41,9 +41,6 @@
         // Check for session timeout or renegotiation
         session_check();
 
-	// Default is no alert
-	$alert = false;
-
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
@@ -51,19 +48,38 @@
                 exit(0);
         }
 
-	// Record the page the workflow started from as a session variable
-	$_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
+	// Default is no alert
+	$alert = false;
 
-	// If mitigated was passed back to the page as a GET parameter
-	if (isset($_GET['mitigated']))
-	{
-		// If its true
-		if ($_GET['mitigated'] == true)
-		{
-			$alert = "good";
-			$alert_message = "Mitigation submitted successfully!";
-		}
-	}
+        // Check if access is authorized
+        if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
+        {
+                header("Location: ../index.php");
+                exit(0);
+        }
+
+/*********************
+ * FUNCTION: DISPLAY *
+ *********************/
+function display()
+{
+        // If the extra directory exists
+        if (is_dir(realpath(__DIR__ . '/../extras/encryption')))
+        {
+                // But the extra is not activated
+                if (!encryption_extra())
+                {
+                        echo "<form name=\"activate\" method=\"post\" action=\"../extras/encryption/\">\n";
+                        echo "<input type=\"submit\" value=\"Activate\" name=\"activate\" /><br />";
+                        echo "</form>\n";
+                }
+                // Once it has been activated
+                else
+                {
+                }
+        }
+}
+
 ?>
 
 <!doctype html>
@@ -72,7 +88,6 @@
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/sorttable.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -91,7 +106,7 @@
     <link rel="stylesheet" href="../css/display.css">
 
 <?php
-	view_top_menu("RiskManagement");
+	view_top_menu("Configure");
 
         if ($alert == "good")
         {
@@ -115,13 +130,15 @@
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <?php view_risk_management_menu("PlanYourMitigations"); ?>
+          <?php view_configure_menu("Extras"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">
             <div class="span12">
-              <p><?php echo $escaper->escapeHtml($lang['MitigationPlanningHelp']); ?>.</p>
-              <?php get_risk_table(1); ?>
+              <div class="hero-unit">
+                <h4>Encrypted Database Extra</h4>
+                <?php display(); ?>
+              </div>
             </div>
           </div>
         </div>

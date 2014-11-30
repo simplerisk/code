@@ -79,45 +79,9 @@
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
-    <div class="navbar">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="brand" href="http://www.simplerisk.org/">SimpleRisk</a>
-          <div class="navbar-content">
-            <ul class="nav">
-              <li>
-                <a href="../index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
-              </li>
-              <li>
-                <a href="../management/index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
-              </li>
-              <li>
-                <a href="../reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
-              </li>
-              <li class="active">
-                <a href="index.php"><?php echo $escaper->escapeHtml($lang['Configure']); ?></a>
-              </li>
-            </ul>
-          </div>
-<?php
-if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
-{
-          echo "<div class=\"btn-group pull-right\">\n";
-          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
-          echo "<ul class=\"dropdown-menu\">\n";
-          echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">" . $escaper->escapeHtml($lang['MyProfile']) . "</a>\n";
-          echo "</li>\n";
-          echo "<li>\n";
-          echo "<a href=\"../logout.php\">" . $escaper->escapeHtml($lang['Logout']) . "</a>\n";
-          echo "</li>\n";
-          echo "</ul>\n";
-          echo "</div>\n";
-}
-?>
-        </div>
-      </div>
-    </div>
+
+    <?php view_top_menu("Configure"); ?>
+
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">

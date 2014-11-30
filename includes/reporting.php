@@ -978,4 +978,379 @@ function get_review_needed_table()
         }
 }
 
+/********************************
+ * FUNCTION: GET RISKS BY TABLE *
+ ********************************/
+function get_risks_by_table($status, $group, $sort, $column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_category=false, $column_team=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false)
+{
+	global $lang;
+	global $escaper;
+
+	// Check the status
+	switch ($status)
+	{
+		// Open risks
+		case 0:
+			$status_query = " WHERE a.status != \"Closed\" ";
+			break;
+		// Closed risks
+		case 1:
+			$status_query = " WHERE a.status = \"Closed\" ";
+			break;
+		case 2:
+		// All risks
+			$status_query = "";
+			break;
+		// Default to open risks
+		default:
+			$status_query = " WHERE a.status != \"Closed\" ";
+			break;
+	}
+
+
+        // Check the sort
+        switch ($sort)
+        {
+                // Calculated Risk
+                case 0:
+			$sort_name = " calculated_risk DESC ";
+                        break;
+		// ID
+		case 1:
+			$sort_name = " a.id ASC ";
+			break;
+		// Subject
+		case 2:
+			$sort_name = " a.subject ASC ";
+			break;
+                // Default to calculated risk
+                default:
+			$sort_name = " calculated_risk DESC ";
+                        break;
+        }
+
+	// Check the group
+	switch ($group)
+	{
+		// None
+		case 0:
+			$order_query = " ORDER BY" . $sort_name;
+			$group_name = "none";
+			break;
+		// Risk Level
+		case 1:
+			$order_query = " ORDER BY" . $sort_name;
+			$group_name = "risk_level";
+			break;
+		// Status
+		case 2:
+			$order_query = " ORDER BY a.status," . $sort_name;
+			$group_name = "status";
+			break;
+		// Site/Location
+		case 3:
+			$order_query = " ORDER BY location," . $sort_name;
+			$group_name = "location";
+			break;
+		// Category
+		case 4:
+			$order_query = " ORDER BY category," . $sort_name;
+			$group_name = "category";
+			break;
+		// Team
+		case 5:
+			$order_query = " ORDER BY team," . $sort_name;
+			$group_name = "team";
+			break;
+		// Technology
+		case 6:
+			$order_query = " ORDER BY technology," . $sort_name;
+			$group_name = "technology";
+			break;
+		// Owner
+		case 7:
+			$order_query = " ORDER BY owner," . $sort_name;
+			$group_name = "owner";
+			break;
+		// Owners Manager
+		case 8:
+			$order_query = " ORDER BY manager," . $sort_name;
+			$group_name = "manager";
+			break;
+		// Risk Scoring Method
+		case 9:
+			$order_query = " ORDER BY scoring_method," . $sort_name;
+			$group_name = "scoring_method";
+			break;
+		// Regulation
+		case 10:
+			$order_query = " ORDER BY regulation," . $sort_name;
+			$group_name = "regulation";
+			break;
+		// Project
+		case 11:
+			$order_query = " ORDER BY project," . $sort_name;
+			$group_name = "project";
+			break;
+		// Next Step
+		case 12:
+			$order_query = " ORDER BY next_step," . $sort_name;
+			$group_name = "next_step";
+			break;
+		// Month Submitted
+		case 13:
+			$order_query = " ORDER BY submission_date DESC," . $sort_name;
+			$group_name = "month_submitted";
+			break;
+		// Default to calculated risk
+		default:
+			$order_query = " ORDER BY" . $sort_name;
+			$group_name = "none";
+			break;
+	}
+
+	// Make the big query
+	$query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value" . $status_query . $order_query;
+
+	// Query the database
+	$db = db_open();
+	$stmt = $db->prepare($query);
+	$stmt->execute();
+	db_close($db);
+
+	// Store the results in the risks array
+	$risks = $stmt->fetchAll();
+
+	// If team separation is enabled
+	if (team_separation_extra())
+        {
+                // Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                // Strip out risks the user should not have access to
+                $risks = strip_no_access_risks($risks);
+        }
+
+	// Set the current group to empty
+	$current_group = "";
+
+	// If the group name is none
+	if ($group_name == "none")
+	{
+		// Display the table header
+		echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+		echo "<thead>\n";
+		echo "<tr>\n";
+
+		// Header columns go here
+		get_header_columns($column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step);
+
+		echo "</tr>\n";
+		echo "</thead>\n";
+		echo "<tbody>\n";
+	}
+
+	// For each risk in the risks array
+	foreach ($risks as $risk)
+	{
+		$risk_id = (int)$risk['id'];
+		$status = $risk['status'];
+		$subject = $risk['subject'];
+		$reference_id = $risk['reference_id'];
+		$control_number = $risk['control_number'];
+		$submission_date = $risk['submission_date'];
+		$last_update = $risk['last_update'];
+		$review_date = $risk['review_date'];
+		$scoring_method = get_scoring_method_name($risk['scoring_method']);
+		$calculated_risk = $risk['calculated_risk'];
+		$color = get_risk_color($risk['calculated_risk']);
+		$risk_level = get_risk_level_name($risk['calculated_risk']);
+		$location = $risk['location'];
+		$category = $risk['category'];
+		$team = $risk['team'];
+		$technology = $risk['technology'];
+		$owner = $risk['owner'];
+		$manager = $risk['manager'];
+		$submitted_by = $risk['submitted_by'];
+		$regulation = $risk['regulation'];
+		$project = $risk['project'];
+		$mitigation_id = $risk['mitigation_id'];
+		$mgmt_review = $risk['mgmt_review'];
+		$days_open = dayssince($risk['submission_date']);
+		$next_review_date = next_review($color, $risk_id, $risk['next_review'], false);
+		$next_review_date_html = next_review($color, $risk_id, $risk['next_review']);
+		$next_step = $risk['next_step'];
+		$month_submitted = date('Y F', strtotime($risk['submission_date']));
+
+		// If the group name is not none
+		if ($group_name != "none")
+		{
+			$group_value = ${$group_name};
+
+			// If the selected group value is empty
+			if ($group_value == "")
+			{
+				// Current group is Unassigned
+				$group_value = $lang['Unassigned'];
+			}
+
+			// If the group is not the current group
+			if ($group_value != $current_group)
+			{
+				// If this is not the first group
+				if ($current_group != "")
+				{
+					echo "</tbody>\n";
+					echo "</table>\n";
+					echo "<br />\n";
+				}
+
+				// If the group is not empty
+				if ($group_value != "")
+				{
+					// Set the group to the current group
+					$current_group = $group_value;
+				}
+				else $current_group = $lang['Unassigned'];
+
+				// Display the table header
+				echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+				echo "<thead>\n";
+				echo "<tr>\n";
+				echo "<th bgcolor=\"#0088CC\" colspan=\"100%\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($current_group) ."</font></center></th>\n";
+				echo "</tr>\n";
+				echo "<tr>\n";
+
+				// Header columns go here
+				get_header_columns($column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step);
+
+				echo "</tr>\n";
+				echo "</thead>\n";
+				echo "<tbody>\n";
+			}
+		}
+
+		// Display the risk information
+		echo "<tr>\n";
+
+		// Risk information goes here
+		get_risk_columns($risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step);
+
+		echo "</tr>\n";
+	
+	}
+
+	// If the group name is none
+	if ($group_name == "none")
+	{
+		// End the table
+		echo "</tbody>\n";
+		echo "</table>\n";
+		echo "<br />\n";
+	}
+}
+
+/********************************
+ * FUNCTION: GET HEADER COLUMNS *
+ ********************************/
+function get_header_columns($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step)
+{
+	global $lang;
+	global $escaper;
+
+	echo "<th class=\"id\" " . ($id == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"25px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+	echo "<th class=\"status\" " . ($risk_status == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+        echo "<th class=\"subject\" " . ($subject == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        echo "<th class=\"reference_id\" " . ($reference_id == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ExternalReferenceId']) ."</th>\n";
+        echo "<th class=\"regulation\" " . ($regulation == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ControlRegulation']) ."</th>\n";
+        echo "<th class=\"control_number\" " . ($control_number == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ControlNumber']) ."</th>\n";
+        echo "<th class=\"location\" " . ($location == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SiteLocation']) ."</th>\n";
+        echo "<th class=\"category\" " . ($category == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Category']) ."</th>\n";
+        echo "<th class=\"team\" " . ($team == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Team']) ."</th>\n";
+        echo "<th class=\"technology\" " . ($technology == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Technology']) ."</th>\n";
+        echo "<th class=\"owner\" " . ($owner == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Owner']) ."</th>\n";
+        echo "<th class=\"manager\" " . ($manager == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['OwnersManager']) ."</th>\n";
+        echo "<th class=\"submitted_by\" " . ($submitted_by == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</th>\n";
+        echo "<th class=\"scoring_method\" " . ($scoring_method == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskScoringMethod']) ."</th>\n";
+        echo "<th class=\"calculated_risk\" " . ($calculated_risk == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"25px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+        echo "<th class=\"submission_date\" " . ($submission_date == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
+        echo "<th class=\"review_date\" " . ($review_date == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ReviewDate']) ."</th>\n";
+	echo "<th class=\"project\" " . ($project == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Project']) ."</th>\n";
+	echo "<th class=\"mitigation_planned\" " . ($mitigation_planned == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</th>\n";
+	echo "<th class=\"management_review\" " . ($management_review == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ManagementReview']) ."</th>\n";
+	echo "<th class=\"days_open\" " . ($days_open == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
+	echo "<th class=\"next_review_date\" " . ($next_review_date == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
+	echo "<th class=\"next_step\" " . ($next_step == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextStep']) ."</th>\n";
+}
+
+/******************************
+ * FUNCTION: GET RISK COLUMNS *
+ ******************************/
+function get_risk_columns($risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step)
+{
+        global $lang;
+        global $escaper;
+
+	$risk_id = (int)$risk['id'];
+	$status = $risk['status'];
+	$subject = $risk['subject'];
+	$reference_id = $risk['reference_id'];
+	$control_number = $risk['control_number'];
+	$submission_date = $risk['submission_date'];
+	$last_update = $risk['last_update'];
+	$review_date = $risk['review_date'];
+	$scoring_method = get_scoring_method_name($risk['scoring_method']);
+	$calculated_risk = $risk['calculated_risk'];
+	$color = get_risk_color($risk['calculated_risk']);
+	$risk_level = get_risk_level_name($risk['calculated_risk']);
+	$location = $risk['location'];
+	$category = $risk['category'];
+	$team = $risk['team'];
+	$technology = $risk['technology'];
+	$owner = $risk['owner'];
+	$manager = $risk['manager'];
+	$submitted_by = $risk['submitted_by'];
+	$regulation = $risk['regulation'];
+	$project = $risk['project'];
+	$mitigation_id = $risk['mitigation_id'];
+	$mgmt_review = $risk['mgmt_review'];
+	$days_open = dayssince($risk['submission_date']);
+	$next_review_date = next_review($color, $risk_id, $risk['next_review'], false);
+	$next_review_date_html = next_review($color, $risk_id, $risk['next_review']);
+	$next_step = $risk['next_step'];
+
+	// If the risk hasn't been reviewed yet
+	if ($review_date == "0000-00-00 00:00:00")
+	{
+		// Set the review date to empty
+		$review_date = "";
+	}
+	// Otherwise set the review date to the proper format
+	else $review_date = date(DATETIMESIMPLE, strtotime($review_date));
+
+	echo "<td class=\"id\" " . ($column_id == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"25px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+	echo "<td class=\"status\" " . ($column_status == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($status) . "</td>\n";
+	echo "<td class=\"subject\" " . ($column_subject == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+	echo "<td class=\"reference_id\" " . ($column_reference_id == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($reference_id) . "</td>\n";
+	echo "<td class=\"regulation\" " . ($column_regulation == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($regulation) . "</td>\n";
+	echo "<td class=\"control_number\" " . ($column_control_number == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($control_number) . "</td>\n";
+	echo "<td class=\"location\" " . ($column_location == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($location) . "</td>\n";
+	echo "<td class=\"category\" " . ($column_category == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($category) . "</td>\n";
+	echo "<td class=\"team\" " . ($column_team == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($team) . "</td>\n";
+	echo "<td class=\"technology\" " . ($column_technology == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($technology) . "</td>\n";
+	echo "<td class=\"owner\" " . ($column_owner == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($owner) . "</td>\n";
+	echo "<td class=\"manager\" " . ($column_manager == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($manager) . "</td>\n";
+	echo "<td class=\"submitted_by\" " . ($column_submitted_by == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($submitted_by) . "</td>\n";
+	echo "<td class=\"scoring_method\" " . ($column_scoring_method == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($scoring_method) . "</td>\n";
+	echo "<td class=\"calculated_risk\" " . ($column_calculated_risk == true ? "" : "style=\"display:none;\" ") . "align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"25px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+	echo "<td class=\"submission_date\" " . ($column_submission_date == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($submission_date))) . "</td>\n";
+	echo "<td class=\"review_date\" " . ($column_review_date == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($review_date) . "</td>\n";
+	echo "<td class=\"project\" " . ($column_project == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($project) . "</td>\n";
+	echo "<td class=\"mitigation_planned\" " . ($column_mitigation_planned == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . planned_mitigation(convert_id($risk_id), $mitigation_id) . "</td>\n";
+	echo "<td class=\"management_review\" " . ($column_management_review == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . management_review(convert_id($risk_id), $mgmt_review) . "</td>\n";
+	echo "<td class=\"days_open\" " . ($column_days_open == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($days_open) . "</td>\n";
+	echo "<td class=\"next_review_date\" " . ($column_next_review_date == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $next_review_date_html . "</td>\n";
+	echo "<td class=\"next_step\" " . ($column_next_step == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $next_step . "</td>\n";
+}
+
 ?>

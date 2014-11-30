@@ -124,6 +124,87 @@ function display_upgrade_info()
         echo "</form>\n";
 }
 
+/**************************
+ * FUNCTION: CHECK GRANTS *
+ **************************/
+function check_grants($db)
+{
+	$stmt = $db->prepare("SHOW GRANTS FOR CURRENT_USER;");
+	$stmt->execute();
+	$array = $stmt->fetchAll();
+
+	// Set the values to false
+	$select = false;
+	$insert = false;
+	$update = false;
+	$delete = false;
+	$create = false;
+	$drop = false;
+	$alter = false;
+
+	// For each row of the array
+	foreach ($array as $value)
+	{
+		$string = $value[0];
+
+		// Match SELECT statement
+		$regex_pattern = "/SELECT/";
+		if (preg_match($regex_pattern, $string))
+		{
+			$select = true;
+		}
+
+                // Match INSERT statement
+                $regex_pattern = "/INSERT/";
+                if (preg_match($regex_pattern, $string))
+                {
+                        $insert = true;
+                }
+
+                // Match UPDATE statement
+                $regex_pattern = "/UPDATE/";
+                if (preg_match($regex_pattern, $string))
+                {
+                        $update = true;
+                }
+
+                // Match DELETE statement
+                $regex_pattern = "/DELETE/";
+                if (preg_match($regex_pattern, $string))
+                {
+                        $delete = true;
+                }
+
+                // Match CREATE statement
+                $regex_pattern = "/CREATE/";
+                if (preg_match($regex_pattern, $string))
+                {
+                        $create = true;
+                }
+
+                // Match DROP statement
+                $regex_pattern = "/DROP/";
+                if (preg_match($regex_pattern, $string))
+                {
+                        $drop = true;
+                }
+
+                // Match ALTER statement
+                $regex_pattern = "/ALTER/";
+                if (preg_match($regex_pattern, $string))
+                {
+                        $alter = true;
+                }
+	}
+
+	// If the grants include all values
+	if ($select && $insert && $update && $delete && $create && $drop && $alter)
+	{
+		return true;
+	}
+	else return false;
+}
+
 /*************************************
  * FUNCTION: UPDATE DATABASE VERSION *
  *************************************/
@@ -245,6 +326,56 @@ function upgrade_from_20140728001($db)
         }   
 }
 
+/**************************************
+ * FUNCTION: UPGRADE FROM 20141013001 *
+ **************************************/
+function upgrade_from_20141013001($db)
+{
+        // Database version to upgrade
+        define('VERSION_TO_UPGRADE', '20141013-001');
+
+        // Database version upgrading to
+        define('VERSION_UPGRADING_TO', '20141129-001');
+
+	// Set the default value for the last_login field in the user table
+	echo "Setting a default value for the last_login field in the user table.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `user` MODIFY `last_login` datetime DEFAULT NULL;");
+	$stmt->execute();
+
+	// Set the default value for the mitigation_id field in the risks table
+	echo "Setting a default value for the mitigation_id field in the risks table.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mitigation_id` int(11) DEFAULT NULL;");
+	$stmt->execute();
+
+	// Make sure that the Unassigned Risks project is ID 0
+	echo "Setting the \"Unassigned Risks\" project to ID 0.<br />\n";
+	$stmt = $db->prepare("UPDATE `projects` SET value=0 WHERE name='Unassigned Risks'");
+	$stmt->execute();
+
+	// Add Transfer as a risk planning strategy
+	echo "Adding \"Transfer\" as a risk planning strategy.<br />\n";
+	if (defined('LANG_DEFAULT'))
+	{
+		if (LANG_DEFAULT == "en")
+		{
+			$stmt = $db->prepare("INSERT INTO planning_strategy (`name`) VALUES ('Transfer');");
+		}
+		else if (LANG_DEFAULT == "es")
+		{
+			$stmt = $db->prepare("INSERT INTO planning_strategy (`name`) VALUES ('Transferencia');");
+		}
+		else if (LANG_DEFAULT == "bp")
+		{
+			$stmt = $db->prepare("INSERT INTO planning_strategy (`name`) VALUES ('Transferência');");
+		}
+	}
+	else
+	{
+		$stmt = $db->prepare("INSERT INTO planning_strategy (`name`) VALUES ('Transfer');");
+	}
+	$stmt->execute();
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -254,20 +385,33 @@ function upgrade_database()
 	echo "Connecting to the SimpleRisk database.<br />\n";
 	$db = db_open();
 
-	echo "Beginning upgrade of SimpleRisk database.<br />\n";
-
-	// Get the current database version
-	$db_version = current_version("db");
-
-	// Run the upgrade for the appropriate current version
-	switch ($db_version)
+	// If the grant check for the database user is successful
+	if (check_grants($db))
 	{
-		case "20140728-001":
-			upgrade_from_20140728001($db);
-			update_database_version($db);
-			break;
-		default:
-			echo "No database upgrade is needed at this time.<br />\n";
+		echo "Beginning upgrade of SimpleRisk database.<br />\n";
+
+		// Get the current database version
+		$db_version = current_version("db");
+
+		// Run the upgrade for the appropriate current version
+		switch ($db_version)
+		{
+			case "20140728-001":
+				upgrade_from_20140728001($db);
+				update_database_version($db);
+				break;
+                        case "20141013-001":
+                                upgrade_from_20141013001($db);
+                                update_database_version($db);
+                                break;
+			default:
+				echo "No database upgrade is needed at this time.<br />\n";
+		}
+	}
+	// If the grant check was not succesful
+	else
+	{
+		echo "A check of your database user privileges found that one of the necessary grants was missing.  Please ensure that you have granted SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, and ALTER permissions to the user.<br />\n";
 	}
 
 	// Disconnect from the database

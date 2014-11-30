@@ -6,6 +6,7 @@
         // Include required functions file
         require_once(realpath(__DIR__ . '/includes/functions.php'));
 	require_once(realpath(__DIR__ . '/includes/authenticate.php'));
+	require_once(realpath(__DIR__ . '/includes/display.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/includes/Component_ZendEscaper/Escaper.php'));
@@ -96,27 +97,10 @@
     <link rel="stylesheet" href="css/divshot-util.css">
     <link rel="stylesheet" href="css/divshot-canvas.css">
     <link rel="stylesheet" href="css/display.css">
-    <div class="navbar">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="brand" href="http://www.simplerisk.org/">SimpleRisk</a>
-          <div class="navbar-content">
-            <ul class="nav">
-              <li class="active">
-                <a href="index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
-              </li>
-              <li>
-                <a href="management/index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
-              </li>
-              <li>
-                <a href="reports/index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
+
 <?php
+	view_top_menu("Home");
+
         if ($alert == "good")
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";

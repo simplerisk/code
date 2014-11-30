@@ -60,6 +60,7 @@
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/sorttable.js"></script>
+    <script src="../js/obsolete.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -68,49 +69,9 @@
   </head>
   
   <body>
-    <div class="navbar">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="brand" href="http://www.simplerisk.org/">SimpleRisk</a>
-          <div class="navbar-content">
-            <ul class="nav">
-              <li>
-                <a href="../index.php"><?php echo $escaper->escapeHtml($lang['Home']); ?></a> 
-              </li>
-              <li>
-                <a href="../management/index.php"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></a> 
-              </li>
-              <li class="active">
-                <a href="index.php"><?php echo $escaper->escapeHtml($lang['Reporting']); ?></a> 
-              </li>
-<?php
-if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
-{
-          echo "<li>\n";
-          echo "<a href=\"../admin/index.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>\n";
-          echo "</li>\n";
-}
-          echo "</ul>\n";
-          echo "</div>\n";
 
-if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
-{
-          echo "<div class=\"btn-group pull-right\">\n";
-          echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
-          echo "<ul class=\"dropdown-menu\">\n";
-          echo "<li>\n";
-          echo "<a href=\"../account/profile.php\">". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
-          echo "</li>\n";
-          echo "<li>\n";
-          echo "<a href=\"../logout.php\">". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
-          echo "</li>\n";
-          echo "</ul>\n";
-          echo "</div>\n";
-}
-?>
-        </div>
-      </div>
-    </div>
+    <?php view_top_menu("Reporting"); ?>
+
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">

@@ -23,12 +23,6 @@
                 header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
-        // Database version to upgrade
-        $version_to_upgrade = "20140728-001";
-
-        // Database version upgrading to
-        $version_upgrading_to = "20140728-001";
-
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRiskDBUpgrade');

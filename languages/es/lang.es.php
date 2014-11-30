@@ -317,6 +317,18 @@ $lang = array(
     'TemporalVector'=>'Vector Temporal',
     'EnvironmentalVector'=>'Vector Ambiental',
     'SupportingDocumentation'=>'Documentación de Apoyo',
+    'Import'=>'Importación',
+    'Export'=>'Exportación',
+    'ActivateTheImportExportExtra'=>'Activar la Importación / Exportación Extra',
+    'PrintableView'=>'Vista Imprimible',
+    'GroupBy'=>'Agrupar Por',
+    'IncludedColumns'=>'Columnas Incluidas',
+    'AllRisks'=>'Todo Riesgo',
+    'DynamicRiskReport'=>'Informe de Riesgo Dinámico',
+    'ObsoleteReports'=>'Informes Obsoletos',
+    'Project'=>'Proyecto',
+    'SortBy'=>'Ordenar Por',
+    'MonthSubmitted'=>'Mes Enviado',
     ''=>'',
 );
 

@@ -31,7 +31,7 @@ function db_open()
         }
         catch (PDOException $e)
         {
-                printf("A fatal error has occurred.  Please contact support.");
+                printf("<br />SimpleRisk is unable to communicate with the database.  You should double-check your settings in the config.php file.  If the problem persists, you can try manually connecting to the database using the command '<i>mysql -h &lt;hostname&gt; -u &lt;username&gt; -p</i>' and specifying the password when prompted.  If the issue persists, contact support and provide a copy of any relevant messages from your web server's error log.<br />\n");
                 //die("Database Connection Failed: " . $e->getMessage());
         }
 
@@ -3105,8 +3105,13 @@ function get_reviews_table($sort_order=3)
         // Get risks
         $risks = get_risks($sort_order);
 
-        // Initialize the reviews array
-        $reviews = array();
+        // Initialize the arrays
+	$need_reviews = array();
+	$need_next_review = array();
+	$need_calculated_risk = array();
+	$reviews = array();
+	$date_next_review = array();
+	$date_calculated_risk = array();
 
 	// Parse through each row in the array
 	foreach ($risks as $key => $row)
@@ -4057,6 +4062,37 @@ function notification_extra()
         else return false;
 }
 
+/*********************************
+ * FUNCTION: IMPORT EXPORT EXTRA *
+ *********************************/
+function import_export_extra()
+{
+        // Open the database connection
+        $db = db_open();
+
+        // Update the last login
+        $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'import_export'");
+        $stmt->execute();
+
+        // Get the results array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        // If no value was found
+        if (empty($array))
+        {
+                return false;
+        }
+        // If the value is true
+        else if ($array[0]['value'] == true)
+        {
+                return true;
+        }
+        else return false;
+}
+
 /******************************
  * FUNCTION: ENCRYPTION EXTRA *
  ******************************/
@@ -4269,6 +4305,26 @@ function supporting_documentation($id, $mode = "view")
 			echo "<br />\n";
 			echo "<input type=\"checkbox\" name=\"delete\" value=\"YES\" />&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "?\n";
 		}
+	}
+}
+
+/*************************************
+ * FUNCTION: GET SCORING METHOD NAME *
+ *************************************/
+function get_scoring_method_name($scoring_method)
+{
+	switch ($scoring_method)
+	{
+		case 1:
+			return "Classic";
+		case 2:
+			return "CVSS";
+		case 3:
+			return "DREAD";
+		case 4:
+			return "OWASP";
+		case 5:
+			return "Custom";
 	}
 }
 
