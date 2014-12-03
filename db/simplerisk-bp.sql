@@ -464,8 +464,8 @@ INSERT INTO `review_levels` (`value`, `name`) VALUES
 -- Table structure for table `risks`
 --
 
-CREATE TABLE IF NOT EXISTS `risks` (
-`id` int(11) NOT NULL,
+CREATE TABLE `risks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `status` varchar(20) NOT NULL,
   `subject` varchar(100) NOT NULL,
   `reference_id` varchar(20) NOT NULL DEFAULT '',
@@ -486,8 +486,11 @@ CREATE TABLE IF NOT EXISTS `risks` (
   `mgmt_review` int(11) NOT NULL,
   `project_id` int(11) NOT NULL DEFAULT '0',
   `close_id` int(11) NOT NULL,
-  `submitted_by` int(11) NOT NULL DEFAULT '1'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `submitted_by` int(11) NOT NULL DEFAULT '1',
+  `parent_id` int(11) DEFAULT NULL COMMENT 'References the parent risk id to create a tree structure',
+  PRIMARY KEY (`id`),
+  KEY `parent_id_idx` (`parent_id`) USING BTREE
+) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 

@@ -124,6 +124,7 @@ $lang = array(
     'UseThisFormHelp'=>'Use this form in order to document a new risk for consideration in the Risk Management Process',
     'Subject'=>'Subject',
     'ExternalReferenceId'=>'External Reference ID',
+    'ParentRiskID'=>'Parent Risk ID',
     'ControlNumber'=>'Control Number',
     'Owner'=>'Owner',
     'OwnersManager'=>'Owner\'s Manager',
