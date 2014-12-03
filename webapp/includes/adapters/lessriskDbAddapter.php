@@ -2,7 +2,7 @@
 
 //include_once "../../classes/dbConnectionManager.class.php";
 include_once __DIR__."/../../interfaces/dbAddapter.interface.php";
-
+include_once "lessriskDbAddapter.config.php";
 
 class lessriskDbAddapter implements \lessrisk\dbAddapter{
 
@@ -15,22 +15,22 @@ class lessriskDbAddapter implements \lessrisk\dbAddapter{
 
     function getDbPassword()
     {
-        return false;
+        return LR_DB_PASSWORD;
     }
 
     function getDbLogin()
     {
-        return false;
+        return LR_DB_USERNAME;
     }
 
     function getDbSchema()
     {
-        return false;
+        return LR_DB_DATABASE;
     }
 
     function dbAdStatus()
     {
-        return false;
+        return true;
     }
 }
 

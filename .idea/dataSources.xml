@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" hash="340259004">
+    <data-source source="LOCAL" name="MySQL - lessrisk@localhost" uuid="f5c83067-7ba0-4117-b4c4-52a93f566945">
+      <driver-ref>mysql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://localhost:3306/lessrisk</jdbc-url>
+      <user-name>lessrisk</user-name>
+      <user-password>dfc6dfcfdfd9dfd9dfd8dfc3dfd9dfc1</user-password>
+      <driver-properties>
+        <property name="zeroDateTimeBehavior" value="convertToNull" />
+        <property name="tinyInt1isBit" value="false" />
+      </driver-properties>
+      <libraries />
+    </data-source>
+  </component>
+</project>
+
