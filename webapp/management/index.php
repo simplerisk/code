@@ -35,6 +35,7 @@ if ((isset($_POST['submit'])) && $submit_risks) {
     $status = "New";
     $subject = $_POST['subject'];
     $reference_id = $_POST['reference_id'];
+    $parent_id = $_POST['parent_id'];
     $regulation = (int)$_POST['regulation'];
     $control_number = $_POST['control_number'];
     $location = $_POST['location'];
@@ -103,7 +104,7 @@ if ((isset($_POST['submit'])) && $submit_risks) {
     $custom = (float)$_POST['Custom'];
 
     // Submit risk and get back the id
-    $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+    $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $parent_id);
 
     // Submit risk scoring
     submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
@@ -140,6 +141,9 @@ if($alert == "good" || $alert == "bad") {
 }
 
 $localvars['active_menu'] = "SubmitYourRisks";
+
+$localvars['ParentRiskID'] = $lang['ParentRiskID'];
+
 
 // The  dropdown menus
 $localvars['dd_regulation'] = create_dropdown("regulation");

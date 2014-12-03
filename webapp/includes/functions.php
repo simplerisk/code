@@ -949,13 +949,13 @@ function update_password($user, $hash)
 /*************************
  * FUNCTION: SUBMIT RISK *
  *************************/
-function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
+function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $parent_id = null)
 {
     // Open the database connection
     $db = db_open();
 
     // Add the risk
-    $stmt = $db->prepare("INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `location`, `category`, `team`, `technology`, `owner`, `manager`, `assessment`, `notes`, `submitted_by`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :location, :category, :team, :technology, :owner, :manager, :assessment, :notes, :submitted_by)");
+    $stmt = $db->prepare("INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `location`, `category`, `team`, `technology`, `owner`, `manager`, `assessment`, `notes`, `submitted_by`, `parent_id`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :location, :category, :team, :technology, :owner, :manager, :assessment, :notes, :submitted_by, :parent_id)");
     $stmt->bindParam(":status", $status, PDO::PARAM_STR, 10);
     $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 100);
     $stmt->bindParam(":reference_id", $reference_id, PDO::PARAM_STR, 20);
@@ -970,6 +970,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $stmt->bindParam(":assessment", $assessment, PDO::PARAM_STR);
     $stmt->bindParam(":notes", $notes, PDO::PARAM_STR);
     $stmt->bindParam(":submitted_by", $_SESSION['uid'], PDO::PARAM_INT);
+    $stmt->bindParam(":parent_id", $parent_id, PDO::PARAM_INT);
     $stmt->execute();
 
     // Get the id of the risk
