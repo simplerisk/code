@@ -12,6 +12,13 @@
 
 include_once __DIR__."/../classes/dbConnectionManager.class.php";
 
+// setup the autoloading
+require_once __DIR__.'/../vendor/autoload.php';
+
+// setup Propel
+require_once __DIR__.'/../db/generated-conf/config.php';
+
+
 $dbm = \lessrisk\dbConnectionManager::get_instance();
 $dba = $dbm->getDefaultAddapter();
 
