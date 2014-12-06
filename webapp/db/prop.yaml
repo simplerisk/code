@@ -1,0 +1,18 @@
+propel:
+  database:
+      connections:
+          lessrisk:
+              adapter: mysql
+              classname: Propel\Runtime\Connection\ConnectionWrapper
+              dsn: "mysql:host=127.0.0.1;dbname=lessrisk"
+              user: lessrisk
+              password: lessrisk
+              attributes:
+  runtime:
+      defaultConnection: lessrisk
+      connections:
+          - lessrisk
+  generator:
+      defaultConnection: lessrisk
+      connections:
+          - lessrisk

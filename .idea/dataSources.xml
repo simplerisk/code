@@ -6,8 +6,6 @@
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://localhost:3306/lessrisk</jdbc-url>
-      <user-name>lessrisk</user-name>
-      <user-password>dfc6dfcfdfd9dfd9dfd8dfc3dfd9dfc1</user-password>
       <driver-properties>
         <property name="zeroDateTimeBehavior" value="convertToNull" />
         <property name="tinyInt1isBit" value="false" />

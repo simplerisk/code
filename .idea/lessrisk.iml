@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/webapp/vendor/propel/propel" />
+      <excludeFolder url="file://$MODULE_DIR$/webapp/vendor/psr/log" />
+      <excludeFolder url="file://$MODULE_DIR$/webapp/vendor/symfony/config" />
+      <excludeFolder url="file://$MODULE_DIR$/webapp/vendor/symfony/console" />
+      <excludeFolder url="file://$MODULE_DIR$/webapp/vendor/symfony/filesystem" />
+      <excludeFolder url="file://$MODULE_DIR$/webapp/vendor/symfony/finder" />
+      <excludeFolder url="file://$MODULE_DIR$/webapp/vendor/symfony/translation" />
+      <excludeFolder url="file://$MODULE_DIR$/webapp/vendor/symfony/validator" />
+      <excludeFolder url="file://$MODULE_DIR$/webapp/vendor/symfony/yaml" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
@@ -11,6 +21,32 @@
         </CLASSES>
         <SOURCES>
           <root url="phar://$MODULE_DIR$/composer.phar" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="PHP">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/config" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/filesystem" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/finder" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/translation" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/yaml" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/psr/log" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/propel/propel" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/validator" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/console" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/config" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/filesystem" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/finder" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/translation" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/yaml" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/psr/log" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/propel/propel" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/validator" />
+          <root url="file://$MODULE_DIR$/webapp/vendor/symfony/console" />
         </SOURCES>
       </library>
     </orderEntry>

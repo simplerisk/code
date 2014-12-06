@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="AMMPS-local">
+  <component name="PublishConfigData">
     <serverData>
-      <paths name="AMMPS-local">
+      <paths name="LessRisk-Local">
         <serverdata>
           <mappings>
-            <mapping deploy="lessrisk" local="$PROJECT_DIR$/webapp" web="/lessrisk" />
+            <mapping deploy="LessRisk" local="$PROJECT_DIR$/webapp" web="/LessRisk" />
           </mappings>
         </serverdata>
       </paths>

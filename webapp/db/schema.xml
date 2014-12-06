@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<database name="lessrisk" defaultIdMethod="native" defaultPhpNamingMethod="underscore">
+  <table name="CVSS_scoring" idMethod="native" phpName="CvssScoring">
+    <column name="id" phpName="Id" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="metric_name" phpName="MetricName" type="VARCHAR" size="30" required="true"/>
+    <column name="abrv_metric_name" phpName="AbrvMetricName" type="VARCHAR" size="3" required="true"/>
+    <column name="metric_value" phpName="MetricValue" type="VARCHAR" size="30" required="true"/>
+    <column name="abrv_metric_value" phpName="AbrvMetricValue" type="VARCHAR" size="3" required="true"/>
+    <column name="numeric_value" phpName="NumericValue" type="FLOAT" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="audit_log" idMethod="native" phpName="AuditLog">
+    <column name="timestamp" phpName="Timestamp" type="TIMESTAMP" required="true" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="risk_id" phpName="RiskId" type="INTEGER" required="true"/>
+    <column name="user_id" phpName="UserId" type="INTEGER" required="true"/>
+    <column name="message" phpName="Message" type="LONGVARCHAR" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="category" idMethod="native" phpName="Category">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="50" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="close_reason" idMethod="native" phpName="CloseReason">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="50" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="closures" idMethod="native" phpName="Closures">
+    <column name="id" phpName="Id" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="risk_id" phpName="RiskId" type="INTEGER" required="true"/>
+    <column name="user_id" phpName="UserId" type="INTEGER" required="true"/>
+    <column name="closure_date" phpName="ClosureDate" type="TIMESTAMP" required="true" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="close_reason" phpName="CloseReason" type="INTEGER" required="true"/>
+    <column name="note" phpName="Note" type="LONGVARCHAR" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="comments" idMethod="native" phpName="Comments">
+    <column name="id" phpName="Id" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="risk_id" phpName="RiskId" type="INTEGER" required="true"/>
+    <column name="date" phpName="Date" type="TIMESTAMP" required="true" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="user" phpName="User" type="INTEGER" required="true"/>
+    <column name="comment" phpName="Comment" type="LONGVARCHAR" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="files" idMethod="native" phpName="Files">
+    <column name="id" phpName="Id" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="risk_id" phpName="RiskId" type="INTEGER" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="100" required="true"/>
+    <column name="unique_name" phpName="UniqueName" type="VARCHAR" size="30" required="true"/>
+    <column name="type" phpName="Type" type="VARCHAR" size="30" required="true"/>
+    <column name="size" phpName="Size" type="INTEGER" required="true"/>
+    <column name="timestamp" phpName="Timestamp" type="TIMESTAMP" required="true" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="user" phpName="User" type="INTEGER" required="true"/>
+    <column name="content" phpName="Content" type="BLOB" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="InnoDB"/>
+    </vendor>
+  </table>
+  <table name="impact" idMethod="native" phpName="Impact">
+    <column name="name" phpName="Name" type="VARCHAR" size="20" required="true"/>
+    <column name="value" phpName="Value" type="INTEGER" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="languages" idMethod="native" phpName="Languages">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="2" required="true"/>
+    <column name="full" phpName="Full" type="VARCHAR" size="50" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="likelihood" idMethod="native" phpName="Likelihood">
+    <column name="name" phpName="Name" type="VARCHAR" size="20" required="true"/>
+    <column name="value" phpName="Value" type="INTEGER" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="location" idMethod="native" phpName="Location">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="100" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="mgmt_reviews" idMethod="native" phpName="MgmtReviews">
+    <column name="id" phpName="Id" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="risk_id" phpName="RiskId" type="INTEGER" required="true"/>
+    <column name="submission_date" phpName="SubmissionDate" type="TIMESTAMP" required="true" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="review" phpName="Review" type="INTEGER" required="true"/>
+    <column name="reviewer" phpName="Reviewer" type="INTEGER" required="true"/>
+    <column name="next_step" phpName="NextStep" type="INTEGER" required="true"/>
+    <column name="comments" phpName="Comments" type="LONGVARCHAR" required="true"/>
+    <column name="next_review" phpName="NextReview" type="VARCHAR" size="10" required="true" defaultValue="0000-00-00"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="mitigation_effort" idMethod="native" phpName="MitigationEffort">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="20" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="mitigations" idMethod="native" phpName="Mitigations">
+    <column name="id" phpName="Id" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="risk_id" phpName="RiskId" type="INTEGER" required="true"/>
+    <column name="submission_date" phpName="SubmissionDate" type="TIMESTAMP" required="true" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="last_update" phpName="LastUpdate" type="TIMESTAMP" required="true" defaultValue="0000-00-00 00:00:00"/>
+    <column name="planning_strategy" phpName="PlanningStrategy" type="INTEGER" required="true"/>
+    <column name="mitigation_effort" phpName="MitigationEffort" type="INTEGER" required="true"/>
+    <column name="current_solution" phpName="CurrentSolution" type="LONGVARCHAR" required="true"/>
+    <column name="security_requirements" phpName="SecurityRequirements" type="LONGVARCHAR" required="true"/>
+    <column name="security_recommendations" phpName="SecurityRecommendations" type="LONGVARCHAR" required="true"/>
+    <column name="submitted_by" phpName="SubmittedBy" type="INTEGER" required="true" defaultValue="1"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="next_step" idMethod="native" phpName="NextStep">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="50" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="password_reset" idMethod="native" phpName="PasswordReset">
+    <column name="username" phpName="Username" type="VARCHAR" size="20" required="true"/>
+    <column name="token" phpName="Token" type="VARCHAR" size="20" required="true"/>
+    <column name="attempts" phpName="Attempts" type="INTEGER" required="true" defaultValue="0"/>
+    <column name="timestamp" phpName="Timestamp" type="TIMESTAMP" required="true" defaultExpr="CURRENT_TIMESTAMP"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="planning_strategy" idMethod="native" phpName="PlanningStrategy">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="20" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="projects" idMethod="native" phpName="Projects">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="100" required="true"/>
+    <column name="order" phpName="Order" type="INTEGER" required="true" defaultValue="999999"/>
+    <column name="status" phpName="Status" type="INTEGER" required="true" defaultValue="1"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="regulation" idMethod="native" phpName="Regulation">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="50" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="review" idMethod="native" phpName="Review">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="50" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="review_levels" idMethod="native" phpName="ReviewLevels">
+    <column name="value" phpName="Value" type="INTEGER" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="20" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="risk_levels" idMethod="native" phpName="RiskLevels">
+    <column name="value" phpName="Value" type="DECIMAL" size="2" scale="1" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="20" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="risk_models" idMethod="native" phpName="RiskModels">
+    <column name="value" phpName="Value" type="INTEGER" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="50" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="risk_scoring" idMethod="native" phpName="RiskScoring">
+    <column name="id" phpName="Id" type="INTEGER" required="true"/>
+    <column name="scoring_method" phpName="ScoringMethod" type="INTEGER" required="true"/>
+    <column name="calculated_risk" phpName="CalculatedRisk" type="FLOAT" required="true"/>
+    <column name="CLASSIC_likelihood" phpName="ClassicLikelihood" type="FLOAT" required="true" defaultValue="5"/>
+    <column name="CLASSIC_impact" phpName="ClassicImpact" type="FLOAT" required="true" defaultValue="5"/>
+    <column name="CVSS_AccessVector" phpName="CvssAccessvector" type="VARCHAR" size="3" required="true" defaultValue="N"/>
+    <column name="CVSS_AccessComplexity" phpName="CvssAccesscomplexity" type="VARCHAR" size="3" required="true" defaultValue="L"/>
+    <column name="CVSS_Authentication" phpName="CvssAuthentication" type="VARCHAR" size="3" required="true" defaultValue="N"/>
+    <column name="CVSS_ConfImpact" phpName="CvssConfimpact" type="VARCHAR" size="3" required="true" defaultValue="C"/>
+    <column name="CVSS_IntegImpact" phpName="CvssIntegimpact" type="VARCHAR" size="3" required="true" defaultValue="C"/>
+    <column name="CVSS_AvailImpact" phpName="CvssAvailimpact" type="VARCHAR" size="3" required="true" defaultValue="C"/>
+    <column name="CVSS_Exploitability" phpName="CvssExploitability" type="VARCHAR" size="3" required="true" defaultValue="ND"/>
+    <column name="CVSS_RemediationLevel" phpName="CvssRemediationlevel" type="VARCHAR" size="3" required="true" defaultValue="ND"/>
+    <column name="CVSS_ReportConfidence" phpName="CvssReportconfidence" type="VARCHAR" size="3" required="true" defaultValue="ND"/>
+    <column name="CVSS_CollateralDamagePotential" phpName="CvssCollateraldamagepotential" type="VARCHAR" size="3" required="true" defaultValue="ND"/>
+    <column name="CVSS_TargetDistribution" phpName="CvssTargetdistribution" type="VARCHAR" size="3" required="true" defaultValue="ND"/>
+    <column name="CVSS_ConfidentialityRequirement" phpName="CvssConfidentialityrequirement" type="VARCHAR" size="3" required="true" defaultValue="ND"/>
+    <column name="CVSS_IntegrityRequirement" phpName="CvssIntegrityrequirement" type="VARCHAR" size="3" required="true" defaultValue="ND"/>
+    <column name="CVSS_AvailabilityRequirement" phpName="CvssAvailabilityrequirement" type="VARCHAR" size="3" required="true" defaultValue="ND"/>
+    <column name="DREAD_DamagePotential" phpName="DreadDamagepotential" type="INTEGER" defaultValue="10"/>
+    <column name="DREAD_Reproducibility" phpName="DreadReproducibility" type="INTEGER" defaultValue="10"/>
+    <column name="DREAD_Exploitability" phpName="DreadExploitability" type="INTEGER" defaultValue="10"/>
+    <column name="DREAD_AffectedUsers" phpName="DreadAffectedusers" type="INTEGER" defaultValue="10"/>
+    <column name="DREAD_Discoverability" phpName="DreadDiscoverability" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_SkillLevel" phpName="OwaspSkilllevel" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_Motive" phpName="OwaspMotive" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_Opportunity" phpName="OwaspOpportunity" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_Size" phpName="OwaspSize" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_EaseOfDiscovery" phpName="OwaspEaseofdiscovery" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_EaseOfExploit" phpName="OwaspEaseofexploit" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_Awareness" phpName="OwaspAwareness" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_IntrusionDetection" phpName="OwaspIntrusiondetection" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_LossOfConfidentiality" phpName="OwaspLossofconfidentiality" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_LossOfIntegrity" phpName="OwaspLossofintegrity" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_LossOfAvailability" phpName="OwaspLossofavailability" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_LossOfAccountability" phpName="OwaspLossofaccountability" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_FinancialDamage" phpName="OwaspFinancialdamage" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_ReputationDamage" phpName="OwaspReputationdamage" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_NonCompliance" phpName="OwaspNoncompliance" type="INTEGER" defaultValue="10"/>
+    <column name="OWASP_PrivacyViolation" phpName="OwaspPrivacyviolation" type="INTEGER" defaultValue="10"/>
+    <column name="Custom" phpName="Custom" type="FLOAT" defaultValue="10"/>
+    <unique name="id">
+      <unique-column name="id"/>
+    </unique>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="risks" idMethod="native" phpName="Risks">
+    <column name="id" phpName="Id" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="status" phpName="Status" type="VARCHAR" size="20" required="true"/>
+    <column name="subject" phpName="Subject" type="VARCHAR" size="100" required="true"/>
+    <column name="reference_id" phpName="ReferenceId" type="VARCHAR" size="20" required="true" defaultValue=""/>
+    <column name="regulation" phpName="Regulation" type="INTEGER"/>
+    <column name="control_number" phpName="ControlNumber" type="VARCHAR" size="20"/>
+    <column name="location" phpName="Location" type="INTEGER" required="true"/>
+    <column name="category" phpName="Category" type="INTEGER" required="true"/>
+    <column name="team" phpName="Team" type="INTEGER" required="true"/>
+    <column name="technology" phpName="Technology" type="INTEGER" required="true"/>
+    <column name="owner" phpName="Owner" type="INTEGER" required="true"/>
+    <column name="manager" phpName="Manager" type="INTEGER" required="true"/>
+    <column name="assessment" phpName="Assessment" type="CLOB" required="true"/>
+    <column name="notes" phpName="Notes" type="CLOB" required="true"/>
+    <column name="submission_date" phpName="SubmissionDate" type="TIMESTAMP" required="true" defaultExpr="CURRENT_TIMESTAMP"/>
+    <column name="last_update" phpName="LastUpdate" type="TIMESTAMP" required="true" defaultValue="0000-00-00 00:00:00"/>
+    <column name="review_date" phpName="ReviewDate" type="TIMESTAMP" required="true" defaultValue="0000-00-00 00:00:00"/>
+    <column name="mitigation_id" phpName="MitigationId" type="INTEGER" required="true"/>
+    <column name="mgmt_review" phpName="MgmtReview" type="INTEGER" required="true"/>
+    <column name="project_id" phpName="ProjectId" type="INTEGER" required="true" defaultValue="0"/>
+    <column name="close_id" phpName="CloseId" type="INTEGER" required="true"/>
+    <column name="submitted_by" phpName="SubmittedBy" type="INTEGER" required="true" defaultValue="1"/>
+    <column name="parent_id" phpName="ParentId" type="INTEGER"/>
+    <index name="parent_id_idx">
+      <index-column name="parent_id"/>
+    </index>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="sessions" idMethod="native" phpName="Sessions">
+    <column name="id" phpName="Id" type="VARCHAR" size="32" primaryKey="true" required="true"/>
+    <column name="access" phpName="Access" type="INTEGER" size="10" sqlType="int(10) unsigned"/>
+    <column name="data" phpName="Data" type="LONGVARCHAR"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="settings" idMethod="native" phpName="Settings">
+    <column name="name" phpName="Name" type="VARCHAR" size="20" primaryKey="true" required="true"/>
+    <column name="value" phpName="Value" type="VARCHAR" size="40" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="team" idMethod="native" phpName="Team">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="50" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="technology" idMethod="native" phpName="Technology">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="50" required="true"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+  <table name="user" idMethod="native" phpName="User">
+    <column name="value" phpName="Value" type="INTEGER" primaryKey="true" autoIncrement="true" required="true"/>
+    <column name="enabled" phpName="Enabled" type="BOOLEAN" size="1" required="true" defaultValue="true"/>
+    <column name="type" phpName="Type" type="VARCHAR" size="20" required="true" defaultValue="simplerisk"/>
+    <column name="username" phpName="Username" type="VARCHAR" size="20" required="true"/>
+    <column name="name" phpName="Name" type="VARCHAR" size="50" required="true"/>
+    <column name="email" phpName="Email" type="VARCHAR" size="200" required="true"/>
+    <column name="salt" phpName="Salt" type="VARCHAR" size="20"/>
+    <column name="password" phpName="Password" type="VARCHAR" size="60" sqlType="binary(60)" required="true"/>
+    <column name="last_login" phpName="LastLogin" type="TIMESTAMP" required="true"/>
+    <column name="teams" phpName="Teams" type="VARCHAR" size="200" required="true" defaultValue="none"/>
+    <column name="lang" phpName="Lang" type="VARCHAR" size="2"/>
+    <column name="admin" phpName="Admin" type="BOOLEAN" size="1" required="true" defaultValue="false"/>
+    <column name="review_high" phpName="ReviewHigh" type="BOOLEAN" size="1" required="true" defaultValue="false"/>
+    <column name="review_medium" phpName="ReviewMedium" type="BOOLEAN" size="1" required="true" defaultValue="false"/>
+    <column name="review_low" phpName="ReviewLow" type="BOOLEAN" size="1" required="true" defaultValue="false"/>
+    <column name="submit_risks" phpName="SubmitRisks" type="BOOLEAN" size="1" required="true" defaultValue="false"/>
+    <column name="modify_risks" phpName="ModifyRisks" type="BOOLEAN" size="1" required="true" defaultValue="false"/>
+    <column name="plan_mitigations" phpName="PlanMitigations" type="BOOLEAN" size="1" required="true" defaultValue="false"/>
+    <column name="close_risks" phpName="CloseRisks" type="BOOLEAN" size="1" required="true" defaultValue="true"/>
+    <column name="multi_factor" phpName="MultiFactor" type="INTEGER" required="true" defaultValue="1"/>
+    <vendor type="mysql">
+      <parameter name="Engine" value="MyISAM"/>
+    </vendor>
+  </table>
+</database>
