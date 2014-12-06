@@ -103,32 +103,56 @@ if ((isset($_POST['submit'])) && $submit_risks) {
     // Custom Risk Scoring
     $custom = (float)$_POST['Custom'];
 
-    // Submit risk and get back the id
-    $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $parent_id);
+    $continue = true;
 
-    // Submit risk scoring
-    submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
+    // Verify if the parent_id exists
+    if($parent_id != null && $parent_id != ""){
 
-    // Upload any file that is submitted
-    upload_file($last_insert_id, $_FILES['file']);
-
-    // If the notification extra is enabled
-    if (notification_extra()) {
-        // Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-        // Send the notification
-        notify_new_risk($last_insert_id, $subject);
+        if(is_numeric($parent_id)) {
+            $risk = RisksQuery::create()->findById($parent_id - 1000)->getFirst();
+            if ($risk == null){
+                $continue = false;
+                // There is an alert message
+                $alert = "bad";
+                $alert_message = "Parent ID doesn't exist!";
+            }
+        }else{
+            $continue = false;
+            // There is an alert message
+            $alert = "bad";
+            $alert_message = "Parent ID doesn't exist!";
+        }
     }
 
-    // Audit log
-    $risk_id = $last_insert_id + 1000;
-    $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $_SESSION['user'] . "\".";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    if ($continue == true) {
 
-    // There is an alert message
-    $alert = "good";
-    $alert_message = "Risk submitted successfully!";
+        // Submit risk and get back the id
+        $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $parent_id);
+
+        // Submit risk scoring
+        submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
+
+        // Upload any file that is submitted
+        upload_file($last_insert_id, $_FILES['file']);
+
+        // If the notification extra is enabled
+        if (notification_extra()) {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+            // Send the notification
+            notify_new_risk($last_insert_id, $subject);
+        }
+
+        // Audit log
+        $risk_id = $last_insert_id + 1000;
+        $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $_SESSION['user'] . "\".";
+        write_log($risk_id, $_SESSION['uid'], $message);
+
+        // There is an alert message
+        $alert = "good";
+        $alert_message = "Risk submitted successfully!";
+    }
 }
 
 $localvars = array();
