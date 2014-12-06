@@ -165,9 +165,7 @@ if($alert == "good" || $alert == "bad") {
     $localvars['alert_message'] = $alert_message;
 }
 
-$localvars['active_menu'] = "SubmitYourRisks";
-
-$localvars['ParentRiskID'] = $lang['ParentRiskID'];
+$localvars['active_menu'] = "MassSubmit";
 
 
 // The  dropdown menus
@@ -181,7 +179,7 @@ $localvars['dd_owner_manager'] = create_dropdown("user", NULL, "manager");
 $localvars['dd_likelihood'] = create_dropdown("likelihood");
 $localvars['dd_impact'] = create_dropdown("impact");
 
-$template = $twig->loadTemplate('management_index.html.twig');
+$template = $twig->loadTemplate('management_mass_submit.html.twig');
 
 $template->display(array_merge($base_twigvars, $localvars));
 
