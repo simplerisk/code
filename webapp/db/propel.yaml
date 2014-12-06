@@ -7,6 +7,10 @@ propel:
               dsn: "mysql:host=127.0.0.1;dbname=lessrisk"
               user: lessrisk
               password: lessrisk
+              settings:
+                charset: utf8
+                queries:
+                  utf8: "SET NAMES utf8 COLLATE utf8_unicode_ci, COLLATION_CONNECTION = utf8_unicode_ci, COLLATION_DATABASE = utf8_unicode_ci, COLLATION_SERVER = utf8_unicode_ci"
               attributes:
   runtime:
       defaultConnection: lessrisk
