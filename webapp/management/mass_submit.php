@@ -35,8 +35,8 @@ if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1) {
 
 // Check if a new risk was submitted and the user has permissions to submit new risks
 if ((isset($_POST['submit'])) && $submit_risks) {
-    $status = "New";
-    $subject_prefis = $_POST['subject_prefix'];
+
+    $subject_prefix = $_POST['subject_prefix'];
     $parent_id = $_POST['parent_id'];
     $importer = $_POST['importer'];
 
@@ -47,55 +47,7 @@ if ((isset($_POST['submit'])) && $submit_risks) {
     // 3 = DREAD
     // 4 = OWASP
     // 5 = Custom
-    $scoring_method = (int)$_POST['scoring_method'];
 
-    // Classic Risk Scoring Inputs
-    $CLASSIClikelihood = (int)$_POST['likelihood'];
-    $CLASSICimpact = (int)$_POST['impact'];
-
-    // CVSS Risk Scoring Inputs
-    $CVSSAccessVector = $_POST['AccessVector'];
-    $CVSSAccessComplexity = $_POST['AccessComplexity'];
-    $CVSSAuthentication = $_POST['Authentication'];
-    $CVSSConfImpact = $_POST['ConfImpact'];
-    $CVSSIntegImpact = $_POST['IntegImpact'];
-    $CVSSAvailImpact = $_POST['AvailImpact'];
-    $CVSSExploitability = $_POST['Exploitability'];
-    $CVSSRemediationLevel = $_POST['RemediationLevel'];
-    $CVSSReportConfidence = $_POST['ReportConfidence'];
-    $CVSSCollateralDamagePotential = $_POST['CollateralDamagePotential'];
-    $CVSSTargetDistribution = $_POST['TargetDistribution'];
-    $CVSSConfidentialityRequirement = $_POST['ConfidentialityRequirement'];
-    $CVSSIntegrityRequirement = $_POST['IntegrityRequirement'];
-    $CVSSAvailabilityRequirement = $_POST['AvailabilityRequirement'];
-
-    // DREAD Risk Scoring Inputs
-    $DREADDamage = (int)$_POST['DREADDamage'];
-    $DREADReproducibility = (int)$_POST['DREADReproducibility'];
-    $DREADExploitability = (int)$_POST['DREADExploitability'];
-    $DREADAffectedUsers = (int)$_POST['DREADAffectedUsers'];
-    $DREADDiscoverability = (int)$_POST['DREADDiscoverability'];
-
-    // OWASP Risk Scoring Inputs
-    $OWASPSkillLevel = (int)$_POST['OWASPSkillLevel'];
-    $OWASPMotive = (int)$_POST['OWASPMotive'];
-    $OWASPOpportunity = (int)$_POST['OWASPOpportunity'];
-    $OWASPSize = (int)$_POST['OWASPSize'];
-    $OWASPEaseOfDiscovery = (int)$_POST['OWASPEaseOfDiscovery'];
-    $OWASPEaseOfExploit = (int)$_POST['OWASPEaseOfExploit'];
-    $OWASPAwareness = (int)$_POST['OWASPAwareness'];
-    $OWASPIntrusionDetection = (int)$_POST['OWASPIntrusionDetection'];
-    $OWASPLossOfConfidentiality = (int)$_POST['OWASPLossOfConfidentiality'];
-    $OWASPLossOfIntegrity = (int)$_POST['OWASPLossOfIntegrity'];
-    $OWASPLossOfAvailability = (int)$_POST['OWASPLossOfAvailability'];
-    $OWASPLossOfAccountability = (int)$_POST['OWASPLossOfAccountability'];
-    $OWASPFinancialDamage = (int)$_POST['OWASPFinancialDamage'];
-    $OWASPReputationDamage = (int)$_POST['OWASPReputationDamage'];
-    $OWASPNonCompliance = (int)$_POST['OWASPNonCompliance'];
-    $OWASPPrivacyViolation = (int)$_POST['OWASPPrivacyViolation'];
-
-    // Custom Risk Scoring
-    $custom = (float)$_POST['Custom'];
 
     $continue = true;
 
@@ -130,7 +82,7 @@ if ((isset($_POST['submit'])) && $submit_risks) {
         /* @var $ri \lessrisk\riskImporter */
         $ri = $rim->getRiskImporter($importer);
 
-        $ri->setSubjectPrefix($subject_prefis);
+        $ri->setSubjectPrefix($subject_prefix);
         $ri->setParentId($parent_id);
         $ri->import($_FILES['file']);
 

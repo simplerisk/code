@@ -136,6 +136,23 @@ class nessusImporter implements riskImporter {
         return $a - $b;
     }
 
+    function avalriskAC($val, $val2){
+        $a = -1;
+        $b = -1;
+
+        if($val == "L") $a = 0;
+        if($val == "A") $a = 1;
+        if($val == "N") $a = 2;
+
+
+        if($val2 == "L") $b = 0;
+        if($val2 == "A") $b = 1;
+        if($val2 == "N") $b = 2;
+
+
+        return $a - $b;
+    }
+
     // TODO: This is still broken !!! FIX it.
     function save()
     {
@@ -162,10 +179,12 @@ class nessusImporter implements riskImporter {
                 if(array_key_exists('synopsis', $vuln)){
                     $risk = new \Risks();
                     $risk->setNew(true);
-                    $risk->setSubject($this->subjectPrefix."-Vuln-".$props['host-fqdn'] ? $props['host-fqdn'] : $props['netbios-name']."-".$vul['synopsis']);
+                    $risk->setSubject($this->subjectPrefix."-Vuln-".$props['host-fqdn']."-".$vul['synopsis']);
                     $risk->setParentId($this->parent_id);
                     $risk->setAssessment($vuln['description']);
                     $risk->setNotes("CVE: ".$vuln['cve'] );
+                    $risk->setStatus("New");
+
 
                     $risk->save();
 
@@ -184,7 +203,7 @@ class nessusImporter implements riskImporter {
                                     $AV = $val[1];
                                     break;
                                 case 'AC':
-                                    if($this->avalrisk($AC, $val[1]) < 0)
+                                    if($this->avalriskAC($AC, $val[1]) < 0)
                                     $AC = $val[1];
                                     break;
                                 case 'Au':
@@ -218,6 +237,31 @@ class nessusImporter implements riskImporter {
                     $scoring->setCvssIntegimpact($I);
                     $scoring->setCvssConfimpact($C);
                     $scoring->setCvssAuthentication($Au);
+
+                    /* @var $cvq \CvssScoringQuery */
+                    $cvq =  new \CvssScoringQuery();
+
+
+                    /* @var $cvsi \CvssScoring*/
+                    $cvsi = $cvq->filterByAbrvMetricName('AV')->filterByAbrvMetricValue($AV)->findOne();
+                    $AVn = $cvsi->getNumericValue();
+                    $cvq =  new \CvssScoringQuery();
+                    $cvsi = $cvq->filterByAbrvMetricName('AC')->filterByAbrvMetricValue($AC)->findOne();
+                    $ACn = $cvsi->getNumericValue();
+                    $cvq->clear();
+                    $cvsi = $cvq->filterByAbrvMetricName('Au')->filterByAbrvMetricValue($Au)->findOne();
+                    $Aun = $cvsi->getNumericValue();
+                    $cvq->clear();
+                    $cvsi = $cvq->filterByAbrvMetricName('C')->filterByAbrvMetricValue($C)->findOne();
+                    $Cn = $cvsi->getNumericValue();
+                    $cvq->clear();
+                    $cvsi = $cvq->filterByAbrvMetricName('I')->filterByAbrvMetricValue($I)->findOne();
+                    $In = $cvsi->getNumericValue();
+                    $cvq->clear();
+                    $cvsi = $cvq->filterByAbrvMetricName('A')->filterByAbrvMetricValue($A)->findOne();
+                    $An = $cvsi->getNumericValue();
+
+                    $scoring->setCalculatedRisk(calculate_cvss_score($AVn,$ACn,$Aun,$Cn,$In,$An,1,1,0.66,1,1,1,1,1));
 
                     $scoring->save();
 
