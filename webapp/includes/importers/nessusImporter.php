@@ -13,7 +13,7 @@ require_once (realpath(__DIR__ . '/../../libs/xml2array.php'));
 
 class nessusImporter implements riskImporter {
 
-    private $final, $host_addr;
+    private $final, $host_addr, $subjectPrefix, $parent_id;
 
     function register()
     {
@@ -72,11 +72,12 @@ class nessusImporter implements riskImporter {
                     if (!isset($this->final[$this->host_addr]['vulns'])) // 1st vuln of this host
                         $this->final[$this->host_addr]['vulns'] = array();
 
-                    $this->final[$this->host_addr]['vulns'][$vuln_id] = $vuln;
+                    //$this->final[$this->host_addr]['vulns'][$vuln_id] = $vuln;
+                    array_push($this->final[$this->host_addr]['vulns'] , $vuln);
                 } elseif (count($curr_item) == 2) // add a param to the current vuln
                 {
                     if (isset($this->final[$this->host_addr]['vulns'][$vuln_id][$curr_item['name']]))
-                        $this->final[$thsi->host_addr]['vulns'][$vuln_id][$curr_item['name']] .= "\n" . $curr_item['value'];
+                        $this->final[$this->host_addr]['vulns'][$vuln_id][$curr_item['name']] .= "\n" . $curr_item['value'];
                     else
                         $this->final[$this->host_addr]['vulns'][$vuln_id][$curr_item['name']] = $curr_item['value'];
                 }
@@ -114,6 +115,27 @@ class nessusImporter implements riskImporter {
         //render();
     }
 
+    function avalrisk($val, $val2){
+        $a = -1;
+        $b = -1;
+
+        if($val == "N") $a = 0;
+        if($val == "L") $a = 1;
+        if($val == "M") $a = 2;
+        if($val == "H") $a = 3;
+        if($val == "P") $a = 1;
+        if($val == "C") $a = 2;
+
+        if($val2 == "N") $b = 0;
+        if($val2 == "L") $b = 1;
+        if($val2 == "M") $b = 2;
+        if($val2 == "H") $b = 3;
+        if($val2 == "P") $b = 1;
+        if($val2 == "C") $b = 2;
+
+        return $a - $b;
+    }
+
     // TODO: This is still broken !!! FIX it.
     function save()
     {
@@ -125,73 +147,96 @@ class nessusImporter implements riskImporter {
         //    'plugin_modification_date', 'patch_publication_date', 'see_also', 'cvss_base_score', 'cve', 'bid', 'xref');
 
 
-        foreach ($this->final AS $ip => $host)
-        {
-            var_dump($ip);
-            var_dump($host); exit;
+        $workset = array_slice($this->final,  2);
 
-            $host_done = 0;
+
+        foreach ($workset AS $ip => $host)
+        {
+
             $props = &$host['properties'];
-            $rowspan = $this->get_num_vulns($host['vulns']);
 
             foreach ($host['vulns'] AS $vuln)
             {
-                if (!$this->match_filters($vuln))
-                    continue ;
 
 
-                if ($host_done == 0)
-                {
-                    echo '<td valign="top" colspan="1" rowspan="'. $rowspan .'">';
+                if(array_key_exists('synopsis', $vuln)){
+                    $risk = new \Risks();
+                    $risk->setNew(true);
+                    $risk->setSubject($this->subjectPrefix."-Vuln-".$props['host-fqdn'] ? $props['host-fqdn'] : $props['netbios-name']."-".$vul['synopsis']);
+                    $risk->setParentId($this->parent_id);
+                    $risk->setAssessment($vuln['description']);
+                    $risk->setNotes("CVE: ".$vuln['cve'] );
 
-                    echo '<b>'. $ip .'</b><br>';
-                    echo '<i>'. ($props['host-fqdn'] ? $props['host-fqdn'] : $props['netbios-name'])  .'</i><br>';
-                    echo $props['operating-system'];
-                    //echo "<br>Netbios name: ". $props['netbios-name'] . "</td>";
+                    $risk->save();
 
-                    $host_done = 1;
+                    $cvss = explode("\n", $vuln['cvss_vector']);
+
+                    foreach($cvss as $item){
+                        $item = substr($item, 6);
+
+                        $vals = explode("/", $item);
+
+                        foreach($vals as $val){
+                            $val = explode(":", $val);
+                            switch($val[0]){
+                                case 'AV':
+                                    if($this->avalrisk($AV, $val[1]) < 0)
+                                    $AV = $val[1];
+                                    break;
+                                case 'AC':
+                                    if($this->avalrisk($AC, $val[1]) < 0)
+                                    $AC = $val[1];
+                                    break;
+                                case 'Au':
+                                    if($this->avalrisk($Au, $val[1]) < 0)
+                                    $Au = $val[1];
+                                    break;
+                                case 'C':
+                                    if($this->avalrisk($C, $val[1]) < 0)
+                                    $C = $val[1];
+                                    break;
+                                case 'I':
+                                    if($this->avalrisk($I, $val[1]) < 0)
+                                    $I = $val[1];
+                                    break;
+                                case 'A':
+                                    if($this->avalrisk($A, $val[1]) < 0)
+                                    $A = $val[1];
+                            }
+                        }
+
+                    }
+
+                    $scoring = new \RiskScoring();
+
+                    $scoring->setId($risk->getId());
+                    $scoring->setScoringMethod(2);
+
+                    $scoring->setCvssAccesscomplexity($AC);
+                    $scoring->setCvssAccessvector($AV);
+                    $scoring->setCvssAvailimpact($A);
+                    $scoring->setCvssIntegimpact($I);
+                    $scoring->setCvssConfimpact($C);
+                    $scoring->setCvssAuthentication($Au);
+
+                    $scoring->save();
+
+
+
                 }
 
-                foreach ($all_cols AS $col)
-                    if (in_array($col, $whitelist_cols))
-                        echo "<td valign=\"top\">".
-                            (empty($vuln[$col]) ? '&nbsp;' :
-                                nl2br(htmlentities($vuln[$col]))) .
-                            "</td>\n";
 
-                echo "</tr>\n";
             }
-            flush();
+
         }
 
-    }
-
-    function match_filters(&$vuln)
-    {
-        $whitelist_sevr = array_keys($_POST['sev']);
-        $ms_filter = $_POST['ms'];
-
-        $is_ms = (preg_match("/MS[0-9]{2}-[0-9]{3}: /", substr($vuln['name'], 0, 10)) > 0) ? true : false;
-
-        if (!isset($vuln['risk_factor']) or
-            (isset($vuln['risk_factor']) and
-                !in_array($vuln['risk_factor'], $whitelist_sevr)))
-
-            return false;
-
-        if ((!$is_ms and $ms_filter == 'only_ms') or
-            ($is_ms and $ms_filter == 'no_ms'))
-
-            return false;
-
-        return true;
     }
 
     function get_num_vulns(&$vulns)
     {
         $ret = 0;
 
-        foreach ($vulns as $v) if ($this->match_filters($v)) $ret++;
+        foreach ($vulns as $v)  $ret++;
 
         return $ret;
     }
@@ -202,6 +247,16 @@ class nessusImporter implements riskImporter {
 
         $this->parse_xml_file($file['tmp_name']);
 
+    }
+
+    function setSubjectPrefix($string)
+    {
+        $this->subjectPrefix = $string;
+    }
+
+    function setParentId($id)
+    {
+        $this->parent_id = $id;
     }
 }
 

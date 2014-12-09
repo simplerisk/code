@@ -11,5 +11,7 @@ namespace lessrisk;
 interface riskImporter {
     function register();
     function getName();
-    function import($string);
+    function setSubjectPrefix($string);
+    function setParentId($id);
+    function import($file);
 } 

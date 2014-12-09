@@ -130,6 +130,8 @@ if ((isset($_POST['submit'])) && $submit_risks) {
         /* @var $ri \lessrisk\riskImporter */
         $ri = $rim->getRiskImporter($importer);
 
+        $ri->setSubjectPrefix($subject_prefis);
+        $ri->setParentId($parent_id);
         $ri->import($_FILES['file']);
 
         //$_FILES['file']
