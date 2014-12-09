@@ -101,7 +101,7 @@
     <td align="left" valign="top"  bgcolor="#6B7782" >
       <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
       	<tr>
-	  <td align="center" background="../images/cal-bg-head.jpg" height="35"><span class="heading">SimpleRisk CVSS V2.0 Calculator</span></td>
+	  <td align="center" background="../images/cal-bg-head.jpg" height="35"><span class="heading">LessRisk CVSS V2.0 Calculator</span></td>
     </tr>
     
     
@@ -157,7 +157,7 @@
                   </tr>
                   <tr>
                     <td  style="padding-left:5px; padding-right:5px;" >
-                      <?php view_cvss_help(); ?>
+                      <?php echo view_cvss_help(); ?>
                     </td>
                   </tr>
               </table></td>
@@ -178,7 +178,7 @@
                               <td width="119"><table border="0" cellspacing="0" cellpadding="0">
                                 <tr>
                                   <td>
-                                    <?php create_cvss_dropdown("AccessVector") ?>
+                                    <?php echo create_cvss_dropdown("AccessVector") ?>
                                   </td>
                                   <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('AccessVectorHelp');"></td>
                                 </tr>
@@ -189,7 +189,7 @@
                               <td class=""><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("AccessComplexity") ?>
+                                      <?php echo create_cvss_dropdown("AccessComplexity") ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('AccessComplexityHelp');"></td>
                                   </tr>
@@ -200,7 +200,7 @@
                               <td><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("Authentication") ?>
+                                      <?php echo create_cvss_dropdown("Authentication") ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('AuthenticationHelp');"></td>
                                   </tr>
@@ -214,7 +214,7 @@
                               <td><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("ConfImpact") ?>
+                                      <?php echo create_cvss_dropdown("ConfImpact") ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('ConfImpactHelp');"></td>
                                   </tr>
@@ -225,7 +225,7 @@
                               <td><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("IntegImpact") ?>
+                                      <?php echo create_cvss_dropdown("IntegImpact") ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('IntegImpactHelp');"></td>
                                   </tr>
@@ -236,7 +236,7 @@
                               <td><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("AvailImpact") ?>
+                                      <?php echo create_cvss_dropdown("AvailImpact") ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('AvailImpactHelp');"></td>
                                   </tr>
@@ -254,7 +254,7 @@
                               <td><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("Exploitability", NULL, false) ?>
+                                      <?php echo create_cvss_dropdown("Exploitability", NULL, false) ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('ExploitabilityHelp');"></td>
                                   </tr>
@@ -265,7 +265,7 @@
                               <td><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("RemediationLevel", NULL, false) ?>
+                                      <?php echo create_cvss_dropdown("RemediationLevel", NULL, false) ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('RemediationLevelHelp');"></td>
                                   </tr>
@@ -276,7 +276,7 @@
                               <td><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("ReportConfidence", NULL, false) ?>
+                                      <?php echo create_cvss_dropdown("ReportConfidence", NULL, false) ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('ReportConfidenceHelp');"></td>
                                   </tr>
@@ -294,7 +294,7 @@
                               <td><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("CollateralDamagePotential", NULL, false) ?>
+                                      <?php echo create_cvss_dropdown("CollateralDamagePotential", NULL, false) ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('CollateralDamagePotentialHelp');" /></td>
                                   </tr>
@@ -305,7 +305,7 @@
                               <td><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("TargetDistribution", NULL, false) ?>
+                                      <?php echo create_cvss_dropdown("TargetDistribution", NULL, false) ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('TargetDistributionHelp');" /></td>
                                   </tr>
@@ -319,7 +319,7 @@
                               <td><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("ConfidentialityRequirement", NULL, false) ?>
+                                      <?php echo create_cvss_dropdown("ConfidentialityRequirement", NULL, false) ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('ConfidentialityRequirementHelp');" /></td>
                                   </tr>
@@ -330,7 +330,7 @@
                               <td><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("IntegrityRequirement", NULL, false) ?>
+                                      <?php echo create_cvss_dropdown("IntegrityRequirement", NULL, false) ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('IntegrityRequirementHelp');" /></td>
                                   </tr>
@@ -341,7 +341,7 @@
                               <td><table border="0" cellspacing="0" cellpadding="0">
                                   <tr>
                                     <td>
-                                      <?php create_cvss_dropdown("AvailabilityRequirement", NULL, false) ?>
+                                      <?php echo create_cvss_dropdown("AvailabilityRequirement", NULL, false) ?>
                                     </td>
                                     <td><img src="../images/helpicon.jpg" width="25" height="18" align="absmiddle" onClick="javascript:showHelp('AvailabilityRequirementHelp');" /></td>
                                   </tr>
