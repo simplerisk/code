@@ -130,6 +130,7 @@ $lang = array(
     'ControlNumber'=>'Número de controle',
     'Owner'=>'Proprietário',
     'OwnersManager'=>'Gerente do Proprietário',
+    'Formats'=>'Formatos',
     'RiskScoringMethod'=>'Método de Pontuação de Risco',
     'CurrentLikelihood'=>'Probabilidade Atual',
     'CurrentImpact'=>'Impacto Atual',

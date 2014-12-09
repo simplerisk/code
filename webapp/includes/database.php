@@ -18,8 +18,10 @@ require_once __DIR__.'/../vendor/autoload.php';
 // setup Propel
 require_once __DIR__.'/../db/generated-conf/config.php';
 
-
+/* @var $dbm \lessrisk\dbConnectionManager */
 $dbm = \lessrisk\dbConnectionManager::get_instance();
+
+/* @var $dba \lessrisk\dbAddapter */
 $dba = $dbm->getDefaultAddapter();
 
 // MySQL Database Host Name

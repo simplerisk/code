@@ -29,7 +29,7 @@ function db_open()
         return $db;
     } catch (PDOException $e) {
         printf("A fatal error has occurred.  Please contact support.");
-        //die("Database Connection Failed: " . $e->getMessage());
+        die("Database Connection Failed: " . $e->getMessage());
     }
 
     return null;

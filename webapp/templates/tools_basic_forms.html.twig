@@ -1,0 +1,18 @@
+
+
+{% macro dropdown(name, values, empty) %}
+
+    <select id="{{ name }}" name="{{ name }}" class="form-field" style="width:auto;">
+
+    {% if empty|default('false') == 'true' %}
+        <option value="">--</option>
+    {% endif %}
+
+    {% for value in values %}
+        <option value="{{ value }}">{{ value }}</option>
+    {% else %}
+        <option value="">--</option>
+    {% endfor %}
+
+    </select>
+{% endmacro %}

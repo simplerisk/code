@@ -9,6 +9,7 @@ class lessriskDbAddapter implements \lessrisk\dbAddapter{
 
     function register($priority)
     {
+        /* @var $dcm \lessrisk\dbConnectionManager */
         $dcm = \lessrisk\dbConnectionManager::get_instance();
         $dcm->addAddapter($this, $priority);
     }

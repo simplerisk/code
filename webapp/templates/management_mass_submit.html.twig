@@ -29,9 +29,10 @@
                            class="input-medium" type="text"></td>
             </tr>
 
+            {% import 'tools_basic_forms.html.twig' as forms %}
             <tr>
-                <td width="200px">{{ OwnersManager }}:</td>
-                <td>{{ dd_owner_manager|raw }}</td>
+                <td width="200px">{{ Formats }}:</td>
+                <td>{{ forms.dropdown('importer', ImporterValues ) }}</td>
             </tr>
 
             <tr>

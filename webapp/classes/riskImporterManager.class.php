@@ -13,10 +13,13 @@ namespace lessrisk;
 
 require_once "singleton.class.php";
 
+require_once "../interfaces/riskImporter.interface.php";
+
 
 class riskImporterManager extends singleton {
 
-    private $riskImporters;
+    /* @var $riskImporters riskImporter */
+    private  $riskImporters;
 
     private $initialized = false;
 
@@ -35,15 +38,25 @@ class riskImporterManager extends singleton {
         }
     }
 
-    public function addRiskImporter($ri){
-        $this->connectionAdpaters[$ri->getName()] = $ri;
+    public function addRiskImporter(riskImporter $ri){
+        $this->initialize();
+        $this->riskImporters[$ri->getName()] = $ri;
     }
 
     public function getRiskImporter($name){
         $this->initialize();
-        return $this->connectionAdpaters[$name];
+        return $this->riskImporters[$name];
     }
 
-
+    public function getRiskImporterNameList(){
+        $this->initialize();
+        $risks = array();
+        $i = 0;
+        foreach($this->riskImporters as $name => $risk ){
+            $risks[$i] = $name;
+            $i++;
+        }
+        return $risks;
+    }
 
 } 
