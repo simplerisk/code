@@ -11,6 +11,7 @@ define('DATESIMPLE', 'd/m/Y');
 
 $lang = array(
     'Home'=>'Início',
+    'File'=>'Arquivo',
     'RiskManagement'=>'Gestão de Riscos',
     'Reporting'=>'Relatórios',
     'Configure'=>'Configurar',

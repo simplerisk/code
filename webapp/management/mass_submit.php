@@ -36,19 +36,10 @@ if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1) {
 // Check if a new risk was submitted and the user has permissions to submit new risks
 if ((isset($_POST['submit'])) && $submit_risks) {
     $status = "New";
-    $subject = $_POST['subject'];
-    $reference_id = $_POST['reference_id'];
+    $subject_prefis = $_POST['subject_prefix'];
     $parent_id = $_POST['parent_id'];
-    $regulation = (int)$_POST['regulation'];
-    $control_number = $_POST['control_number'];
-    $location = $_POST['location'];
-    $category = (int)$_POST['category'];
-    $team = (int)$_POST['team'];
-    $technology = (int)$_POST['technology'];
-    $owner = (int)$_POST['owner'];
-    $manager = (int)$_POST['manager'];
-    $assessment = $_POST['assessment'];
-    $notes = $_POST['notes'];
+    $importer = $_POST['importer'];
+
 
     // Risk scoring method
     // 1 = Classic
@@ -109,8 +100,11 @@ if ((isset($_POST['submit'])) && $submit_risks) {
     $continue = true;
 
     // Verify if the parent_id exists
-    if($parent_id != null && $parent_id != ""){
-
+    if($parent_id != null && $parent_id != "") {
+        $alert = "bad";
+        $alert_message = "Please select a parent id!";
+    }
+    else{
         if(is_numeric($parent_id)) {
             $parent_id = $parent_id - 1000;
             $risk = RisksQuery::create()->findById($parent_id)->getFirst();
@@ -130,6 +124,17 @@ if ((isset($_POST['submit'])) && $submit_risks) {
 
     if ($continue == true) {
 
+        /* @var $rim  \lessrisk\riskImporterManager */
+        $rim = \lessrisk\riskImporterManager::get_instance();
+
+        /* @var $ri \lessrisk\riskImporter */
+        $ri = $rim->getRiskImporter($importer);
+
+        $ri->import($_FILES['file']);
+
+        //$_FILES['file']
+
+        /*
         // Submit risk and get back the id
         $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $parent_id);
 
@@ -138,6 +143,7 @@ if ((isset($_POST['submit'])) && $submit_risks) {
 
         // Upload any file that is submitted
         upload_file($last_insert_id, $_FILES['file']);
+        */
 
         // If the notification extra is enabled
         if (notification_extra()) {
