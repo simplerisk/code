@@ -44,6 +44,9 @@ function generateSalt($username)
  ***************************/
 function generateHash($salt, $password)
 {
+	// The crypt function can take a while so we increase the max execution time
+	set_time_limit(120);
+
 	$hash = crypt($password, $salt);
 	return $hash;
 }
@@ -64,7 +67,12 @@ function get_user_type($user)
         // Store the list in the array
         $array = $stmt->fetchAll();
 
-	$type = $array[0]['type'];
+	// If the user does not exist
+	if (empty($array))
+	{
+		$type = "DNE";
+	}
+	else $type = $array[0]['type'];
 
 	// If the type isn't simplerisk or ldap
 	if ($type != "simplerisk" && $type != "ldap")
@@ -355,9 +363,27 @@ function password_reset_by_userid($userid)
 function send_reset_email($username, $name, $email, $token)
 {
         $to = $email;
-        $subject = "SimpleRisk Password Reset";
-        $body = $name.",\n\nA request was submitted to reset your SimpleRisk password.  Your username is \"".$username."\" and your password reset token is \"".$token."\".  You may now use the \"Forgot your password\" link on the SimpleRisk log in page to reset your password.";
-        mail($to, $subject, $body);
+        $subject = "[SIMPLERISK] Password Reset Token";
+
+        // To send HTML mail, the Content-type header must be set
+        $headers = "MIME-Version: 1.0\r\n";
+        $headers .= "Content-type: text/html; charset=UTF-8\r\n";
+
+        // Additional headers
+        $headers .= "From: SimpleRisk <noreply@simplerisk.it>\r\n";
+        $headers .= "Reply-To: SimpleRisk <noreply@simplerisk.it>\r\n";
+        $headers .= "X-Mailer: PHP/" . phpversion();
+
+        // Create the full HTML message
+        $body = "<html><body>\n";
+        $body .= "<p>Hello " . $name.",</p>\n";
+        $body .= "<p>A request was submitted to reset your SimpleRisk password.</p>\n";
+	$body .= "<b>Username:</b>&nbsp;&nbsp;".$username."<br/>\n";
+	$body .= "<b>Reset Token:</b>&nbsp;&nbsp;".$token."<br/>\n";
+	$body .= "<p>You may now use the \"<u>Forgot your password</u>\" link on the SimpleRisk log in page to reset your password.</p>";
+	$body .= "<p>This is an automated message and responses will be ignored or rejected.</p>\n";
+	$body .= "</body></html>\n";
+        mail($to, $subject, $body, $headers);
 }
 
 /*************************************

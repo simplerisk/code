@@ -323,11 +323,10 @@
 				$custom_review = $_POST['next_review'];
 
 				// Check the date format
-				if (!preg_match('/^[0-9]{4}-[0-1][0-9]-[0-3][0-9]$/', $custom_review))
+				if (!validate_date($custom_review, 'Y-m-d'))
 				{
 					$custom_review = "0000-00-00";
 				}
-				
 			}
 			else $custom_review = "0000-00-00";
 

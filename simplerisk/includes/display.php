@@ -2404,7 +2404,7 @@ function view_top_menu($active)
 		echo "<div style=\"width:150px; height:35px; line-height:45px; text-align:center;\">\n";
 		echo "<form name=\"search\" action=\"../management/view.php\" method=\"get\">\n";
 		echo "<input type=\"text\" size=\"6\" name=\"id\" value=\"ID#\" style=\"border-style: inset; font-size:10px; height:15px; line-height:35px; width:25px; text-align:center;\" onClick=\"this.setSelectionRange(0, this.value.length)\" />\n";
-		echo "<img src=\"../images/search.png\" width=\"20px\" heigh=\"20px\" style=\"margin-top: -10px;\" />\n";
+		echo "<a href=\"javascript:document.search.submit()\"><img src=\"../images/search.png\" width=\"20px\" heigh=\"20px\" style=\"margin-top: -10px;\" alt=\"Search\" /></a>\n";
 		echo "</form>\n";
 		echo "</div>\n";
 		echo "</li>\n";

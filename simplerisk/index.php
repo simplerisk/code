@@ -33,6 +33,9 @@
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 	session_start('SimpleRisk');
 
+        // Default is no alert
+        $alert = false;
+
 	// Include the language file
 	require_once(language_file());
 
@@ -86,7 +89,13 @@
 				header("Location: reports");
 			}
 		}
-		else $_SESSION["access"] = "denied";
+		// If the user is not a valid user
+		else
+		{
+			$_SESSION["access"] = "denied";
+			$alert = "bad";
+			$alert_message = "Invalid username or password.";
+		}
 	}
 
 	// If the user has already authorized and we are authorizing with duo
@@ -176,6 +185,16 @@
       		echo "<div class=\"row-fluid\">\n";
       		echo "<div class=\"span9\">\n";
       		echo "<div class=\"well\">\n";
+
+        	if ($alert == "bad")
+        	{
+                	echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                	echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                	echo "</div>\n";
+                	echo "<br />\n";
+        	}
+
+
       		echo "<p><label><u>" . $escaper->escapeHtml($lang['LogInHere']) . "</u></label></p>\n";
       		echo "<form name=\"authenticate\" method=\"post\" action=\"\">\n";
       		echo $escaper->escapeHtml($lang['Username']) . ": <input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /><br />\n";

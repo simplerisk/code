@@ -842,7 +842,7 @@ function open_risk_scoring_method_pie($title = null)
         $db = db_open();
 
         // Query the database
-        $stmt = $db->prepare("SELECT CASE WHEN scoring_method = 2 THEN 'CVSS' WHEN scoring_method = 1 THEN 'Classic' END AS name, COUNT(*) AS num FROM `risks` a INNER JOIN `risk_scoring` b ON a.id = b.id WHERE status != \"Closed\" GROUP BY b.scoring_method ORDER BY COUNT(*) DESC");
+        $stmt = $db->prepare("SELECT CASE WHEN scoring_method = 5 THEN 'Custom' WHEN scoring_method = 4 THEN 'OWASP' WHEN scoring_method = 3 THEN 'DREAD' WHEN scoring_method = 2 THEN 'CVSS' WHEN scoring_method = 1 THEN 'Classic' END AS name, COUNT(*) AS num FROM `risks` a INNER JOIN `risk_scoring` b ON a.id = b.id WHERE status != \"Closed\" GROUP BY b.scoring_method ORDER BY COUNT(*) DESC");
         $stmt->execute();
 
         // Store the list in the array

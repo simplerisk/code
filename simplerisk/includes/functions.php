@@ -1843,7 +1843,7 @@ function get_mitigation_by_id($risk_id)
         $risk_id = $risk_id - 1000;
 
         // Query the database
-        $stmt = $db->prepare("SELECT * FROM mitigations WHERE risk_id=:risk_id");
+        $stmt = $db->prepare("SELECT mitigations.*, mitigations.risk_id AS id FROM mitigations WHERE risk_id=:risk_id");
         $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
 
         $stmt->execute();
@@ -1884,7 +1884,7 @@ function get_review_by_id($risk_id)
         $risk_id = $risk_id - 1000;
 
         // Query the database
-        $stmt = $db->prepare("SELECT * FROM mgmt_reviews WHERE risk_id=:risk_id ORDER BY submission_date DESC");
+        $stmt = $db->prepare("SELECT mgmt_reviews.*, mgmt_reviews.risk_id AS id FROM mgmt_reviews WHERE risk_id=:risk_id ORDER BY submission_date DESC");
         $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
 
         $stmt->execute();
@@ -4326,6 +4326,15 @@ function get_scoring_method_name($scoring_method)
 		case 5:
 			return "Custom";
 	}
+}
+
+/***************************
+ * FUNCTION: VALIDATE DATE *
+ ***************************/
+function validate_date($date, $format = 'Y-m-d H:i:s')
+{
+	$d = DateTime::createFromFormat($format, $date);
+	return $d && $d->format($format) == $date;
 }
 
 ?>

@@ -376,6 +376,28 @@ function upgrade_from_20141013001($db)
 	$stmt->execute();
 }
 
+/**************************************
+ * FUNCTION: UPGRADE FROM 20141129001 *
+ **************************************/
+function upgrade_from_20141129001($db)
+{
+        // Database version to upgrade
+        define('VERSION_TO_UPGRADE', '20141129-001');
+
+        // Database version upgrading to
+        define('VERSION_UPGRADING_TO', '20141214-001');
+
+        // Set the default value for the mitigation_id field in the risks table
+        echo "Setting a default value for the mitigation_id field in the risks table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mitigation_id` int(11) DEFAULT 0;");
+        $stmt->execute();
+
+        // Correct any mitigation_id values of null
+        echo "Correcting any mitigation_id values of NULL.<br />\n";
+        $stmt = $db->prepare("UPDATE `risks` SET mitigation_id = 0 WHERE mitigation_id IS NULL;");
+        $stmt->execute();
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -404,6 +426,10 @@ function upgrade_database()
                                 upgrade_from_20141013001($db);
                                 update_database_version($db);
                                 break;
+			case "20141129-001":
+				upgrade_from_20141129001($db);
+				update_database_version($db);
+				break;
 			default:
 				echo "No database upgrade is needed at this time.<br />\n";
 		}
