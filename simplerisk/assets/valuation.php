@@ -3,10 +3,10 @@
          * License, v. 2.0. If a copy of the MPL was not distributed with this
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-        require_once(realpath(__DIR__ . '/../includes/functions.php'));
+        // Include required functions file
+        require_once(realpath(__DIR__ . '/../includes/assets.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-	require_once(realpath(__DIR__ . '/../includes/config.php'));
-	require_once(realpath(__DIR__ . '/../includes/upgrade.php'));
+	require_once(realpath(__DIR__ . '/../includes/display.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -23,9 +23,15 @@
                 header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
+        {
+		session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        }
+
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-        session_start('SimpleRiskDBUpgrade');
+        session_start('SimpleRisk');
 
         // Include the language file
         require_once(language_file());
@@ -35,70 +41,43 @@
         // Check for session timeout or renegotiation
         session_check();
 
-        // If the user requested a logout
-        if (isset($_GET['logout']) && $_GET['logout'] == "true")
-        {
-		// Log the user out
-		logout();
-	}
-
 	// Default is no alert
 	$alert = false;
 
-        // If the login form was posted
-        if (isset($_POST['submit']))
+        // Check if access is authorized
+        if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
-                $user = $_POST['user'];
-                $pass = $_POST['pass'];
-
-                // If the user is valid
-                if (is_valid_user($user, $pass, true))
-                {
-                        // Check if the user is an admin
-                        if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
-                        {
-                                // Grant access
-                                $_SESSION["access"] = "granted";
-                        }
-                        // The user is not an admin
-                        else
-                        {
-				$alert = "bad";
-                                $alert_message = "You need to log in as an administrative user in order to upgrade the database.";
-
-                                // Deny access
-                                $_SESSION["access"] = "denied";
-                        }
-                }
-                // The user was not valid
-                else
-                {
-			// Send an alert
-			$alert = "bad";
-
-                        // Invalid username or password
-                        $alert_message = "Invalid username or password.";
-
-                        // Deny access
-                        $_SESSION["access"] = "denied";
-                }
+                header("Location: ../index.php");
+                exit(0);
         }
 
-	// If an API key is set and is valid
-	if (isset($_GET['key']) && check_valid_key($_GET['key']))
+	// Check if the user has access to manage assets
+	if (!isset($_SESSION["asset"]) || $_SESSION["asset"] != 1)
 	{
-		// Grant access
-		$_SESSION["access"] = "granted";
+		header("Location: ../index.php");
+		exit(0);
+	}
+	else $manage_assets = true;
 
-		// API key is admin
-		$_SESSION["admin"] = "1";
+	// Check if an asset search was submitted
+	if ((isset($_POST['search'])) && $manage_assets)
+	{
+		$range = $_POST['range'];
+		$AvailableIPs = discover_assets($range);
+
+		// If the IP was not in a recognizable format
+		if ($AvailableIPs === false)
+		{
+			$alert = "bad";
+			$alert_message = "IP was not in a recognizable format.";
+		}
 	}
 
 ?>
 
 <!doctype html>
 <html>
-
+  
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -107,8 +86,44 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <script type="text/javascript">
+      var loading={
+        ajax:function(st)
+        {
+          this.show('load');
+        },
+        show:function(el)
+        {
+          this.getID(el).style.display='';
+        },
+        getID:function(el)
+        {
+          return document.getElementById(el);
+        }
+      }
+    </script>
+    <style type="text/css">
+      #load{
+        position:absolute;
+        z-index:1;
+        border:3px double #999;
+        background:#F5F6CE;
+        width:80%;
+        height:80%;
+	filter: alpha(opacity=90);
+	opacity: 0.9;
+        margin-top:-100px;
+        margin-left:-100px;
+	top:15%;
+	left:15%;
+        text-align:center;
+        line-height:300px;
+        font-family:"Trebuchet MS", verdana, arial, tahoma;
+        font-size:18pt;
+      }
+    </style>
   </head>
-
+  
   <body>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -118,24 +133,10 @@
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
-    <div class="navbar">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="brand" href="http://www.simplerisk.org/">SimpleRisk</a>
-          <div class="navbar-content">
-            <ul class="nav">
-              <li>
-                <a href="upgrade.php">Database Upgrade Script</a>
-              </li>
-              <li>
-                <a href="upgrade.php?logout=true">Logout</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
+
 <?php
+	view_top_menu("AssetManagement");
+
         if ($alert == "good")
         {
                 echo "<div id=\"alert\" class=\"container-fluid\">\n";
@@ -155,37 +156,18 @@
                 echo "<br />\n";
         }
 ?>
+    <div id="load" style="display:none;">Scanning IPs... Please wait.</div>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span12">
+        <div class="span3">
+          <?php view_asset_management_menu("AssetValuation"); ?>
+        </div>
+        <div class="span9">
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-<?php
-	// If access was not granted display the login form
-	if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-	{
-		// Display the login form
-		display_login_form();
-	}
-	// Otherwise access was granted so check if the user is an admin
-	else if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
-        {
-		// If CONTINUE was not pressed
-		if (!isset($_POST['upgrade_database']))
-		{
-			// Display the upgrade information
-			display_upgrade_info();
-		}
-		// Otherwise, CONTINUE was pressed
-		else
-		{
-			// Upgrade the database
-			upgrade_database();
-		}
-	}
-?>
-
+                <h4><?php echo $escaper->escapeHtml($lang['AssetValuation']); ?></h4>
+                <?php echo $escaper->escapeHtml($lang['ComingSoon']); ?></h4>
               </div>
             </div>
           </div>

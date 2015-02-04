@@ -840,13 +840,13 @@ function user_exist($user)
 /**********************
  * FUNCTION: ADD USER *
  **********************/
-function add_user($type, $user, $email, $name, $salt, $hash, $teams, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
+function add_user($type, $user, $email, $name, $salt, $hash, $teams, $asset, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
 {
         // Open the database connection
         $db = db_open();
 
         // Insert the new user
-        $stmt = $db->prepare("INSERT INTO user (`type`, `username`, `name`, `email`, `salt`, `password`, `teams`, `admin`, `review_high`, `review_medium`, `review_low`, `submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`) VALUES (:type, :user, :name, :email, :salt, :hash, :teams, :admin, :review_high, :review_medium, :review_low, :submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor)");
+        $stmt = $db->prepare("INSERT INTO user (`type`, `username`, `name`, `email`, `salt`, `password`, `teams`, `asset`, `admin`, `review_high`, `review_medium`, `review_low`, `submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`) VALUES (:type, :user, :name, :email, :salt, :hash, :teams, :asset, :admin, :review_high, :review_medium, :review_low, :submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor)");
 	$stmt->bindParam(":type", $type, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
@@ -854,6 +854,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $admin, $re
 	$stmt->bindParam(":salt", $salt, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":hash", $hash, PDO::PARAM_STR, 60);
 	$stmt->bindParam(":teams", $teams, PDO::PARAM_STR, 200);
+	$stmt->bindParam(":asset", $asset, PDO::PARAM_INT);
         $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
 	$stmt->bindParam(":review_high", $review_high, PDO::PARAM_INT);
 	$stmt->bindParam(":review_medium", $review_medium, PDO::PARAM_INT);
@@ -874,7 +875,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $admin, $re
 /*************************
  * FUNCTION: UPDATE USER *
  *************************/
-function update_user($user_id, $name, $email, $teams, $lang, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
+function update_user($user_id, $name, $email, $teams, $lang, $asset, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
 {
         // If the language is empty
         if ($lang == "")
@@ -887,12 +888,13 @@ function update_user($user_id, $name, $email, $teams, $lang, $admin, $review_hig
         $db = db_open();
 
         // Update the user
-        $stmt = $db->prepare("UPDATE user set `name`=:name, `email`=:email, `teams`=:teams, `lang` =:lang, `admin`=:admin, `review_high`=:review_high, `review_medium`=:review_medium, `review_low`=:review_low, `submit_risks`=:submit_risks, `modify_risks`=:modify_risks, `plan_mitigations`=:plan_mitigations, `close_risks`=:close_risks, `multi_factor`=:multi_factor WHERE `value`=:user_id");
+        $stmt = $db->prepare("UPDATE user set `name`=:name, `email`=:email, `teams`=:teams, `lang` =:lang, `asset`=:asset, `admin`=:admin, `review_high`=:review_high, `review_medium`=:review_medium, `review_low`=:review_low, `submit_risks`=:submit_risks, `modify_risks`=:modify_risks, `plan_mitigations`=:plan_mitigations, `close_risks`=:close_risks, `multi_factor`=:multi_factor WHERE `value`=:user_id");
 	$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
         $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
         $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":teams", $teams, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":lang", $lang, PDO::PARAM_STR, 2);
+	$stmt->bindParam(":asset", $asset, PDO::PARAM_INT);
         $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
         $stmt->bindParam(":review_high", $review_high, PDO::PARAM_INT);
         $stmt->bindParam(":review_medium", $review_medium, PDO::PARAM_INT);
@@ -911,6 +913,7 @@ function update_user($user_id, $name, $email, $teams, $lang, $admin, $review_hig
 	if ($_SESSION['uid'] == $user_id)
 	{
 		// Update the session values
+		$_SESSION['asset'] = (int)$asset;
         	$_SESSION['admin'] = (int)$admin;
         	$_SESSION['review_high'] = (int)$review_high;
         	$_SESSION['review_medium'] = (int)$review_medium;

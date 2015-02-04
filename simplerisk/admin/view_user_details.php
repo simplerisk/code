@@ -72,6 +72,7 @@
 			$email = $_POST['email'];
 			$teams = $_POST['team'];
 			$language = get_name_by_value("languages", (int)$_POST['languages']);
+			$asset = isset($_POST['asset']) ? '1' : '0';
 	                $admin = isset($_POST['admin']) ? '1' : '0';
         	        $submit_risks = isset($_POST['submit_risks']) ? '1' : '0';
                 	$modify_risks = isset($_POST['modify_risks']) ? '1' : '0';
@@ -112,7 +113,7 @@
                         if ($none) $team = "none";
 
 			// Update the user
-			update_user($user_id, $name, $email, $team, $language, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
+			update_user($user_id, $name, $email, $team, $language, $asset, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
                         // Audit log
                         $risk_id = 1000;
@@ -245,6 +246,7 @@
                   <li><input name="review_low" type="checkbox"<?php if ($review_low) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewLowRisks']); ?></li>
                   <li><input name="review_medium" type="checkbox"<?php if ($review_medium) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></li>
                   <li><input name="review_high" type="checkbox"<?php if ($review_high) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></li>
+		  <li><input name="asset" type="checkbox"<?php if ($asset) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></li>
                   <li><input name="admin" type="checkbox"<?php if ($admin) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></li>
                 </ul>
                 <h6><u><?php echo $escaper->escapeHtml($lang['MultiFactorAuthentication']); ?></u></h6>

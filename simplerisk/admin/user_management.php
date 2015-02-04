@@ -69,6 +69,7 @@
                 $repeat_pass = $_POST['repeat_password'];
 		$teams = $_POST['team'];
                 $admin = isset($_POST['admin']) ? '1' : '0';
+		$asset = isset($_POST['asset']) ? '1' : '0';
 		$submit_risks = isset($_POST['submit_risks']) ? '1' : '0';
 		$modify_risks = isset($_POST['modify_risks']) ? '1' : '0';
 		$close_risks = isset($_POST['close_risks']) ? '1' : '0';
@@ -138,7 +139,7 @@
 				if ($none) $team = "none";
 
                                 // Insert a new user
-                                add_user($type, $user, $email, $name, $salt, $hash, $team, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
+                                add_user($type, $user, $email, $name, $salt, $hash, $team, $asset, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
                         	// Audit log
                         	$risk_id = 1000;
@@ -347,6 +348,7 @@
                   <li><input name="review_low" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewLowRisks']); ?></li>
                   <li><input name="review_medium" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></li>
                   <li><input name="review_high" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></li>
+		  <li><input name="asset" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></li>
                   <li><input name="admin" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></li>
                 </ul>
                 <h6><u><?php echo $escaper->escapeHtml($lang['MultiFactorAuthentication']); ?></u></h6>

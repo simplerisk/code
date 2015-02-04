@@ -8,6 +8,8 @@
 require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
+require_once(realpath(__DIR__ . '/assets.php'));
+
 /****************************
  * FUNCTION: VIEW TOP TABLE *
  ****************************/
@@ -200,6 +202,10 @@ function view_risk_details($id, $submission_date, $subject, $reference_id, $regu
 	echo "<br />\n";
         echo "<textarea style=\"cursor: default;\" name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\" title=\"" . $escaper->escapeHtml($notes) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($notes) . "</textarea>\n";
 	echo "<br />\n";
+	echo $escaper->escapeHtml($lang['AffectedAssets']) .": \n";
+	echo "<br />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"assets\" id=\"assets\" size=\"50\" value=\"" . $escaper->escapeHtml(get_list_of_assets($id, false)) . "\" title=\"" . $escaper->escapeHtml(get_list_of_assets($id, false)) . "\" disabled=\"disabled\" />\n";
+	echo "<br />\n";
 	echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
 	echo "<br />\n";
 	supporting_documentation($id, "view");
@@ -290,6 +296,11 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
         echo "<td>" . $escaper->escapeHtml($notes) . "</td>\n";
         echo "</tr>\n";
 
+        echo "<tr>\n";
+        echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</td>\n";
+	echo "<td>" . $escaper->escapeHtml(get_list_of_assets($id, false)) . "</td>\n";
+	echo "</tr>\n";
+
 	echo "</table>\n";
 }
 
@@ -354,6 +365,10 @@ function edit_risk_details($id, $submission_date, $subject, $reference_id, $regu
         echo "<br />\n";
         echo "<textarea name=\"notes\" cols=\"50\" rows=\"3\" id=\"notes\">" . $escaper->escapeHtml($notes) . "</textarea>\n";
         echo "<br />\n";
+	echo $escaper->escapeHtml($lang['AffectedAssets']) .": \n";
+	echo "<br />\n";
+	echo "<div class=\"ui-widget\"><input type=\"text\" id=\"assets\" name=\"assets\" value=\"" . $escaper->escapeHtml(get_list_of_assets($id)) . "\" /></div>\n";
+	echo "<br />\n";
         echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
         echo "<br />\n";
         supporting_documentation($id, "edit");
@@ -2345,6 +2360,15 @@ function view_top_menu($active)
 		echo "<li>\n";
 		echo "<a href=\"management/index.php\">" . $escaper->escapeHtml($lang['RiskManagement']) . "</a>\n";
 		echo "</li>\n";
+
+		// If the user has asset management permissions
+		if (isset($_SESSION["asset"]) && $_SESSION["asset"] == "1")
+		{
+			echo ($active == "AssetManagement" ? "<li class=\"active\">\n" : "<li>\n");
+			echo "<a href=\"assets/index.php\">" . $escaper->escapeHtml($lang['AssetManagement']) . "</a>\n";
+			echo "</li>\n";
+		}
+
 		echo "<li>\n";
 		echo "<a href=\"reports/index.php\">" . $escaper->escapeHtml($lang['Reporting']) . "</a>\n";
 		echo "</li>\n";
@@ -2387,6 +2411,14 @@ function view_top_menu($active)
 		echo ($active == "RiskManagement" ? "<li class=\"active\">\n" : "<li>\n");
 		echo "<a href=\"../management/index.php\">" . $escaper->escapeHtml($lang['RiskManagement']) . "</a>\n";
 		echo "</li>\n";
+
+		// If the user has asset management permissions
+		if (isset($_SESSION["asset"]) && $_SESSION["asset"] == "1")
+		{
+			echo ($active == "AssetManagement" ? "<li class=\"active\">\n" : "<li>\n");
+			echo "<a href=\"../assets/index.php\">" . $escaper->escapeHtml($lang['AssetManagement']) . "</a>\n";
+			echo "</li>\n";
+		}
 
 		echo ($active == "Reporting" ? "<li class=\"active\">\n" : "<li>\n");
 		echo "<a href=\"../reports/index.php\">" . $escaper->escapeHtml($lang['Reporting']) . "</a>\n";
@@ -2458,6 +2490,30 @@ function view_risk_management_menu($active)
         echo "</li>\n";
         echo ($active == "ReviewRisksRegularly" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"review_risks.php\">V. " . $escaper->escapeHtml($lang['ReviewRisksRegularly']) . "</a>\n";
+        echo "</li>\n";
+	echo "</ul>\n";
+}
+
+/***************************************
+ * FUNCTION: VIEW ASSET MANAGEMENT MENU *
+ ***************************************/
+function view_asset_management_menu($active)
+{
+        global $lang;
+        global $escaper;
+
+        echo "<ul class=\"nav nav-pills nav-stacked\">\n";
+        echo ($active == "AutomatedDiscovery" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"index.php\">I. " . $escaper->escapeHtml($lang['AutomatedDiscovery']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "BatchImport" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"batch.php\">II. " . $escaper->escapeHtml($lang['BatchImport']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "ManageAssets" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"manage.php\">III. " . $escaper->escapeHtml($lang['ManageAssets']) . "</a>\n";
+        echo "</li>\n";
+        echo ($active == "AssetValuation" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"valuation.php\">IV. " . $escaper->escapeHtml($lang['AssetValuation']) . "</a>\n";
         echo "</li>\n";
 	echo "</ul>\n";
 }
@@ -2706,6 +2762,117 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $r
 
 	echo "</div>\n";
 	echo "</form>\n";
+}
+
+/************************************************
+ * FUNCTION: DISPLAY SIMPLE AUTOCOMPLETE SCRIPT *
+ ************************************************/
+function display_simple_autocomplete_script($assets)
+{
+	global $escaper;
+
+        echo "<script>\n";
+        echo "  $(function() {\n";
+        echo "    var availableAssets = [\n";
+
+        // For each asset
+        foreach ($assets as $asset)
+        {
+                // Display the asset name as an available asset
+                echo "      \"" . $escaper->escapeHtml($asset['name']) . "\",\n";
+        }
+
+        echo "    ];\n";
+        echo "    function split( val ) {\n";
+        echo "      return val.split( /,\s*/ );\n";
+        echo "    }\n";
+        echo "    function extractLast( term ) {\n";
+        echo "      return split( term ).pop();\n";
+        echo "    }\n";
+        echo "    $( \"#asset_name\" )\n";
+        echo "      // don't navigate away from the field on tab when selecting an item\n";
+        echo "      .bind( \"keydown\", function( event ) {\n";
+        echo "        if ( event.keyCode === $.ui.keyCode.TAB && $( this ).autocomplete( \"instance\" ).menu.active ) {\n";
+        echo "          event.preventDefault();\n";
+        echo "        }\n";
+        echo "      })\n";
+        echo "      .autocomplete({\n";
+        echo "        minLength: 0,\n";
+        echo "        source: function( request, response ) {\n";
+        echo "        // delegate back to autocomplete, but extract the last term\n";
+        echo "        response( $.ui.autocomplete.filter(\n";
+        echo "        availableAssets, extractLast( request.term ) ) );\n";
+        echo "      },\n";
+        echo "      select: function( event, ui ) {\n";
+        echo "        var terms = split( this.value );\n";
+        echo "        // remove the current input\n";
+        echo "        terms.pop();\n";
+        echo "        // add the selected item\n";
+        echo "        terms.push( ui.item.value );\n";
+        echo "        return false;\n";
+        echo "      }\n";
+        echo "    });\n";
+        echo "  });\n";
+        echo "</script>\n";
+}
+
+/***********************************************
+ * FUNCTION: DISPLAY ASSET AUTOCOMPLETE SCRIPT *
+ ***********************************************/
+function display_asset_autocomplete_script($assets)
+{
+	global $escaper;
+
+	echo "<script>\n";
+	echo "  $(function() {\n";
+        echo "    var availableAssets = [\n";
+
+	// For each asset
+	foreach ($assets as $asset)
+	{
+		// Display the asset name as an available asset
+		echo "      \"" . $escaper->escapeHtml($asset['name']) . "\",\n";
+	}
+
+        echo "    ];\n";
+        echo "    function split( val ) {\n";
+        echo "      return val.split( /,\s*/ );\n";
+        echo "    }\n";
+        echo "    function extractLast( term ) {\n";
+        echo "      return split( term ).pop();\n";
+        echo "    }\n";
+        echo "    $( \"#assets\" )\n";
+        echo "      // don't navigate away from the field on tab when selecting an item\n";
+        echo "      .bind( \"keydown\", function( event ) {\n";
+        echo "        if ( event.keyCode === $.ui.keyCode.TAB && $( this ).autocomplete( \"instance\" ).menu.active ) {\n";
+        echo "          event.preventDefault();\n";
+        echo "        }\n";
+        echo "      })\n";
+        echo "      .autocomplete({\n";
+        echo "        minLength: 0,\n";
+        echo "        source: function( request, response ) {\n";
+        echo "        // delegate back to autocomplete, but extract the last term\n";
+        echo "        response( $.ui.autocomplete.filter(\n";
+        echo "        availableAssets, extractLast( request.term ) ) );\n";
+        echo "      },\n";
+        echo "      focus: function() {\n";
+        echo "        // prevent value inserted on focus\n";
+        echo "        return false;\n";
+        echo "      },\n";
+        echo "      select: function( event, ui ) {\n";
+        echo "        var terms = split( this.value );\n";
+        echo "        // remove the current input\n";
+        echo "        terms.pop();\n";
+        echo "        // add the selected item\n";
+        echo "        terms.push( ui.item.value );\n";
+        echo "        // add placeholder to get the comma-and-space at the end\n";
+        echo "        terms.push( \"\" );\n";
+        echo "        this.value = terms.join( \", \" );\n";
+        echo "        return false;\n";
+        echo "      }\n";
+        echo "    });\n";
+        echo "  });\n";
+    	echo "</script>\n";
 }
 
 ?>

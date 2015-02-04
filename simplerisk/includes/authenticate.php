@@ -90,7 +90,7 @@ function get_user_type($user)
 /***************************
  * FUNCTION: IS VALID USER *
  ***************************/
-function is_valid_user($user, $pass)
+function is_valid_user($user, $pass, $upgrade = false)
 {
 	// Default set valid_simplerisk and valid_ad to false
 	$valid_simplerisk = false;
@@ -129,7 +129,7 @@ function is_valid_user($user, $pass)
 	if ($valid_ad || $valid_simplerisk)
 	{
 		// Set the user permissions
-		set_user_permissions($user);
+		set_user_permissions($user, $upgrade);
 
         	// If the encryption extra is enabled
         	if (encryption_extra())
@@ -164,32 +164,50 @@ function is_valid_user($user, $pass)
 /**********************************
  * FUNCTION: SET USER PERMISSIONS *
  **********************************/
-function set_user_permissions($user)
+function set_user_permissions($user, $upgrade = false)
 {
 	// Open the database connection
         $db = db_open();
 
-        // Query the DB for the users information
-        $stmt = $db->prepare("SELECT value, type, name, lang, admin, review_high, review_medium, review_low, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
+	// If we are not doing an upgrade
+	if (!$upgrade)
+	{
+        	// Query the DB for the users complete information
+        	$stmt = $db->prepare("SELECT value, type, name, lang, asset, admin, review_high, review_medium, review_low, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
+	}
+	// If we are doing an upgrade
+	else
+	{
+		// Query the DB for minimal user permissions needed
+		$stmt = $db->prepare("SELECT value, type, name, lang, admin FROM user WHERE username = :user");
+	}
+
         $stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
         $stmt->execute();
 
         // Store the list in the array
         $array = $stmt->fetchAll();
 
-        // Set the session values
+        // Set the minimal session values
         $_SESSION['uid'] = $array[0]['value'];
         $_SESSION['user'] = $user;
         $_SESSION['name'] = $array[0]['name'];
         $_SESSION['admin'] = $array[0]['admin'];
-        $_SESSION['review_high'] = $array[0]['review_high'];
-        $_SESSION['review_medium'] = $array[0]['review_medium'];
-        $_SESSION['review_low'] = $array[0]['review_low'];
-        $_SESSION['submit_risks'] = $array[0]['submit_risks'];
-        $_SESSION['modify_risks'] = $array[0]['modify_risks'];
-        $_SESSION['close_risks'] = $array[0]['close_risks'];
-        $_SESSION['plan_mitigations'] = $array[0]['plan_mitigations'];
-        $_SESSION['user_type'] = $array[0]['type'];
+	$_SESSION['user_type'] = $array[0]['type'];
+
+	// If we are not doing an upgrade
+	if (!$upgrade)
+	{
+		// Set additional session values
+		$_SESSION['asset'] = $array[0]['asset'];
+        	$_SESSION['review_high'] = $array[0]['review_high'];
+        	$_SESSION['review_medium'] = $array[0]['review_medium'];
+        	$_SESSION['review_low'] = $array[0]['review_low'];
+        	$_SESSION['submit_risks'] = $array[0]['submit_risks'];
+        	$_SESSION['modify_risks'] = $array[0]['modify_risks'];
+        	$_SESSION['close_risks'] = $array[0]['close_risks'];
+        	$_SESSION['plan_mitigations'] = $array[0]['plan_mitigations'];
+	}
 
 	// If the users language is not null
 	if (!is_null($array[0]['lang']))

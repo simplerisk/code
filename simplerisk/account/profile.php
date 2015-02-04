@@ -83,6 +83,7 @@
 	$last_login = date(DATETIME, strtotime($user_info['last_login']));
 	$teams = $user_info['teams'];
 	$language = $user_info['lang'];
+	$asset = $user_info['asset'];
         $admin = $user_info['admin'];
         $review_high = $user_info['review_high'];
         $review_medium = $user_info['review_medium'];
@@ -211,6 +212,7 @@
                   <li><input name="review_low" type="checkbox"<?php if ($review_low) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewLowRisks']); ?></li>
                   <li><input name="review_medium" type="checkbox"<?php if ($review_medium) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></li>
                   <li><input name="review_high" type="checkbox"<?php if ($review_high) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></li>
+		  <li><input name="asset" type="checkbox"<?php if ($asset) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></li>
                   <li><input name="admin" type="checkbox"<?php if ($admin) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></li>
                 </ul>
               </div>

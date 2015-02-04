@@ -7,6 +7,7 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
+	require_once(realpath(__DIR__ . '/../includes/assets.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -76,6 +77,7 @@
                 $manager = (int)$_POST['manager'];
                 $assessment = $_POST['assessment'];
                 $notes = $_POST['notes'];
+		$assets = $_POST['assets'];
 
 		// Risk scoring method
 		// 1 = Classic
@@ -139,6 +141,9 @@
 		// Submit risk scoring
 		submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
 
+		// Tag assets to risk
+		tag_assets_to_risk($last_insert_id, $assets);
+
 		// Upload any file that is submitted
 		upload_file($last_insert_id, $_FILES['file']);
 
@@ -168,12 +173,14 @@
   
   <head>
     <script src="../js/jquery.min.js"></script>
+    <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <link rel="stylesheet" href="../css/jquery-ui.min.css">
     <script type="text/javascript">
       function popupcvss()
       {
@@ -240,6 +247,7 @@
         }
       }
     </script>
+    <?php display_asset_autocomplete_script(get_entered_assets()); ?>
   </head>
   
   <body>
@@ -420,15 +428,19 @@
                     </table>
 		  </div>
                   <tr>
-                    <td width="200px"><?php echo $escaper->escapeHtml($lang['RiskAssessment']); ?></td>
+                    <td width="200px"><?php echo $escaper->escapeHtml($lang['RiskAssessment']); ?>:</td>
                     <td><textarea name="assessment" cols="50" rows="3" id="assessment"></textarea></td>
                   </tr>
                   <tr>
-                    <td width="200px"><?php echo $escaper->escapeHtml($lang['AdditionalNotes']); ?></td>
+                    <td width="200px"><?php echo $escaper->escapeHtml($lang['AdditionalNotes']); ?>:</td>
                     <td><textarea name="notes" cols="50" rows="3" id="notes"></textarea></td>
                   </tr>
                   <tr>
-                    <td width="200px"><?php echo $escaper->escapeHtml($lang['SupportingDocumentation']); ?></td>
+                    <td width="200px"><?php echo $escaper->escapeHtml($lang['AffectedAssets']); ?>:</td>
+                    <td><div class="ui-widget"><input type="text" id="assets" name="assets" /></div></td>
+                  </tr>
+                  <tr>
+                    <td width="200px"><?php echo $escaper->escapeHtml($lang['SupportingDocumentation']); ?>:</td>
                     <td><input type="file" name="file" /></td>
                   </tr>
                 </table>

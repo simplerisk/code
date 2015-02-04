@@ -164,66 +164,109 @@
                 // Get the details of the risk
                 $risk = get_risk_by_id($id);
 
-                $status = $risk[0]['status'];
-                $subject = $risk[0]['subject'];
-                $reference_id = $risk[0]['reference_id'];
-		$regulation = $risk[0]['regulation'];
-		$control_number = $risk[0]['control_number'];
-                $location = $risk[0]['location'];
-                $category = $risk[0]['category'];
-                $team = $risk[0]['team'];
-                $technology = $risk[0]['technology'];
-                $owner = $risk[0]['owner'];
-                $manager = $risk[0]['manager'];
-                $assessment = $risk[0]['assessment'];
-                $notes = $risk[0]['notes'];
-                $submission_date = $risk[0]['submission_date'];
-                $mitigation_id = $risk[0]['mitigation_id'];
-                $mgmt_review = $risk[0]['mgmt_review'];
-                $calculated_risk = $risk[0]['calculated_risk'];
-                $risk_level = get_risk_level_name($calculated_risk);
-		$next_review = $risk[0]['next_review'];
-		$color = get_risk_color($id);
+                // If the risk was found use the values for the risk
+                if (count($risk) != 0)
+                {
+                	$status = $risk[0]['status'];
+                	$subject = $risk[0]['subject'];
+	                $reference_id = $risk[0]['reference_id'];
+			$regulation = $risk[0]['regulation'];
+			$control_number = $risk[0]['control_number'];
+	                $location = $risk[0]['location'];
+        	        $category = $risk[0]['category'];
+                	$team = $risk[0]['team'];
+	                $technology = $risk[0]['technology'];
+	                $owner = $risk[0]['owner'];
+	                $manager = $risk[0]['manager'];
+        	        $assessment = $risk[0]['assessment'];
+                	$notes = $risk[0]['notes'];
+	                $submission_date = $risk[0]['submission_date'];
+	                $mitigation_id = $risk[0]['mitigation_id'];
+        	        $mgmt_review = $risk[0]['mgmt_review'];
+                	$calculated_risk = $risk[0]['calculated_risk'];
+	                $risk_level = get_risk_level_name($calculated_risk);
+			$next_review = $risk[0]['next_review'];
+			$color = get_risk_color($id);
 
-                $scoring_method = $risk[0]['scoring_method'];
-                $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
-                $CLASSIC_impact = $risk[0]['CLASSIC_impact'];
-                $AccessVector = $risk[0]['CVSS_AccessVector'];
-                $AccessComplexity = $risk[0]['CVSS_AccessComplexity'];
-                $Authentication = $risk[0]['CVSS_Authentication'];
-                $ConfImpact = $risk[0]['CVSS_ConfImpact'];
-                $IntegImpact = $risk[0]['CVSS_IntegImpact'];
-                $AvailImpact = $risk[0]['CVSS_AvailImpact'];
-                $Exploitability = $risk[0]['CVSS_Exploitability'];
-                $RemediationLevel = $risk[0]['CVSS_RemediationLevel'];
-                $ReportConfidence = $risk[0]['CVSS_ReportConfidence'];
-                $CollateralDamagePotential = $risk[0]['CVSS_CollateralDamagePotential'];
-                $TargetDistribution = $risk[0]['CVSS_TargetDistribution'];
-                $ConfidentialityRequirement = $risk[0]['CVSS_ConfidentialityRequirement'];
-                $IntegrityRequirement = $risk[0]['CVSS_IntegrityRequirement'];
-                $AvailabilityRequirement = $risk[0]['CVSS_AvailabilityRequirement'];
-                $DREADDamagePotential = $risk[0]['DREAD_DamagePotential'];
-                $DREADReproducibility = $risk[0]['DREAD_Reproducibility'];
-                $DREADExploitability = $risk[0]['DREAD_Exploitability'];
-                $DREADAffectedUsers = $risk[0]['DREAD_AffectedUsers'];
-                $DREADDiscoverability = $risk[0]['DREAD_Discoverability'];
-                $OWASPSkillLevel = $risk[0]['OWASP_SkillLevel'];
-                $OWASPMotive = $risk[0]['OWASP_Motive'];
-                $OWASPOpportunity = $risk[0]['OWASP_Opportunity'];
-                $OWASPSize = $risk[0]['OWASP_Size'];
-                $OWASPEaseOfDiscovery = $risk[0]['OWASP_EaseOfDiscovery'];
-                $OWASPEaseOfExploit = $risk[0]['OWASP_EaseOfExploit'];
-                $OWASPAwareness = $risk[0]['OWASP_Awareness'];
-                $OWASPIntrusionDetection = $risk[0]['OWASP_IntrusionDetection'];
-                $OWASPLossOfConfidentiality = $risk[0]['OWASP_LossOfConfidentiality'];
-                $OWASPLossOfIntegrity = $risk[0]['OWASP_LossOfIntegrity'];
-                $OWASPLossOfAvailability = $risk[0]['OWASP_LossOfAvailability'];
-                $OWASPLossOfAccountability = $risk[0]['OWASP_LossOfAccountability'];
-                $OWASPFinancialDamage = $risk[0]['OWASP_FinancialDamage'];
-                $OWASPReputationDamage = $risk[0]['OWASP_ReputationDamage'];
-                $OWASPNonCompliance = $risk[0]['OWASP_NonCompliance'];
-                $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
-                $custom = $risk[0]['Custom'];
+	                $scoring_method = $risk[0]['scoring_method'];
+        	        $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
+                	$CLASSIC_impact = $risk[0]['CLASSIC_impact'];
+	                $AccessVector = $risk[0]['CVSS_AccessVector'];
+        	        $AccessComplexity = $risk[0]['CVSS_AccessComplexity'];
+                	$Authentication = $risk[0]['CVSS_Authentication'];
+	                $ConfImpact = $risk[0]['CVSS_ConfImpact'];
+        	        $IntegImpact = $risk[0]['CVSS_IntegImpact'];
+                	$AvailImpact = $risk[0]['CVSS_AvailImpact'];
+	                $Exploitability = $risk[0]['CVSS_Exploitability'];
+        	        $RemediationLevel = $risk[0]['CVSS_RemediationLevel'];
+                	$ReportConfidence = $risk[0]['CVSS_ReportConfidence'];
+	                $CollateralDamagePotential = $risk[0]['CVSS_CollateralDamagePotential'];
+        	        $TargetDistribution = $risk[0]['CVSS_TargetDistribution'];
+                	$ConfidentialityRequirement = $risk[0]['CVSS_ConfidentialityRequirement'];
+	                $IntegrityRequirement = $risk[0]['CVSS_IntegrityRequirement'];
+        	        $AvailabilityRequirement = $risk[0]['CVSS_AvailabilityRequirement'];
+                	$DREADDamagePotential = $risk[0]['DREAD_DamagePotential'];
+	                $DREADReproducibility = $risk[0]['DREAD_Reproducibility'];
+        	        $DREADExploitability = $risk[0]['DREAD_Exploitability'];
+                	$DREADAffectedUsers = $risk[0]['DREAD_AffectedUsers'];
+	                $DREADDiscoverability = $risk[0]['DREAD_Discoverability'];
+        	        $OWASPSkillLevel = $risk[0]['OWASP_SkillLevel'];
+                	$OWASPMotive = $risk[0]['OWASP_Motive'];
+	                $OWASPOpportunity = $risk[0]['OWASP_Opportunity'];
+        	        $OWASPSize = $risk[0]['OWASP_Size'];
+                	$OWASPEaseOfDiscovery = $risk[0]['OWASP_EaseOfDiscovery'];
+	                $OWASPEaseOfExploit = $risk[0]['OWASP_EaseOfExploit'];
+        	        $OWASPAwareness = $risk[0]['OWASP_Awareness'];
+                	$OWASPIntrusionDetection = $risk[0]['OWASP_IntrusionDetection'];
+	                $OWASPLossOfConfidentiality = $risk[0]['OWASP_LossOfConfidentiality'];
+        	        $OWASPLossOfIntegrity = $risk[0]['OWASP_LossOfIntegrity'];
+                	$OWASPLossOfAvailability = $risk[0]['OWASP_LossOfAvailability'];
+	                $OWASPLossOfAccountability = $risk[0]['OWASP_LossOfAccountability'];
+        	        $OWASPFinancialDamage = $risk[0]['OWASP_FinancialDamage'];
+                	$OWASPReputationDamage = $risk[0]['OWASP_ReputationDamage'];
+	                $OWASPNonCompliance = $risk[0]['OWASP_NonCompliance'];
+        	        $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
+                	$custom = $risk[0]['Custom'];
+                }
+                // If the risk was not found use null values
+                else
+                {
+                        $status = "Risk ID Does Not Exist";
+                        $subject = "N/A";
+                        $reference_id = "N/A";
+                        $regulation = "";
+                        $control_number = "N/A";
+                        $location = "";
+                        $category = "";
+                        $team = "";
+                        $technology = "";
+                        $owner = "";
+                        $manager = "";
+                        $assessment = "";
+                        $notes = "";
+                        $submission_date = "";
+                        $mitigation_id = "";
+                        $mgmt_review = "";
+                        $calculated_risk = "0.0";
+
+                        $scoring_method = "";
+                        $CLASSIC_likelihood = "";
+                        $CLASSIC_impact = "";
+                        $AccessVector = "";
+                        $AccessComplexity = "";
+                        $Authentication = "";
+                        $ConfImpact = "";
+                        $IntegImpact = "";
+                        $AvailImpact = "";
+                        $Exploitability = "";
+                        $RemediationLevel = "";
+                        $ReportConfidence = "";
+                        $CollateralDamagePotential = "";
+                        $TargetDistribution = "";
+                        $ConfidentialityRequirement = "";
+                        $IntegrityRequirement = "";
+                        $AvailabilityRequirement = "";
+                }
 
                 if ($submission_date == "")
                 {
@@ -269,6 +312,7 @@
                         $review_date = "N/A";
                         $review = "";
                         $next_step = "";
+			$next_review = "";
                         $reviewer = "";
                         $comments = "";
                 }

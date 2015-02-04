@@ -63,6 +63,9 @@
  *********************/
 function display()
 {
+	global $lang;
+	global $escaper;
+
 	// If the extra directory exists
 	if (is_dir(realpath(__DIR__ . '/../extras/authentication')))
 	{
@@ -76,57 +79,100 @@ function display()
 		// Once it has been activated
 		else
 		{
-			echo "<form name=\"\">\n";
+			// Include the authentication extra
+			require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
+
+			// If values have been submitted
+			if (isset($_POST['submit']))
+			{
+				$tls = $_POST['tls'];
+				$ldap_version = $_POST['ldap_version'];
+				$chase_referrals = $_POST['chase_referrals'];
+				$ldap_host = $_POST['ldap_host'];
+				$ldap_port = $_POST['ldap_port'];
+				$userdn = $_POST['userdn'];
+				$ikey = $_POST['ikey'];
+				$skey = $_POST['skey'];
+				$host = $_POST['host'];
+				$consumer_key = $_POST['consumer_key'];
+				$consumer_secret = $_POST['consumer_secret'];
+
+				// Write the configuration file
+				write_config_file($tls, $ldap_version, $chase_referrals, $ldap_host, $ldap_port, $userdn, $ikey, $skey, $host, $consumer_key, $consumer_secret);
+			}
+			else
+			{
+				// Read the config file
+				$configs = read_config_file();
+
+				$tls = $configs['TLS'];
+                                $ldap_version = $configs['LDAP_VERSION'];
+                                $chase_referrals = $configs['CHASE_REFERRALS'];
+                                $ldap_host = $configs['LDAPHOST'];
+                                $ldap_port = $configs['LDAPPORT'];
+                                $userdn = $configs['USERDN'];
+                                $ikey = $configs['IKEY'];
+                                $skey = $configs['SKEY'];
+                                $host = $configs['HOST'];
+                                $consumer_key = $configs['CONSUMERKEY'];
+                                $consumer_secret = $configs['CONSUMERSECRET'];
+			}
+
+			echo "<form name=\"authentication_extra\" method=\"post\" action=\"\">\n";
 			echo "<table>\n";
 			echo "<tr><td colspan=\"2\"><u>LDAP</u></td></tr>\n";
 			echo "<tr>\n";
 			echo "<td>TLS:</td>\n";
-			echo "<td><input type=\"text\" name=\"tls\" /></td>\n";
+			echo "<td><input type=\"text\" name=\"tls\" value=\"" . $escaper->escapeHtml($tls) . "\" /></td>\n";
 			echo "</tr>\n";
 			echo "<tr>\n";
 			echo "<td>LDAP VERSION:</td>\n";
-			echo "<td><input type=\"text\" name=\"ldap_version\" /></td>\n";
+			echo "<td><input type=\"text\" name=\"ldap_version\" value=\"" . $escaper->escapeHtml($ldap_version) . "\" /></td>\n";
 			echo "</tr>\n";
                         echo "<tr>\n";
                         echo "<td>CHASE REFERRALS:</td>\n";
-                        echo "<td><input type=\"text\" name=\"chase_referrals\" /></td>\n";
+                        echo "<td><input type=\"text\" name=\"chase_referrals\" value=\"" . $escaper->escapeHtml($chase_referrals) . "\" /></td>\n";
 			echo "</tr>\n";
                         echo "<tr>\n";
                         echo "<td>LDAP HOST:</td>\n";
-                        echo "<td><input type=\"text\" name=\"ldap_host\" /></td>\n";
+                        echo "<td><input type=\"text\" name=\"ldap_host\" value=\"" . $escaper->escapeHtml($ldap_host) . "\" /></td>\n";
                         echo "</tr>\n";
                         echo "<tr>\n";
                         echo "<td>LDAP PORT:</td>\n";
-                        echo "<td><input type=\"text\" name=\"ldap_port\" /></td>\n";
+                        echo "<td><input type=\"text\" name=\"ldap_port\" value=\"" . $escaper->escapeHtml($ldap_port) . "\" /></td>\n";
                         echo "</tr>\n";
                         echo "<tr>\n";
                         echo "<td>USER DN:</td>\n";
-                        echo "<td><input type=\"text\" name=\"userdn\" /></td>\n";
+                        echo "<td><input type=\"text\" name=\"userdn\" value=\"" . $escaper->escapeHtml($userdn) . "\" /></td>\n";
                         echo "</tr>\n";
 			echo "<tr><td colspan=\"2\">&nbsp;</td></tr>\n";
 			echo "<tr><td colspan=\"2\"><u>Duo Security</u></td></tr>\n";
                         echo "<tr>\n";
                         echo "<td>IKEY:</td>\n";
-                        echo "<td><input type=\"text\" name=\"ikey\" /></td>\n";
+                        echo "<td><input type=\"text\" name=\"ikey\" value=\"" . $escaper->escapeHtml($ikey) . "\" /></td>\n";
                         echo "</tr>\n";
                         echo "<tr>\n";
                         echo "<td>SKEY:</td>\n";
-                        echo "<td><input type=\"text\" name=\"skey\" /></td>\n";
+                        echo "<td><input type=\"text\" name=\"skey\" value=\"" . $escaper->escapeHtml($skey) . "\" /></td>\n";
                         echo "</tr>\n";
                         echo "<tr>\n";
                         echo "<td>HOST:</td>\n";
-                        echo "<td><input type=\"text\" name=\"host\" /></td>\n";
+                        echo "<td><input type=\"text\" name=\"host\" value=\"" . $escaper->escapeHtml($host) . "\" /></td>\n";
                         echo "</tr>\n";
 			echo "<tr><td colspan=\"2\">&nbsp;</td></tr>\n";
 			echo "<tr><td colspan=\"2\"><u>Toopher</u></td></tr>\n";
                         echo "<tr>\n";
                         echo "<td>CONSUMER KEY:</td>\n";
-                        echo "<td><input type=\"text\" name=\"consumer_key\" /></td>\n";
+                        echo "<td><input type=\"text\" name=\"consumer_key\" value=\"" . $escaper->escapeHtml($consumer_key) . "\" /></td>\n";
                         echo "</tr>\n";
                         echo "<tr>\n";
                         echo "<td>CONSUMER SECRET:</td>\n";
-                        echo "<td><input type=\"text\" name=\"consumer_secret\" /></td>\n";
+                        echo "<td><input type=\"text\" name=\"consumer_secret\" value=\"" . $escaper->escapeHtml($consumer_secret) . "\" /></td>\n";
                         echo "</tr>\n";
+			echo "</table>\n";
+                	echo "<div class=\"form-actions\">\n";
+                  	echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Submit']) . "</button>\n";
+                	echo "</div>\n";
 			echo "</form>\n";
 		}
 	}

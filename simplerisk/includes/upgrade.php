@@ -398,6 +398,48 @@ function upgrade_from_20141129001($db)
         $stmt->execute();
 }
 
+/**************************************
+ * FUNCTION: UPGRADE FROM 20141214001 *
+ **************************************/
+function upgrade_from_20141214001($db)
+{
+	// Database version to upgrade
+	define('VERSION_TO_UPGRADE', '20141214-001');
+
+	// Database version upgrading to
+	define('VERSION_UPGRADING_TO', '20150202-001');
+
+	// Add the field to track asset management permission
+	echo "Adding a field to track asset management permissions.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `user` ADD asset tinyint(1) DEFAULT 0 NOT NULL AFTER lang;");
+	$stmt->execute();
+
+	// Give admin users asset management permissions
+	echo "Giving admin users asset management permissions.<br />\n";
+	$stmt = $db->prepare("UPDATE `user` SET asset='1' WHERE admin='1';");
+	$stmt->execute();
+
+	// Add the asset tracking table
+	echo "Adding the table to track assets.<br />\n";
+	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assets` (id int(11) AUTO_INCREMENT PRIMARY KEY, ip VARCHAR(15), name VARCHAR(200) NOT NULL UNIQUE, created TIMESTAMP DEFAULT NOW());");
+	$stmt->execute();
+
+	// Add table to track risk to asset tagging
+	echo "Adding table to track risk to asset tagging.<br />\n";
+	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risks_to_assets` (risk_id int(11), asset VARCHAR(200) NOT NULL, UNIQUE(risk_id,asset));");
+	$stmt->execute();
+
+	// Add a table for scoring methods
+	echo "Adding a table for scoring methods.<br />\n";
+	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `scoring_methods` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20));");
+	$stmt->execute();
+
+	// Add scoring methods to table
+	echo "Adding scoring methods to scoring methods table.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `scoring_methods` VALUES ('1', 'Classic'), ('2', 'CVSS'), ('3', 'DREAD'), ('4', 'OWASP'), ('5', 'Custom');");
+	$stmt->execute();
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -428,6 +470,10 @@ function upgrade_database()
                                 break;
 			case "20141129-001":
 				upgrade_from_20141129001($db);
+				update_database_version($db);
+				break;
+			case "20141214-001":
+				upgrade_from_20141214001($db);
 				update_database_version($db);
 				break;
 			default:

@@ -68,15 +68,46 @@
 		import_csv($_FILES['file']);
 	}
 
-	// If the user selected to export a CSV
-	if (isset($_POST['export_csv']))
+	// If the user selected to do a combined export
+	if (isset($_POST['combined_export']))
 	{
 		// Include the Import-Export Extra
 		require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
 
 		// Export the CSV file
-		export_csv();
+		export_csv("combined");
 	}
+
+        // If the user selected to do a combined export
+        if (isset($_POST['risks_export']))
+        {
+                // Include the Import-Export Extra
+                require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+
+                // Export the CSV file
+                export_csv("risks");
+        }
+
+        // If the user selected to do a combined export
+        if (isset($_POST['mitigations_export']))
+        {
+                // Include the Import-Export Extra
+                require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+
+                // Export the CSV file
+                export_csv("mitigations");
+        }
+
+        // If the user selected to do a combined export
+        if (isset($_POST['reviews_export']))
+        {
+                // Include the Import-Export Extra
+                require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+
+                // Export the CSV file
+                export_csv("reviews");
+        }
+
 
 /*********************
  * FUNCTION: DISPLAY *
@@ -118,9 +149,12 @@ function display()
                         echo "<div class=\"hero-unit\">\n";
                         echo "<h4>" . $escaper->escapeHtml($lang['Export']) . "</h4>\n";
                         echo "<form name=\"export\" method=\"post\" action=\"\">\n";
-			echo "Export all risks to a CSV file by clicking below:<br />\n";
+			echo "Export to a CSV file by clicking below:<br />\n";
                         echo "<div class=\"form-actions\">\n";
-                        echo "<button type=\"submit\" name=\"export_csv\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Export']) . "</button>\n";
+                        echo "<button type=\"submit\" name=\"risks_export\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['ExportRisks']) . "</button>\n";
+                        echo "<button type=\"submit\" name=\"mitigations_export\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['ExportMitigations']) . "</button>\n";
+                        echo "<button type=\"submit\" name=\"reviews_export\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['ExportReviews']) . "</button>\n";
+                        echo "<button type=\"submit\" name=\"combined_export\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['ExportCombined']) . "</button>\n";
                         echo "</div>\n";
                         echo "</form>\n";
                         echo "</div>\n";

@@ -163,7 +163,7 @@
 <html>
   
   <head>
-    <script src="../js/jquery-1.10.1.min.js"></script>
+    <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>

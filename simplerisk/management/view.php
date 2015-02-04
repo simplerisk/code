@@ -402,9 +402,13 @@
                 	$manager = (int)$_POST['manager'];
                 	$assessment = $_POST['assessment'];
                 	$notes = $_POST['notes'];
+			$assets = $_POST['assets'];
 
 			// Update risk
 			update_risk($id, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+
+			// Tag the assets to the risk id
+			tag_assets_to_risk($id-1000, $assets);
 
 			// If the user checked the delete button
 			if (isset($_POST['delete']) && $_POST['delete'] == "YES")
@@ -515,6 +519,7 @@
   
   <head>
     <script src="../js/jquery.min.js"></script>
+    <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -525,6 +530,7 @@
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
+    <link rel="stylesheet" href="../css/jquery-ui.min.css">
     <script type="text/javascript">
       function showScoreDetails() {
         document.getElementById("scoredetails").style.display = "";
@@ -545,6 +551,7 @@
         document.getElementById("show").style.display = "none";
       }
     </script>
+    <?php display_asset_autocomplete_script(get_entered_assets()); ?>
   </head>
   
   <body>
