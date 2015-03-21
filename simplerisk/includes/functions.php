@@ -595,6 +595,7 @@ function get_risk_level_name($risk)
 	{
         	// Open the database connection
         	$db = db_open();
+
         	// Get the risk levels
         	$stmt = $db->prepare("SELECT name FROM risk_levels WHERE value<=$risk ORDER BY value DESC LIMIT 1");
         	$stmt->execute();
@@ -732,7 +733,7 @@ function get_setting($setting)
 }
 
 /***************************
- * FUNCTION: INSERT STRING *
+ * FUNCTION: ADD NAME *
  ***************************/
 function add_name($table, $name, $size=20)
 {
@@ -2159,6 +2160,17 @@ function get_risks($sort_order=0)
                 $array = $stmt->fetchAll();
         }
 
+	// 21 = Get all risks
+	else if ($sort_order == 21)
+	{
+		// Query the database
+		$stmt = $db->prepare("SELECT * FROM risks ORDER BY id ASC");
+		$stmt->execute();
+
+		// Store the list in the array
+                $array = $stmt->fetchAll();
+	}
+
         // Close the database connection
         db_close($db);
 
@@ -3196,6 +3208,49 @@ function get_reviews_table($sort_order=3)
         return true;
 }
 
+/***********************************
+ * FUNCTION: GET DELETE RISK TABLE *
+ ***********************************/
+function get_delete_risk_table()
+{
+        global $lang;
+        global $escaper;
+
+        // Get risks
+        $risks = get_risks(21);
+
+        echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        echo "<thead>\n";
+        echo "<tr>\n";
+	 echo "<th align=\"left\" width=\"75\"><input type=\"checkbox\" onclick=\"checkAll(this)\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "</th>\n";
+        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        echo "</tr>\n";
+        echo "</thead>\n";
+        echo "<tbody>\n";
+
+        // For each risk
+        foreach ($risks as $risk)
+        {
+                $risk_id = $risk['id'];
+                $subject = $risk['subject'];
+                $status = $risk['status'];
+
+                echo "<tr>\n";
+                echo "<td align=\"center\">\n";
+                echo "<input type=\"checkbox\" name=\"risks[]\" value=\"" . $escaper->escapeHtml($risk['id']) . "\" />\n";
+                echo "</td>\n";
+                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                echo "</tr>\n";
+        }
+
+        echo "</tbody>\n";
+        echo "</table>\n";
+}
+
 /*******************************
  * FUNCTION: MANAGEMENT REVIEW *
  *******************************/
@@ -3551,6 +3606,16 @@ function close_risk($id, $user_id, $status, $close_reason, $note)
         $stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
 	$stmt->bindParam(":close_id", $close_id, PDO::PARAM_INT);
         $stmt->execute();
+
+        // If notification is enabled
+        if (notification_extra())
+        {
+                // Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+                // Send the notification
+                notify_risk_close($id);
+        }
 
         // Close the database connection
         db_close($db);
@@ -4338,6 +4403,90 @@ function validate_date($date, $format = 'Y-m-d H:i:s')
 {
 	$d = DateTime::createFromFormat($format, $date);
 	return $d && $d->format($format) == $date;
+}
+
+/**************************
+ * FUNCTION: DELETE RISKS *
+ **************************/
+function delete_risks($risks)
+{
+        // Return true by default
+        $return = true;
+
+        // For each risk
+        foreach ($risks as $risk)
+        {
+                $risk_id = (int) $risk;
+
+                // Delete the asset
+                $success = delete_risk($risk_id);
+
+                // If it was not a success return false
+                if (!$success) $return = false;
+        }
+
+        // Return success or failure
+        return $return;
+}
+
+/*************************
+ * FUNCTION: DELETE RISK *
+ *************************/
+function delete_risk($risk_id)
+{
+        // Open the database connection
+        $db = db_open();
+
+	// Remove closures for the risk
+	$stmt = $db->prepare("DELETE FROM `closures` WHERE `risk_id`=:id;");
+	$stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+        $return = $stmt->execute();
+
+	// Remove comments for the risk
+	$stmt = $db->prepare("DELETE FROM `comments` WHERE `risk_id`=:id;");
+        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+        $return = $stmt->execute();
+
+	// Remove files for the risk
+	$stmt = $db->prepare("DELETE FROM `files` WHERE `risk_id`=:id;");
+        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+        $return = $stmt->execute();
+
+	// Remove management reviews for the risk
+	$stmt = $db->prepare("DELETE FROM `mgmt_reviews` WHERE `risk_id`=:id;");
+        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+        $return = $stmt->execute();
+
+	// Remove mitigations for the risk
+	$stmt = $db->prepare("DELETE FROM `mitigations` WHERE `risk_id`=:id;");
+        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+        $return = $stmt->execute();
+
+	// Remove asset mapping for the risk
+	$stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE `risk_id`=:id;");
+        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+        $return = $stmt->execute();
+
+	// Remove the risk scoring for the risk
+	$stmt = $db->prepare("DELETE FROM `risk_scoring` WHERE `id`=:id;");
+        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+        $return = $stmt->execute();
+
+	// Remove the risk
+        $stmt = $db->prepare("DELETE FROM `risks` WHERE `id`=:id;");
+        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+        $return = $stmt->execute();
+
+        // Close the database connection
+        db_close($db);
+
+        // Audit log
+        $risk_id = $risk_id + 1000;
+        $message = "Risk ID \"" . $risk_id . "\" was DELETED by username \"" . $_SESSION['user'] . "\".";
+        write_log($risk_id, $_SESSION['uid'], $message);
+
+        // Return success or failure
+        return $return;
 }
 
 ?>

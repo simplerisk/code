@@ -2614,6 +2614,9 @@ function view_configure_menu($active)
 	echo ($active == "RedefineNamingConventions" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"custom_names.php\">" . $escaper->escapeHtml($lang['RedefineNamingConventions']) . "</a>\n";
         echo "</li>\n";
+	echo ($active == "DeleteRisks" ? "<li class=\"active\">\n" : "<li>\n");
+	echo "<a href=\"delete_risks.php\">" . $escaper->escapeHtml($lang['DeleteRisks']) . "</a>\n";
+	echo "</li>\n";
 	echo ($active == "AuditTrail" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"audit_trail.php\">" . $escaper->escapeHtml($lang['AuditTrail']) . "</a>\n";
         echo "</li>\n";

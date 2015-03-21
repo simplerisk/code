@@ -307,7 +307,6 @@
                         $review_date = "N/A";
                         $review = "";
                         $next_step = "";
-			$next_review = "";
                         $reviewer = "";
                         $comments = "";
                 }

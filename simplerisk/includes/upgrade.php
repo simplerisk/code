@@ -141,6 +141,7 @@ function check_grants($db)
 	$create = false;
 	$drop = false;
 	$alter = false;
+	$all = false;
 
 	// For each row of the array
 	foreach ($array as $value)
@@ -195,10 +196,22 @@ function check_grants($db)
                 {
                         $alter = true;
                 }
+
+		// Match ALL statement
+		$regex_pattern = "/ALL/";
+		if (preg_match($regex_pattern, $string))
+		{
+			$all = true;
+		}
 	}
 
 	// If the grants include all values
 	if ($select && $insert && $update && $delete && $create && $drop && $alter)
+	{
+		return true;
+	}
+	// If the grant includes the all value
+	else if ($all)
 	{
 		return true;
 	}
@@ -440,6 +453,38 @@ function upgrade_from_20141214001($db)
 	$stmt->execute();
 }
 
+/**************************************
+ * FUNCTION: UPGRADE FROM 20141214001 *
+ **************************************/
+function upgrade_from_20150202001($db)
+{
+        // Database version to upgrade
+        define('VERSION_TO_UPGRADE', '20150202-001');
+
+        // Database version upgrading to
+        define('VERSION_UPGRADING_TO', '20150321-001');
+
+	// Increase the size of the name column of the settings table
+	echo "Increasing the size of the settings table name column to hold 50 characters.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `settings` MODIFY `name` varchar(50) NOT NULL;");
+	$stmt->execute();
+
+	// Increase the size of the value column of the settings table
+	echo "Increasing the size of the settings table value column to hold 200 characters.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `settings` MODIFY `value` varchar(200) NOT NULL;");
+        $stmt->execute();
+
+        // Set the default value for the mitigation_id field in the risks table to 0 instead of null
+        echo "Setting the default value for the mitigation_id field in the risks table to 0.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mitigation_id` int(11) DEFAULT 0;");
+        $stmt->execute();
+
+	// Update risks with mitigation_id of null to 0
+	echo "Updating risks with a mitigation_id of null to 0.<br />\n";
+	$stmt = $db->prepare("UPDATE `risks` SET `mitigation_id` = 0 WHERE mitigation_id is null;");
+	$stmt->execute();
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -476,6 +521,10 @@ function upgrade_database()
 				upgrade_from_20141214001($db);
 				update_database_version($db);
 				break;
+			case "20150202-001":
+				upgrade_from_20150202001($db);
+				update_database_version($db);
+                                break;
 			default:
 				echo "No database upgrade is needed at this time.<br />\n";
 		}

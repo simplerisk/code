@@ -355,6 +355,12 @@ $lang = array(
     'MitigationId'=>'Mitigação ID',
     'ReviewId'=>'ID da Avaliação',
     'AffectedAssets'=>'Ativos Afetados',
+    'Activate'=>'Ativar',
+    'DeleteRisks'=>'Excluir Riscos',
+    'DeletedRisksCannotBeRecovered'=>'Riscos Excluídos Não Podem Ser Recuperados',
+    'RisksDeletedSuccessfully'=>'Riscos Excluído Com Sucesso',
+    'ThereWasAProblemDeletingTheRisk'=>'Houve Um Problema Excluindo Os Riscos',
+    'Activated'=>'ATIVOU',
     ''=>'',
 );
 

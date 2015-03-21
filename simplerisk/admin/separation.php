@@ -70,12 +70,16 @@ function display()
                 if (!team_separation_extra())
                 {
                         echo "<form name=\"activate\" method=\"post\" action=\"../extras/separation/\">\n";
-                        echo "<input type=\"submit\" value=\"Activate\" name=\"activate\" /><br />";
+                        echo "<input type=\"submit\" value=\"Activate\" name=\"activate\" /><br />\n";
                         echo "</form>\n";
                 }
                 // Once it has been activated
                 else
                 {
+                        // Include the Team Separation Extra
+                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+			display_team_separation();
                 }
         }
 }

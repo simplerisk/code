@@ -141,6 +141,7 @@
 		$language = $user_info['lang'];
 		$teams = $user_info['teams'];
                 $admin = $user_info['admin'];
+		$asset = $user_info['asset'];
                 $review_high = $user_info['review_high'];
                 $review_medium = $user_info['review_medium'];
                 $review_low = $user_info['review_low'];

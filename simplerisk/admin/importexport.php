@@ -65,7 +65,7 @@
 		require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
 
 		// Import the CSV file
-		import_csv($_FILES['file']);
+		$display = import_csv($_FILES['file']);
 	}
 
 	// If the user selected to do a combined export
@@ -112,7 +112,7 @@
 /*********************
  * FUNCTION: DISPLAY *
  *********************/
-function display()
+function display($display = "")
 {
 	global $lang;
 	global $escaper;
@@ -133,32 +133,13 @@ function display()
                 // Once it has been activated
                 else
                 {
-			// Show the import form
-			echo "<div class=\"hero-unit\">\n";
-			echo "<h4>" . $escaper->escapeHtml($lang['Import']) . "</h4>\n";
-			echo "<form name=\"import\" method=\"post\" action=\"\" enctype=\"multipart/form-data\">\n";
-			echo "Import the following CSV file into SimpleRisk:<br />\n";
-			echo "<input type=\"file\" name=\"file\" />\n";
-			echo "<div class=\"form-actions\">\n";
-			echo "<button type=\"submit\" name=\"import_csv\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Import']) . "</button>\n";
-			echo "</div>\n";
-			echo "</form>\n";
-			echo "</div>\n";
+			// Include the Import-Export Extra
+                	require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
 
-			// Show the export form
-                        echo "<div class=\"hero-unit\">\n";
-                        echo "<h4>" . $escaper->escapeHtml($lang['Export']) . "</h4>\n";
-                        echo "<form name=\"export\" method=\"post\" action=\"\">\n";
-			echo "Export to a CSV file by clicking below:<br />\n";
-                        echo "<div class=\"form-actions\">\n";
-                        echo "<button type=\"submit\" name=\"risks_export\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['ExportRisks']) . "</button>\n";
-                        echo "<button type=\"submit\" name=\"mitigations_export\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['ExportMitigations']) . "</button>\n";
-                        echo "<button type=\"submit\" name=\"reviews_export\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['ExportReviews']) . "</button>\n";
-                        echo "<button type=\"submit\" name=\"combined_export\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['ExportCombined']) . "</button>\n";
-                        echo "</div>\n";
-                        echo "</form>\n";
-                        echo "</div>\n";
-                }
+			display_import();
+
+			display_export();
+		}
         }
 }
 
@@ -170,6 +151,7 @@ function display()
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/sorttable.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">

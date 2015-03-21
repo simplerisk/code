@@ -3,9 +3,9 @@
          * License, v. 2.0. If a copy of the MPL was not distributed with this
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-        // Include required functions file
+	// Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
-        require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+	require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
 
         // Include Zend Escaper for HTML Output Encoding
@@ -51,53 +51,33 @@
 	// Default is no alert
 	$alert = false;
 
-        // Check if access is authorized
-        if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
+	// Check if access is authorized
+	if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
+	{
+		header("Location: ../index.php");
+		exit(0);
+	}
+
+        // Check if risks were deleted
+        if (isset($_POST['delete_risks']) && isset($_POST['risks']))
         {
-                header("Location: ../index.php");
-                exit(0);
-        }
+                $risks = $_POST['risks'];
 
-        // If the user updated the configuration
-        if (isset($_POST['submit']))
-        {
-                // Include the Notification Extra
-                require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+                // Delete the risks
+                $success = delete_risks($risks);
 
-                // Update the notification configuration
-                update_notification_config();
-        }
-
-/*********************
- * FUNCTION: DISPLAY *
- *********************/
-function display($display = "")
-{
-	global $lang;
-	global $escaper;
-
-        // If the extra directory exists
-        if (is_dir(realpath(__DIR__ . '/../extras/notification')))
-        {
-                // But the extra is not activated
-                if (!notification_extra())
+                // If the risk delete was successful
+                if ($success)
                 {
-                        echo "<form name=\"activate\" method=\"post\" action=\"../extras/notification/\">\n";
-                        echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
-                        echo "</form>\n";
-                        echo "</div>\n";
+                        $alert = "good";
+                        $alert_message = $lang['RisksDeletedSuccessfully'];
                 }
-                // Once it has been activated
                 else
                 {
-                        // Include the Notification Extra
-                        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-                        display_notification();
+                        $alert = "bad";
+                        $alert_message = $lang['ThereWasAProblemDeletingTheRisk'];
                 }
         }
-}
-
 ?>
 
 <!doctype html>
@@ -111,6 +91,16 @@ function display($display = "")
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <script type="text/javascript">
+      function checkAll(bx) {
+        var cbs = document.getElementsByTagName('input');
+        for(var i=0; i < cbs.length; i++) {
+          if (cbs[i].type == 'checkbox') {
+            cbs[i].checked = bx.checked;
+          }
+        }
+      }
+    </script>
   </head>
   
   <body>
@@ -148,14 +138,22 @@ function display($display = "")
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <?php view_configure_menu("Extras"); ?>
+          <?php view_configure_menu("DeleteRisks"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <h4>Notification Extra</h4>
-                <?php display(); ?>
+                <form name="delete_risks" method="post" action="">
+                <p>
+                <h4><?php echo $escaper->escapeHtml($lang['DeleteRisks']); ?></h4>
+		<?php echo $escaper->escapeHtml($lang['DeletedRisksCannotBeRecovered']); ?>
+		</p>
+		<button type="submit" name="delete_risks" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Delete']); ?></button>
+                  <br /><br />
+		<?php get_delete_risk_table(); ?>
+		<button type="submit" name="delete_risks" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Delete']); ?></button>
+                </form>
               </div>
             </div>
           </div>
