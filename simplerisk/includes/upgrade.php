@@ -454,7 +454,7 @@ function upgrade_from_20141214001($db)
 }
 
 /**************************************
- * FUNCTION: UPGRADE FROM 20141214001 *
+ * FUNCTION: UPGRADE FROM 20150202001 *
  **************************************/
 function upgrade_from_20150202001($db)
 {
@@ -482,6 +482,99 @@ function upgrade_from_20150202001($db)
 	// Update risks with mitigation_id of null to 0
 	echo "Updating risks with a mitigation_id of null to 0.<br />\n";
 	$stmt = $db->prepare("UPDATE `risks` SET `mitigation_id` = 0 WHERE mitigation_id is null;");
+	$stmt->execute();
+}
+
+/**************************************
+ * FUNCTION: UPGRADE FROM 20150321001 *
+ **************************************/
+function upgrade_from_20150321001($db)
+{
+	global $lang;
+
+        // Database version to upgrade
+        define('VERSION_TO_UPGRADE', '20150321-001');
+
+        // Database version upgrading to
+        define('VERSION_UPGRADING_TO', '20150531-001');
+
+	// Get the value for the low review level
+	$stmt = $db->prepare("SELECT value FROM review_levels WHERE name = 'Low'");
+	$stmt->execute();
+	$array = $stmt->fetchAll();
+	$low_value = $array[0]['value'];
+
+	// Add a new Insignificant review level
+	echo "Adding a new Insignificant review level.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `review_levels` VALUE (:low_value, 'Insignificant');");
+	$stmt->bindParam(":low_value", $low_value, PDO::PARAM_INT);
+	$stmt->execute();
+
+	// Get the value for the high review level
+	$stmt = $db->prepare("SELECT value FROM review_levels WHERE name = 'High'");
+	$stmt->execute();
+        $array = $stmt->fetchAll();
+        $high_value = $array[0]['value'];
+
+	// Add a new Very High review level
+	echo "Adding a new Very High review level.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `review_levels` VALUE (:high_value, 'Very High');");
+	$stmt->bindParam(":high_value", $high_value, PDO::PARAM_INT);
+        $stmt->execute();
+
+	// Modify the risk levels table to allow for two places to the left of the decimal
+	echo "Modifying the risk levels table to allow for two places to the left of the decimal.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `risk_levels` MODIFY `value` decimal(3,1) NOT NULL;");
+	$stmt->execute();
+
+	// Add a new Very High risk level
+	echo "Adding a new Very High risk level.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `risk_levels` VALUE (10.1, 'Very High');");
+	$stmt->execute();
+
+	// Add an id column to the review levels table
+	echo "Adding an id column to the review levels table.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `review_levels` ADD id int(11) DEFAULT 0 NOT NULL FIRST;");
+	$stmt->execute();
+
+	// Set default ids for the review levels table
+	echo "Setting default ids for the review levels table.<br />\n";
+	$stmt = $db->prepare("UPDATE `review_levels` SET id = 1 WHERE name = 'Very High';");
+	$stmt->execute();
+	$stmt = $db->prepare("UPDATE `review_levels` SET id = 2 WHERE name = 'High';");
+        $stmt->execute();
+	$stmt = $db->prepare("UPDATE `review_levels` SET id = 3 WHERE name = 'Medium';");
+        $stmt->execute();
+	$stmt = $db->prepare("UPDATE `review_levels` SET id = 4 WHERE name = 'Low';");
+        $stmt->execute();
+	$stmt = $db->prepare("UPDATE `review_levels` SET id = 5 WHERE name = 'Insignificant';");
+        $stmt->execute();
+	
+	// Add a new Very High user responsibility
+	echo "Adding a new Very High user responsibility.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `user` ADD review_veryhigh tinyint(1) NOT NULL DEFAULT '0' AFTER `admin`;");
+	$stmt->execute();
+
+        // Give admin users ability to review Very High risks
+        echo "Giving admin users the ability to review Very High risks.<br />\n";
+        $stmt = $db->prepare("UPDATE `user` SET review_veryhigh='1' WHERE admin='1';");
+        $stmt->execute();
+
+	// Add a new Insignificant user responsibility
+	echo "Adding a new Insignificant user responsibility.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `user` ADD review_insignificant tinyint(1) NOT NULL DEFAULT '0' AFTER `review_low`;");
+        $stmt->execute();
+
+        // Give admin users ability to review Insignificant risks
+        echo "Giving admin users the ability to review Insignificant risks.<br />\n";
+        $stmt = $db->prepare("UPDATE `user` SET review_insignificant='1' WHERE admin='1';");
+        $stmt->execute();
+
+	// Create a random id for this SimpleRisk instance
+	echo "Creating a random instance identifier.<br />\n";
+	$instance_id = generate_token(50);
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('instance_id', :instance_id)");
+	$stmt->bindParam(":instance_id", $instance_id, PDO::PARAM_STR, 50);
 	$stmt->execute();
 }
 
@@ -525,6 +618,10 @@ function upgrade_database()
 				upgrade_from_20150202001($db);
 				update_database_version($db);
                                 break;
+			case "20150321-001":
+				upgrade_from_20150321001($db);
+				update_database_version($db);
+				break;
 			default:
 				echo "No database upgrade is needed at this time.<br />\n";
 		}

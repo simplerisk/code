@@ -61,15 +61,17 @@
         // Check if the risk level update was submitted
         if (isset($_POST['update_review_settings']))
         {
+		$veryhigh = (int)$_POST['veryhigh'];
                 $high = (int)$_POST['high'];
                 $medium = (int)$_POST['medium'];
                 $low = (int)$_POST['low'];
+		$insignificant = (int)$_POST['insignificant'];
 
                 // Check if all values are integers
-                if (is_int($high) && is_int($medium) && is_int($low))
+                if (is_int($veryhigh) && is_int($high) && is_int($medium) && is_int($low) && is_int($insignificant))
                 {
                         // Update the review settings
-                        update_review_settings($high, $medium, $low);
+                        update_review_settings($veryhigh, $high, $medium, $low, $insignificant);
 
                         // Audit log
                         $risk_id = 1000;
@@ -146,9 +148,11 @@
 
 	        <?php $review_levels = get_review_levels(); ?>
 
-                <p><?php echo $escaper->escapeHtml($lang['IWantToReviewHighRiskEvery']); ?> <input type="text" name="high" size="2" value="<?php echo $escaper->escapeHtml($review_levels[0]['value']); ?>" /> <?php echo $escaper->escapeHtml($lang['days']); ?>.</p>
-                <p><?php echo $escaper->escapeHtml($lang['IWantToReviewMediumRiskEvery']); ?> <input type="text" name="medium" size="2" value="<?php echo $escaper->escapeHtml($review_levels[1]['value']); ?>" /> <?php echo $escaper->escapeHtml($lang['days']); ?>.</p>
-                <p><?php echo $escaper->escapeHtml($lang['IWantToReviewLowRiskEvery']); ?> <input type="text" name="low" size="2" value="<?php echo $escaper->escapeHtml($review_levels[2]['value']); ?>" /> <?php echo $escaper->escapeHtml($lang['days']); ?>.</p>
+		<p><?php echo $escaper->escapeHtml($lang['IWantToReviewVeryHighRiskEvery']); ?> <input type="text" name="veryhigh" size="2" value="<?php echo $escaper->escapeHtml($review_levels[0]['value']); ?>" /> <?php echo $escaper->escapeHtml($lang['days']); ?>.</p>
+                <p><?php echo $escaper->escapeHtml($lang['IWantToReviewHighRiskEvery']); ?> <input type="text" name="high" size="2" value="<?php echo $escaper->escapeHtml($review_levels[1]['value']); ?>" /> <?php echo $escaper->escapeHtml($lang['days']); ?>.</p>
+                <p><?php echo $escaper->escapeHtml($lang['IWantToReviewMediumRiskEvery']); ?> <input type="text" name="medium" size="2" value="<?php echo $escaper->escapeHtml($review_levels[2]['value']); ?>" /> <?php echo $escaper->escapeHtml($lang['days']); ?>.</p>
+                <p><?php echo $escaper->escapeHtml($lang['IWantToReviewLowRiskEvery']); ?> <input type="text" name="low" size="2" value="<?php echo $escaper->escapeHtml($review_levels[3]['value']); ?>" /> <?php echo $escaper->escapeHtml($lang['days']); ?>.</p>
+		<p><?php echo $escaper->escapeHtml($lang['IWantToReviewInsignificantRiskEvery']); ?> <input type="text" name="insignificant" size="2" value="<?php echo $escaper->escapeHtml($review_levels[4]['value']); ?>" /> <?php echo $escaper->escapeHtml($lang['days']); ?>.</p>
 
                 <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_review_settings" />
 

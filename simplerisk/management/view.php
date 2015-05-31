@@ -257,6 +257,9 @@
 			// Set the new scoring method
 			$scoring_method = change_scoring_method($id, "1");
 
+			// Update the classic score
+			$calculated_risk = update_classic_score($id, $CLASSIC_likelihood, $CLASSIC_impact);
+
                         // Audit log
                         $risk_id = $id;
                         $message = "Scoring method was changed for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
@@ -270,6 +273,9 @@
                 {
                         // Set the new scoring method
                         $scoring_method = change_scoring_method($id, "2");
+
+			// Update the cvss score
+			$calculated_risk = update_cvss_score($id, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement);
 
                         // Audit log
                         $risk_id = $id;
@@ -285,6 +291,9 @@
                         // Set the new scoring method
                         $scoring_method = change_scoring_method($id, "3");
 
+			// Update the dread score
+			$calculated_risk = update_dread_score($id, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability);
+
                         // Audit log
                         $risk_id = $id;
                         $message = "Scoring method was changed for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
@@ -299,6 +308,9 @@
                         // Set the new scoring method
                         $scoring_method = change_scoring_method($id, "4");
 
+			// Update the owasp score
+			$calculated_risk = update_owasp_score($id, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation);
+
                         // Audit log
                         $risk_id = $id;
                         $message = "Scoring method was changed for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
@@ -312,6 +324,9 @@
                 {
                         // Set the new scoring method
                         $scoring_method = change_scoring_method($id, "5");
+
+			// Update the custom score
+			$calculated_risk = update_custom_score($id, $custom);
 
                         // Audit log
                         $risk_id = $id;

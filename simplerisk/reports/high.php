@@ -80,25 +80,44 @@
         </div>
         <div class="span9">
           <div class="row-fluid">
-            <div class="span6">
+            <div class="span7">
               <div class="well">
                 <?php
                         $open = get_open_risks();
                         $high = get_high_risks();
+			$veryhigh = get_veryhigh_risks();
                         
                         // If there are not 0 open risks
                         if ($open != 0)
                         {
-                                $percent = 100*($high/$open);
+                                $highpercent = 100*($high/$open);
+				$veryhighpercent = 100*($veryhigh/$open);
                         }
-                        else $percent = 0;
+                        else
+			{
+				$highpercent = 0;
+				$veryhighpercent = 0;
+			}
                 ?>
                 <h3><?php echo $escaper->escapeHtml($lang['TotalOpenRisks']); ?>: <?php echo $escaper->escapeHtml($open); ?></h3>
-                <h3><?php echo $escaper->escapeHtml($lang['TotalHighRisks']); ?>: <?php echo $escaper->escapeHtml($high); ?></h3>
-                <h3><?php echo $escaper->escapeHtml($lang['HighRiskPercentage']); ?>: <?php echo $escaper->escapeHtml(round($percent, 2)); ?>%</h3>
+		<?php
+			// If we have very high risks
+			if ($veryhigh > 0)
+			{
+				echo "<h3>" . $escaper->escapeHtml($lang['TotalVeryHighRisks']) . ": " . $escaper->escapeHtml($veryhigh) . "</h3>";
+				echo "<h3>" . $escaper->escapeHtml($lang['VeryHighRiskPercentage']) . ": " . $escaper->escapeHtml(round($veryhighpercent, 2)) . "%</h3>";
+			}
+
+			// If we have high risks
+			if ($high > 0)
+			{
+				echo "<h3>" . $escaper->escapeHtml($lang['TotalHighRisks']) . ": " . $escaper->escapeHtml($veryhigh) . "</h3>";
+				echo "<h3>" . $escaper->escapeHtml($lang['HighRiskPercentage']) . ": " . $escaper->escapeHtml(round($highpercent, 2)) . "%</h3>";
+			}
+		?>
               </div>
             </div>
-            <div class="span6">
+            <div class="span5">
               <div class="well">
                 <?php open_risk_level_pie($escaper->escapeHtml($lang['RiskLevel'])); ?>
               </div>

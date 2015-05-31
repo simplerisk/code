@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.            *
  ***********************************************************************/
 
+ini_set('default_charset', 'utf-8');
 define('DATETIME', 'Y-m-d g:i A T');
 define('DATETIMESIMPLE', 'Y-m-d H:i');
 define('DATESIMPLE', 'Y-m-d');
@@ -361,6 +362,18 @@ $lang = array(
     'RisksDeletedSuccessfully'=>'Risk(s) Deleted Successfully',
     'ThereWasAProblemDeletingTheRisk'=>'There Was a Problem Deleting the Risk(s)',
     'Activated'=>'ACTIVATED',
+    'IWantToReviewInsignificantRiskEvery'=>'I want to review INSIGNIFICANT risk every',
+    'Insignificant'=>'Insignificant',
+    'IConsiderVeryHighRiskToBeAnythingGreaterThan'=>'I consider VERY HIGH risk to be anything greater than',
+    'IConsiderHighRiskToBeLessThanAboveButGreaterThan'=>'I consider HIGH risk to be less than above, but greater than',
+    'VeryHigh'=>'Very High',
+    'VeryHighRisk'=>'Very High Risk',
+    'IWantToReviewVeryHighRiskEvery'=> 'I want to review VERY HIGH risk every',
+    'AbleToReviewVeryHighRisks'=>'Able to Review Very High Risks',
+    'AbleToReviewInsignificantRisks'=>'Able to Review Insignificant Risks',
+    'TotalVeryHighRisks'=>'Total Very High Risks',
+    'VeryHighRiskPercentage'=>'Very High Risk Percentage',
+    'AllTeams'=>'All Teams',
     ''=>'',
 );
 

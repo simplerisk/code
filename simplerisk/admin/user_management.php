@@ -74,9 +74,11 @@
 		$modify_risks = isset($_POST['modify_risks']) ? '1' : '0';
 		$close_risks = isset($_POST['close_risks']) ? '1' : '0';
 		$plan_mitigations = isset($_POST['plan_mitigations']) ? '1' : '0';
+		$review_veryhigh = isset($_POST['review_veryhigh']) ? '1' : '0';
                 $review_high = isset($_POST['review_high']) ? '1' : '0';
                 $review_medium = isset($_POST['review_medium']) ? '1' : '0';
                 $review_low = isset($_POST['review_low']) ? '1' : '0';
+		$review_insignificant = isset($_POST['review_insignificant']) ? '1' : '0';
 		$multi_factor = (int)$_POST['multi_factor'];
 
 		// If the type is 1
@@ -139,7 +141,7 @@
 				if ($none) $team = "none";
 
                                 // Insert a new user
-                                add_user($type, $user, $email, $name, $salt, $hash, $team, $asset, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
+                                add_user($type, $user, $email, $name, $salt, $hash, $team, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
                         	// Audit log
                         	$risk_id = 1000;
@@ -257,12 +259,23 @@
   
   <head>
     <script src="../js/jquery.min.js"></script>
+    <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/bootstrap-multiselect.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
+    <script type="text/javascript">
+      $(function(){
+          $("#team").multiselect({
+              allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllTeams']); ?>',
+              includeSelectAllOption: true
+          });
+      });
+    </script>
     <script type="text/javascript">
       function handleSelection(choice) {
         if (choice=="1") {
@@ -345,9 +358,11 @@
                   <li><input name="modify_risks" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyExistingRisks']); ?></li>
                   <li><input name="close_risks" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCloseRisks']); ?></li>
                   <li><input name="plan_mitigations" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToPlanMitigations']); ?></li>
+                  <li><input name="review_insignificant" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewInsignificantRisks']); ?></li>
                   <li><input name="review_low" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewLowRisks']); ?></li>
                   <li><input name="review_medium" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></li>
                   <li><input name="review_high" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></li>
+                  <li><input name="review_veryhigh" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></li>
 		  <li><input name="asset" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></li>
                   <li><input name="admin" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></li>
                 </ul>

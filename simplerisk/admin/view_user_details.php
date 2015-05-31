@@ -78,9 +78,11 @@
                 	$modify_risks = isset($_POST['modify_risks']) ? '1' : '0';
 			$close_risks = isset($_POST['close_risks']) ? '1' : '0';
                 	$plan_mitigations = isset($_POST['plan_mitigations']) ? '1' : '0';
+			$review_veryhigh = isset($_POST['review_veryhigh']) ? '1' : '0';
                 	$review_high = isset($_POST['review_high']) ? '1' : '0';
                 	$review_medium = isset($_POST['review_medium']) ? '1' : '0';
                 	$review_low = isset($_POST['review_low']) ? '1' : '0';
+			$review_insignificant = isset($_POST['review_insignificant']) ? '1' : '0';
 			$multi_factor = (int)$_POST['multi_factor'];
 
                         // Create a boolean for all
@@ -113,7 +115,7 @@
                         if ($none) $team = "none";
 
 			// Update the user
-			update_user($user_id, $name, $email, $team, $language, $asset, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
+			update_user($user_id, $name, $email, $team, $language, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
                         // Audit log
                         $risk_id = 1000;
@@ -142,9 +144,11 @@
 		$teams = $user_info['teams'];
                 $admin = $user_info['admin'];
 		$asset = $user_info['asset'];
+		$review_veryhigh = $user_info['review_veryhigh'];
                 $review_high = $user_info['review_high'];
                 $review_medium = $user_info['review_medium'];
                 $review_low = $user_info['review_low'];
+		$review_insignificant = $user_info['review_insignificant'];
                 $submit_risks = $user_info['submit_risks'];
                 $modify_risks = $user_info['modify_risks'];
 		$close_risks = $user_info['close_risks'];
@@ -161,9 +165,11 @@
                 $last_login = "N/A";
                 $teams = "none";
                 $admin = false;
+		$review_veryhigh = false;
                 $review_high = false;
                 $review_medium = false;
                 $review_low = false;
+		$review_insignificant = false;
                 $submit_risks = false;
                 $modify_risks = false;
                 $close_risks = false;
@@ -177,12 +183,23 @@
   
   <head>
     <script src="../js/jquery.min.js"></script>
+    <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/bootstrap-multiselect.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
+    <script type="text/javascript">
+      $(function(){
+          $("#team").multiselect({
+              allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllTeams']); ?>',
+              includeSelectAllOption: true
+          });
+      });
+    </script>
   </head>
   
   <body>
@@ -244,9 +261,11 @@
                   <li><input name="modify_risks" type="checkbox"<?php if ($modify_risks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyExistingRisks']); ?></li>
                   <li><input name="close_risks" type="checkbox"<?php if ($close_risks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCloseRisks']); ?></li>
                   <li><input name="plan_mitigations" type="checkbox"<?php if ($plan_mitigations) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToPlanMitigations']); ?></li>
+                  <li><input name="review_insignificant" type="checkbox"<?php if ($review_insignificant) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewInsignificantRisks']); ?></li>
                   <li><input name="review_low" type="checkbox"<?php if ($review_low) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewLowRisks']); ?></li>
                   <li><input name="review_medium" type="checkbox"<?php if ($review_medium) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></li>
                   <li><input name="review_high" type="checkbox"<?php if ($review_high) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></li>
+                  <li><input name="review_veryhigh" type="checkbox"<?php if ($review_veryhigh) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></li>
 		  <li><input name="asset" type="checkbox"<?php if ($asset) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></li>
                   <li><input name="admin" type="checkbox"<?php if ($admin) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></li>
                 </ul>

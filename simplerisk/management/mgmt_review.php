@@ -322,8 +322,14 @@
                         $comments = $mgmt_reviews[0]['comments'];
                 }
 
+		// If the risk level is very high and they have permission
+		if (($risk_level == "Very High") && ($_SESSION['review_veryhigh'] == 1))
+		{
+			// Review is approved
+			$approved = true;
+		}
 		// If the risk level is high and they have permission
-		if (($risk_level == "High") && ($_SESSION['review_high'] == 1))
+		else if (($risk_level == "High") && ($_SESSION['review_high'] == 1))
 		{
 			// Review is approved
 			$approved = true;
@@ -340,6 +346,12 @@
                         // Review is approved
                         $approved = true;
 		}
+                // If the risk level is insignificant and they have permission
+                else if (($risk_level == "Insignificant") && ($_SESSION['review_insignificant'] == 1))
+                {
+                        // Review is approved
+                        $approved = true;
+                }
         }
 
 	// If they are not approved to review the risk

@@ -53,13 +53,37 @@
         $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 
 	// Set the status
-	(isset($_POST['status']) ? $status = $_POST['status'] : $status = 0);
+	if (isset($_GET['status']))
+	{
+		$status = (int)$_GET['status'];
+	}
+	else if (isset($_POST['status']))
+	{
+		$status = (int)$_POST['status'];
+	}
+	else $status = 0;
 
 	// Set the group
-	(isset($_POST['group']) ? $group = $_POST['group'] : $group = 0);
+        if (isset($_GET['group']))
+        {
+                $group = (int)$_GET['group'];
+        }
+        else if (isset($_POST['group']))
+        {
+                $group = (int)$_POST['group'];
+        }
+        else $group = 0;
 
 	// Set the sort
-	(isset($_POST['sort']) ? $sort = $_POST['sort'] : $sort = 0);
+        if (isset($_GET['sort']))
+        {
+                $sort = (int)$_GET['sort'];
+        }
+        else if (isset($_POST['sort']))
+        {
+                $sort = (int)$_POST['sort'];
+        }
+        else $sort = 0;
 
 	// Set the columns
 	(isset($_POST['id']) ? $id = true : $id = false);

@@ -107,8 +107,18 @@
 	                // Include the custom authentication extra
         	        require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
 
+                        // Get the authentication settings
+                        $configs = get_authentication_settings();
+
+                        // For each configuration
+                        foreach ($configs as $config)
+                        {
+                                // Set the name value pair as a variable
+                                $$config['name'] = $config['value'];
+                        }
+
 			// Get the response back from Duo
-        		$resp = Duo::verifyResponse(IKEY, SKEY, get_duo_akey(), $_POST['sig_response']);
+        		$resp = Duo::verifyResponse($IKEY, $SKEY, get_duo_akey(), $_POST['sig_response']);
 
 			// If the response is not null
         		if ($resp != NULL)
@@ -195,11 +205,13 @@
         	}
 
 
-      		echo "<p><label><u>" . $escaper->escapeHtml($lang['LogInHere']) . "</u></label></p>\n";
       		echo "<form name=\"authenticate\" method=\"post\" action=\"\">\n";
-      		echo $escaper->escapeHtml($lang['Username']) . ": <input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /><br />\n";
-      		echo $escaper->escapeHtml($lang['Password']) . ": <input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" />\n";
-      		echo "<label><a href=\"reset.php\">" . $escaper->escapeHtml($lang['ForgotYourPassword']) . "</a></label>\n";
+		echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+		echo "<tr><td colspan=\"2\"><label><u>" . $escaper->escapeHtml($lang['LogInHere']) . "</u></label></td></tr>\n";
+      		echo "<tr><td>" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td><input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
+      		echo "<tr><td>" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</td><td><input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
+		echo "<tr><td colspan=\"2\"><label><a href=\"reset.php\">" . $escaper->escapeHtml($lang['ForgotYourPassword']) . "</a></label></td></tr>\n";
+		echo "</table>\n";
       		echo "<div class=\"form-actions\">\n";
       		echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Login']) . "</button>\n";
       		echo "<input class=\"btn\" value=\"" . $escaper->escapeHtml($lang['Reset']) . "\" type=\"reset\">\n";

@@ -22,7 +22,7 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
         echo "<tr>\n";
         echo "<td width=\"100\" valign=\"middle\" halign=\"center\">\n";
 
-        echo "<table width=\"100\" height=\"100\" border=\"10\" class=" . $escaper->escapeHtml(get_risk_color($calculated_risk)) . ">\n";
+        echo "<table width=\"100\" height=\"100\" border=\"10\" class=\"" . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "\">\n";
         echo "<tr>\n";
         echo "<td valign=\"middle\" halign=\"center\">\n";
         echo "<center>\n";
@@ -108,7 +108,7 @@ function view_print_top_table($id, $calculated_risk, $subject, $status)
         echo "<tr>\n";
         echo "<td width=\"100\" valign=\"middle\" halign=\"center\">\n";
 
-        echo "<table width=\"100\" height=\"100\" border=\"10\" class=" . $escaper->escapeHtml(get_risk_color($calculated_risk)) . ">\n";
+        echo "<table width=\"100\" height=\"100\" border=\"10\" class=\"" . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "\">\n";
         echo "<tr>\n";
         echo "<td valign=\"middle\" halign=\"center\">\n";
         echo "<center>\n";
@@ -710,7 +710,7 @@ function edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $Con
 	echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
 	echo "<tr>\n";
-        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['BaseScore']) . "</u></b></td>\n";
+        echo "<td colspan=\"4\"><b><u>" . $escaper->escapeHtml($lang['BaseVector']) . "</u></b></td>\n";
         echo "<td rowspan=\"19\" style=\"vertical-align:top;\">\n";
         view_cvss_help();
         echo "</td>\n";

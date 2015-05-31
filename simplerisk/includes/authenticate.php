@@ -173,7 +173,7 @@ function set_user_permissions($user, $upgrade = false)
 	if (!$upgrade)
 	{
         	// Query the DB for the users complete information
-        	$stmt = $db->prepare("SELECT value, type, name, lang, asset, admin, review_high, review_medium, review_low, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
+        	$stmt = $db->prepare("SELECT value, type, name, lang, asset, admin, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
 	}
 	// If we are doing an upgrade
 	else
@@ -200,9 +200,11 @@ function set_user_permissions($user, $upgrade = false)
 	{
 		// Set additional session values
 		$_SESSION['asset'] = $array[0]['asset'];
+		$_SESSION['review_veryhigh'] = $array[0]['review_veryhigh'];
         	$_SESSION['review_high'] = $array[0]['review_high'];
         	$_SESSION['review_medium'] = $array[0]['review_medium'];
         	$_SESSION['review_low'] = $array[0]['review_low'];
+		$_SESSION['review_insignificant'] = $array[0]['review_insignificant'];
         	$_SESSION['submit_risks'] = $array[0]['submit_risks'];
         	$_SESSION['modify_risks'] = $array[0]['modify_risks'];
         	$_SESSION['close_risks'] = $array[0]['close_risks'];

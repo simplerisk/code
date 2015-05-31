@@ -4,6 +4,12 @@
     font-weight: 600;
     float: left;
 }
+.orangered {
+    background: repeat-x scroll 50% 50% orangered;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: left;
+}
 .orange {
     background: repeat-x scroll 50% 50% orange;
     border: 1px solid #000000;
@@ -12,6 +18,12 @@
 }
 .yellow {
     background: repeat-x scroll 50% 50% yellow;
+    border: 1px solid #000000;
+    font-weight: 600;
+    float: left;
+}
+.white {
+    background: repeat-x scroll 50% 50% white;
     border: 1px solid #000000;
     font-weight: 600;
     float: left;
@@ -39,4 +51,34 @@
     text-align: center;
     vertical-align: middle;
     line-height: 2em;
+}
+.risk-table-veryhigh {
+        width:10px;
+        height:10px;
+        border:1px solid #000;
+        background-color:red;
+}
+.risk-table-high {
+        width:10px;
+        height:10px;
+        border:1px solid #000;
+        background-color:orangered;
+}
+.risk-table-medium {
+        width:10px;
+        height:10px;
+        border:1px solid #000;
+        background-color:orange;
+}
+.risk-table-low {
+        width:10px;
+        height:10px;
+        border:1px solid #000;
+        background-color:yellow;
+}
+.risk-table-insignificant {
+        width:10px;
+        height:10px;
+        border:1px solid #000;
+        background-color:white;
 }

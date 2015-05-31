@@ -61,59 +61,63 @@
         // Check if the risk level update was submitted
         if (isset($_POST['update_risk_levels']))
         {
-                $high = (float)$_POST['high'];
-                $medium = (float)$_POST['medium'];
-                $low = (float)$_POST['low'];
+		$veryhigh = $_POST['veryhigh'];
+                $high = $_POST['high'];
+                $medium = $_POST['medium'];
+                $low = $_POST['low'];
                 $risk_model = (int)$_POST['risk_models'];
 
                 // Check if all values are integers
-                if (is_float($high) && is_float($medium) && is_float($low) && is_int($risk_model))
+                if (is_numeric($veryhigh) && is_numeric($high) && is_numeric($medium) && is_numeric($low) && is_int($risk_model))
                 {
-                        // Check if low < medium < high
-                        if (($low < $medium) && ($medium < $high))
+                        // Check if low < medium < high < very high
+                        if (($low < $medium) && ($medium < $high) && ($high < $veryhigh))
                         {
                                 // Update the risk level
-                                update_risk_levels($high, $medium, $low);
+                                update_risk_levels($veryhigh, $high, $medium, $low);
 
                 		// Audit log
                 		$risk_id = 1000;
                 		$message = "Risk level scoring was modified by the \"" . $_SESSION['user'] . "\" user.";
                 		write_log($risk_id, $_SESSION['uid'], $message);
 
-				// TODO: This message will never be seen because of the alert condition for the risk model.
-				$alert = "good";
-				$alert_message = "The configuration was updated successfully.";
+				// Risk model should be between 1 and 5
+				if ((1 <= $risk_model) && ($risk_model <= 5))
+				{
+					// Update the risk model
+					update_risk_model($risk_model);
+
+                                	// Audit log
+                                	$risk_id = 1000;
+                                	$message = "The risk formula was modified by the \"" . $_SESSION['user'] . "\" user.";
+                                	write_log($risk_id, $_SESSION['uid'], $message);
+
+					// There is an alert message
+					$alert = "good";
+					$alert_message = "The configuration was updated successfully.";
+				}
+                        	// Otherwise, there was a problem
+                        	else
+                        	{
+                                	$alert = "bad";
+                                	$alert_message = "The risk formula submitted was an invalid value.";
+                        	}
                         }
 			// Otherwise, there was a problem
 			else
 			{
 				// There is an alert message
 				$alert = "bad";
-				$alert_message = "Your LOW risk needs to be less than your MEDIUM risk which needs to be less than your HIGH risk.";
-			}
-
-                        // Risk model should be between 1 and 5
-                        if ((1 <= $risk_model) && ($risk_model <= 5))
-                        {
-                                // Update the risk model
-                                update_risk_model($risk_model);
-
-                                // Audit log
-                                $risk_id = 1000;
-                                $message = "The risk formula was modified by the \"" . $_SESSION['user'] . "\" user.";
-                                write_log($risk_id, $_SESSION['uid'], $message);
-
-				// There is an alert message
-				$alert = "good";
-				$alert_message = "The configuration was updated successfully.";
-                        }
-			// Otherwise, there was a problem
-			else
-			{
-				$alert = "good";
-				$alert_message = "The risk formula submitted was an invalid value.";
+				$alert_message = "Your LOW risk needs to be less than your MEDIUM risk which needs to be less than your HIGH risk which needs to be less than your VERY HIGH risk.";
 			}
                 }
+		// Otherwise, there was a problem
+		else
+		{
+			// There is an alert message
+			$alert = "bad";
+			$alert_message = "One of the submitted risk values is not a numeric value.";
+		}
         }
 ?>
 
@@ -179,7 +183,8 @@
 
                 <?php $risk_levels = get_risk_levels(); ?>
 
-                <p><?php echo $escaper->escapeHtml($lang['IConsiderHighRiskToBeAnythingGreaterThan']); ?>: <input type="text" name="high" size="2" value="<?php echo $escaper->escapeHtml($risk_levels[2]['value']); ?>" /></p>
+		<p><?php echo $escaper->escapeHtml($lang['IConsiderVeryHighRiskToBeAnythingGreaterThan']); ?>: <input type="text" name="veryhigh" size="2" value="<?php echo $escaper->escapeHtml($risk_levels[3]['value']); ?>" /></p>
+                <p><?php echo $escaper->escapeHtml($lang['IConsiderHighRiskToBeLessThanAboveButGreaterThan']); ?>: <input type="text" name="high" size="2" value="<?php echo $escaper->escapeHtml($risk_levels[2]['value']); ?>" /></p>
                 <p><?php echo $escaper->escapeHtml($lang['IConsiderMediumRiskToBeLessThanAboveButGreaterThan']); ?>: <input type="text" name="medium" size="2" value="<?php echo $escaper->escapeHtml($risk_levels[1]['value']); ?>" /></p>
                 <p><?php echo $escaper->escapeHtml($lang['IConsiderlowRiskToBeLessThanAboveButGreaterThan']); ?>: <input type="text" name="low" size="2" value="<?php echo $escaper->escapeHtml($risk_levels[0]['value']); ?>" /></p>
 

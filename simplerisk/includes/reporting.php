@@ -64,14 +64,44 @@ function get_high_risks()
         $db = db_open();
 
         // Get the high risk level
-        $stmt = $db->prepare("SELECT value FROM `risk_levels` WHERE name = 'High'");
+        $stmt = $db->prepare("SELECT value FROM `risk_levels` WHERE name = 'High' OR name = 'Very High'");
         $stmt->execute();
-        $array = $stmt->fetch();
-        $high = $array['value'];
+        $array = $stmt->fetchAll();
+        $high = $array[0]['value'];
+	$veryhigh = $array[1]['value'];
 
         // Query the database
-        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :high");
+        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :high AND a.calculated_risk < :veryhigh");
         $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
+	$stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        return count($array);
+}
+
+/*********************************
+ * FUNCTION: GET VERY HIGH RISKS *
+ *********************************/
+function get_veryhigh_risks()
+{
+        // Open the database connection
+        $db = db_open();
+
+        // Get the high risk level
+        $stmt = $db->prepare("SELECT value FROM `risk_levels` WHERE name = 'Very High'");
+        $stmt->execute();
+        $array = $stmt->fetch();
+        $veryhigh = $array['value'];
+
+        // Query the database
+        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :veryhigh");
+        $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
         $stmt->execute();
 
         // Store the list in the array
@@ -245,6 +275,9 @@ function open_risk_level_pie($title = null)
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
 
+	$chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+	location.href = 'dynamic_risk_report.php?status=0&group=1&sort=0'; }");
+
         $chart->plotOptions->pie->allowPointSelect = 1;
         $chart->plotOptions->pie->cursor = "pointer";
         $chart->plotOptions->pie->dataLabels->enabled = false;
@@ -255,15 +288,17 @@ function open_risk_level_pie($title = null)
         $db = db_open();
 
 	// Get the risk levels
-	$stmt = $db->prepare("SELECT * from `risk_levels`");
+	$stmt = $db->prepare("SELECT * from `risk_levels` ORDER BY value DESC");
 	$stmt->execute();
 	$array = $stmt->fetchAll();
-	$high = $array[0][0];
-	$medium = $array[1][0];
-	$low = $array[2][0];
+	$veryhigh = $array[0][0];
+	$high = $array[1][0];
+	$medium = $array[2][0];
+	$low = $array[3][0];
 
         // Query the database
-        $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
+        $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :veryhigh THEN 'Very High' WHEN a.calculated_risk < :veryhigh AND a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
+	$stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
 	$stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
 	$stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
 	$stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
@@ -283,7 +318,8 @@ function open_risk_level_pie($title = null)
         // Otherwise
         else
         {
-		// Initialize high, medium, and low
+		// Initialize veryhigh, high, medium, low, and insignificant
+		$veryhigh = false;
 		$high = false;
 		$medium = false;
 		$low = false;
@@ -294,13 +330,21 @@ function open_risk_level_pie($title = null)
                 {
                         $data[] = array($row['level'], (int)$row['num']);
 
+			// If we have at least one very high risk
+			if ($row['level'] == "Very High" && $veryhigh != true)
+			{
+				$veryhigh = true;
+
+				// Add red to the color array
+				$color_array[] = "red";
+			}
 			// If we have at least one high risk
-			if ($row['level'] == "High" && $high != true)
+			else if ($row['level'] == "High" && $high != true)
 			{
 				$high = true;
 
 				// Add red to the color array
-				$color_array[] = "red";
+				$color_array[] = "orangered";
 			}
 			// If we have at least one medium risk
 			else if ($row['level'] == "Medium" && $medium != true)
@@ -351,6 +395,9 @@ function open_risk_status_pie($title = null)
 
 	$chart->tooltip->formatter = new HighchartJsExpr("function() {
     	return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
+
+        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+        location.href = 'dynamic_risk_report.php?status=0&group=2&sort=0'; }");
 
 	$chart->plotOptions->pie->allowPointSelect = 1;
 	$chart->plotOptions->pie->cursor = "pointer";
@@ -412,6 +459,9 @@ function closed_risk_reason_pie($title = null)
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
 
+        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+        location.href = 'dynamic_risk_report.php?status=1&group=0&sort=0'; }");
+
         $chart->plotOptions->pie->allowPointSelect = 1;
         $chart->plotOptions->pie->cursor = "pointer";
         $chart->plotOptions->pie->dataLabels->enabled = false;
@@ -471,6 +521,9 @@ function open_risk_location_pie($title = null)
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
+
+        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+        location.href = 'dynamic_risk_report.php?status=0&group=3&sort=0'; }");
 
         $chart->plotOptions->pie->allowPointSelect = 1;
         $chart->plotOptions->pie->cursor = "pointer";
@@ -532,6 +585,9 @@ function open_risk_category_pie($title = null)
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
 
+        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+        location.href = 'dynamic_risk_report.php?status=0&group=4&sort=0'; }");
+
         $chart->plotOptions->pie->allowPointSelect = 1;
         $chart->plotOptions->pie->cursor = "pointer";
         $chart->plotOptions->pie->dataLabels->enabled = false;
@@ -591,6 +647,9 @@ function open_risk_team_pie($title = null)
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
+
+        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+        location.href = 'dynamic_risk_report.php?status=0&group=5&sort=0'; }");
 
         $chart->plotOptions->pie->allowPointSelect = 1;
         $chart->plotOptions->pie->cursor = "pointer";
@@ -652,6 +711,9 @@ function open_risk_technology_pie($title = null)
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
 
+        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+        location.href = 'dynamic_risk_report.php?status=0&group=6&sort=0'; }");
+
         $chart->plotOptions->pie->allowPointSelect = 1;
         $chart->plotOptions->pie->cursor = "pointer";
         $chart->plotOptions->pie->dataLabels->enabled = false;
@@ -711,6 +773,9 @@ function open_risk_owner_pie($title = null)
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
+
+        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+        location.href = 'dynamic_risk_report.php?status=0&group=7&sort=0'; }");
 
         $chart->plotOptions->pie->allowPointSelect = 1;
         $chart->plotOptions->pie->cursor = "pointer";
@@ -772,6 +837,9 @@ function open_risk_owners_manager_pie($title = null)
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
 
+        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+        location.href = 'dynamic_risk_report.php?status=0&group=8&sort=0'; }");
+
         $chart->plotOptions->pie->allowPointSelect = 1;
         $chart->plotOptions->pie->cursor = "pointer";
         $chart->plotOptions->pie->dataLabels->enabled = false;
@@ -831,6 +899,9 @@ function open_risk_scoring_method_pie($title = null)
 
         $chart->tooltip->formatter = new HighchartJsExpr("function() {
         return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
+
+        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+        location.href = 'dynamic_risk_report.php?status=0&group=9&sort=0'; }");
 
         $chart->plotOptions->pie->allowPointSelect = 1;
         $chart->plotOptions->pie->cursor = "pointer";
@@ -1350,7 +1421,7 @@ function get_risk_columns($risk, $column_id, $column_status, $column_subject, $c
 	echo "<td class=\"management_review\" " . ($column_management_review == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . management_review(convert_id($risk_id), $mgmt_review) . "</td>\n";
 	echo "<td class=\"days_open\" " . ($column_days_open == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($days_open) . "</td>\n";
 	echo "<td class=\"next_review_date\" " . ($column_next_review_date == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $next_review_date_html . "</td>\n";
-	echo "<td class=\"next_step\" " . ($column_next_step == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $next_step . "</td>\n";
+	echo "<td class=\"next_step\" " . ($column_next_step == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($next_step) . "</td>\n";
 }
 
 ?>

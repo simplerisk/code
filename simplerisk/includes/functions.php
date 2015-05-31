@@ -176,7 +176,7 @@ function get_review_levels()
         $db = db_open();
 
         // Query the database
-        $stmt = $db->prepare("SELECT * FROM review_levels ORDER BY value");
+        $stmt = $db->prepare("SELECT * FROM review_levels ORDER BY id");
         $stmt->execute();
 
         // Store the list in the array
@@ -191,11 +191,16 @@ function get_review_levels()
 /********************************
  * FUNCTION: UPDATE RISK LEVELS *
  ********************************/
-function update_risk_levels($high, $medium, $low)
+function update_risk_levels($veryhigh, $high, $medium, $low)
 {
         // Open the database connection
         $db = db_open();
  
+	// Update the very high risk level
+	$stmt = $db->prepare("UPDATE risk_levels SET value=:value WHERE name='Very High'");
+        $stmt->bindParam(":value", $veryhigh, PDO::PARAM_STR);
+        $stmt->execute();
+
         // Update the high risk level
         $stmt = $db->prepare("UPDATE risk_levels SET value=:value WHERE name='High'");
 	$stmt->bindParam(":value", $high, PDO::PARAM_STR);
@@ -220,10 +225,15 @@ function update_risk_levels($high, $medium, $low)
 /************************************
  * FUNCTION: UPDATE REVIEW SETTINGS *
  ************************************/
-function update_review_settings($high, $medium, $low)
+function update_review_settings($veryhigh, $high, $medium, $low, $insignificant)
 {
         // Open the database connection
         $db = db_open();
+
+	// Update the very high risk level
+	$stmt = $db->prepare("UPDATE review_levels SET value=:value WHERE name='Very High'");
+	$stmt->bindParam(":value", $veryhigh, PDO::PARAM_INT);
+        $stmt->execute();
 
         // Update the high risk level
         $stmt = $db->prepare("UPDATE review_levels SET value=:value WHERE name='High'");
@@ -238,6 +248,11 @@ function update_review_settings($high, $medium, $low)
         // Update the low risk level
         $stmt = $db->prepare("UPDATE review_levels SET value=:value WHERE name='Low'");
         $stmt->bindParam(":value", $low, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Update the insignificant risk level
+        $stmt = $db->prepare("UPDATE review_levels SET value=:value WHERE name='Insignificant'");
+        $stmt->bindParam(":value", $insignificant, PDO::PARAM_INT);
         $stmt->execute();
 
         // Close the database connection
@@ -388,13 +403,13 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL)
 	
         if ($rename != NULL)
         {
-                echo "<select multiple id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "[]\">\n";
+                echo "<select multiple=\"multiple\" id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "[]\">\n";
         }
-        else echo "<select multiple id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";
+        else echo "<select multiple=\"multiple\" id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";
 
 	// Create all or none options
-	echo "    <option value=\"all\">" . $escaper->escapeHtml($lang['ALL']) . "</option>\n";
-	echo "    <option value=\"none\">" . $escaper->escapeHtml($lang['NONE']) . "</option>\n";
+	//echo "    <option value=\"all\">" . $escaper->escapeHtml($lang['ALL']) . "</option>\n";
+	//echo "    <option value=\"none\">" . $escaper->escapeHtml($lang['NONE']) . "</option>\n";
 
         // Get the list of options
         $options = get_table($name);
@@ -432,17 +447,20 @@ function create_risk_table()
 	// Create legend table
 	echo "<table>\n";
 	echo "<tr height=\"20px\">\n";
-	echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:red;\" /></td>\n";
+	echo "<td><div class=\"risk-table-veryhigh\" /></td>\n";
+        echo "<td>". $escaper->escapeHtml($lang['VeryHighRisk']) ."</td>\n";
+        echo "<td>&nbsp;</td>\n";
+	echo "<td><div class=\"risk-table-high\" /></td>\n";
 	echo "<td>". $escaper->escapeHtml($lang['HighRisk']) ."</td>\n";
 	echo "<td>&nbsp;</td>\n";
-	echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:orange;\" /></td>\n";
+	echo "<td><div class=\"risk-table-medium\" /></td>\n";
 	echo "<td>". $escaper->escapeHtml($lang['MediumRisk']) ."</td>\n";
         echo "<td>&nbsp;</td>\n";
-        echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:yellow;\" /></td>\n";
+	echo "<td><div class=\"risk-table-low\" /></td>\n";
         echo "<td>". $escaper->escapeHtml($lang['LowRisk']) ."</td>\n";
         echo "<td>&nbsp;</td>\n";
-        echo "<td><div style=\"width:10px;height:10px;border:1px solid #000;background-color:white;\" /></td>\n";
-        echo "<td>". $escaper->escapeHtml($lang['Irrelevant']) ."</td>\n";
+	echo "<td><div class=\"risk-table-insignificant\" /></td>\n";
+        echo "<td>". $escaper->escapeHtml($lang['Insignificant']) ."</td>\n";
 	echo "</tr>\n";
 	echo "</table>\n";
 
@@ -562,21 +580,25 @@ function get_risk_color($risk)
         $stmt->execute();
 
 	// Store the list in the array
-        $array = $stmt->fetchAll();
+        $array = $stmt->fetch();
 
         // Close the database connection
         db_close($db);
 
 	// Find the color
-	if ($array[0]['name'] == "High")
+	if ($array['name'] == "Very High")
 	{
 		$color = "red";
 	}
-	else if ($array[0]['name'] == "Medium")
+	else if ($array['name'] == "High")
+	{
+		$color = "orangered";
+	}
+	else if ($array['name'] == "Medium")
 	{
 		$color = "orange";
 	}
-	else if ($array[0]['name'] == "Low")
+	else if ($array['name'] == "Low")
 	{
 		$color = "yellow";
 	}
@@ -590,6 +612,8 @@ function get_risk_color($risk)
  *********************************/
 function get_risk_level_name($risk)
 {
+	global $lang;
+
 	// If the risk is not null
 	if ($risk != "")
 	{
@@ -597,22 +621,23 @@ function get_risk_level_name($risk)
         	$db = db_open();
 
         	// Get the risk levels
-        	$stmt = $db->prepare("SELECT name FROM risk_levels WHERE value<=$risk ORDER BY value DESC LIMIT 1");
+		$stmt = $db->prepare("SELECT name FROM risk_levels WHERE value<=:risk ORDER BY value DESC LIMIT 1");
+		$stmt->bindParam(":risk", $risk, PDO::PARAM_STR);
         	$stmt->execute();
 
         	// Store the list in the array
-        	$array = $stmt->fetchAll();
+        	$array = $stmt->fetch();
 
         	// Close the database connection
         	db_close($db);
 
 		// If the risk is High, Medium, or Low
-		if ($array[0]['name'] != "")
+		if ($array['name'] != "")
 		{
-			return $array[0]['name'];
+			return $array['name'];
 		}
-		// Otherwise the risk is Irrelevant
-		else return "Irrelevant";
+		// Otherwise the risk is Insignificant
+		else return $lang['Insignificant'];
 	}
 	// Return a null value
 	return "";
@@ -841,13 +866,13 @@ function user_exist($user)
 /**********************
  * FUNCTION: ADD USER *
  **********************/
-function add_user($type, $user, $email, $name, $salt, $hash, $teams, $asset, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
+function add_user($type, $user, $email, $name, $salt, $hash, $teams, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
 {
         // Open the database connection
         $db = db_open();
 
         // Insert the new user
-        $stmt = $db->prepare("INSERT INTO user (`type`, `username`, `name`, `email`, `salt`, `password`, `teams`, `asset`, `admin`, `review_high`, `review_medium`, `review_low`, `submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`) VALUES (:type, :user, :name, :email, :salt, :hash, :teams, :asset, :admin, :review_high, :review_medium, :review_low, :submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor)");
+        $stmt = $db->prepare("INSERT INTO user (`type`, `username`, `name`, `email`, `salt`, `password`, `teams`, `asset`, `admin`, `review_veryhigh`, `review_high`, `review_medium`, `review_low`, `review_insignificant`, `submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`) VALUES (:type, :user, :name, :email, :salt, :hash, :teams, :asset, :admin, :review_veryhigh, :review_high, :review_medium, :review_low, :review_insignificant, :submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor)");
 	$stmt->bindParam(":type", $type, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
@@ -857,9 +882,11 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $asset, $ad
 	$stmt->bindParam(":teams", $teams, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":asset", $asset, PDO::PARAM_INT);
         $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
+	$stmt->bindParam(":review_veryhigh", $review_veryhigh, PDO::PARAM_INT);
 	$stmt->bindParam(":review_high", $review_high, PDO::PARAM_INT);
 	$stmt->bindParam(":review_medium", $review_medium, PDO::PARAM_INT);
 	$stmt->bindParam(":review_low", $review_low, PDO::PARAM_INT);
+	$stmt->bindParam(":review_insignificant", $review_insignificant, PDO::PARAM_INT);
 	$stmt->bindParam(":submit_risks", $submit_risks, PDO::PARAM_INT);
 	$stmt->bindParam(":modify_risks", $modify_risks, PDO::PARAM_INT);
 	$stmt->bindParam(":plan_mitigations", $plan_mitigations, PDO::PARAM_INT);
@@ -876,7 +903,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $asset, $ad
 /*************************
  * FUNCTION: UPDATE USER *
  *************************/
-function update_user($user_id, $name, $email, $teams, $lang, $asset, $admin, $review_high, $review_medium, $review_low, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
+function update_user($user_id, $name, $email, $teams, $lang, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
 {
         // If the language is empty
         if ($lang == "")
@@ -889,7 +916,7 @@ function update_user($user_id, $name, $email, $teams, $lang, $asset, $admin, $re
         $db = db_open();
 
         // Update the user
-        $stmt = $db->prepare("UPDATE user set `name`=:name, `email`=:email, `teams`=:teams, `lang` =:lang, `asset`=:asset, `admin`=:admin, `review_high`=:review_high, `review_medium`=:review_medium, `review_low`=:review_low, `submit_risks`=:submit_risks, `modify_risks`=:modify_risks, `plan_mitigations`=:plan_mitigations, `close_risks`=:close_risks, `multi_factor`=:multi_factor WHERE `value`=:user_id");
+        $stmt = $db->prepare("UPDATE user set `name`=:name, `email`=:email, `teams`=:teams, `lang` =:lang, `asset`=:asset, `admin`=:admin, `review_veryhigh`=:review_veryhigh, `review_high`=:review_high, `review_medium`=:review_medium, `review_low`=:review_low, `review_insignificant`=:review_insignificant, `submit_risks`=:submit_risks, `modify_risks`=:modify_risks, `plan_mitigations`=:plan_mitigations, `close_risks`=:close_risks, `multi_factor`=:multi_factor WHERE `value`=:user_id");
 	$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
         $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
         $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
@@ -897,9 +924,11 @@ function update_user($user_id, $name, $email, $teams, $lang, $asset, $admin, $re
 	$stmt->bindParam(":lang", $lang, PDO::PARAM_STR, 2);
 	$stmt->bindParam(":asset", $asset, PDO::PARAM_INT);
         $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
+	$stmt->bindParam(":review_veryhigh", $review_veryhigh, PDO::PARAM_INT);
         $stmt->bindParam(":review_high", $review_high, PDO::PARAM_INT);
         $stmt->bindParam(":review_medium", $review_medium, PDO::PARAM_INT);
         $stmt->bindParam(":review_low", $review_low, PDO::PARAM_INT);
+	$stmt->bindParam(":review_insignificant", $review_insignificant, PDO::PARAM_INT);
         $stmt->bindParam(":submit_risks", $submit_risks, PDO::PARAM_INT);
         $stmt->bindParam(":modify_risks", $modify_risks, PDO::PARAM_INT);
         $stmt->bindParam(":plan_mitigations", $plan_mitigations, PDO::PARAM_INT);
@@ -916,9 +945,11 @@ function update_user($user_id, $name, $email, $teams, $lang, $asset, $admin, $re
 		// Update the session values
 		$_SESSION['asset'] = (int)$asset;
         	$_SESSION['admin'] = (int)$admin;
+		$_SESSION['review_veryhigh'] = (int)$review_veryhigh;
         	$_SESSION['review_high'] = (int)$review_high;
         	$_SESSION['review_medium'] = (int)$review_medium;
         	$_SESSION['review_low'] = (int)$review_low;
+		$_SESSION['review_insignificant'] = (int)$review_insignificant;
         	$_SESSION['submit_risks'] = (int)$submit_risks;
         	$_SESSION['modify_risks'] = (int)$modify_risks;
         	$_SESSION['close_risks'] = (int)$close_risks;
@@ -3485,8 +3516,14 @@ function next_review($color, $risk_id, $next_review, $html = true)
 			// Get the review levels
 			$review_levels = get_review_levels();
 
+			// If very high risk
+			if ($color === "red")
+			{
+				// Get days to review very high risks
+				$days = $review_levels[0]['value'];
+			}
 			// If high risk
-			if ($color == "red")
+			else if ($color == "orangered")
 			{
 				// Get days to review high risks
 				$days = $review_levels[0]['value'];
@@ -3502,6 +3539,12 @@ function next_review($color, $risk_id, $next_review, $html = true)
 			{
                         	// Get days to review low risks
                         	$days = $review_levels[2]['value'];
+			}
+			// If insignificant risk
+			else if ($color == "white")
+			{
+				// Get days to review insignificant risks
+				$days = $review_levels[3]['value'];
 			}
 
 			// Next review date
@@ -3543,24 +3586,36 @@ function next_review_by_score($calculated_risk)
         // Get the review levels
         $review_levels = get_review_levels();
 
-        // If high risk
+        // If very high risk
         if ($color == "red")
         {
                 // Get days to review high risks
                 $days = $review_levels[0]['value'];
         }
+	// If high risk
+	else if ($color == "orangered")
+	{
+		// Get days to review high risks
+		$days = $review_levels[1]['value'];
+	}
         // If medium risk
         else if ($color == "orange")
         {
                 // Get days to review medium risks
-                $days = $review_levels[1]['value'];
+                $days = $review_levels[2]['value'];
         }
         // If low risk
         else if ($color == "yellow")
         {
                 // Get days to review low risks
-                $days = $review_levels[2]['value'];
+                $days = $review_levels[3]['value'];
         }
+	// If insignificant risk
+	else if ($color == "white")
+	{
+		// Get days to review insignificant risks
+		$days = $review_levels[4]['value'];
+	}
 
         // Next review date
         $today = new DateTime('NOW');

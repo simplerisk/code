@@ -124,9 +124,13 @@
       <div class="row-fluid">
         <div class="span9">
           <div class="well">
-            <p><label><u><?php echo $escaper->escapeHtml($lang['SendPasswordResetEmail']); ?></u></label></p>
             <form name="send_reset_email" method="post" action="">
-            <?php echo $escaper->escapeHtml($lang['Username']); ?>: <input class="input-medium" name="user" id="user" type="text" maxlength="20" />
+		<?php
+			echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+			echo "<tr><td colspan=\"2\"><label><u>" . $escaper->escapeHtml($lang['SendPasswordResetEmail']) . "</u></label></td></tr>\n";
+			echo "<tr><td>" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td><input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" maxlength=\"20\" /></td></tr>\n";
+			echo "</table>\n";
+		?>
             <div class="form-actions">
               <button type="submit" name="send_reset_email" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Send']); ?></button>
               <input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
@@ -138,12 +142,16 @@
       <div class="row-fluid">
         <div class="span9">
           <div class="well">
-            <p><label><u><?php echo $escaper->escapeHtml($lang['PasswordReset']); ?></u></label></p>
             <form name="password_reset" method="post" action="">
-            <?php echo $escaper->escapeHtml($lang['Username']); ?>: <input class="input-medium" name="user" id="user" type="text" maxlength="20" /><br />
-            <?php echo $escaper->escapeHtml($lang['ResetToken']); ?>: <input class="input-medium" name="token" id="token" type="password" maxlength="20" /><br />
-            <?php echo $escaper->escapeHtml($lang['Password']); ?>: <input class="input-medium" name="password" id="password" type="password" maxlength="50" autocomplete="off" /><br />
-            <?php echo $escaper->escapeHtml($lang['RepeatPassword']); ?>: <input class="input-medium" name="repeat_password" id="repeat_password" type="password" maxlength="50" autocomplete="off" />
+		<?php
+			echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+			echo "<tr><td colspan=\"2\"><label><u>" . $escaper->escapeHtml($lang['PasswordReset']) . "</u></label></td></tr>\n";
+			echo "<tr><td>" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td><input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" maxlength=\"20\" /></td></tr>\n";
+			echo "<tr><td>" . $escaper->escapeHtml($lang['ResetToken']) . ":&nbsp;</td><td><input class=\"input-medium\" name=\"token\" id=\"token\" type=\"password\" maxlength=\"20\" /></td></tr>\n";
+			echo "<tr><td>" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</td><td><input class=\"input-medium\" name=\"password\" id=\"password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
+			echo "<tr><td>" . $escaper->escapeHtml($lang['RepeatPassword']) . ":&nbsp;</td><td><input class=\"input-medium\" name=\"repeat_password\" id=\"repeat_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
+			echo "</table>\n";
+		?>
             <div class="form-actions">
               <button type="submit" name="password_reset" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
               <input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
