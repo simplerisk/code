@@ -83,10 +83,25 @@
 	// If the projects were saved to status
 	if (isset($_POST['update_project_status']))
 	{
+		// For each project
 		foreach ($_POST['projects'] as $project_id)
 		{
+			// Update its project status
 			$status_id = $_POST['project_' . $project_id];
 			update_project_status($status_id, $project_id);
+
+			// If the project status is Completed (3)
+			if ($status_id == 3)
+			{
+				// Close the risks associated with the project
+				completed_project($project_id);
+			}
+			// Otherwise
+			else
+			{
+				// Reopen the risks associated with the project
+				incomplete_project($project_id);
+			}
 		}
 
                 // There is an alert message
@@ -127,15 +142,19 @@
 				$alert = "bad";
 				$alert_message = "You cannot delete the Unassigned Risks project or we will have no place to put unassigned risks.  Sorry.";
 			}
-			// If the project has risks associated with it
-			else if (project_has_risks($value))
-			{
-				// There is an alert message
-				$alert = "bad";
-				$alert_message = "You cannot delete a project that has risks assigned to it.  Drag the risks back to the Unassigned Risks tab, save it, and try again.";
-			}
 			else
 			{
+				// Get the risks associated with the project
+				$risks = get_project_risks($value);
+
+				// For each associated risk
+				foreach ($risks as $risk)
+				{
+					// Set the project ID for the risk to unassigned (0)
+					update_risk_project(0, $risk['id']);
+				}
+
+				// Delete the project
                         	delete_value("projects", $value);
 
                         	// Audit log

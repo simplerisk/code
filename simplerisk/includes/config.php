@@ -38,4 +38,7 @@ define('LANG_DEFAULT', 'en');
 // List of supported timezones here: http://www.php.net/manual/en/timezones.php
 date_default_timezone_set('America/Chicago');
 
+// Turn on debugging
+define('DEBUG', 'false');
+
 ?>

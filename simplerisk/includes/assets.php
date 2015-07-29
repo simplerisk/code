@@ -98,17 +98,20 @@ function add_assets($AvailableIPs)
 /***********************
  * FUNCTION: ADD ASSET *
  ***********************/
-function add_asset($ip, $name)
+function add_asset($ip, $name, $value=5)
 {
-	// Trim whitespace from the name
+	// Trim whitespace from the name, ip, and value
 	$name = trim($name);
+	$ip = trim($ip);
+	$value = trim($value);
 
         // Open the database connection
         $db = db_open();
 
-	$stmt = $db->prepare("INSERT INTO `assets` (ip, name) VALUES (:ip, :name) ON DUPLICATE KEY UPDATE `name`=:name;");
+	$stmt = $db->prepare("INSERT INTO `assets` (ip, name, value) VALUES (:ip, :name, :value) ON DUPLICATE KEY UPDATE `name`=:name, `ip`=:ip;");
         $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 15);
         $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
+	$stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
         $return = $stmt->execute();
 
         // Close the database connection
@@ -336,5 +339,86 @@ function get_unentered_assets()
         return $assets;
 }
 
+/*******************************************
+ * FUNCTION: DISPLAY ASSET VALUATION TABLE *
+ *******************************************/
+function display_asset_valuation_table()
+{
+        global $lang;
+        global $escaper;
+
+        echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+
+        // Display the table header
+        echo "<thead>\n";
+        echo "<tr>\n";
+        echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetName']) . "</th>\n";
+        echo "<th align=\"left\">" . $escaper->escapeHtml($lang['IPAddress']) . "</th>\n";
+	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetValue']) . "</th>\n";
+        echo "</tr>\n";
+        echo "</thead>\n";
+        echo "<tbody>\n";
+
+        // Get the array of assets
+        $assets = get_entered_assets();
+
+        // For each asset
+        foreach ($assets as $asset)
+        {
+                // If the IP address is not valid
+                if (!preg_match('/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/', $asset['ip']))
+                {
+                        $asset['ip'] = "N/A";
+                }
+
+                echo "<tr>\n";
+                echo "<td>" . $escaper->escapeHtml($asset['name']) . "</td>\n";
+                echo "<td>" . $escaper->escapeHtml($asset['ip']) . "</td>\n";
+		echo "<td>\n";
+		echo "<input type=\"hidden\" name=\"ids[]\" value=\"" . $escaper->escapeHtml($asset['id']) . "\" />\n";
+		asset_value_dropdown($asset['value']);
+		echo "</td>\n";
+                echo "</tr>\n";
+        }
+
+        echo "</tbody>\n";
+        echo "</table>\n";
+}
+
+/********************************
+ * FUNCTION: UPDATE ASSET VALUE *
+ ********************************/
+function update_asset_value($id, $value)
+{
+        // Open the database connection
+        $db = db_open();
+
+	// Update the asset value
+	$stmt = $db->prepare("UPDATE assets SET value = :value WHERE id = :id");
+	$stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
+	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Close the database connection
+        db_close($db);
+}
+
+/**********************************
+ * FUNCTION: ASSET VALUE DROPDOWN *
+ **********************************/
+function asset_value_dropdown($value)
+{
+	global $escaper;
+
+	echo "<select name=\"values[]\" style=\"width: 50px;\">\n";
+
+	// Display values 1 to 10
+	for ($i=1; $i<=10; $i++)
+	{
+		echo "<option value=\"" . $escaper->escapeHtml($i) . "\"" . ($i == $value ? " selected" : "") . ">" . $escaper->escapeHtml($i) . "</option>\n";
+	}
+
+	echo "</select>\n";
+}
 
 ?>

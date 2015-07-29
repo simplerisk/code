@@ -53,35 +53,35 @@
         $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 
 	// Set the status
-	if (isset($_GET['status']))
-	{
-		$status = (int)$_GET['status'];
-	}
-	else if (isset($_POST['status']))
+	if (isset($_POST['status']))
 	{
 		$status = (int)$_POST['status'];
+	}
+	else if (isset($_GET['status']))
+	{
+		$status = (int)$_GET['status'];
 	}
 	else $status = 0;
 
 	// Set the group
-        if (isset($_GET['group']))
-        {
-                $group = (int)$_GET['group'];
-        }
-        else if (isset($_POST['group']))
+        if (isset($_POST['group']))
         {
                 $group = (int)$_POST['group'];
+        }
+        else if (isset($_GET['group']))
+        {
+                $group = (int)$_GET['group'];
         }
         else $group = 0;
 
 	// Set the sort
-        if (isset($_GET['sort']))
-        {
-                $sort = (int)$_GET['sort'];
-        }
-        else if (isset($_POST['sort']))
+        if (isset($_POST['sort']))
         {
                 $sort = (int)$_POST['sort'];
+        }
+        else if (isset($_GET['sort']))
+        {
+                $sort = (int)$_GET['sort'];
         }
         else $sort = 0;
 
@@ -109,6 +109,7 @@
 	(isset($_POST['days_open']) ? $days_open = true : $days_open = false);
 	(isset($_POST['next_review_date']) ? $next_review_date = true : $next_review_date = false);
 	(isset($_POST['next_step']) ? $next_step = true : $next_step = false);
+	(isset($_POST['affected_assets']) ? $affected_assets = true : $affected_assets = false);
 
 	// If there was not a POST
 	if (!isset($_POST['status']))
@@ -152,13 +153,13 @@
           <div class="row-fluid">
             <div id="selections" class="span12">
               <div class="well">
-                <?php view_get_risks_by_selections($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step); ?>
+                <?php view_get_risks_by_selections($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets); ?>
               </div>
             </div>
           </div>
           <div class="row-fluid">
             <div class="span12">
-              <?php get_risks_by_table($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step); ?>
+              <?php get_risks_by_table($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets); ?>
             </div>
           </div>
         </div>

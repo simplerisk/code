@@ -3,9 +3,9 @@
          * License, v. 2.0. If a copy of the MPL was not distributed with this
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-        // Include required functions file
-        require_once(realpath(__DIR__ . '/../includes/assets.php'));
-        require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+	// Include required functions file
+        require_once(realpath(__DIR__ . '/../includes/functions.php'));
+	require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
 
         // Include Zend Escaper for HTML Output Encoding
@@ -41,9 +41,6 @@
         // Check for session timeout or renegotiation
         session_check();
 
-	// Default is no alert
-	$alert = false;
-
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
@@ -51,25 +48,77 @@
                 exit(0);
         }
 
-	// Check if the user has access to manage assets
-	if (!isset($_SESSION["asset"]) || $_SESSION["asset"] != 1)
+	// Default is no alert
+	$alert = false;
+
+	// Check if access is authorized
+	if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
 	{
 		header("Location: ../index.php");
 		exit(0);
 	}
-	else $manage_assets = true;
 
-	// Check if an asset search was submitted
-	if ((isset($_POST['search'])) && $manage_assets)
+        // Check if a new file type was submitted
+        if (isset($_POST['add_file_type']))
+        {
+                $name = $_POST['new_file_type'];
+
+                // Insert a new file type up to 100 chars
+                add_name("file_types", $name, 100);
+
+                // Audit log
+                $risk_id = 1000;
+                $message = "A new upload file type was added by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+
+		// There is an alert message
+		$alert = "good";
+		$alert_message = "A new upload file type was added successfully.";
+        }
+
+        // Check if a file type was deleted
+        if (isset($_POST['delete_file_type']))
+        {
+                $value = (int)$_POST['file_types'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        delete_value("file_types", $value);
+
+                	// Audit log
+                	$risk_id = 1000;
+                	$message = "An existing upload file type was removed by the \"" . $_SESSION['user'] . "\" user.";
+                	write_log($risk_id, $_SESSION['uid'], $message);
+
+                	// There is an alert message
+                	$alert = "good";
+                	$alert_message = "An existing upload file type was removed successfully.";
+                }
+        }
+
+	// Check if the maximum file upload size was updated
+	if (isset($_POST['update_max_upload_size']))
 	{
-		$range = $_POST['range'];
-		$AvailableIPs = discover_assets($range);
-
-		// If the IP was not in a recognizable format
-		if ($AvailableIPs === false)
+		// Verify value is a numeric value
+		if (is_numeric($_POST['size']))
 		{
+			update_setting('max_upload_size', $_POST['size']);
+
+                        // Audit log
+                        $risk_id = 1000;
+                        $message = "The maximum upload file size was updated by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The maximum upload file size was updated successfully.";
+		}
+		else
+		{
+			// There is an alert message
 			$alert = "bad";
-			$alert_message = "IP was not in a recognizable format.";
+			$alert_message = "The maximum upload file size needs to be an integer value.";
 		}
 	}
 
@@ -86,42 +135,6 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
-    <script type="text/javascript">
-      var loading={
-        ajax:function(st)
-        {
-          this.show('load');
-        },
-        show:function(el)
-        {
-          this.getID(el).style.display='';
-        },
-        getID:function(el)
-        {
-          return document.getElementById(el);
-        }
-      }
-    </script>
-    <style type="text/css">
-      #load{
-        position:absolute;
-        z-index:1;
-        border:3px double #999;
-        background:#F5F6CE;
-        width:80%;
-        height:80%;
-	filter: alpha(opacity=90);
-	opacity: 0.9;
-        margin-top:-100px;
-        margin-left:-100px;
-	top:15%;
-	left:15%;
-        text-align:center;
-        line-height:300px;
-        font-family:"Trebuchet MS", verdana, arial, tahoma;
-        font-size:18pt;
-      }
-    </style>
   </head>
   
   <body>
@@ -135,7 +148,7 @@
     <link rel="stylesheet" href="../css/display.css">
 
 <?php
-	view_top_menu("AssetManagement");
+	view_top_menu("Configure");
 
         if ($alert == "good")
         {
@@ -156,18 +169,30 @@
                 echo "<br />\n";
         }
 ?>
-    <div id="load" style="display:none;">Scanning IPs... Please wait.</div>
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <?php view_asset_management_menu("BatchImport"); ?>
+          <?php view_configure_menu("FileUploadSettings"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <h4><?php echo $escaper->escapeHtml($lang['BatchImport']); ?></h4>
-                <?php echo $escaper->escapeHtml($lang['ComingSoon']); ?></h4>
+                <form name="filetypes" method="post" action="">
+                <p>
+                <h4><?php echo $escaper->escapeHtml($lang['AllowedFileTypes']); ?>:</h4>
+                <?php echo $escaper->escapeHtml($lang['AddNewFileTypeOf']); ?> <input name="new_file_type" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_file_type" /><br />
+                <?php echo $escaper->escapeHtml($lang['DeleteCurrentFileTypeOf']); ?> <?php create_dropdown("file_types"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_file_type" />
+                </p>
+                </form>
+              </div>
+              <div class="hero-unit">
+                <form name="filesize" method="post" action="">
+                <p>
+                <h4><?php echo $escaper->escapeHtml($lang['MaximumUploadFileSize']); ?>:</h4>
+                <input name="size" type="number" maxlength="50" size="20" value="<?php echo get_setting('max_upload_size'); ?>" />&nbsp;<?php echo $escaper->escapeHtml($lang['Bytes']); ?><br />
+                <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_max_upload_size" />
+                </form>
               </div>
             </div>
           </div>

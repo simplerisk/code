@@ -151,6 +151,7 @@
 		// If the risk was found use the values for the risk
 		if (count($risk) != 0)
 		{
+			$submitted_by = $risk[0]['submitted_by'];
                 	$status = $risk[0]['status'];
                 	$subject = $risk[0]['subject'];
 			$reference_id = $risk[0]['reference_id'];
@@ -214,6 +215,7 @@
 		// If the risk was not found use null values
 		else
 		{
+			$submitted_by = "";
                         $status = "Risk ID Does Not Exist";
                         $subject = "N/A";
                         $reference_id = "N/A";
@@ -354,6 +356,7 @@
 			$mitigation_date = "";
 			$planning_strategy = "";
 			$mitigation_effort = "";
+			$mitigation_team = $team;
 			$current_solution = "";
 			$security_requirements = "";
 			$security_recommendations = "";
@@ -366,6 +369,7 @@
 			$mitigation_date = date(DATETIME, strtotime($mitigation_date));
 			$planning_strategy = $mitigation[0]['planning_strategy'];
 			$mitigation_effort = $mitigation[0]['mitigation_effort'];
+			$mitigation_team = $mitigation[0]['mitigation_team'];
 			$current_solution = $mitigation[0]['current_solution'];
 			$security_requirements = $mitigation[0]['security_requirements'];
 			$security_recommendations = $mitigation[0]['security_recommendations'];
@@ -429,13 +433,13 @@
 			if (isset($_POST['delete']) && $_POST['delete'] == "YES")
 			{
 				// Delete the file
-				delete_file($id-1000);
+				$error = delete_file($id-1000);
 			}
 			// Otherwise
 			else
 			{
                 		// Upload any file that is submitted
-                		upload_file($id-1000, $_FILES['file']);
+                		$error = upload_file($id-1000, $_FILES['file']);
 			}
 
                 	// Audit log
@@ -443,8 +447,16 @@
                 	$message = "Risk details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
                 	write_log($risk_id, $_SESSION['uid'], $message);
 
-			$alert = "good";
-			$alert_message = "The risk has been successfully modified.";
+			if ($error == 1)
+			{
+				$alert = "good";
+				$alert_message = "The risk has been successfully modified.";
+			}
+			else
+			{
+				$alert = "bad";
+				$alert_message = $error;
+			}
 		}
 		// Otherwise, the user did not have permission to modify risks
 		else
@@ -466,6 +478,7 @@
 	{
                 $planning_strategy = (int)$_POST['planning_strategy'];
 		$mitigation_effort = (int)$_POST['mitigation_effort'];
+		$mitigation_team = (int)$_POST['mitigation_team'];
                 $current_solution = $_POST['current_solution'];
                 $security_requirements = $_POST['security_requirements'];
                 $security_recommendations = $_POST['security_recommendations'];
@@ -476,13 +489,13 @@
 	                $status = "Mitigation Planned";
 
                 	// Submit mitigation and get the mitigation date back
-                	$mitigation_date = submit_mitigation($id, $status, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations);
+                	$mitigation_date = submit_mitigation($id, $status, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
 			$mitigation_date = date(DATETIME, strtotime($mitigation_date));
 		}
 		else
 		{
 			// Update mitigation and get the mitigation date back
-			$mitigation_date = update_mitigation($id, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations);
+			$mitigation_date = update_mitigation($id, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
 			$mitigation_date = date(DATETIME, strtotime($mitigation_date));
 		}
 
@@ -688,7 +701,7 @@
 			// Otherwise we are just viewing the risk
 			else
 			{
-				view_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+				view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
 			}
 		?>
                 </form>
@@ -701,12 +714,12 @@
 			// If the user has selected to edit the mitigation
 			if (isset($_POST['edit_mitigation']))
 			{ 
-				edit_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations);
+				edit_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
 			}
 			// Otherwise we are just viewing the mitigation
 			else
 			{
-				view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations);
+				view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
 			}
 		?>
                 </form>

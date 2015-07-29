@@ -144,7 +144,7 @@ function view_print_top_table($id, $calculated_risk, $subject, $status)
 /*******************************
  * FUNCTION: VIEW RISK DETAILS *
  *******************************/
-function view_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
+function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
 {
 	global $lang;
 	global $escaper;
@@ -153,6 +153,10 @@ function view_risk_details($id, $submission_date, $subject, $reference_id, $regu
         echo $escaper->escapeHtml($lang['SubmissionDate']) .": \n";
         echo "<br />\n";
         echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $escaper->escapeHtml($submission_date) . "\" title=\"" . $escaper->escapeHtml($submission_date) . "\" disabled=\"disabled\" />\n";
+	echo "<br />\n";
+	echo $escaper->escapeHtml($lang['SubmittedBy']) .": \n";
+	echo "<br />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"submitted_by\" id=\"submitted_by\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $submitted_by)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("user", $submitted_by)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo $escaper->escapeHtml($lang['Subject']) .": \n";
         echo "<br />\n";
@@ -380,7 +384,7 @@ function edit_risk_details($id, $submission_date, $subject, $reference_id, $regu
 /*************************************
  * FUNCTION: VIEW MITIGATION DETAILS *
  *************************************/
-function view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
+function view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
 {
 	global $lang;
 	global $escaper;
@@ -398,6 +402,10 @@ function view_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         echo "<br />\n";
         echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_effort\" id=\"mitigation_effort\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
+	echo $escaper->escapeHtml($lang['MitigationTeam']) .": \n";
+	echo "<br />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_team\" id=\"mitigation_team\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("team", $mitigation_team)) . "\" disabled=\"disabled\" />\n";
+	echo "<br />\n";
         echo $escaper->escapeHtml($lang['CurrentSolution']) .": \n";
         echo "<br />\n";
         echo "<textarea style=\"cursor: default;\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" title=\"" . $escaper->escapeHtml($current_solution) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($current_solution) . "</textarea>\n";
@@ -467,7 +475,7 @@ function view_print_mitigation_details($mitigation_date, $planning_strategy, $mi
 /*************************************
  * FUNCTION: EDIT MITIGATION DETAILS *
  *************************************/
-function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
+function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations)
 {
 	global $lang;
 	global $escaper;
@@ -485,6 +493,9 @@ function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         echo "<br />\n";
         create_dropdown("mitigation_effort", $mitigation_effort);
         echo "<br />\n";
+	echo $escaper->escapeHtml($lang['MitigationTeam']) .": \n";
+	echo "<br />\n";
+	create_dropdown("team", $mitigation_team, "mitigation_team", true);
         echo $escaper->escapeHtml($lang['CurrentSolution']) .": \n";
         echo "<br />\n";
         echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $escaper->escapeHtml($current_solution) . "</textarea>\n";
@@ -583,7 +594,7 @@ function view_print_review_details($id, $review_date, $reviewer, $review, $next_
 /****************************************
  * FUNCTION: edit_mitigation_submission *
  ****************************************/
-function edit_mitigation_submission($planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
+function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
 {
 	global $lang;
 	global $escaper;
@@ -599,6 +610,10 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $cur
         echo "<br />\n";
 	create_dropdown("mitigation_effort", $mitigation_effort, NULL, true);
         echo "<br />\n";
+	echo $escaper->escapeHtml($lang['MitigationTeam']) . ": \n";
+	echo "<br />\n";
+	create_dropdown("team", $mitigation_team, "mitigation_team", true);
+	echo "<br />\n";
         echo $escaper->escapeHtml($lang['CurrentSolution']) .": \n";
         echo "<br />\n";
         echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $escaper->escapeHtml($current_solution) . "</textarea>\n";
@@ -1568,17 +1583,25 @@ function custom_scoring_table($id, $custom)
  *******************************/
 function view_classic_help()
 {
+	global $escaper;
+
+	// Get the arrray of likelihood values
+	$likelihood = get_table("likelihood");
+
+	// Get the array of impact values
+	$impact = get_table("impact");
+
         echo "<div id=\"divHelp\" style=\"width:100%;overflow:auto\"></div>\n";
 
         echo "<div id=\"likelihoodHelp\"  style=\"display:none; visibility:hidden\">\n";
         echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
         echo "<tr>\n";
         echo "<td class=\"cal-text\">\n";
-        echo "<p><b>Remote:</b> May only occur in exceptional circumstances.</p>\n";
-	echo "<p><b>Unlikely:</b> Expected to occur in a few circumstances.</p>\n";
-	echo "<p><b>Credible:</b> Expected to occur in some circumstances.</p>\n";
-	echo "<p><b>Likely:</b> Expected to occur in many circumstances.</p>\n";
-	echo "<p><b>Almost Certain:</b> Expected to occur frequently and in most circumstances.</p>\n";
+        echo "<p><b>" . $escaper->escapeHtml($likelihood[0]['name']) . ":</b> May only occur in exceptional circumstances.</p>\n";
+	echo "<p><b>" . $escaper->escapeHtml($likelihood[1]['name']) . ":</b> Expected to occur in a few circumstances.</p>\n";
+	echo "<p><b>" . $escaper->escapeHtml($likelihood[2]['name']) . ":</b> Expected to occur in some circumstances.</p>\n";
+	echo "<p><b>" . $escaper->escapeHtml($likelihood[3]['name']) . ":</b> Expected to occur in many circumstances.</p>\n";
+	echo "<p><b>" . $escaper->escapeHtml($likelihood[4]['name']) . ":</b> Expected to occur frequently and in most circumstances.</p>\n";
         echo "</td>\n";
         echo "</tr>\n";
         echo "</table>\n";
@@ -1588,11 +1611,11 @@ function view_classic_help()
         echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
         echo "<tr>\n";
         echo "<td class=\"cal-text\">\n";
-	echo "<p><b>Insignificant:</b> No impact on service, no impact on reputation, complaint unlikely, or litigation risk remote.</p>\n";
-	echo "<p><b>Minor:</b> Slight impact on service, slight impact on reputation, complaint possible, or litigation possible.</p>\n";
-	echo "<p><b>Moderate:</b> Some service disruption, potential for adverse publicity (avoidable with careful handling), complaint probable, or litigation probably.</p>\n";
-	echo "<p><b>Major:</b> Service disrupted, adverse publicity not avoidable (local media), complaint probably, or litigation probable.</p>\n";
-	echo "<p><b>Extreme/Catastrophic:</b> Service interrupted for significant time, major adverse publicity not avoidable (national media), major litigation expected, resignation of senior management and board, or loss of benficiary confidence.</p>\n";
+	echo "<p><b>" . $escaper->escapeHtml($impact[0]['name']) . ":</b> No impact on service, no impact on reputation, complaint unlikely, or litigation risk remote.</p>\n";
+	echo "<p><b>" . $escaper->escapeHtml($impact[1]['name']) . ":</b> Slight impact on service, slight impact on reputation, complaint possible, or litigation possible.</p>\n";
+	echo "<p><b>" . $escaper->escapeHtml($impact[2]['name']) . ":</b> Some service disruption, potential for adverse publicity (avoidable with careful handling), complaint probable, or litigation probably.</p>\n";
+	echo "<p><b>" . $escaper->escapeHtml($impact[3]['name']) . ":</b> Service disrupted, adverse publicity not avoidable (local media), complaint probably, or litigation probable.</p>\n";
+	echo "<p><b>" . $escaper->escapeHtml($impact[4]['name']) . ":</b> Service interrupted for significant time, major adverse publicity not avoidable (national media), major litigation expected, resignation of senior management and board, or loss of benficiary confidence.</p>\n";
         echo "</td>\n";
         echo "</tr>\n";
         echo "</table>\n";
@@ -2506,14 +2529,11 @@ function view_asset_management_menu($active)
         echo ($active == "AutomatedDiscovery" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"index.php\">I. " . $escaper->escapeHtml($lang['AutomatedDiscovery']) . "</a>\n";
         echo "</li>\n";
-        echo ($active == "BatchImport" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"batch.php\">II. " . $escaper->escapeHtml($lang['BatchImport']) . "</a>\n";
-        echo "</li>\n";
         echo ($active == "ManageAssets" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"manage.php\">III. " . $escaper->escapeHtml($lang['ManageAssets']) . "</a>\n";
+        echo "<a href=\"manage.php\">II. " . $escaper->escapeHtml($lang['ManageAssets']) . "</a>\n";
         echo "</li>\n";
         echo ($active == "AssetValuation" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"valuation.php\">IV. " . $escaper->escapeHtml($lang['AssetValuation']) . "</a>\n";
+        echo "<a href=\"valuation.php\">III. " . $escaper->escapeHtml($lang['AssetValuation']) . "</a>\n";
         echo "</li>\n";
 	echo "</ul>\n";
 }
@@ -2614,6 +2634,9 @@ function view_configure_menu($active)
 	echo ($active == "RedefineNamingConventions" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"custom_names.php\">" . $escaper->escapeHtml($lang['RedefineNamingConventions']) . "</a>\n";
         echo "</li>\n";
+	echo ($active == "FileUploadSettings" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"uploads.php\">" . $escaper->escapeHtml($lang['FileUploadSettings']) . "</a>\n";
+        echo "</li>\n";
 	echo ($active == "DeleteRisks" ? "<li class=\"active\">\n" : "<li>\n");
 	echo "<a href=\"delete_risks.php\">" . $escaper->escapeHtml($lang['DeleteRisks']) . "</a>\n";
 	echo "</li>\n";
@@ -2635,6 +2658,9 @@ function view_configure_menu($active)
 	echo ($active == "Announcements" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"announcements.php\">" . $escaper->escapeHtml($lang['Announcements']) . "</a>\n";
         echo "</li>\n";
+	echo ($active == "Register" ? "<li class=\"active\">\n" : "<li>\n");
+	echo "<a href=\"register.php\">" . $escaper->escapeHtml($lang['Register']) . "</a>\n";
+	echo "</li>\n";
 	echo ($active == "About" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"about.php\">" . $escaper->escapeHtml($lang['About']) . "</a>\n";
         echo "</li>\n";
@@ -2644,7 +2670,7 @@ function view_configure_menu($active)
 /******************************************
  * FUNCTION: VIEW GET RISKS BY SELECTIONS *
  ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $category=false, $team=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false)
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $category=false, $team=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false)
 {
 	global $lang;
 	global $escaper;
@@ -2715,7 +2741,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $r
 	echo "<tr>\n";
 	echo "<td><input type=\"checkbox\" name=\"id\" id=\"checkbox_id\"" . ($id == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_id()\" /></td><td>" . $escaper->escapeHtml($lang['ID']) . "</td>\n";
 	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"risk_status\" id=\"checkbox_risk_status\"" . ($risk_status == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_status()\" onchange=\"javascript: submit()\" /></td><td>" . $escaper->escapeHtml($lang['Status']) . "</td>\n";
+	echo "<td><input type=\"checkbox\" name=\"risk_status\" id=\"checkbox_risk_status\"" . ($risk_status == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_status()\" /></td><td>" . $escaper->escapeHtml($lang['Status']) . "</td>\n";
 	echo "<td width=\"10px\"></td>\n";
 	echo "<td><input type=\"checkbox\" name=\"subject\" id=\"checkbox_subject\"" . ($subject == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_subject()\" /></td><td>" . $escaper->escapeHtml($lang['Subject']) . "</td>\n";
 	echo "<td width=\"10px\"></td>\n";
@@ -2758,7 +2784,8 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $r
 	echo "<td width=\"10px\"></td>\n";
 	echo "<td><input type=\"checkbox\" name=\"next_step\" id=\"checkbox_next_step\"" . ($next_step == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_next_step()\" /></td><td>" . $escaper->escapeHtml($lang['NextStep']) . "</td>\n";
 	echo "<td width=\"10px\"></td>\n";
-	echo "<td></td><td></td>\n";
+	echo "<td><input type=\"checkbox\" name=\"affected_assets\" id=\"checkbox_affected_assets\"" . ($affected_assets == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_affected_assets()\" /></td><td>" . $escaper->escapeHtml($lang['AffectedAssets']) . "</td>\n";
+        echo "</tr>\n";
 	echo "</table>\n";
         echo "</div>\n";
         echo "</div>\n";
@@ -2876,6 +2903,96 @@ function display_asset_autocomplete_script($assets)
         echo "    });\n";
         echo "  });\n";
     	echo "</script>\n";
+}
+
+/*********************************************
+ * FUNCTION: DISPLAY REGISTRATION TABLE EDIT *
+ *********************************************/
+function display_registration_table_edit($name="", $company="", $title="", $phone="", $email="")
+{
+	global $escaper;
+	global $lang;
+
+	echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+        echo "  <tr>\n";
+        echo "    <td>" . $escaper->escapeHtml($lang['FullName']) . ":&nbsp;</td>\n";
+        echo "    <td><input type=\"text\" name=\"name\" id=\"name\" value=\"" . $escaper->escapeHtml($name) . "\" /></td>\n";
+        echo "  </tr>\n";
+        echo "  <tr>\n";
+        echo "    <td>" . $escaper->escapeHtml($lang['Company']) . ":&nbsp;</td>\n";
+        echo "    <td><input type=\"text\" name=\"company\" id=\"company\" value=\"" . $escaper->escapeHtml($company) . "\" /></td>\n";
+        echo "  </tr>\n";
+        echo "  <tr>\n";
+        echo "    <td>" . $escaper->escapeHtml($lang['JobTitle']) . ":&nbsp;</td>\n";
+        echo "    <td><input type=\"text\" name=\"title\" id=\"title\" value=\"" . $escaper->escapeHtml($title) . "\" /></td>\n";
+        echo "  </tr>\n";
+        echo "  <tr>\n";
+        echo "    <td>" . $escaper->escapeHtml($lang['Phone']) . ":&nbsp;</td>\n";
+        echo "    <td><input type=\"tel\" name=\"phone\" id=\"phone\" value=\"" . $escaper->escapeHtml($phone) . "\" /></td>\n";
+        echo "  </tr>\n";
+        echo "  <tr>\n";
+        echo "    <td>" . $escaper->escapeHtml($lang['EmailAddress']) . ":&nbsp;</td>\n";
+        echo "    <td><input type=\"email\" name=\"email\" id=\"email\" value=\"" . $escaper->escapeHtml($email) . "\" /></td>\n";
+        echo "  </tr>\n";
+	echo "</table>\n";
+        echo "<div class=\"form-actions\">\n";
+        echo "  <button type=\"submit\" name=\"register\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Register']) . "</button>\n";
+        echo "</div>\n";
+}
+
+/****************************************
+ * FUNCTION: DISPLAY REGISTRATION TABLE *
+ ****************************************/
+function display_registration_table($name="", $company="", $title="", $phone="", $email="")
+{
+        global $escaper;
+        global $lang;
+
+        echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+        echo "  <tr>\n";
+        echo "    <td>" . $escaper->escapeHtml($lang['FullName']) . ":&nbsp;</td>\n";
+        echo "    <td><input type=\"text\" name=\"name\" id=\"name\" value=\"" . $escaper->escapeHtml($name) . "\" title=\"" . $escaper->escapeHtml($name) . "\" disabled=\"disabled\" /></td>\n";
+        echo "  </tr>\n";
+        echo "  <tr>\n";
+        echo "    <td>" . $escaper->escapeHtml($lang['Company']) . ":&nbsp;</td>\n";
+        echo "    <td><input type=\"text\" name=\"company\" id=\"company\" value=\"" . $escaper->escapeHtml($company) . "\" title=\"" . $escaper->escapeHtml($company) . "\" disabled=\"disabled\" /></td>\n";
+        echo "  </tr>\n";
+        echo "  <tr>\n";
+        echo "    <td>" . $escaper->escapeHtml($lang['JobTitle']) . ":&nbsp;</td>\n";
+        echo "    <td><input type=\"text\" name=\"title\" id=\"title\" value=\"" . $escaper->escapeHtml($title) . "\" title=\"" . $escaper->escapeHtml($title) . "\" disabled=\"disabled\" /></td>\n";
+        echo "  </tr>\n";
+        echo "  <tr>\n";
+        echo "    <td>" . $escaper->escapeHtml($lang['Phone']) . ":&nbsp;</td>\n";
+        echo "    <td><input type=\"tel\" name=\"phone\" id=\"phone\" value=\"" . $escaper->escapeHtml($phone) . "\" title=\"" . $escaper->escapeHtml($phone) . "\" disabled=\"disabled\" /></td>\n";
+        echo "  </tr>\n";
+        echo "  <tr>\n";
+        echo "    <td>" . $escaper->escapeHtml($lang['EmailAddress']) . ":&nbsp;</td>\n";
+        echo "    <td><input type=\"email\" name=\"email\" id=\"email\" value=\"" . $escaper->escapeHtml($email) . "\" title=\"" . $escaper->escapeHtml($email) . "\" disabled=\"disabled\" /></td>\n";
+        echo "  </tr>\n";
+        echo "</table>\n";
+        echo "<div class=\"form-actions\">\n";
+        echo "  <button type=\"submit\" name=\"update\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Update']) . "</button>\n";
+        echo "</div>\n";
+}
+
+/*****************************
+ * FUNCTION: DISPLAY UPGRADE *
+ *****************************/
+function display_upgrade()
+{
+	// If the upgrade extra exists
+	if (file_exists(realpath(__DIR__ . '/../extras/upgrade/index.php')))
+	{
+		// Require the upgrade extra file
+		require_once(realpath(__DIR__ . '/../extras/upgrade/index.php'));
+
+		display_upgrades();
+	}
+	// The ugprade does not exist
+	else
+	{
+		echo "There are issues obtaining the upgrade extra.  Check the error log for more information.<br />\n";
+	}
 }
 
 ?>

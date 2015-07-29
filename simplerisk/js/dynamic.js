@@ -485,3 +485,24 @@ function check_next_step()
     }
   }
 }
+
+function check_affected_assets()
+{
+  elements = document.getElementsByClassName("affected_assets");
+  checkbox = document.getElementById("checkbox_affected_assets");
+
+  if(checkbox.checked)
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "";
+    }
+  }
+  else
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "none";
+    }
+  }
+}

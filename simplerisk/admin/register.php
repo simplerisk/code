@@ -4,8 +4,8 @@
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
         // Include required functions file
-        require_once(realpath(__DIR__ . '/../includes/assets.php'));
-        require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+        require_once(realpath(__DIR__ . '/../includes/functions.php'));
+	require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
 
         // Include Zend Escaper for HTML Output Encoding
@@ -41,8 +41,8 @@
         // Check for session timeout or renegotiation
         session_check();
 
-	// Default is no alert
-	$alert = false;
+        // Default is no alert
+        $alert = false;
 
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
@@ -51,32 +51,65 @@
                 exit(0);
         }
 
-	// Check if the user has access to manage assets
-	if (!isset($_SESSION["asset"]) || $_SESSION["asset"] != 1)
-	{
-		header("Location: ../index.php");
-		exit(0);
-	}
-	else $manage_assets = true;
+        // Check if access is authorized
+        if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
+        {
+                header("Location: ../index.php");
+                exit(0);
+        }
 
-	// Check if an asset update was submitted
-	if ((isset($_POST['update_valuation'])) && $manage_assets)
+	// If SimpleRisk is not registered
+	if (get_setting('registration_registered') == 0)
 	{
-		// Get the ids and values
-		$ids = $_POST['ids'];
-		$values = $_POST['values'];
+		// Set registered to false
+		$registered = false;
 
-		// For each asset
-		for ($i=0; $i<count($ids); $i++)
+		// If the user has sent registration information
+		if (isset($_POST['register']))
 		{
-			// If the value is between 1 and 10
-			if ($values[$i] >= 1 && $values[$i] <= 10)
-			{
-				update_asset_value($ids[$i], $values[$i]);
-			}
+			// Get the posted values
+			$name = $_POST['name'];
+			$company = $_POST['company'];
+			$title = $_POST['title'];
+			$phone = $_POST['phone'];
+			$email = $_POST['email'];
+
+			// Add the registration
+			$result = add_registration($name, $company, $title, $phone, $email);
+
+			// Set registered to true
+			$registered = true;
 		}
 	}
+	// SimpleRisk is registered
+	else
+	{
+		// Set registered to true
+		$registered = true;
 
+		// If the user has updated their registration information
+		if (isset($_POST['register']))
+		{
+                        // Get the posted values
+                        $name = $_POST['name'];
+                        $company = $_POST['company'];
+                        $title = $_POST['title'];
+                        $phone = $_POST['phone'];
+                        $email = $_POST['email'];
+
+			// Update the registration
+			update_registration($name, $company, $title, $phone, $email);
+		}
+		// Otherwise get the registration values from the database
+		else
+		{
+        		$name = get_setting("registration_name");
+	        	$company = get_setting("registration_company");
+        		$title = get_setting("registration_title");
+        		$phone = get_setting("registration_phone");
+        		$email = get_setting("registration_email");
+		}
+	}
 ?>
 
 <!doctype html>
@@ -90,26 +123,7 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
-    <style type="text/css">
-      #load{
-        position:absolute;
-        z-index:1;
-        border:3px double #999;
-        background:#F5F6CE;
-        width:80%;
-        height:80%;
-	filter: alpha(opacity=90);
-	opacity: 0.9;
-        margin-top:-100px;
-        margin-left:-100px;
-	top:15%;
-	left:15%;
-        text-align:center;
-        line-height:300px;
-        font-family:"Trebuchet MS", verdana, arial, tahoma;
-        font-size:18pt;
-      }
-    </style>
+    <link rel="stylesheet" href="../css/paypal.css">
   </head>
   
   <body>
@@ -123,7 +137,7 @@
     <link rel="stylesheet" href="../css/display.css">
 
 <?php
-	view_top_menu("AssetManagement");
+	view_top_menu("Configure");
 
         if ($alert == "good")
         {
@@ -144,24 +158,67 @@
                 echo "<br />\n";
         }
 ?>
-    <div id="load" style="display:none;">Scanning IPs... Please wait.</div>
+
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <?php view_asset_management_menu("AssetValuation"); ?>
+          <?php view_configure_menu("Register"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <h4><?php echo $escaper->escapeHtml($lang['AssetValuation']); ?></h4>
-		<form name="asset_valuation" method="post" action="">
-		<button type="submit" name="update_valuation" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
-		<hr />
-		<?php display_asset_valuation_table(); ?>
-		<hr />
-		<button type="submit" name="update_valuation" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
-		</form>
+                <p><h4><?php echo $escaper->escapeHtml($lang['RegisterSimpleRisk']); ?></h4></p>
+                <p><?php echo $escaper->escapeHtml($lang['RegistrationText']); ?></p>
+              </div>
+            </div>
+          </div>
+          <div class="row-fluid">
+            <div class="span6">
+              <div class="hero-unit">
+                <p><h4><?php echo $escaper->escapeHtml($lang['RegistrationInformation']); ?></h4></p>
+                <form name="register" method="post" action="">
+		<?php
+			// If the instance is not registered
+			if (!$registered)
+			{
+				// Display the registration table
+				display_registration_table_edit();
+			}
+			// The instance is registered
+			else
+			{
+				// The user wants to update the registration
+				if (isset($_POST['update']))
+				{
+					// Display the editable registration table
+					display_registration_table_edit($name, $company, $title, $phone, $email);
+				}
+				else
+				{
+					// Display the registration table
+					display_registration_table($name, $company, $title, $phone, $email);
+				}
+			}
+		?>
+                </form>
+              </div>
+            </div>
+            <div class="span6">
+              <div class="hero-unit">
+                <p><h4><?php echo $escaper->escapeHtml($lang['UpgradeSimpleRisk']); ?></h4></p>
+		<?php
+			// If the instance is not registered
+			if (!$registered)
+			{
+				echo "Please register in order to be able to use the easy upgrade feature.";
+			}
+			// The instance is registered
+			else
+			{
+				display_upgrade();
+			}
+		?>
               </div>
             </div>
           </div>

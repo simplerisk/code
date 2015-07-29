@@ -297,6 +297,59 @@
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
+    <script type="text/javascript">
+      function checkAll(bx) {
+        var cbs = document.getElementsByTagName('input');
+        for(var i=0; i < cbs.length; i++) {
+          if (cbs[i].type == 'checkbox') {
+            cbs[i].checked = bx.checked;
+          }
+        }
+      }
+
+      function checkAllRiskMgmt(bx) {
+        if (document.getElementsByName("check_risk_mgmt")[0].checked == true) {
+          document.getElementsByName("submit_risks")[0].checked = true;
+          document.getElementsByName("modify_risks")[0].checked = true;
+          document.getElementsByName("close_risks")[0].checked = true;
+          document.getElementsByName("plan_mitigations")[0].checked = true;
+          document.getElementsByName("review_insignificant")[0].checked = true;
+          document.getElementsByName("review_low")[0].checked = true;
+          document.getElementsByName("review_medium")[0].checked = true;
+          document.getElementsByName("review_high")[0].checked = true;
+          document.getElementsByName("review_veryhigh")[0].checked = true;
+        }
+        else {
+          document.getElementsByName("submit_risks")[0].checked = false;
+          document.getElementsByName("modify_risks")[0].checked = false;
+          document.getElementsByName("close_risks")[0].checked = false;
+          document.getElementsByName("plan_mitigations")[0].checked = false;
+          document.getElementsByName("review_insignificant")[0].checked = false;
+          document.getElementsByName("review_low")[0].checked = false;
+          document.getElementsByName("review_medium")[0].checked = false;
+          document.getElementsByName("review_high")[0].checked = false;
+          document.getElementsByName("review_veryhigh")[0].checked = false;
+        }
+      }
+
+      function checkAllAssetMgmt(bx) {
+        if (document.getElementsByName("check_asset_mgmt")[0].checked == true) {
+          document.getElementsByName("asset")[0].checked = true;
+        }
+        else {
+          document.getElementsByName("asset")[0].checked = false;
+        }
+      }
+
+      function checkAllConfigure(bx) {
+        if (document.getElementsByName("check_configure")[0].checked == true) {
+          document.getElementsByName("admin")[0].checked = true;
+        }
+        else {
+          document.getElementsByName("admin")[0].checked = false;
+        }
+      }
+    </script>
 
 <?php
 	view_top_menu("Configure");
@@ -330,42 +383,50 @@
             <div class="span12">
               <div class="hero-unit">
                 <form name="add_user" method="post" action="">
-                <p>
-                <h4><?php echo $escaper->escapeHtml($lang['AddANewUser']); ?>:</h4>
-		<?php echo $escaper->escapeHtml($lang['Type']); ?>: <select name="type" id="select" onChange="handleSelection(value)">
-                <option selected value="1">SimpleRisk</option>
-		<?php
-			// If the custom authentication extra is enabeld
-			if (custom_authentication_extra())
-			{
-				// Display the LDAP option
-				echo "<option value=\"2\">LDAP</option>\n";
-			}
-		?>
-                </select><br />
-                <?php echo $escaper->escapeHtml($lang['FullName']); ?>: <input name="name" type="text" maxlength="50" size="20" /><br />
-                <?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>: <input name="email" type="text" maxlength="200" size="20" /><br />
-                <?php echo $escaper->escapeHtml($lang['Username']); ?>: <input name="new_user" type="text" maxlength="20" size="20" /><br />
-		<div id="simplerisk">
-                <?php echo $escaper->escapeHtml($lang['Password']); ?>: <input name="password" type="password" maxlength="50" size="20" autocomplete="off" /><br />
-                <?php echo $escaper->escapeHtml($lang['RepeatPassword']); ?>: <input name="repeat_password" type="password" maxlength="50" size="20" autocomplete="off" /><br />
-		</div>
+                <table border="0" cellspacing="0" cellpadding="0">
+                  <tr><td colspan="2"><h4><?php echo $escaper->escapeHtml($lang['AddANewUser']); ?>:</h4></td></tr>
+                  <tr>
+                    <td><?php echo $escaper->escapeHtml($lang['Type']); ?>:&nbsp;</td>
+                    <td>
+                      <select name="type" id="select" onChange="handleSelection(value)">
+                        <option selected value="1">SimpleRisk</option>
+                        <?php
+                       		// If the custom authentication extra is enabeld
+                        	if (custom_authentication_extra())
+                        	{
+                                	// Display the LDAP option
+                                	echo "<option value=\"2\">LDAP</option>\n";
+                        	}
+                        ?>
+                      </select>
+                    </td>
+                  </tr>
+                  <tr><td><?php echo $escaper->escapeHtml($lang['FullName']); ?>:&nbsp;</td><td><input name="name" type="text" maxlength="50" size="20" /></td></tr>
+                  <tr><td><?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>:&nbsp;</td><td><input name="email" type="text" maxlength="200" size="20" /></td></tr>
+                  <tr><td><?php echo $escaper->escapeHtml($lang['Username']); ?>:&nbsp;</td><td><input name="new_user" type="text" maxlength="20" size="20" /></td></tr>
+                  <tr><td><?php echo $escaper->escapeHtml($lang['Password']); ?>:&nbsp;</td><td><input name="password" type="password" maxlength="50" size="20" autocomplete="off" /></td></tr>
+                  <tr><td><?php echo $escaper->escapeHtml($lang['RepeatPassword']); ?>:&nbsp;</td><td><input name="repeat_password" type="password" maxlength="50" size="20" autocomplete="off" /></td></tr>
+                </table>
                 <h6><u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u></h6>
                 <?php create_multiple_dropdown("team"); ?>
                 <h6><u><?php echo $escaper->escapeHtml($lang['UserResponsibilities']); ?></u></h6>
-                <ul>
-                  <li><input name="submit_risks" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToSubmitNewRisks']); ?></li>
-                  <li><input name="modify_risks" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyExistingRisks']); ?></li>
-                  <li><input name="close_risks" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCloseRisks']); ?></li>
-                  <li><input name="plan_mitigations" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToPlanMitigations']); ?></li>
-                  <li><input name="review_insignificant" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewInsignificantRisks']); ?></li>
-                  <li><input name="review_low" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewLowRisks']); ?></li>
-                  <li><input name="review_medium" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></li>
-                  <li><input name="review_high" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></li>
-                  <li><input name="review_veryhigh" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></li>
-		  <li><input name="asset" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></li>
-                  <li><input name="admin" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></li>
-                </ul>
+		<table border="0" cellspacing="0" cellpadding="0">
+		  <tr><td colspan="3"><input name="check_all" type="checkbox" onclick="checkAll(this)" />&nbsp;<?php echo $escaper->escapeHtml($lang['CheckAll']); ?></td></tr>
+		  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input name="check_risk_mgmt" type="checkbox" onclick="checkAllRiskMgmt(this)" />&nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllRiskMgmt']); ?></td></tr>
+		  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="submit_risks" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToSubmitNewRisks']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="modify_risks" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyExistingRisks']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="close_risks" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCloseRisks']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="plan_mitigations" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToPlanMitigations']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_insignificant" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewInsignificantRisks']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_low" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewLowRisks']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_medium" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_high" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_veryhigh" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input name="check_asset_mgmt" type="checkbox" onclick="checkAllAssetMgmt(this)" />&nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllAssetMgmt']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="asset" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input name="check_configure" type="checkbox" onclick="checkAllConfigure(this)" />&nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllConfigure']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="admin" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></td></tr>
+		</table>
                 <h6><u><?php echo $escaper->escapeHtml($lang['MultiFactorAuthentication']); ?></u></h6>
                 <input type="radio" name="multi_factor" value="1" checked />&nbsp;<?php echo $escaper->escapeHtml($lang['None']); ?><br />
 <?php

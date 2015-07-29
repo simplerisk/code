@@ -123,16 +123,47 @@
                 // Verify value is an integer
                 if (is_int($value))
                 {
-                        delete_value("team", $value);
+			// If team separation is enabled
+			if (team_separation_extra())
+			{
+				// Check if a risk is assigned to the team
+				$risks = get_risks_by_team($value);
+				
+				// If the risks array is empty
+				if (empty($risks))
+				{
+					$delete = true;
+				}
+				else
+				{
+					$delete = false;
+				}
+			}
+			else
+			{
+				$delete = true;
+			}
 
-                        // Audit log
-                        $risk_id = 1000;
-                        $message = "An existing team was removed by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
+			// If it is ok to delete the team
+			if ($delete)
+			{
+                        	delete_value("team", $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "An existing team was removed successfully.";
+	                        // Audit log
+        	                $risk_id = 1000;
+                	        $message = "An existing team was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        	write_log($risk_id, $_SESSION['uid'], $message);
+
+                        	// There is an alert message
+                        	$alert = "good";
+                        	$alert_message = "An existing team was removed successfully.";
+			}
+			else
+			{
+				// There is an alert message
+				$alert = "bad";
+				$alert_message = "Cannot delete this team because there are risks that are currently using it.";
+			}
                 }
         }
 

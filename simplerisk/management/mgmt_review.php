@@ -161,6 +161,7 @@
                 // If the risk was found use the values for the risk
                 if (count($risk) != 0)
                 {
+			$submitted_by = $risk[0]['submitted_by'];
                 	$status = $risk[0]['status'];
 	                $subject = $risk[0]['subject'];
         	        $reference_id = $risk[0]['reference_id'];
@@ -224,6 +225,7 @@
                 // If the risk was not found use null values
                 else
                 {
+			$submitted_by = "";
                         $status = "Risk ID Does Not Exist";
                         $subject = "N/A";
                         $reference_id = "N/A";
@@ -279,6 +281,7 @@
                         $mitigation_date = "";
                         $planning_strategy = "";
                         $mitigation_effort = "";
+			$mitigation_team = "";
                         $current_solution = "";
                         $security_requirements = "";
 			$security_recommendations = "";
@@ -292,6 +295,7 @@
                         $mitigation_date = date(DATETIME, strtotime($mitigation_date));
                         $planning_strategy = $mitigation[0]['planning_strategy'];
                         $mitigation_effort = $mitigation[0]['mitigation_effort'];
+			$mitigation_team = $mitigation[0]['mitigation_team'];
                         $current_solution = $mitigation[0]['current_solution'];
                         $security_requirements = $mitigation[0]['security_requirements'];
                         $security_recommendations = $mitigation[0]['security_recommendations'];
@@ -575,12 +579,12 @@
           <div class="row-fluid">
             <div class="span6">
               <div class="well">
-		<?php view_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes); ?>
+		<?php view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes); ?>
               </div>
             </div>
             <div class="span6">
               <div class="well">
-		<?php view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations); ?>
+		<?php view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations); ?>
               </div>
             </div>
           </div>

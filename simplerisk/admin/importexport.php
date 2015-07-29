@@ -139,6 +139,8 @@ function display($display = "")
 			display_import();
 
 			display_export();
+
+			display_import_assets();
 		}
         }
 }

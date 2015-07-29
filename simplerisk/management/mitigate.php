@@ -167,6 +167,7 @@
                 // If the risk was found use the values for the risk
                 if (count($risk) != 0)
                 {
+			$submitted_by = $risk[0]['submitted_by'];
                 	$status = $risk[0]['status'];
                 	$subject = $risk[0]['subject'];
 	                $reference_id = $risk[0]['reference_id'];
@@ -231,6 +232,7 @@
                 // If the risk was not found use null values
                 else
                 {
+			$submitted_by = "";
                         $status = "Risk ID Does Not Exist";
                         $subject = "N/A";
                         $reference_id = "N/A";
@@ -285,6 +287,7 @@
                         $mitigation_date = "";
                         $planning_strategy = "";
                         $mitigation_effort = "";
+			$mitigation_team = $team;
                         $current_solution = "";
                         $security_requirements = "";
                         $security_recommendations = "";
@@ -297,6 +300,7 @@
                         $mitigation_date = date(DATETIME, strtotime($mitigation_date));
                         $planning_strategy = $mitigation[0]['planning_strategy'];
                         $mitigation_effort = $mitigation[0]['mitigation_effort'];
+			$mitigation_team = $mitigation[0]['mitigation_team'];
                         $current_solution = $mitigation[0]['current_solution'];
                         $security_requirements = $mitigation[0]['security_requirements'];
                         $security_recommendations = $mitigation[0]['security_recommendations'];
@@ -336,12 +340,13 @@
                 $status = "Mitigation Planned";
                 $planning_strategy = (int)$_POST['planning_strategy'];
 		$mitigation_effort = (int)$_POST['mitigation_effort'];
+		$mitigation_team = (int)$_POST['mitigation_team'];
                 $current_solution = $_POST['current_solution'];
                 $security_requirements = $_POST['security_requirements'];
                 $security_recommendations = $_POST['security_recommendations'];
 
                 // Submit mitigation
-                submit_mitigation($id, $status, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations);
+                submit_mitigation($id, $status, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
 
                 // Audit log
                 $risk_id = $id;
@@ -493,13 +498,13 @@
               </div>
             </div>
             <div class="well">
-                <?php edit_mitigation_submission($planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations); ?>
+                <?php edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations); ?>
             </div>
           </div>
           <div class="row-fluid">
             <div class="span6">
               <div class="well">
-		<?php view_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes); ?>
+		<?php view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes); ?>
               </div>
             </div>
             <div class="span6">

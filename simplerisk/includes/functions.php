@@ -7,6 +7,7 @@
 // Include required configuration files
 require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/cvss.php'));
+require_once(realpath(__DIR__ . '/services.php'));
 
 // Include the language file
 require_once(language_file());
@@ -356,7 +357,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 	}
 
 	// If we want a table that should be ordered by name instead of value
-	if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation" || $name == "languages" || $name == "projects")
+	if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation" || $name == "languages" || $name == "projects" || $name == "file_types")
 	{
 		$options = get_table_ordered_by_name($name);
 	}
@@ -743,7 +744,7 @@ function get_setting($setting)
 
         // Get the risk levels
         $stmt = $db->prepare("SELECT * FROM settings where name=:setting");
-        $stmt->bindParam(":setting", $setting, PDO::PARAM_STR, 40);
+        $stmt->bindParam(":setting", $setting, PDO::PARAM_STR, 100);
         $stmt->execute();
 
         // Store the list in the array
@@ -752,9 +753,31 @@ function get_setting($setting)
         // Close the database connection
         db_close($db);
 
-	$value = $array[0]['value'];
+	// If the array isn't empty
+	if (!empty($array))
+	{
+		// Set the value to the array value
+		$value = $array[0]['value'];
+	}
+	else $value = false;
 
 	return $value;
+}
+
+/****************************
+ * FUNCTION: UPDATE SETTING *
+ ****************************/
+function update_setting($name, $value)
+{
+	// Open the database connection
+	$db = db_open();
+
+	// Update the setting
+	$stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name=:name;");
+	$stmt->bindParam(":value", $value, PDO::PARAM_STR, 200);
+	$stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
+	$stmt->execute();
+
 }
 
 /***************************
@@ -1661,7 +1684,7 @@ function update_risk_scoring($id, $scoring_method, $CLASSIC_likelihood, $CLASSIC
 /*******************************
  * FUNCTION: SUBMIT MITIGATION *
  *******************************/
-function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
+function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
 {
         // Subtract 1000 from id
         $risk_id = (int)$risk_id - 1000;
@@ -1673,11 +1696,12 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
         $db = db_open();
         
         // Add the mitigation
-        $stmt = $db->prepare("INSERT INTO mitigations (`risk_id`, `planning_strategy`, `mitigation_effort`, `current_solution`, `security_requirements`, `security_recommendations`, `submitted_by`) VALUES (:risk_id, :planning_strategy, :mitigation_effort, :current_solution, :security_requirements, :security_recommendations, :submitted_by)");
+        $stmt = $db->prepare("INSERT INTO mitigations (`risk_id`, `planning_strategy`, `mitigation_effort`, `mitigation_team`, `current_solution`, `security_requirements`, `security_recommendations`, `submitted_by`) VALUES (:risk_id, :planning_strategy, :mitigation_effort, :mitigation_team, :current_solution, :security_requirements, :security_recommendations, :submitted_by)");
 
         $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
         $stmt->bindParam(":planning_strategy", $planning_strategy, PDO::PARAM_INT);
 	$stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
+	$stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
 	$stmt->bindParam(":current_solution", $current_solution, PDO::PARAM_STR);
 	$stmt->bindParam(":security_requirements", $security_requirements, PDO::PARAM_STR);
 	$stmt->bindParam(":security_recommendations", $security_recommendations, PDO::PARAM_STR);
@@ -2883,7 +2907,7 @@ function get_project_list()
 		$order = $project['order'];
 
 		// If the project is not 0 (ie. Unassigned Risks)
-		if ($id != 0)
+		if ($id != 0 && $project['status'] != 3)
 		{
 			echo "<li class=\"ui-state-default\" id=\"sort_" . $escaper->escapeHtml($id) . "\">\n";
 			echo "<span>&#x21C5;</span>&nbsp;" . $escaper->escapeHtml($name) . "\n";
@@ -3033,10 +3057,14 @@ function get_project_tabs()
 	
 	foreach ($projects as $project)
 	{
-		$id = (int)$project['value'];
-		$name = $project['name'];
+		// If the status is not "Completed Projects"
+		if ($project['status'] != 3)
+		{
+			$id = (int)$project['value'];
+			$name = $project['name'];
 
-		echo "<li><a href=\"#tabs-" . $escaper->escapeHtml($id) . "\">" . $escaper->escapeHtml($name) . "</a></li>\n";
+			echo "<li><a href=\"#tabs-" . $escaper->escapeHtml($id) . "\">" . $escaper->escapeHtml($name) . "</a></li>\n";
+		}
 	}
 
 	echo "</ul>\n";
@@ -3112,32 +3140,26 @@ function get_projects($order="order")
 }
 
 /*******************************
- * FUNCTION: PROJECT HAS RISKS *
+ * FUNCTION: GET PROJECT RISKS *
  *******************************/
-function project_has_risks($project_id)
+function get_project_risks($project_id)
 {
         // Open the database connection
         $db = db_open();
 
         // Query the database
         $stmt = $db->prepare("SELECT * FROM risks WHERE project_id = :project_id");
-	$stmt->bindParam(":project_id", $project_id, PDO::PARAM_INT);
+        $stmt->bindParam(":project_id", $project_id, PDO::PARAM_INT);
         $stmt->execute();
 
         // Store the list in the array
         $array = $stmt->fetchAll();
 
-        // If the array is empty
-        if (empty($array))
-        {
-                $return = false;
-        }
-        else $return = true;
-
         // Close the database connection
         db_close($db);
 
-        return $return;
+	// Return the array of risks
+	return $array;
 }
 
 /*******************************
@@ -3654,7 +3676,8 @@ function close_risk($id, $user_id, $status, $close_reason, $note)
         $close_id = get_close_id($id);
 
         // Update the risk
-        $stmt = $db->prepare("UPDATE risks SET status=:status,last_update=:date,project_id=0,close_id=:close_id WHERE id = :id");
+        //$stmt = $db->prepare("UPDATE risks SET status=:status,last_update=:date,project_id=0,close_id=:close_id WHERE id = :id");
+	$stmt = $db->prepare("UPDATE risks SET status=:status,last_update=:date,close_id=:close_id WHERE id = :id");
 
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":status", $status, PDO::PARAM_STR, 50);
@@ -3851,7 +3874,7 @@ function get_audit_trail($id = NULL)
 /*******************************
  * FUNCTION: UPDATE MITIGATION *
  *******************************/
-function update_mitigation($id, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations)
+function update_mitigation($id, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
 {
         // Subtract 1000 from id
         $id = $id - 1000;
@@ -3863,12 +3886,13 @@ function update_mitigation($id, $planning_strategy, $mitigation_effort, $current
         $db = db_open();
 
         // Update the risk
-	$stmt = $db->prepare("UPDATE mitigations SET last_update=:date, planning_strategy=:planning_strategy, mitigation_effort=:mitigation_effort, current_solution=:current_solution, security_requirements=:security_requirements, security_recommendations=:security_recommendations WHERE risk_id=:id");
+	$stmt = $db->prepare("UPDATE mitigations SET last_update=:date, planning_strategy=:planning_strategy, mitigation_effort=:mitigation_effort, mitigation_team=:mitigation_team, current_solution=:current_solution, security_requirements=:security_requirements, security_recommendations=:security_recommendations WHERE risk_id=:id");
 
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
 	$stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
         $stmt->bindParam(":planning_strategy", $planning_strategy, PDO::PARAM_INT);
 	$stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
+	$stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
         $stmt->bindParam(":current_solution", $current_solution, PDO::PARAM_STR);
         $stmt->bindParam(":security_requirements", $security_requirements, PDO::PARAM_STR);
 	$stmt->bindParam(":security_recommendations", $security_recommendations, PDO::PARAM_STR);
@@ -4100,7 +4124,7 @@ function custom_authentication_extra()
         // Open the database connection
         $db = db_open();
 
-        // Update the last login
+	// See if the custom authentication extra is available
         $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'custom_auth'");
         $stmt->execute();
 
@@ -4131,7 +4155,7 @@ function team_separation_extra()
         // Open the database connection
         $db = db_open();
 
-        // Update the last login
+	// See if the team separation extra is available
         $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'team_separation'");
         $stmt->execute();
 
@@ -4162,7 +4186,7 @@ function notification_extra()
         // Open the database connection
         $db = db_open();
 
-        // Update the last login
+	// See if the notification extra is available
         $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'notifications'");
         $stmt->execute();
 
@@ -4193,7 +4217,7 @@ function import_export_extra()
         // Open the database connection
         $db = db_open();
 
-        // Update the last login
+	// See if the import export extra is available
         $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'import_export'");
         $stmt->execute();
 
@@ -4224,7 +4248,7 @@ function encryption_extra()
         // Open the database connection
         $db = db_open();
 
-        // Update the last login
+        // See if the encryption extra is available
         $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'encryption'");
         $stmt->execute();
 
@@ -4252,8 +4276,24 @@ function encryption_extra()
  *************************/
 function upload_file($risk_id, $file)
 {
-	// Allowed file types
-	$allowed_types = array('image/gif', 'image/jpg', 'image/png', 'image/x-png', 'image/jpeg', 'application/x-pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip', 'text/rtf', 'application/octet-stream', 'text/plain', 'text/xml', 'text/comma-separated-values', 'application/vnd.ms-excel', 'application/msword', 'application/x-gzip');
+        // Open the database connection
+        $db = db_open();
+
+        // Get the list of allowed file types
+        $stmt = $db->prepare("SELECT `name` FROM `file_types`");
+        $stmt->execute();
+
+        // Get the result
+        $result = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        // Create an array of allowed types
+        foreach ($result as $key => $row)
+        {
+		$allowed_types[] = $row['name'];
+	}
 
         // If a file was submitted and the name isn't blank
         if (isset($file) && $file['name'] != "")
@@ -4261,8 +4301,11 @@ function upload_file($risk_id, $file)
         	// If the file type is appropriate
                 if (in_array($file['type'], $allowed_types))
                 {
+			// Get the maximum upload file size
+			$max_upload_size = get_setting("max_upload_size");
+
                 	// If the file size is less than 5MB
-                        if ($file['size'] < 5120000)
+                        if ($file['size'] < $max_upload_size)
                         {
                         	// If there was no error with the upload
                                 if ($file['error'] == 0)
@@ -4295,11 +4338,11 @@ function upload_file($risk_id, $file)
                                 }
 				else return "There was an error with the file upload.";
                         }
-			else return "The uploaded file was too big to store in the database.";
+			else return "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
                 }
-		else return "The file type of the uploaded file is not supported.";
+		else return "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
 	}
-	else return "There was an error with the uploaded file.";
+	else return 1;
 }
 
 /*************************
@@ -4317,6 +4360,8 @@ function delete_file($risk_id)
 
         // Close the database connection
         db_close($db);
+
+	return 1;
 }
 
 /***************************
@@ -4542,6 +4587,237 @@ function delete_risk($risk_id)
 
         // Return success or failure
         return $return;
+}
+
+/*******************************
+ * FUNCTION: GET RISKS BY TEAM *
+ *******************************/
+function get_risks_by_team($team)
+{
+	// Open the database connection
+	$db = db_open();
+
+	// Query the database
+	$stmt = $db->prepare("SELECT id FROM `risks` WHERE `team` = :team");
+	$stmt->bindParam(":team", $team, PDO::PARAM_INT);
+	$stmt->execute();
+
+	// Store the list in the array
+	$array = $stmt->fetch();
+
+	// Close the database connection
+	db_close($db);
+
+	return $array;
+}
+
+/*******************************
+ * FUNCTION: COMPLETED PROJECT *
+ *******************************/
+function completed_project($project_id)
+{
+	// Check if the user has access to close risks
+	if (isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1)
+	{
+		// Get the risks for the project
+		$risks = get_project_risks($project_id);
+
+		// For each risk in the project
+		foreach ($risks as $risk)
+		{
+			// If the risks status is not Closed
+			if ($risk['status'] != "Closed")
+			{
+				$id = $risk['id'] + 1000;
+				$status = "Closed";
+				$close_reason = 1;
+				$project = get_name_by_value("projects", $project_id);
+				$note = "Risk was closed when the \"" . $project_id . "\" project was marked as Completed.";
+			
+				// Close the risk
+				close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
+			}
+                }
+
+		return 1;
+        }
+	else return 0;
+}
+
+/********************************
+ * FUNCTION: INCOMPLETE PROJECT *
+ ********************************/
+function incomplete_project($project_id)
+{
+	// Get the risks for the project
+	$risks = get_project_risks($project_id);
+
+	// For each risk in the project
+	foreach ($risks as $risk)
+	{
+		// If the risk status is Closed
+		if ($risk['status'] == "Closed")
+		{
+			$id = $risk['id'] + 1000;
+
+			// Reopen the risk
+			reopen_risk($id);
+		}
+	}
+}
+
+/*****************************
+ * FUNCTION: WRITE DEBUG LOG *
+ *****************************/
+function write_debug_log($value)
+{
+	// If DEBUG is enabled
+	if (DEBUG == "true")
+	{
+		// Log file to write to
+		$log_file = "/tmp/debug_log";
+
+		// Write to the error log
+		$return = error_log(date('c')." ".$value."\n", 3, $log_file);
+	}
+}
+
+/******************************
+ * FUNCTION: ADD REGISTRATION *
+ ******************************/
+function add_registration($name, $company, $title, $phone, $email)
+{
+        // Get the instance identifier
+        $instance_id = get_setting("instance_id");
+
+        // If the instance id is false
+        if ($instance_id == false)
+        {
+                // Open the database connection
+                $db = db_open();
+
+                // Create a random instance id
+                $instance_id = generate_token(50);
+                $stmt = $db->prepare("INSERT INTO `settings` VALUES ('instance_id', :instance_id)");
+                $stmt->bindParam(":instance_id", $instance_id, PDO::PARAM_STR, 50);
+                $stmt->execute();
+
+                // Close the database connection
+                db_close($db);
+        }
+
+	// Create the data to send
+	$data = array(
+		'action' => 'register_instance',
+		'instance_id' => $instance_id,
+		'name' => $name,
+		'company' => $company,
+		'title' => $title,
+		'phone' => $phone,
+		'email' => $email,
+	);
+
+	// Register instance with the web service
+	$results = simplerisk_service_call($data);
+	$regex_pattern = "/<api_key>(.*)<\/api_key>/";
+
+	foreach ($results as $line)
+	{
+        	if (preg_match($regex_pattern, $line, $matches))
+        	{
+        		$services_api_key = $matches[1];
+
+			// Open the database connection
+			$db = db_open();
+
+        		// Add the registration
+        		$stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('registration_name', :name), ('registration_company', :company), ('registration_title', :title), ('registration_phone', :phone), ('registration_email', :email), ('services_api_key', :services_api_key)");
+        		$stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
+		        $stmt->bindParam(":company", $company, PDO::PARAM_STR, 200);
+        		$stmt->bindParam(":title", $title, PDO::PARAM_STR, 200);
+	        	$stmt->bindParam(":phone", $phone, PDO::PARAM_STR, 200);
+	        	$stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
+			$stmt->bindParam(":services_api_key", $services_api_key, PDO::PARAM_STR, 50);
+        		$stmt->execute();
+
+			// Mark the instance as registered
+			$stmt = $db->prepare("UPDATE `settings` SET value=1 WHERE name='registration_registered';");
+			$stmt->execute();
+
+			// Download the update extra
+			$result = download_extra("upgrade");
+
+			// Close the database connection
+			db_close($db);
+
+			return $result;
+        	}
+	}
+}
+
+/*********************************
+ * FUNCTION: UPDATE REGISTRATION *
+ *********************************/
+function update_registration($name, $company, $title, $phone, $email)
+{
+	// Get the instance id
+	$instance_id = get_setting("instance_id");
+
+	// Get the services API key
+	$services_api_key = get_setting("services_api_key");
+
+        // Create the data to send
+        $data = array(
+                'action' => 'update_instance',
+                'instance_id' => $instance_id,
+		'api_key' => $services_api_key,
+                'name' => $name,
+                'company' => $company,
+                'title' => $title,
+                'phone' => $phone,
+                'email' => $email,
+        );
+
+        // Register instance with the web service
+        $results = simplerisk_service_call($data);
+        $regex_pattern = "/<result>success<\/result>/";
+
+        foreach ($results as $line)
+        {
+		// If the service returned a success
+                if (preg_match($regex_pattern, $line, $matches))
+                {
+		        // Open the database connection
+		        $db = db_open();
+
+	        	// Update the registration
+			$stmt = $db->prepare("UPDATE `settings` SET value=:name WHERE name='registration_name'");
+			$stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
+			$stmt->execute();
+
+		        $stmt = $db->prepare("UPDATE `settings` SET value=:company WHERE name='registration_company'");
+		        $stmt->bindParam(":company", $company, PDO::PARAM_STR, 200);
+		        $stmt->execute();
+
+		        $stmt = $db->prepare("UPDATE `settings` SET value=:title WHERE name='registration_title'");
+        		$stmt->bindParam(":title", $title, PDO::PARAM_STR, 200);
+        		$stmt->execute();
+
+        		$stmt = $db->prepare("UPDATE `settings` SET value=:phone WHERE name='registration_phone'");
+        		$stmt->bindParam(":phone", $phone, PDO::PARAM_STR, 200);
+        		$stmt->execute();
+
+        		$stmt = $db->prepare("UPDATE `settings` SET value=:email WHERE name='registration_email'");
+        		$stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
+        		$stmt->execute();
+
+                        // Download the update extra
+                        $result = download_extra("upgrade");
+
+        		// Close the database connection
+        		db_close($db);
+		}
+	}
 }
 
 ?>

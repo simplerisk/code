@@ -91,12 +91,16 @@ function display_login_form()
 	global $lang;
 	global $escaper;
 
-	echo "<p><label><u>" . $escaper->escapeHtml($lang['LogInHere']) . "</u></label></p>\n";
         echo "<form name=\"authenticate\" method=\"post\" action=\"\">\n";
-        echo $escaper->escapeHtml($lang['Username']) . ": <input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /><br />\n";
-        echo $escaper->escapeHtml($lang['Password']) . ": <input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" />\n";
-        echo "<br />\n";
+	echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+	echo "<tr><td colspan=\"2\"><label><u>" . $escaper->escapeHtml($lang['LogInHere']) . "</u></label></td></tr>\n";
+	echo "<tr><td>" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td><input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
+	echo "<tr><td>" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</td><td><input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
+	echo "</table>\n";
+	echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Login']) . "</button>\n";
+	echo "<input class=\"btn\" value=\"Reset\" type=\"reset\">\n";
+	echo "</div>\n";
         echo "</form>\n";
 }
 
@@ -578,6 +582,67 @@ function upgrade_from_20150321001($db)
 	$stmt->execute();
 }
 
+/**************************************
+ * FUNCTION: UPGRADE FROM 20150531001 *
+ **************************************/
+function upgrade_from_20150531001($db)
+{
+        global $lang;
+
+        // Database version to upgrade
+        define('VERSION_TO_UPGRADE', '20150531-001');
+
+        // Database version upgrading to
+        define('VERSION_UPGRADING_TO', '20150729-001');
+
+	// Create a new file type table
+	echo "Creating a new table to track upload file types.<br />\n";
+	$stmt = $db->prepare("CREATE TABLE `file_types` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`));");
+	$stmt->execute();
+
+	// Add default file types
+	echo "Adding default upload file types.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `file_types` VALUES (1,'image/gif'),(2,'image/jpg'),(3,'image/png'),(4,'image/x-png'),(5,'image/jpeg'),(6,'application/x-pdf'),(7,'application/vnd.openxmlformats-officedocument.wordprocessingml.document'),(8,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),(9,'application/zip'),(10,'text/rtf'),(11,'application/octet-stream'),(12,'text/plain'),(13,'text/xml'),(14,'text/comma-separated-values'),(15,'application/vnd.ms-excel'),(16,'application/msword'),(17,'application/x-gzip'),(18,'application/force-download'),(19,'application/pdf');");
+	$stmt->execute();
+
+	// Set maximum upload file size
+	echo "Setting maximum upload file size.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `settings` VALUE ('max_upload_size', '5120000');");
+	$stmt->execute();
+
+	// Change file content from blob to longblob
+	echo "Changing file content type in database from BLOB to LONGBLOB.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `files` MODIFY `content` longblob NOT NULL;");
+	$stmt->execute();
+
+	// Add a mitigation_team field to the mitigations table
+	echo "Adding a mitigation_team field to the mitigations table.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_team int(11) NOT NULL AFTER mitigation_effort;");
+	$stmt->execute();
+
+	// If the batch asset file exists
+	if (file_exists(realpath(__DIR__ . '/../assets/batch.php')))
+	{
+		// Delete the batch asset file
+		echo "Deleting the batch asset management file.<br />\n";
+		$success = unlink(realpath(__DIR__ . '/../assets/batch.php'));
+		if (!$success)
+		{
+			echo "<font color=\"red\"><b>Could not delete the batch asset management file.  You can manually delete it here: " . realpath(__DIR__ . '/../assets/batch.php') . "</b></font><br />\n";
+		}
+	}
+
+	// Add a value column to the assets table
+	echo "Adding a value column to the assets table.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `assets` ADD value int(11) DEFAULT 5 AFTER name;");
+	$stmt->execute();
+
+	// Add a setting to show not registered
+	echo "Adding a setting to show SimpleRisk is not registered.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('registration_registered', 0)");
+        $stmt->execute();
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -620,6 +685,10 @@ function upgrade_database()
                                 break;
 			case "20150321-001":
 				upgrade_from_20150321001($db);
+				update_database_version($db);
+				break;
+			case "20150531-001":
+				upgrade_from_20150531001($db);
 				update_database_version($db);
 				break;
 			default:
