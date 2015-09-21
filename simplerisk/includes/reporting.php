@@ -265,12 +265,10 @@ function get_risk_trend($title = null)
 function get_risk_pyramid($title = null)
 {
         $chart = new Highchart();
-        $chart->includeExtraScripts();
 
-        $chart->chart->type = "funnel";
+        $chart->chart->type = "pyramid";
 	$chart->chart->marginRight = "100";
         $chart->title->text = $title;
-	$chart->title->x = "-50";
         $chart->chart->renderTo = "risk_pyramid_chart";
         $chart->credits->enabled = false;
 	$chart->plotOptions->series->dataLabels->enabled = true;
@@ -305,6 +303,9 @@ function get_risk_pyramid($title = null)
         // Close the database connection
         db_close($db);
 
+	// Reverse the order of the array
+	$array = array_reverse($array);
+
         // If the array is empty
         if (empty($array))
         {
@@ -318,6 +319,7 @@ function get_risk_pyramid($title = null)
                 $high = false;
                 $medium = false;
                 $low = false;
+		$insignificant = false;
                 $color_array = array();
 
                 // Create the data array
@@ -357,12 +359,16 @@ function get_risk_pyramid($title = null)
                                 // Add yellow to the color array
                                 $color_array[] = "yellow";
                         }
+			else if ($row['level'] == "Insignificant" && $insignificant != true)
+			{
+				$insignificant = true;
+
+				// Add lightgrey to the color array
+				$color_array[] = "lightgrey";
+			}
                 }
 
-                // Add black to color array for insignificant
-                $color_array[] = "lightgrey";
-
-                $chart->plotOptions->pie->colors = $color_array;
+                $chart->plotOptions->pyramid->colors = $color_array;
 
                 $chart->series[] = array(
                         'name' => "Risk Pyramid",
@@ -374,7 +380,6 @@ function get_risk_pyramid($title = null)
         echo "<script type=\"text/javascript\">";
         echo $chart->render("risk_pyramid_chart");
         echo "</script>\n";
-        echo "<br /><p><font size=\"1\">* This report requires PHP >= 5.5 in order to run properly.</font></p>\n";
 }
 
 /**********************************

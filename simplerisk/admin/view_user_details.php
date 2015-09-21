@@ -70,7 +70,7 @@
 			// Get the submitted values
 			$name = $_POST['name'];
 			$email = $_POST['email'];
-			$teams = $_POST['team'];
+			$teams = isset($_POST['team']) ? $_POST['team'] : array('none');
 			$language = get_name_by_value("languages", (int)$_POST['languages']);
 			$asset = isset($_POST['asset']) ? '1' : '0';
 	                $admin = isset($_POST['admin']) ? '1' : '0';

@@ -7,6 +7,7 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
+	require_once(realpath(__DIR__ . '/../includes/messages.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -106,8 +107,11 @@
 		// If the user and current password are valid
 		if (is_valid_user($user, $current_pass))
 		{
-                	// Verify that the two passwords are the same
-                	if ("$new_pass" == "$confirm_pass")
+			// Check the password
+			$error_code = valid_password($new_pass, $confirm_pass);
+
+                	// If the password is valid
+                	if ($error_code == 1)
                 	{
                                 // Generate the salt
                                 $salt = generateSalt($user);
@@ -132,7 +136,7 @@
 			{
 				// Send an alert
 				$alert = "bad";
-				$alert_message = "The new password entered does not match the confirm password entered.  Please try again.";
+				$alert_message = password_error_message($error_code);
 			}
                 }
 		else

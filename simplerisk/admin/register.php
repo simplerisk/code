@@ -77,8 +77,20 @@
 			// Add the registration
 			$result = add_registration($name, $company, $title, $phone, $email);
 
-			// Set registered to true
-			$registered = true;
+			// If the registration failed
+			if ($result == 0)
+			{
+				$alert = "bad";
+				$alert_message = "There was a problem registering your SimpleRisk instance.";
+			}
+			else
+			{
+				$alert = "good";
+				$alert_message = "SimpleRisk instance registered successfully.";
+
+				// Set registered to true
+				$registered = true;
+			}
 		}
 	}
 	// SimpleRisk is registered
@@ -98,7 +110,19 @@
                         $email = $_POST['email'];
 
 			// Update the registration
-			update_registration($name, $company, $title, $phone, $email);
+			$result = update_registration($name, $company, $title, $phone, $email);
+
+                        // If the registration failed
+                        if ($result == 0)
+                        {
+                                $alert = "bad";
+                                $alert_message = "There was a problem updating your SimpleRisk instance."; 
+                        }
+                        else
+                        {
+                                $alert = "good";
+                                $alert_message = "SimpleRisk instance updated successfully.";
+                        }
 		}
 		// Otherwise get the registration values from the database
 		else
@@ -108,6 +132,115 @@
         		$title = get_setting("registration_title");
         		$phone = get_setting("registration_phone");
         		$email = get_setting("registration_email");
+		}
+
+		// If the user wants to install the Upgrade Extra
+		if (isset($_POST['get_upgrade_extra']))
+		{
+	                // Download the extra
+        	        $result = download_extra("upgrade");
+
+                        // If the installation failed
+                        if ($result == 0)
+                        {
+                                $alert = "bad";
+                                $alert_message = "There was a problem installing the Upgrade Extra.";
+                        }
+                        else
+                        {
+                                $alert = "good";
+                                $alert_message = "Upgrade Extra installed successfully.";
+                        }
+		}
+		// If the user wants to install the Authentication Extra
+		else if (isset($_POST['get_authentication_extra']))
+		{
+                	// Download the extra
+                	$result = download_extra("authentication");	
+
+                        // If the installation failed
+                        if ($result == 0)
+                        {
+                                $alert = "bad";
+                                $alert_message = "There was a problem installing the Custom Authentication Extra.";
+                        }
+                        else
+                        {
+                                $alert = "good";
+                                $alert_message = "Custom Authentication Extra installed successfully.";
+                        }
+		}
+		// If the user wants to install the Encryption Extra
+		else if (isset($_POST['get_encryption_extra']))
+		{
+	                // Download the extra
+        	        $result = download_extra("encryption");
+
+                        // If the installation failed
+                        if ($result == 0)
+                        {
+                                $alert = "bad";
+                                $alert_message = "There was a problem installing the Encrypted Database Extra.";
+                        }
+                        else
+                        {
+                                $alert = "good";
+                                $alert_message = "Encrypted Database Extra installed successfully.";
+                        }
+		}
+		// If the user wants to install the Import-Export Extra
+		else if (isset($_POST['get_importexport_extra']))
+		{
+	                // Download the extra
+        	        $result = download_extra("import-export");
+
+                        // If the installation failed
+                        if ($result == 0)
+                        {
+                                $alert = "bad";
+                                $alert_message = "There was a problem installing the Import/Export Extra.";
+                        }
+                        else
+                        {
+                                $alert = "good";
+                                $alert_message = "Import/Export Extra installed successfully.";
+                        }
+		}
+		// If the user wants to install the Notification Extra
+		else if (isset($_POST['get_notification_extra']))
+		{
+	                // Download the extra
+        	        $result = download_extra("notification");
+
+                        // If the installation failed
+                        if ($result == 0)
+                        {
+                                $alert = "bad";
+                                $alert_message = "There was a problem installing the E-mail Notification Extra.";
+                        }
+                        else
+                        {
+                                $alert = "good";
+                                $alert_message = "E-mail Notification Extra installed successfully.";
+                        }
+		}
+		// If the user wants to install the Separation Extra
+		else if (isset($_POST['get_separation_extra']))
+		{
+	                // Download the extra
+        	        $result = download_extra("separation");
+
+                        // If the installation failed
+                        if ($result == 0)
+                        {
+                                $alert = "bad";
+                                $alert_message = "There was a problem installing the Team-Based Separation Extra.";
+                        }
+                        else
+                        {
+                                $alert = "good";
+                                $alert_message = "Team-Based Separation Extra installed successfully.";
+                        }
 		}
 	}
 ?>
@@ -174,6 +307,13 @@
             </div>
           </div>
           <div class="row-fluid">
+            <div class="span12">
+              <div class="hero-unit">
+                <font size="3"><b>Instance ID:</b>&nbsp;<?php echo $escaper->escapeHtml(get_setting("instance_id")); ?></font>
+              </div>
+            </div>
+          </div>
+          <div class="row-fluid">
             <div class="span6">
               <div class="hero-unit">
                 <p><h4><?php echo $escaper->escapeHtml($lang['RegistrationInformation']); ?></h4></p>
@@ -219,6 +359,24 @@
 				display_upgrade();
 			}
 		?>
+              </div>
+            </div>
+          </div>
+          <div class="row-fluid">
+            <div class="span12">
+              <div class="hero-unit">
+                <?php
+		// If the instance is not registered
+                        if (!$registered)
+                        {
+                                echo "Please register in order to be able to use the easy upgrade feature.";
+                        }
+                        // The instance is registered
+                        else
+                        {
+                                display_upgrade_extras();
+                        }
+                ?>
               </div>
             </div>
           </div>

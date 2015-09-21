@@ -413,8 +413,11 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
 {
 	$userid = is_simplerisk_user($username);
 
-	// Verify that the passwords match
-	if ($password == $repeat_password)
+        // Check the password
+        $error_code = valid_password($password, $repeat_password);
+
+        // If the password is valid
+        if ($error_code == 1)
 	{
         	// If the username exists
         	if ($userid != 0)

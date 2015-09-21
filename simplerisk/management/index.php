@@ -144,8 +144,12 @@
 		// Tag assets to risk
 		tag_assets_to_risk($last_insert_id, $assets);
 
-		// Upload any file that is submitted
-		upload_file($last_insert_id, $_FILES['file']);
+		// If a file was submitted
+		if (!empty($_FILES))
+		{
+			// Upload any file that is submitted
+			upload_file($last_insert_id, $_FILES['file']);
+		}
 
 		// If the notification extra is enabled
         	if (notification_extra())
@@ -164,7 +168,7 @@
 
 		// There is an alert message
 		$alert = "good";
-		$alert_message = "Risk submitted successfully!";
+		$alert_message = "Risk ID " . $risk_id . " submitted successfully!";
         }
 ?>
 

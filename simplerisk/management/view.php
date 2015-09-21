@@ -438,8 +438,14 @@
 			// Otherwise
 			else
 			{
-                		// Upload any file that is submitted
-                		$error = upload_file($id-1000, $_FILES['file']);
+				// If a file was submitted
+				if (!empty($_FILES))
+				{
+                			// Upload any file that is submitted
+                			$error = upload_file($id-1000, $_FILES['file']);
+				}
+				// Otherwise, success
+				else $error = 1;
 			}
 
                 	// Audit log

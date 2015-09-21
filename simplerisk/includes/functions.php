@@ -330,9 +330,9 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
         echo "  </select>\n";
 }
 
-/************************************
- * FUNCTION: CREATE SELECT DROPDOWN *
- ************************************/
+/*****************************
+ * FUNCTION: CREATE DROPDOWN *
+ *****************************/
 function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false)
 {
 	global $escaper;
@@ -856,9 +856,9 @@ function disable_user($value)
         return true;
 }
 
-/*****************************
- * FUNCTION: DOES USER EXIST *
- *****************************/
+/************************
+ * FUNCTION: USER EXIST *
+ ************************/
 function user_exist($user)
 {
         // Open the database connection
@@ -884,6 +884,211 @@ function user_exist($user)
         db_close($db);
 
         return $return;
+}
+
+/****************************
+ * FUNCTION: VALID USERNAME *
+ ****************************/
+function valid_username($username)
+{
+	// If the username is not blank 
+	if ($username != "")
+	{
+		// Return true
+		return true;
+	}
+	// Otherwise, return false
+	else return false;
+}
+
+/****************************
+ * FUNCTION: VALID PASSWORD *
+ ****************************/
+function valid_password($password, $repeat_password)
+{
+	// Check that the two passwords are the same
+	if ($password == $repeat_password)
+	{
+		// If the password policy is enabled
+		if (get_setting('pass_policy_enabled') == 1)
+		{
+			// If the password policy requirements are being met
+			if (check_valid_min_chars($password) && check_valid_alpha($password) && check_valid_upper($password) && check_valid_lower($password) && check_valid_digits($password) && check_valid_specials($password))
+			{
+				// Return 1
+				return 1;
+			}
+			// Otherwise, return 101
+			else return 101;
+		}
+		// Otherwise, return 1
+		else return 1;
+	}
+	// Otherwise, return 100
+	else return 100;
+}
+
+/***********************************
+ * FUNCTION: CHECK VALID MIN CHARS *
+ ***********************************/
+function check_valid_min_chars($password)
+{
+	// If the password length is >= the minimum characters
+	if (strlen($password) >= get_setting('pass_policy_min_chars'))
+	{
+		// Return true
+		return true;
+	}
+	// Otherwise, return false
+	else return false;
+}
+
+/*******************************
+ * FUNCTION: CHECK VALID ALPHA *
+ *******************************/
+function check_valid_alpha($password)
+{
+	// If alpha checking is enabled
+	if (get_setting('pass_policy_alpha_required') == 1)
+	{
+		// If the password contains an alpha character
+		if (preg_match('/[A-Za-z]+/', $password))
+		{
+			// Return true
+			return true;
+		}
+		// Otherwise, return false
+		else return false;
+	}
+	// Otherwise, return true
+	else return true;
+}
+
+/*******************************
+ * FUNCTION: CHECK VALID UPPER *
+ *******************************/
+function check_valid_upper($password)
+{
+        // If upper checking is enabled
+        if (get_setting('pass_policy_upper_required') == 1)
+        {
+                // If the password contains an upper character
+                if (preg_match('/[A-Z]+/', $password))
+                {
+                        // Return true
+                        return true;
+                }
+                // Otherwise, return false
+                else return false;
+        }
+        // Otherwise, return true
+        else return true;
+}
+
+/*******************************
+ * FUNCTION: CHECK VALID LOWER *
+ *******************************/
+function check_valid_lower($password)
+{
+        // If lower checking is enabled
+        if (get_setting('pass_policy_lower_required') == 1)
+        {
+                // If the password contains an lower character
+                if (preg_match('/[a-z]+/', $password))
+                {
+                        // Return true
+                        return true;
+                }
+                // Otherwise, return false
+                else return false;
+        }
+        // Otherwise, return true
+        else return true;
+}
+
+/********************************
+ * FUNCTION: CHECK VALID DIGITS *
+ ********************************/
+function check_valid_digits($password)
+{
+	// If digit checking is enabled
+	if (get_setting('pass_policy_digits_required') == 1)
+	{
+		// If the password contains a digit
+		if (preg_match("/[0-9]+/", $password))
+		{
+			// Return true
+			return true;
+		}
+		// Otherwise, return false
+        	else return false;
+	}
+	// Otherwise, return true
+	else return true;
+}
+
+/**********************************
+ * FUNCTION: CHECK VALID SPECIALS *
+ **********************************/
+function check_valid_specials($password)
+{
+	// If special checking is enabled
+	if (get_setting('pass_policy_special_required') == 1)
+	{
+		// If the password contains a special
+		if (preg_match("/[^A-Za-z0-9]+/", $password))
+        	{
+                	// Return true
+                	return true;
+        	}
+        	// Otherwise, return false
+        	else return false;
+	}
+	// Otherwise, return true
+	else return true;
+}
+
+/************************************
+ * FUNCTION: UPDATE PASSWORD POLICY *
+ ************************************/
+function update_password_policy($pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required)
+{
+	// Open the database connection
+	$db = db_open();
+
+	// Update the password policy
+	$stmt = $db->prepare("UPDATE `settings` SET value=:pass_policy_enabled WHERE name='pass_policy_enabled'");
+	$stmt->bindParam(":pass_policy_enabled", $pass_policy_enabled, PDO::PARAM_INT, 1);
+	$stmt->execute();
+	$stmt = $db->prepare("UPDATE `settings` SET value=:min_characters WHERE name='pass_policy_min_chars'");
+	$stmt->bindParam(":min_characters", $min_characters, PDO::PARAM_INT, 2);
+	$stmt->execute();
+	$stmt = $db->prepare("UPDATE `settings` SET value=:alpha_required WHERE name='pass_policy_alpha_required'");
+	$stmt->bindParam(":alpha_required", $alpha_required, PDO::PARAM_INT, 1);
+	$stmt->execute();
+        $stmt = $db->prepare("UPDATE `settings` SET value=:upper_required WHERE name='pass_policy_upper_required'");
+        $stmt->bindParam(":upper_required", $upper_required, PDO::PARAM_INT, 1);
+        $stmt->execute();
+	$stmt = $db->prepare("UPDATE `settings` SET value=:lower_required WHERE name='pass_policy_lower_required'");
+	$stmt->bindParam(":lower_required", $lower_required, PDO::PARAM_INT, 1);
+	$stmt->execute();
+        $stmt = $db->prepare("UPDATE `settings` SET value=:digits_required WHERE name='pass_policy_digits_required'");
+        $stmt->bindParam(":digits_required", $digits_required, PDO::PARAM_INT, 1);
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `settings` SET value=:special_required WHERE name='pass_policy_special_required'");
+        $stmt->bindParam(":special_required", $special_required, PDO::PARAM_INT, 1);
+        $stmt->execute();
+
+        // Close the database connection
+        db_close($db);
+
+	// Audit log
+	$risk_id = 1000;
+	$message = "The password policy was updated by user \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
+
+	// Return true
+	return true;
 }
 
 /**********************
@@ -1061,6 +1266,9 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
 {
         // Open the database connection
         $db = db_open();
+
+	// Set numeric null to 0
+	if ($location == NULL) $location = 0;
 
         // Add the risk
         $stmt = $db->prepare("INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `location`, `category`, `team`, `technology`, `owner`, `manager`, `assessment`, `notes`, `submitted_by`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :location, :category, :team, :technology, :owner, :manager, :assessment, :notes, :submitted_by)");
@@ -1723,7 +1931,7 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
         // If notification is enabled
         if (notification_extra())
         {
-                // Include the team separation extra
+                // Include the notification extra
                 require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
 		// Send the notification
@@ -1778,7 +1986,7 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         // If notification is enabled
         if (notification_extra())
         {
-                // Include the team separation extra
+                // Include the notification extra
                 require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
 		// Send the notification
@@ -1827,7 +2035,7 @@ function update_risk($id, $subject, $reference_id, $regulation, $control_number,
         // If notification is enabled
         if (notification_extra())
         {
-                // Include the team separation extra
+                // Include the notification extra
                 require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
 		// Send the notification
@@ -3976,6 +4184,30 @@ function latest_version($param)
 	{
 		$regex_pattern = "/<dbversion>(.*)<\/dbversion>/";
 	}
+	else if ($param == "authentication")
+	{
+		$regex_pattern = "/<authentication>(.*)<\/authentication>/";
+	}
+	else if ($param == "encryption")
+	{
+		$regex_pattern = "/<encryption>(.*)<\/encryption>/";
+	}
+	else if ($param == "importexport")
+	{
+		$regex_pattern = "/<importexport>(.*)<\/importexport>/";
+	}
+	else if ($param == "notification")
+	{
+		$regex_pattern = "/<notification>(.*)<\/notification>/";
+	}
+	else if ($param == "separation")
+	{
+		$regex_pattern = "/<separation>(.*)<\/separation>/";
+	}
+	else if ($param == "upgrade")
+	{
+		$regex_pattern = "/<upgrade>(.*)<\/upgrade>/";
+	}
 
 	foreach ($version_page as $line)
 	{           
@@ -4750,9 +4982,13 @@ function add_registration($name, $company, $title, $phone, $email)
 			// Close the database connection
 			db_close($db);
 
+			// Return the result
 			return $result;
         	}
 	}
+
+        // Return a failure
+        return 0;
 }
 
 /*********************************
@@ -4816,8 +5052,14 @@ function update_registration($name, $company, $title, $phone, $email)
 
         		// Close the database connection
         		db_close($db);
+
+			// Return the result
+			return $result;
 		}
 	}
+
+	// Return a failure
+	return 0;
 }
 
 ?>

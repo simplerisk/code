@@ -30,8 +30,11 @@ function simplerisk_service_call($data)
  ****************************/
 function download_extra($name)
 {
+	// SimpleRisk directory
+	$simplerisk_dir = realpath(__DIR__ . '/../');
+
 	// Extras directory
-	$extras_dir = realpath(__DIR__ . '/../extras');
+	$extras_dir = $simplerisk_dir . '/extras';
 
 	// Set success to true
 	$success = true;
@@ -40,6 +43,13 @@ function download_extra($name)
 	if (!is_dir($extras_dir))
 	{
 		$success = mkdir($extras_dir);
+		
+		// If we couldn't make the extras directory
+		if (!$success)
+		{
+			// Return a failure
+			return 0;
+		}
 	}
 	
 	// Get the instance id
@@ -79,6 +89,9 @@ function download_extra($name)
 	unlink(sys_get_temp_dir() . '/' . $name . '.tgz');
         unlink(sys_get_temp_dir() . '/' . $name . ".tar");
         delete_dir($source);
+
+	// Return a success
+	return 1;
 }
 
 /**************************

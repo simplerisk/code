@@ -7,6 +7,7 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
+	require_once(realpath(__DIR__ . '/../includes/messages.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -67,7 +68,7 @@
                 $user = $_POST['new_user'];
                 $pass = $_POST['password'];
                 $repeat_pass = $_POST['repeat_password'];
-		$teams = $_POST['team'];
+		$teams = isset($_POST['team']) ? $_POST['team'] : array('none');
                 $admin = isset($_POST['admin']) ? '1' : '0';
 		$asset = isset($_POST['asset']) ? '1' : '0';
 		$submit_risks = isset($_POST['submit_risks']) ? '1' : '0';
@@ -93,63 +94,76 @@
 		}
 		else $type = "INVALID";
 
-                // Verify that the two passwords are the same
-                if ("$pass" == "$repeat_pass")
+                // Check the password
+                $error_code = valid_password($pass, $repeat_pass);
+
+                // If the password is valid
+                if ($error_code == 1)
                 {
                         // Verify that the user does not exist
                         if (!user_exist($user))
                         {
-				// Create a unique salt for the user
-                                $salt = generate_token(20);
-
-				// Hash the salt
-				$salt_hash = '$2a$15$' . md5($salt);
-
-				// Generate the password hash
-				$hash = generateHash($salt_hash, $pass);
-
-				// Create a boolean for all
-				$all = false;
-
-				// Create a boolean for none
-				$none = false;
-
-				// Initialize the team value as null
-				$team = null;
-
-				// Create the team value
-				foreach ($teams as $value)
+				// Verify that it is a valid username format
+				if (valid_username($user))
 				{
-					// If the selected value is all
-					if ($value == "all") $all = true;
+					// Create a unique salt for the user
+                                	$salt = generate_token(20);
 
-					// If the selected value is none
-					if ($value == "none") $none = true;
+					// Hash the salt
+					$salt_hash = '$2a$15$' . md5($salt);
 
-					$team .= ":";
-					$team .= $value;
-					$team .= ":";
+					// Generate the password hash
+					$hash = generateHash($salt_hash, $pass);
+
+					// Create a boolean for all
+					$all = false;
+
+					// Create a boolean for none
+					$none = false;
+
+					// Initialize the team value as null
+					$team = null;
+
+					// Create the team value
+					foreach ($teams as $value)
+					{
+						// If the selected value is all
+						if ($value == "all") $all = true;
+
+						// If the selected value is none
+						if ($value == "none") $none = true;
+
+						$team .= ":";
+						$team .= $value;
+						$team .= ":";
+					}
+
+					// If no value was submitted then default to none
+					if ($value == "") $none = true;
+
+					// If all was selected then assign all teams
+					if ($all) $team = "all";
+
+					// If none was selected then assign no teams
+					if ($none) $team = "none";
+
+                                	// Insert a new user
+                                	add_user($type, $user, $email, $name, $salt, $hash, $team, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
+
+                        		// Audit log
+                        		$risk_id = 1000;
+                        		$message = "A new user was added by the \"" . $_SESSION['user'] . "\" user.";
+                        		write_log($risk_id, $_SESSION['uid'], $message);
+
+					$alert = "good";
+					$alert_message = "The new user was added successfully.";
 				}
-
-				// If no value was submitted then default to none
-				if ($value == "") $none = true;
-
-				// If all was selected then assign all teams
-				if ($all) $team = "all";
-
-				// If none was selected then assign no teams
-				if ($none) $team = "none";
-
-                                // Insert a new user
-                                add_user($type, $user, $email, $name, $salt, $hash, $team, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
-
-                        	// Audit log
-                        	$risk_id = 1000;
-                        	$message = "A new user was added by the \"" . $_SESSION['user'] . "\" user.";
-                        	write_log($risk_id, $_SESSION['uid'], $message);
-
-				$alert = "good";
-				$alert_message = "The new user was added successfully.";
+				// Otherwise, an invalid username was specified
+				else
+				{
+					$alert = "bad";
+					$alert_message = "An invalid username was specified.  Please try again with a different username.";
+				}
                         }
 			// Otherwise, the user already exists
 			else
@@ -158,11 +172,11 @@
 				$alert_message = "The username already exists.  Please try again with a different username.";
 			}
                 }
-		// Otherewise, the two passwords are different
+		// Otherewise, an invalid password was specified
 		else
 		{
 				$alert = "bad";
-				$alert_message = "The password and repeat password entered were different.  Please try again.";
+				$alert_message = password_error_message($error_code);
 		}
         }
 
@@ -230,7 +244,7 @@
                 }
         }
 
-	// Check if a password reset was requeted
+	// Check if a password reset was requested
         if (isset($_POST['password_reset']))
 	{
 		$value = (int)$_POST['user'];
@@ -242,7 +256,7 @@
               
                         // Audit log
                         $risk_id = 1000;
-                       $message = "A password reset request was submitted by the \"" . $_SESSION['user'] . "\" user.";
+			$message = "A password reset request was submitted by the \"" . $_SESSION['user'] . "\" user.";
                         write_log($risk_id, $_SESSION['uid'], $message);
 
 
@@ -250,6 +264,24 @@
                         $alert = "good";
                         $alert_message = "A password reset email was sent to the user.";
                 }
+	}
+
+	// Check if a password policy update was requested
+	if (isset($_POST['password_policy_update']))
+	{
+		$pass_policy_enabled = (isset($_POST['pass_policy_enabled'])) ? 1 : 0;
+		$min_characters = (int)$_POST['min_characters'];
+		$alpha_required = (isset($_POST['alpha_required'])) ? 1 : 0;
+		$upper_required = (isset($_POST['upper_required'])) ? 1 : 0;
+		$lower_required = (isset($_POST['lower_required'])) ? 1 : 0;
+		$digits_required = (isset($_POST['digits_required'])) ? 1 : 0;
+		$special_required = (isset($_POST['special_required'])) ? 1 : 0;
+
+		update_password_policy($pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required);
+
+		// There is an alert message
+		$alert = "good";
+		$alert_message = "The password policy was updated successfully.";
 	}
 
 ?>
@@ -278,11 +310,16 @@
     </script>
     <script type="text/javascript">
       function handleSelection(choice) {
+        elements = document.getElementsByClassName("ldap_pass");
         if (choice=="1") {
-          document.getElementById("simplerisk").style.display = "";
+          for(i=0; i<elements.length; i++) {
+            elements[i].style.display = "";
+          }
         }
         if (choice=="2") {
-          document.getElementById("simplerisk").style.display = "none";
+          for(i=0; i<elements.length; i++) {
+            elements[i].style.display = "none";
+          }
         }
       }
     </script>
@@ -404,8 +441,8 @@
                   <tr><td><?php echo $escaper->escapeHtml($lang['FullName']); ?>:&nbsp;</td><td><input name="name" type="text" maxlength="50" size="20" /></td></tr>
                   <tr><td><?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>:&nbsp;</td><td><input name="email" type="text" maxlength="200" size="20" /></td></tr>
                   <tr><td><?php echo $escaper->escapeHtml($lang['Username']); ?>:&nbsp;</td><td><input name="new_user" type="text" maxlength="20" size="20" /></td></tr>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['Password']); ?>:&nbsp;</td><td><input name="password" type="password" maxlength="50" size="20" autocomplete="off" /></td></tr>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['RepeatPassword']); ?>:&nbsp;</td><td><input name="repeat_password" type="password" maxlength="50" size="20" autocomplete="off" /></td></tr>
+                  <tr class="ldap_pass"><td><?php echo $escaper->escapeHtml($lang['Password']); ?>:&nbsp;</td><td><input name="password" type="password" maxlength="50" size="20" autocomplete="off" /></td></tr>
+                  <tr class="ldap_pass"><td><?php echo $escaper->escapeHtml($lang['RepeatPassword']); ?>:&nbsp;</td><td><input name="repeat_password" type="password" maxlength="50" size="20" autocomplete="off" /></td></tr>
                 </table>
                 <h6><u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u></h6>
                 <?php create_multiple_dropdown("team"); ?>
@@ -480,6 +517,19 @@
                 <h4><?php echo $escaper->escapeHtml($lang['PasswordReset']); ?>:</h4>
                 <?php echo $escaper->escapeHtml($lang['SendPasswordResetEmailForUser']); ?> <?php create_dropdown("user"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Send']); ?>" name="password_reset" />
                 </p>
+                </form>
+              </div>
+              <div class="hero-unit">
+                <form name="password_policy" method="post" action="">
+                <p><h4><?php echo $escaper->escapeHtml($lang['PasswordPolicy']); ?>:</h4></p>
+		<p><?php echo $escaper->escapeHtml($lang['Enabled']); ?>&nbsp;&nbsp;<input type="checkbox" name="pass_policy_enabled"<?php if (get_setting('pass_policy_enabled') == 1) echo " checked" ?> /></p>
+                <p><?php echo $escaper->escapeHtml($lang['MinimumNumberOfCharacters']); ?>&nbsp;&nbsp;<input type="number" name="min_characters" min="1" max="50" maxlength="2" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_min_chars')); ?>"/>&nbsp;&nbsp;[1-50]</p>
+		<p><?php echo $escaper->escapeHtml($lang['RequireAlphaCharacter']); ?>&nbsp;&nbsp;<input type="checkbox" name="alpha_required"<?php if (get_setting('pass_policy_alpha_required') == 1) echo " checked" ?>  /></p>
+		<p><?php echo $escaper->escapeHtml($lang['RequireUpperCaseCharacter']); ?>&nbsp;&nbsp;<input type="checkbox" name="upper_required"<?php if (get_setting('pass_policy_upper_required') == 1) echo " checked" ?>  /></p>
+		<p><?php echo $escaper->escapeHtml($lang['RequireLowerCaseCharacter']); ?>&nbsp;&nbsp;<input type="checkbox" name="lower_required"<?php if (get_setting('pass_policy_lower_required') == 1) echo " checked" ?>  /></p>
+		<p><?php echo $escaper->escapeHtml($lang['RequireNumericCharacter']); ?>&nbsp;&nbsp;<input type="checkbox" name="digits_required"<?php if (get_setting('pass_policy_digits_required') == 1) echo " checked" ?>  /></p>
+		<p><?php echo $escaper->escapeHtml($lang['RequireSpecialCharacter']); ?>&nbsp;&nbsp;<input type="checkbox" name="special_required"<?php if (get_setting('pass_policy_special_required') == 1) echo " checked" ?> /></p>
+		<p><input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="password_policy_update" /></p>
                 </form>
               </div>
             </div>

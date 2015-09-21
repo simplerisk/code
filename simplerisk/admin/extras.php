@@ -113,9 +113,8 @@
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <h4>Custom Extras</h4>
-                <p>It would be awesome if everything were free, right?  Hopefully the core SimpleRisk platform is able to serve all of your risk management needs.  But, if you find yourself still wanting more functionality, we&#39;ve developed a series of &quot;Extras&quot; that will do just that for just a few hundred bucks each for a perpetual license.
-                </p>
+                <h4><?php echo $escaper->escapeHtml($lang['CustomExtras']); ?></h4>
+                <p><?php echo $escaper->escapeHtml($lang['CustomExtrasText']); ?></p>
                 <table width="100%" class="table table-bordered table-condensed">
                 <thead>
                 <tr>

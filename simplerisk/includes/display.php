@@ -2556,6 +2556,9 @@ function view_reporting_menu($active)
 	echo ($active == "DynamicRiskReport" ? "<li class=\"active\">\n" : "<li>\n");
 	echo "<a href=\"dynamic_risk_report.php\">" . $escaper->escapeHtml($lang['DynamicRiskReport']) . "</a>\n";
 	echo "</li>\n";
+	echo ($active == "RiskAdvice" ? "<li class=\"active\">\n" : "<li>\n");
+	echo "<a href=\"riskadvice.php\">" . $escaper->escapeHtml($lang['RiskAdvice']) . "</a>\n";
+	echo "</li>\n";
         echo ($active == "AllOpenRisksAssignedToMeByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"my_open.php\">" . $escaper->escapeHtml($lang['AllOpenRisksAssignedToMeByRiskLevel']) . "</a>\n";
         echo "</li>\n";
@@ -2659,7 +2662,7 @@ function view_configure_menu($active)
         echo "<a href=\"announcements.php\">" . $escaper->escapeHtml($lang['Announcements']) . "</a>\n";
         echo "</li>\n";
 	echo ($active == "Register" ? "<li class=\"active\">\n" : "<li>\n");
-	echo "<a href=\"register.php\">" . $escaper->escapeHtml($lang['Register']) . "</a>\n";
+	echo "<a href=\"register.php\">" . $escaper->escapeHtml($lang['Register']) . " &amp; " . $escaper->escapeHtml($lang['Upgrade']) . "</a>\n";
 	echo "</li>\n";
 	echo ($active == "About" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"about.php\">" . $escaper->escapeHtml($lang['About']) . "</a>\n";

@@ -643,6 +643,65 @@ function upgrade_from_20150531001($db)
         $stmt->execute();
 }
 
+/**************************************
+ * FUNCTION: UPGRADE FROM 20150729001 *
+ **************************************/
+function upgrade_from_20150729001($db)
+{
+        global $lang;
+
+        // Database version to upgrade
+        define('VERSION_TO_UPGRADE', '20150729-001');
+
+        // Database version upgrading to
+        define('VERSION_UPGRADING_TO', '20150920-001');
+
+	// Create a setting for password policy
+	echo "Enabling the new password policy.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('pass_policy_enabled', 1)");
+	$stmt->execute();
+
+	// Set the default number of characters required to 8
+	echo "Setting the default number of characters required to 8.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('pass_policy_min_chars', 8)");
+	$stmt->execute();
+
+	// Set the alpha characters to required
+	echo "Setting Alpha characters to required.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('pass_policy_alpha_required', 1)");
+	$stmt->execute();
+
+	// Set the upper case characters to required
+	echo "Setting Upper Case characters to required.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('pass_policy_upper_required', 1)");
+	$stmt->execute();
+
+	// Set the lower case characters to required
+	echo "Setting Lower Case characters to required.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('pass_policy_lower_required', 1)");
+	$stmt->execute();
+
+	// Set the digits to required
+	echo "Setting Digits to required.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('pass_policy_digits_required', 1)");
+	$stmt->execute();
+
+	// Set the special characters to required
+	echo "Setting Special Characters to required.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('pass_policy_special_required', 1)");
+	$stmt->execute();
+
+	// Set the mgmt_review field default value to null
+	echo "Setting the mgmt_review field's default value to null.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mgmt_review` int(11) DEFAULT NULL;");
+	$stmt->execute();
+
+	// Set the close_id field default value to null
+	echo "Setting the close_id field's default value to null.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `risks` MODIFY `close_id` int(11) DEFAULT NULL;");
+	$stmt->execute();
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -689,6 +748,10 @@ function upgrade_database()
 				break;
 			case "20150531-001":
 				upgrade_from_20150531001($db);
+				update_database_version($db);
+				break;
+			case "20150729-001":
+				upgrade_from_20150729001($db);
 				update_database_version($db);
 				break;
 			default:
