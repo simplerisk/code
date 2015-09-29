@@ -406,8 +406,17 @@
 	// If the risk details were updated
         if (isset($_POST['update_details']))
         {
+        	// Check if the subject is null
+        	if (isset($_POST['subject']) && $_POST['subject'] == "")
+        	{
+                	$empty_subject = true;
+                	$alert = "bad";
+                	$alert_message = "The subject of a risk cannot be empty.";
+        	}
+		else $empty_subject = true;
+
 		// If the user has permission to modify risks
-		if (isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
+		if (!$empty_subject && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
 		{
                 	$subject = $_POST['subject'];
 			$reference_id = $_POST['reference_id'];
@@ -465,7 +474,7 @@
 			}
 		}
 		// Otherwise, the user did not have permission to modify risks
-		else
+		else if (!$empty_subject)
 		{
 			$alert = "bad";
                 	$alert_message = "You do not have permission to modify risks.  Your attempt to modify the details of this risk was not recorded.  Please contact an Administrator if you feel that you have reached this message in error.";

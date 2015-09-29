@@ -225,12 +225,12 @@ function check_grants($db)
 /*************************************
  * FUNCTION: UPDATE DATABASE VERSION *
  *************************************/
-function update_database_version($db)
+function update_database_version($db, $version_to_upgrade, $version_upgrading_to)
 {
 	// Update the database version information
 	echo "Updating the database version information.<br />\n";
 
-	$stmt = $db->prepare("UPDATE `settings` SET `value` = '" . VERSION_UPGRADING_TO . "' WHERE `settings`.`name` = 'db_version' AND `settings`.`value` = '" . VERSION_TO_UPGRADE . "' LIMIT 1 ;");
+	$stmt = $db->prepare("UPDATE `settings` SET `value` = '" . $version_upgrading_to . "' WHERE `settings`.`name` = 'db_version' AND `settings`.`value` = '" . $version_to_upgrade . "' LIMIT 1 ;");
 	$stmt->execute();
 }
 
@@ -240,10 +240,12 @@ function update_database_version($db)
 function upgrade_from_20140728001($db)
 {
 	// Database version to upgrade
-	define('VERSION_TO_UPGRADE', '20140728-001');
+	$version_to_upgrade = '20140728-001';
 
 	// Database version upgrading to
-	define('VERSION_UPGRADING_TO', '20141013-001');
+	$version_upgrading_to = '20141013-001';
+
+	echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
 	// Creating a table to store supporting documentation files
         echo "Creating a table to store supporting documentation files.<br />\n";
@@ -341,6 +343,11 @@ function upgrade_from_20140728001($db)
                 $stmt->bindParam(":comments", stripslashes($value['comments']));
                 $stmt->execute();
         }   
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /**************************************
@@ -349,10 +356,12 @@ function upgrade_from_20140728001($db)
 function upgrade_from_20141013001($db)
 {
         // Database version to upgrade
-        define('VERSION_TO_UPGRADE', '20141013-001');
-
+        $version_to_upgrade = '20141013-001';
+        
         // Database version upgrading to
-        define('VERSION_UPGRADING_TO', '20141129-001');
+        $version_upgrading_to = '20141129-001';
+
+	echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
 	// Set the default value for the last_login field in the user table
 	echo "Setting a default value for the last_login field in the user table.<br />\n";
@@ -391,6 +400,11 @@ function upgrade_from_20141013001($db)
 		$stmt = $db->prepare("INSERT INTO planning_strategy (`name`) VALUES ('Transfer');");
 	}
 	$stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /**************************************
@@ -399,10 +413,12 @@ function upgrade_from_20141013001($db)
 function upgrade_from_20141129001($db)
 {
         // Database version to upgrade
-        define('VERSION_TO_UPGRADE', '20141129-001');
+        $version_to_upgrade = '20141129-001';
 
         // Database version upgrading to
-        define('VERSION_UPGRADING_TO', '20141214-001');
+        $version_upgrading_to = '20141214-001';
+
+	echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
         // Set the default value for the mitigation_id field in the risks table
         echo "Setting a default value for the mitigation_id field in the risks table.<br />\n";
@@ -413,6 +429,11 @@ function upgrade_from_20141129001($db)
         echo "Correcting any mitigation_id values of NULL.<br />\n";
         $stmt = $db->prepare("UPDATE `risks` SET mitigation_id = 0 WHERE mitigation_id IS NULL;");
         $stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /**************************************
@@ -420,11 +441,13 @@ function upgrade_from_20141129001($db)
  **************************************/
 function upgrade_from_20141214001($db)
 {
-	// Database version to upgrade
-	define('VERSION_TO_UPGRADE', '20141214-001');
+        // Database version to upgrade
+        $version_to_upgrade = '20141214-001';
+        
+        // Database version upgrading to
+        $version_upgrading_to = '20150202-001';
 
-	// Database version upgrading to
-	define('VERSION_UPGRADING_TO', '20150202-001');
+	echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
 	// Add the field to track asset management permission
 	echo "Adding a field to track asset management permissions.<br />\n";
@@ -455,6 +478,11 @@ function upgrade_from_20141214001($db)
 	echo "Adding scoring methods to scoring methods table.<br />\n";
 	$stmt = $db->prepare("INSERT INTO `scoring_methods` VALUES ('1', 'Classic'), ('2', 'CVSS'), ('3', 'DREAD'), ('4', 'OWASP'), ('5', 'Custom');");
 	$stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /**************************************
@@ -463,10 +491,12 @@ function upgrade_from_20141214001($db)
 function upgrade_from_20150202001($db)
 {
         // Database version to upgrade
-        define('VERSION_TO_UPGRADE', '20150202-001');
+        $version_to_upgrade = '20150202-001';
 
         // Database version upgrading to
-        define('VERSION_UPGRADING_TO', '20150321-001');
+        $version_upgrading_to = '20150321-001';
+
+	echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
 	// Increase the size of the name column of the settings table
 	echo "Increasing the size of the settings table name column to hold 50 characters.<br />\n";
@@ -487,6 +517,11 @@ function upgrade_from_20150202001($db)
 	echo "Updating risks with a mitigation_id of null to 0.<br />\n";
 	$stmt = $db->prepare("UPDATE `risks` SET `mitigation_id` = 0 WHERE mitigation_id is null;");
 	$stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /**************************************
@@ -494,13 +529,13 @@ function upgrade_from_20150202001($db)
  **************************************/
 function upgrade_from_20150321001($db)
 {
-	global $lang;
-
         // Database version to upgrade
-        define('VERSION_TO_UPGRADE', '20150321-001');
+        $version_to_upgrade = '20150321-001';
 
         // Database version upgrading to
-        define('VERSION_UPGRADING_TO', '20150531-001');
+        $version_upgrading_to = '20150531-001';
+
+	echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
 	// Get the value for the low review level
 	$stmt = $db->prepare("SELECT value FROM review_levels WHERE name = 'Low'");
@@ -580,6 +615,11 @@ function upgrade_from_20150321001($db)
 	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('instance_id', :instance_id)");
 	$stmt->bindParam(":instance_id", $instance_id, PDO::PARAM_STR, 50);
 	$stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /**************************************
@@ -587,13 +627,13 @@ function upgrade_from_20150321001($db)
  **************************************/
 function upgrade_from_20150531001($db)
 {
-        global $lang;
-
         // Database version to upgrade
-        define('VERSION_TO_UPGRADE', '20150531-001');
+        $version_to_upgrade = '20150531-001';
 
         // Database version upgrading to
-        define('VERSION_UPGRADING_TO', '20150729-001');
+        $version_upgrading_to = '20150729-001';
+
+	echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
 	// Create a new file type table
 	echo "Creating a new table to track upload file types.<br />\n";
@@ -641,6 +681,11 @@ function upgrade_from_20150531001($db)
 	echo "Adding a setting to show SimpleRisk is not registered.<br />\n";
 	$stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('registration_registered', 0)");
         $stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /**************************************
@@ -648,13 +693,13 @@ function upgrade_from_20150531001($db)
  **************************************/
 function upgrade_from_20150729001($db)
 {
-        global $lang;
-
         // Database version to upgrade
-        define('VERSION_TO_UPGRADE', '20150729-001');
+        $version_to_upgrade = '20150729-001';
 
         // Database version upgrading to
-        define('VERSION_UPGRADING_TO', '20150920-001');
+        $version_upgrading_to = '20150920-001';
+
+        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
 	// Create a setting for password policy
 	echo "Enabling the new password policy.<br />\n";
@@ -700,6 +745,40 @@ function upgrade_from_20150729001($db)
 	echo "Setting the close_id field's default value to null.<br />\n";
 	$stmt = $db->prepare("ALTER TABLE `risks` MODIFY `close_id` int(11) DEFAULT NULL;");
 	$stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/**************************************
+ * FUNCTION: UPGRADE FROM 20150920001 *
+ **************************************/
+function upgrade_from_20150920001($db)
+{
+        // Database version to upgrade
+	$version_to_upgrade = '20150920-001';
+
+        // Database version upgrading to
+	$version_upgrading_to = '20150928-001';
+
+	echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+        // Set the mgmt_review field default value to null
+        echo "Setting the mgmt_review field's default value to null.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `mgmt_review` int(11) DEFAULT 0;");
+        $stmt->execute();
+
+	// Correct for bug in setting of mgmt_review in previous release
+	echo "Updating mgmt_review for risks submitted since previous release.<br />\n";
+	$stmt = $db->prepare("UPDATE `risks` SET `mgmt_review`=0 WHERE `mgmt_review` IS NULL;");
+	$stmt->execute();
+
+	// Update the database version
+	update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /******************************
@@ -708,14 +787,11 @@ function upgrade_from_20150729001($db)
 function upgrade_database()
 {
 	// Connect to the database
-	echo "Connecting to the SimpleRisk database.<br />\n";
 	$db = db_open();
 
 	// If the grant check for the database user is successful
 	if (check_grants($db))
 	{
-		echo "Beginning upgrade of SimpleRisk database.<br />\n";
-
 		// Get the current database version
 		$db_version = current_version("db");
 
@@ -724,51 +800,52 @@ function upgrade_database()
 		{
 			case "20140728-001":
 				upgrade_from_20140728001($db);
-				update_database_version($db);
+				upgrade_database();
 				break;
                         case "20141013-001":
                                 upgrade_from_20141013001($db);
-                                update_database_version($db);
-                                break;
+				upgrade_database();
+				break;
 			case "20141129-001":
 				upgrade_from_20141129001($db);
-				update_database_version($db);
+				upgrade_database();
 				break;
 			case "20141214-001":
 				upgrade_from_20141214001($db);
-				update_database_version($db);
+				upgrade_database();
 				break;
 			case "20150202-001":
 				upgrade_from_20150202001($db);
-				update_database_version($db);
-                                break;
+				upgrade_database();
+				break;
 			case "20150321-001":
 				upgrade_from_20150321001($db);
-				update_database_version($db);
+				upgrade_database();
 				break;
 			case "20150531-001":
 				upgrade_from_20150531001($db);
-				update_database_version($db);
+				upgrade_database();
 				break;
 			case "20150729-001":
 				upgrade_from_20150729001($db);
-				update_database_version($db);
+				upgrade_database();
+				break;
+			case "20150920-001":
+				upgrade_from_20150920001($db);
+				upgrade_database();
 				break;
 			default:
-				echo "No database upgrade is needed at this time.<br />\n";
+				echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
 		}
 	}
-	// If the grant check was not succesful
+	// If the grant check was not successful
 	else
 	{
 		echo "A check of your database user privileges found that one of the necessary grants was missing.  Please ensure that you have granted SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, and ALTER permissions to the user.<br />\n";
 	}
 
 	// Disconnect from the database
-	echo "Disconnecting from the SimpleRisk database.<br />\n";
 	db_close($db);
-
-	echo "SimpleRisk database upgrade is complete.<br />\n";
 }
 
 ?>

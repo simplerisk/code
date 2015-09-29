@@ -114,17 +114,27 @@
         {
                 $name = $_POST['new_project'];
 
-                // Insert a new project up to 100 chars
-                add_name("projects", $name, 100);
+		// Check if the project name is null
+		if (isset($name) && $name == "")
+		{
+			$alert = "bad";
+			$alert_message = "The project name cannot be empty.";
+		}
+		// Otherwise
+		else
+		{
+                	// Insert a new project up to 100 chars
+	                add_name("projects", $name, 100);
 
-                // Audit log
-                $risk_id = 1000;
-                $message = "A new project was added by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+        	        // Audit log
+                	$risk_id = 1000;
+	                $message = "A new project was added by the \"" . $_SESSION['user'] . "\" user.";
+        	        write_log($risk_id, $_SESSION['uid'], $message);
 
-		// There is an alert message
-                $alert = "good";
-                $alert_message = "A new project was added successfully.";
+			// There is an alert message
+	                $alert = "good";
+        	        $alert_message = "A new project was added successfully.";
+		}
         }
 
         // Check if a project was deleted

@@ -61,6 +61,14 @@
 	}
 	else $submit_risks = true;
 
+	// Check if the subject is null
+	if (isset($_POST['subject']) && $_POST['subject'] == "")
+	{
+		$submit_risks = false;
+		$alert = "bad";
+		$alert_message = "The subject of a risk cannot be empty.";
+	}
+
         // Check if a new risk was submitted and the user has permissions to submit new risks
         if ((isset($_POST['submit'])) && $submit_risks)
         {

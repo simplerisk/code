@@ -508,6 +508,9 @@ function is_valid_reset_token($username, $token)
  ***************************/
 function session_check()
 {
+	// Perform session garbage collection
+	sess_gc(1440);
+
         // Last request was more $last_activity
         if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > LAST_ACTIVITY_TIMEOUT))
         {
