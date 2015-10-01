@@ -413,7 +413,7 @@
                 	$alert = "bad";
                 	$alert_message = "The subject of a risk cannot be empty.";
         	}
-		else $empty_subject = true;
+		else $empty_subject = false;
 
 		// If the user has permission to modify risks
 		if (!$empty_subject && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
