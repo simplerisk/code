@@ -73,11 +73,6 @@
                         // Update the review settings
                         update_review_settings($veryhigh, $high, $medium, $low, $insignificant);
 
-                        // Audit log
-                        $risk_id = 1000;
-                        $message = "The review settings were modified by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
-
 			$alert = "good";
 			$alert_message = "The review settings have been updated successfully!";
                 }

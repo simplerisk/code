@@ -35,26 +35,8 @@
         // Include the language file
         require_once(language_file());
 
-	// Audit log
-	$risk_id = 1000;
-	$message = "Username \"" . $_SESSION['user'] . "\" logged out successfully.";
-	write_log($risk_id, $_SESSION['uid'], $message);
-
-	// Deny access
-	$_SESSION["access"] = "denied";
-
-	// Reset the session data
-	$_SESSION = array();
-
-	// Send a Set-Cookie to invalidate the session cookie
-	if (ini_get("session.use_cookies"))
-	{
-        	$params = session_get_cookie_params();
-        	setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], isset($params['httponly']));
-	}
-
-	// Destroy the session
-	session_destroy();
+	// Log the user out
+	logout();
 
 	// Redirect to the index
 	header( 'Location: index.php' );

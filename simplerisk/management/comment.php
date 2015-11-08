@@ -102,11 +102,6 @@
                 // Add the comment
                 add_comment($id, $_SESSION['uid'], $comment);
 
-                // Audit log
-                $risk_id = $id;
-                $message = "A comment was added to risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-                write_log($risk_id, $_SESSION['uid'], $message);
-
 		// Check that the id is a numeric value
 		if (is_numeric($id))
 		{

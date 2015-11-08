@@ -116,11 +116,6 @@
                 // Close the risk
                 close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
 
-                // Audit log
-                $risk_id = $id;
-                $message = "Risk ID \"" . $risk_id . "\" was marked as closed by username \"" . $_SESSION['user'] . "\".";
-                write_log($risk_id, $_SESSION['uid'], $message);
-
                 // Check that the id is a numeric value
                 if (is_numeric($id))
                 {

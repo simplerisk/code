@@ -66,11 +66,6 @@
                 // Insert a new file type up to 100 chars
                 add_name("file_types", $name, 100);
 
-                // Audit log
-                $risk_id = 1000;
-                $message = "A new upload file type was added by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-
 		// There is an alert message
 		$alert = "good";
 		$alert_message = "A new upload file type was added successfully.";
@@ -86,11 +81,6 @@
                 {
                         delete_value("file_types", $value);
 
-                	// Audit log
-                	$risk_id = 1000;
-                	$message = "An existing upload file type was removed by the \"" . $_SESSION['user'] . "\" user.";
-                	write_log($risk_id, $_SESSION['uid'], $message);
-
                 	// There is an alert message
                 	$alert = "good";
                 	$alert_message = "An existing upload file type was removed successfully.";
@@ -104,11 +94,6 @@
 		if (is_numeric($_POST['size']))
 		{
 			update_setting('max_upload_size', $_POST['size']);
-
-                        // Audit log
-                        $risk_id = 1000;
-                        $message = "The maximum upload file size was updated by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
 
                         // There is an alert message
                         $alert = "good";

@@ -117,11 +117,6 @@
 			// Update the user
 			update_user($user_id, $name, $email, $team, $language, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
-                        // Audit log
-                        $risk_id = 1000;
-                        $message = "An existing user was modified by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
-
 			$alert = "good";
                         $alert_message = "The user was updated successfully.";
 		}

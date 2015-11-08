@@ -262,11 +262,6 @@
 			// Update the classic score
 			$calculated_risk = update_classic_score($id, $CLASSIC_likelihood, $CLASSIC_impact);
 
-                        // Audit log
-                        $risk_id = $id;
-                        $message = "Scoring method was changed for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-                        write_log($risk_id, $_SESSION['uid'], $message);
-
                         $alert = "good";
                         $alert_message = "The scoring method has been successfully changed to Classic.";
 		}
@@ -278,11 +273,6 @@
 
 			// Update the cvss score
 			$calculated_risk = update_cvss_score($id, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement);
-
-                        // Audit log
-                        $risk_id = $id;
-                        $message = "Scoring method was changed for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-                        write_log($risk_id, $_SESSION['uid'], $message);
 
                         $alert = "good";
                         $alert_message = "The scoring method has been successfully changed to CVSS.";
@@ -296,11 +286,6 @@
 			// Update the dread score
 			$calculated_risk = update_dread_score($id, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability);
 
-                        // Audit log
-                        $risk_id = $id;
-                        $message = "Scoring method was changed for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-                        write_log($risk_id, $_SESSION['uid'], $message);
-
                         $alert = "good";
                         $alert_message = "The scoring method has been successfully changed to DREAD.";
                 }
@@ -313,11 +298,6 @@
 			// Update the owasp score
 			$calculated_risk = update_owasp_score($id, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation);
 
-                        // Audit log
-                        $risk_id = $id;
-                        $message = "Scoring method was changed for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-                        write_log($risk_id, $_SESSION['uid'], $message);
-
                         $alert = "good";
                         $alert_message = "The scoring method has been successfully changed to OWASP.";
                 }
@@ -329,11 +309,6 @@
 
 			// Update the custom score
 			$calculated_risk = update_custom_score($id, $custom);
-
-                        // Audit log
-                        $risk_id = $id;
-                        $message = "Scoring method was changed for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-                        write_log($risk_id, $_SESSION['uid'], $message);
 
                         $alert = "good";
                         $alert_message = "The scoring method has been successfully changed to Custom.";
@@ -356,6 +331,8 @@
 			$mitigation_date = "";
 			$planning_strategy = "";
 			$mitigation_effort = "";
+			$mitigation_cost = 1;
+			$mitigation_owner = $owner;
 			$mitigation_team = $team;
 			$current_solution = "";
 			$security_requirements = "";
@@ -369,6 +346,8 @@
 			$mitigation_date = date(DATETIME, strtotime($mitigation_date));
 			$planning_strategy = $mitigation[0]['planning_strategy'];
 			$mitigation_effort = $mitigation[0]['mitigation_effort'];
+			$mitigation_cost = $mitigation[0]['mitigation_cost'];
+			$mitigation_owner = $mitigation[0]['mitigation_owner'];
 			$mitigation_team = $mitigation[0]['mitigation_team'];
 			$current_solution = $mitigation[0]['current_solution'];
 			$security_requirements = $mitigation[0]['security_requirements'];
@@ -457,11 +436,6 @@
 				else $error = 1;
 			}
 
-                	// Audit log
-                	$risk_id = $id;
-                	$message = "Risk details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-                	write_log($risk_id, $_SESSION['uid'], $message);
-
 			if ($error == 1)
 			{
 				$alert = "good";
@@ -493,6 +467,8 @@
 	{
                 $planning_strategy = (int)$_POST['planning_strategy'];
 		$mitigation_effort = (int)$_POST['mitigation_effort'];
+		$mitigation_cost = (int)$_POST['mitigation_cost'];
+		$mitigation_owner = (int)$_POST['mitigation_owner'];
 		$mitigation_team = (int)$_POST['mitigation_team'];
                 $current_solution = $_POST['current_solution'];
                 $security_requirements = $_POST['security_requirements'];
@@ -504,20 +480,15 @@
 	                $status = "Mitigation Planned";
 
                 	// Submit mitigation and get the mitigation date back
-                	$mitigation_date = submit_mitigation($id, $status, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
+                	$mitigation_date = submit_mitigation($id, $status, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
 			$mitigation_date = date(DATETIME, strtotime($mitigation_date));
 		}
 		else
 		{
 			// Update mitigation and get the mitigation date back
-			$mitigation_date = update_mitigation($id, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
+			$mitigation_date = update_mitigation($id, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
 			$mitigation_date = date(DATETIME, strtotime($mitigation_date));
 		}
-
-                // Audit log
-                $risk_id = $id;
-                $message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-                write_log($risk_id, $_SESSION['uid'], $message);
 
 		$alert = "good";
 		$alert_message = "The risk mitigation has been successfully modified.";
@@ -729,12 +700,12 @@
 			// If the user has selected to edit the mitigation
 			if (isset($_POST['edit_mitigation']))
 			{ 
-				edit_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
+				edit_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
 			}
 			// Otherwise we are just viewing the mitigation
 			else
 			{
-				view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
+				view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
 			}
 		?>
                 </form>

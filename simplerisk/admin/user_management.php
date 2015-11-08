@@ -150,11 +150,6 @@
                                 	// Insert a new user
                                 	add_user($type, $user, $email, $name, $salt, $hash, $team, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
-                        		// Audit log
-                        		$risk_id = 1000;
-                        		$message = "A new user was added by the \"" . $_SESSION['user'] . "\" user.";
-                        		write_log($risk_id, $_SESSION['uid'], $message);
-
 					$alert = "good";
 					$alert_message = "The new user was added successfully.";
 				}
@@ -190,11 +185,6 @@
                 {
                         enable_user($value);
 
-                        // Audit log
-                        $risk_id = 1000;
-                        $message = "A user was enabled by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
-
                         // There is an alert message
                         $alert = "good";
                         $alert_message = "The user was enabled successfully.";
@@ -210,11 +200,6 @@
                 if (is_int($value))
                 {
                         disable_user($value);
-
-                        // Audit log
-                        $risk_id = 1000;
-                        $message = "A user was disabled by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
 
                         // There is an alert message
                         $alert = "good";
@@ -233,11 +218,6 @@
                 {
                         delete_value("user", $value);
 
-                        // Audit log
-                        $risk_id = 1000;
-                        $message = "An existing user was deleted by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
-
 			// There is an alert message
 			$alert = "good";
 			$alert_message = "The existing user was deleted successfully.";
@@ -254,12 +234,6 @@
                 {
                         password_reset_by_userid($value);
               
-                        // Audit log
-                        $risk_id = 1000;
-			$message = "A password reset request was submitted by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
-
-
                         // There is an alert message
                         $alert = "good";
                         $alert_message = "A password reset email was sent to the user.";

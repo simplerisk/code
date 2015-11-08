@@ -375,6 +375,11 @@ function password_reset_by_userid($userid)
 
         // Send the reset e-mail
         send_reset_email($username, $name, $email, $token);
+
+	// Audit log
+	$risk_id = 1000;
+	$message = "A password reset request was submitted for user \"" . $username . "\" by the \"" . $_SESSION['user'] . "\" user.";
+	write_log($risk_id, $_SESSION['uid'], $message);
 }
 
 /******************************
@@ -672,6 +677,37 @@ function sess_gc($sess_maxlifetime)
         db_close($db);
 
         return true;
+}
+
+/********************
+ * FUNCTION: LOGOUT *
+ ********************/
+function logout()
+{
+	// Get the session username and uid
+	$username = $_SESSION['user'];
+	$uid = $_SESSION['uid'];
+
+        // Deny access
+        $_SESSION["access"] = "denied";
+
+        // Reset the session data
+        $_SESSION = array();
+
+        // Send a Set-Cookie to invalidate the session cookie
+        if (ini_get("session.use_cookies"))
+        {
+                $params = session_get_cookie_params();
+                setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], isset($params['httponly']));
+        }
+
+        // Destroy the session
+        session_destroy();
+
+	// Audit log
+	$risk_id = 1000;
+	$message = "Username \"" . $username . "\" logged out successfully.";
+	write_log($risk_id, $uid, $message);
 }
 
 ?>

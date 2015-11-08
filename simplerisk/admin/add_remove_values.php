@@ -66,14 +66,26 @@
                 // Insert a new category up to 50 chars
                 add_name("category", $name, 50);
 
-                // Audit log
-                $risk_id = 1000;
-                $message = "A new category was added by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-
 		// There is an alert message
 		$alert = "good";
 		$alert_message = "A new category was added successfully.";
+        }
+
+        // Check if the category update was submitted
+        if (isset($_POST['update_category']))
+        {
+                $new_name = $_POST['new_name'];
+                $value = (int)$_POST['update_category_name'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        update_table("category", $new_name, $value);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The category name was updated successfully.";
+                }
         }
 
         // Check if a category was deleted
@@ -85,11 +97,6 @@
                 if (is_int($value))
                 {
                         delete_value("category", $value);
-
-                	// Audit log
-                	$risk_id = 1000;
-                	$message = "An existing category was removed by the \"" . $_SESSION['user'] . "\" user.";
-                	write_log($risk_id, $_SESSION['uid'], $message);
 
                 	// There is an alert message
                 	$alert = "good";
@@ -105,15 +112,27 @@
                 // Insert a new team up to 50 chars
                 add_name("team", $name, 50);
 
-                // Audit log
-                $risk_id = 1000;
-                $message = "A new team was added by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-
                 // There is an alert message
                 $alert = "good";
                 $alert_message = "A new team was added successfully.";
         }
+
+	// Check if the team update was submitted
+	if (isset($_POST['update_team']))
+	{
+		$new_name = $_POST['new_name'];
+		$value = (int)$_POST['update_team_name'];
+
+		// Verify value is an integer
+		if (is_int($value))
+		{
+			update_table("team", $new_name, $value);
+
+			// There is an alert message
+			$alert = "good";
+			$alert_message = "The team name was updated successfully.";
+		}
+	}
 
         // Check if a team was deleted
         if (isset($_POST['delete_team']))
@@ -149,11 +168,6 @@
 			{
                         	delete_value("team", $value);
 
-	                        // Audit log
-        	                $risk_id = 1000;
-                	        $message = "An existing team was removed by the \"" . $_SESSION['user'] . "\" user.";
-                        	write_log($risk_id, $_SESSION['uid'], $message);
-
                         	// There is an alert message
                         	$alert = "good";
                         	$alert_message = "An existing team was removed successfully.";
@@ -175,14 +189,26 @@
                 // Insert a new technology up to 50 chars
                 add_name("technology", $name, 50);
 
-                // Audit log
-                $risk_id = 1000;
-                $message = "A new technology was added by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-
                 // There is an alert message
                 $alert = "good";
                 $alert_message = "A new technology was added successfully.";
+        }
+
+        // Check if the technology update was submitted
+        if (isset($_POST['update_technology']))
+        {
+                $new_name = $_POST['new_name'];
+                $value = (int)$_POST['update_technology_name'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        update_table("technology", $new_name, $value);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The technology name was updated successfully.";
+                }
         }
 
         // Check if a technology was deleted
@@ -194,11 +220,6 @@
                 if (is_int($value))
                 {
                         delete_value("technology", $value);
-
-                        // Audit log
-                        $risk_id = 1000;
-                        $message = "An existing technology was removed by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
 
                         // There is an alert message
                         $alert = "good";
@@ -214,14 +235,26 @@
                 // Insert a new location up to 100 chars
                 add_name("location", $name, 100);
 
-                // Audit log
-                $risk_id = 1000;
-                $message = "A new location was added by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-
                 // There is an alert message
                 $alert = "good";
                 $alert_message = "A new location was added successfully.";
+        }
+
+        // Check if the location update was submitted
+        if (isset($_POST['update_location']))
+        {
+                $new_name = $_POST['new_name'];
+                $value = (int)$_POST['update_location_name'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        update_table("location", $new_name, $value);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The location name was updated successfully.";
+                }
         }
 
         // Check if a location was deleted
@@ -233,11 +266,6 @@
                 if (is_int($value))
                 {
                         delete_value("location", $value);
-
-                        // Audit log
-                        $risk_id = 1000;
-                        $message = "An existing location was removed by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
 
                         // There is an alert message
                         $alert = "good";
@@ -253,14 +281,26 @@
                 // Insert a new regulation up to 50 chars
                 add_name("regulation", $name, 50);
 
-                // Audit log
-                $risk_id = 1000;
-                $message = "A new control regulation was added by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-
                 // There is an alert message
                 $alert = "good";
                 $alert_message = "A new control regulation was added successfully.";
+        }
+
+        // Check if the regulation update was submitted
+        if (isset($_POST['update_regulation']))
+        {
+                $new_name = $_POST['new_name'];
+                $value = (int)$_POST['update_regulation_name'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        update_table("regulation", $new_name, $value);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The regulation name was updated successfully.";
+                }
         }
 
         // Check if a control regulation was deleted
@@ -272,11 +312,6 @@
                 if (is_int($value))
                 {
                         delete_value("regulation", $value);
-
-                        // Audit log
-                        $risk_id = 1000;
-                        $message = "An existing control regulation was removed by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
 
                         // There is an alert message
                         $alert = "good";
@@ -292,14 +327,26 @@
                 // Insert a new planning strategy up to 20 chars
                 add_name("planning_strategy", $name, 20);
 
-                // Audit log
-                $risk_id = 1000;
-                $message = "A new planning strategy was added by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-
                 // There is an alert message
                 $alert = "good";
                 $alert_message = "A new planning strategy was added successfully.";
+        }
+
+        // Check if the planning strategy update was submitted
+        if (isset($_POST['update_planning_strategy']))
+        {
+                $new_name = $_POST['new_name'];
+                $value = (int)$_POST['update_planning_strategy_name'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        update_table("planning_strategy", $new_name, $value);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The planning strategy name was updated successfully.";
+                }
         }
 
         // Check if a planning strategy was deleted
@@ -311,11 +358,6 @@
                 if (is_int($value))
                 {
                         delete_value("planning_strategy", $value);
-
-                        // Audit log
-                        $risk_id = 1000;
-                        $message = "An existing planning strategy was removed by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
 
                         // There is an alert message
                         $alert = "good";
@@ -331,14 +373,26 @@
                 // Insert a new close reason up to 50 chars
                 add_name("close_reason", $name, 50);
                 
-                // Audit log
-                $risk_id = 1000;
-                $message = "A new close reason was added by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-
                 // There is an alert message
                 $alert = "good";
                 $alert_message = "A new close reason was added successfully.";
+        }
+
+        // Check if the close reason update was submitted
+        if (isset($_POST['update_close_reason']))
+        {
+                $new_name = $_POST['new_name'];
+                $value = (int)$_POST['update_close_reason_name'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        update_table("close_reason", $new_name, $value);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The close reason name was updated successfully.";
+                }
         }
                         
         // Check if a close reason was deleted
@@ -351,11 +405,6 @@
                 {
                         delete_value("close_reason", $value);
                 
-                        // Audit log
-                        $risk_id = 1000;
-                        $message = "An existing close reason was removed by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
-
                         // There is an alert message
                         $alert = "good";
                         $alert_message = "An existing close reason was removed successfully.";
@@ -421,6 +470,7 @@
                 <p>
                 <h4><?php echo $escaper->escapeHtml($lang['Category']); ?>:</h4>
                 <?php echo $escaper->escapeHtml($lang['AddNewCategoryNamed']); ?> <input name="new_category" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_category" /><br />
+		<?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("category", NULL, "update_category_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_category" /><br />
                 <?php echo $escaper->escapeHtml($lang['DeleteCurrentCategoryNamed']); ?> <?php create_dropdown("category"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_category" />
                 </p>
                 </form>
@@ -430,6 +480,7 @@
                 <p>
                 <h4><?php echo $escaper->escapeHtml($lang['Team']); ?>:</h4>
                 <?php echo $escaper->escapeHtml($lang['AddNewTeamNamed']); ?> <input name="new_team" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_team" /><br />
+		<?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("team", NULL, "update_team_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_team" /><br />
                 <?php echo $escaper->escapeHtml($lang['DeleteCurrentTeamNamed']); ?> <?php create_dropdown("team"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_team" />
                 </p>
                 </form>
@@ -439,6 +490,7 @@
                 <p>
                 <h4><?php echo $escaper->escapeHtml($lang['Technology']); ?>:</h4>
                 <?php echo $escaper->escapeHtml($lang['AddNewTechnologyNamed']); ?> <input name="new_technology" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_technology" /><br />
+		<?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("technology", NULL, "update_technology_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_technology" /><br />
                 <?php echo $escaper->escapeHtml($lang['DeleteCurrentTechnologyNamed']); ?> <?php create_dropdown("technology"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_technology" />
                 </p>
                 </form>
@@ -448,6 +500,7 @@
                 <p>
                 <h4><?php echo $escaper->escapeHtml($lang['SiteLocation']); ?>:</h4>
                 <?php echo $escaper->escapeHtml($lang['AddNewSiteLocationNamed']); ?> <input name="new_location" type="text" maxlength="100" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_location" /><br />
+		<?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("location", NULL, "update_location_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_location" /><br />
                 <?php echo $escaper->escapeHtml($lang['DeleteCurrentSiteLocationNamed']); ?> <?php create_dropdown("location"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_location" />
                 </p>
                 </form>
@@ -457,6 +510,7 @@
                 <p>
                 <h4><?php echo $escaper->escapeHtml($lang['ControlRegulation']); ?>:</h4>
                 <?php echo $escaper->escapeHtml($lang['AddNewControlRegulationNamed']); ?> <input name="new_regulation" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_regulation" /><br />
+		<?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("regulation", NULL, "update_regulation_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_regulation" /><br />
                 <?php echo $escaper->escapeHtml($lang['DeleteCurrentControlRegulationNamed']); ?> <?php create_dropdown("regulation"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_regulation" />
                 </p>
                 </form>
@@ -466,6 +520,7 @@
                 <p>
                 <h4><?php echo $escaper->escapeHtml($lang['RiskPlanningStrategy']); ?>:</h4>
                 <?php echo $escaper->escapeHtml($lang['AddNewRiskPlanningStrategyNamed']); ?> <input name="new_planning_strategy" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_planning_strategy" /><br />
+		<?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("planning_strategy", NULL, "update_planning_strategy_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_planning_strategy" /><br />
                 <?php echo $escaper->escapeHtml($lang['DeleteCurrentRiskPlanningStrategyNamed']); ?> <?php create_dropdown("planning_strategy"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_planning_strategy" />
                 </p>
                 </form>
@@ -475,6 +530,7 @@
                 <p>
                 <h4><?php echo $escaper->escapeHtml($lang['CloseReason']); ?>:</h4>
                 <?php echo $escaper->escapeHtml($lang['AddNewCloseReasonNamed']); ?> <input name="new_close_reason" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_close_reason" /><br />
+		<?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("close_reason", NULL, "update_close_reason_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_close_reason" /><br />
                 <?php echo $escaper->escapeHtml($lang['DeleteCurrentCloseReasonNamed']); ?> <?php create_dropdown("close_reason"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_close_reason" />
                 </p>
                 </form>

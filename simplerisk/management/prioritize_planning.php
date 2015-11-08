@@ -126,11 +126,6 @@
                 	// Insert a new project up to 100 chars
 	                add_name("projects", $name, 100);
 
-        	        // Audit log
-                	$risk_id = 1000;
-	                $message = "A new project was added by the \"" . $_SESSION['user'] . "\" user.";
-        	        write_log($risk_id, $_SESSION['uid'], $message);
-
 			// There is an alert message
 	                $alert = "good";
         	        $alert_message = "A new project was added successfully.";
@@ -166,11 +161,6 @@
 
 				// Delete the project
                         	delete_value("projects", $value);
-
-                        	// Audit log
-                        	$risk_id = 1000;
-                        	$message = "An existing project was removed by the \"" . $_SESSION['user'] . "\" user.";
-                        	write_log($risk_id, $_SESSION['uid'], $message);
 
 				// There is an alert message
 				$alert = "good";

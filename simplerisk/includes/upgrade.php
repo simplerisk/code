@@ -57,10 +57,10 @@ function check_valid_key($key)
         else return false;
 }
 
-/********************
- * FUNCTION: LOGOUT *
- ********************/
-function logout()
+/****************************
+ * FUNCTION: UPGRADE LOGOUT *
+ ****************************/
+function upgrade_logout()
 {
         // Deny access
         $_SESSION["access"] = "denied";
@@ -800,6 +800,94 @@ function upgrade_from_20150928001($db)
         echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/**************************************
+ * FUNCTION: UPGRADE FROM 20150930001 *
+ **************************************/
+function upgrade_from_20150930001($db)
+{
+        // Database version to upgrade
+        $version_to_upgrade = '20150930-001';
+
+        // Database version upgrading to
+        $version_upgrading_to = '20151108-001';
+
+        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+        // Set the user_id field default value to 0
+        echo "Setting the user_id field's default value to null.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `audit_log` MODIFY `user_id` int(11) DEFAULT 0 NOT NULL;");
+        $stmt->execute();
+
+	// Increase the size of the subject field to 300
+	echo "Increasing the size of the subject field to 300 characters.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `risks` MODIFY `subject` varchar(300) NOT NULL;");
+	$stmt->execute();
+
+	// Add a location field for assets
+	echo "Adding a location field for assets.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `assets` ADD location int(11) NOT NULL AFTER value;");
+	$stmt->execute();
+
+	// Add a team field for assets
+	echo "Adding a team field for assets.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `assets` ADD team int(11) NOT NULL AFTER location;");
+	$stmt->execute();
+
+        // If the manage asset file exists
+        if (file_exists(realpath(__DIR__ . '/../assets/manage.php')))
+        {
+                // Delete the manage asset file
+                echo "Deleting the asset management file.<br />\n";
+                $success = unlink(realpath(__DIR__ . '/../assets/manage.php'));
+                if (!$success)
+                {
+                        echo "<font color=\"red\"><b>Could not delete the asset management file.  You can manually delete it here: " . realpath(__DIR__ . '/../assets/manage.php') . "</b></font><br />\n";
+                }
+        }
+
+        // If the asset valuation file exists
+        if (file_exists(realpath(__DIR__ . '/../assets/valuation.php')))
+        {
+                // Delete the asset valuation file
+                echo "Deleting the asset valuation file.<br />\n";
+                $success = unlink(realpath(__DIR__ . '/../assets/valuation.php'));
+                if (!$success)
+                {
+                        echo "<font color=\"red\"><b>Could not delete the asset valuation file.  You can manually delete it here: " . realpath(__DIR__ . '/../assets/valuation.php') . "</b></font><br />\n";
+                }
+        }
+
+	// Create the asset values table
+	echo "Creating the asset values table.<br />\n";
+	$stmt = $db->prepare("CREATE TABLE `asset_values` (`id` int(11) NOT NULL, `min_value` int(11) NOT NULL, `max_value` int(11) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
+	$stmt->execute();
+
+	// Add initial asset values
+	echo "Adding initial asset values.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `asset_values` VALUES ('1','0','100000'),('2','100001','200000'),('3','200001','300000'),('4','300001','400000'),('5','400001','500000'),('6','500001','600000'),('7','600001','700000'),('8','700001','800000'),('9','800001','900000'),('10','900001','1000000');");
+	$stmt->execute();
+
+	// Set the default asset valuation
+	echo "Setting the default asset valuation.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('default_asset_valuation', '5');");
+	$stmt->execute();
+
+        // Add a mitigation_owner field to the mitigations table
+        echo "Adding a mitigation_owner field to the mitigations table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_owner int(11) NOT NULL AFTER mitigation_effort;");
+        $stmt->execute();
+
+	// Add a mitigation_cost field to the mitigations table
+	echo "Adding a mitigation_cost field to the mitigations table.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_cost int(11) NOT NULL DEFAULT 1 AFTER mitigation_effort;");
+	$stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -855,6 +943,10 @@ function upgrade_database()
 				break;
 			case "20150928-001":
 				upgrade_from_20150928001($db);
+				upgrade_database();
+				break;
+			case "20150930-001":
+				upgrade_from_20150930001($db);
 				upgrade_database();
 				break;
 			default:

@@ -1172,6 +1172,203 @@ function get_review_needed_table()
         }
 }
 
+/************************************
+ * FUNCTION: RISKS AND ASSETS TABLE *
+ ************************************/
+function risks_and_assets_table($report)
+{
+        global $lang;
+        global $escaper;
+
+        // Open the database
+        $db = db_open();
+
+	// Check the report
+	switch ($report)
+	{
+		// Risks by Asset
+		case 0:
+			$query = "SELECT a.risk_id AS id, a.asset, b.id AS asset_id, b.ip AS asset_ip, b.name AS asset_name, b.value AS asset_value, b.location AS asset_location, b.team AS asset_team, c.status, c.subject, c.submission_date, d.calculated_risk, e.next_review FROM risks_to_assets a LEFT JOIN assets b ON a.asset = b.name LEFT JOIN risks c ON a.risk_id = c.id LEFT JOIN risk_scoring d ON a.risk_id = d.id LEFT JOIN mgmt_reviews e ON c.mgmt_review = e.id WHERE status != \"Closed\" ORDER BY asset_value DESC, asset_name, calculated_risk DESC, id";
+			break;
+		// Assets by Risk
+		case 1:
+			$query = "SELECT a.risk_id AS id, a.asset, b.id AS asset_id, b.ip AS asset_ip, b.name AS asset_name, b.value AS asset_value, b.location AS asset_location, b.team AS asset_team, c.status, c.subject, d.calculated_risk FROM risks_to_assets a LEFT JOIN assets b ON a.asset = b.name LEFT JOIN risks c ON a.risk_id = c.id LEFT JOIN risk_scoring d ON a.risk_id = d.id WHERE status != \"Closed\" ORDER BY calculated_risk DESC, id, asset_value DESC, asset_name";
+			break;
+	}
+
+        $stmt = $db->prepare($query);
+        $stmt->execute();
+
+        // Store the results in the rows array
+        $rows = $stmt->fetchAll();
+
+        // If team separation is enabled
+        if (team_separation_extra())
+        {
+                // Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                // Strip out risks the user should not have access to
+                $rows = strip_no_access_risks($rows);
+        }
+
+        // Set the current group to empty
+        $current_group = "";
+
+	// If risks by asset
+	if ($report == 0)
+	{
+		// For each row
+		foreach ($rows as $row)
+		{
+                        // Get the variables for the row
+                        $risk_id = (int)$row['id'];
+                        $asset = $row['asset'];
+                        $asset_id = (int)$row['asset_id'];
+                        $asset_ip = $row['asset_ip'];
+                        $asset_name = $row['asset_name'];
+                        $asset_value = $row['asset_value'];
+                        $asset_location = $row['asset_location'];
+                        $asset_team = $row['asset_team'];
+                        $status = $row['status'];
+                        $subject = $row['subject'];
+			$calculated_risk = $row['calculated_risk'];
+			$color = get_risk_color($calculated_risk);
+			$dayssince = dayssince($row['submission_date']);
+
+                        // If the current group is not the asset id
+                        if ($current_group != $asset_id)
+                        {
+                                // If this is not the first group
+                                if ($current_group != "")
+                                {
+                                        // End the table
+                                        echo "</tr>\n";
+                                        echo "</tbody>\n";
+                                        echo "</table>\n";
+                                }
+
+                                // Set the current group to the asset id
+                                $current_group = $asset_id;
+
+                                // Display the table header
+                                echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+                                echo "<thead>\n";
+                                echo "<tr>\n";
+                                echo "<th bgcolor=\"#0088CC\" colspan=\"5\"><center><font color=\"#FFFFFF\">" . $escaper->escapeHtml($lang['AssetName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_name) . "<br />" . $escaper->escapeHtml($lang['AssetValue']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml(get_asset_value_by_id($asset_value)) . "</font></center></th>\n";
+				echo "</tr>\n";
+                                echo "<tr>\n";
+				echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+                                echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+                                echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+				echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+				echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
+                                echo "</tr>\n";
+                                echo "</thead>\n";
+                                echo "<tbody>\n";
+                        }
+
+                        // Display the individual asset information
+                        echo "<tr>\n";
+			echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+			echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
+			echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+			echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($calculated_risk) . "</td>\n";
+			echo "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($dayssince) . "</td>\n";
+                        echo "</tr>\n";
+		}
+
+                // End the last table
+                echo "</tr>\n";
+                echo "</tbody>\n";
+                echo "</table>\n";
+        }
+
+	// If assets by risk
+	if ($report == 1)
+	{
+		// For each row
+		foreach ($rows as $row)
+		{
+			// Get the variables for the row
+			$risk_id = (int)$row['id'];
+			$asset = $row['asset'];
+			$asset_id = (int)$row['asset_id'];
+			$asset_ip = $row['asset_ip'];
+			$asset_name = $row['asset_name'];
+			$asset_value = $row['asset_value'];
+			$asset_location = $row['asset_location'];
+			$asset_team = $row['asset_team'];
+			$status = $row['status'];
+			$subject = $row['subject'];
+			$calculated_risk = $row['calculated_risk'];
+
+			// If the current group is not the risk_id
+			if ($current_group != $risk_id)
+			{
+				// If this is not the first group
+				if ($current_group != "")
+				{
+					// End the table
+					echo "<tr><td bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"5\"></td></tr>\n";
+					echo "<tr>\n";
+					echo "<td bgcolor=\"lightgrey\" align=\"left\" width=\"50px\" colspan=\"4\"><b>" . $escaper->escapeHtml($lang['MaximumQuantitativeLoss']) . "</b></td>\n";
+					echo "<td bgcolor=\"lightgrey\" align=\"left\" width=\"50px\"><b>$" . $escaper->escapeHtml(number_format($asset_valuation)) . "</b></td>\n";
+					echo "</tr>\n";
+					echo "</tbody>\n";
+					echo "</table>\n";
+				}
+
+				// Set the current group to the risk id
+				$current_group = $risk_id;
+
+				// Get the risk id's asset valuation
+				$asset_valuation = asset_valuation_for_risk_id($risk_id);
+
+				// Get the risk color
+				$color = get_risk_color($calculated_risk);
+
+				// Display the table header
+				echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+				echo "<thead>\n";
+				echo "<tr>\n";
+				echo "<th bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"5\"><center><font color=\"#000000\">" . $escaper->escapeHtml($lang['RiskId']) . ":&nbsp;&nbsp;<a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\" style=\"color:#000000\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a><br />" . $escaper->escapeHtml($lang['Subject']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($subject) . "<br />" . $escaper->escapeHtml($lang['CalculatedRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($calculated_risk) . "&nbsp;&nbsp;(" . $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . ")</font></center></th>\n";
+				echo "</tr>\n";
+				echo "<tr>\n";
+				echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AssetName']) ."</th>\n";
+				echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['IPAddress']) ."</th>\n";
+				echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SiteLocation']) ."</th>\n";
+				echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Team']) ."</th>\n";
+				echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AssetValuation']) ."</th>\n";
+				echo "</tr>\n";
+				echo "</thead>\n";
+				echo "<tbody>\n";
+			}
+
+			// Display the individual asset information
+			echo "<tr>\n";
+			echo "<td align=\"left\" width=\"50px\">" . $escaper->escapeHtml($asset_name) . "</td>\n";
+			echo "<td align=\"left\" width=\"50px\">" . $escaper->escapeHtml($asset_ip) . "</td>\n";
+			echo "<td align=\"left\" width=\"50px\">" . $escaper->escapeHtml(get_name_by_value("location", $asset_location)) . "</td>\n";
+			echo "<td align=\"left\" width=\"50px\">" . $escaper->escapeHtml(get_name_by_value("team",$asset_team)) . "</td>\n";
+			echo "<td align=\"left\" width=\"50px\">" . $escaper->escapeHtml(get_asset_value_by_id($asset_value)) . "</td>\n";
+			echo "</tr>\n";
+		}
+
+		// End the last table
+		echo "<tr><td bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"5\"></td></tr>\n";
+                echo "<tr>\n";
+		echo "<td bgcolor=\"lightgrey\" align=\"left\" width=\"50px\" colspan=\"4\"><b>" . $escaper->escapeHtml($lang['MaximumQuantitativeLoss']) . "</b></td>\n";
+		echo "<td bgcolor=\"lightgrey\" align=\"left\" width=\"50px\"><b>$" . $escaper->escapeHtml(number_format($asset_valuation)) . "</b></td>\n";
+		echo "</tr>\n";
+		echo "</tbody>\n";
+		echo "</table>\n";
+	}
+
+	// Close the database
+        db_close($db);
+}
+
 /********************************
  * FUNCTION: GET RISKS BY TABLE *
  ********************************/
@@ -1193,7 +1390,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 			break;
 		case 2:
 		// All risks
-			$status_query = "";
+			$status_query = " ";
 			break;
 		// Default to open risks
 		default:
@@ -1233,7 +1430,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 			break;
 		// Risk Level
 		case 1:
-			$order_query = "GROUP BY id ORDER BY" . $sort_name;
+			$order_query = "GROUP BY id ORDER BY calculated_risk DESC, " . $sort_name;
 			$group_name = "risk_level";
 			break;
 		// Status
@@ -1304,7 +1501,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 	}
 
 	// Make the big query
-	$query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id" . $status_query . $order_query;
+	$query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets, o.closure_date FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id" . $status_query . $order_query;
 
 	// Query the database
 	$db = db_open();
@@ -1510,7 +1707,20 @@ function get_risk_columns($risk, $column_id, $column_status, $column_subject, $c
 	$project = $risk['project'];
 	$mitigation_id = $risk['mitigation_id'];
 	$mgmt_review = $risk['mgmt_review'];
-	$days_open = dayssince($risk['submission_date']);
+
+	// If the status is not closed
+	if ($status != "Closed")
+	{
+		// Compare submission date to now
+		$days_open = dayssince($risk['submission_date']);
+	}
+	// Otherwise the status is closed
+	else
+	{
+		// Compare the submission date to the closure date
+		$days_open = dayssince($risk['submission_date'], $risk['closure_date']);
+	}
+
 	$next_review_date = next_review($color, $risk_id, $risk['next_review'], false);
 	$next_review_date_html = next_review($color, $risk_id, $risk['next_review']);
 	$next_step = $risk['next_step'];

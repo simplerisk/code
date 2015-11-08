@@ -76,21 +76,11 @@
                                 // Update the risk level
                                 update_risk_levels($veryhigh, $high, $medium, $low);
 
-                		// Audit log
-                		$risk_id = 1000;
-                		$message = "Risk level scoring was modified by the \"" . $_SESSION['user'] . "\" user.";
-                		write_log($risk_id, $_SESSION['uid'], $message);
-
 				// Risk model should be between 1 and 5
 				if ((1 <= $risk_model) && ($risk_model <= 5))
 				{
 					// Update the risk model
 					update_risk_model($risk_model);
-
-                                	// Audit log
-                                	$risk_id = 1000;
-                                	$message = "The risk formula was modified by the \"" . $_SESSION['user'] . "\" user.";
-                                	write_log($risk_id, $_SESSION['uid'], $message);
 
 					// There is an alert message
 					$alert = "good";

@@ -169,12 +169,8 @@
                 	notify_new_risk($last_insert_id, $subject);
         	}
 
-		// Audit log
-		$risk_id = $last_insert_id + 1000;
-		$message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $_SESSION['user'] . "\".";
-		write_log($risk_id, $_SESSION['uid'], $message);
-
 		// There is an alert message
+		$risk_id = $last_insert_id + 1000;
 		$alert = "good";
 		$alert_message = "Risk ID " . $risk_id . " submitted successfully!";
         }

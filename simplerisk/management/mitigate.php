@@ -287,6 +287,8 @@
                         $mitigation_date = "";
                         $planning_strategy = "";
                         $mitigation_effort = "";
+			$mitigation_cost = 1;
+			$mitigation_owner = $owner;
 			$mitigation_team = $team;
                         $current_solution = "";
                         $security_requirements = "";
@@ -300,6 +302,8 @@
                         $mitigation_date = date(DATETIME, strtotime($mitigation_date));
                         $planning_strategy = $mitigation[0]['planning_strategy'];
                         $mitigation_effort = $mitigation[0]['mitigation_effort'];
+			$mitigation_cost = $mitigation[0]['mitigation_cost'];
+			$mitigation_owner = $mitigation[0]['mitigation_owner'];
 			$mitigation_team = $mitigation[0]['mitigation_team'];
                         $current_solution = $mitigation[0]['current_solution'];
                         $security_requirements = $mitigation[0]['security_requirements'];
@@ -340,18 +344,25 @@
                 $status = "Mitigation Planned";
                 $planning_strategy = (int)$_POST['planning_strategy'];
 		$mitigation_effort = (int)$_POST['mitigation_effort'];
+		$mitigation_cost = (int)$_POST['mitigation_cost'];
+		$mitigation_owner = (int)$_POST['mitigation_owner'];
 		$mitigation_team = (int)$_POST['mitigation_team'];
                 $current_solution = $_POST['current_solution'];
                 $security_requirements = $_POST['security_requirements'];
                 $security_recommendations = $_POST['security_recommendations'];
 
-                // Submit mitigation
-                submit_mitigation($id, $status, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
-
-                // Audit log
-                $risk_id = $id;
-                $message = "A mitigation was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-                write_log($risk_id, $_SESSION['uid'], $message);
+		// If a mitigation does not exist
+		if ($mitigation == false)
+		{
+                	// Submit a new mitigation
+                	submit_mitigation($id, $status, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
+		}
+		// Otherwise, a mitigation already exists
+		else
+		{
+			// Update the mitigation
+			update_mitigation($id, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
+		}
 
                 // Redirect back to the page the workflow started on
                 header("Location: " . $_SESSION["workflow_start"] . "?mitigated=true");
@@ -498,7 +509,7 @@
               </div>
             </div>
             <div class="well">
-                <?php edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations); ?>
+                <?php edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations); ?>
             </div>
           </div>
           <div class="row-fluid">

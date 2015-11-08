@@ -60,11 +60,13 @@
 	else $manage_assets = true;
 
 	// Check if an asset update was submitted
-	if ((isset($_POST['update_valuation'])) && $manage_assets)
+	if ((isset($_POST['update_asset'])) && $manage_assets)
 	{
 		// Get the ids and values
 		$ids = $_POST['ids'];
 		$values = $_POST['values'];
+		$locations = $_POST['locations'];
+		$teams = $_POST['teams'];
 
 		// For each asset
 		for ($i=0; $i<count($ids); $i++)
@@ -72,7 +74,13 @@
 			// If the value is between 1 and 10
 			if ($values[$i] >= 1 && $values[$i] <= 10)
 			{
-				update_asset_value($ids[$i], $values[$i]);
+				// If the location is empty set it to zero
+				if ($locations[$i] == "") $locations[$i] = 0;
+
+				// If the team is empty set it to zero
+				if ($teams[$i] == "") $teams[$i] = 0;
+
+				edit_asset($ids[$i], $values[$i], $locations[$i], $teams[$i]);
 			}
 		}
 	}
@@ -148,19 +156,19 @@
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <?php view_asset_management_menu("AssetValuation"); ?>
+          <?php view_asset_management_menu("EditAssets"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <h4><?php echo $escaper->escapeHtml($lang['AssetValuation']); ?></h4>
-		<form name="asset_valuation" method="post" action="">
-		<button type="submit" name="update_valuation" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
+                <h4><?php echo $escaper->escapeHtml($lang['EditAssets']); ?></h4>
+		<form name="edit_asset" method="post" action="">
+		<button type="submit" name="update_asset" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
 		<hr />
-		<?php display_asset_valuation_table(); ?>
+		<?php display_edit_asset_table(); ?>
 		<hr />
-		<button type="submit" name="update_valuation" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
+		<button type="submit" name="update_asset" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
 		</form>
               </div>
             </div>

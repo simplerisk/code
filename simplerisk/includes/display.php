@@ -384,7 +384,7 @@ function edit_risk_details($id, $submission_date, $subject, $reference_id, $regu
 /*************************************
  * FUNCTION: VIEW MITIGATION DETAILS *
  *************************************/
-function view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
+function view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
 {
 	global $lang;
 	global $escaper;
@@ -402,6 +402,14 @@ function view_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         echo "<br />\n";
         echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_effort\" id=\"mitigation_effort\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
+	echo $escaper->escapeHtml($lang['MitigationCost']) .": \n";
+	echo "<br />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_cost\" id=\"mitigation_cost\" size=\"50\" value=\"" . $escaper->escapeHtml(get_asset_value_by_id($mitigation_cost)) . "\" title=\"" . $escaper->escapeHtml(get_asset_value_by_id($mitigation_cost)) . "\" disabled=\"disabled\" />\n";
+	echo "<br />\n";
+	echo $escaper->escapeHtml($lang['MitigationOwner']) .": \n";
+	echo "<br />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_owner\" id=\"mitigation_owner\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) . "\" disabled=\"disabled\" />\n";
+	echo "<br />\n";
 	echo $escaper->escapeHtml($lang['MitigationTeam']) .": \n";
 	echo "<br />\n";
 	echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_team\" id=\"mitigation_team\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("team", $mitigation_team)) . "\" disabled=\"disabled\" />\n";
@@ -475,7 +483,7 @@ function view_print_mitigation_details($mitigation_date, $planning_strategy, $mi
 /*************************************
  * FUNCTION: EDIT MITIGATION DETAILS *
  *************************************/
-function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations)
+function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations)
 {
 	global $lang;
 	global $escaper;
@@ -491,11 +499,20 @@ function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         echo "<br />\n";
         echo $escaper->escapeHtml($lang['MitigationEffort']) .": \n";
         echo "<br />\n";
-        create_dropdown("mitigation_effort", $mitigation_effort);
+	create_dropdown("mitigation_effort", $mitigation_effort);
+	echo "<br />\n";
+	echo $escaper->escapeHtml($lang['MitigationCost']) .": \n";
+	echo "<br />\n";
+	create_asset_valuation_dropdown("mitigation_cost", $mitigation_cost);
         echo "<br />\n";
+	echo $escaper->escapeHtml($lang['MitigationOwner']) .": \n";
+	echo "<br />\n";
+	create_dropdown("user", $mitigation_owner, "mitigation_owner", true);
+	echo "<br />\n";
 	echo $escaper->escapeHtml($lang['MitigationTeam']) .": \n";
 	echo "<br />\n";
 	create_dropdown("team", $mitigation_team, "mitigation_team", true);
+	echo "<br />\n";
         echo $escaper->escapeHtml($lang['CurrentSolution']) .": \n";
         echo "<br />\n";
         echo "<textarea name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $escaper->escapeHtml($current_solution) . "</textarea>\n";
@@ -594,7 +611,7 @@ function view_print_review_details($id, $review_date, $reviewer, $review, $next_
 /****************************************
  * FUNCTION: edit_mitigation_submission *
  ****************************************/
-function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
+function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
 {
 	global $lang;
 	global $escaper;
@@ -610,6 +627,14 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mit
         echo "<br />\n";
 	create_dropdown("mitigation_effort", $mitigation_effort, NULL, true);
         echo "<br />\n";
+	echo $escaper->escapeHtml($lang['MitigationCost']) .": \n";
+	echo "<br />\n";
+	create_asset_valuation_dropdown("mitigation_cost", $mitigation_cost);
+	echo "<br />\n";
+	echo $escaper->escapeHtml($lang['MitigationOwner']) . ": \n";
+	echo "<br />\n";
+	create_dropdown("user", $mitigation_owner, "mitigation_owner", true);
+	echo "<br />\n";
 	echo $escaper->escapeHtml($lang['MitigationTeam']) . ": \n";
 	echo "<br />\n";
 	create_dropdown("team", $mitigation_team, "mitigation_team", true);
@@ -2529,11 +2554,11 @@ function view_asset_management_menu($active)
         echo ($active == "AutomatedDiscovery" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"index.php\">I. " . $escaper->escapeHtml($lang['AutomatedDiscovery']) . "</a>\n";
         echo "</li>\n";
-        echo ($active == "ManageAssets" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"manage.php\">II. " . $escaper->escapeHtml($lang['ManageAssets']) . "</a>\n";
+        echo ($active == "AddDeleteAssets" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"adddeleteassets.php\">II. " . $escaper->escapeHtml($lang['AddDeleteAssets']) . "</a>\n";
         echo "</li>\n";
-        echo ($active == "AssetValuation" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"valuation.php\">III. " . $escaper->escapeHtml($lang['AssetValuation']) . "</a>\n";
+        echo ($active == "EditAssets" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"edit.php\">III. " . $escaper->escapeHtml($lang['EditAssets']) . "</a>\n";
         echo "</li>\n";
 	echo "</ul>\n";
 }
@@ -2558,6 +2583,9 @@ function view_reporting_menu($active)
 	echo "</li>\n";
 	echo ($active == "RiskAdvice" ? "<li class=\"active\">\n" : "<li>\n");
 	echo "<a href=\"riskadvice.php\">" . $escaper->escapeHtml($lang['RiskAdvice']) . "</a>\n";
+	echo "</li>\n";
+	echo ($active == "RisksAndAssets" ? "<li class=\"active\">\n" : "<li>\n");
+	echo "<a href=\"risks_and_assets.php\">" . $escaper->escapeHtml($lang['RisksAndAssets']) . "</a>\n";
 	echo "</li>\n";
         echo ($active == "AllOpenRisksAssignedToMeByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"my_open.php\">" . $escaper->escapeHtml($lang['AllOpenRisksAssignedToMeByRiskLevel']) . "</a>\n";
@@ -2637,6 +2665,9 @@ function view_configure_menu($active)
 	echo ($active == "RedefineNamingConventions" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"custom_names.php\">" . $escaper->escapeHtml($lang['RedefineNamingConventions']) . "</a>\n";
         echo "</li>\n";
+	echo ($active == "AssetValuation" ? "<li class=\"active\">\n" : "<li>\n");
+	echo "<a href=\"assetvaluation.php\">" . $escaper->escapeHtml($lang['AssetValuation']) . "</a>\n";
+	echo "</li>\n";
 	echo ($active == "FileUploadSettings" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"uploads.php\">" . $escaper->escapeHtml($lang['FileUploadSettings']) . "</a>\n";
         echo "</li>\n";
@@ -2668,6 +2699,38 @@ function view_configure_menu($active)
         echo "<a href=\"about.php\">" . $escaper->escapeHtml($lang['About']) . "</a>\n";
         echo "</li>\n";
         echo "</ul>\n";
+}
+
+/**********************************************
+ * FUNCTION: VIEW RISKS AND ASSETS SELECTIONS *
+ **********************************************/
+function view_risks_and_assets_selections($report)
+{
+        global $lang;
+        global $escaper;
+
+        echo "<form name=\"select_report\" method=\"post\" action=\"\">\n";
+        echo "<div class=\"row-fluid\">\n";
+        echo "<div class=\"span12\">\n";
+        echo "<a href=\"javascript:;\" onclick=\"javascript: closeSearchBox()\"><img src=\"../images/X-100.png\" width=\"10\" height=\"10\" align=\"right\" /></a>\n";
+
+        // Report Selection
+	echo "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
+	echo "<tr>\n";
+        echo "<td>" . $escaper->escapeHtml($lang['Report']) . ":&nbsp;</td>\n";
+	echo "<td>\n";
+        echo "<select id=\"report\" name=\"report\" onchange=\"javascript: submit()\">\n";
+        echo "<option value=\"0\"" . ($report == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RisksByAsset']) . "</option>\n";
+        echo "<option value=\"1\"" . ($report == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetsByRisk']) . "</option>\n";
+        echo "</select>\n";
+	echo "</td>\n";
+	echo "</tr>\n";
+	echo "</table>\n";
+
+	echo "</div>\n";
+	echo "</div>\n";
+        echo "</form>\n";
+	
 }
 
 /******************************************

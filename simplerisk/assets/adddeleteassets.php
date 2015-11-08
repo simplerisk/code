@@ -64,9 +64,12 @@
 	{
 		$name = $_POST['asset_name'];
 		$ip = $_POST['ip'];
+		$value = $_POST['value'];
+		$location = $_POST['location'];
+		$team = $_POST['team'];
 
 		// Add the asset
-		$success = add_asset($ip, $name);
+		$success = add_asset($ip, $name, $value, $location, $team);
 
 		// If the asset add was successful
 		if ($success)
@@ -190,7 +193,7 @@
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <?php view_asset_management_menu("ManageAssets"); ?>
+          <?php view_asset_management_menu("AddRemoveAssets"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">
@@ -207,6 +210,27 @@
                   <tr>
                     <td><?php echo $escaper->escapeHTML($lang['IPAddress']); ?>:&nbsp;</td>
                     <td><input type="text" name="ip" maxlength="15" size="20" /></td>
+                  </tr>
+                  <tr>
+                    <td><?php echo $escaper->escapeHTML($lang['AssetValuation']); ?>: &nbsp;</td>
+                    <td>
+                      <?php
+                        // Get the default asset valuation
+                        $default = get_default_asset_valuation();
+
+                        // Create the asset valuation dropdown
+                        create_asset_valuation_dropdown("value", $default);
+                      ?>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><?php echo $escaper->escapeHTML($lang['SiteLocation']); ?>: &nbsp;</td>
+                    <td><?php create_dropdown("location"); ?></td>
+                  </tr>
+                  <tr>
+                    <td><?php echo $escaper->escapeHTML($lang['Team']); 
+?>: &nbsp;</td>
+                    <td><?php create_dropdown("team"); ?></td>
                   </tr>
                 </table>
                 <button type="submit" name="add_asset" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>

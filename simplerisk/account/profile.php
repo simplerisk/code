@@ -122,11 +122,6 @@
 				// Update the password
 				update_password($user, $hash);
 
-                		// Audit log
-                		$risk_id = 1000;
-                		$message = "Password was modified for the \"" . $_SESSION['user'] . "\" user.";
-                		write_log($risk_id, $_SESSION['uid'], $message);
-
 				// Send an alert
 				$alert = "good";
 				$alert_message = "Your password has been updated successfully!";

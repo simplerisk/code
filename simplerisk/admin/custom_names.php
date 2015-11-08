@@ -69,11 +69,6 @@
                 {
                         update_table("impact", $new_name, $value);
 
-                        // Audit log
-                        $risk_id = 1000;
-                       $message = "The impact naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
-
 			// There is an alert message
 			$alert = "good";
 			$alert_message = "The impact naming convention was updated successfully.";
@@ -91,11 +86,6 @@
                 {
                         update_table("likelihood", $new_name, $value);
 
-                        // Audit log
-                        $risk_id = 1000;
-                       $message = "The likelihood naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
-
 			// There is an alert message
                         $alert = "good";
                         $alert_message = "The likelihood naming convention was updated successfully.";
@@ -112,11 +102,6 @@
                 if (is_int($value))
                 {
                         update_table("mitigation_effort", $new_name, $value);
-
-                        // Audit log
-                        $risk_id = 1000;
-                       $message = "The mitigation effort naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
-                        write_log($risk_id, $_SESSION['uid'], $message);
 
 			// There is an alert message
                         $alert = "good";

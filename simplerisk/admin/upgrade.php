@@ -39,7 +39,7 @@
         if (isset($_GET['logout']) && $_GET['logout'] == "true")
         {
 		// Log the user out
-		logout();
+		upgrade_logout();
 	}
 
 	// Default is no alert

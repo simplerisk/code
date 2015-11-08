@@ -216,6 +216,11 @@ function update_risk_levels($veryhigh, $high, $medium, $low)
         $stmt = $db->prepare("UPDATE risk_levels SET value=:value WHERE name='Low'");
         $stmt->bindParam(":value", $low, PDO::PARAM_STR);
         $stmt->execute();
+
+	// Audit log
+	$risk_id = 1000;
+	$message = "Risk level scoring was modified by the \"" . $_SESSION['user'] . "\" user.";
+	write_log($risk_id, $_SESSION['uid'], $message);
         
         // Close the database connection
         db_close($db);
@@ -255,6 +260,11 @@ function update_review_settings($veryhigh, $high, $medium, $low, $insignificant)
         $stmt = $db->prepare("UPDATE review_levels SET value=:value WHERE name='Insignificant'");
         $stmt->bindParam(":value", $insignificant, PDO::PARAM_INT);
         $stmt->execute();
+
+	// Audit log
+	$risk_id = 1000;
+	$message = "The review settings were modified by the \"" . $_SESSION['user'] . "\" user.";
+	write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);
@@ -684,6 +694,11 @@ function update_risk_model($risk_model)
 		}
 	}
 
+	// Audit log
+	$risk_id = 1000;
+	$message = "The risk formula was modified by the \"" . $_SESSION['user'] . "\" user.";
+	write_log($risk_id, $_SESSION['uid'], $message);
+
         // Close the database connection
         db_close($db);
 
@@ -696,7 +711,7 @@ function update_risk_model($risk_model)
 function change_scoring_method($risk_id, $scoring_method)
 {
         // Subtract 1000 from the risk_id
-        $id = $risk_id - 1000;
+        $id = (int)$risk_id - 1000;
 
         // Open the database connection
         $db = db_open();
@@ -706,6 +721,10 @@ function change_scoring_method($risk_id, $scoring_method)
 	$stmt->bindParam(":scoring_method", $scoring_method, PDO::PARAM_INT);
 	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
 	$stmt->execute();
+
+	// Audit log
+	$message = "Scoring method was changed for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);
@@ -727,6 +746,28 @@ function update_table($table, $name, $value)
         $stmt->bindParam(":name", $name, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":value", $value, PDO::PARAM_INT);
         $stmt->execute();
+
+	// Audit log
+	switch ($table)
+	{
+		case "impact":
+			$risk_id = 1000;
+			$message = "The impact naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		case "likelihood":
+			$risk_id = 1000;
+			$message = "The likelihood naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		case "mitigation_effort":
+			$risk_id = 1000;
+			$message = "The mitigation effort naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		default:
+			break;
+	}
 
         // Close the database connection
         db_close($db);
@@ -778,11 +819,25 @@ function update_setting($name, $value)
 	$stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
 	$stmt->execute();
 
+	// Audit log
+	switch ($name)
+	{
+		case "max_upload_size":
+			$risk_id = 1000;
+			$message = "The maximum upload file size was updated by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		default:
+			break;
+	}
+
+        // Close the database connection
+        db_close($db);
 }
 
-/***************************
+/**********************
  * FUNCTION: ADD NAME *
- ***************************/
+ **********************/
 function add_name($table, $name, $size=20)
 {
         // Open the database connection
@@ -792,6 +847,58 @@ function add_name($table, $name, $size=20)
         $stmt = $db->prepare("INSERT INTO $table (`name`) VALUES (:name)");
         $stmt->bindParam(":name", $name, PDO::PARAM_STR, $size);
         $stmt->execute();
+
+	// Audit log
+	switch ($table)
+	{
+		case "projects":
+			$risk_id = 1000;
+			$message = "A new project \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		case "category":
+			$risk_id = 1000;
+			$message = "A new category \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		case "team":
+			$risk_id = 1000;
+			$message = "A new team \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		case "technology":
+			$risk_id = 1000;
+			$message = "A new technology \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		case "location":
+			$risk_id = 1000;
+			$message = "A new location \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		case "regulation":
+			$risk_id = 1000;
+			$message = "A new control regulation \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		case "planning_strategy":
+			$risk_id = 1000;
+			$message = "A new planning strategy \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		case "close_reason":
+			$risk_id = 1000;
+			$message = "A new close reason \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		case "file_types":
+			$risk_id = 1000;
+			$message = "A new upload file type \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		default:
+			break;
+	}
 
         // Close the database connection
         db_close($db);
@@ -807,10 +914,70 @@ function delete_value($table, $value)
         // Open the database connection
         $db = db_open();
 
+	// Get the name to be deleted
+	$name = get_name_by_value($table, $value);
+
         // Delete the table value
         $stmt = $db->prepare("DELETE FROM $table WHERE value=:value");
         $stmt->bindParam(":value", $value, PDO::PARAM_INT);
         $stmt->execute();
+
+        // Audit log
+        switch ($table)
+        {
+                case "projects":
+                        $risk_id = 1000;
+			$message = "The existing project \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+                        break;
+		case "user":
+			$risk_id = 1000;
+			$message = "The existing user \"" . $name . "\" was deleted by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+                case "category":
+                        $risk_id = 1000;
+			$message = "The existing category \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+                        break;
+                case "team":
+                        $risk_id = 1000;
+			$message = "The existing team \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+                        break;
+                case "technology":
+                        $risk_id = 1000;
+			$message = "The existing technology \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+                        break;
+                case "location":
+                        $risk_id = 1000;
+			$message = "The existing location \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+                        break;
+                case "regulation":
+                        $risk_id = 1000;
+			$message = "The existing control regulation \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+                        break;
+                case "planning_strategy":
+                        $risk_id = 1000;
+			$message = "The existing planning strategy \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+                        break;
+                case "close_reason":
+                        $risk_id = 1000;
+			$message = "The existing close reason \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+                        write_log($risk_id, $_SESSION['uid'], $message);
+                        break;
+		case "file_types":
+			$risk_id = 1000;
+			$message = "The existing upload file type \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+                default:
+                        break;
+        }
 
         // Close the database connection
         db_close($db);
@@ -831,6 +998,12 @@ function enable_user($value)
         $stmt->bindParam(":value", $value, PDO::PARAM_INT);
         $stmt->execute();
 
+	// Audit log
+	$risk_id = 1000;
+	$username = get_name_by_value("user", $value);
+	$message = "The user \"" . $username . "\" was enabled by the \"" . $_SESSION['user'] . "\" user.";
+	write_log($risk_id, $_SESSION['uid'], $message);
+
         // Close the database connection
         db_close($db);
 
@@ -849,6 +1022,12 @@ function disable_user($value)
         $stmt = $db->prepare("UPDATE user SET enabled = 0 WHERE value=:value");
         $stmt->bindParam(":value", $value, PDO::PARAM_INT);
         $stmt->execute();
+
+        // Audit log
+        $risk_id = 1000;
+        $username = get_name_by_value("user", $value);
+        $message = "The user \"" . $username . "\" was disabled by the \"" . $_SESSION['user'] . "\" user.";
+        write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);
@@ -1122,6 +1301,11 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $asset, $ad
 	$stmt->bindParam(":multi_factor", $multi_factor, PDO::PARAM_INT);
         $stmt->execute();
 
+	// Audit log
+	$risk_id = 1000;
+	$message = "The new user \"" . $user . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+	write_log($risk_id, $_SESSION['uid'], $message);
+
         // Close the database connection
         db_close($db);
 
@@ -1184,6 +1368,12 @@ function update_user($user_id, $name, $email, $teams, $lang, $asset, $admin, $re
         	$_SESSION['plan_mitigations'] = (int)$plan_mitigations;
 		$_SESSION['lang'] = $lang;
 	}
+
+	// Audit log
+	$risk_id = 1000;
+	$username = get_name_by_value("user", $user_id);
+	$message = "The existing user \"" . $username . "\" was modified by the \"" . $_SESSION['user'] . "\" user.";
+	write_log($risk_id, $_SESSION['uid'], $message);
 
         return true;
 }
@@ -1253,6 +1443,11 @@ function update_password($user, $hash)
 	$stmt->bindParam(":hash", $hash, PDO::PARAM_STR, 60);
 	$stmt->execute();
 
+	// Audit log
+	$risk_id = 1000;
+	$message = "Password was modified for the \"" . $_SESSION['user'] . "\" user.";
+	write_log($risk_id, $_SESSION['uid'], $message);
+
         // Close the database connection
         db_close($db);
 
@@ -1273,7 +1468,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
         // Add the risk
         $stmt = $db->prepare("INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `location`, `category`, `team`, `technology`, `owner`, `manager`, `assessment`, `notes`, `submitted_by`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :location, :category, :team, :technology, :owner, :manager, :assessment, :notes, :submitted_by)");
 	$stmt->bindParam(":status", $status, PDO::PARAM_STR, 10);
-        $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 100);
+        $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 300);
 	$stmt->bindParam(":reference_id", $reference_id, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":regulation", $regulation, PDO::PARAM_INT);
 	$stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR, 20);
@@ -1290,6 +1485,11 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
 
 	// Get the id of the risk
 	$last_insert_id = $db->lastInsertId();
+
+	// Audit log
+	$risk_id = $last_insert_id + 1000;
+	$message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);
@@ -1480,10 +1680,10 @@ function submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIC_likeliho
 /**********************************
  * FUNCTION: UPDATE CLASSIC SCORE *
  **********************************/
-function update_classic_score($id, $CLASSIC_likelihood, $CLASSIC_impact)
+function update_classic_score($risk_id, $CLASSIC_likelihood, $CLASSIC_impact)
 {
-        // Subtract 1000 from the id
-        $id = $id - 1000;
+        // Subtract 1000 from the risk_id
+        $id = (int)$risk_id - 1000;
 
         // Open the database connection
         $db = db_open();
@@ -1501,11 +1701,6 @@ function update_classic_score($id, $CLASSIC_likelihood, $CLASSIC_impact)
         // Add the risk score
         $stmt->execute();
 
-        // Audit log
-        $risk_id = $id + 1000;
-        $message = "Risk scoring for risk ID \"" . $risk_id . "\" was updated by username \"" . $_SESSION['user'] . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
-
         $alert = true;
         $alert_message = "Risk scoring was updated successfully.";
 
@@ -1518,10 +1713,10 @@ function update_classic_score($id, $CLASSIC_likelihood, $CLASSIC_impact)
 /*******************************
  * FUNCTION: UPDATE CVSS SCORE *
  *******************************/
-function update_cvss_score($id, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement)
+function update_cvss_score($risk_id, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement)
 {
-        // Subtract 1000 from the id
-        $id = $id - 1000;
+        // Subtract 1000 from the risk_id
+        $id = (int)$risk_id - 1000;
 
         // Open the database connection
         $db = db_open();
@@ -1567,11 +1762,6 @@ function update_cvss_score($id, $AccessVector, $AccessComplexity, $Authenticatio
         // Add the risk score
         $stmt->execute();
 
-        // Audit log    
-        $risk_id = $id + 1000;
-        $message = "Risk scoring for risk ID \"" . $risk_id . "\" was updated by username \"" . $_SESSION['user'] . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
-
         $alert = true;  
         $alert_message = "Risk scoring was updated successfully.";
 
@@ -1584,10 +1774,10 @@ function update_cvss_score($id, $AccessVector, $AccessComplexity, $Authenticatio
 /********************************
  * FUNCTION: UPDATE DREAD SCORE *
  ********************************/
-function update_dread_score($id, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability)
+function update_dread_score($risk_id, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability)
 {
-        // Subtract 1000 from the id
-        $id = $id - 1000;
+        // Subtract 1000 from the risk_id
+        $id = (int)$risk_id - 1000;
 
         // Open the database connection
         $db = db_open();
@@ -1608,11 +1798,6 @@ function update_dread_score($id, $DREADDamagePotential, $DREADReproducibility, $
         // Add the risk score
         $stmt->execute();
 
-        // Audit log    
-        $risk_id = $id + 1000;
-        $message = "Risk scoring for risk ID \"" . $risk_id . "\" was updated by username \"" . $_SESSION['user'] . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
-
         $alert = true;  
         $alert_message = "Risk scoring was updated successfully.";
 
@@ -1625,10 +1810,10 @@ function update_dread_score($id, $DREADDamagePotential, $DREADReproducibility, $
 /********************************
  * FUNCTION: UPDATE OWASP SCORE *
  ********************************/
-function update_owasp_score($id, $OWASPSkill, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPDiscovery, $OWASPExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation)
+function update_owasp_score($risk_id, $OWASPSkill, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPDiscovery, $OWASPExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation)
 {
-        // Subtract 1000 from the id
-        $id = $id - 1000;
+        // Subtract 1000 from the risk_id
+        $id = (int)$risk_id - 1000;
 
         // Open the database connection
         $db = db_open();
@@ -1672,11 +1857,6 @@ function update_owasp_score($id, $OWASPSkill, $OWASPMotive, $OWASPOpportunity, $
         // Add the risk score
         $stmt->execute();
 
-        // Audit log    
-        $risk_id = $id + 1000;
-        $message = "Risk scoring for risk ID \"" . $risk_id . "\" was updated by username \"" . $_SESSION['user'] . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
-
         $alert = true;  
         $alert_message = "Risk scoring was updated successfully.";
 
@@ -1689,10 +1869,10 @@ function update_owasp_score($id, $OWASPSkill, $OWASPMotive, $OWASPOpportunity, $
 /*********************************
  * FUNCTION: UPDATE CUSTOM SCORE *
  *********************************/
-function update_custom_score($id, $custom)
+function update_custom_score($risk_id, $custom)
 {
-        // Subtract 1000 from the id
-        $id = $id - 1000;
+        // Subtract 1000 from the risk_id
+        $id = (int)$risk_id - 1000;
 
         // Open the database connection
         $db = db_open();
@@ -1715,11 +1895,6 @@ function update_custom_score($id, $custom)
 
         // Add the risk score
         $stmt->execute();
-
-        // Audit log    
-        $risk_id = $id + 1000;
-        $message = "Risk scoring for risk ID \"" . $risk_id . "\" was updated by username \"" . $_SESSION['user'] . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
 
         $alert = true;  
         $alert_message = "Risk scoring was updated successfully.";
@@ -1892,10 +2067,10 @@ function update_risk_scoring($id, $scoring_method, $CLASSIC_likelihood, $CLASSIC
 /*******************************
  * FUNCTION: SUBMIT MITIGATION *
  *******************************/
-function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
+function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
 {
         // Subtract 1000 from id
-        $risk_id = (int)$risk_id - 1000;
+        $id = (int)$risk_id - 1000;
 
         // Get current datetime for last_update
         $current_datetime = date('Y-m-d H:i:s');
@@ -1904,11 +2079,13 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
         $db = db_open();
         
         // Add the mitigation
-        $stmt = $db->prepare("INSERT INTO mitigations (`risk_id`, `planning_strategy`, `mitigation_effort`, `mitigation_team`, `current_solution`, `security_requirements`, `security_recommendations`, `submitted_by`) VALUES (:risk_id, :planning_strategy, :mitigation_effort, :mitigation_team, :current_solution, :security_requirements, :security_recommendations, :submitted_by)");
+        $stmt = $db->prepare("INSERT INTO mitigations (`risk_id`, `planning_strategy`, `mitigation_effort`, `mitigation_cost`, `mitigation_owner`, `mitigation_team`, `current_solution`, `security_requirements`, `security_recommendations`, `submitted_by`) VALUES (:risk_id, :planning_strategy, :mitigation_effort, :mitigation_cost, :mitigation_owner, :mitigation_team, :current_solution, :security_requirements, :security_recommendations, :submitted_by)");
 
-        $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+        $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":planning_strategy", $planning_strategy, PDO::PARAM_INT);
 	$stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
+	$stmt->bindParam(":mitigation_cost", $mitigation_cost, PDO::PARAM_INT);
+	$stmt->bindParam(":mitigation_owner", $mitigation_owner, PDO::PARAM_INT);
 	$stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
 	$stmt->bindParam(":current_solution", $current_solution, PDO::PARAM_STR);
 	$stmt->bindParam(":security_requirements", $security_requirements, PDO::PARAM_STR);
@@ -1917,13 +2094,13 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
         $stmt->execute();
 
 	// Get the new mitigation id
-	$mitigation_id = get_mitigation_id($risk_id);
+	$mitigation_id = get_mitigation_id($id);
 
 	// Update the risk status and last_update
 	$stmt = $db->prepare("UPDATE risks SET status=:status, last_update=:last_update, mitigation_id=:mitigation_id WHERE id = :risk_id");
 	$stmt->bindParam(":status", $status, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":last_update", $current_datetime, PDO::PARAM_STR, 20);
-	$stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+	$stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
 	$stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
 
 	$stmt->execute();
@@ -1935,8 +2112,12 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
                 require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
 		// Send the notification
-		notify_new_mitigation($risk_id);
+		notify_new_mitigation($id);
         }
+
+	// Audit log
+	$message = "A mitigation was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);
@@ -1949,8 +2130,8 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
  **************************************/
 function submit_management_review($risk_id, $status, $review, $next_step, $reviewer, $comments, $next_review)
 {
-        // Subtract 1000 from id
-        $risk_id = (int)$risk_id - 1000;
+        // Subtract 1000 from risk_id
+        $id = (int)$risk_id - 1000;
 
         // Get current datetime for last_update
         $current_datetime = date('Y-m-d H:i:s');
@@ -1961,7 +2142,7 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         // Add the review
         $stmt = $db->prepare("INSERT INTO mgmt_reviews (`risk_id`, `review`, `reviewer`, `next_step`, `comments`, `next_review`) VALUES (:risk_id, :review, :reviewer, :next_step, :comments, :next_review)");
 
-        $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+        $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
 	$stmt->bindParam(":review", $review, PDO::PARAM_INT);
 	$stmt->bindParam(":reviewer", $reviewer, PDO::PARAM_INT);
 	$stmt->bindParam(":next_step", $next_step, PDO::PARAM_INT);
@@ -1971,14 +2152,14 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         $stmt->execute();
 
         // Get the new mitigation id
-        $mgmt_review = get_review_id($risk_id);
+        $mgmt_review = get_review_id($id);
 
         // Update the risk status and last_update
         $stmt = $db->prepare("UPDATE risks SET status=:status, last_update=:last_update, review_date=:review_date, mgmt_review=:mgmt_review WHERE id = :risk_id");
         $stmt->bindParam(":status", $status, PDO::PARAM_STR, 20);
         $stmt->bindParam(":last_update", $current_datetime, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":review_date", $current_datetime, PDO::PARAM_STR, 20);
-        $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+        $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":mgmt_review", $mgmt_review, PDO::PARAM_INT);
 
         $stmt->execute();
@@ -1990,8 +2171,12 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
                 require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
 		// Send the notification
-		notify_new_review($risk_id);
+		notify_new_review($id);
         }
+
+	// Audit log
+	$message = "A management review was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);
@@ -2002,10 +2187,10 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
 /*************************
  * FUNCTION: UPDATE RISK *
  *************************/
-function update_risk($id, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
+function update_risk($risk_id, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
 {
-	// Subtract 1000 from id
-	$id = $id - 1000;
+	// Subtract 1000 from risk_id
+	$id = (int)$risk_id - 1000;
 
 	// Get current datetime for last_update
 	$current_datetime = date('Y-m-d H:i:s');
@@ -2017,7 +2202,7 @@ function update_risk($id, $subject, $reference_id, $regulation, $control_number,
 	$stmt = $db->prepare("UPDATE risks SET subject=:subject, reference_id=:reference_id, regulation=:regulation, control_number=:control_number, location=:location, category=:category, team=:team, technology=:technology, owner=:owner, manager=:manager, assessment=:assessment, notes=:notes, last_update=:date WHERE id = :id");
 
 	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
-        $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 100);
+        $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 300);
 	$stmt->bindParam(":reference_id", $reference_id, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":regulation", $regulation, PDO::PARAM_INT);
 	$stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR, 20);
@@ -2041,6 +2226,10 @@ function update_risk($id, $subject, $reference_id, $regulation, $control_number,
 		// Send the notification
 		notify_risk_update($id);
         }
+
+	// Audit log
+	$message = "Risk details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);
@@ -2336,7 +2525,7 @@ function get_risks($sort_order=0)
         else if ($sort_order == 13)
         {
                 // Query the database
-                $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value ORDER BY DATE(b.submission_date) DESC");
+                $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, g.name AS mitigation_team FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value ORDER BY DATE(b.submission_date) DESC");
                 $stmt->execute();
 
                 // Store the list in the array
@@ -2565,6 +2754,9 @@ function get_mitigations_table($sort_order=13)
         echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationDate']) ."</th>\n";
         echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."</th>\n";
         echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationEffort']) ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationCost']) ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationOwner']) ."</th>\n";
+	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</th>\n";
         echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
@@ -2579,6 +2771,9 @@ function get_mitigations_table($sort_order=13)
 		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
                 echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['planning_strategy']) . "</td>\n";
                 echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_effort']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(get_asset_value_by_id($risk['mitigation_cost'])) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_owner']) . "</td>\n";
+		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_team']) . "</td>\n";
                 echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
                 echo "</tr>\n";
         }
@@ -3683,10 +3878,24 @@ function get_review_id($risk_id)
 /*****************************
  * FUNCTION: DAYS SINCE DATE *
  *****************************/
-function dayssince($date)
+function dayssince($date, $date2 = null)
 {
+	// Set the first date to the provided value
 	$datetime1 = new DateTime($date);
-	$datetime2 = new DateTime("now");
+
+	// If the second date is null
+	if ($date2 == null)
+	{
+		// Set it to the current date and time
+		$datetime2 = new DateTime("now");
+	}
+	// Otherwise
+	else
+	{
+		$datetime2 = new DateTime($date2);
+	}
+
+	// Get the difference between the two dates
 	$days = $datetime1->diff($datetime2);
 
 	// Return the number of days
@@ -3859,10 +4068,10 @@ function next_review_by_score($calculated_risk)
 /************************
  * FUNCTION: CLOSE RISK *
  ************************/
-function close_risk($id, $user_id, $status, $close_reason, $note)
+function close_risk($risk_id, $user_id, $status, $close_reason, $note)
 {
-        // Subtract 1000 from id
-        $id = $id - 1000;
+        // Subtract 1000 from risk_id
+        $id = (int)$risk_id - 1000;
 
         // Get current datetime for last_update
         $current_datetime = date('Y-m-d H:i:s');
@@ -3884,7 +4093,6 @@ function close_risk($id, $user_id, $status, $close_reason, $note)
         $close_id = get_close_id($id);
 
         // Update the risk
-        //$stmt = $db->prepare("UPDATE risks SET status=:status,last_update=:date,project_id=0,close_id=:close_id WHERE id = :id");
 	$stmt = $db->prepare("UPDATE risks SET status=:status,last_update=:date,close_id=:close_id WHERE id = :id");
 
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
@@ -3902,6 +4110,10 @@ function close_risk($id, $user_id, $status, $close_reason, $note)
                 // Send the notification
                 notify_risk_close($id);
         }
+
+	// Audit log
+	$message = "Risk ID \"" . $risk_id . "\" was marked as closed by username \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);
@@ -3935,10 +4147,10 @@ function get_close_id($risk_id)
 /*************************
  * FUNCTION: REOPEN RISK *
  *************************/
-function reopen_risk($id)
+function reopen_risk($risk_id)
 {
         // Subtract 1000 from id
-        $id = $id - 1000;
+        $id = (int)$risk_id - 1000;
 
         // Get current datetime for last_update
         $current_datetime = date('Y-m-d H:i:s');
@@ -3953,6 +4165,10 @@ function reopen_risk($id)
         $stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
         $stmt->execute();
 
+	// Audit log
+	$message = "Risk ID \"" . $risk_id . "\" was reopened by username \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
+
         // Close the database connection
         db_close($db);
 
@@ -3962,10 +4178,10 @@ function reopen_risk($id)
 /*************************
  * FUNCTION: ADD COMMENT *
  *************************/
-function add_comment($id, $user_id, $comment)
+function add_comment($risk_id, $user_id, $comment)
 {
         // Subtract 1000 from id
-        $id = $id - 1000;
+        $id = (int)$risk_id - 1000;
 
         // Get current datetime for last_update
         $current_datetime = date('Y-m-d H:i:s');
@@ -3988,6 +4204,10 @@ function add_comment($id, $user_id, $comment)
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
         $stmt->execute();
+
+	// Audit log
+	$message = "A comment was added to risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);
@@ -4082,10 +4302,10 @@ function get_audit_trail($id = NULL)
 /*******************************
  * FUNCTION: UPDATE MITIGATION *
  *******************************/
-function update_mitigation($id, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
+function update_mitigation($risk_id, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
 {
-        // Subtract 1000 from id
-        $id = $id - 1000;
+        // Subtract 1000 from risk_id
+        $id = (int)$risk_id - 1000;
 
         // Get current datetime for last_update
         $current_datetime = date('Y-m-d H:i:s');
@@ -4094,12 +4314,14 @@ function update_mitigation($id, $planning_strategy, $mitigation_effort, $mitigat
         $db = db_open();
 
         // Update the risk
-	$stmt = $db->prepare("UPDATE mitigations SET last_update=:date, planning_strategy=:planning_strategy, mitigation_effort=:mitigation_effort, mitigation_team=:mitigation_team, current_solution=:current_solution, security_requirements=:security_requirements, security_recommendations=:security_recommendations WHERE risk_id=:id");
+	$stmt = $db->prepare("UPDATE mitigations SET last_update=:date, planning_strategy=:planning_strategy, mitigation_effort=:mitigation_effort, mitigation_cost=:mitigation_cost, mitigation_owner=:mitigation_owner, mitigation_team=:mitigation_team, current_solution=:current_solution, security_requirements=:security_requirements, security_recommendations=:security_recommendations WHERE risk_id=:id");
 
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
 	$stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
         $stmt->bindParam(":planning_strategy", $planning_strategy, PDO::PARAM_INT);
 	$stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
+	$stmt->bindParam(":mitigation_cost", $mitigation_cost, PDO::PARAM_INT);
+	$stmt->bindParam(":mitigation_owner", $mitigation_owner, PDO::PARAM_INT);
 	$stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
         $stmt->bindParam(":current_solution", $current_solution, PDO::PARAM_STR);
         $stmt->bindParam(":security_requirements", $security_requirements, PDO::PARAM_STR);
@@ -4115,6 +4337,10 @@ function update_mitigation($id, $planning_strategy, $mitigation_effort, $mitigat
 		// Send the notification
 		notify_mitigation_update($id);
         }
+
+	// Audit log
+	$message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);

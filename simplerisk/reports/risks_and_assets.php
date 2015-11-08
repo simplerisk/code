@@ -3,9 +3,11 @@
          * License, v. 2.0. If a copy of the MPL was not distributed with this
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-        // Include required functions file
+	// Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+        require_once(realpath(__DIR__ . '/../includes/display.php'));
+	require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -47,45 +49,58 @@
                 exit(0);
         }
 
-        // Check if a risk ID was sent
-        if (isset($_GET['id']) || isset($_POST['id']))
-        {
-                if (isset($_GET['id']))
-		{
-			$id = (int)$_GET['id'];
-		}
-		else if (isset($_POST['id']))
-		{
-			$id = (int)$_POST['id'];
-		}
+        // Record the page the workflow started from as a session variable
+        $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 
-                // If team separation is enabled
-                if (team_separation_extra())
-                {
-                        //Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-                
-                        // If the user should not have access to the risk
-                        if (!extra_grant_access($_SESSION['uid'], $id))
-                        {
-                                // Redirect back to the page the workflow started on
-                                header("Location: " . $_SESSION["workflow_start"]);
-                                exit(0);
-                        }
-                }
-
-		// Reopen the risk
-		reopen_risk($id);
-
-                // Check that the id is a numeric value
-                if (is_numeric($id))
-                {
-                        // Create the redirection location
-			$url = "view.php?id=" . $id . "&reopened=true";
-
-                        // Redirect to plan mitigations page
-                        header("Location: " . $url);
-                }
-        }
-	else header('Location: reports/closed.php');
+	// If the select_report form was posted
+	if (isset($_POST['report']))
+	{
+		$report = (int)$_POST['report'];
+	}
+	else $report = 0;
 ?>
+
+<!doctype html>
+<html>
+  
+  <head>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/sorttable.js"></script>
+    <script src="../js/obsolete.js"></script>
+    <script src="../js/dynamic.js"></script>
+    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+  </head>
+  
+  <body>
+
+    <?php view_top_menu("Reporting"); ?>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span3">
+          <?php view_reporting_menu("RisksAndAssets"); ?>
+        </div>
+        <div class="span9">
+          <div class="row-fluid">
+            <div id="selections" class="span12">
+              <div class="well">
+		<?php view_risks_and_assets_selections($report); ?>
+              </div>
+            </div>
+          </div>
+          <div class="row-fluid">
+            <div class="span12">
+	      <?php risks_and_assets_table($report); ?>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>

@@ -281,7 +281,9 @@
                         $mitigation_date = "";
                         $planning_strategy = "";
                         $mitigation_effort = "";
-			$mitigation_team = "";
+			$mitigation_cost = 1;
+			$mitigation_owner = $owner;
+			$mitigation_team = $team;
                         $current_solution = "";
                         $security_requirements = "";
 			$security_recommendations = "";
@@ -295,6 +297,8 @@
                         $mitigation_date = date(DATETIME, strtotime($mitigation_date));
                         $planning_strategy = $mitigation[0]['planning_strategy'];
                         $mitigation_effort = $mitigation[0]['mitigation_effort'];
+			$mitigation_cost = $mitigation[0]['mitigation_cost'];
+			$mitigation_owner = $mitigation[0]['mitigation_owner'];
 			$mitigation_team = $mitigation[0]['mitigation_team'];
                         $current_solution = $mitigation[0]['current_solution'];
                         $security_requirements = $mitigation[0]['security_requirements'];
@@ -394,11 +398,6 @@
                 	// Submit review
                 	submit_management_review($id, $status, $review, $next_step, $reviewer, $comments, $custom_review);
 
-                	// Audit log
-                	$risk_id = $id;
-                	$message = "A management review was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-                	write_log($risk_id, $_SESSION['uid'], $message);
-
 			// If the reviewer rejected the risk
 			if ($review == 2)
 			{
@@ -407,11 +406,7 @@
                 		$note = "Risk was closed automatically when the reviewer rejected the risk.";
 
                 		// Close the risk
-                		close_risk($risk_id, $_SESSION['uid'], $status, $close_reason, $note);
-
-                		// Audit log
-                		$message = "Risk ID \"" . $risk_id . "\" automatically closed when username \"" . $_SESSION['user'] . "\" rejected the risk.";
-                		write_log($risk_id, $_SESSION['uid'], $message);
+                		close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
 			}
 
                         // Redirect back to the page the workflow started on
@@ -584,7 +579,7 @@
             </div>
             <div class="span6">
               <div class="well">
-		<?php view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_team, $current_solution, $security_requirements, $security_recommendations); ?>
+		<?php view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations); ?>
               </div>
             </div>
           </div>
