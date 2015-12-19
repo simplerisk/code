@@ -1224,12 +1224,12 @@ function risks_and_assets_table($report)
                         // Get the variables for the row
                         $risk_id = (int)$row['id'];
                         $asset = $row['asset'];
-                        $asset_id = (int)$row['asset_id'];
-                        $asset_ip = $row['asset_ip'];
-                        $asset_name = $row['asset_name'];
+                        $asset_id = (isset($row['asset_id']) ? (int)$row['asset_id'] : "N/A");
+                        $asset_ip = (isset($row['asset_ip']) ? $row['asset_ip'] : "N/A");
+                        $asset_name = (isset($row['asset_name']) ? $row['asset_name'] : $asset);
                         $asset_value = $row['asset_value'];
-                        $asset_location = $row['asset_location'];
-                        $asset_team = $row['asset_team'];
+			$asset_location = (isset($row['asset_location']) ? get_name_by_value("location",$row['asset_location']) : "N/A");
+                        $asset_team = (isset($row['asset_team']) ? get_name_by_value("team",$row['asset_team']) : "N/A");
                         $status = $row['status'];
                         $subject = $row['subject'];
 			$calculated_risk = $row['calculated_risk'];
@@ -1243,7 +1243,6 @@ function risks_and_assets_table($report)
                                 if ($current_group != "")
                                 {
                                         // End the table
-                                        echo "</tr>\n";
                                         echo "</tbody>\n";
                                         echo "</table>\n";
                                 }
@@ -1279,7 +1278,6 @@ function risks_and_assets_table($report)
 		}
 
                 // End the last table
-                echo "</tr>\n";
                 echo "</tbody>\n";
                 echo "</table>\n";
         }
@@ -1294,11 +1292,14 @@ function risks_and_assets_table($report)
 			$risk_id = (int)$row['id'];
 			$asset = $row['asset'];
 			$asset_id = (int)$row['asset_id'];
-			$asset_ip = $row['asset_ip'];
-			$asset_name = $row['asset_name'];
-			$asset_value = $row['asset_value'];
-			$asset_location = $row['asset_location'];
-			$asset_team = $row['asset_team'];
+                        $asset_ip = (isset($row['asset_ip']) ? $row['asset_ip'] : "N/A");
+			$asset_ip = ($asset_ip != "" ? $asset_ip : "N/A");
+                        $asset_name = (isset($row['asset_name']) ? $row['asset_name'] : $asset);
+                        $asset_value = $row['asset_value'];
+                        $asset_location = (isset($row['asset_location']) ? get_name_by_value("location",$row['asset_location']) : "N/A");
+			$asset_location = ($asset_location != "" ? $asset_location : "N/A");
+                        $asset_team = (isset($row['asset_team']) ? get_name_by_value("team",$row['asset_team']) : "N/A");
+			$asset_team = ($asset_team != "" ? $asset_team : "N/A");
 			$status = $row['status'];
 			$subject = $row['subject'];
 			$calculated_risk = $row['calculated_risk'];
@@ -1349,20 +1350,24 @@ function risks_and_assets_table($report)
 			echo "<tr>\n";
 			echo "<td align=\"left\" width=\"50px\">" . $escaper->escapeHtml($asset_name) . "</td>\n";
 			echo "<td align=\"left\" width=\"50px\">" . $escaper->escapeHtml($asset_ip) . "</td>\n";
-			echo "<td align=\"left\" width=\"50px\">" . $escaper->escapeHtml(get_name_by_value("location", $asset_location)) . "</td>\n";
-			echo "<td align=\"left\" width=\"50px\">" . $escaper->escapeHtml(get_name_by_value("team",$asset_team)) . "</td>\n";
+			echo "<td align=\"left\" width=\"50px\">" . $escaper->escapeHtml($asset_location) . "</td>\n";
+			echo "<td align=\"left\" width=\"50px\">" . $escaper->escapeHtml($asset_team) . "</td>\n";
 			echo "<td align=\"left\" width=\"50px\">" . $escaper->escapeHtml(get_asset_value_by_id($asset_value)) . "</td>\n";
 			echo "</tr>\n";
 		}
 
-		// End the last table
-		echo "<tr><td bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"5\"></td></tr>\n";
-                echo "<tr>\n";
-		echo "<td bgcolor=\"lightgrey\" align=\"left\" width=\"50px\" colspan=\"4\"><b>" . $escaper->escapeHtml($lang['MaximumQuantitativeLoss']) . "</b></td>\n";
-		echo "<td bgcolor=\"lightgrey\" align=\"left\" width=\"50px\"><b>$" . $escaper->escapeHtml(number_format($asset_valuation)) . "</b></td>\n";
-		echo "</tr>\n";
-		echo "</tbody>\n";
-		echo "</table>\n";
+		// If this is not the first group
+		if ($current_group != "")
+		{
+			// End the last table
+			echo "<tr><td bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"5\"></td></tr>\n";
+                	echo "<tr>\n";
+			echo "<td bgcolor=\"lightgrey\" align=\"left\" width=\"50px\" colspan=\"4\"><b>" . $escaper->escapeHtml($lang['MaximumQuantitativeLoss']) . "</b></td>\n";
+			echo "<td bgcolor=\"lightgrey\" align=\"left\" width=\"50px\"><b>$" . $escaper->escapeHtml(number_format($asset_valuation)) . "</b></td>\n";
+			echo "</tr>\n";
+			echo "</tbody>\n";
+			echo "</table>\n";
+		}
 	}
 
 	// Close the database
@@ -1372,7 +1377,7 @@ function risks_and_assets_table($report)
 /********************************
  * FUNCTION: GET RISKS BY TABLE *
  ********************************/
-function get_risks_by_table($status, $group, $sort, $column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_category=false, $column_team=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false)
+function get_risks_by_table($status, $group, $sort, $column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_category=false, $column_team=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_team=false)
 {
 	global $lang;
 	global $escaper;
@@ -1501,7 +1506,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 	}
 
 	// Make the big query
-	$query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets, o.closure_date FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id" . $status_query . $order_query;
+	$query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value" . $status_query . $order_query;
 
 	// Query the database
 	$db = db_open();
@@ -1534,7 +1539,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 		echo "<tr>\n";
 
 		// Header columns go here
-		get_header_columns($column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets);
+		get_header_columns($column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team);
 
 		echo "</tr>\n";
 		echo "</thead>\n";
@@ -1573,6 +1578,14 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 		$next_step = $risk['next_step'];
 		$affected_assets = $risk['affected_assets'];
 		$month_submitted = date('Y F', strtotime($risk['submission_date']));
+		$planning_strategy = $risk['planning_strategy'];
+		$mitigation_effort = $risk['mitigation_effort'];
+		$mitigation_min_cost = $risk['mitigation_min_cost'];
+		$mitigation_max_cost = $risk['mitigation_max_cost'];
+		//$mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;
+		$mitigation_cost = $risk['mitigation_min_cost'];
+		$mitigation_owner = $risk['mitigation_owner'];
+		$mitigation_team = $risk['mitigation_team'];
 
 		// If the group name is not none
 		if ($group_name != "none")
@@ -1614,7 +1627,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 				echo "<tr>\n";
 
 				// Header columns go here
-				get_header_columns($column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets);
+				get_header_columns($column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team);
 
 				echo "</tr>\n";
 				echo "</thead>\n";
@@ -1626,7 +1639,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 		echo "<tr>\n";
 
 		// Risk information goes here
-		get_risk_columns($risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets);
+		get_risk_columns($risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team);
 
 		echo "</tr>\n";
 	
@@ -1645,7 +1658,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 /********************************
  * FUNCTION: GET HEADER COLUMNS *
  ********************************/
-function get_header_columns($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets)
+function get_header_columns($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team)
 {
 	global $lang;
 	global $escaper;
@@ -1674,12 +1687,17 @@ function get_header_columns($id, $risk_status, $subject, $reference_id, $regulat
 	echo "<th class=\"next_review_date\" " . ($next_review_date == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
 	echo "<th class=\"next_step\" " . ($next_step == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextStep']) ."</th>\n";
 	echo "<th class=\"affected_assets\" " . ($affected_assets == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AffectedAssets']) ."</th>\n";
+	echo "<th class=\"planning_strategy\" " . ($planning_strategy == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."</th>\n";
+	echo "<th class=\"mitigation_effort\" " . ($mitigation_effort == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationEffort']) ."</th>\n";
+	echo "<th class=\"mitigation_cost\" " . ($mitigation_cost== true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationCost']) ."</th>\n";
+	echo "<th class=\"mitigation_owner\" " . ($mitigation_owner== true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationOwner']) ."</th>\n";
+	echo "<th class=\"mitigation_team\" " . ($mitigation_team == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</th>\n";
 }
 
 /******************************
  * FUNCTION: GET RISK COLUMNS *
  ******************************/
-function get_risk_columns($risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets)
+function get_risk_columns($risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team)
 {
         global $lang;
         global $escaper;
@@ -1725,6 +1743,21 @@ function get_risk_columns($risk, $column_id, $column_status, $column_subject, $c
 	$next_review_date_html = next_review($color, $risk_id, $risk['next_review']);
 	$next_step = $risk['next_step'];
 	$affected_assets = $risk['affected_assets'];
+	$planning_strategy = $risk['planning_strategy'];
+	$mitigation_effort = $risk['mitigation_effort'];
+	$mitigation_min_cost = $risk['mitigation_min_cost'];
+	$mitigation_max_cost = $risk['mitigation_max_cost'];
+
+	// If the mitigation costs are empty
+	if (empty($mitigation_min_cost) && empty($mitigation_max_cost))
+	{
+		// Return no value
+		$mitigation_cost = "";
+	}
+	else $mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;
+
+	$mitigation_owner = $risk['mitigation_owner'];
+	$mitigation_team = $risk['mitigation_team'];
 
 	// If the risk hasn't been reviewed yet
 	if ($review_date == "0000-00-00 00:00:00")
@@ -1759,6 +1792,11 @@ function get_risk_columns($risk, $column_id, $column_status, $column_subject, $c
 	echo "<td class=\"next_review_date\" " . ($column_next_review_date == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $next_review_date_html . "</td>\n";
 	echo "<td class=\"next_step\" " . ($column_next_step == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($next_step) . "</td>\n";
 	echo "<td class=\"affected_assets\" " . ($column_affected_assets == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($affected_assets) . "</td>\n";
+	echo "<td class=\"planning_strategy\" " . ($column_planning_strategy == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($planning_strategy) . "</td>\n";
+	echo "<td class=\"mitigation_effort\" " . ($column_mitigation_effort == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_effort) . "</td>\n";
+	echo "<td class=\"mitigation_cost\" " . ($column_mitigation_cost == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_cost) . "</td>\n";
+	echo "<td class=\"mitigation_owner\" " . ($column_mitigation_owner == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_owner) . "</td>\n";
+	echo "<td class=\"mitigation_team\" " . ($column_mitigation_team == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_team) . "</td>\n";
 }
 
 ?>

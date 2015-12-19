@@ -888,6 +888,78 @@ function upgrade_from_20150930001($db)
         echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/**************************************
+ * FUNCTION: UPGRADE FROM 20151108001 *
+ **************************************/
+function upgrade_from_20151108001($db)
+{
+        // Database version to upgrade
+        $version_to_upgrade = '20151108-001';
+
+        // Database version upgrading to
+        $version_upgrading_to = '20151219-001';
+
+        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+	// Add an asset_id field to the risks_to_assets table
+	echo "Adding an asset_id field to the risks_to_assets table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks_to_assets` ADD COLUMN `asset_id` int(11) NOT NULL AFTER risk_id;");
+        $stmt->execute();
+
+	// Delete orphaned entries in the assets table
+	echo "Deleting orphaned entries in the assets table.<br />\n";
+	$stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE asset NOT IN (SELECT a.name FROM assets a);");
+	$stmt->execute();
+
+	// Map the asset id for risks_to_assets
+	echo "Mapping the asset_id value in the risks_to_assets table.<br />\n";
+	$stmt = $db->prepare("UPDATE `risks_to_assets` INNER JOIN `assets` ON `assets`.name = `risks_to_assets`.asset SET `risks_to_assets`.asset_id = `assets`.id;");
+	$stmt->execute();
+
+	// Set the file table default risk_id to 0
+	echo "Setting the file table default risk_id to 0.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `files` MODIFY `risk_id` int(11) DEFAULT 0;");
+	$stmt->execute();
+
+	// Add a type field to the file table
+	echo "Adding a type field to the file table.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `files` ADD COLUMN `view_type` int(11) DEFAULT 1 AFTER `risk_id`;");
+	$stmt->execute(); 
+
+	// Add a new status table
+	echo "Adding a new status table.<br />\n";
+	$stmt = $db->prepare("CREATE TABLE `status` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50));");
+	$stmt->execute();
+
+	// Add new custom statuses
+	echo "Adding new custom statuses.<br />\n";
+	if (defined('LANG_DEFAULT'))
+        {
+                if (LANG_DEFAULT == "en")
+                {
+                        $stmt = $db->prepare("INSERT INTO status (`name`) VALUES ('New'), ('Mitigation Planned'), ('Mgmt Reviewed'), ('Closed'), ('Reopened'), ('Untreated'), ('Treated');");
+                }
+                else if (LANG_DEFAULT == "es")
+                {
+                        $stmt = $db->prepare("INSERT INTO status (`name`) VALUES ('Nuevo'), ('Mitigación de Planificación'), ('Gestión Comentado'), ('Cerrado'), ('Reabierto'), ('Sin Tratar'), ('Tratada');");
+                }
+                else if (LANG_DEFAULT == "bp")
+                {
+                        $stmt = $db->prepare("INSERT INTO status (`name`) VALUES ('Novo'), ('Mitigação Planejado'), ('Gestão Avaliado'), ('Fechadas'), ('Reaberta'), ('Não Tratada'), ('Tratado');");
+                }
+        }
+        else
+        {
+                $stmt = $db->prepare("INSERT INTO status (`name`) VALUES ('New'), ('Mitigation Planned'), ('Mgmt Reviewed'), ('Closed'), ('Reopened'), ('Untreated'), ('Treated');");
+        }
+	$stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -947,6 +1019,10 @@ function upgrade_database()
 				break;
 			case "20150930-001":
 				upgrade_from_20150930001($db);
+				upgrade_database();
+				break;
+			case "20151108-001":
+				upgrade_from_20151108001($db);
 				upgrade_database();
 				break;
 			default:

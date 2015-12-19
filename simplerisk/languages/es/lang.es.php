@@ -433,6 +433,13 @@ $lang = array(
     'MaximumQuantitativeLoss'=>'Pérdida Máxima Cuantitativa',
     'MitigationOwner'=>'Mitigación Propietario',
     'MitigationCost'=>'Costos de Mitigación',
+    'RiskColumns'=>'Riesgo Columnas',
+    'MitigationColumns'=>'Mitigación Columnas',
+    'ReviewColumns'=>'Revisión Columnas',
+    'ChangeStatus'=>'Cambiar Estado',
+    'SetRiskStatusTo'=>'Establecer el estado de riesgo a',
+    'AddNewStatusNamed'=>'Añadir nuevo estado llamado',
+    'DeleteStatusNamed'=>'Eliminar estado llamado',
     ''=>'',
 );
 

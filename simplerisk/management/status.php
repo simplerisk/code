@@ -94,19 +94,22 @@
                 }
         }
 
-        // Check if a new comment was submitted
-        if (isset($_POST['submit']))
+        // Check if the status was updated and the user has the ability to modify the risk
+        if (isset($_POST['update_status']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
         {
-                $comment = $_POST['comment'];
+                $status_id = (int)$_POST['status'];
 
-                // Add the comment
-                add_comment($id, $_SESSION['uid'], $comment);
+		// Get the name associated with the status
+		$status = get_name_by_value("status", $status_id);
 
 		// Check that the id is a numeric value
 		if (is_numeric($id))
 		{
+			// Update the status of the risk
+			update_risk_status($id, $status);
+
                 	// Create the redirection location
-                	$url = "view.php?id=" . $id . "&comment=true";
+                	$url = "view.php?id=" . $id . "&update_status=true";
 
 	                // Redirect to risk view page
         	        header("Location: " . $url); 
@@ -153,12 +156,12 @@
           <div class="row-fluid">
             <div class="well">
               <form name="add_comment" method="post" action="">
-                <label><?php echo $escaper->escapeHtml($lang['Comment']); ?>:</label>
-                <textarea style="width: 100%; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;" name="comment" cols="50" rows="3" id="comment"></textarea>
-                <div class="form-actions">
-                  <button type="submit" name="submit" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
-                  <input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
-                </div>
+                <?php
+			echo $escaper->escapeHtml($lang['SetRiskStatusTo']);
+			echo "&nbsp;&nbsp;";
+			create_dropdown("status");
+			echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Update']) . "\" name=\"update_status\" />\n";
+		?>
               </form>
             </div>
           </div>

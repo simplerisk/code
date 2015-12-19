@@ -506,3 +506,109 @@ function check_affected_assets()
     }
   }
 }
+
+function check_planning_strategy()
+{
+  elements = document.getElementsByClassName("planning_strategy");
+  checkbox = document.getElementById("checkbox_planning_strategy");
+
+  if(checkbox.checked)
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "";
+    }
+  }
+  else
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "none";
+    }
+  }
+}
+
+function check_mitigation_effort()
+{
+  elements = document.getElementsByClassName("mitigation_effort");
+  checkbox = document.getElementById("checkbox_mitigation_effort");
+
+  if(checkbox.checked)
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "";
+    }
+  }
+  else
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "none";
+    }
+  }
+}
+
+function check_mitigation_cost()
+{
+  elements = document.getElementsByClassName("mitigation_cost");
+  checkbox = document.getElementById("checkbox_mitigation_cost");
+
+  if(checkbox.checked)
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "";
+    }
+  }
+  else
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "none";
+    }
+  }
+}
+
+function check_mitigation_owner()
+{
+  elements = document.getElementsByClassName("mitigation_owner");
+  checkbox = document.getElementById("checkbox_mitigation_owner");
+
+  if(checkbox.checked)
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "";
+    }
+  }
+  else
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "none";
+    }
+  }
+}
+
+function check_mitigation_team()
+{
+  elements = document.getElementsByClassName("mitigation_team");
+  checkbox = document.getElementById("checkbox_mitigation_team");
+
+  if(checkbox.checked)
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "";
+    }
+  }
+  else
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "none";
+    }
+  }
+}
+

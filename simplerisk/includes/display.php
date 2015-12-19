@@ -75,6 +75,7 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 	echo "<li><a href=\"view.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['EditRisk']) ."</a></li>\n";
         echo "<li><a href=\"mitigate.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PlanAMitigation']) ."</a></li>\n";
         echo "<li><a href=\"mgmt_review.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PerformAReview']) ."</a></li>\n";
+	echo "<li><a href=\"status.php?id=" . $escaper->escapeHtml($id) . "\">" . $escaper->escapeHtml($lang['ChangeStatus']) . "</a></li>\n";
         echo "<li><a href=\"comment.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['AddAComment']) ."</a></li>\n";
 	echo "<li><a href=\"print_view.php?id=" . $escaper->escapeHtml($id) . "\" target=\"_blank\">". $escaper->escapeHtml($lang['PrintableView']) ."</a></li>\n";
         echo "</ul>\n";
@@ -212,7 +213,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo "<br />\n";
 	echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
 	echo "<br />\n";
-	supporting_documentation($id, "view");
+	supporting_documentation($id, "view", 1);
 
 	// If the page is the view.php page
 	if (basename($_SERVER['PHP_SELF']) == "view.php")
@@ -375,7 +376,7 @@ function edit_risk_details($id, $submission_date, $subject, $reference_id, $regu
 	echo "<br />\n";
         echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
         echo "<br />\n";
-        supporting_documentation($id, "edit");
+        supporting_documentation($id, "edit", 1);
         echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"update_details\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Update']) ."</button>\n";
         echo "</div>\n";
@@ -384,7 +385,7 @@ function edit_risk_details($id, $submission_date, $subject, $reference_id, $regu
 /*************************************
  * FUNCTION: VIEW MITIGATION DETAILS *
  *************************************/
-function view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
+function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
 {
 	global $lang;
 	global $escaper;
@@ -425,6 +426,10 @@ function view_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         echo $escaper->escapeHtml($lang['SecurityRecommendations']) .": \n";
         echo "<br />\n";
         echo "<textarea style=\"cursor: default;\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" title=\"" . $escaper->escapeHtml($security_recommendations) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>\n";
+	echo "<br />\n";
+	echo $escaper->escapeHtml($lang['SupportingDocumentation']) .": \n";
+	echo "<br />\n";
+	supporting_documentation($risk_id, "view", 2);
 
         // If the page is the view.php page
         if (basename($_SERVER['PHP_SELF']) == "view.php")
@@ -483,7 +488,7 @@ function view_print_mitigation_details($mitigation_date, $planning_strategy, $mi
 /*************************************
  * FUNCTION: EDIT MITIGATION DETAILS *
  *************************************/
-function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations)
+function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations)
 {
 	global $lang;
 	global $escaper;
@@ -524,6 +529,9 @@ function edit_mitigation_details($mitigation_date, $planning_strategy, $mitigati
         echo $escaper->escapeHtml($lang['SecurityRecommendations']) .": \n";
         echo "<br />\n";
         echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>\n";
+	echo "<br />\n";
+	echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
+	supporting_documentation($risk_id, "edit", 2);
         echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"update_mitigation\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Update']) ."</button>\n";
         echo "</div>\n";
@@ -617,7 +625,7 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mit
 	global $escaper;
 	
 	echo "<h4>". $escaper->escapeHtml($lang['SubmitRiskMitigation']) ."</h4>\n";
-        echo "<form name=\"submit_mitigation\" method=\"post\" action=\"\">\n";
+        echo "<form name=\"submit_mitigation\" method=\"post\" action=\"\" enctype=\"multipart/form-data\">\n";
 	
         echo $escaper->escapeHtml($lang['PlanningStrategy']) .": \n";
         echo "<br />\n";
@@ -651,6 +659,10 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mit
         echo "<br />\n";
         echo "<textarea name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>\n";
         echo "<br />\n";
+	echo $escaper->escapeHtml($lang['SupportingDocumentation']) .": \n";
+	echo "<br />\n";
+	echo "<input type=\"file\" name=\"file\" />\n";
+	echo "<br />\n";
         echo "<div class=\"form-actions\">\n";
         echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">". $escaper->escapeHtml($lang['Submit']) ."</button>\n";
         echo "<input class=\"btn\" value=\"". $lang['Reset'] ."\" type=\"reset\">\n";
@@ -2736,7 +2748,7 @@ function view_risks_and_assets_selections($report)
 /******************************************
  * FUNCTION: VIEW GET RISKS BY SELECTIONS *
  ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $category=false, $team=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false)
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $category=false, $team=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false)
 {
 	global $lang;
 	global $escaper;
@@ -2797,64 +2809,73 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $r
 	echo "</div>\n";
 
 	echo "</div>\n";
+
 	echo "<div class=\"row-fluid\">\n";
 
-	// Included Columns Selection
-        echo "<div class=\"span12\">\n";
+	echo "<div class=\"span8\">\n";
+	echo "<div class=\"well\">\n";
+	echo "<div class=\"row-fluid\">\n";
+	echo "<h4>" . $escaper->escapeHtml($lang['RiskColumns']) . ":</h4>\n";
+	echo "<div class=\"span4\">\n";
+        echo "<table border=\"0\">\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"id\" id=\"checkbox_id\"" . ($id == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_id()\" /></td><td>" . $escaper->escapeHtml($lang['ID']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"risk_status\" id=\"checkbox_risk_status\"" . ($risk_status == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_status()\" /></td><td>" . $escaper->escapeHtml($lang['Status']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"subject\" id=\"checkbox_subject\"" . ($subject == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_subject()\" /></td><td>" . $escaper->escapeHtml($lang['Subject']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"reference_id\" id=\"checkbox_reference_id\"" . ($reference_id == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_reference_id()\" /></td><td>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"regulation\" id=\"checkbox_regulation\"" . ($regulation == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_regulation()\" /></td><td>" . $escaper->escapeHtml($lang['ControlRegulation']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"control_number\" id=\"checkbox_control_number\"" . ($control_number == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_control_number()\" /></td><td>" . $escaper->escapeHtml($lang['ControlNumber']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"location\" id=\"checkbox_location\"" . ($location == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_location()\" /></td><td>" . $escaper->escapeHtml($lang['SiteLocation']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"category\" id=\"checkbox_category\"" . ($category == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_category()\" /></td><td>" . $escaper->escapeHtml($lang['Category']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"team\" id=\"checkbox_team\"" . ($team == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_team()\" /></td><td>" . $escaper->escapeHtml($lang['Team']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"technology\" id=\"checkbox_technology\"" . ($technology == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_technology()\" /></td><td>" . $escaper->escapeHtml($lang['Technology']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"owner\" id=\"checkbox_owner\"" . ($owner == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_owner()\" /></td><td>" . $escaper->escapeHtml($lang['Owner']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"manager\" id=\"checkbox_manager\"" . ($manager == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_manager()\" /></td><td>" . $escaper->escapeHtml($lang['OwnersManager']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"submitted_by\" id=\"checkbox_submitted_by\"" . ($submitted_by == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_submitted_by()\" /></td><td>" . $escaper->escapeHtml($lang['SubmittedBy']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"scoring_method\" id=\"checkbox_scoring_method\"" . ($scoring_method == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_scoring_method()\" /></td><td>" . $escaper->escapeHtml($lang['RiskScoringMethod']) . "</td></tr>\n";
+	echo "</table>\n";
+	echo "</div>\n";
+        echo "<div class=\"span4\">\n";
+        echo "<table border=\"0\">\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"calculated_risk\" id=\"checkbox_calculated_risk\"" . ($calculated_risk == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_calculated_risk()\" /></td><td>" . $escaper->escapeHtml($lang['CalculatedRisk']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"submission_date\" id=\"checkbox_submission_date\"" . ($submission_date == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_submission_date()\" /></td><td>" . $escaper->escapeHtml($lang['SubmissionDate']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"project\" id=\"checkbox_project\"" . ($project == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_project()\" /></td><td>" . $escaper->escapeHtml($lang['Project']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"days_open\" id=\"checkbox_days_open\"" . ($days_open == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_days_open()\" /></td><td>" . $escaper->escapeHtml($lang['DaysOpen']) . "</td></tr>\n";
+	echo "<tr><td><input type=\"checkbox\" name=\"affected_assets\" id=\"checkbox_affected_assets\"" . ($affected_assets == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_affected_assets()\" /></td><td>" . $escaper->escapeHtml($lang['AffectedAssets']) . "</td></tr>\n";
+	echo "</table>\n";
+	echo "</div>\n";
+	echo "</div>\n";
+	echo "</div>\n";
+	echo "</div>\n";
+
+        echo "<div class=\"span4\">\n";
         echo "<div class=\"well\">\n";
-	echo "<h4>" . $lang['IncludedColumns'] . ":</h4>\n";
+        echo "<div class=\"row-fluid\">\n";
+        echo "<h4>" . $escaper->escapeHtml($lang['MitigationColumns']) . ":</h4>\n";
 	echo "<table border=\"0\">\n";
-	echo "<tr>\n";
-	echo "<td><input type=\"checkbox\" name=\"id\" id=\"checkbox_id\"" . ($id == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_id()\" /></td><td>" . $escaper->escapeHtml($lang['ID']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"risk_status\" id=\"checkbox_risk_status\"" . ($risk_status == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_status()\" /></td><td>" . $escaper->escapeHtml($lang['Status']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"subject\" id=\"checkbox_subject\"" . ($subject == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_subject()\" /></td><td>" . $escaper->escapeHtml($lang['Subject']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"reference_id\" id=\"checkbox_reference_id\"" . ($reference_id == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_reference_id()\" /></td><td>" . $escaper->escapeHtml($lang['ExternalReferenceId']) . "</td>\n";
-	echo "<td><input type=\"checkbox\" name=\"regulation\" id=\"checkbox_regulation\"" . ($regulation == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_regulation()\" /></td><td>" . $escaper->escapeHtml($lang['ControlRegulation']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"control_number\" id=\"checkbox_control_number\"" . ($control_number == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_control_number()\" /></td><td>" . $escaper->escapeHtml($lang['ControlNumber']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"location\" id=\"checkbox_location\"" . ($location == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_location()\" /></td><td>" . $escaper->escapeHtml($lang['SiteLocation']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"category\" id=\"checkbox_category\"" . ($category == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_category()\" /></td><td>" . $escaper->escapeHtml($lang['Category']) . "</td>\n";
-	echo "</tr>\n";
-	echo "<tr>\n";
-	echo "<td><input type=\"checkbox\" name=\"team\" id=\"checkbox_team\"" . ($team == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_team()\" /></td><td>" . $escaper->escapeHtml($lang['Team']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"technology\" id=\"checkbox_technology\"" . ($technology == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_technology()\" /></td><td>" . $escaper->escapeHtml($lang['Technology']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"owner\" id=\"checkbox_owner\"" . ($owner == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_owner()\" /></td><td>" . $escaper->escapeHtml($lang['Owner']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"manager\" id=\"checkbox_manager\"" . ($manager == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_manager()\" /></td><td>" . $escaper->escapeHtml($lang['OwnersManager']) . "</td>\n";
-	echo "<td><input type=\"checkbox\" name=\"submitted_by\" id=\"checkbox_submitted_by\"" . ($submitted_by == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_submitted_by()\" /></td><td>" . $escaper->escapeHtml($lang['SubmittedBy']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"scoring_method\" id=\"checkbox_scoring_method\"" . ($scoring_method == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_scoring_method()\" /></td><td>" . $escaper->escapeHtml($lang['RiskScoringMethod']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"calculated_risk\" id=\"checkbox_calculated_risk\"" . ($calculated_risk == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_calculated_risk()\" /></td><td>" . $escaper->escapeHtml($lang['CalculatedRisk']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"submission_date\" id=\"checkbox_submission_date\"" . ($submission_date == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_submission_date()\" /></td><td>" . $escaper->escapeHtml($lang['SubmissionDate']) . "</td>\n";
-	echo "</tr>\n";
-	echo "<tr>\n";
-	echo "<td><input type=\"checkbox\" name=\"review_date\" id=\"checkbox_review_date\"" . ($review_date == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_review_date()\" /></td><td>" . $escaper->escapeHtml($lang['ReviewDate']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"project\" id=\"checkbox_project\"" . ($project == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_project()\" /></td><td>" . $escaper->escapeHtml($lang['Project']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"mitigation_planned\" id=\"checkbox_mitigation_planned\"" . ($mitigation_planned == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_mitigation_planned()\" /></td><td>" . $escaper->escapeHtml($lang['MitigationPlanned']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"management_review\" id=\"checkbox_management_review\"" . ($management_review == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_management_review()\" /></td><td>" . $escaper->escapeHtml($lang['ManagementReview']) . "</td>\n";
-	echo "<td><input type=\"checkbox\" name=\"days_open\" id=\"checkbox_days_open\"" . ($days_open == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_days_open()\" /></td><td>" . $escaper->escapeHtml($lang['DaysOpen']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"next_review_date\" id=\"checkbox_next_review_date\"" . ($next_review_date == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_next_review_date()\" /></td><td>" . $escaper->escapeHtml($lang['NextReviewDate']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"next_step\" id=\"checkbox_next_step\"" . ($next_step == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_next_step()\" /></td><td>" . $escaper->escapeHtml($lang['NextStep']) . "</td>\n";
-	echo "<td width=\"10px\"></td>\n";
-	echo "<td><input type=\"checkbox\" name=\"affected_assets\" id=\"checkbox_affected_assets\"" . ($affected_assets == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_affected_assets()\" /></td><td>" . $escaper->escapeHtml($lang['AffectedAssets']) . "</td>\n";
-        echo "</tr>\n";
+	echo "<tr><td><input type=\"checkbox\" name=\"mitigation_planned\" id=\"checkbox_mitigation_planned\"" . ($mitigation_planned == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_mitigation_planned()\" /></td><td>" . $escaper->escapeHtml($lang['MitigationPlanned']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"planning_strategy\" id=\"checkbox_planning_strategy\"" . ($planning_strategy == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_planning_strategy()\" /></td><td>" . $escaper->escapeHtml($lang['PlanningStrategy']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"mitigation_effort\" id=\"checkbox_mitigation_effort\"" . ($mitigation_effort == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_mitigation_effort()\" /></td><td>" . $escaper->escapeHtml($lang['MitigationEffort']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"mitigation_cost\" id=\"checkbox_mitigation_cost\"" . ($mitigation_cost == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_mitigation_cost()\" /></td><td>" . $escaper->escapeHtml($lang['MitigationCost']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"mitigation_owner\" id=\"checkbox_mitigation_owner\"" . ($mitigation_owner == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_mitigation_owner()\" /></td><td>" . $escaper->escapeHtml($lang['MitigationOwner']) . "</td></tr>\n";
+        echo "<tr><td><input type=\"checkbox\" name=\"mitigation_team\" id=\"checkbox_mitigation_team\"" . ($mitigation_team == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_mitigation_team()\" /></td><td>" . $escaper->escapeHtml($lang['MitigationTeam']) . "</td></tr>\n";
 	echo "</table>\n";
         echo "</div>\n";
+	echo "</div>\n";
+	echo "</div>\n";
+
+        echo "<div class=\"span4\">\n";
+        echo "<div class=\"well\">\n";
+        echo "<div class=\"row-fluid\">\n";
+        echo "<h4>" . $escaper->escapeHtml($lang['ReviewColumns']) . ":</h4>\n";
+	echo "<table border=\"0\">\n";
+	echo "<tr><td><input type=\"checkbox\" name=\"management_review\" id=\"checkbox_management_review\"" . ($management_review == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_management_review()\" /></td><td>" . $escaper->escapeHtml($lang['ManagementReview']) . "</td></tr>\n";
+	echo "<tr><td><input type=\"checkbox\" name=\"review_date\" id=\"checkbox_review_date\"" . ($review_date == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_review_date()\" /></td><td>" . $escaper->escapeHtml($lang['ReviewDate']) . "</td></tr>\n";
+	echo "<tr><td><input type=\"checkbox\" name=\"next_review_date\" id=\"checkbox_next_review_date\"" . ($next_review_date == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_next_review_date()\" /></td><td>" . $escaper->escapeHtml($lang['NextReviewDate']) . "</td></tr>\n";
+	echo "<tr><td><input type=\"checkbox\" name=\"next_step\" id=\"checkbox_next_step\"" . ($next_step == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_next_step()\" /></td><td>" . $escaper->escapeHtml($lang['NextStep']) . "</td></tr>\n";
+	echo "</table>\n";
         echo "</div>\n";
+	echo "</div>\n";
+	echo "</div>\n";
 
 	echo "</div>\n";
 	echo "</form>\n";

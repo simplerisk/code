@@ -410,6 +410,52 @@
                         $alert_message = "An existing close reason was removed successfully.";
                 }
         }
+
+        // Check if a new status was submitted
+        if (isset($_POST['add_status']))
+        {
+                $name = $_POST['new_status'];
+
+                // Insert a new status up to 50 chars
+                add_name("status", $name, 50);
+
+                // There is an alert message
+                $alert = "good";
+                $alert_message = "A new status was added successfully.";
+        }
+
+        // Check if the status update was submitted
+        if (isset($_POST['update_status']))
+        {
+                $new_name = $_POST['new_name'];
+                $value = (int)$_POST['update_status_name'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        update_table("status", $new_name, $value);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The status name was updated successfully.";
+                }
+        }
+
+        // Check if a status was deleted
+        if (isset($_POST['delete_status']))
+        {
+                $value = (int)$_POST['status'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        delete_value("status", $value);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "An existing status was removed successfully.";
+                }
+        }
 ?>
 
 <!doctype html>
@@ -532,6 +578,16 @@
                 <?php echo $escaper->escapeHtml($lang['AddNewCloseReasonNamed']); ?> <input name="new_close_reason" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_close_reason" /><br />
 		<?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("close_reason", NULL, "update_close_reason_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_close_reason" /><br />
                 <?php echo $escaper->escapeHtml($lang['DeleteCurrentCloseReasonNamed']); ?> <?php create_dropdown("close_reason"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_close_reason" />
+                </p>
+                </form>
+              </div>
+              <div class="hero-unit">
+                <form name="status" method="post" action="">
+                <p>
+                <h4><?php echo $escaper->escapeHtml($lang['Status']); ?>:</h4>
+                <?php echo $escaper->escapeHtml($lang['AddNewStatusNamed']); ?> <input name="new_status" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_status" /><br />
+                <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("status", NULL, "update_status_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_status" /><br />
+                <?php echo $escaper->escapeHtml($lang['DeleteStatusNamed']); ?> <?php create_dropdown("status"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_status" />
                 </p>
                 </form>
               </div>

@@ -149,4 +149,25 @@ function delete_dir($dir)
         return rmdir($dir);
 }
 
+/***************************
+ * FUNCTION: JSON RESPONSE *
+ ***************************/
+function json_response($status, $status_message, $data)
+{
+	// HTTP Header
+	header("HTTP/1.1 $status, $status_message");
+	header("Content-Type: application/json");
+
+	// Response
+	$response['status'] = $status;
+	$response['status_message'] = $status_message;
+	$response['data'] = $data;
+
+	// JSON Response
+	$json_response = json_encode($response);
+
+	// Display the response
+	echo $json_response;
+}
+
 ?>

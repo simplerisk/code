@@ -364,6 +364,15 @@
 			update_mitigation($id, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
 		}
 
+		// If a file was submitted
+		if (!empty($_FILES))
+		{
+			// Upload any file that is submitted
+			$error = upload_file($id-1000, $_FILES['file'], 2);
+		}
+		// Otherwise, success
+		else $error = 1;
+
                 // Redirect back to the page the workflow started on
                 header("Location: " . $_SESSION["workflow_start"] . "?mitigated=true");
         }

@@ -579,7 +579,7 @@
             </div>
             <div class="span6">
               <div class="well">
-		<?php view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations); ?>
+		<?php view_mitigation_details($id+1000, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations); ?>
               </div>
             </div>
           </div>

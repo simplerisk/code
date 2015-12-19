@@ -110,6 +110,11 @@
 	(isset($_POST['next_review_date']) ? $next_review_date = true : $next_review_date = false);
 	(isset($_POST['next_step']) ? $next_step = true : $next_step = false);
 	(isset($_POST['affected_assets']) ? $affected_assets = true : $affected_assets = false);
+	(isset($_POST['planning_strategy']) ? $planning_strategy = true : $planning_strategy = false);
+	(isset($_POST['mitigation_effort']) ? $mitigation_effort = true : $mitigation_effort = false);
+	(isset($_POST['mitigation_cost']) ? $mitigation_cost = true : $mitigation_cost = false);
+	(isset($_POST['mitigation_owner']) ? $mitigation_owner = true : $mitigation_owner = false);
+	(isset($_POST['mitigation_team']) ? $mitigation_team = true : $mitigation_team = false);
 
 	// If there was not a POST
 	if (!isset($_POST['status']))
@@ -153,13 +158,13 @@
           <div class="row-fluid">
             <div id="selections" class="span12">
               <div class="well">
-                <?php view_get_risks_by_selections($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets); ?>
+                <?php view_get_risks_by_selections($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team); ?>
               </div>
             </div>
           </div>
           <div class="row-fluid">
             <div class="span12">
-              <?php get_risks_by_table($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets); ?>
+              <?php get_risks_by_table($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team); ?>
             </div>
           </div>
         </div>

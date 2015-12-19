@@ -376,10 +376,23 @@ function password_reset_by_userid($userid)
         // Send the reset e-mail
         send_reset_email($username, $name, $email, $token);
 
+	// If this was submitted by an unauthenticated user
+	if (!isset($_SESSION['uid']))
+	{
+		$user = "Unauthenticated";
+		$uid = 0;
+	}
+	// Otherwise, set the user and uid
+	else
+	{
+		$user = $_SESSION['user'];
+		$uid = $_SESSION['uid'];
+	}
+
 	// Audit log
 	$risk_id = 1000;
-	$message = "A password reset request was submitted for user \"" . $username . "\" by the \"" . $_SESSION['user'] . "\" user.";
-	write_log($risk_id, $_SESSION['uid'], $message);
+	$message = "A password reset request was submitted for user \"" . $username . "\" by the \"" . $user . "\" user.";
+	write_log($risk_id, $uid, $message);
 }
 
 /******************************

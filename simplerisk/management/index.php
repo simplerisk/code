@@ -156,7 +156,7 @@
 		if (!empty($_FILES))
 		{
 			// Upload any file that is submitted
-			upload_file($last_insert_id, $_FILES['file']);
+			upload_file($last_insert_id, $_FILES['file'], 1);
 		}
 
 		// If the notification extra is enabled

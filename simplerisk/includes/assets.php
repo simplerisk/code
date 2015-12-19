@@ -92,8 +92,8 @@ function add_assets($AvailableIPs)
 
 		// Set the default values for assets
 		$value = get_default_asset_valuation();
-		$location = null;
-		$team = null;
+		$location = 0;
+		$team = 0;
 
 		// Add the asset
 		add_asset($ipv4addr, $name, $value, $location, $team);
@@ -120,6 +120,10 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0)
 	$stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
 	$stmt->bindParam(":team", $team, PDO::PARAM_INT, 2);
         $return = $stmt->execute();
+
+        // Update the asset_id column in risks_to_assets
+        $stmt = $db->prepare("UPDATE `risks_to_assets` INNER JOIN `assets` ON `assets`.name = `risks_to_assets`.asset SET `risks_to_assets`.asset_id = `assets`.id;");
+	$return = $stmt->execute();
 
         // Close the database connection
         db_close($db);
@@ -160,9 +164,15 @@ function delete_asset($asset_id)
         // Open the database connection
         $db = db_open();
 
+	// Delete the assets entry
         $stmt = $db->prepare("DELETE FROM `assets` WHERE `id`=:id;");
         $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
         $return = $stmt->execute();
+
+	// Delete the risks_to_assets entry
+	$stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE `asset_id`=:id;");
+	$stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
+	$return = $stmt->execute();
 
         // Close the database connection
         db_close($db);
@@ -289,6 +299,10 @@ function tag_assets_to_risk($risk_id, $assets)
 			$stmt->execute();
 		}
 	}
+
+	// Add the asset_id column to risks_to_assets
+	$stmt = $db->prepare("UPDATE `risks_to_assets` INNER JOIN `assets` ON `assets`.name = `risks_to_assets`.asset SET `risks_to_assets`.asset_id = `assets`.id;");
+	$stmt->execute();
 	
 	// Close the database connection
 	db_close($db);
@@ -353,7 +367,7 @@ function get_unentered_assets()
         $db = db_open();
 
         // Get the assets
-        $stmt = $db->prepare("SELECT asset AS name FROM risks_to_assets a LEFT JOIN assets b ON a.asset = b.name WHERE b.name IS NULL");
+        $stmt = $db->prepare("SELECT DISTINCT asset AS name FROM risks_to_assets WHERE asset_id = 0");
         $stmt->execute();
 
         // Store the list in the assets array

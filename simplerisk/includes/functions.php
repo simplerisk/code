@@ -4247,7 +4247,10 @@ function get_comments($id)
 		$date = date(DATETIME, strtotime($comment['date']));
 		$user = $comment['name'];
 
-		echo "<p>". $escaper->escapeHtml($date) ." > ". $escaper->escapeHtml($user) .": ". $escaper->escapeHtml($text) ."</p>\n";
+		echo "<p>\n";
+		echo "<b><u>" . $escaper->escapeHtml($date) ." by ". $escaper->escapeHtml($user) ."</u></b><br />\n";
+		echo "<textarea style=\"cursor: default; border: none; width: 100%; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;\" name=\"comment\" cols=\"100\" rows=\"3\" id=\"comment\" title=\"" . $escaper->escapeHtml($text) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($text) . "</textarea>\n";
+		echo "</p>\n";
 	}
 
         return true;
@@ -4487,6 +4490,12 @@ function write_log($risk_id, $user_id, $message)
         // Subtract 1000 from id
         $risk_id = $risk_id - 1000;
 
+	// If the user_id value is not set
+	if (!isset($user_id))
+	{
+		$user_id = 0;
+	}
+
         // Open the database connection
         $db = db_open();
 
@@ -4698,6 +4707,37 @@ function import_export_extra()
         else return false;
 }
 
+/***********************
+ * FUNCTION: API EXTRA *
+ ***********************/
+function api_extra()
+{
+        // Open the database connection
+        $db = db_open();
+
+        // See if the import export extra is available
+        $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'api'");
+        $stmt->execute();
+
+        // Get the results array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        // If no value was found
+        if (empty($array))
+        {
+                return false;
+        }
+        // If the value is true
+        else if ($array[0]['value'] == true)
+        {
+                return true;
+        }
+        else return false;
+}
+
 /******************************
  * FUNCTION: ENCRYPTION EXTRA *
  ******************************/
@@ -4732,7 +4772,7 @@ function encryption_extra()
 /*************************
  * FUNCTION: UPLOAD FILE *
  *************************/
-function upload_file($risk_id, $file)
+function upload_file($risk_id, $file, $view_type = 1)
 {
         // Open the database connection
         $db = db_open();
@@ -4778,8 +4818,9 @@ function upload_file($risk_id, $file)
 					$unique_name = generate_token(30);
 
         				// Store the file in the database
-        				$stmt = $db->prepare("INSERT INTO files (risk_id, name, unique_name, type, size, user, content) VALUES (:risk_id, :name, :unique_name, :type, :size, :user, :content)");
+        				$stmt = $db->prepare("INSERT INTO files (risk_id, view_type, name, unique_name, type, size, user, content) VALUES (:risk_id, :view_type, :name, :unique_name, :type, :size, :user, :content)");
 					$stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+					$stmt->bindParam(":view_type", $view_type, PDO::PARAM_INT);
 					$stmt->bindParam(":name", $file['name'], PDO::PARAM_STR, 30);
 					$stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
 					$stmt->bindParam(":type", $file['type'], PDO::PARAM_STR, 30);
@@ -4806,14 +4847,14 @@ function upload_file($risk_id, $file)
 /*************************
  * FUNCTION: DELETE FILE *
  *************************/
-function delete_file($risk_id)
+function delete_file($unique_name)
 {
         // Open the database connection
         $db = db_open();
 
 	// Delete the file from the database
-	$stmt = $db->prepare("DELETE FROM files WHERE risk_id=:risk_id");
-	$stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+	$stmt = $db->prepare("DELETE FROM files WHERE unique_name=:unique_name");
+	$stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
 	$stmt->execute();
 
         // Close the database connection
@@ -4881,8 +4922,10 @@ function download_file($unique_name)
 
 /**************************************
  * FUNCTION: SUPPORTING DOCUMENTATION *
+ * TYPE 1 = Risk File                 *
+ * TYPE 2 = Mitigation File           *
  **************************************/
-function supporting_documentation($id, $mode = "view")
+function supporting_documentation($id, $mode = "view", $view_type = 1)
 {
 	global $lang;
         global $escaper;
@@ -4894,12 +4937,13 @@ function supporting_documentation($id, $mode = "view")
         $db = db_open();
 
         // Get the file from the database
-        $stmt = $db->prepare("SELECT name, unique_name FROM files WHERE risk_id=:id");
+        $stmt = $db->prepare("SELECT name, unique_name FROM files WHERE risk_id=:id AND view_type=:view_type");
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+	$stmt->bindParam(":view_type", $view_type, PDO::PARAM_INT);
         $stmt->execute();
 
         // Store the results in an array
-        $array = $stmt->fetch();
+        $array = $stmt->fetchAll();
 
         // Close the database connection
         db_close($db);
@@ -4907,15 +4951,24 @@ function supporting_documentation($id, $mode = "view")
 	// If the mode is view
 	if ($mode == "view")
 	{
+		echo "<ul>\n";
+
 		// If the array is empty
 		if (empty($array))
 		{
-			echo $escaper->escapeHtml($lang['None']);
+			echo "<li>" . $escaper->escapeHtml($lang['None']) . "</li>\n";
 		}
 		else
 		{
-			echo "<a href=\"download.php?id=" . $escaper->escapeHtml($array['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($array['name']) . "</a>\n";
+
+			// For each entry in the array
+			foreach ($array as $file)
+			{
+				echo "<li><a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($file['name']) . "</a></li>\n";
+			}
 		}
+
+		echo "</ul>\n";
 	}
 	// If the mode is edit
 	else if ($mode == "edit")
@@ -4927,9 +4980,16 @@ function supporting_documentation($id, $mode = "view")
 		}
 		else
 		{
-			echo "<a href=\"download.php?id=" . $escaper->escapeHtml($array['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($array['name']) . "</a>\n";
-			echo "<br />\n";
-			echo "<input type=\"checkbox\" name=\"delete\" value=\"YES\" />&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "?\n";
+                        echo "<ul>\n";
+
+                        // For each entry in the array
+                        foreach ($array as $file)
+                        {
+				echo "<li><a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($file['name']) . "</a>&nbsp;&nbsp;--&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "?<input type=\"checkbox\" name=\"delete[]\" value=\"" . $escaper->escapeHtml($file['unique_name']) . "\" /></li>\n";
+			}
+
+			echo "</ul>\n";
+			echo "<input type=\"file\" name=\"file\" />\n";
 		}
 	}
 }
@@ -5286,6 +5346,29 @@ function update_registration($name, $company, $title, $phone, $email)
 
 	// Return a failure
 	return 0;
+}
+
+/********************************
+ * FUNCTION: UPDATE RISK STATUS *
+ ********************************/
+function update_risk_status($risk_id, $status)
+{
+	// Adjust the risk id
+	$id = $risk_id - 1000;
+
+        // Open the database connection
+        $db = db_open();
+
+        // Update the status
+        $stmt = $db->prepare("UPDATE risks SET `status`=:status WHERE `id`=:id");
+        $stmt->bindParam(":status", $status, PDO::PARAM_STR, 50);
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Close the database connection
+        db_close($db);
+
+        return true;
 }
 
 ?>

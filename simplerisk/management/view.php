@@ -417,24 +417,25 @@
 			// Tag the assets to the risk id
 			tag_assets_to_risk($id-1000, $assets);
 
-			// If the user checked the delete button
-			if (isset($_POST['delete']) && $_POST['delete'] == "YES")
+			// If the delete value exists
+			if (!empty($_POST['delete']))
 			{
-				// Delete the file
-				$error = delete_file($id-1000);
-			}
-			// Otherwise
-			else
-			{
-				// If a file was submitted
-				if (!empty($_FILES))
+				// For each file selected
+				foreach ($_POST['delete'] as $file)
 				{
-                			// Upload any file that is submitted
-                			$error = upload_file($id-1000, $_FILES['file']);
+					// Delete the file
+					delete_file($file);
 				}
-				// Otherwise, success
-				else $error = 1;
 			}
+
+			// If a file was submitted
+			if (!empty($_FILES))
+			{
+                		// Upload any file that is submitted
+                		$error = upload_file($id-1000, $_FILES['file'], 1);
+			}
+			// Otherwise, success
+			else $error = 1;
 
 			if ($error == 1)
 			{
@@ -490,6 +491,26 @@
 			$mitigation_date = date(DATETIME, strtotime($mitigation_date));
 		}
 
+                // If the delete value exists
+                if (!empty($_POST['delete']))
+                {
+                	// For each file selected
+                        foreach ($_POST['delete'] as $file)
+                        {
+                        	// Delete the file
+                                delete_file($file);
+                        }
+                }
+
+		// If a file was submitted
+		if (!empty($_FILES))
+		{
+			// Upload any file that is submitted
+			$error = upload_file($id-1000, $_FILES['file'], 2);
+		}
+		// Otherwise, success
+		else $error = 1;
+
 		$alert = "good";
 		$alert_message = "The risk mitigation has been successfully modified.";
 	}
@@ -502,6 +523,17 @@
 		{
 			$alert = "good";
 			$alert_message = "Your comment has been successfully added to the risk.";
+		}
+	}
+
+	// If update_status is passed via GET
+	if (isset($_GET['update_status']))
+	{
+		// If it's true
+		if ($_GET['update_status'] == true)
+		{
+			$alert = "good";
+			$alert_message = "Your risk status has been successfully changed.";
 		}
 	}
 
@@ -695,17 +727,17 @@
             </div>
             <div class="span4">
               <div class="well">
-                <form name="mitigation" method="post" action="">
+                <form name="mitigation" method="post" action="" enctype="multipart/form-data">
 		<?php
 			// If the user has selected to edit the mitigation
 			if (isset($_POST['edit_mitigation']))
 			{ 
-				edit_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
+				edit_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
 			}
 			// Otherwise we are just viewing the mitigation
 			else
 			{
-				view_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
+				view_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
 			}
 		?>
                 </form>
