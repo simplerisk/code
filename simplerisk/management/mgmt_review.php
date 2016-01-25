@@ -59,11 +59,13 @@
         {
                 if (isset($_GET['id']))
                 {
-                        $id = (int)$_GET['id'];
+                	// Test that the ID is a numeric value
+                	$id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
                 }
                 else if (isset($_POST['id']))
                 {
-                        $id = (int)$_POST['id'];
+                	// Test that the ID is a numeric value
+                	$id = (is_numeric($_POST['id']) ? (int)$_POST['id'] : 0);
                 }
 
                 // If team separation is enabled
@@ -168,6 +170,7 @@
 			$regulation = $risk[0]['regulation'];
 			$control_number = $risk[0]['control_number'];
         	        $location = $risk[0]['location'];
+			$source = $risk[0]['source'];
                 	$category = $risk[0]['category'];
 	                $team = $risk[0]['team'];
         	        $technology = $risk[0]['technology'];
@@ -232,6 +235,7 @@
                         $regulation = "";
                         $control_number = "N/A";
                         $location = "";
+			$source = "";
                         $category = "";
                         $team = "";
                         $technology = "";
@@ -574,7 +578,7 @@
           <div class="row-fluid">
             <div class="span6">
               <div class="well">
-		<?php view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes); ?>
+		<?php view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes); ?>
               </div>
             </div>
             <div class="span6">

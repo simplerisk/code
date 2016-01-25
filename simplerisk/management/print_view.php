@@ -54,7 +54,8 @@
         // Check if a risk ID was sent
         if (isset($_GET['id']))
         {
-                $id = (int)$_GET['id'];
+                // Test that the ID is a numeric value
+                $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
 
         	// If team separation is enabled
         	if (team_separation_extra())

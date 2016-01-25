@@ -77,7 +77,8 @@
 		$reference_id = $_POST['reference_id'];
 		$regulation = (int)$_POST['regulation'];
 		$control_number = $_POST['control_number'];
-		$location = $_POST['location'];
+		$location = (int)$_POST['location'];
+		$source = (int)$_POST['source'];
                 $category = (int)$_POST['category'];
                 $team = (int)$_POST['team'];
                 $technology = (int)$_POST['technology'];
@@ -144,7 +145,7 @@
 		$custom = (float)$_POST['Custom'];
 
                 // Submit risk and get back the id
-                $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+                $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes);
 
 		// Submit risk scoring
 		submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
@@ -322,6 +323,10 @@
                 <tr>
                   <td width="200px"><?php echo $escaper->escapeHtml($lang['SiteLocation']); ?>:</td>
                   <td><?php create_dropdown("location"); ?></td>
+                </tr>
+                <tr>
+                  <td width="200px"><?php echo $escaper->escapeHtml($lang['RiskSource']); ?>:</td>
+                  <td><?php create_dropdown("source"); ?></td>
                 </tr>
                 <tr>
                   <td width="200px"><?php echo $escaper->escapeHtml($lang['Category']); ?>:</td>

@@ -17,6 +17,9 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 {
 	global $lang;
 	global $escaper;
+
+	// Decrypt fields
+	$subject = try_decrypt($subject);
 	
 	echo "<table width=\"100%\" cellpadding=\"10\" cellspacing=\"0\" style=\"border:none;\">\n";
         echo "<tr>\n";
@@ -105,6 +108,9 @@ function view_print_top_table($id, $calculated_risk, $subject, $status)
         global $lang;
         global $escaper;
 
+	// Decrypt fields
+	$subject = try_decrypt($subject);
+
         echo "<table width=\"100%\" cellpadding=\"10\" cellspacing=\"0\" style=\"border:none;\">\n";
         echo "<tr>\n";
         echo "<td width=\"100\" valign=\"middle\" halign=\"center\">\n";
@@ -145,10 +151,15 @@ function view_print_top_table($id, $calculated_risk, $subject, $status)
 /*******************************
  * FUNCTION: VIEW RISK DETAILS *
  *******************************/
-function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
+function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes)
 {
 	global $lang;
 	global $escaper;
+
+	// Decrypt fields
+	$subject = try_decrypt($subject);
+	$assessment = try_decrypt($assessment);
+	$notes = try_decrypt($notes);
 	
 	echo "<h4>". $escaper->escapeHtml($lang['Details']) ."</h4>\n";
         echo $escaper->escapeHtml($lang['SubmissionDate']) .": \n";
@@ -178,6 +189,10 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
         echo $escaper->escapeHtml($lang['SiteLocation']) .": \n";
         echo "<br />\n";
         echo "<input style=\"cursor: default;\" type=\"text\" name=\"location\" id=\"location\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("location", $location)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("location", $location)) . "\" disabled=\"disabled\" />\n";
+        echo "<br />\n";
+        echo $escaper->escapeHtml($lang['RiskSource']) .": \n";
+        echo "<br />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"source\" id=\"source\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "\" disabled=\"disabled\" />\n";
         echo "<br />\n";
         echo $escaper->escapeHtml($lang['Category']) .": \n";
         echo "<br />\n";
@@ -232,6 +247,11 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
 {
         global $lang;
         global $escaper;
+
+	// Decrypt fields
+	$subject = try_decrypt($subject);
+	$assessment = try_decrypt($assessment);
+	$notes = try_decrypt($notes);
 
         echo "<h4>" . $escaper->escapeHtml($lang['Details']) . "</h4>\n";
 	echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
@@ -312,10 +332,15 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
 /*******************************
  * FUNCTION: EDIT RISK DETAILS *
  *******************************/
-function edit_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $assessment, $notes)
+function edit_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $assessment, $notes)
 {
 	global $lang;
 	global $escaper;
+
+	// Decrypt fields
+	$subject = try_decrypt($subject);
+	$assessment = try_decrypt($assessment);
+	$notes = try_decrypt($notes);
 	
 	echo "<h4>". $escaper->escapeHtml($lang['Details']) ."</h4>\n";
         echo $escaper->escapeHtml($lang['SubmissionDate']) .": \n";
@@ -341,6 +366,10 @@ function edit_risk_details($id, $submission_date, $subject, $reference_id, $regu
         echo $escaper->escapeHtml($lang['SiteLocation']) .": \n";
         echo "<br />\n";
         create_dropdown("location", $location);
+        echo "<br />\n";
+        echo $escaper->escapeHtml($lang['RiskSource']) .": \n";
+        echo "<br />\n";
+        create_dropdown("source", $source);
         echo "<br />\n";
         echo $escaper->escapeHtml($lang['Category']) .": \n";
         echo "<br />\n";
@@ -390,6 +419,11 @@ function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 	global $lang;
 	global $escaper;
 	
+	// Decrypt fields
+	$current_solution = try_decrypt($current_solution);
+	$security_requirements = try_decrypt($security_requirements);
+	$security_recommendations = try_decrypt($security_recommendations);
+
         echo "<h4>". $escaper->escapeHtml($lang['Mitigation']) ."</h4>\n";
         echo $escaper->escapeHtml($lang['MitigationDate']) .": \n";
         echo "<br />\n";
@@ -449,6 +483,11 @@ function view_print_mitigation_details($mitigation_date, $planning_strategy, $mi
         global $lang;
         global $escaper;
 
+	// Decrypt fields
+	$current_solution = try_decrypt($current_solution);
+	$security_requirements = try_decrypt($security_requirements);
+	$security_recommendations = try_decrypt($security_recommendations);
+
         echo "<h4>". $escaper->escapeHtml($lang['Mitigation']) ."</h4>\n";
         echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
 
@@ -493,6 +532,11 @@ function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 	global $lang;
 	global $escaper;
 	
+	// Decrypt fields
+	$current_solution = try_decrypt($current_solution);
+	$security_requirements = try_decrypt($security_requirements);
+	$security_recommendations = try_decrypt($security_recommendations);
+
 	echo "<h4>". $escaper->escapeHtml($lang['Mitigation']) ."</h4>\n";
         echo $escaper->escapeHtml($lang['MitigationDate']) .": \n";
 	echo "<br />\n";
@@ -544,6 +588,9 @@ function view_review_details($id, $review_date, $reviewer, $review, $next_step, 
 {
 	global $lang;
 	global $escaper;
+
+	// Decrypt fields
+	$comments = try_decrypt($comments);
 	
 	echo "<h4>". $escaper->escapeHtml($lang['LastReview']) ."</h4>\n";
         echo $escaper->escapeHtml($lang['ReviewDate']) .": \n";
@@ -579,6 +626,9 @@ function view_print_review_details($id, $review_date, $reviewer, $review, $next_
 {
         global $lang;
         global $escaper;
+
+	// Decrypt fields
+	$comments = try_decrypt($comments);
 
         echo "<h4>". $escaper->escapeHtml($lang['LastReview']) ."</h4>\n";
         echo "<table border=\"1\" width=\"100%\" cellspacing=\"10\" cellpadding=\"10\">\n";
@@ -623,6 +673,11 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mit
 {
 	global $lang;
 	global $escaper;
+
+	// Decrypt fields
+	$current_solution = try_decrypt($current_solution);
+	$security_requirements = try_decrypt($security_requirements);
+	$security_recommendations = try_decrypt($security_recommendations);
 	
 	echo "<h4>". $escaper->escapeHtml($lang['SubmitRiskMitigation']) ."</h4>\n";
         echo "<form name=\"submit_mitigation\" method=\"post\" action=\"\" enctype=\"multipart/form-data\">\n";
@@ -677,6 +732,9 @@ function edit_review_submission($review, $next_step, $next_review, $comments)
 {
 	global $lang;
 	global $escaper;
+
+	// Decrypt fields
+	$comments = try_decrypt($comments);
 	
 	echo "<h4>". $escaper->escapeHtml($lang['SubmitManagementReview']) ."</h4>\n";
         echo "<form name=\"submit_management_review\" method=\"post\" action=\"\">\n";
@@ -2748,7 +2806,7 @@ function view_risks_and_assets_selections($report)
 /******************************************
  * FUNCTION: VIEW GET RISKS BY SELECTIONS *
  ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $category=false, $team=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false)
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false)
 {
 	global $lang;
 	global $escaper;
@@ -2782,16 +2840,17 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $r
 	echo "<option value=\"1\"" . ($group == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskLevel']) . "</option>\n";
 	echo "<option value=\"2\"" . ($group == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Status']) . "</option>\n";
 	echo "<option value=\"3\"" . ($group == 3 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['SiteLocation']) . "</option>\n";
-	echo "<option value=\"4\"" . ($group == 4 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Category']) . "</option>\n";
-	echo "<option value=\"5\"" . ($group == 5 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Team']) . "</option>\n";
-	echo "<option value=\"6\"" . ($group == 6 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Technology']) . "</option>\n";
-	echo "<option value=\"7\"" . ($group == 7 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Owner']) . "</option>\n";
-	echo "<option value=\"8\"" . ($group == 8 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['OwnersManager']) . "</option>\n";
-	echo "<option value=\"9\"" . ($group == 9 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskScoringMethod']) . "</option>\n";
-	echo "<option value=\"10\"" . ($group == 10 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ControlRegulation']) . "</option>\n";
-	echo "<option value=\"11\"" . ($group == 11 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Project']) . "</option>\n";
-	echo "<option value=\"12\"" . ($group == 12 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['NextStep']) . "</option>\n";
-	echo "<option value=\"13\"" . ($group == 13 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['MonthSubmitted']) . "</option>\n";
+	echo "<option value=\"4\"" . ($group == 4 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskSource']) . "</option>\n";
+	echo "<option value=\"5\"" . ($group == 5 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Category']) . "</option>\n";
+	echo "<option value=\"6\"" . ($group == 6 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Team']) . "</option>\n";
+	echo "<option value=\"7\"" . ($group == 7 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Technology']) . "</option>\n";
+	echo "<option value=\"8\"" . ($group == 8 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Owner']) . "</option>\n";
+	echo "<option value=\"9\"" . ($group == 9 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['OwnersManager']) . "</option>\n";
+	echo "<option value=\"10\"" . ($group == 10 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskScoringMethod']) . "</option>\n";
+	echo "<option value=\"11\"" . ($group == 11 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ControlRegulation']) . "</option>\n";
+	echo "<option value=\"12\"" . ($group == 12 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Project']) . "</option>\n";
+	echo "<option value=\"13\"" . ($group == 13 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['NextStep']) . "</option>\n";
+	echo "<option value=\"14\"" . ($group == 14 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['MonthSubmitted']) . "</option>\n";
 	echo "</select>\n";
         echo "</div>\n";
         echo "</div>\n";
@@ -2825,17 +2884,18 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $r
         echo "<tr><td><input type=\"checkbox\" name=\"regulation\" id=\"checkbox_regulation\"" . ($regulation == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_regulation()\" /></td><td>" . $escaper->escapeHtml($lang['ControlRegulation']) . "</td></tr>\n";
         echo "<tr><td><input type=\"checkbox\" name=\"control_number\" id=\"checkbox_control_number\"" . ($control_number == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_control_number()\" /></td><td>" . $escaper->escapeHtml($lang['ControlNumber']) . "</td></tr>\n";
         echo "<tr><td><input type=\"checkbox\" name=\"location\" id=\"checkbox_location\"" . ($location == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_location()\" /></td><td>" . $escaper->escapeHtml($lang['SiteLocation']) . "</td></tr>\n";
+	echo "<tr><td><input type=\"checkbox\" name=\"source\" id=\"checkbox_source\"" . ($source == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_source()\" /></td><td>" . $escaper->escapeHtml($lang['RiskSource']) . "</td></tr>\n";
         echo "<tr><td><input type=\"checkbox\" name=\"category\" id=\"checkbox_category\"" . ($category == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_category()\" /></td><td>" . $escaper->escapeHtml($lang['Category']) . "</td></tr>\n";
         echo "<tr><td><input type=\"checkbox\" name=\"team\" id=\"checkbox_team\"" . ($team == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_team()\" /></td><td>" . $escaper->escapeHtml($lang['Team']) . "</td></tr>\n";
         echo "<tr><td><input type=\"checkbox\" name=\"technology\" id=\"checkbox_technology\"" . ($technology == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_technology()\" /></td><td>" . $escaper->escapeHtml($lang['Technology']) . "</td></tr>\n";
         echo "<tr><td><input type=\"checkbox\" name=\"owner\" id=\"checkbox_owner\"" . ($owner == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_owner()\" /></td><td>" . $escaper->escapeHtml($lang['Owner']) . "</td></tr>\n";
         echo "<tr><td><input type=\"checkbox\" name=\"manager\" id=\"checkbox_manager\"" . ($manager == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_manager()\" /></td><td>" . $escaper->escapeHtml($lang['OwnersManager']) . "</td></tr>\n";
         echo "<tr><td><input type=\"checkbox\" name=\"submitted_by\" id=\"checkbox_submitted_by\"" . ($submitted_by == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_submitted_by()\" /></td><td>" . $escaper->escapeHtml($lang['SubmittedBy']) . "</td></tr>\n";
-        echo "<tr><td><input type=\"checkbox\" name=\"scoring_method\" id=\"checkbox_scoring_method\"" . ($scoring_method == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_scoring_method()\" /></td><td>" . $escaper->escapeHtml($lang['RiskScoringMethod']) . "</td></tr>\n";
 	echo "</table>\n";
 	echo "</div>\n";
         echo "<div class=\"span4\">\n";
         echo "<table border=\"0\">\n";
+	echo "<tr><td><input type=\"checkbox\" name=\"scoring_method\" id=\"checkbox_scoring_method\"" . ($scoring_method == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_scoring_method()\" /></td><td>" . $escaper->escapeHtml($lang['RiskScoringMethod']) . "</td></tr>\n";
         echo "<tr><td><input type=\"checkbox\" name=\"calculated_risk\" id=\"checkbox_calculated_risk\"" . ($calculated_risk == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_calculated_risk()\" /></td><td>" . $escaper->escapeHtml($lang['CalculatedRisk']) . "</td></tr>\n";
         echo "<tr><td><input type=\"checkbox\" name=\"submission_date\" id=\"checkbox_submission_date\"" . ($submission_date == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_submission_date()\" /></td><td>" . $escaper->escapeHtml($lang['SubmissionDate']) . "</td></tr>\n";
         echo "<tr><td><input type=\"checkbox\" name=\"project\" id=\"checkbox_project\"" . ($project == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_project()\" /></td><td>" . $escaper->escapeHtml($lang['Project']) . "</td></tr>\n";

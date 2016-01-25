@@ -635,7 +635,7 @@ function create_asset_valuation_dropdown($name, $selected = NULL)
 		}
 		else $text = "";
 
-		echo "  <option value=\"" . $escaper->escapeHtml($value['id']) . "\"" . $text . ">$" . $escaper->escapeHtml(number_format($value['min_value'])) . " to $" . $escaper->escapeHtml(number_format($value['max_value'])) . "</option>\n";
+		echo "  <option value=\"" . $escaper->escapeHtml($value['id']) . "\"" . $text . ">" . $escaper->escapeHtml(get_setting("currency")) . $escaper->escapeHtml(number_format($value['min_value'])) . " to " . $escaper->escapeHtml(get_setting("currency")) . $escaper->escapeHtml(number_format($value['max_value'])) . "</option>\n";
 	}
 
 	echo "</select>\n";
@@ -690,6 +690,8 @@ function get_default_asset_valuation()
  ***********************************/
 function get_asset_value_by_id($id)
 {
+	global $escaper;
+
         // Open the database connection
         $db = db_open();
 
@@ -703,7 +705,7 @@ function get_asset_value_by_id($id)
 	// If a value exists
 	if (!empty($value))
 	{
-		$asset_value = "$" . number_format($value[0]['min_value']) . " to $" . number_format($value[0]['max_value']);
+		$asset_value = get_setting("currency") . number_format($value[0]['min_value']) . " to " . get_setting("currency") . number_format($value[0]['max_value']);
 	}
 	// Otherwise
 	else

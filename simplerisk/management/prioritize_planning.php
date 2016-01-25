@@ -124,7 +124,7 @@
 		else
 		{
                 	// Insert a new project up to 100 chars
-	                add_name("projects", $name, 100);
+	                add_name("projects", try_encrypt($name), 100);
 
 			// There is an alert message
 	                $alert = "good";
@@ -390,7 +390,7 @@
               <div class="hero-unit">
                 <h4>2) <?php echo $escaper->escapeHtml($lang['AddUnassignedRisksToProjects']); ?></h4>
                 <p><?php echo $escaper->escapeHtml($lang['AddUnassignedRisksToProjectsHelp']); ?>.</p>
-                <?php get_project_tabs() ?>
+                <?php get_project_tabs(); ?>
               </div>
               <div class="hero-unit">
                 <h4>3) <?php echo $escaper->escapeHtml($lang['PrioritizeProjects']); ?></h4>

@@ -440,6 +440,11 @@ $lang = array(
     'SetRiskStatusTo'=>'Definir Status de Risco Para',
     'AddNewStatusNamed'=>'Adicionar novo status nomeado',
     'DeleteStatusNamed'=>'Excluir estatuto nomeado',
+    'DefaultCurrencySymbol'=>'Símbolo Monetário Padrão',
+    'DefaultValues'=>'Valores Padrão',
+    'RiskSource'=>'Fonte Risco',
+    'AddNewSourceNamed'=>'Adicionar nova fonte nomeado',
+    'DeleteSourceNamed'=>'Excluir fonte nomeado',
     ''=>'',
 );
 

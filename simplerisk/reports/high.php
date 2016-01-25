@@ -111,7 +111,7 @@
 			// If we have high risks
 			if ($high > 0)
 			{
-				echo "<h3>" . $escaper->escapeHtml($lang['TotalHighRisks']) . ": " . $escaper->escapeHtml($veryhigh) . "</h3>";
+				echo "<h3>" . $escaper->escapeHtml($lang['TotalHighRisks']) . ": " . $escaper->escapeHtml($high) . "</h3>";
 				echo "<h3>" . $escaper->escapeHtml($lang['HighRiskPercentage']) . ": " . $escaper->escapeHtml(round($highpercent, 2)) . "%</h3>";
 			}
 		?>

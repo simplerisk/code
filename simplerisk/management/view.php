@@ -54,7 +54,8 @@
         // Check if a risk ID was sent
         if (isset($_GET['id']))
         {
-                $id = (int)$_GET['id'];
+		// Test that the ID is a numeric value
+		$id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
 
         	// If team separation is enabled
         	if (team_separation_extra())
@@ -158,6 +159,7 @@
 			$regulation = $risk[0]['regulation'];
 			$control_number = $risk[0]['control_number'];
 			$location = $risk[0]['location'];
+			$source = $risk[0]['source'];
                 	$category = $risk[0]['category'];
                 	$team = $risk[0]['team'];
                 	$technology = $risk[0]['technology'];
@@ -222,6 +224,7 @@
 			$regulation = "";
 			$control_number = "N/A";
                         $location = "";
+			$source = "";
                         $category = "";
                         $team = "";
                         $technology = "";
@@ -397,22 +400,23 @@
 		// If the user has permission to modify risks
 		if (!$empty_subject && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
 		{
-                	$subject = $_POST['subject'];
+                	$subject = try_encrypt($_POST['subject']);
 			$reference_id = $_POST['reference_id'];
 			$regulation = (int)$_POST['regulation'];
 			$control_number = $_POST['control_number'];
 			$location = (int)$_POST['location'];
+			$source = (int)$_POST['source'];
                 	$category = (int)$_POST['category'];
                 	$team = (int)$_POST['team'];
                 	$technology = (int)$_POST['technology'];
                 	$owner = (int)$_POST['owner'];
                 	$manager = (int)$_POST['manager'];
-                	$assessment = $_POST['assessment'];
-                	$notes = $_POST['notes'];
+                	$assessment = try_encrypt($_POST['assessment']);
+                	$notes = try_encrypt($_POST['notes']);
 			$assets = $_POST['assets'];
 
 			// Update risk
-			update_risk($id, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+			update_risk($id, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes);
 
 			// Tag the assets to the risk id
 			tag_assets_to_risk($id-1000, $assets);
@@ -471,9 +475,9 @@
 		$mitigation_cost = (int)$_POST['mitigation_cost'];
 		$mitigation_owner = (int)$_POST['mitigation_owner'];
 		$mitigation_team = (int)$_POST['mitigation_team'];
-                $current_solution = $_POST['current_solution'];
-                $security_requirements = $_POST['security_requirements'];
-                $security_recommendations = $_POST['security_recommendations'];
+                $current_solution = try_encrypt($_POST['current_solution']);
+                $security_requirements = try_encrypt($_POST['security_requirements']);
+                $security_recommendations = try_encrypt($_POST['security_recommendations']);
 
 		// If we don't yet have a mitigation
 		if ($mitigation_id == 0)
@@ -714,12 +718,12 @@
 			// If the user has selected to edit the risk
 			if (isset($_POST['edit_details']))
 			{
-				edit_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $assessment, $notes);
+				edit_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $assessment, $notes);
 			}
 			// Otherwise we are just viewing the risk
 			else
 			{
-				view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+				view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes);
 			}
 		?>
                 </form>

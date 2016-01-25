@@ -456,6 +456,52 @@
                         $alert_message = "An existing status was removed successfully.";
                 }
         }
+
+        // Check if a new source was submitted
+        if (isset($_POST['add_source']))
+        {
+                $name = $_POST['new_source'];
+
+                // Insert a new source up to 50 chars
+                add_name("source", $name, 50);
+
+                // There is an alert message
+                $alert = "good";
+                $alert_message = "A new source was added successfully.";
+        }
+
+        // Check if the source update was submitted
+        if (isset($_POST['update_source']))
+        {
+                $new_name = $_POST['new_name'];
+                $value = (int)$_POST['update_source_name'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        update_table("source", $new_name, $value);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The source name was updated successfully.";
+                }
+        }
+
+        // Check if a source was deleted
+        if (isset($_POST['delete_source']))
+        {
+                $value = (int)$_POST['source'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        delete_value("source", $value);
+
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "An existing source was removed successfully.";
+                }
+        }
 ?>
 
 <!doctype html>
@@ -588,6 +634,16 @@
                 <?php echo $escaper->escapeHtml($lang['AddNewStatusNamed']); ?> <input name="new_status" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_status" /><br />
                 <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("status", NULL, "update_status_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_status" /><br />
                 <?php echo $escaper->escapeHtml($lang['DeleteStatusNamed']); ?> <?php create_dropdown("status"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_status" />
+                </p>
+                </form>
+              </div>
+              <div class="hero-unit">
+                <form name="source" method="post" action="">
+                <p>
+                <h4><?php echo $escaper->escapeHtml($lang['RiskSource']); ?>:</h4>
+                <?php echo $escaper->escapeHtml($lang['AddNewSourceNamed']); ?> <input name="new_source" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_source" /><br />
+                <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("source", NULL, "update_source_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_source" /><br />
+                <?php echo $escaper->escapeHtml($lang['DeleteSourceNamed']); ?> <?php create_dropdown("source"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_source" />
                 </p>
                 </form>
               </div>

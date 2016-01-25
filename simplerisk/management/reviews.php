@@ -51,7 +51,8 @@
         // Check if a risk ID was sent
         if (isset($_GET['id']))
         {
-                $id = (int)$_GET['id'];
+                // Test that the ID is a numeric value
+                $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
 
                 // Get the details of the risk
                 $risk = get_risk_by_id($id);

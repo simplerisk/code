@@ -122,6 +122,16 @@
 				// Update the password
 				update_password($user, $hash);
 
+                                // If the encryption extra is enabled
+                                if (encryption_extra())
+                                {
+                                        // Load the extra
+                                        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+                                        // Set the new encrypted password
+                                        set_enc_pass($user, $new_pass, $_SESSION['encrypted_pass']);
+                                }
+
 				// Send an alert
 				$alert = "good";
 				$alert_message = "Your password has been updated successfully!";

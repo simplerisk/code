@@ -61,6 +61,17 @@
 	// Check if the default asset valuation was submitted
 	if (isset($_POST['update_default_value']))
 	{
+		// If the currency is set and is not empty
+		if (isset($_POST['currency']) && ($_POST['currency'] != ""))
+		{
+			// If the currency value is one character long
+			if (strlen($_POST['currency']) <= 6)
+			{
+				// Update the currency
+				update_setting("currency", $_POST['currency']);
+			}
+		}
+
 		// If value is set and is numeric
 		if (isset($_POST['value']) && is_numeric($_POST['value']))
 		{
@@ -168,11 +179,14 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <?php $url = "<svg xmlns=\"http://www.w3.org/2000/svg\"><text x=\"5px\" y=\"20px\" font-size=\"15\" stroke=\"green\" fill=\"green\">" . get_setting("currency") . "</text></svg>"; ?>
     <style type="text/css">
       #dollarsign {
-      	background: white url(/images/dollarsign.jpg) left no-repeat;
-	background-size: 15px;
-	padding-left: 17px;
+	background-image: url('data:image/svg+xml;base64,<?php echo base64_encode($url); ?>');
+	background-repeat: no-repeat;
+	background-color: white;
+	background-position: left;
+        padding-left: 35px;
       }
     </style>
   </head>
@@ -219,10 +233,14 @@
             <div class="span12">
               <div class="hero-unit">
                 <form name="default" method="post" action="">
-                <h4><?php echo $escaper->escapeHtml($lang['DefaultAssetValuation']); ?>:</h4>
+                <h4><?php echo $escaper->escapeHtml($lang['DefaultValues']); ?>:</h4>
                 <table border="0" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td><?php echo $escaper->escapeHtml($lang['Default']); ?>:&nbsp;</td>
+                  <td><?php echo $escaper->escapeHtml($lang['DefaultCurrencySymbol']); ?>:&nbsp;</td>
+                  <td><input type="text" name="currency" maxlength="3" value="<?php echo get_setting("currency"); ?>" /></td>
+                </tr>
+                <tr>
+                  <td><?php echo $escaper->escapeHtml($lang['DefaultAssetValuation']); ?>:&nbsp;</td>
                   <td>
                     <?php
 			// Get the default asset valuation

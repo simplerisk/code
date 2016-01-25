@@ -150,6 +150,27 @@ function check_location()
   }
 }
 
+function check_source()
+{
+  elements = document.getElementsByClassName("source");
+  checkbox = document.getElementById("checkbox_source");
+
+  if(checkbox.checked)
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "";
+    }
+  }
+  else
+  {
+    for(i=0; i<elements.length; i++)
+    {
+      elements[i].style.display = "none";
+    }
+  }
+}
+
 function check_category()
 {
   elements = document.getElementsByClassName("category");

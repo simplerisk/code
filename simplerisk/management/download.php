@@ -50,13 +50,15 @@
         if (isset($_GET['id']) || isset($_POST['id']))
         {
                 if (isset($_GET['id']))
-		{
-			$id = $_GET['id'];
-		}
-		else if (isset($_POST['id']))
-		{
-			$id = $_POST['id'];
-		}
+                {
+                        // Test that the ID is a numeric value
+                        $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
+                }
+                else if (isset($_POST['id']))
+                {
+                        // Test that the ID is a numeric value
+                        $id = (is_numeric($_POST['id']) ? (int)$_POST['id'] : 0);
+                }
 
 		// Get the file for the submitted file id
 		download_file($id);

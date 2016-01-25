@@ -150,6 +150,16 @@
                                 	// Insert a new user
                                 	add_user($type, $user, $email, $name, $salt, $hash, $team, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
+					// If the encryption extra is enabled
+					if (encryption_extra())
+					{
+						// Load the extra
+						require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+						// Add the new encrypted user
+						add_user_enc($pass, $salt, $user);
+					}
+
 					$alert = "good";
 					$alert_message = "The new user was added successfully.";
 				}
@@ -217,6 +227,19 @@
                 if (is_int($value))
                 {
                         delete_value("user", $value);
+
+                	// If the encryption extra is enabled
+                	if (encryption_extra())
+                	{
+                        	// Load the extra
+                        	require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+				// Delete the value from the user_enc table
+				delete_user_enc($value);
+
+				// Check to see if all users have now been activated
+				check_all_activated();
+			}
 
 			// There is an alert message
 			$alert = "good";

@@ -93,6 +93,7 @@
 	(isset($_POST['regulation']) ? $regulation = true : $regulation = false);
 	(isset($_POST['control_number']) ? $control_number = true : $control_number = false);
 	(isset($_POST['location']) ? $location = true : $location = false);
+	(isset($_POST['source']) ? $source = true : $source = false);
 	(isset($_POST['category']) ? $category = true : $category = false);
 	(isset($_POST['team']) ? $team = true : $team = false);
 	(isset($_POST['technology']) ? $technology = true : $technology = false);
@@ -158,13 +159,13 @@
           <div class="row-fluid">
             <div id="selections" class="span12">
               <div class="well">
-                <?php view_get_risks_by_selections($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team); ?>
+                <?php view_get_risks_by_selections($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team); ?>
               </div>
             </div>
           </div>
           <div class="row-fluid">
             <div class="span12">
-              <?php get_risks_by_table($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team); ?>
+              <?php get_risks_by_table($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team); ?>
             </div>
           </div>
         </div>

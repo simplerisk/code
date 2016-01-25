@@ -99,6 +99,11 @@
           <div class="row-fluid">
             <div class="span3">
               <div class="well">
+                <?php open_risk_source_pie($escaper->escapeHtml($lang['RiskSource'])); ?>
+              </div>
+            </div>
+            <div class="span3">
+              <div class="well">
                 <?php open_risk_category_pie($escaper->escapeHtml($lang['Category'])); ?>
               </div>
             </div>
@@ -107,13 +112,13 @@
                 <?php open_risk_team_pie($escaper->escapeHtml($lang['Team'])); ?>
               </div>
             </div>
+          </div>
+          <div class="row-fluid">
             <div class="span3">
               <div class="well">
                 <?php open_risk_technology_pie($escaper->escapeHtml($lang['Technology'])); ?>
               </div>
             </div>
-          </div>
-          <div class="row-fluid">
             <div class="span3">
               <div class="well">
                 <?php open_risk_owner_pie($escaper->escapeHtml($lang['Owner'])); ?>
@@ -124,6 +129,8 @@
                 <?php open_risk_owners_manager_pie($escaper->escapeHtml($lang['OwnersManager'])); ?>
               </div>
             </div>
+          </div>
+          <div class="row-fluid">
             <div class="span3">
               <div class="well">
                 <?php open_risk_scoring_method_pie($escaper->escapeHtml($lang['RiskScoringMethod'])); ?>

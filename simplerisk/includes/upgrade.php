@@ -960,6 +960,62 @@ function upgrade_from_20151108001($db)
         echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/**************************************
+ * FUNCTION: UPGRADE FROM 20151219001 *
+ **************************************/
+function upgrade_from_20151219001($db)
+{
+        // Database version to upgrade
+        $version_to_upgrade = '20151219-001';
+
+        // Database version upgrading to
+        $version_upgrading_to = '20160124-001';
+
+        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+	// Add a new currency setting
+	echo "Adding a new currency setting.<br />\n";
+	add_setting("currency", "$");
+
+	// Add a risk source table
+	echo "Adding a new risk source table.<br />\n";
+	$stmt = $db->prepare("CREATE TABLE `source` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50) NOT NULL);");
+        $stmt->execute();
+
+        // Add new custom statuses
+        echo "Adding new risk sources.<br />\n";
+        if (defined('LANG_DEFAULT'))
+        {
+                if (LANG_DEFAULT == "en")
+                {
+                        $stmt = $db->prepare("INSERT INTO source (`name`) VALUES ('People'), ('Process'), ('System'), ('External');");
+                }
+                else if (LANG_DEFAULT == "es")
+                {
+                        $stmt = $db->prepare("INSERT INTO source (`name`) VALUES ('Gente'), ('Proceso'), ('Sistema'), ('Externo');");
+                }
+                else if (LANG_DEFAULT == "bp")
+                {
+                        $stmt = $db->prepare("INSERT INTO source (`name`) VALUES ('Pessoas'), ('Processo'), ('Sistema'), ('Externo');");
+                }
+        }
+        else
+        {
+                $stmt = $db->prepare("INSERT INTO source (`name`) VALUES ('People'), ('Process'), ('System'), ('External');");
+        }
+        $stmt->execute();
+
+        // Add a source column to the risks table
+        echo "Adding a source column to the risks table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD source int(11) NOT NULL AFTER location;");
+        $stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -1023,6 +1079,10 @@ function upgrade_database()
 				break;
 			case "20151108-001":
 				upgrade_from_20151108001($db);
+				upgrade_database();
+				break;
+			case "20151219-001":
+				upgrade_from_20151219001($db);
 				upgrade_database();
 				break;
 			default:

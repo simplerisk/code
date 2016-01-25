@@ -391,6 +391,13 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
         // For each option
         foreach ($options as $option)
         {
+		// If this is a project
+		if ($name == "projects")
+		{
+			// Try to decrypt it
+			$option['name'] = try_decrypt($option['name']);
+		}
+
 		// If the option is selected
 		if ($selected == $option['value'])
 		{
@@ -776,6 +783,23 @@ function update_table($table, $name, $value)
 }
 
 /*************************
+ * FUNCTION: ADD SETTING *
+ *************************/
+function add_setting($name, $value)
+{
+        // Open the database connection
+        $db = db_open();
+
+	$stmt = $db->prepare("INSERT INTO settings (`name`,`value`) VALUES (:name, :value);");
+	$stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
+	$stmt->bindParam(":value", $value, PDO::PARAM_STR, 200);
+	$stmt->execute();
+	
+        // Close the database connection
+        db_close($db);
+}
+
+/*************************
  * FUNCTION: GET SETTING *
  *************************/
 function get_setting($setting)
@@ -853,7 +877,7 @@ function add_name($table, $name, $size=20)
 	{
 		case "projects":
 			$risk_id = 1000;
-			$message = "A new project \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+			$message = "A new project \"" . try_decrypt($name) . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
 			write_log($risk_id, $_SESSION['uid'], $message);
 			break;
 		case "category":
@@ -874,6 +898,11 @@ function add_name($table, $name, $size=20)
 		case "location":
 			$risk_id = 1000;
 			$message = "A new location \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
+		case "source":
+			$risk_id = 1000;
+			$message = "A new source \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
 			write_log($risk_id, $_SESSION['uid'], $message);
 			break;
 		case "regulation":
@@ -955,6 +984,11 @@ function delete_value($table, $value)
 			$message = "The existing location \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
                         write_log($risk_id, $_SESSION['uid'], $message);
                         break;
+		case "source":
+			$risk_id = 1000;
+			$message = "The existing source \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+			write_log($risk_id, $_SESSION['uid'], $message);
+			break;
                 case "regulation":
                         $risk_id = 1000;
 			$message = "The existing control regulation \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
@@ -1457,7 +1491,7 @@ function update_password($user, $hash)
 /*************************
  * FUNCTION: SUBMIT RISK *
  *************************/
-function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
+function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes)
 {
         // Open the database connection
         $db = db_open();
@@ -1466,20 +1500,21 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
 	if ($location == NULL) $location = 0;
 
         // Add the risk
-        $stmt = $db->prepare("INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `location`, `category`, `team`, `technology`, `owner`, `manager`, `assessment`, `notes`, `submitted_by`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :location, :category, :team, :technology, :owner, :manager, :assessment, :notes, :submitted_by)");
+        $stmt = $db->prepare("INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `location`, `source`, `category`, `team`, `technology`, `owner`, `manager`, `assessment`, `notes`, `submitted_by`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :location, :source, :category, :team, :technology, :owner, :manager, :assessment, :notes, :submitted_by)");
 	$stmt->bindParam(":status", $status, PDO::PARAM_STR, 10);
-        $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 300);
+        $stmt->bindParam(":subject", try_encrypt($subject), PDO::PARAM_STR, 300);
 	$stmt->bindParam(":reference_id", $reference_id, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":regulation", $regulation, PDO::PARAM_INT);
 	$stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":location", $location, PDO::PARAM_INT);
+	$stmt->bindParam(":source", $source, PDO::PARAM_INT);
 	$stmt->bindParam(":category", $category, PDO::PARAM_INT);
 	$stmt->bindParam(":team", $team, PDO::PARAM_INT);
 	$stmt->bindParam(":technology", $technology, PDO::PARAM_INT);
 	$stmt->bindParam(":owner", $owner, PDO::PARAM_INT);
 	$stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
-	$stmt->bindParam(":assessment", $assessment, PDO::PARAM_STR);
-	$stmt->bindParam(":notes", $notes, PDO::PARAM_STR);
+	$stmt->bindParam(":assessment", try_encrypt($assessment), PDO::PARAM_STR);
+	$stmt->bindParam(":notes", try_encrypt($notes), PDO::PARAM_STR);
 	$stmt->bindParam(":submitted_by", $_SESSION['uid'], PDO::PARAM_INT);
         $stmt->execute();
 
@@ -2087,9 +2122,9 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
 	$stmt->bindParam(":mitigation_cost", $mitigation_cost, PDO::PARAM_INT);
 	$stmt->bindParam(":mitigation_owner", $mitigation_owner, PDO::PARAM_INT);
 	$stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
-	$stmt->bindParam(":current_solution", $current_solution, PDO::PARAM_STR);
-	$stmt->bindParam(":security_requirements", $security_requirements, PDO::PARAM_STR);
-	$stmt->bindParam(":security_recommendations", $security_recommendations, PDO::PARAM_STR);
+	$stmt->bindParam(":current_solution", try_encrypt($current_solution), PDO::PARAM_STR);
+	$stmt->bindParam(":security_requirements", try_encrypt($security_requirements), PDO::PARAM_STR);
+	$stmt->bindParam(":security_recommendations", try_encrypt($security_recommendations), PDO::PARAM_STR);
 	$stmt->bindParam(":submitted_by", $_SESSION['uid'], PDO::PARAM_INT);
         $stmt->execute();
 
@@ -2146,7 +2181,7 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
 	$stmt->bindParam(":review", $review, PDO::PARAM_INT);
 	$stmt->bindParam(":reviewer", $reviewer, PDO::PARAM_INT);
 	$stmt->bindParam(":next_step", $next_step, PDO::PARAM_INT);
-	$stmt->bindParam(":comments", $comments, PDO::PARAM_STR);
+	$stmt->bindParam(":comments", try_encrypt($comments), PDO::PARAM_STR);
 	$stmt->bindParam(":next_review", $next_review, PDO::PARAM_STR, 10);
 
         $stmt->execute();
@@ -2187,7 +2222,7 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
 /*************************
  * FUNCTION: UPDATE RISK *
  *************************/
-function update_risk($risk_id, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
+function update_risk($risk_id, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes)
 {
 	// Subtract 1000 from risk_id
 	$id = (int)$risk_id - 1000;
@@ -2199,7 +2234,7 @@ function update_risk($risk_id, $subject, $reference_id, $regulation, $control_nu
         $db = db_open();
 
         // Update the risk
-	$stmt = $db->prepare("UPDATE risks SET subject=:subject, reference_id=:reference_id, regulation=:regulation, control_number=:control_number, location=:location, category=:category, team=:team, technology=:technology, owner=:owner, manager=:manager, assessment=:assessment, notes=:notes, last_update=:date WHERE id = :id");
+	$stmt = $db->prepare("UPDATE risks SET subject=:subject, reference_id=:reference_id, regulation=:regulation, control_number=:control_number, location=:location, source=:source, category=:category, team=:team, technology=:technology, owner=:owner, manager=:manager, assessment=:assessment, notes=:notes, last_update=:date WHERE id = :id");
 
 	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 300);
@@ -2207,6 +2242,7 @@ function update_risk($risk_id, $subject, $reference_id, $regulation, $control_nu
 	$stmt->bindParam(":regulation", $regulation, PDO::PARAM_INT);
 	$stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":location", $location, PDO::PARAM_INT);
+	$stmt->bindParam(":source", $source, PDO::PARAM_INT);
         $stmt->bindParam(":category", $category, PDO::PARAM_INT);
         $stmt->bindParam(":team", $team, PDO::PARAM_INT);
         $stmt->bindParam(":technology", $technology, PDO::PARAM_INT);
@@ -2673,7 +2709,7 @@ function get_risk_table($sort_order=0)
 		echo "<tr>\n";
 		echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
 		echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
-		echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+		echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml(try_decrypt($risk['subject'])) . "</td>\n";
 		echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
 		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
 		echo "<td align=\"center\" width=\"100px\">" . planned_mitigation(convert_id($risk['id']), $risk['mitigation_id']) . "</td>\n";
@@ -2715,12 +2751,14 @@ function get_submitted_risks_table($sort_order=11)
         // For each risk
         foreach ($risks as $risk)
         {
+		$subject = try_decrypt($risk['subject']);
+
                 // Get the risk color
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
 		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
 		echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
                 echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
@@ -2765,9 +2803,11 @@ function get_mitigations_table($sort_order=13)
         // For each risk
         foreach ($risks as $risk)
         {
+		$subject = try_decrypt($risk['subject']);
+
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
 		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
                 echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['planning_strategy']) . "</td>\n";
                 echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_effort']) . "</td>\n";
@@ -2811,9 +2851,11 @@ function get_reviewed_risk_table($sort_order=12)
         // For each risk
         foreach ($risks as $risk)
         {
+		$subject = try_decrypt($risk['subject']);
+
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
 		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
 		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['review']) . "</td>\n";
 		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['next_step']) . "</td>\n";
@@ -2855,12 +2897,13 @@ function get_closed_risks_table($sort_order=17)
         // For each risk
         foreach ($risks as $risk)
         {
+		$subject = try_decrypt($risk['subject']);
                 // Get the risk color
                 $color = get_risk_color($risk['calculated_risk']);
 
                 echo "<tr>\n";
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
                 echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['team']) . "</td>\n";
 		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['closure_date']))) . "</td>\n";
@@ -3262,7 +3305,7 @@ function get_projects_and_risks_table()
                 	// For each risk
                 	foreach ($risks as $risk)
                 	{
-                        	$subject = $risk['subject'];
+                        	$subject = try_decrypt($risk['subject']);
                         	$risk_id = (int)$risk['id'];
                         	$project_id = (int)$risk['project_id'];
                         	$color = get_risk_color($risk['calculated_risk']);
@@ -3487,7 +3530,7 @@ function get_project_tabs()
 		// For each risk
 		foreach ($risks as $risk)
 		{
-			$subject = $risk['subject'];
+			$subject = try_decrypt($risk['subject']);
 			$risk_id = (int)$risk['id'];
 			$project_id = (int)$risk['project_id'];
                 	$color = get_risk_color($risk['calculated_risk']);
@@ -3535,6 +3578,13 @@ function get_projects($order="order")
 
         // Store the list in the array
         $array = $stmt->fetchAll();
+
+	// For each project
+	foreach ($array as $key => $project)
+	{
+		// Try to decrypt the project name
+		$array[$key]['name'] = try_decrypt($project['name']);
+	}
         
         // Close the database connection
         db_close($db);
@@ -3589,7 +3639,7 @@ function get_reviews_table($sort_order=3)
 	{
 		// Create arrays for each value
                 $risk_id[$key] = (int)$row['id'];
-                $subject[$key] = $row['subject'];
+                $subject[$key] = try_decrypt($row['subject']);
                 $status[$key] = $row['status'];
                 $calculated_risk[$key] = $row['calculated_risk'];
                 $color[$key] = get_risk_color($row['calculated_risk']);
@@ -3690,7 +3740,7 @@ function get_delete_risk_table()
         foreach ($risks as $risk)
         {
                 $risk_id = $risk['id'];
-                $subject = $risk['subject'];
+                $subject = try_decrypt($risk['subject']);
                 $status = $risk['status'];
 
                 echo "<tr>\n";
@@ -4194,7 +4244,7 @@ function add_comment($risk_id, $user_id, $comment)
         
         $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":user", $user_id, PDO::PARAM_INT);
-        $stmt->bindParam(":comment", $comment, PDO::PARAM_STR);
+        $stmt->bindParam(":comment", try_encrypt($comment), PDO::PARAM_STR);
 
         $stmt->execute();
         
@@ -4243,7 +4293,7 @@ function get_comments($id)
 
         foreach ($comments as $comment)
         {
-		$text = $comment['comment'];
+		$text = try_decrypt($comment['comment']);
 		$date = date(DATETIME, strtotime($comment['date']));
 		$user = $comment['name'];
 
@@ -4263,43 +4313,55 @@ function get_audit_trail($id = NULL)
 {
 	global $escaper;
 
-	// Open the database connection
-	$db = db_open();
-
-	// If the ID is not NULL
-	if ($id != NULL)
+	// If the ID is greater than 1000 or NULL
+	if ($id > 1000 || $id === NULL)
 	{
-        	// Subtract 1000 from id
-        	$id = $id - 1000;
+		// Open the database connection
+		$db = db_open();
 
-        	// Get the comments for this specific ID
-        	$stmt = $db->prepare("SELECT timestamp, message FROM audit_log WHERE risk_id=:risk_id ORDER BY timestamp DESC");
+		// If the ID is greater than 1000
+		if ($id > 1000)
+		{
+        		// Subtract 1000 from id
+	        	$id = $id - 1000;
+	
+        		// Get the comments for this specific ID
+        		$stmt = $db->prepare("SELECT timestamp, message FROM audit_log WHERE risk_id=:risk_id ORDER BY timestamp DESC");
 
-        	$stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+        		$stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+		}
+		// If the ID is NULL
+		else if ($id === NULL)
+		{
+			// Get the full audit trail
+			$stmt = $db->prepare("SELECT timestamp, message FROM audit_log ORDER BY timestamp DESC");
+		}
+
+        	$stmt->execute();
+        
+       		// Store the list in the array
+        	$logs = $stmt->fetchAll();
+        
+        	// Close the database connection
+        	db_close($db);
+        
+        	foreach ($logs as $log)
+        	{       
+             	  	$text = try_decrypt($log['message']);
+               		$date = date(DATETIME, strtotime($log['timestamp'])); 
+                
+               		echo "<p>" . $escaper->escapeHtml($date) . " > " . $escaper->escapeHtml($text) . "</p>\n";
+        	}
+
+		// Return true
+		return true;
 	}
-	// Otherwise get the full audit trail
+	// Otherwise this is not a valid ID
 	else
 	{
-		$stmt = $db->prepare("SELECT timestamp, message FROM audit_log ORDER BY timestamp DESC");
+		// Return false
+		return false;
 	}
-
-        $stmt->execute();
-        
-        // Store the list in the array
-        $logs = $stmt->fetchAll();
-        
-        // Close the database connection
-        db_close($db);
-        
-        foreach ($logs as $log)
-        {       
-                $text = $log['message'];
-                $date = date(DATETIME, strtotime($log['timestamp'])); 
-                
-                echo "<p>" . $escaper->escapeHtml($date) . " > " . $escaper->escapeHtml($text) . "</p>\n";
-        }
-
-        return true;
 }
 
 /*******************************
@@ -4384,7 +4446,7 @@ function get_reviews($id)
 		$reviewer =  get_name_by_value("user", $review['reviewer']);
 		$review_value = get_name_by_value("review", $review['review']);
 		$next_step = get_name_by_value("next_step", $review['next_step']);
-		$comment = $review['comments'];
+		$comment = try_decrypt($review['comments']);
 
 		echo "<p>\n";
 		echo "<u>". $escaper->escapeHtml($date) ."</u><br />\n";
@@ -4504,7 +4566,7 @@ function write_log($risk_id, $user_id, $message)
 
         $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
 	$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-	$stmt->bindParam(":message", $message, PDO::PARAM_STR);
+	$stmt->bindParam(":message", try_encrypt($message), PDO::PARAM_STR);
 
         $stmt->execute();
 
@@ -5369,6 +5431,48 @@ function update_risk_status($risk_id, $status)
         db_close($db);
 
         return true;
+}
+
+/*************************
+ * FUNCTION: TRY DECRYPT *
+ *************************/
+function try_decrypt($value)
+{
+	// If the encryption extra is enabled
+	if (encryption_extra())
+	{
+		// Load the extra
+		require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+		// Decrypt the value
+		$decrypted_value = decrypt($_SESSION['encrypted_pass'], $value);
+
+		// Return the decrypted value
+		return $decrypted_value;
+	}
+	// Otherwise return the value
+	else return $value;
+}
+
+/*************************
+ * FUNCTION: TRY ENCRYPT *
+ *************************/
+function try_encrypt($value)
+{
+        // If the encryption extra is enabled
+        if (encryption_extra())
+        {
+                // Load the extra
+                require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+        
+                // Encrypt the value
+                $encrypted_value = encrypt($_SESSION['encrypted_pass'], $value);
+        
+                // Return the encrypted value
+                return $encrypted_value;
+        }
+        // Otherwise return the value
+        else return $value;
 }
 
 ?>

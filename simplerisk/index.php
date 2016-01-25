@@ -63,6 +63,16 @@
                                 	// Grant the user access
                                 	grant_access();
 
+                                	// If the encryption extra is enabled
+                                	if (encryption_extra())
+                                	{
+                                                // Load the extra
+                                                require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+
+						// Check user enc
+						check_user_enc($user, $pass);
+                                	}
+
                                 	// Redirect to the reports index
                                 	header("Location: reports");
 				}
@@ -84,6 +94,16 @@
 			{
 				// Grant the user access
 				grant_access();
+
+                                // If the encryption extra is enabled
+                                if (encryption_extra())
+                                {
+                                        // Load the extra
+                                        require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+
+                                	// Check user enc
+                                        check_user_enc($user, $pass);
+                                }
 
 				// Redirect to the reports index
 				header("Location: reports");
@@ -125,6 +145,16 @@
 			{
                         	// Grant the user access
                         	grant_access();
+
+                                // If the encryption extra is enabled
+                                if (encryption_extra())
+                                {
+                                        // Load the extra
+                                        require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+
+                                	// Check user enc
+                                        check_user_enc($user, $pass);
+                                }
 
                         	// Redirect to the reports index
                         	header("Location: reports");

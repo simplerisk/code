@@ -131,7 +131,7 @@ function risk_distribution_analysis()
 		{
 			// Get the values
 			$id = (int)$risk['id'];
-			$subject = $escaper->escapeHtml($risk['subject']);
+			$subject = $escaper->escapeHtml(try_decrypt($risk['subject']));
 			$calculated_risk = $risk['calculated_risk'];
 			$mitigation_effort = $risk['mitigation_effort'];
 

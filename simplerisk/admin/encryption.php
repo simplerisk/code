@@ -70,12 +70,16 @@ function display()
                 if (!encryption_extra())
                 {
                         echo "<form name=\"activate\" method=\"post\" action=\"../extras/encryption/\">\n";
-                        echo "<input type=\"submit\" value=\"Activate\" name=\"activate\" /><br />";
+                        echo "<input type=\"submit\" value=\"Activate\" name=\"activate\" /><br />\n";
                         echo "</form>\n";
                 }
                 // Once it has been activated
                 else
                 {
+                        // Include the Encryption Extra
+                        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+                        display_encryption();
                 }
         }
 }

@@ -131,31 +131,6 @@ function is_valid_user($user, $pass, $upgrade = false)
 		// Set the user permissions
 		set_user_permissions($user, $upgrade);
 
-        	// If the encryption extra is enabled
-        	if (encryption_extra())
-        	{
-                	// Load the extra
-                	require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-
-			// If the user has been activated
-			if (activated_user($user))
-			{
-				$encrypted_pass = get_enc_pass($user, $pass);
-			}
-			// The user has not yet been activated
-			else
-			{
-				// Get the current password encrypted with the temp key
-				$encrypted_pass = get_enc_pass($user, fetch_tmp_pass());
-
-				// Set the new encrypted password
-				set_enc_pass($user, $pass, $encrypted_pass);
-			}
-
-			// Set the encrypted pass in the session
-			$_SESSION['encrypted_pass'] = $encrypted_pass;
-        	}
-
 		return true;
 	}
 	else return false;
@@ -458,6 +433,16 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
 
 			        // Close the database connection
         			db_close($db);
+
+                                // If the encryption extra is enabled
+                                if (encryption_extra())
+                                {
+                                        // Load the extra
+                                        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+                                        // Set the new encrypted password
+                                        set_enc_pass($username, $password, $_SESSION['encrypted_pass']);
+                                }
 
 				return true;
 			}
