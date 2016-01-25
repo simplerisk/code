@@ -979,7 +979,7 @@ function upgrade_from_20151219001($db)
 
 	// Add a risk source table
 	echo "Adding a new risk source table.<br />\n";
-	$stmt = $db->prepare("CREATE TABLE `source` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50) NOT NULL);");
+	$stmt = $db->prepare("CREATE TABLE `source` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50) NOT NULL) ENGINE=MyISAM DEFAULT CHARSET=utf8;;");
         $stmt->execute();
 
         // Add new custom statuses
