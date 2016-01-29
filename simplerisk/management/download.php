@@ -51,13 +51,13 @@
         {
                 if (isset($_GET['id']))
                 {
-                        // Test that the ID is a numeric value
-                        $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
+			// Set the id parameter
+			$id = $_GET['id'];
                 }
                 else if (isset($_POST['id']))
                 {
-                        // Test that the ID is a numeric value
-                        $id = (is_numeric($_POST['id']) ? (int)$_POST['id'] : 0);
+			// Set the id parameter
+			$id = $_POST['id'];
                 }
 
 		// Get the file for the submitted file id
