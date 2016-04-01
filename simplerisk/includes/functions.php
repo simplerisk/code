@@ -1307,13 +1307,13 @@ function update_password_policy($pass_policy_enabled, $min_characters, $alpha_re
 /**********************
  * FUNCTION: ADD USER *
  **********************/
-function add_user($type, $user, $email, $name, $salt, $hash, $teams, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
+function add_user($type, $user, $email, $name, $salt, $hash, $teams, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
 {
         // Open the database connection
         $db = db_open();
 
         // Insert the new user
-        $stmt = $db->prepare("INSERT INTO user (`type`, `username`, `name`, `email`, `salt`, `password`, `teams`, `asset`, `admin`, `review_veryhigh`, `review_high`, `review_medium`, `review_low`, `review_insignificant`, `submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`) VALUES (:type, :user, :name, :email, :salt, :hash, :teams, :asset, :admin, :review_veryhigh, :review_high, :review_medium, :review_low, :review_insignificant, :submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor)");
+        $stmt = $db->prepare("INSERT INTO user (`type`, `username`, `name`, `email`, `salt`, `password`, `teams`, `assessments`, `asset`, `admin`, `review_veryhigh`, `review_high`, `review_medium`, `review_low`, `review_insignificant`, `submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`) VALUES (:type, :user, :name, :email, :salt, :hash, :teams, :assessments, :asset, :admin, :review_veryhigh, :review_high, :review_medium, :review_low, :review_insignificant, :submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor)");
 	$stmt->bindParam(":type", $type, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
@@ -1321,6 +1321,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $asset, $ad
 	$stmt->bindParam(":salt", $salt, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":hash", $hash, PDO::PARAM_STR, 60);
 	$stmt->bindParam(":teams", $teams, PDO::PARAM_STR, 200);
+	$stmt->bindParam(":assessments", $assessments, PDO::PARAM_INT);
 	$stmt->bindParam(":asset", $asset, PDO::PARAM_INT);
         $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
 	$stmt->bindParam(":review_veryhigh", $review_veryhigh, PDO::PARAM_INT);
@@ -1349,7 +1350,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $asset, $ad
 /*************************
  * FUNCTION: UPDATE USER *
  *************************/
-function update_user($user_id, $name, $email, $teams, $lang, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
+function update_user($user_id, $name, $email, $teams, $lang, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
 {
         // If the language is empty
         if ($lang == "")
@@ -1362,12 +1363,13 @@ function update_user($user_id, $name, $email, $teams, $lang, $asset, $admin, $re
         $db = db_open();
 
         // Update the user
-        $stmt = $db->prepare("UPDATE user set `name`=:name, `email`=:email, `teams`=:teams, `lang` =:lang, `asset`=:asset, `admin`=:admin, `review_veryhigh`=:review_veryhigh, `review_high`=:review_high, `review_medium`=:review_medium, `review_low`=:review_low, `review_insignificant`=:review_insignificant, `submit_risks`=:submit_risks, `modify_risks`=:modify_risks, `plan_mitigations`=:plan_mitigations, `close_risks`=:close_risks, `multi_factor`=:multi_factor WHERE `value`=:user_id");
+        $stmt = $db->prepare("UPDATE user set `name`=:name, `email`=:email, `teams`=:teams, `lang` =:lang, `assessments`=:assessments, `asset`=:asset, `admin`=:admin, `review_veryhigh`=:review_veryhigh, `review_high`=:review_high, `review_medium`=:review_medium, `review_low`=:review_low, `review_insignificant`=:review_insignificant, `submit_risks`=:submit_risks, `modify_risks`=:modify_risks, `plan_mitigations`=:plan_mitigations, `close_risks`=:close_risks, `multi_factor`=:multi_factor WHERE `value`=:user_id");
 	$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
         $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
         $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":teams", $teams, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":lang", $lang, PDO::PARAM_STR, 2);
+	$stmt->bindParam(":assessments", $assessments,  PDO::PARAM_INT);
 	$stmt->bindParam(":asset", $asset, PDO::PARAM_INT);
         $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
 	$stmt->bindParam(":review_veryhigh", $review_veryhigh, PDO::PARAM_INT);
@@ -1389,6 +1391,7 @@ function update_user($user_id, $name, $email, $teams, $lang, $asset, $admin, $re
 	if ($_SESSION['uid'] == $user_id)
 	{
 		// Update the session values
+		$_SESSION['assessments'] = (int)$assessments;
 		$_SESSION['asset'] = (int)$asset;
         	$_SESSION['admin'] = (int)$admin;
 		$_SESSION['review_veryhigh'] = (int)$review_veryhigh;
@@ -1432,6 +1435,28 @@ function get_user_by_id($id)
 	db_close($db);
 
 	return $array[0];
+}
+
+/****************************
+ * FUNCTION: GET ID BY USER *
+ ****************************/
+function get_id_by_user($user)
+{
+        // Open the database connection
+        $db = db_open();
+
+        // Get the user information
+        $stmt = $db->prepare("SELECT * FROM user WHERE username = :user");
+        $stmt->bindParam(":user", $user, PDO::PARAM_STR);
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetch();
+
+        // Close the database connection
+        db_close($db);
+
+        return $array['value'];
 }
 
 /*******************************
@@ -3728,7 +3753,7 @@ function get_delete_risk_table()
         echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
-	 echo "<th align=\"left\" width=\"75\"><input type=\"checkbox\" onclick=\"checkAll(this)\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "</th>\n";
+	echo "<th align=\"left\" width=\"75\"><input type=\"checkbox\" onclick=\"checkAll(this)\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "</th>\n";
         echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
         echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
         echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
@@ -4309,7 +4334,7 @@ function get_comments($id)
 /*****************************
  * FUNCTION: GET AUDIT TRAIL *
  *****************************/
-function get_audit_trail($id = NULL)
+function get_audit_trail($id = NULL, $days = 7)
 {
 	global $escaper;
 
@@ -4326,15 +4351,17 @@ function get_audit_trail($id = NULL)
 	        	$id = $id - 1000;
 	
         		// Get the comments for this specific ID
-        		$stmt = $db->prepare("SELECT timestamp, message FROM audit_log WHERE risk_id=:risk_id ORDER BY timestamp DESC");
+        		$stmt = $db->prepare("SELECT timestamp, message FROM audit_log WHERE risk_id=:risk_id AND (`timestamp` > CURDATE()-INTERVAL :days DAY) ORDER BY timestamp DESC");
 
         		$stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+			$stmt->bindParam(":days", $days, PDO::PARAM_INT);
 		}
 		// If the ID is NULL
 		else if ($id === NULL)
 		{
 			// Get the full audit trail
-			$stmt = $db->prepare("SELECT timestamp, message FROM audit_log ORDER BY timestamp DESC");
+			$stmt = $db->prepare("SELECT timestamp, message FROM audit_log WHERE (`timestamp` > CURDATE()-INTERVAL :days DAY) ORDER BY timestamp DESC");
+			$stmt->bindParam(":days", $days, PDO::PARAM_INT);
 		}
 
         	$stmt->execute();
@@ -4777,8 +4804,39 @@ function api_extra()
         // Open the database connection
         $db = db_open();
 
-        // See if the import export extra is available
+        // See if the api extra is available
         $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'api'");
+        $stmt->execute();
+
+        // Get the results array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        // If no value was found
+        if (empty($array))
+        {
+                return false;
+        }
+        // If the value is true
+        else if ($array[0]['value'] == true)
+        {
+                return true;
+        }
+        else return false;
+}
+
+/*******************************
+ * FUNCTION: ASSESSMENTS EXTRA *
+ *******************************/
+function assessments_extra()
+{
+        // Open the database connection
+        $db = db_open();
+
+        // See if the assessments extra is available
+        $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'assessments'");
         $stmt->execute();
 
         // Get the results array
@@ -5473,6 +5531,25 @@ function try_encrypt($value)
         }
         // Otherwise return the value
         else return $value;
+}
+
+/*****************************
+ * FUNCTION: GET CURRENT URL *
+ *****************************/
+function get_current_url()
+{
+	// Check if we are using the HTTPS protocol
+        $isHTTPS = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on");
+
+	// Set the port
+        $port = (isset($_SERVER['SERVER_PORT']) && ((!$isHTTPS && $_SERVER['SERVER_PORT'] != "80") || ($isHTTPS && $_SERVER['SERVER_PORT'] != "443")));
+        $port = ($port) ? ":" . $_SERVER['SERVER_PORT'] : "";
+
+	// Set the current URL
+        $url = ($isHTTPS ? "https://" : "http://") . $_SERVER['SERVER_NAME'] . $port . $_SERVER['REQUEST_URI'];
+
+	// Return the URL
+	return $url;
 }
 
 ?>

@@ -73,78 +73,31 @@
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <?php view_reporting_menu("RiskDashboard"); ?>
+          <?php view_reporting_menu("Overview"); ?>
         </div>
         <div class="span9">
           <div class="row-fluid">
-            <h3><?php echo $escaper->escapeHtml($lang['OpenRisks']); ?> (<?php echo $escaper->escapeHtml(get_open_risks()); ?>)</h3>
-          </div>
-          <div class="row-fluid">
-            <div class="span3">
+            <div class="span4">
               <div class="well">
-                <?php open_risk_level_pie($escaper->escapeHtml($lang['RiskLevel'])); ?>
+                <?php open_closed_pie($escaper->escapeHtml($lang['OpenVsClosed'])); ?>
               </div>
             </div>
-            <div class="span3">
+            <div class="span4">
               <div class="well">
-                <?php open_risk_status_pie($escaper->escapeHtml($lang['Status'])); ?>
+                <?php open_mitigation_pie($escaper->escapeHtml($lang['MitigatedVsUnmitigated'])); ?>
               </div>
             </div>
-            <div class="span3">
+            <div class="span4">
               <div class="well">
-                <?php open_risk_location_pie($escaper->escapeHtml($lang['SiteLocation'])); ?>
+                <?php open_review_pie($escaper->escapeHtml($lang['ReviewedVsUnreviewed'])); ?>
               </div>
             </div>
           </div>
+        </div>
+        <div class="span9">
           <div class="row-fluid">
-            <div class="span3">
-              <div class="well">
-                <?php open_risk_source_pie($escaper->escapeHtml($lang['RiskSource'])); ?>
-              </div>
-            </div>
-            <div class="span3">
-              <div class="well">
-                <?php open_risk_category_pie($escaper->escapeHtml($lang['Category'])); ?>
-              </div>
-            </div>
-            <div class="span3">
-              <div class="well">
-                <?php open_risk_team_pie($escaper->escapeHtml($lang['Team'])); ?>
-              </div>
-            </div>
-          </div>
-          <div class="row-fluid">
-            <div class="span3">
-              <div class="well">
-                <?php open_risk_technology_pie($escaper->escapeHtml($lang['Technology'])); ?>
-              </div>
-            </div>
-            <div class="span3">
-              <div class="well">
-                <?php open_risk_owner_pie($escaper->escapeHtml($lang['Owner'])); ?>
-              </div>
-            </div>
-            <div class="span3">
-              <div class="well">
-                <?php open_risk_owners_manager_pie($escaper->escapeHtml($lang['OwnersManager'])); ?>
-              </div>
-            </div>
-          </div>
-          <div class="row-fluid">
-            <div class="span3">
-              <div class="well">
-                <?php open_risk_scoring_method_pie($escaper->escapeHtml($lang['RiskScoringMethod'])); ?>
-              </div>
-            </div>
-          </div>
-          <div class="row-fluid">
-            <h3><?php echo $escaper->escapeHtml($lang['ClosedRisks']); ?>: (<?php echo $escaper->escapeHtml(get_closed_risks()); ?>)</h3>
-          </div>
-          <div class="row-fluid">
-            <div class="span3">
-              <div class="well">
-                <?php closed_risk_reason_pie($escaper->escapeHtml($lang['Reason'])); ?>
-              </div>
+            <div class="well">
+              <?php risks_by_month_table(); ?>
             </div>
           </div>
         </div>

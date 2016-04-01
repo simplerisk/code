@@ -72,6 +72,7 @@
 			$email = $_POST['email'];
 			$teams = isset($_POST['team']) ? $_POST['team'] : array('none');
 			$language = get_name_by_value("languages", (int)$_POST['languages']);
+			$assessments = isset($_POST['assessments']) ? '1' : '0';
 			$asset = isset($_POST['asset']) ? '1' : '0';
 	                $admin = isset($_POST['admin']) ? '1' : '0';
         	        $submit_risks = isset($_POST['submit_risks']) ? '1' : '0';
@@ -115,7 +116,7 @@
                         if ($none) $team = "none";
 
 			// Update the user
-			update_user($user_id, $name, $email, $team, $language, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
+			update_user($user_id, $name, $email, $team, $language, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
 			$alert = "good";
                         $alert_message = "The user was updated successfully.";
@@ -138,6 +139,7 @@
 		$language = $user_info['lang'];
 		$teams = $user_info['teams'];
                 $admin = $user_info['admin'];
+		$assessments = $user_info['assessments'];
 		$asset = $user_info['asset'];
 		$review_veryhigh = $user_info['review_veryhigh'];
                 $review_high = $user_info['review_high'];
@@ -160,6 +162,8 @@
                 $last_login = "N/A";
                 $teams = "none";
                 $admin = false;
+		$assessments = false;
+		$asset = false;
 		$review_veryhigh = false;
                 $review_high = false;
                 $review_medium = false;
@@ -250,6 +254,15 @@
         }
       }
 
+      function checkAllAssessments(bx) {
+        if (document.getElementsByName("check_assessments")[0].checked == true) {
+          document.getElementsByName("assessments")[0].checked = true;
+        }
+        else {
+          document.getElementsByName("assessments")[0].checked = false;
+        }
+      }
+
       function checkAllConfigure(bx) {
         if (document.getElementsByName("check_configure")[0].checked == true) {
           document.getElementsByName("admin")[0].checked = true;
@@ -319,6 +332,8 @@
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_veryhigh" type="checkbox"<?php if ($review_veryhigh) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input name="check_asset_mgmt" type="checkbox" onclick="checkAllAssetMgmt(this)" />&nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllAssetMgmt']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="asset" type="checkbox"<?php if ($asset) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input name="check_assessments" type="checkbox" onclick="checkAllAssessments(this)" />&nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllAssessments']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="assessments" type="checkbox"<?php if ($assessments) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssessmentsMenu']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input name="check_configure" type="checkbox" onclick="checkAllConfigure(this)" />&nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllConfigure']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="admin" type="checkbox"<?php if ($admin) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></td></tr>
                 </table>

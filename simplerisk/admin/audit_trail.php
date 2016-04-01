@@ -55,6 +55,13 @@
                 exit(0);
         }
 
+	// If the days value is post
+	if (isset($_POST['days']))
+	{
+		$days = (int)$_POST['days'];
+	}
+	// Otherwise use a week
+	else $days = 7;
 ?>
 
 <!doctype html>
@@ -91,7 +98,17 @@
           <div class="row-fluid">
             <div class="well">
               <h4><?php echo $escaper->escapeHtml($lang['AuditTrail']); ?></h4>
-              <?php get_audit_trail(); ?>
+              <form name="change_timeframe" method="post" action="">
+              <select name="days" id="days" onchange="javascript: submit()">
+                <option value="7"<?php echo ($days == 7) ? " selected" : ""; ?>>Last Week</option>
+                <option value="30"<?php echo ($days == 30) ? " selected" : ""; ?>>Last Month</option>
+                <option value="90"<?php echo ($days == 90) ? " selected" : ""; ?>>Last Quarter</option>
+                <option value="180"<?php echo ($days == 180) ? " selected" : ""; ?>>Last 6 Months</option>
+                <option value="365"<?php echo ($days == 365) ? " selected" : ""; ?>>Last Year</option>
+                <<option value="36500"<?php echo ($days == 36500) ? " selected" : ""; ?>>All Time</option>
+              </select>
+              </form>
+              <?php get_audit_trail(NULL, $days); ?>
             </div>
           </div>
         </div>

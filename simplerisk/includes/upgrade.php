@@ -249,7 +249,7 @@ function upgrade_from_20140728001($db)
 
 	// Creating a table to store supporting documentation files
         echo "Creating a table to store supporting documentation files.<br />\n";
-        $stmt = $db->prepare("CREATE TABLE files(id INT NOT NULL AUTO_INCREMENT, risk_id INT NOT NULL, name VARCHAR(100) NOT NULL, unique_name VARCHAR(30) NOT NULL, type VARCHAR(30) NOT NULL, size INT NOT NULL, timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, user INT NOT NULL, content BLOB NOT NULL, PRIMARY KEY(id));");
+        $stmt = $db->prepare("CREATE TABLE files(id INT NOT NULL AUTO_INCREMENT, risk_id INT NOT NULL, name VARCHAR(100) NOT NULL, unique_name VARCHAR(30) NOT NULL, type VARCHAR(30) NOT NULL, size INT NOT NULL, timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, user INT NOT NULL, content BLOB NOT NULL, PRIMARY KEY(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
 
 	// Strip slashes from user table entries
@@ -394,6 +394,10 @@ function upgrade_from_20141013001($db)
 		{
 			$stmt = $db->prepare("INSERT INTO planning_strategy (`name`) VALUES ('Transferência');");
 		}
+		else
+		{
+			$stmt = $db->prepare("INSERT INTO planning_strategy (`name`) VALUES ('Transfer');");
+		}
 	}
 	else
 	{
@@ -461,17 +465,17 @@ function upgrade_from_20141214001($db)
 
 	// Add the asset tracking table
 	echo "Adding the table to track assets.<br />\n";
-	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assets` (id int(11) AUTO_INCREMENT PRIMARY KEY, ip VARCHAR(15), name VARCHAR(200) NOT NULL UNIQUE, created TIMESTAMP DEFAULT NOW());");
+	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assets` (id int(11) AUTO_INCREMENT PRIMARY KEY, ip VARCHAR(15), name VARCHAR(200) NOT NULL UNIQUE, created TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 	$stmt->execute();
 
 	// Add table to track risk to asset tagging
 	echo "Adding table to track risk to asset tagging.<br />\n";
-	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risks_to_assets` (risk_id int(11), asset VARCHAR(200) NOT NULL, UNIQUE(risk_id,asset));");
+	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risks_to_assets` (risk_id int(11), asset VARCHAR(200) NOT NULL, UNIQUE(risk_id,asset)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 	$stmt->execute();
 
 	// Add a table for scoring methods
 	echo "Adding a table for scoring methods.<br />\n";
-	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `scoring_methods` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20));");
+	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `scoring_methods` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 	$stmt->execute();
 
 	// Add scoring methods to table
@@ -637,7 +641,7 @@ function upgrade_from_20150531001($db)
 
 	// Create a new file type table
 	echo "Creating a new table to track upload file types.<br />\n";
-	$stmt = $db->prepare("CREATE TABLE `file_types` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`));");
+	$stmt = $db->prepare("CREATE TABLE `file_types` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 	$stmt->execute();
 
 	// Add default file types
@@ -859,7 +863,7 @@ function upgrade_from_20150930001($db)
 
 	// Create the asset values table
 	echo "Creating the asset values table.<br />\n";
-	$stmt = $db->prepare("CREATE TABLE `asset_values` (`id` int(11) NOT NULL, `min_value` int(11) NOT NULL, `max_value` int(11) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
+	$stmt = $db->prepare("CREATE TABLE `asset_values` (`id` int(11) NOT NULL, `min_value` int(11) NOT NULL, `max_value` int(11) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 	$stmt->execute();
 
 	// Add initial asset values
@@ -928,7 +932,7 @@ function upgrade_from_20151108001($db)
 
 	// Add a new status table
 	echo "Adding a new status table.<br />\n";
-	$stmt = $db->prepare("CREATE TABLE `status` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50));");
+	$stmt = $db->prepare("CREATE TABLE `status` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 	$stmt->execute();
 
 	// Add new custom statuses
@@ -947,6 +951,10 @@ function upgrade_from_20151108001($db)
                 {
                         $stmt = $db->prepare("INSERT INTO status (`name`) VALUES ('Novo'), ('Mitigação Planejado'), ('Gestão Avaliado'), ('Fechadas'), ('Reaberta'), ('Não Tratada'), ('Tratado');");
                 }
+		else
+		{
+			$stmt = $db->prepare("INSERT INTO status (`name`) VALUES ('New'), ('Mitigation Planned'), ('Mgmt Reviewed'), ('Closed'), ('Reopened'), ('Untreated'), ('Treated');");
+		}
         }
         else
         {
@@ -979,7 +987,7 @@ function upgrade_from_20151219001($db)
 
 	// Add a risk source table
 	echo "Adding a new risk source table.<br />\n";
-	$stmt = $db->prepare("CREATE TABLE `source` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50) NOT NULL) ENGINE=MyISAM DEFAULT CHARSET=utf8;;");
+	$stmt = $db->prepare("CREATE TABLE `source` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
 
         // Add new custom statuses
@@ -998,6 +1006,10 @@ function upgrade_from_20151219001($db)
                 {
                         $stmt = $db->prepare("INSERT INTO source (`name`) VALUES ('Pessoas'), ('Processo'), ('Sistema'), ('Externo');");
                 }
+		else
+		{
+			$stmt = $db->prepare("INSERT INTO source (`name`) VALUES ('People'), ('Process'), ('System'), ('External');");
+		}
         }
         else
         {
@@ -1009,6 +1021,95 @@ function upgrade_from_20151219001($db)
         echo "Adding a source column to the risks table.<br />\n";
         $stmt = $db->prepare("ALTER TABLE `risks` ADD source int(11) NOT NULL AFTER location;");
         $stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/**************************************
+ * FUNCTION: UPGRADE FROM 20160124001 *
+ **************************************/
+function upgrade_from_20160124001($db)
+{
+        // Database version to upgrade
+        $version_to_upgrade = '20160124-001';
+
+        // Database version upgrading to
+        $version_upgrading_to = '20160331-001';
+
+        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+	// Delete old extra versions from settings table
+	echo "Deleting old extra versions from settings table.<br />\n";
+	$stmt = $db->prepare("DELETE FROM `settings` WHERE name='custom_auth_version';");
+	$stmt->execute();
+	$stmt = $db->prepare("DELETE FROM `settings` WHERE name='notifications_version';");
+	$stmt->execute();
+	$stmt = $db->prepare("DELETE FROM `settings` WHERE name='team_separation_version';");
+	$stmt->execute();
+	$stmt = $db->prepare("DELETE FROM `settings` WHERE name='import_export_version';");
+	$stmt->execute();
+
+        // Add the field to track assessments permission
+        echo "Adding a field to track assessments permissions.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD assessments tinyint(1) DEFAULT 0 NOT NULL AFTER lang;");
+        $stmt->execute();
+
+        // Give admin users assessments permissions
+        echo "Giving admin users assessments permissions.<br />\n";
+        $stmt = $db->prepare("UPDATE `user` SET assessments='1' WHERE admin='1';");
+        $stmt->execute();
+
+        // Add the assessment tracking table
+        echo "Adding the table to track assessments.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assessments` (id int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(200) NOT NULL, created TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+
+	// Add the assessment questions table
+	echo "Adding the table to track assessment questions.<br />\n";
+	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assessment_questions` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `assessment_id` int(11) NOT NULL, `question` VARCHAR(1000) NOT NULL, `order` int(11) NOT NULL DEFAULT '999999') ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+	$stmt->execute();
+
+	// Add the assessment answers table
+	echo "Adding the table to track assessment answers.<br />\n";
+	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assessment_answers` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `assessment_id` int(11) NOT NULL, `question_id` int(11) NOT NULL, `answer` VARCHAR(200) NOT NULL, `submit_risk` tinyint(1) DEFAULT 0 NOT NULL, `risk_subject` VARCHAR(200) NOT NULL, `risk_score` int(11) NOT NULL, `risk_owner` int(11), `assets` VARCHAR(200), `order` int(11) NOT NULL DEFAULT '999999') ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+	$stmt->execute();
+
+	// Add the pending risks table
+	echo "Adding the table to track pending risks.<br />\n";
+	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `pending_risks` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `assessment_id` int(11) NOT NULL, `subject` varchar(300) NOT NULL, `score` int(11) NOT NULL, `owner` int(11), `asset` varchar(200), `submission_date` TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+	$stmt->execute();
+
+	// Add the Critical Security Controls assessment
+	require_once(realpath(__DIR__ . '/assessments.php'));
+	critical_security_controls_assessment();
+
+	// Add PHPMailer settings
+	echo "Adding PHPMailer settings.<br />\n";
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_transport', 'sendmail');");
+	$stmt->execute();
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_from_email', 'noreply@simplerisk.it');");
+	$stmt->execute();
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_from_name', 'SimpleRisk');");
+	$stmt->execute();
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_replyto_email', 'noreply@simplerisk.it');");
+	$stmt->execute();
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_replyto_name', 'SimpleRisk');");
+	$stmt->execute();
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_host', 'smtp1.example.com');");
+	$stmt->execute();
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_smtpauth', 'false');");
+	$stmt->execute();
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_username', 'user@example.com');");
+	$stmt->execute();
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_password', 'secret');");
+	$stmt->execute();
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_smtpsecure', 'none');");
+	$stmt->execute();
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_port', '587');");
+	$stmt->execute();
 
         // Update the database version
         update_database_version($db, $version_to_upgrade, $version_upgrading_to);
@@ -1083,6 +1184,10 @@ function upgrade_database()
 				break;
 			case "20151219-001":
 				upgrade_from_20151219001($db);
+				upgrade_database();
+				break;
+			case "20160124-001":
+				upgrade_from_20160124001($db);
 				upgrade_database();
 				break;
 			default:

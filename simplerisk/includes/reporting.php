@@ -1133,6 +1133,228 @@ function open_risk_scoring_method_pie($title = null)
     echo "</script>\n";
 }
 
+/*********************************
+ * FUNCTION: OPEN MITIGATION PIE *
+ *********************************/
+function open_mitigation_pie($title = null)
+{
+        $chart = new Highchart();
+
+        $chart->chart->renderTo = "open_mitigation_pie";
+        $chart->chart->plotBackgroundColor = null;
+        $chart->chart->plotBorderWidth = null;
+        $chart->chart->plotShadow = false;
+        $chart->title->text = $title;
+
+        $chart->tooltip->formatter = new HighchartJsExpr("function() {
+        return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
+
+        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+        location.href = 'dynamic_risk_report.php?status=2&group=2&sort=0'; }");
+
+        $chart->plotOptions->pie->allowPointSelect = 1;
+        $chart->plotOptions->pie->cursor = "pointer";
+        $chart->plotOptions->pie->dataLabels->enabled = false;
+        $chart->plotOptions->pie->showInLegend = 1;
+        $chart->credits->enabled = false;
+
+        // Open the database connection
+        $db = db_open();
+
+        // Query the database
+        $stmt = $db->prepare("SELECT CASE WHEN mitigation_id = 0 THEN 'Unmitigated' WHEN mitigation_id != 0 THEN 'Mitigated' END AS name, COUNT(*) AS num FROM `risks` WHERE status != \"Closed\" GROUP BY name ORDER BY name");
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        // If the array is empty
+        if (empty($array))
+        {
+                $data[] = array("No Data Available", 0);
+        }
+        // Otherwise
+        else
+        {
+                // Create the data array
+                foreach ($array as $row)
+                {
+                        $data[] = array($row['name'], (int)$row['num']);
+
+			if ($row['name'] == "Mitigated")
+			{
+				$color_array[] = "green";
+			}
+			else if ($row['name'] == "Unmitigated")
+			{
+				$color_array[] = "red";
+			}
+                }
+
+                $chart->plotOptions->pie->colors = $color_array;
+
+                $chart->series[] = array('type' => "pie",
+                        'name' => "Status",
+                        'data' => $data);
+        }
+
+    echo "<div id=\"open_mitigation_pie\"></div>\n";
+    echo "<script type=\"text/javascript\">";
+    echo $chart->render("open_mitigation_pie");
+    echo "</script>\n";
+}
+
+/*****************************
+ * FUNCTION: OPEN REVIEW PIE *
+ *****************************/
+function open_review_pie($title = null)
+{
+        $chart = new Highchart();
+
+        $chart->chart->renderTo = "open_review_pie";
+        $chart->chart->plotBackgroundColor = null;
+        $chart->chart->plotBorderWidth = null;
+        $chart->chart->plotShadow = false;
+        $chart->title->text = $title;
+
+        $chart->tooltip->formatter = new HighchartJsExpr("function() {
+        return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
+
+        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+        location.href = 'dynamic_risk_report.php?status=2&group=2&sort=0'; }");
+
+        $chart->plotOptions->pie->allowPointSelect = 1;
+        $chart->plotOptions->pie->cursor = "pointer";
+        $chart->plotOptions->pie->dataLabels->enabled = false;
+        $chart->plotOptions->pie->showInLegend = 1;
+        $chart->credits->enabled = false;
+
+        // Open the database connection
+        $db = db_open();
+
+        // Query the database
+        $stmt = $db->prepare("SELECT CASE WHEN mgmt_review = 0 THEN 'Unreviewed' WHEN mgmt_review != 0 THEN 'Reviewed' END AS name, COUNT(*) AS num FROM `risks` WHERE status != \"Closed\" GROUP BY name ORDER BY name");
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        // If the array is empty
+        if (empty($array))
+        {
+                $data[] = array("No Data Available", 0);
+        }
+        // Otherwise
+        else
+        {
+                // Create the data array
+                foreach ($array as $row)
+                {
+                        $data[] = array($row['name'], (int)$row['num']);
+
+			if ($row['name'] == "Reviewed")
+			{
+				$color_array[] = "green";
+			}
+			else if ($row['name'] == "Unreviewed")
+			{
+				$color_array[] = "red";
+			}
+                }
+
+		$chart->plotOptions->pie->colors = $color_array;
+
+                $chart->series[] = array('type' => "pie",
+                        'name' => "Status",
+                        'data' => $data);
+        }
+
+    echo "<div id=\"open_review_pie\"></div>\n";
+    echo "<script type=\"text/javascript\">";
+    echo $chart->render("open_review_pie");
+    echo "</script>\n";
+}
+
+/*****************************
+ * FUNCTION: OPEN CLOSED PIE *
+ *****************************/
+function open_closed_pie($title = null)
+{
+        $chart = new Highchart();
+
+        $chart->chart->renderTo = "open_closed_pie";
+        $chart->chart->plotBackgroundColor = null;
+        $chart->chart->plotBorderWidth = null;
+        $chart->chart->plotShadow = false;
+        $chart->title->text = $title;
+
+        $chart->tooltip->formatter = new HighchartJsExpr("function() {
+        return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
+
+        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+        location.href = 'dynamic_risk_report.php?status=2&group=2&sort=0'; }");
+
+        $chart->plotOptions->pie->allowPointSelect = 1;
+        $chart->plotOptions->pie->cursor = "pointer";
+        $chart->plotOptions->pie->dataLabels->enabled = false;
+        $chart->plotOptions->pie->showInLegend = 1;
+        $chart->credits->enabled = false;
+
+        // Open the database connection
+        $db = db_open();
+
+        // Query the database
+        $stmt = $db->prepare("SELECT CASE WHEN status = \"Closed\" THEN 'Closed' WHEN status != \"Closed\" THEN 'Open' END AS name, COUNT(*) AS num FROM `risks` GROUP BY name ORDER BY name");
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        // If the array is empty
+        if (empty($array))
+        {
+                $data[] = array("No Data Available", 0);
+        }
+        // Otherwise
+        else
+        {
+                // Create the data array
+                foreach ($array as $row)
+                {
+                        $data[] = array($row['name'], (int)$row['num']);
+
+                        if ($row['name'] == "Closed")
+                        {
+                                $color_array[] = "green";
+                        }
+                        else if ($row['name'] == "Open")
+                        {
+                                $color_array[] = "red";
+                        }
+                }
+
+                $chart->plotOptions->pie->colors = $color_array;
+
+                $chart->series[] = array('type' => "pie",
+                        'name' => "Status",
+                        'data' => $data);
+        }
+
+    echo "<div id=\"open_closed_pie\"></div>\n";
+    echo "<script type=\"text/javascript\">";
+    echo $chart->render("open_closed_pie");
+    echo "</script>\n";
+}
+
 /*************************************
  * FUNCTION: GET REVIEW NEEDED TABLE *
  *************************************/
@@ -1869,6 +2091,197 @@ function get_risk_columns($risk, $column_id, $column_status, $column_subject, $c
 	echo "<td class=\"mitigation_cost\" " . ($column_mitigation_cost == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_cost) . "</td>\n";
 	echo "<td class=\"mitigation_owner\" " . ($column_mitigation_owner == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_owner) . "</td>\n";
 	echo "<td class=\"mitigation_team\" " . ($column_mitigation_team == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_team) . "</td>\n";
+}
+
+/**********************************
+ * FUNCTION: RISKS BY MONTH TABLE *
+ **********************************/
+function risks_by_month_table()
+{
+	global $escaper;
+	global $lang;
+
+	// Initialize the open and closed date arrays
+	$open_date = array();
+	$close_date = array();
+
+	// Open the database connection
+        $db = db_open();
+
+        // Fetch the submission dates
+	$stmt = $db->prepare("SELECT submission_date, COUNT(*) AS num FROM risks WHERE status!='Closed' GROUP BY YEAR(submission_date), MONTH(submission_date);");
+        $stmt->execute();
+        $array = $stmt->fetchAll();
+
+	// For each row
+	foreach ($array as $key=>$row)
+	{
+		$open_date[$key] = date('Y M', strtotime($row['submission_date']));
+		$open_count[$key] = $row['num'];	
+
+		// If this is the fist key
+		if ($key == 0)
+		{
+			// Use the value of this row
+			$open_total[$key] = $row['num'];
+		}
+		// Otherwise, add the value of this row to the previous value
+		else $open_total[$key] = $open_total[$key-1] + $row['num'];
+	}
+
+	// Fetch the closure dates
+	$stmt = $db->prepare("SELECT a.risk_id, a.closure_date, c.status, COUNT(*) AS num FROM closures a LEFT JOIN risks c ON a.risk_id=c.id WHERE a.closure_date=(SELECT max(b.closure_date) FROM closures b WHERE a.risk_id=b.risk_id) AND c.status='Closed' GROUP BY YEAR(a.closure_date), MONTH(a.closure_date);");
+	$stmt->execute();
+	$array = $stmt->fetchAll();
+
+	// For each row
+	foreach ($array as $key=>$row)
+	{
+		$close_date[$key] = date('Y M', strtotime($row['closure_date']));
+		$close_count[$key] = $row['num'];
+
+		// If this is the fist key
+		if ($key == 0)
+		{
+			// Use the value of this row
+			$close_total[$key] = $row['num'];
+		}
+		// Otherwise, add the value of this row to the previous value
+		else $close_total[$key] = $close_total[$key-1] + $row['num'];
+	}
+
+        // Close the database connection
+        db_close($db);
+
+	echo "<table name=\"risks_by_month\" width=\"100%\" height=\"100%\" border=\"1\">\n";
+	echo "<thead>\n";
+	echo "<tr bgcolor=\"white\">\n";
+	echo "<th>&nbsp;</th>\n";
+
+	// For each of the past 12 months
+	for ($i=12; $i>=0; $i--)
+	{
+		// Get the month
+		$month = date('Y M', strtotime("first day of -$i month"));
+
+		echo "<th align=\"center\" width=\"50px\">" . $escaper->escapeHtml($month) . "</th>\n";
+	}
+
+	echo "</tr>\n";
+	echo "</thead>\n";
+	echo "<tbody>\n";
+	echo "<tr bgcolor=\"white\">\n";
+	echo "<td align=\"center\">" . $escaper->escapeHtml($lang['OpenedRisks']) . "</td>\n";
+
+	// For each of the past 12 months
+	for ($i=12; $i>=0; $i--)
+	{
+		// Get the month
+		$month = date('Y M', strtotime("first day of -$i month"));
+		
+		// Search the open risks array
+		$key = array_search($month, $open_date);
+
+		// If no result was found or the key is null
+		if ($key === false || is_null($key))
+		{
+			// Set the value to 0
+			$open[$i] = 0;
+		}
+		// Otherwise, use the value found
+		else $open[$i] = $open_count[$key];
+
+		echo "<td align=\"center\" width=\"50px\">" . $escaper->escapeHtml($open[$i]) . "</td>\n";
+	}
+
+	echo "</tr>\n";
+	echo "<tr bgcolor=\"white\">\n";
+	echo "<td align=\"center\">" . $escaper->escapeHtml($lang['ClosedRisks']) . "</td>\n";
+
+	// For each of the past 12 months
+	for ($i=12; $i>=0; $i--)
+	{
+		// Get the month
+		$month = date('Y M', strtotime("first day of -$i month"));
+
+		// Search the closed risks array
+		$key = array_search($month, $close_date);
+
+		// If no result was found or the key is null
+		if ($key === false || is_null($key))
+		{
+			// Set the value to 0
+			$close[$i] = 0;
+		}
+		// Otherwise, use the value found
+		else $close[$i] = $close_count[$key];
+
+		echo "<td align=\"center\" width=\"50px\">" . $escaper->escapeHtml($close[$i]) . "</td>\n";
+	}
+
+	echo "</tr>\n";
+	echo "<tr bgcolor=\"white\">\n";
+	echo "<td align=\"center\">" . $escaper->escapeHtml($lang['RiskTrend']) . "</td>\n";
+
+	// For each of the past 12 months
+	for ($i=12; $i>=0; $i--)
+	{
+		// Subtract the open number from the closed number
+		$total[$i] = $open[$i] - $close[$i];
+
+		// If the total is positive
+		if ($total[$i] > 0)
+		{
+			// Display it in green
+			$total_string = "<font color=\"red\">+" . $total[$i] . "</font>";
+		}
+		// If the total is negative
+		else if ($total[$i] < 0)
+		{
+			// Display it in red
+			$total_string = "<font color=\"green\">" . $total[$i] . "</font>
+";
+		}
+		// Otherwise the total is 0
+		else $total_string = $total[$i];
+
+		echo "<td align=\"center\" width=\"50px\">" . $total_string . "</td>\n";
+	}
+
+	// Reverse the total array
+	$total = array_reverse($total);
+
+	// Get the number of open risks
+	$open_risks_today = get_open_risks();
+
+	// Start the total open risks array with the open risks today
+	$total_open_risks[] = $open_risks_today;
+
+	// For each of the past 12 months
+	for ($i=1; $i<=12; $i++)
+	{
+		$total_open_risks[$i] = $total_open_risks[$i-1] - $total[$i-1];
+	}
+
+	// Reverse the total open risks array
+	$total_open_risks = array_reverse($total_open_risks);
+	
+	echo "</tr>\n";
+	echo "<tr bgcolor=\"white\">\n";
+	echo "<td align=\"center\">" . $escaper->escapeHtml($lang['TotalOpenRisks']) . "</td>\n";
+
+	// For each of the past 12 months
+	for ($i=0; $i<=12; $i++)
+	{
+		// Get the total number of risks
+		$total = $total_open_risks[$i];
+
+		echo "<td align=\"center\" width=\"50px\">" . $escaper->escapeHtml($total) . "</td>\n";
+	}
+
+	echo "</tr>\n";
+	echo "</tbody>\n";
+	echo "</table>\n";
 }
 
 ?>

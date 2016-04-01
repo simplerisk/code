@@ -70,6 +70,7 @@
                 $repeat_pass = $_POST['repeat_password'];
 		$teams = isset($_POST['team']) ? $_POST['team'] : array('none');
                 $admin = isset($_POST['admin']) ? '1' : '0';
+		$assessments = isset($_POST['assessments']) ? '1' : '0';
 		$asset = isset($_POST['asset']) ? '1' : '0';
 		$submit_risks = isset($_POST['submit_risks']) ? '1' : '0';
 		$modify_risks = isset($_POST['modify_risks']) ? '1' : '0';
@@ -85,17 +86,38 @@
 		// If the type is 1
 		if ($type == "1")
 		{
+			// This is a local SimpleRisk user account
 			$type = "simplerisk";
+
+			// Check the password
+			$error_code = valid_password($pass, $repeat_pass);
 		}
 		// If the type is 2
 		else if ($type == "2")
 		{
+			// This is an LDAP user account
 			$type = "ldap";
-		}
-		else $type = "INVALID";
 
-                // Check the password
-                $error_code = valid_password($pass, $repeat_pass);
+			// No password check required
+			$error_code = 1;
+		}
+		// If the type is 3
+		else if ($type == "3")
+		{
+			// This is a SAML user account
+			$type = "saml";
+
+			// No password check required
+			$error_code = 1;
+		}
+		else
+		{
+			// This is an invalid type
+			$type = "INVALID";
+
+			// Return an error
+			$error_code = 0;
+		}
 
                 // If the password is valid
                 if ($error_code == 1)
@@ -148,7 +170,7 @@
 					if ($none) $team = "none";
 
                                 	// Insert a new user
-                                	add_user($type, $user, $email, $name, $salt, $hash, $team, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
+                                	add_user($type, $user, $email, $name, $salt, $hash, $team, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
 					// If the encryption extra is enabled
 					if (encryption_extra())
@@ -318,6 +340,11 @@
             elements[i].style.display = "none";
           }
         }
+        if (choice=="3") {
+          for(i=0; i<elements.length; i++) {
+            elements[i].style.display = "none";
+          }
+        }
       }
     </script>
   </head>
@@ -372,6 +399,15 @@
         }
         else {
           document.getElementsByName("asset")[0].checked = false;
+        }
+      }
+
+      function checkAllAssessments(bx) {
+        if (document.getElementsByName("check_assessments")[0].checked == true) {
+          document.getElementsByName("assessments")[0].checked = true;
+        }
+        else {
+          document.getElementsByName("assessments")[0].checked = false;
         }
       }
 
@@ -430,6 +466,9 @@
                         	{
                                 	// Display the LDAP option
                                 	echo "<option value=\"2\">LDAP</option>\n";
+
+					// Display the SAML option
+					echo "<option value=\"3\">SAML</option>\n";
                         	}
                         ?>
                       </select>
@@ -458,6 +497,8 @@
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_veryhigh" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input name="check_asset_mgmt" type="checkbox" onclick="checkAllAssetMgmt(this)" />&nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllAssetMgmt']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="asset" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input name="check_assessments" type="checkbox" onclick="checkAllAssessments(this)" />&nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllAssessments']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="assessments" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssessmentsMenu']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input name="check_configure" type="checkbox" onclick="checkAllConfigure(this)" />&nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllConfigure']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="admin" type="checkbox" />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></td></tr>
 		</table>

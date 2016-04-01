@@ -51,12 +51,12 @@
         {
                 if (isset($_GET['id']))
                 {
-			// Set the id parameter
+			// Set the id to the get parameter
 			$id = $_GET['id'];
                 }
                 else if (isset($_POST['id']))
                 {
-			// Set the id parameter
+			// Set the id to the post parameter
 			$id = $_POST['id'];
                 }
 

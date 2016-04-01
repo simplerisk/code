@@ -74,8 +74,8 @@ function get_user_type($user)
 	}
 	else $type = $array[0]['type'];
 
-	// If the type isn't simplerisk or ldap
-	if ($type != "simplerisk" && $type != "ldap")
+	// If the type isn't simplerisk or ldap or saml
+	if ($type != "simplerisk" && $type != "ldap" && $type != "saml")
 	{
 		// The user does not exist
 		$type = "DNE";
@@ -92,9 +92,10 @@ function get_user_type($user)
  ***************************/
 function is_valid_user($user, $pass, $upgrade = false)
 {
-	// Default set valid_simplerisk and valid_ad to false
+	// Default set valid_simplerisk, valid_ad, and valid_saml to false
 	$valid_simplerisk = false;
 	$valid_ad = false;
+	$valid_saml = false;
 
 	// Find the type of the user in the database
 	$type = get_user_type($user);
@@ -124,12 +125,25 @@ function is_valid_user($user, $pass, $upgrade = false)
 			$valid_ad = is_valid_ad_user($user, $pass);
 		}
 	}
+	// If the type is saml
+	else if ($type == "saml")
+	{
+		// If custom authentication is enabled
+		if (custom_authentication_extra())
+		{
+			// Include the custom authentication extra
+			require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
 
-	// If either the AD or SimpleRisk user are valid
-	if ($valid_ad || $valid_simplerisk)
+			// Check for a valid SAML user
+			$valid_saml = is_valid_saml_user($user);
+		}
+	}
+
+	// If either the SAML, AD, or SimpleRisk user are valid
+	if ($valid_saml || $valid_ad || $valid_simplerisk)
 	{
 		// Set the user permissions
-		set_user_permissions($user, $upgrade);
+		set_user_permissions($user, $pass, $upgrade);
 
 		return true;
 	}
@@ -139,7 +153,7 @@ function is_valid_user($user, $pass, $upgrade = false)
 /**********************************
  * FUNCTION: SET USER PERMISSIONS *
  **********************************/
-function set_user_permissions($user, $upgrade = false)
+function set_user_permissions($user, $pass, $upgrade = false)
 {
 	// Open the database connection
         $db = db_open();
@@ -148,7 +162,7 @@ function set_user_permissions($user, $upgrade = false)
 	if (!$upgrade)
 	{
         	// Query the DB for the users complete information
-        	$stmt = $db->prepare("SELECT value, type, name, lang, asset, admin, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
+        	$stmt = $db->prepare("SELECT value, type, name, lang, assessments, asset, admin, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
 	}
 	// If we are doing an upgrade
 	else
@@ -174,6 +188,7 @@ function set_user_permissions($user, $upgrade = false)
 	if (!$upgrade)
 	{
 		// Set additional session values
+		$_SESSION['assessments'] = $array[0]['assessments'];
 		$_SESSION['asset'] = $array[0]['asset'];
 		$_SESSION['review_veryhigh'] = $array[0]['review_veryhigh'];
         	$_SESSION['review_high'] = $array[0]['review_high'];
@@ -184,6 +199,16 @@ function set_user_permissions($user, $upgrade = false)
         	$_SESSION['modify_risks'] = $array[0]['modify_risks'];
         	$_SESSION['close_risks'] = $array[0]['close_risks'];
         	$_SESSION['plan_mitigations'] = $array[0]['plan_mitigations'];
+
+		// If the encryption extra is enabled
+		if (encryption_extra())
+		{
+			// Load the extra
+			require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+			// Set the encrypted password in the session
+			$_SESSION['encrypted_pass'] = get_enc_pass($user, $pass);
+		}
 	}
 
 	// If the users language is not null
@@ -396,7 +421,13 @@ function send_reset_email($username, $name, $email, $token)
 	$body .= "<p>You may now use the \"<u>Forgot your password</u>\" link on the SimpleRisk log in page to reset your password.</p>";
 	$body .= "<p>This is an automated message and responses will be ignored or rejected.</p>\n";
 	$body .= "</body></html>\n";
-        mail($to, $subject, $body, $headers);
+        //mail($to, $subject, $body, $headers);
+
+	// Require the mail functions
+	require_once(realpath(__DIR__ . '/mail.php'));
+
+	// Send the e-mail
+	send_email($name, $email, $subject, $body);
 }
 
 /*************************************
@@ -686,6 +717,11 @@ function logout()
 	$username = $_SESSION['user'];
 	$uid = $_SESSION['uid'];
 
+	// Audit log
+	$risk_id = 1000;
+	$message = "Username \"" . $username . "\" logged out successfully.";
+	write_log($risk_id, $uid, $message);
+
         // Deny access
         $_SESSION["access"] = "denied";
 
@@ -701,11 +737,6 @@ function logout()
 
         // Destroy the session
         session_destroy();
-
-	// Audit log
-	$risk_id = 1000;
-	$message = "Username \"" . $username . "\" logged out successfully.";
-	write_log($risk_id, $uid, $message);
 }
 
 ?>

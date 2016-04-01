@@ -9,6 +9,7 @@ require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 require_once(realpath(__DIR__ . '/assets.php'));
+require_once(realpath(__DIR__ . '/assessments.php'));
 
 /****************************
  * FUNCTION: VIEW TOP TABLE *
@@ -1151,7 +1152,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "<td width=\"75\">\n";
 	create_numeric_dropdown("LossOfConfidentiality", $OWASPLossOfConfidentiality, false);
         echo "</td>\n";
-        echo "<td width=\"50\"><img src=\"../images/helpicon.jpg\" width=\"25\" height=\"18\" align=\"absmiddle\" onClick=\"javascript:showHelp('EaseOfDiscoveryHelp');\"></td>\n";
+        echo "<td width=\"50\"><img src=\"../images/helpicon.jpg\" width=\"25\" height=\"18\" align=\"absmiddle\" onClick=\"javascript:showHelp('LossOfConfidentialityHelp');\"></td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
@@ -1195,7 +1196,7 @@ function edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OW
         echo "<td width=\"75\">\n";
 	create_numeric_dropdown("FinancialDamage", $OWASPFinancialDamage, false);
         echo "</td>\n";
-        echo "<td width=\"50\"><img src=\"../images/helpicon.jpg\" width=\"25\" height=\"18\" align=\"absmiddle\" onClick=\"javascript:showHelp('EaseOfDiscoveryHelp');\"></td>\n";
+        echo "<td width=\"50\"><img src=\"../images/helpicon.jpg\" width=\"25\" height=\"18\" align=\"absmiddle\" onClick=\"javascript:showHelp('FinancialDamageHelp');\"></td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
 
@@ -2487,6 +2488,14 @@ function view_top_menu($active)
 			echo "</li>\n";
 		}
 
+                // If the user has assessments permissions
+                if (isset($_SESSION["assessments"]) && $_SESSION["assessments"] == "1")
+                {
+                        echo ($active == "Assessments" ? "<li class=\"active\">\n" : "<li>\n");
+                        echo "<a href=\"assessments/index.php\">" . $escaper->escapeHtml($lang['Assessments']) . "</a>\n";
+                        echo "</li>\n";
+                }
+
 		echo "<li>\n";
 		echo "<a href=\"reports/index.php\">" . $escaper->escapeHtml($lang['Reporting']) . "</a>\n";
 		echo "</li>\n";
@@ -2537,6 +2546,14 @@ function view_top_menu($active)
 			echo "<a href=\"../assets/index.php\">" . $escaper->escapeHtml($lang['AssetManagement']) . "</a>\n";
 			echo "</li>\n";
 		}
+
+                // If the user has assessments permissions
+                if (isset($_SESSION["assessments"]) && $_SESSION["assessments"] == "1")
+                {
+                        echo ($active == "Assessments" ? "<li class=\"active\">\n" : "<li>\n");
+                        echo "<a href=\"../assessments/index.php\">" . $escaper->escapeHtml($lang['Assessments']) . "</a>\n";
+                        echo "</li>\n";
+                }
 
 		echo ($active == "Reporting" ? "<li class=\"active\">\n" : "<li>\n");
 		echo "<a href=\"../reports/index.php\">" . $escaper->escapeHtml($lang['Reporting']) . "</a>\n";
@@ -2633,6 +2650,35 @@ function view_asset_management_menu($active)
 	echo "</ul>\n";
 }
 
+/***********************************
+ * FUNCTION: VIEW ASSESSMENTS MENU *
+ ***********************************/
+function view_assessments_menu($active)
+{
+        global $lang;
+        global $escaper;
+
+        echo "<ul class=\"nav nav-pills nav-stacked\">\n";
+        echo ($active == "AvailableAssessments" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"index.php\">I. " . $escaper->escapeHtml($lang['AvailableAssessments']) . "</a>\n";
+        echo "</li>\n";
+	echo ($active == "PendingRisks" ? "<li class=\"active\">\n" : "<li>\n");
+	echo "<a href=\"risks.php\">II. " .  $escaper->escapeHtml($lang['PendingRisks']) . "</a>\n";
+	echo "</li>\n";
+
+	// If the assessments extra is installed
+	if (assessments_extra())
+	{
+		// Include the assessments extra
+		require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+		// Display the assessments extra menu
+		view_assessments_extra_menu($active);
+	}
+
+	echo "</ul>\n";
+}
+
 /*********************************
  * FUNCTION: VIEW REPORTING MENU *
  *********************************/
@@ -2642,8 +2688,11 @@ function view_reporting_menu($active)
 	global $escaper;
 
         echo "<ul class=\"nav nav-pills nav-stacked\">\n";
+        echo ($active == "Overview" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"index.php\">" . $escaper->escapeHtml($lang['Overview']) . "</a>\n";
+        echo "</li>\n";
         echo ($active == "RiskDashboard" ? "<li class=\"active\">\n" : "<li>\n");
-        echo "<a href=\"index.php\">" . $escaper->escapeHtml($lang['RiskDashboard']) . "</a>\n";
+        echo "<a href=\"dashboard.php\">" . $escaper->escapeHtml($lang['RiskDashboard']) . "</a>\n";
         echo "</li>\n";
         echo ($active == "RiskTrend" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"trend.php\">" . $escaper->escapeHtml($lang['RiskTrend']) . "</a>\n";
@@ -2741,6 +2790,9 @@ function view_configure_menu($active)
 	echo ($active == "FileUploadSettings" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"uploads.php\">" . $escaper->escapeHtml($lang['FileUploadSettings']) . "</a>\n";
         echo "</li>\n";
+	echo ($active == "MailSettings" ? "<li class=\"active\">\n" : "<li>\n");
+	echo "<a href=\"mail_settings.php\">" . $escaper->escapeHtml($lang['MailSettings']) . "</a>\n";
+	echo "</li>\n";
 	echo ($active == "DeleteRisks" ? "<li class=\"active\">\n" : "<li>\n");
 	echo "<a href=\"delete_risks.php\">" . $escaper->escapeHtml($lang['DeleteRisks']) . "</a>\n";
 	echo "</li>\n";
@@ -2753,6 +2805,14 @@ function view_configure_menu($active)
 	{
 		echo ($active == "ImportExport" ? "<li class=\"active\">\n" : "<li>\n");
 		echo "<a href=\"importexport.php\">" . $escaper->escapeHtml($lang['Import']) . "/" . $escaper->escapeHtml($lang['Export']) . "</a>\n";
+		echo "</li>\n";
+	}
+
+	// If the Assessments Extra is enabled
+	if (assessments_extra())
+	{
+		echo ($active == "ActiveAssessments" ? "<li class=\"active\">\n" : "<li>\n");
+		echo "<a href=\"active_assessments.php\">" . $escaper->escapeHtml($lang['ActiveAssessments']) . "</a>\n";
 		echo "</li>\n";
 	}
 
@@ -3140,6 +3200,249 @@ function display_upgrade()
 	{
 		echo "There are issues obtaining the upgrade extra.  Check the error log for more information.<br />\n";
 	}
+}
+
+/*********************************
+ * FUNCTION: DISPLAY ASSESSMENTS *
+ *********************************/
+function display_assessment_links()
+{
+	global $escaper;
+
+	// Get the assessments
+	$assessments = get_assessment_names();
+
+	// Start the list
+        echo "<ul class=\"nav nav-pills nav-stacked\">\n";
+
+	// For each entry in the assessments array
+	foreach ($assessments as $assessment)
+	{
+		// Get the assessment values
+		$assessment_name = $assessment['name'];
+		$assessment_id = (int)$assessment['id'];
+
+		// Display the assessment
+		echo "<li style=\"text-align:center\"><a href=\"index.php?action=view&assessment_id=" . $escaper->escapeHtml($assessment_id) . "\">" . $escaper->escapeHTML($assessment_name) . "</a></li>\n";
+	}
+
+	// End the list
+	echo "</ul>\n";
+}
+
+/*******************************************
+ * FUNCTION: DISPLAY ADD DELETE ROW SCRIPT *
+ *******************************************/
+function display_add_delete_row_script()
+{
+	echo "<script language=\"javascript\">\n";
+	echo "function addRow(tableID) {\n";
+	echo "var table = document.getElementById(tableID);\n";
+	echo "var rowCount = table.rows.length;\n";
+	echo "var row = table.insertRow(rowCount);\n";
+	echo "var colCount = table.rows[1].cells.length;\n";
+	echo "for(var i=0; i<colCount; i++) {\n";
+	echo "var newcell = row.insertCell(i);\n";
+	echo "newcell.innerHTML = table.rows[1].cells[i].innerHTML;\n";
+	echo "switch(newcell.childNodes[0].type) {\n";
+	echo "case \"text\":\n";
+	echo "newcell.childNodes[0].value = \"\";\n";
+	echo "break;\n";
+	echo "case \"checkbox\":\n";
+	echo "newcell.childNodes[0].checked = false;\n";
+	echo "break;\n";
+	echo "case \"select-one\":\n";
+	echo "newcell.childNodes[0].selectedIndex = 0;\n";
+	echo "break;\n";
+	echo "}\n";
+	echo "}\n";
+	echo "}\n";
+	echo "function deleteRow(tableID) {\n";
+	echo "try {\n";
+	echo "var table = document.getElementById(tableID);\n";
+	echo "var rowCount = table.rows.length;\n";
+	echo "if (rowCount > 3) {\n";
+	echo "table.deleteRow(rowCount-1);\n";
+	echo "}\n";
+	echo "else {\n";
+	echo "alert(\"Cannot delete all the rows.\");\n";
+	echo "}\n";
+	echo "}catch(e) {\n";
+	echo "alert(e);\n";
+	echo "}\n";
+	echo "}\n";
+	echo "</script>\n";
+}
+
+/***********************************************
+ * FUNCTION: DISPLAY VIEW ASSESSMENT QUESTIONS *
+ ***********************************************/
+function display_view_assessment_questions($assessment_id = NULL)
+{
+	global $escaper;
+	global $lang;
+
+        echo "<div class=\"row-fluid\">\n";
+        echo "<div class=\"span12\">\n";
+        echo "<div class=\"hero-unit\">\n";
+	echo "<form name=\"submit_assessment\" method=\"post\" action=\"\">\n";
+
+	// If the assessment id was sent by get
+	if (isset($_GET['assessment_id']))
+	{
+		// Set the assessment id
+		$assessment_id = $_GET['assessment_id'];
+	}
+	// If the assessment id was sent by post
+	else if (isset($_POST['assessment_id']))
+	{
+		// Set the assessment id
+		$assessment_id = $_POST['assessment_id'];
+	}
+
+	// Add a hidden value for the assessment id
+	echo "<input type=\"hidden\" name=\"assessment_id\" value=\"" . $escaper->escapeHtml($assessment_id) . "\" />\n";
+
+	// Add a hidden value for the action
+	echo "<input type=\"hidden\" name=\"action\" value=\"submit\" />\n";
+
+	// Get the assessment name
+	$assessment = get_assessment_names($assessment_id);
+	$assessment_name = $assessment['name'];
+	echo "<center><h3>" . $escaper->escapeHtml($assessment_name) . "</h3></center>\n";
+	echo "<hr />\n";
+	echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+	echo "<tr>\n";
+	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetName']) . ":&nbsp;&nbsp;</th>\n";
+	echo "<th><input type=\"text\" name=\"asset\" /></th>\n";
+	echo "</tr>\n";
+	echo "</table>\n";
+	echo "<hr />\n";
+
+	// Get the assessment
+	$assessment = get_assessment($assessment_id);
+
+        // Set a variable to track the current question
+        $current_question = "";
+
+        // For each row in the array
+        foreach ($assessment as $row)
+        {
+                $question = $row['question'];
+		$question_id = (int)$row['question_id'];
+
+                // If the question is new
+                if ($current_question != $question)
+                {
+                        // If this is not the first question
+                        if ($current_question != "")
+                        {
+                                // End the previous answer table
+                                echo "</table>\n";
+
+                                // Display a horizontal rule
+                                echo "<hr />\n";
+                        }
+
+                        // Set the current question to the question
+                        $current_question = $question;
+
+                        // Display the question
+                        echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+                        echo "<tr>\n";
+                        echo "<th align=\"left\">" . $escaper->escapeHtml($question) . "</th>\n";
+                        echo "</tr>\n";
+                        echo "</table>\n";
+
+                        // Display the answers
+                        echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+                }
+
+                // Set the answer values
+                $answer = $row['answer'];
+		$answer_id = (int)$row['answer_id'];
+
+                // Display the answer
+                echo "<tr>\n";
+		echo "<td><input type=\"radio\" name=\"" . $question_id . "\" value=\"" . $answer_id . "\" />&nbsp;&nbsp;</td>\n";
+		echo "<td>" . $escaper->escapeHtml($answer) . "</td>\n";
+                echo "</tr>\n";
+        }
+
+        // End the table
+        echo "</table>\n";
+
+	echo "<hr />\n";
+	echo "<input type=\"submit\" name=\"submit_assessment\" value=\"" . $escaper->escapeHtml($lang['Submit']) . "\" />\n";
+	echo "</form>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+}
+
+/***********************************
+ * FUNCTION: DISPLAY PENDING RISKS *
+ ***********************************/
+function display_pending_risks()
+{
+        global $escaper;
+        global $lang;
+
+        echo "<div class=\"row-fluid\">\n";
+        echo "<div class=\"span12\">\n";
+
+	// Get the pending risks
+	$risks = get_pending_risks();
+
+	// For each pending risk
+	foreach($risks as $risk)
+	{
+		// Get the assessment name
+		$assessment = get_assessment_names($risk['assessment_id']);
+
+		echo "<div class=\"hero-unit\">\n";
+		echo "<form name=\"submit_risk\" method=\"post\" action=\"\" enctype=\"multipart/form-data\">\n";
+		echo "<input type=\"hidden\" name=\"assessment_id\" value=\"" . $escaper->escapeHtml($risk['assessment_id']) . "\" />\n";
+		echo "<input type=\"hidden\" name=\"pending_risk_id\" value=\"" . $escaper->escapeHtml($risk['id']) . "\" />\n";
+		echo "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
+		echo "<tr>\n";
+		echo "<td style=\"white-space: nowrap;\">".$lang['SubmissionDate'] . ":&nbsp;&nbsp;</td>\n";
+		echo "<td width=\"99%\"><input type=\"text\"  style=\"width: 97%;\" name=\"submission_date\" value=\"" . $escaper->escapeHtml($risk['submission_date']) . "\" /></td>\n";
+		echo "</tr>\n";
+		echo "<tr>\n";
+		echo "<td style=\"white-space: nowrap;\">".$lang['Subject'] . ":&nbsp;&nbsp;</td>\n";
+		echo "<td width=\"99%\"><input type=\"text\" style=\"width: 97%;\" name=\"subject\" value=\"" . $escaper->escapeHtml($risk['subject']) . "\" /></td>\n";	
+		echo "</tr>\n";
+                echo "<tr>\n";
+                echo "<td style=\"white-space: nowrap;\">".$lang['RiskScore'] . ":&nbsp;&nbsp;</td>\n";
+                echo "<td width=\"99%\"><input type=\"number\" style=\"width: 97%;\" min=\"0\" max=\"10\" name=\"risk_score\" value=\"" . $escaper->escapeHtml($risk['score']) . "\" /></td>\n";
+                echo "</tr>\n";
+                echo "<tr>\n";
+                echo "<td style=\"white-space: nowrap;\">".$lang['Owner'] . ":&nbsp;&nbsp;</td>\n";
+		echo "<td width=\"99%\">\n";
+		create_dropdown("user", $risk['owner'], "owner");
+		echo "</td>\n";
+                echo "</tr>\n";
+                echo "<tr>\n";
+                echo "<td style=\"white-space: nowrap;\">".$lang['AssetName'] . ":&nbsp;&nbsp;</td>\n";
+                echo "<td width=\"99%\"><input type=\"text\" style=\"width: 97%;\" name=\"asset\" value=\"" . $escaper->escapeHtml($risk['asset']) . "\" /></td>\n";
+                echo "</tr>\n";
+		echo "<tr>\n";
+                echo "<td style=\"white-space: nowrap;\">".$lang['AdditionalNotes'] . ":&nbsp;&nbsp;</td>\n";
+                echo "<td width=\"99%\"><textarea name=\"note\" style=\"width: 97%;\" cols=\"50\" rows=\"3\" id=\"note\">Risk created using the &quot;" . $escaper->escapeHtml($assessment['name']) . "&quot; assessment.</textarea></td>\n";
+                echo "</tr>\n";
+		echo "</table>\n";
+		echo "<div class=\"form-actions\">\n";
+		echo "<button type=\"submit\" name=\"add\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Add']) . "</button>\n";
+		echo "<button type=\"submit\" name=\"delete\" class=\"btn\">" . $escaper->escapehtml($lang['Delete']) . "</button>\n";
+		echo "</div>\n";
+		echo "</form>\n";
+		echo "</div>\n";
+	}
+
+        echo "</div>\n";
+        echo "</div>\n";
+        echo "</div>\n";
 }
 
 ?>

@@ -149,6 +149,16 @@
                   <td>Restriction of risk viewing to team members the risk is categorized as.</td>
                   <td width="60px"><?php echo (team_separation_extra() ? '<a href="separation.php">Yes</a>' : '<a href="separation.php">No</a>'); ?></td>
                 </tr>
+                <tr>
+                  <td width="155px"><b>Assessments</b></td>
+                  <td>Enables ability to create custom risk assessment forms and send them to users.</td>
+                  <td width="60px"><?php echo (assessments_extra() ? '<a href="assessments.php">Yes</a>' : '<a href="assessments.php">No</a>'); ?></td>
+                </tr>
+                <tr>
+                  <td width="155px"><b>API</b></td>
+                  <td>Enables an API for integration of SimpleRisk with other tools and automation tasks.</td>
+                  <td width="60px"><?php echo (api_extra() ? '<a href="api.php">Yes</a>' : '<a href="api.php">No</a>'); ?></td>
+                </tr>
                 <tbody>
                 </table>
                 <p>If you are interested in adding these or other custom functionality to your SimpleRisk installation, please send an e-mail to <a href="mailto:extras@simplerisk.org?Subject=Interest%20in%20SimpleRisk%20Extras" target="_top">extras@simplerisk.org</a>.</p>

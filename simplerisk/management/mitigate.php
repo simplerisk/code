@@ -546,7 +546,7 @@
           <div class="row-fluid">
             <div class="well">
               <h4><?php echo $escaper->escapeHtml($lang['AuditTrail']); ?></h4>
-              <?php get_audit_trail($id); ?>
+              <?php get_audit_trail($id,36500); ?>
             </div>
           </div>
         </div>

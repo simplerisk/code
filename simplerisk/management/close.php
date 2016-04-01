@@ -115,6 +115,9 @@
                 $close_reason = $_POST['close_reason'];
                 $note = $_POST['note'];
 
+		// Submit a review
+		submit_management_review($id, $status, "", "", $_SESSION['uid'], $note, "0000-00-00");
+
                 // Close the risk
                 close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
 
