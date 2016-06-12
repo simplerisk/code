@@ -126,7 +126,7 @@ function add_pending_risk($assessment_id, $subject, $score, $owner, $asset)
         // Get the assessment questions and answers
         $stmt = $db->prepare("INSERT INTO `pending_risks` (`assessment_id`, `subject`, `score`, `owner`, `asset`) VALUES (:assessment_id, :subject, :score, :owner, :asset);");
         $stmt->bindParam(":assessment_id", $assessment_id, PDO::PARAM_INT);
-	$stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 300);
+	$stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 1000);
 	$stmt->bindParam(":score", $score, PDO::PARAM_INT);
 	$stmt->bindParam(":owner", $owner, PDO::PARAM_INT);
 	$stmt->bindParam(":asset", $asset, PDO::PARAM_STR, 200);

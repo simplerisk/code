@@ -7,6 +7,7 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
 	require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
+	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -20,7 +21,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-                header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
         }
 
         // Session handler is database
@@ -48,9 +49,6 @@
                 exit(0);
         }
 
-	// Default is no alert
-	$alert = false;
-
 	// Check if access is authorized
 	if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
 	{
@@ -69,13 +67,13 @@
                 // If the risk delete was successful
                 if ($success)
                 {
-                        $alert = "good";
-                        $alert_message = $lang['RisksDeletedSuccessfully'];
+			// Display an alert
+			set_alert(true, "good", $lang['RisksDeletedSuccessfully']);
                 }
                 else
                 {
-                        $alert = "bad";
-                        $alert_message = $lang['ThereWasAProblemDeletingTheRisk'];
+			// Display an alert
+			set_alert(true, "bad", $lang['ThereWasAProblemDeletingTheRisk']);
                 }
         }
 ?>
@@ -116,24 +114,8 @@
 <?php
 	view_top_menu("Configure");
 
-        if ($alert == "good")
-        {
-                echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
-        else if ($alert == "bad")
-        {
-                echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
+	// Get any alert messages
+	get_alert();
 ?>
     <div class="container-fluid">
       <div class="row-fluid">

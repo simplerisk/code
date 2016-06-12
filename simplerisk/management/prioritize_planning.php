@@ -7,6 +7,7 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
+	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -20,7 +21,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-                header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
         }
 
         // Session handler is database
@@ -41,9 +42,6 @@
         // Check for session timeout or renegotiation
         session_check();
 
-	// Default is no alert
-	$alert = false;
-
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
@@ -60,9 +58,8 @@
                         update_risk_project($project_id, $risk_id);
                 }
 
-		// There is an alert message
-		$alert = "good";
-		$alert_message = "The risks were saved successfully to the projects.";
+		// Display an alert
+		set_alert(true, "good", "The risks were saved successfully to the projects.");
         }
 
 
@@ -75,9 +72,8 @@
 			update_project_order($order, $id);
 		}
 
-                // There is an alert message
-                $alert = "good";
-                $alert_message = "The project order was updated successfully.";
+		// Display an alert
+		set_alert(true, "good", "The project order was updated successfully.");
 	}
 
 	// If the projects were saved to status
@@ -104,9 +100,8 @@
 			}
 		}
 
-                // There is an alert message
-                $alert = "good";
-                $alert_message = "The project statuses were successfully updated.";
+		// Display an alert
+		set_alert(true, "good", "The project statuses were successfully updated.");
 	}
 
         // Check if a new project was submitted
@@ -117,8 +112,8 @@
 		// Check if the project name is null
 		if (isset($name) && $name == "")
 		{
-			$alert = "bad";
-			$alert_message = "The project name cannot be empty.";
+			// Display an alert
+			set_alert(true, "bad", "The project name cannot be empty.");
 		}
 		// Otherwise
 		else
@@ -126,9 +121,8 @@
                 	// Insert a new project up to 100 chars
 	                add_name("projects", try_encrypt($name), 100);
 
-			// There is an alert message
-	                $alert = "good";
-        	        $alert_message = "A new project was added successfully.";
+			// Display an alert
+			set_alert(true, "good", "A new project was added successfully.");
 		}
         }
 
@@ -143,9 +137,8 @@
 			// If the project ID is 0 (ie. Unassigned Risks)
 			if ($value == 0)
 			{
-				// There is an alert message
-				$alert = "bad";
-				$alert_message = "You cannot delete the Unassigned Risks project or we will have no place to put unassigned risks.  Sorry.";
+				// Display an alert
+				set_alert(true, "bad", "You cannot delete the Unassigned Risks project or we will have no place to put unassigned risks.  Sorry.");
 			}
 			else
 			{
@@ -162,17 +155,15 @@
 				// Delete the project
                         	delete_value("projects", $value);
 
-				// There is an alert message
-				$alert = "good";
-                		$alert_message = "An existing project was deleted successfully.";
+				// Display an alert
+				set_alert(true, "good", "An existing project was deleted successfully.");
 			}
                 }
 		// We should never get here as we bound the variable as an int
 		else
 		{
-			// There is an alert message
-			$alert = "bad";
-			$alert_message = "The project ID was not a valid value.  Please try again.";
+			// Display an alert
+			set_alert(true, "bad", "The project ID was not a valid value.  Please try again.");
 		}
         }
 
@@ -350,24 +341,8 @@
 <?php
 	view_top_menu("RiskManagement");
 
-        if ($alert == "good")
-        {
-                echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
-        else if ($alert == "bad")
-        {
-                echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
+	// Get any alert messages
+	get_alert();
 ?>
     <div class="container-fluid">
       <div class="row-fluid">

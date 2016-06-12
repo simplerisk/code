@@ -7,6 +7,7 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
 	require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
+	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -20,7 +21,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-                header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
         }
 
         // Session handler is database
@@ -48,9 +49,6 @@
                 exit(0);
         }
 
-	// Default is no alert
-	$alert = false;
-
 	// Check if access is authorized
 	if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
 	{
@@ -66,9 +64,8 @@
                 // Insert a new category up to 50 chars
                 add_name("category", $name, 50);
 
-		// There is an alert message
-		$alert = "good";
-		$alert_message = "A new category was added successfully.";
+		// Display an alert
+		set_alert(true, "good", "A new category was added successfully.");
         }
 
         // Check if the category update was submitted
@@ -82,9 +79,8 @@
                 {
                         update_table("category", $new_name, $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "The category name was updated successfully.";
+			// Display an alert
+			set_alert(true, "good", "The category name was updated successfully.");
                 }
         }
 
@@ -98,9 +94,8 @@
                 {
                         delete_value("category", $value);
 
-                	// There is an alert message
-                	$alert = "good";
-                	$alert_message = "An existing category was removed successfully.";
+			// Display an alert
+			set_alert(true, "good", "An existing category was removed successfully.");
                 }
         }
 
@@ -112,9 +107,8 @@
                 // Insert a new team up to 50 chars
                 add_name("team", $name, 50);
 
-                // There is an alert message
-                $alert = "good";
-                $alert_message = "A new team was added successfully.";
+		// Display an alert
+		set_alert(true, "good", "A new team was added successfully.");
         }
 
 	// Check if the team update was submitted
@@ -128,9 +122,8 @@
 		{
 			update_table("team", $new_name, $value);
 
-			// There is an alert message
-			$alert = "good";
-			$alert_message = "The team name was updated successfully.";
+			// Display an alert
+			set_alert(true, "good", "The team name was updated successfully.");
 		}
 	}
 
@@ -168,15 +161,13 @@
 			{
                         	delete_value("team", $value);
 
-                        	// There is an alert message
-                        	$alert = "good";
-                        	$alert_message = "An existing team was removed successfully.";
+				// Display an alert
+				set_alert(true, "good", "An existing team was removed successfully.");
 			}
 			else
 			{
-				// There is an alert message
-				$alert = "bad";
-				$alert_message = "Cannot delete this team because there are risks that are currently using it.";
+				// Display an alert
+				set_alert(true, "bad", "Cannot delete this team because there are risks that are currently using it.");
 			}
                 }
         }
@@ -189,9 +180,8 @@
                 // Insert a new technology up to 50 chars
                 add_name("technology", $name, 50);
 
-                // There is an alert message
-                $alert = "good";
-                $alert_message = "A new technology was added successfully.";
+		// Display an alert
+		set_alert(true, "good", "A new technology was added successfully.");
         }
 
         // Check if the technology update was submitted
@@ -205,9 +195,8 @@
                 {
                         update_table("technology", $new_name, $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "The technology name was updated successfully.";
+			// Display an alert
+			set_alert(true, "good", "The technology name was updated successfully.");
                 }
         }
 
@@ -221,9 +210,8 @@
                 {
                         delete_value("technology", $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "An existing technology was removed successfully.";
+			// Display an alert
+			set_alert(true, "good", "An existing technology was removed successfully.");
                 }
         }
 
@@ -235,9 +223,8 @@
                 // Insert a new location up to 100 chars
                 add_name("location", $name, 100);
 
-                // There is an alert message
-                $alert = "good";
-                $alert_message = "A new location was added successfully.";
+		// Display an alert
+		set_alert(true, "good", "A new location was added successfully.");
         }
 
         // Check if the location update was submitted
@@ -251,9 +238,8 @@
                 {
                         update_table("location", $new_name, $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "The location name was updated successfully.";
+			// Display an alert
+			set_alert(true, "good", "The location name was updated successfully.");
                 }
         }
 
@@ -267,9 +253,8 @@
                 {
                         delete_value("location", $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "An existing location was removed successfully.";
+			// Display an alert
+			set_alert(true, "good", "An existing location was removed successfully.");
                 }
         }
 
@@ -281,9 +266,8 @@
                 // Insert a new regulation up to 50 chars
                 add_name("regulation", $name, 50);
 
-                // There is an alert message
-                $alert = "good";
-                $alert_message = "A new control regulation was added successfully.";
+		// Display an alert
+		set_alert(true, "good", "A new control regulation was added successfully.");
         }
 
         // Check if the regulation update was submitted
@@ -297,9 +281,8 @@
                 {
                         update_table("regulation", $new_name, $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "The regulation name was updated successfully.";
+			// Display an alert
+			set_alert(true, "good", "The regulation name was updated successfully.");
                 }
         }
 
@@ -313,9 +296,8 @@
                 {
                         delete_value("regulation", $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "An existing control regulation was removed successfully.";
+			// Display an alert
+			set_alert(true, "good", "An existing control regulation was removed successfully.");
                 }
         }
 
@@ -327,9 +309,8 @@
                 // Insert a new planning strategy up to 20 chars
                 add_name("planning_strategy", $name, 20);
 
-                // There is an alert message
-                $alert = "good";
-                $alert_message = "A new planning strategy was added successfully.";
+		// Display an alert
+		set_alert(true, "good", "A new planning strategy was added successfully.");
         }
 
         // Check if the planning strategy update was submitted
@@ -343,9 +324,8 @@
                 {
                         update_table("planning_strategy", $new_name, $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "The planning strategy name was updated successfully.";
+			// Display an alert
+			set_alert(true, "good", "The planning strategy name was updated successfully.");
                 }
         }
 
@@ -359,9 +339,8 @@
                 {
                         delete_value("planning_strategy", $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "An existing planning strategy was removed successfully.";
+			// Display an alert
+			set_alert(true, "good", "An existing planning strategy was removed successfully.");
                 }
         }
 
@@ -373,9 +352,8 @@
                 // Insert a new close reason up to 50 chars
                 add_name("close_reason", $name, 50);
                 
-                // There is an alert message
-                $alert = "good";
-                $alert_message = "A new close reason was added successfully.";
+		// Display an alert
+		set_alert(true, "good", "A new close reason was added successfully.");
         }
 
         // Check if the close reason update was submitted
@@ -389,9 +367,8 @@
                 {
                         update_table("close_reason", $new_name, $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "The close reason name was updated successfully.";
+			// Display an alert
+			set_alert(true, "good", "The close reason name was updated successfully.");
                 }
         }
                         
@@ -405,9 +382,8 @@
                 {
                         delete_value("close_reason", $value);
                 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "An existing close reason was removed successfully.";
+			// Display an alert
+			set_alert(true, "good", "An existing close reason was removed successfully.");
                 }
         }
 
@@ -419,9 +395,8 @@
                 // Insert a new status up to 50 chars
                 add_name("status", $name, 50);
 
-                // There is an alert message
-                $alert = "good";
-                $alert_message = "A new status was added successfully.";
+		// Display an alert
+		set_alert(true, "good", "A new status was added successfully.");
         }
 
         // Check if the status update was submitted
@@ -435,9 +410,8 @@
                 {
                         update_table("status", $new_name, $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "The status name was updated successfully.";
+			// Display an alert
+			set_alert(true, "good", "The status name was updated successfully.");
                 }
         }
 
@@ -451,9 +425,8 @@
                 {
                         delete_value("status", $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "An existing status was removed successfully.";
+			// Display an alert
+			set_alert(true, "good", "An existing status was removed successfully.");
                 }
         }
 
@@ -465,9 +438,8 @@
                 // Insert a new source up to 50 chars
                 add_name("source", $name, 50);
 
-                // There is an alert message
-                $alert = "good";
-                $alert_message = "A new source was added successfully.";
+		// Display an alert
+		set_alert(true, "good", "A new source was added successfully.");
         }
 
         // Check if the source update was submitted
@@ -481,9 +453,8 @@
                 {
                         update_table("source", $new_name, $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "The source name was updated successfully.";
+			// Display an alert
+			set_alert(true, "good", "The source name was updated successfully.");
                 }
         }
 
@@ -497,9 +468,8 @@
                 {
                         delete_value("source", $value);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "An existing source was removed successfully.";
+			// Display an alert
+			set_alert(true, "good", "An existing source was removed successfully.");
                 }
         }
 ?>
@@ -530,24 +500,8 @@
 <?php
 	view_top_menu("Configure");
 
-        if ($alert == "good")
-        {
-                echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
-        else if ($alert == "bad")
-        {
-                echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
+	// Get any alert messages
+	get_alert();
 ?>
     <div class="container-fluid">
       <div class="row-fluid">

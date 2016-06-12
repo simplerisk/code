@@ -2,6 +2,215 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/*********************
+ * FUNCTION: GET CVE *
+ *********************/
+function getCVE()
+{
+	// Get the CVE ID from the URL
+	var url = window.location.href;
+	var captured = /cve_id=([^&]+)/.exec(url)[1];
+	var cve_id = captured ? captured : '';
+
+	// Check that it is a valid CVE
+	var pattern = /cve\-\d{4}-\d{4}/i;
+	if (cve_id.match(pattern))
+	{
+		// Get the CVSS info
+		get_cvss_info(cve_id);
+	}
+}
+
+/***************************
+ * FUNCTION: GET CVSS INFO *
+ ***************************/
+function get_cvss_info(cve)
+{
+        $.ajax({
+        type:'GET',
+        url:'https://vfeed.simplerisk.it/?method=get_cvss&id='+cve,
+        processData: true,
+        cache: true,
+        data: {},
+        dataType: 'json',
+        success: function (data) {
+                process_cvss_info(data);
+        }
+        });
+}
+
+/*******************************
+ * FUNCTION: PROCESS CVSS INFO *
+ *******************************/
+function process_cvss_info(cvss_info_json)
+{
+        // Parse out the JSON values and process them
+        var access_complexity = cvss_info_json[0]['access complexity'];
+        process_access_complexity(access_complexity);
+        var access_vector = cvss_info_json[0]['access vector'];
+        process_access_vector(access_vector);
+        var authentication = cvss_info_json[0]['authentication'];
+        process_authentication(authentication);
+        var availability_impact = cvss_info_json[0]['availability impact'];
+        process_availability_impact(availability_impact);
+        //var base = cvss_info_json[0]['base'];
+	//this.document.getElementById("BaseScore").innerHTML = base;
+        var confidentiality_impact = cvss_info_json[0]['confidentiality impact'];
+        process_confidentiality_impact(confidentiality_impact);
+        //var exploit = cvss_info_json[0]['exploit'];
+	//this.document.getElementById("ExploitabilitySubscore").innerHTML = exploit;
+        //var impact = cvss_info_json[0]['impact'];
+	//this.document.getElementById("ImpactSubscore").innerHTML = impact;
+        var integrity_impact = cvss_info_json[0]['integrity impact'];
+        process_integrity_impact(integrity_impact);
+
+	// Update the score
+	updateScore();
+}
+
+/*******************************
+ * FUNCTION: DROPDOWN SELECTOR *
+ *******************************/
+function dropdown_selector(element_id, value)
+{
+        var ddl = document.getElementById(element_id);
+        var opts = ddl.options.length;
+        for (var i=0; i<opts; i++)
+        {
+                if (ddl.options[i].value == value)
+                {
+                        ddl.options[i].selected = true;
+                        break;
+                }
+        }
+}
+
+/***************************************
+ * FUNCTION: PROCESS ACCESS COMPLEXITY *
+ ***************************************/
+function process_access_complexity(access_complexity)
+{
+        switch (access_complexity)
+        {
+                case "high":
+			var value = "H";
+                        break;
+                case "medium":
+			var value = "M";
+                        break;
+                case "low":
+			var value = "L";
+                        break;
+        }
+
+	dropdown_selector('AccessComplexity', value);
+}
+
+/***********************************
+ * FUNCTION: PROCESS ACCESS VECTOR *
+ ***********************************/
+function process_access_vector(access_vector)
+{
+        switch (access_vector)
+        {
+                case "local":
+			var value = "L";
+                        break;
+                case "adjacent network":
+			var value = "A";
+                        break;
+                case "network":
+			var value = "N";
+                        break;
+        }
+
+	dropdown_selector('AccessVector', value);
+}
+
+/************************************
+ * FUNCTION: PROCESS AUTHENTICATION *
+ ************************************/
+function process_authentication(authentication)
+{
+        switch (authentication)
+        {
+                case "none":
+			var value = "N";
+                        break;
+                case "single instance":
+			var value = "S";
+                        break;
+                case "multiple instances":
+			var value = "M";
+                        break;
+        }
+
+	dropdown_selector('Authentication', value);
+}
+
+/********************************************
+ * FUNCTION: PROCESS CONFIDENTIALITY IMPACT *
+ ********************************************/
+function process_confidentiality_impact(confidentiality_impact)
+{
+        switch (confidentiality_impact)
+        {
+                case "none":
+			var value = "N";
+                        break;
+                case "partial":
+			var value = "P";
+                        break;
+                case "complete":
+			var value = "C";
+                        break;
+        }
+
+	dropdown_selector('ConfImpact', value);
+}
+
+/**************************************
+ * FUNCTION: PROCESS INTEGRITY IMPACT *
+ **************************************/
+function process_integrity_impact(integrity_impact)
+{
+        switch (integrity_impact)
+        {
+                case "none":
+                        var value = "N";
+                        break;
+                case "partial":
+                        var value = "P";
+                        break;
+                case "complete":
+                        var value = "C";
+                        break;
+        }
+
+	dropdown_selector('IntegImpact', value);
+}
+
+/*****************************************
+ * FUNCTION: PROCESS AVAILABILITY IMPACT *
+ *****************************************/
+function process_availability_impact(availability_impact)
+{
+        switch (availability_impact)
+        {
+                case "none":
+                        var value = "N";
+                        break;
+                case "partial":
+                        var value = "P";
+                        break;
+                case "complete":
+                        var value = "C";
+                        break;
+        }
+
+	dropdown_selector('AvailImpact', value);
+}
+
 /**************************
  * FUNCTION: UPDATE SCORE *
  **************************/

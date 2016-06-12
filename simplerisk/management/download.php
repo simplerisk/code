@@ -15,7 +15,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-                header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
         }
 
         // Session handler is database
@@ -35,9 +35,6 @@
 
         // Check for session timeout or renegotiation
         session_check();
-
-        // Default is no alert
-        $alert = false;
 
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")

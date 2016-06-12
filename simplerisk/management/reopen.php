@@ -19,7 +19,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-                header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
         }
 
         // Session handler is database
@@ -79,13 +79,16 @@
 		// Reopen the risk
 		reopen_risk($id);
 
+		// Display an alert
+                set_alert(true, "good", "Your risk has now been reopened.");
+
                 // Check that the id is a numeric value
                 if (is_numeric($id))
                 {
                         // Create the redirection location
-			$url = "view.php?id=" . $id . "&reopened=true";
+			$url = "view.php?id=" . $id;
 
-                        // Redirect to plan mitigations page
+                        // Redirect to view risk page
                         header("Location: " . $url);
                 }
         }

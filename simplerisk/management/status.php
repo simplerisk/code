@@ -20,7 +20,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-                header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
         }
 
         // Session handler is database
@@ -104,6 +104,9 @@
 		// Get the name associated with the status
 		$status = get_name_by_value("status", $status_id);
 
+		// Display an alert
+                set_alert(true, "good", "Your risk status has been successfully changed.");
+
 		// Check that the id is a numeric value
 		if (is_numeric($id))
 		{
@@ -111,7 +114,7 @@
 			update_risk_status($id, $status);
 
                 	// Create the redirection location
-                	$url = "view.php?id=" . $id . "&update_status=true";
+                	$url = "view.php?id=" . $id;
 
 	                // Redirect to risk view page
         	        header("Location: " . $url); 
