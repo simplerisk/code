@@ -7,6 +7,7 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
+	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
 	// Include Zend Escaper for HTML Output Encoding
 	require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -20,7 +21,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
+		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
         }
 
         // Session handler is database
@@ -40,9 +41,6 @@
 
         // Check for session timeout or renegotiation
         session_check();
-
-	// Default is no alert
-	$alert = false;
 
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
@@ -265,8 +263,8 @@
 			// Update the classic score
 			$calculated_risk = update_classic_score($id, $CLASSIC_likelihood, $CLASSIC_impact);
 
-                        $alert = "good";
-                        $alert_message = "The scoring method has been successfully changed to Classic.";
+			// Display an alert
+			set_alert(true, "good", "The scoring method has been successfully changed to Classic.");
 		}
                 // If the current scoring method was changed to CVSS
                 else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 2)
@@ -277,8 +275,8 @@
 			// Update the cvss score
 			$calculated_risk = update_cvss_score($id, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement);
 
-                        $alert = "good";
-                        $alert_message = "The scoring method has been successfully changed to CVSS.";
+			// Display an alert
+			set_alert(true, "good", "The scoring method has been successfully changed to CVSS.");
                 }
                 // If the current scoring method was changed to DREAD
                 else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 3)
@@ -289,8 +287,8 @@
 			// Update the dread score
 			$calculated_risk = update_dread_score($id, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability);
 
-                        $alert = "good";
-                        $alert_message = "The scoring method has been successfully changed to DREAD.";
+			// Display an alert
+			set_alert(true, "good", "The scoring method has been successfully changed to DREAD.");
                 }
                 // If the current scoring method was changed to OWASP
                 else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 4)
@@ -301,8 +299,8 @@
 			// Update the owasp score
 			$calculated_risk = update_owasp_score($id, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation);
 
-                        $alert = "good";
-                        $alert_message = "The scoring method has been successfully changed to OWASP.";
+			// Display an alert
+			set_alert(true, "good", "The scoring method has been successfully changed to OWASP.");
                 }
                 // If the current scoring method was changed to Custom
                 else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 5)
@@ -313,8 +311,8 @@
 			// Update the custom score
 			$calculated_risk = update_custom_score($id, $custom);
 
-                        $alert = "good";
-                        $alert_message = "The scoring method has been successfully changed to Custom.";
+			// Display an alert
+			set_alert(true, "good", "The scoring method has been successfully changed to Custom.");
                 }
 
                 if ($submission_date == "")
@@ -360,7 +358,7 @@
 		// Get the management reviews for the risk
 		$mgmt_reviews = get_review_by_id($id);
 
-                // If no mitigation exists for this risk
+                // If no review exists for this risk
                 if ($mgmt_reviews == false)
                 {
                         // Set the values to empty
@@ -371,7 +369,7 @@
 			$reviewer = "";
 			$comments = "";
                 }
-                // If a mitigation exists
+                // If a review exists
                 else
                 {
                         // Set the mitigation values
@@ -379,7 +377,7 @@
 			$review_date = date(DATETIME, strtotime($review_date));
 			$review = $mgmt_reviews[0]['review'];
 			$next_step = $mgmt_reviews[0]['next_step'];
-			$next_review = next_review($color, $id, $next_review, false);
+			$next_review = next_review($color, $id-1000, $next_review, false);
 			$reviewer = $mgmt_reviews[0]['reviewer'];
 			$comments = $mgmt_reviews[0]['comments'];
 		}
@@ -392,8 +390,9 @@
         	if (isset($_POST['subject']) && $_POST['subject'] == "")
         	{
                 	$empty_subject = true;
-                	$alert = "bad";
-                	$alert_message = "The subject of a risk cannot be empty.";
+
+			// Display an alert
+			set_alert(true, "bad", "The subject of a risk cannot be empty.");
         	}
 		else $empty_subject = false;
 
@@ -443,28 +442,28 @@
 
 			if ($error == 1)
 			{
-				$alert = "good";
-				$alert_message = "The risk has been successfully modified.";
+				// Display an alert
+				set_alert(true, "good", "The risk has been successfully modified.");
 			}
 			else
 			{
-				$alert = "bad";
-				$alert_message = $error;
+				// Display an alert
+				set_alert(true, "bad", $error);
 			}
 		}
 		// Otherwise, the user did not have permission to modify risks
 		else if (!$empty_subject)
 		{
-			$alert = "bad";
-                	$alert_message = "You do not have permission to modify risks.  Your attempt to modify the details of this risk was not recorded.  Please contact an Administrator if you feel that you have reached this message in error.";
+			// Display an alert
+			set_alert(true, "bad", "You do not have permission to modify risks.  Your attempt to modify the details of this risk was not recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
 		}
         }
 
 	// If the user has selected to edit the risk details and does not have permission
 	if ((isset($_POST['edit_details'])) && ($_SESSION['modify_risks'] != 1))
 	{
-        	$alert = "bad";
-                $alert_message = "You do not have permission to modify risks.  Any risks that you attempt to modify will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.";
+		// Display an alert
+		set_alert(true, "bad", "You do not have permission to modify risks.  Any risks that you attempt to modify will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
 	}
 
 	// Check if a mitigation was updated
@@ -515,53 +514,9 @@
 		// Otherwise, success
 		else $error = 1;
 
-		$alert = "good";
-		$alert_message = "The risk mitigation has been successfully modified.";
+		// Display an alert
+		set_alert(true, "good", "The risk mitigation has been successfully modified.");
 	}
-
-	// If comment is passed via GET
-	if (isset($_GET['comment']))
-	{
-		// If it's true
-		if ($_GET['comment'] == true)
-		{
-			$alert = "good";
-			$alert_message = "Your comment has been successfully added to the risk.";
-		}
-	}
-
-	// If update_status is passed via GET
-	if (isset($_GET['update_status']))
-	{
-		// If it's true
-		if ($_GET['update_status'] == true)
-		{
-			$alert = "good";
-			$alert_message = "Your risk status has been successfully changed.";
-		}
-	}
-
-        // If closed is passed via GET
-        if (isset($_GET['closed']))
-        {       
-                // If it's true
-                if ($_GET['closed'] == true)
-                {
-                        $alert = "good";
-                        $alert_message = "Your risk has now been marked as closed.";
-                }
-        }
-
-        // If reopened is passed via GET
-        if (isset($_GET['reopened']))
-        {       
-                // If it's true
-                if ($_GET['reopened'] == true)
-                {       
-                        $alert = "good"; 
-                        $alert_message = "Your risk has now been reopened.";      
-                }
-        }
 ?>
 
 <!doctype html>
@@ -616,24 +571,8 @@
 <?php
 	view_top_menu("RiskManagement");
 
-	if ($alert == "good")
-	{
-    		echo "<div id=\"alert\" class=\"container-fluid\">\n";
-      		echo "<div class=\"row-fluid\">\n";
-       		echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
-      		echo "</div>\n";
-    		echo "</div>\n";
-		echo "<br />\n";
-	}
-	else if ($alert == "bad")
-	{
-        	echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
+	// Get any alert messages
+	get_alert();
 ?>
     <div class="container-fluid">
       <div class="row-fluid">

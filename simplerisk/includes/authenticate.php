@@ -28,7 +28,7 @@ function generateSalt($username)
 
 	// Get the users unique salt
 	$stmt = $db->prepare("SELECT salt FROM user WHERE username = :username");
-	$stmt->bindParam(":username", $username, PDO::PARAM_STR, 20);
+	$stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
 	$stmt->execute();
 	$values = $stmt->fetchAll();
 	$salt = '$2a$15$' . md5($values[0]['salt']);
@@ -61,7 +61,7 @@ function get_user_type($user)
 
 	// Query the DB for a matching enabled user
         $stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND username = :user");
-        $stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
+        $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
         $stmt->execute();
 
         // Store the list in the array
@@ -171,7 +171,7 @@ function set_user_permissions($user, $pass, $upgrade = false)
 		$stmt = $db->prepare("SELECT value, type, name, lang, admin FROM user WHERE username = :user");
 	}
 
-        $stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
+        $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
         $stmt->execute();
 
         // Store the list in the array
@@ -226,6 +226,10 @@ function set_user_permissions($user, $pass, $upgrade = false)
  **************************/
 function grant_access()
 {
+	// Change the session id to prevent session fixation
+	session_regenerate_id(true);
+
+	// Grant access
 	$_SESSION["access"] = "granted";
 
         // Update the last login
@@ -255,7 +259,7 @@ function is_valid_simplerisk_user($user, $pass)
 
         // Query the DB for a matching user and hash
         $stmt = $db->prepare("SELECT password FROM user WHERE username = :user");
-        $stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
+        $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
         $stmt->execute();
 
         // Store the list in the array
@@ -285,7 +289,7 @@ function is_simplerisk_user($username)
 
         // Query the DB for a matching user and hash
         $stmt = $db->prepare("SELECT value FROM user WHERE type = 'simplerisk' AND username = :username");
-        $stmt->bindParam(":username", $username, PDO::PARAM_STR, 20);
+        $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
         $stmt->execute();
 
         // Store the list in the array
@@ -365,7 +369,7 @@ function password_reset_by_userid($userid)
         // Insert into the password reset table
         $stmt = $db->prepare("INSERT INTO password_reset (`username`, `token`) VALUES (:username, :token)");
 
-        $stmt->bindParam(":username", $username, PDO::PARAM_STR, 20);
+        $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
         $stmt->bindParam(":token", $token, PDO::PARAM_STR, 20);
 
         $stmt->execute();
@@ -459,7 +463,7 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
                         	// Update the password
                         	$stmt = $db->prepare("UPDATE user SET password=:hash WHERE username=:username");
                         	$stmt->bindParam(":hash", $hash, PDO::PARAM_STR, 60);
-                        	$stmt->bindParam(":username", $username, PDO::PARAM_STR, 20);
+                        	$stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
                         	$stmt->execute();
 
 			        // Close the database connection
@@ -497,13 +501,13 @@ function is_valid_reset_token($username, $token)
 
 	// Increment the attempts for the username
 	$stmt = $db->prepare("UPDATE password_reset SET attempts=attempts+1 WHERE username=:username");
-	$stmt->bindParam(":username", $username, PDO::PARAM_STR, 20);
+	$stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
 	$stmt->execute();
 
         // Search for a valid token
         $stmt = $db->prepare("SELECT attempts FROM password_reset WHERE username=:username AND token=:token");
 
-        $stmt->bindParam(":username", $username, PDO::PARAM_STR, 20);
+        $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":token", $token, PDO::PARAM_STR, 20);
         $stmt->execute();
 
@@ -585,6 +589,9 @@ function session_check()
  **************************/
 function sess_open($sess_path, $sess_name)
 {
+        // Perform session garbage collection
+        sess_gc(1440);
+
         return true;
 }
 
@@ -593,6 +600,9 @@ function sess_open($sess_path, $sess_name)
  ***************************/
 function sess_close()
 {
+        // Perform session garbage collection
+        sess_gc(1440);
+
         return true;
 }
 
@@ -674,6 +684,9 @@ function sess_write($sess_id, $data)
  *****************************/
 function sess_destroy($sess_id)
 {
+        // Perform session garbage collection
+        sess_gc(1440);
+
         // Open the database connection
         $db = db_open();
 

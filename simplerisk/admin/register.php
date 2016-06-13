@@ -7,6 +7,7 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
 	require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
+	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -20,7 +21,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
+		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
         }
 
         // Session handler is database
@@ -40,9 +41,6 @@
 
         // Check for session timeout or renegotiation
         session_check();
-
-        // Default is no alert
-        $alert = false;
 
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
@@ -80,13 +78,13 @@
 			// If the registration failed
 			if ($result == 0)
 			{
-				$alert = "bad";
-				$alert_message = "There was a problem registering your SimpleRisk instance.";
+				// Display an alert
+				set_alert(true, "bad", "There was a problem registering your SimpleRisk instance.");
 			}
 			else
 			{
-				$alert = "good";
-				$alert_message = "SimpleRisk instance registered successfully.";
+				// Display an alert
+				set_alert(true, "good", "SimpleRisk instance registered successfully.");
 
 				// Set registered to true
 				$registered = true;
@@ -115,13 +113,13 @@
                         // If the registration failed
                         if ($result == 0)
                         {
-                                $alert = "bad";
-                                $alert_message = "There was a problem updating your SimpleRisk instance."; 
+				// Display an alert
+				set_alert(true, "bad", "There was a problem updating your SimpleRisk instance.");
                         }
                         else
                         {
-                                $alert = "good";
-                                $alert_message = "SimpleRisk instance updated successfully.";
+				// Display an alert
+				set_alert(true, "good", "SimpleRisk instance updated successfully.");
                         }
 		}
 		// Otherwise get the registration values from the database
@@ -143,13 +141,13 @@
                         // If the installation failed
                         if ($result == 0)
                         {
-                                $alert = "bad";
-                                $alert_message = "There was a problem installing the Upgrade Extra.";
+				// Display an alert
+				set_alert(true, "bad", "There was a problem installing the Upgrade Extra.");
                         }
                         else
                         {
-                                $alert = "good";
-                                $alert_message = "Upgrade Extra installed successfully.";
+				// Display an alert
+				set_alert(true, "good", "Upgrade Extra installed successfully.");
                         }
 		}
 		// If the user wants to install the Authentication Extra
@@ -161,13 +159,13 @@
                         // If the installation failed
                         if ($result == 0)
                         {
-                                $alert = "bad";
-                                $alert_message = "There was a problem installing the Custom Authentication Extra.";
+				// Display an alert
+				set_alert(true, "bad", "There was a problem installing the Custom Authentication Extra.");
                         }
                         else
                         {
-                                $alert = "good";
-                                $alert_message = "Custom Authentication Extra installed successfully.";
+				// Display an alert
+				set_alert(true, "good", "Custom Authentication Extra installed successfully.");
                         }
 		}
 		// If the user wants to install the Encryption Extra
@@ -179,13 +177,13 @@
                         // If the installation failed
                         if ($result == 0)
                         {
-                                $alert = "bad";
-                                $alert_message = "There was a problem installing the Encrypted Database Extra.";
+				// Display an alert
+				set_alert(true, "bad", "There was a problem installing the Encrypted Database Extra.");
                         }
                         else
                         {
-                                $alert = "good";
-                                $alert_message = "Encrypted Database Extra installed successfully.";
+				// Display an alert
+				set_alert(true, "good", "Encrypted Database Extra installed successfully.");
                         }
 		}
 		// If the user wants to install the Import-Export Extra
@@ -197,13 +195,13 @@
                         // If the installation failed
                         if ($result == 0)
                         {
-                                $alert = "bad";
-                                $alert_message = "There was a problem installing the Import/Export Extra.";
+				// Display an alert
+				set_alert(true, "bad", "There was a problem installing the Import/Export Extra.");
                         }
                         else
                         {
-                                $alert = "good";
-                                $alert_message = "Import/Export Extra installed successfully.";
+				// Display an alert
+				set_alert(true, "good", "Import/Export Extra installed successfully.");
                         }
 		}
 		// If the user wants to install the Notification Extra
@@ -215,13 +213,13 @@
                         // If the installation failed
                         if ($result == 0)
                         {
-                                $alert = "bad";
-                                $alert_message = "There was a problem installing the E-mail Notification Extra.";
+				// Display an alert
+				set_alert(true, "bad", "There was a problem installing the E-mail Notification Extra.");
                         }
                         else
                         {
-                                $alert = "good";
-                                $alert_message = "E-mail Notification Extra installed successfully.";
+				// Display an alert
+				set_alert(true, "good", "E-mail Notification Extra installed successfully.");
                         }
 		}
 		// If the user wants to install the Separation Extra
@@ -233,13 +231,13 @@
                         // If the installation failed
                         if ($result == 0)
                         {
-                                $alert = "bad";
-                                $alert_message = "There was a problem installing the Team-Based Separation Extra.";
+				// Display an alert
+				set_alert(true, "bad", "There was a problem installing the Team-Based Separation Extra.");
                         }
                         else
                         {
-                                $alert = "good";
-                                $alert_message = "Team-Based Separation Extra installed successfully.";
+				// Display an alert
+				set_alert(true, "good", "Team-Based Separation Extra installed successfully.");
                         }
 		}
 	}
@@ -272,24 +270,8 @@
 <?php
 	view_top_menu("Configure");
 
-        if ($alert == "good")
-        {
-                echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
-        else if ($alert == "bad")
-        {
-                echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
+	// Get any alert messages
+	get_alert();
 ?>
 
     <div class="container-fluid">
