@@ -58,20 +58,28 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
                 $stmt->execute();
         }
 
-        // Update the from_email
-        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_from_email'");
-        $stmt->bindParam(":value", $from_email, PDO::PARAM_STR, 200);
-        $stmt->execute();
+	// If the from_email is valid
+	if (preg_match("/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/", $from_email))
+	{
+        	// Update the from_email
+        	$stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_from_email'");
+        	$stmt->bindParam(":value", $from_email, PDO::PARAM_STR, 200);
+        	$stmt->execute();
+	}
 
         // Update the from_name
         $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_from_name'");
         $stmt->bindParam(":value", $from_name, PDO::PARAM_STR, 200);
         $stmt->execute();
 
-        // Update the replyto_email
-        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_replyto_email'");
-        $stmt->bindParam(":value", $replyto_email, PDO::PARAM_STR, 200);
-        $stmt->execute();
+        // If the replyto_email is valid
+	if (preg_match("/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/", $replyto_email))
+        {
+        	// Update the replyto_email
+        	$stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_replyto_email'");
+        	$stmt->bindParam(":value", $replyto_email, PDO::PARAM_STR, 200);
+        	$stmt->execute();
+	}
 
         // Update the replyto_name
         $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_replyto_name'");

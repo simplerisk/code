@@ -20,7 +20,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
+		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
         }
 
         // Session handler is database
@@ -51,6 +51,7 @@
 
 <html>
 <head>
+<script src="../js/jquery.min.js"></script>
 <title>SimpleRisk CVSS Calculator</title>
 <link rel="stylesheet" type="text/css" href="../css/style.css">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -60,6 +61,9 @@
 <script type="text/javascript" language="JavaScript">
   <!--
   var parent_window = window.opener;
+
+  // Get the CVE information
+  getCVE();
 
   function cvssSubmit() {
     if (parent_window && !parent_window.closed) {

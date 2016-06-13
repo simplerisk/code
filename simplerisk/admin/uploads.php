@@ -7,6 +7,7 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
 	require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
+	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -20,7 +21,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
+		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
         }
 
         // Session handler is database
@@ -48,9 +49,6 @@
                 exit(0);
         }
 
-	// Default is no alert
-	$alert = false;
-
 	// Check if access is authorized
 	if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
 	{
@@ -66,9 +64,8 @@
                 // Insert a new file type up to 100 chars
                 add_name("file_types", $name, 100);
 
-		// There is an alert message
-		$alert = "good";
-		$alert_message = "A new upload file type was added successfully.";
+		// Display an alert
+		set_alert(true, "good", "A new upload file type was added successfully.");
         }
 
         // Check if a file type was deleted
@@ -81,9 +78,8 @@
                 {
                         delete_value("file_types", $value);
 
-                	// There is an alert message
-                	$alert = "good";
-                	$alert_message = "An existing upload file type was removed successfully.";
+			// Display an alert
+			set_alert(true, "good", "An existing upload file type was removed successfully.");
                 }
         }
 
@@ -95,15 +91,13 @@
 		{
 			update_setting('max_upload_size', $_POST['size']);
 
-                        // There is an alert message
-                        $alert = "good";
-                        $alert_message = "The maximum upload file size was updated successfully.";
+			// Display an alert
+			set_alert(true, "good", "The maximum upload file size was updated successfully.");
 		}
 		else
 		{
-			// There is an alert message
-			$alert = "bad";
-			$alert_message = "The maximum upload file size needs to be an integer value.";
+			// Display an alert
+			set_alert(true, "bad", "The maximum upload file size needs to be an integer value.");
 		}
 	}
 
@@ -135,24 +129,8 @@
 <?php
 	view_top_menu("Configure");
 
-        if ($alert == "good")
-        {
-                echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
-        else if ($alert == "bad")
-        {
-                echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
-                echo "</div>\n";
-                echo "</div>\n";
-                echo "<br />\n";
-        }
+	// Get any alert messages
+	get_alert();
 ?>
     <div class="container-fluid">
       <div class="row-fluid">
