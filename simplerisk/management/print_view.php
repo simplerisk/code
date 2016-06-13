@@ -20,7 +20,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
         // Session handler is database
@@ -40,6 +40,9 @@
 
         // Check for session timeout or renegotiation
         session_check();
+
+	// Default is no alert
+	$alert = false;
 
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
@@ -230,7 +233,7 @@
 			$review_date = date(DATETIME, strtotime($review_date));
 			$review = $mgmt_reviews[0]['review'];
 			$next_step = $mgmt_reviews[0]['next_step'];
-			$next_review = next_review($color, $id-1000, $next_review, false);
+			$next_review = next_review($color, $id, $next_review, false);
 			$reviewer = $mgmt_reviews[0]['reviewer'];
 			$comments = $mgmt_reviews[0]['comments'];
 		}

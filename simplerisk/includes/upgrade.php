@@ -1117,56 +1117,6 @@ function upgrade_from_20160124001($db)
         echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
-/**************************************
- * FUNCTION: UPGRADE FROM 20160331001 *
- **************************************/
-function upgrade_from_20160331001($db)
-{
-        // Database version to upgrade
-        $version_to_upgrade = '20160331-001';
-
-        // Database version upgrading to
-        $version_upgrading_to = '20160612-001';
-
-        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
-
-
-        // Update the assessment answers table to use a blob for the risk subject
-        echo "Updating the assessment answers table to use a blob for the risk subject.<br />\n";
-	$stmt = $db->prepare("ALTER TABLE `assessment_answers` MODIFY `risk_subject` blob NOT NULL;");
-        $stmt->execute();
-
-        // Update the pending risks table to use a blob for the subject
-	echo "Updating the pending risks table to use a blob for the subject.<br />\n";
-	$stmt = $db->prepare("ALTER TABLE `pending_risks` MODIFY `subject` blob NOT NULL;");
-        $stmt->execute();
-
-	// Update the user table to use a blob for the username
-	echo "Updating the user table to use a blob for the username.<br />\n";
-	$stmt = $db->prepare("ALTER TABLE `user` MODIFY `username` blob NOT NULL;");
-	$stmt->execute();
-
-	// Update the user table to use a blob for the email
-	echo "Updating the user table to use a blob for the email.<br />\n";
-	$stmt = $db->prepare("ALTER TABLE `user` MODIFY `email` blob NOT NULL;");
-	$stmt->execute();
-
-	// Update the language table to have 5 character names
-	echo "Updating the language table to have 5 character names.<br />\n";
-	$stmt = $db->prepare("ALTER TABLE `languages` MODIFY `name` varchar(5) NOT NULL;");
-	$stmt->execute();
-
-	// Add new language translations
-	echo "Adding new language translations.<br />\n";
-	$stmt = $db->prepare("INSERT INTO `languages` (name, full) VALUES ('ar','Arabic'), ('ca', 'Catalan'), ('cs', 'Czech'), ('da', 'Danish'), ('de', 'German'), ('el', 'Greek'), ('fi', 'Finnish'), ('fr', 'French'), ('he', 'Hebrew'), ('hi', 'Hindi'), ('hu', 'Hungarian'), ('it', 'Italian'), ('ja', 'Japanese'), ('ko', 'Korean'), ('nl', 'Dutch'), ('no', 'Norwegian'), ('pl', 'Polish'), ('pt', 'Portuguese'), ('ro', 'Romanian'), ('ru', 'Russian'), ('sr', 'Serbian'), ('sv', 'Swedish'), ('tr', 'Turkish'), ('uk', 'Ukranian'), ('vi', 'Vietnamese'), ('zh-CN', 'Chinese Simplified'), ('zh-TW', 'Chinese Traditional');");
-	$stmt->execute();
-
-        // Update the database version
-        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
-
-        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
-}
-
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -1238,10 +1188,6 @@ function upgrade_database()
 				break;
 			case "20160124-001":
 				upgrade_from_20160124001($db);
-				upgrade_database();
-				break;
-			case "20160331-001":
-				upgrade_from_20160331001($db);
 				upgrade_database();
 				break;
 			default:

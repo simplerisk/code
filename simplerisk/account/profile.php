@@ -8,7 +8,6 @@
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
 	require_once(realpath(__DIR__ . '/../includes/messages.php'));
-	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -22,7 +21,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
         // Session handler is database
@@ -42,6 +41,9 @@
 
         // Check for session timeout or renegotiation
         session_check();
+
+	// Default is no alert
+	$alert = false;
 
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
@@ -64,13 +66,13 @@
 			// Use the new language file
 			require_once(language_file());
 
-			// Display an alert
-			set_alert(true, "good", "Your language was updated successfully.");
+                        $alert = "good";
+                        $alert_message = "Your language was updated successfully.";
 		}
 		else
 		{
-			// Display an alert
-			set_alert(true, "bad", "You need to select a valid language");
+                        $alert = "bad";
+                        $alert_message = "You need to select a valid language";
 		}
 	}
 
@@ -130,20 +132,23 @@
                                         set_enc_pass($user, $new_pass, $_SESSION['encrypted_pass']);
                                 }
 
-				// Display an alert
-				set_alert(true, "good", "Your password has been updated successfully!");
+				// Send an alert
+				$alert = "good";
+				$alert_message = "Your password has been updated successfully!";
 
                         }
 			else
 			{
-				// Display an alert
-				set_alert(true, "bad", password_error_message($error_code));
+				// Send an alert
+				$alert = "bad";
+				$alert_message = password_error_message($error_code);
 			}
                 }
 		else
 		{
-			// Display an alert
-			set_alert(true, "bad", "You have entered your current password incorrectly.  Please try again.");
+			// Send an alert
+			$alert = "bad";
+			$alert_message = "You have entered your current password incorrectly.  Please try again.";
 		}
         }
 ?>
@@ -185,8 +190,24 @@
 <?php
 	view_top_menu("Configure");
 
-	// Get any alert messages
-	get_alert();
+        if ($alert == "good")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
+        else if ($alert == "bad")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
 ?>
     <div class="container-fluid">
       <div class="row-fluid">

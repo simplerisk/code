@@ -7,7 +7,6 @@
         require_once(realpath(__DIR__ . '/includes/functions.php'));
 	require_once(realpath(__DIR__ . '/includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/includes/display.php'));
-	require_once(realpath(__DIR__ . '/includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/includes/Component_ZendEscaper/Escaper.php'));
@@ -21,7 +20,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
         // Session handler is database
@@ -37,6 +36,9 @@
         // Include the language file
         require_once(language_file());
 
+	// Default is no alert
+	$alert = false;
+
         // Check if a password reset email was requested
         if (isset($_POST['send_reset_email']))
         {
@@ -45,8 +47,9 @@
 		// Try to generate a password reset token
 		password_reset_by_username($username);
 
-		// Display an alert
-		set_alert(true, "good", "If the user exists in the system, then a password reset e-mail should be on it's way.");
+		// Send an alert message
+		$alert = "good";
+		$alert_message = "If the user exists in the system, then a password reset e-mail should be on it's way.";
         }
 
         // Check if a password reset was requested
@@ -60,13 +63,13 @@
 		// If a password reset was submitted
 		if (password_reset_by_token($username, $token, $password, $repeat_password))
 		{
-			// Display an alert
-			set_alert(true, "good", "Your password has been reset successfully.");
+			$alert = "good";
+			$alert_message = "Your password has been reset successfully.";
 		}
 		else
 		{
-			// Display an alert
-			set_alert(true, "bad", "There was a problem with your password reset request.  Please try again.");
+			$alert = "bad";
+			$alert_message = "There was a problem with your password reset request.  Please try again.";
 		}
         }
 
@@ -98,8 +101,24 @@
 <?php
 	view_top_menu("Home");
 
-	// Get any alert messages
-	get_alert();
+        if ($alert == "good")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
+        else if ($alert == "bad")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
 ?>
     <div class="container-fluid">
       <div class="row-fluid">

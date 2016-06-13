@@ -7,7 +7,6 @@
         require_once(realpath(__DIR__ . '/includes/functions.php'));
 	require_once(realpath(__DIR__ . '/includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/includes/display.php'));
-	require_once(realpath(__DIR__ . '/includes/alerts.php'));
 
 	// Include Zend Escaper for HTML Output Encoding
 	require_once(realpath(__DIR__ . '/includes/Component_ZendEscaper/Escaper.php'));
@@ -21,7 +20,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
 	// Session handler is database
@@ -33,6 +32,9 @@
 	// Start session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 	session_start('SimpleRisk');
+
+        // Default is no alert
+        $alert = false;
 
 	// Include the language file
 	require_once(language_file());
@@ -111,9 +113,8 @@
 		else
 		{
 			$_SESSION["access"] = "denied";
-
-			// Display an alert
-			set_alert(true, "bad", "Invalid username or password.");
+			$alert = "bad";
+			$alert_message = "Invalid username or password.";
 		}
 	}
 
@@ -225,8 +226,14 @@
       		echo "<div class=\"span9\">\n";
       		echo "<div class=\"well\">\n";
 
-		// Get any alert messages
-		get_alert();
+        	if ($alert == "bad")
+        	{
+                	echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                	echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                	echo "</div>\n";
+                	echo "<br />\n";
+        	}
+
 
       		echo "<form name=\"authenticate\" method=\"post\" action=\"\">\n";
 		echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";

@@ -7,7 +7,6 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
-	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -21,7 +20,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
         // Session handler is database
@@ -48,6 +47,9 @@
                 header("Location: ../index.php");
                 exit(0);
         }
+
+	// Default is no alert
+	$alert = false;
 
         // Check if access is authorized
         if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
@@ -102,25 +104,29 @@
 				// If the update was successful
 				if ($success)
 				{
-					// Display an alert
-					set_alert(true, "good", "The asset valuation settings were updated successfully.");
+					// There is an alert message
+					$alert = "good";
+					$alert_message = "The asset valuation settings were updated successfully.";
 				}
 				else
 				{
-					// Display an alert
-					set_alert(true, "bad", "There was an issue updating the asset valuation settings.");
+					// There is an alert message
+					$alert = "bad";
+					$alert_message = "There was an issue updating the asset valuation settings.";
 				}
 			}
 			else
 			{
-				// Display an alert
-				set_alert(true, "bad", "Please specify an integer for the maximum value.");
+				// There is an alert message
+				$alert = "bad";
+				$alert_message = "Please specify an integer for the maximum value.";
 			}
 		}
 		else
 		{
-			// Display an alert
-			set_alert(true, "bad", "Please specify an integer greater than or equal to zero for the minimum value.");
+			// There is an alert message
+			$alert = "bad";
+			$alert_message = "Please specify an integer greater than or equal to zero for the minimum value.";
 		}
 	}
 
@@ -145,13 +151,15 @@
                                 // If the update was successful
                                 if ($success)
                                 {
-					// Display an alert
-					set_alert(true, "good", "The asset valuation settings were updated successfully.");
+                                        // There is an alert message
+                                        $alert = "good";
+                                        $alert_message = "The asset valuation settings were updated successfully.";
                                 }
                                 else
                                 {
-					// Display an alert
-					set_alert(true, "bad", "There was an issue updating the asset valuation settings.");
+                                        // There is an alert message
+                                        $alert = "bad";
+                                        $alert_message = "There was an issue updating the asset valuation settings.";
                                 }
 			}
 		}
@@ -196,8 +204,24 @@
 <?php
 	view_top_menu("Configure");
 
-	// Get any alert messages
-	get_alert();
+        if ($alert == "good")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
+        else if ($alert == "bad")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
 ?>
     <div class="container-fluid">
       <div class="row-fluid">

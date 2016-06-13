@@ -7,7 +7,6 @@
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/config.php'));
 	require_once(realpath(__DIR__ . '/../includes/upgrade.php'));
-	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -21,7 +20,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
         // Start the session
@@ -43,6 +42,9 @@
 		upgrade_logout();
 	}
 
+	// Default is no alert
+	$alert = false;
+
         // If the login form was posted
         if (isset($_POST['submit']))
         {
@@ -61,8 +63,8 @@
                         // The user is not an admin
                         else
                         {
-				// Display an alert
-				set_alert(true, "bad", "You need to log in as an administrative user in order to upgrade the database.");
+				$alert = "bad";
+                                $alert_message = "You need to log in as an administrative user in order to upgrade the database.";
 
                                 // Deny access
                                 $_SESSION["access"] = "denied";
@@ -71,8 +73,11 @@
                 // The user was not valid
                 else
                 {
-			// Display an alert
-			set_alert(true, "bad", "Invalid username or password.");
+			// Send an alert
+			$alert = "bad";
+
+                        // Invalid username or password
+                        $alert_message = "Invalid username or password.";
 
                         // Deny access
                         $_SESSION["access"] = "denied";
@@ -131,8 +136,24 @@
       </div>
     </div>
 <?php
-	// Get any alert messages
-	get_alert();
+        if ($alert == "good")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
+        else if ($alert == "bad")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
 ?>
     <div class="container-fluid">
       <div class="row-fluid">

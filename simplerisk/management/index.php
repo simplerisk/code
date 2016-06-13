@@ -8,7 +8,6 @@
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
 	require_once(realpath(__DIR__ . '/../includes/assets.php'));
-	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -22,7 +21,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
         // Session handler is database
@@ -43,6 +42,9 @@
         // Check for session timeout or renegotiation
         session_check();
 
+	// Default is no alert
+	$alert = false;
+
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
@@ -54,9 +56,8 @@
 	if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1)
 	{
 		$submit_risks = false;
-
-		// Display an alert
-		set_alert(true, "bad", "You do not have permission to submit new risks.  Any risks that you attempt to submit will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
+		$alert = "bad";
+		$alert_message = "You do not have permission to submit new risks.  Any risks that you attempt to submit will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.";
 	}
 	else $submit_risks = true;
 
@@ -64,9 +65,8 @@
 	if (isset($_POST['subject']) && $_POST['subject'] == "")
 	{
 		$submit_risks = false;
-
-		// Display an alert
-		set_alert(true, "bad", "The subject of a risk cannot be empty.");
+		$alert = "bad";
+		$alert_message = "The subject of a risk cannot be empty.";
 	}
 
         // Check if a new risk was submitted and the user has permissions to submit new risks
@@ -172,9 +172,8 @@
 
 		// There is an alert message
 		$risk_id = $last_insert_id + 1000;
-
-		// Display an alert
-		set_alert(true, "good", "Risk ID " . $risk_id . " submitted successfully!");
+		$alert = "good";
+		$alert_message = "Risk ID " . $risk_id . " submitted successfully!";
         }
 ?>
 
@@ -185,7 +184,6 @@
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/cve_lookup.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -195,15 +193,7 @@
     <script type="text/javascript">
       function popupcvss()
       {
-        var cve_id = document.getElementById('reference_id').value;
-        var pattern = /cve\-\d{4}-\d{4}/i;
-
-        // If the field is a CVE ID
-        if (cve_id.match(pattern))
-        {
-          my_window = window.open('cvss_rating.php?cve_id='+cve_id,'popupwindow','width=850,height=680,menu=0,status=0');
-        }
-        else my_window = window.open('cvss_rating.php','popupwindow','width=850,height=680,menu=0,status=0');
+        my_window = window.open('cvss_rating.php','popupwindow','width=850,height=680,menu=0,status=0');
       }
 
       function popupdread()
@@ -282,8 +272,24 @@
 <?php
 	view_top_menu("RiskManagement");
 
-	// Get any alert messages
-	get_alert();
+        if ($alert == "good")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
+        else if ($alert == "bad")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
 ?>
     <div class="container-fluid">
       <div class="row-fluid">
@@ -304,7 +310,7 @@
                 </tr>
                 <tr>
                   <td width="200px"><?php echo $escaper->escapeHtml($lang['ExternalReferenceId']); ?>:</td>
-                  <td><input maxlength="20" size="20" name="reference_id" id="reference_id" class="input-medium" type="text" onkeyup="javascript: check_cve_id('reference_id');"></td>
+                  <td><input maxlength="20" size="20" name="reference_id" id="reference_id" class="input-medium" type="text"></td>
                 </tr>
                 <tr>
                   <td width="200px"><?php echo $escaper->escapeHtml($lang['ControlRegulation']); ?>:</td>

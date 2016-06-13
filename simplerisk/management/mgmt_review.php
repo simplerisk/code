@@ -7,7 +7,6 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
         require_once(realpath(__DIR__ . '/../includes/display.php'));
-	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -21,7 +20,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
         // Session handler is database
@@ -41,6 +40,9 @@
 
         // Check for session timeout or renegotiation
         session_check();
+
+	// Default is no alert
+	$alert = false;
 
 	// Default is not approved
 	$approved = false;
@@ -367,8 +369,9 @@
 	// If they are not approved to review the risk
 	if (!($approved))
 	{
-		// Display an alert
-		set_alert(true, "bad", "You do not have permission to review " . $risk_level . " level risks.  Any reviews that you attempt to submit will not be recorded.  Please contact an administrator if you feel that you have reached this message in error.");
+		// There is an alert
+		$alert = "bad";
+		$alert_message = "You do not have permission to review " . $risk_level . " level risks.  Any reviews that you attempt to submit will not be recorded.  Please contact an administrator if you feel that you have reached this message in error.";
 	}
 
         // Check if a new risk mitigation was submitted
@@ -410,17 +413,15 @@
                 		close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
 			}
 
-			// Display an alert
-			set_alert(true, "good", "Management review submitted successfully!");
-
                         // Redirect back to the page the workflow started on
                         header("Location: " . $_SESSION["workflow_start"] . "?reviewed=true");
 		}
 		// They do not have permissions to review the risk
 		else
 		{
-			// Display an alert
-			set_alert(true, "bad", "You do not have permission to review " . $risk_level . " level risks.  The review that you attempted to submit was not recorded.  Please contact an administrator if you feel that you have reached this message in error.");
+                	// There is an alert
+                	$alert = "bad";
+                	$alert_message = "You do not have permission to review " . $risk_level . " level risks.  The review that you attempted to submit was not recorded.  Please contact an administrator if you feel that you have reached this message in error.";
 		}
         }
 ?>
@@ -479,8 +480,24 @@
 <?php
 	view_top_menu("RiskManagement");
 
-	// Get any alert messages
-	get_alert();
+        if ($alert == "good")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
+        else if ($alert == "bad")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
 ?>
     <div class="container-fluid">
       <div class="row-fluid">

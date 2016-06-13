@@ -7,7 +7,6 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
-	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -21,7 +20,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
         // Session handler is database
@@ -42,6 +41,9 @@
         // Check for session timeout or renegotiation
         session_check();
 
+	// Default is no alert
+	$alert = false;
+
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
@@ -52,25 +54,14 @@
 	// Record the page the workflow started from as a session variable
 	$_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 
-        // If reviewed is passed via GET
-        if (isset($_GET['reviewed']))
-        {
-                // If it's true
-                if ($_GET['reviewed'] == true)
-                {
-                        // Display an alert
-                        set_alert(true, "good", "Management review submitted successfully!");
-                }
-        }
-
 	// If mitigated was passed back to the page as a GET parameter
 	if (isset($_GET['mitigated']))
 	{
 		// If its true
 		if ($_GET['mitigated'] == true)
 		{
-			// Display an alert
-			set_alert(true, "good", "Mitigation submitted successfully!");
+			$alert = "good";
+			$alert_message = "Mitigation submitted successfully!";
 		}
 	}
 ?>
@@ -102,8 +93,24 @@
 <?php
 	view_top_menu("RiskManagement");
 
-	// Get any alert messages
-	get_alert();
+        if ($alert == "good")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
+        else if ($alert == "bad")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
 ?>
     <div class="container-fluid">
       <div class="row-fluid">

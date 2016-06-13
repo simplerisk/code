@@ -7,7 +7,6 @@
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
-	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -21,7 +20,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
         // Session handler is database
@@ -42,6 +41,9 @@
         // Check for session timeout or renegotiation
         session_check();
 
+        // Default is no alert
+        $alert = false;
+
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
@@ -53,9 +55,8 @@
         if (!isset($_SESSION["close_risks"]) || $_SESSION["close_risks"] != 1)
         {
                 $close_risks = false;
-
-		// Display an alert
-		set_alert(true, "bad", "You do not have permission to close risks.  Any attempts to close risks will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
+                $alert = "bad";
+                $alert_message = "You do not have permission to close risks.  Any attempts to close risks will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.";
         }
         else $close_risks = true;
 
@@ -115,19 +116,16 @@
                 $note = $_POST['note'];
 
 		// Submit a review
-		submit_management_review($id, $status, "", "", $_SESSION['uid'], $note, "0000-00-00", true);
+		submit_management_review($id, $status, "", "", $_SESSION['uid'], $note, "0000-00-00");
 
                 // Close the risk
                 close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
-
-		// Display an alert
-                set_alert(true, "good", "Your risk has now been marked as closed.");
 
                 // Check that the id is a numeric value
                 if (is_numeric($id))
                 {
                         // Create the redirection location
-			$url = "view.php?id=" . $id;
+			$url = "view.php?id=" . $id . "&closed=true";
 
                         // Redirect to plan mitigations page
                         header("Location: " . $url); 
@@ -160,6 +158,25 @@
 
 <?php
 	view_top_menu("RiskManagement");
+
+        if ($alert == "good")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
+        else if ($alert == "bad")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
 ?>
     <div class="container-fluid">
       <div class="row-fluid">

@@ -8,7 +8,6 @@
 require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/cvss.php'));
 require_once(realpath(__DIR__ . '/services.php'));
-require_once(realpath(__DIR__ . '/alerts.php'));
 
 // Include the language file
 require_once(language_file());
@@ -128,11 +127,6 @@ function get_custom_table($type)
 	else if ($type == "disabled_users")
 	{
 		$stmt = $db->prepare("SELECT * FROM user WHERE enabled = 0 ORDER BY name");
-	}
-	// If we want a languages table
-	else if ($type == "languages")
-	{
-		$stmt = $db->prepare("SELECT value, full as name FROM languages ORDER BY name");
 	}
 	// If we want a CVSS scoring table
 	else if (in_array($type, $allowed_cvss_values))
@@ -373,7 +367,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 	}
 
 	// If we want a table that should be ordered by name instead of value
-	if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation" || $name == "projects" || $name == "file_types")
+	if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation" || $name == "languages" || $name == "projects" || $name == "file_types")
 	{
 		$options = get_table_ordered_by_name($name);
 	}
@@ -384,11 +378,6 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 	}
 	// If we want a table of only disabled users
 	else if ($name == "disabled_users")
-	{
-		$options = get_custom_table($name);
-	}
-	// If we want a table of languages
-	else if ($name == "languages")
 	{
 		$options = get_custom_table($name);
 	}
@@ -1090,7 +1079,7 @@ function user_exist($user)
 
         // Find the user
 	$stmt = $db->prepare("SELECT * FROM user WHERE name=:user");
-	$stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
+	$stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
 
         $stmt->execute();
 
@@ -1538,7 +1527,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
         // Add the risk
         $stmt = $db->prepare("INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `location`, `source`, `category`, `team`, `technology`, `owner`, `manager`, `assessment`, `notes`, `submitted_by`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :location, :source, :category, :team, :technology, :owner, :manager, :assessment, :notes, :submitted_by)");
 	$stmt->bindParam(":status", $status, PDO::PARAM_STR, 10);
-        $stmt->bindParam(":subject", try_encrypt($subject), PDO::PARAM_STR, 1000);
+        $stmt->bindParam(":subject", try_encrypt($subject), PDO::PARAM_STR, 300);
 	$stmt->bindParam(":reference_id", $reference_id, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":regulation", $regulation, PDO::PARAM_INT);
 	$stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR, 20);
@@ -1772,8 +1761,8 @@ function update_classic_score($risk_id, $CLASSIC_likelihood, $CLASSIC_impact)
         // Add the risk score
         $stmt->execute();
 
-	// Display an alert
-	set_alert(true, "good", "Risk scoring was updated successfully.");
+        $alert = true;
+        $alert_message = "Risk scoring was updated successfully.";
 
         // Close the database connection
         db_close($db);
@@ -1833,8 +1822,8 @@ function update_cvss_score($risk_id, $AccessVector, $AccessComplexity, $Authenti
         // Add the risk score
         $stmt->execute();
 
-	// Display an alert
-	set_alert(true, "good", "Risk scoring was updated successfully.");
+        $alert = true;  
+        $alert_message = "Risk scoring was updated successfully.";
 
         // Close the database connection
         db_close($db);
@@ -1869,8 +1858,8 @@ function update_dread_score($risk_id, $DREADDamagePotential, $DREADReproducibili
         // Add the risk score
         $stmt->execute();
 
-	// Display an alert
-	set_alert(true, "good", "Risk scoring was updated successfully.");
+        $alert = true;  
+        $alert_message = "Risk scoring was updated successfully.";
 
         // Close the database connection
         db_close($db);
@@ -1928,8 +1917,8 @@ function update_owasp_score($risk_id, $OWASPSkill, $OWASPMotive, $OWASPOpportuni
         // Add the risk score
         $stmt->execute();
 
-	// Display an alert
-	set_alert(true, "good", "Risk scoring was updated successfully.");
+        $alert = true;  
+        $alert_message = "Risk scoring was updated successfully.";
 
         // Close the database connection
         db_close($db);
@@ -1967,8 +1956,8 @@ function update_custom_score($risk_id, $custom)
         // Add the risk score
         $stmt->execute();
 
-	// Display an alert
-	set_alert(true, "good", "Risk scoring was updated successfully.");
+        $alert = true;  
+        $alert_message = "Risk scoring was updated successfully.";
 
         // Close the database connection
         db_close($db);
@@ -2199,7 +2188,7 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
 /**************************************
  * FUNCTION: SUBMIT MANAGEMENT REVIEW *
  **************************************/
-function submit_management_review($risk_id, $status, $review, $next_step, $reviewer, $comments, $next_review, $close=false)
+function submit_management_review($risk_id, $status, $review, $next_step, $reviewer, $comments, $next_review)
 {
         // Subtract 1000 from risk_id
         $id = (int)$risk_id - 1000;
@@ -2235,23 +2224,19 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
 
         $stmt->execute();
 
-	// If this is not a risk closure
-	if (!$close)
-	{
-        	// If notification is enabled
-        	if (notification_extra())
-        	{
-                	// Include the notification extra
-                	require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+        // If notification is enabled
+        if (notification_extra())
+        {
+                // Include the notification extra
+                require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
-			// Send the notification
-			notify_new_review($id);
-        	}
+		// Send the notification
+		notify_new_review($id);
+        }
 
-		// Audit log
-		$message = "A management review was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-		write_log($risk_id, $_SESSION['uid'], $message);
-	}
+	// Audit log
+	$message = "A management review was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);
@@ -2277,7 +2262,7 @@ function update_risk($risk_id, $subject, $reference_id, $regulation, $control_nu
 	$stmt = $db->prepare("UPDATE risks SET subject=:subject, reference_id=:reference_id, regulation=:regulation, control_number=:control_number, location=:location, source=:source, category=:category, team=:team, technology=:technology, owner=:owner, manager=:manager, assessment=:assessment, notes=:notes, last_update=:date WHERE id = :id");
 
 	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
-        $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 1000);
+        $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 300);
 	$stmt->bindParam(":reference_id", $reference_id, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":regulation", $regulation, PDO::PARAM_INT);
 	$stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR, 20);
@@ -2436,37 +2421,6 @@ function get_review_by_id($risk_id)
                 // Strip out risks the user should not have access to
                 $array = strip_no_access_risks($array);
         }
-
-        // If the array is empty
-        if (empty($array))
-        {
-                return false;
-        }
-        else return $array;
-}
-
-/******************************
- * FUNCTION: GET CLOSE BY ID *
- ******************************/
-function get_close_by_id($risk_id)
-{
-        // Open the database connection
-        $db = db_open();
-
-        // Subtract 1000 from the id
-        $risk_id = $risk_id - 1000;
-
-        // Query the database
-        $stmt = $db->prepare("SELECT * FROM closures WHERE risk_id=:risk_id ORDER BY closure_date DESC limit 1");
-        $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
-
-        $stmt->execute();
-
-        // Store the list in the array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
 
         // If the array is empty
         if (empty($array))
@@ -4571,14 +4525,6 @@ function latest_version($param)
 	else if ($param == "upgrade")
 	{
 		$regex_pattern = "/<upgrade>(.*)<\/upgrade>/";
-	}
-	else if ($param == "assessments")
-	{
-		$regex_pattern = "/<assessments>(.*)<\/assessments>/";
-	}
-	else if ($param == "api")
-	{
-		$regex_pattern = "/<api>(.*)<\/api>/";
 	}
 
 	foreach ($version_page as $line)

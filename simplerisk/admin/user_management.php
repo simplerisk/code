@@ -8,7 +8,6 @@
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
 	require_once(realpath(__DIR__ . '/../includes/messages.php'));
-	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -22,7 +21,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
         // Session handler is database
@@ -49,6 +48,9 @@
                 header("Location: ../index.php");
                 exit(0);
         }
+
+	// Default is no alert
+	$alert = false;
 
         // Check if access is authorized
         if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
@@ -180,28 +182,28 @@
 						add_user_enc($pass, $salt, $user);
 					}
 
-					// Display an alert
-					set_alert(true, "good", "The new user was added successfully.");
+					$alert = "good";
+					$alert_message = "The new user was added successfully.";
 				}
 				// Otherwise, an invalid username was specified
 				else
 				{
-					// Display an alert
-					set_alert(true, "bad", "An invalid username was specified.  Please try again with a different username.");
+					$alert = "bad";
+					$alert_message = "An invalid username was specified.  Please try again with a different username.";
 				}
                         }
 			// Otherwise, the user already exists
 			else
 			{
-				// Display an alert
-				set_alert(true, "bad", "The username already exists.  Please try again with a different username.");
+				$alert = "bad";
+				$alert_message = "The username already exists.  Please try again with a different username.";
 			}
                 }
 		// Otherewise, an invalid password was specified
 		else
 		{
-			// Display an alert
-			set_alert(true, "bad", password_error_message($error_code));
+				$alert = "bad";
+				$alert_message = password_error_message($error_code);
 		}
         }
 
@@ -215,8 +217,9 @@
                 {
                         enable_user($value);
 
-			// Display an alert
-			set_alert(true, "good", "The user was enabled successfully.");
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The user was enabled successfully.";
                 }
 	}
 
@@ -230,8 +233,9 @@
                 {
                         disable_user($value);
 
-			// Display an alert
-			set_alert(true, "good", "The user was disabled successfully.");
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "The user was disabled successfully.";
                 }
 
 	}
@@ -259,8 +263,9 @@
 				check_all_activated();
 			}
 
-			// Display an alert
-			set_alert(true, "good", "The existing user was deleted successfully.");
+			// There is an alert message
+			$alert = "good";
+			$alert_message = "The existing user was deleted successfully.";
                 }
         }
 
@@ -274,8 +279,9 @@
                 {
                         password_reset_by_userid($value);
               
-			// Display an alert
-			set_alert(true, "good", "A password reset email was sent to the user.");
+                        // There is an alert message
+                        $alert = "good";
+                        $alert_message = "A password reset email was sent to the user.";
                 }
 	}
 
@@ -292,8 +298,9 @@
 
 		update_password_policy($pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required);
 
-		// Display an alert
-		set_alert(true, "good", "The password policy was updated successfully.");
+		// There is an alert message
+		$alert = "good";
+		$alert_message = "The password policy was updated successfully.";
 	}
 
 ?>
@@ -417,8 +424,24 @@
 <?php
 	view_top_menu("Configure");
 
-	// Get any alert messages
-	get_alert();
+        if ($alert == "good")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
+        else if ($alert == "bad")
+        {
+                echo "<div id=\"alert\" class=\"container-fluid\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($alert_message) . "</div>\n";
+                echo "</div>\n";
+                echo "</div>\n";
+                echo "<br />\n";
+        }
 ?>
     <div class="container-fluid">
       <div class="row-fluid">

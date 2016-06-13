@@ -20,7 +20,7 @@
         if (CSP_ENABLED == "true")
         {
                 // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+                header("Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'");
         }
 
         // Session handler is database
@@ -104,14 +104,11 @@
                 // Add the comment
                 add_comment($id, $_SESSION['uid'], $comment);
 
-		// Display an alert
-		set_alert(true, "good", "Your comment has been successfully added to the risk.");
-
 		// Check that the id is a numeric value
 		if (is_numeric($id))
 		{
                 	// Create the redirection location
-                	$url = "view.php?id=" . $id;
+                	$url = "view.php?id=" . $id . "&comment=true";
 
 	                // Redirect to risk view page
         	        header("Location: " . $url); 
