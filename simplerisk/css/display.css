@@ -1,29 +1,29 @@
 .red {
-    background: repeat-x scroll 50% 50% red !important;
+    background: repeat-x scroll 50% 50% red;
     border: 1px solid #000000;
     font-weight: 600;
     float: left;
 }
 .orangered {
-    background: repeat-x scroll 50% 50% orangered !important;
+    background: repeat-x scroll 50% 50% orangered;
     border: 1px solid #000000;
     font-weight: 600;
     float: left;
 }
 .orange {
-    background: repeat-x scroll 50% 50% orange !important;
+    background: repeat-x scroll 50% 50% orange;
     border: 1px solid #000000;
     font-weight: 600;
     float: left;
 }
 .yellow {
-    background-color: yellow !important;
+    background: repeat-x scroll 50% 50% yellow;
     border: 1px solid #000000;
     font-weight: 600;
     float: left;
 }
 .white {
-    background: repeat-x scroll 50% 50% white !important;
+    background: repeat-x scroll 50% 50% white;
     border: 1px solid #000000;
     font-weight: 600;
     float: left;
