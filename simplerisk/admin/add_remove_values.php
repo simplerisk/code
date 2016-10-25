@@ -140,7 +140,7 @@
 			{
 				// Check if a risk is assigned to the team
 				$risks = get_risks_by_team($value);
-				
+
 				// If the risks array is empty
 				if (empty($risks))
 				{
@@ -351,7 +351,7 @@
 
                 // Insert a new close reason up to 50 chars
                 add_name("close_reason", $name, 50);
-                
+
 		// Display an alert
 		set_alert(true, "good", "A new close reason was added successfully.");
         }
@@ -371,17 +371,17 @@
 			set_alert(true, "good", "The close reason name was updated successfully.");
                 }
         }
-                        
+
         // Check if a close reason was deleted
         if (isset($_POST['delete_close_reason']))
         {
                 $value = (int)$_POST['close_reason'];
-        
+
                 // Verify value is an integer
                 if (is_int($value))
                 {
                         delete_value("close_reason", $value);
-                
+
 			// Display an alert
 			set_alert(true, "good", "An existing close reason was removed successfully.");
                 }
@@ -476,7 +476,7 @@
 
 <!doctype html>
 <html>
-  
+
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -484,18 +484,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
-  </head>
-  
-  <body>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
+
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
+  </head>
+
+  <body>
 
 <?php
 	view_top_menu("Configure");

@@ -56,14 +56,33 @@
                 exit(0);
         }
 
-	// If the user updated the configuration
-	if (isset($_POST['submit']))
-	{
-		// Include the Authentication Extra
-		require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
+        // If the extra directory exists
+        if (is_dir(realpath(__DIR__ . '/../extras/authentication')))
+        {
+                // Include the Authentication Extra
+                require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
 
-		// Update the authentication configuration
-		update_authentication_config();
+        	// If the user updated the configuration
+        	if (isset($_POST['submit']))
+        	{
+			// Update the authentication configuration
+			update_authentication_config();
+		}
+
+                // If the user wants to activate the extra
+                if (isset($_POST['activate']))
+                {
+                        // Enable the Authentication Extra
+                        enable_authentication_extra();
+                }
+
+                // If the user wants to deactivate the extra
+                if (isset($_POST['deactivate']))
+                {
+                        // Disable the Authentication Extra
+                        disable_authentication_extra();
+                }
+
 	}
 
 /*********************
@@ -77,10 +96,10 @@ function display($display = "")
         // If the extra directory exists
         if (is_dir(realpath(__DIR__ . '/../extras/authentication')))
         {
-                // But the extra is not activated
+                // If the extra is not activated
                 if (!custom_authentication_extra())
                 {
-                        echo "<form name=\"activate\" method=\"post\" action=\"../extras/authentication/\">\n";
+			echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
                         echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
                         echo "</form>\n";
                         echo "</div>\n";
@@ -94,13 +113,18 @@ function display($display = "")
                         display_authentication();
                 }
         }
+	// Otherwise, the Extra does not exist
+	else
+	{
+		echo "<a href=\"https://www.simplerisk.it/extras\" target=\"_blank\">Purchase the Extra</a>\n";
+	}
 }
 
 ?>
 
 <!doctype html>
 <html>
-  
+
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -108,18 +132,17 @@ function display($display = "")
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
-  </head>
-  
-  <body>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
+
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
+  </head>
+
+  <body>
 
 <?php
 	view_top_menu("Configure");

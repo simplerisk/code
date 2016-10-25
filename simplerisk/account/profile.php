@@ -150,7 +150,7 @@
 
 <!doctype html>
 <html>
-  
+
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
@@ -160,8 +160,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
+
+
+    <link rel="stylesheet" href="../css/divshot-util.css">
+    <link rel="stylesheet" href="../css/divshot-canvas.css">
+    <link rel="stylesheet" href="../css/display.css">
+
+		<link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
     <script type="text/javascript">
       $(function(){
           $("#team").multiselect({
@@ -171,17 +179,8 @@
       });
     </script>
   </head>
-  
-  <body>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
 
+  <body>
 <?php
 	view_top_menu("Configure");
 
@@ -197,11 +196,24 @@
                 <form name="change_language" method="post" action="">
                 <table border="0" cellspacing="0" cellpadding="0">
                   <tr><td colspan="2"><h4><?php echo $escaper->escapeHtml($lang['ProfileDetails']); ?></h4></td></tr>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['FullName']); ?>:&nbsp;</td><td><input style="cursor: default;" name="name" type="text" maxlength="50" size="20" title="<?php echo $escaper->escapeHtml($name); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($name); ?>" /></td>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>:&nbsp;</td><td><input style="cursor: default;" name="email" type="text" maxlength="200" size="20" title="<?php echo $escaper->escapeHtml($email); ?>"disabled="disabled" value="<?php echo $escaper->escapeHtml($email); ?>" /></td>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['Username']); ?>:&nbsp;</td><td><input style="cursor: default;" name="username" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($username); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($username); ?>" /></td>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['LastLogin']); ?>:&nbsp;</td><td><input style="cursor: default;" name="last_login" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($last_login); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($last_login); ?>" /></td>
-                  <tr><td><?php echo $lang['Language']; ?>:&nbsp;</td><td><?php create_dropdown("languages", get_value_by_name("languages", $language)); ?><input type="submit" name="change_language" value="Update" /></td>
+                  <tr><td><?php echo $escaper->escapeHtml($lang['FullName']); ?>:&nbsp;</td><td><input style="cursor: default;" name="name" type="text" maxlength="50" size="20" title="<?php echo $escaper->escapeHtml($name); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($name); ?>" /></td></tr>
+                  <tr><td><?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>:&nbsp;</td><td><input style="cursor: default;" name="email" type="text" maxlength="200" size="20" title="<?php echo $escaper->escapeHtml($email); ?>"disabled="disabled" value="<?php echo $escaper->escapeHtml($email); ?>" /></td></tr>
+                  <tr><td><?php echo $escaper->escapeHtml($lang['Username']); ?>:&nbsp;</td><td><input style="cursor: default;" name="username" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($username); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($username); ?>" /></td></tr>
+                  <tr><td><?php echo $escaper->escapeHtml($lang['LastLogin']); ?>:&nbsp;</td><td><input style="cursor: default;" name="last_login" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($last_login); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($last_login); ?>" /></td></tr>
+                  <tr><td><?php echo $escaper->escapeHtml($lang['Language']); ?>:&nbsp;</td><td><?php create_dropdown("languages", get_value_by_name("languages", $language)); ?><input type="submit" name="change_language" value="Update" /></td></tr>
+
+		<?php
+			// If the API Extra is enabled
+			if (api_extra())
+			{
+				// Require the API Extra
+				require_once(realpath(__DIR__ . '/../extras/api/index.php'));
+
+				// Display the API Profile
+				display_api_profile();
+			}
+		?>
+
                 </table>
                 </form>
                 <h6><u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u></h6>

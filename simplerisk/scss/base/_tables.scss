@@ -1,0 +1,109 @@
+/*--------------------------------------------------------------
+ ## Table Styles
+ --------------------------------------------------------------*/
+
+ .table.table-bordered{
+
+    border-radius: 3px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+ 	  td,th{
+      padding: 10px;
+      background-color: #fff;
+    }
+ }
+
+ .table-bordered thead:first-child tr:first-child > th:first-child,
+ .table-bordered tbody:first-child tr:first-child > td:first-child,
+ .table-bordered tbody:first-child tr:first-child > th:first-child {
+    -webkit-border-top-left-radius: 2px;
+    border-top-left-radius: 2px;
+    -moz-border-radius-topleft: 2px;
+}
+
+
+.table-bordered thead:last-child tr:last-child > th:first-child,
+.table-bordered tbody:last-child tr:last-child > td:first-child,
+.table-bordered tbody:last-child tr:last-child > th:first-child,
+.table-bordered tfoot:last-child tr:last-child > td:first-child,
+.table-bordered tfoot:last-child tr:last-child > th:first-child {
+    -webkit-border-bottom-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    -moz-border-radius-bottomleft: 2px;
+}
+
+.table-bordered thead:first-child tr:first-child > th:last-child,
+.table-bordered tbody:first-child tr:first-child > td:last-child,
+.table-bordered tbody:first-child tr:first-child > th:last-child {
+    -webkit-border-top-right-radius: 2px;
+    border-top-right-radius: 2px;
+    -moz-border-radius-topright: 2px;
+}
+
+.table-bordered thead:last-child tr:last-child > th:last-child,
+.table-bordered tbody:last-child tr:last-child > td:last-child,
+.table-bordered tbody:last-child tr:last-child > th:last-child,
+.table-bordered tfoot:last-child tr:last-child > td:last-child,
+.table-bordered tfoot:last-child tr:last-child > th:last-child {
+    -webkit-border-bottom-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    -moz-border-radius-bottomright: 2px;
+}
+
+.table-striped thead > tr > th,
+.table-striped tbody > tr:nth-child(even) > td,
+.table-striped tbody > tr:nth-child(even) > th {
+    background-color: #ebe7e7 !important;
+}
+
+.table-bordered th, .table-bordered td {
+    border-left: 1px solid #d1d3d4 !important;
+}
+
+.table-striped tbody > tr:nth-child(odd) > td,
+.table-striped tbody > tr:nth-child(odd) > th{
+  background-color: #fff;
+}
+
+.table-striped tbody > tr > td a{
+  display: block;
+  text-align: center;
+  text-transform: uppercase;
+  color: $color-1;
+}
+
+.table-striped tbody > tr > td.text-center{
+  text-align: center;
+}
+
+.table.table-bordered{
+  margin-top: 0px;
+}
+
+.table tbody tr td:first-child a{
+  font-weight: 400;
+  color: $color-1;
+}
+
+.table tbody tr td:last-child a{
+  font-weight: 400;
+  color: $color-1;
+}
+
+
+
+.active-cell a{
+  color: #0088cc !important;
+  font-weight: bold !important;
+}
+
+.mitigation.yes{
+  color: $color-1 !important;
+  font-weight: bold;
+}
+
+.management.yes{
+  color: $color-1 !important;
+  font-weight: bold;
+}

@@ -56,14 +56,32 @@
                 exit(0);
         }
 
-	// If the user updated the configuration
-	if (isset($_POST['submit']))
+	// If the extra directory exists
+	if (is_dir(realpath(__DIR__ . '/../extras/assessments')))
 	{
 		// Include the Assessment Extra
 		require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
 
-		// Update the assessment configuration
-		update_assessment_config();
+                // If the user wants to activate the extra
+                if (isset($_POST['activate']))
+                {
+                        // Enable the Assessments Extra
+                        enable_assessments_extra();
+                }
+
+                // If the user wants to deactivate the extra
+                if (isset($_POST['deactivate']))
+                {
+                        // Disable the Assessments Extra
+                        disable_assessments_extra();
+                }
+
+		// If the user updated the configuration
+		if (isset($_POST['submit']))
+		{
+			// Update the assessment configuration
+			update_assessment_config();
+		}
 	}
 
 /*********************
@@ -71,14 +89,17 @@
  *********************/
 function display()
 {
+	global $lang;
+	global $escaper;
+
         // If the extra directory exists
         if (is_dir(realpath(__DIR__ . '/../extras/assessments')))
         {
                 // But the extra is not activated
                 if (!assessments_extra())
                 {
-                        echo "<form name=\"activate\" method=\"post\" action=\"../extras/assessments/\">\n";
-                        echo "<input type=\"submit\" value=\"Activate\" name=\"activate\" /><br />\n";
+                        echo "<form name=\"activate\" method=\"post\" action=\"\">\n";
+                        echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
                         echo "</form>\n";
                 }
                 // Once it has been activated
@@ -90,13 +111,18 @@ function display()
 			display_assessments();
                 }
         }
+        // Otherwise, the Extra does not exist
+        else
+        {
+                echo "<a href=\"https://www.simplerisk.it/extras\" target=\"_blank\">Purchase the Extra</a>\n";
+        }
 }
 
 ?>
 
 <!doctype html>
 <html>
-  
+
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -104,18 +130,17 @@ function display()
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
-  </head>
-  
-  <body>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
+
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
+  </head>
+
+  <body>
 
 <?php
 	view_top_menu("Configure");

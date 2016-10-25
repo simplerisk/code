@@ -57,7 +57,13 @@
 <link href="../css/front-style.css" rel="stylesheet" type="text/css">
 <script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
 <script language="javascript" src="../js/owasp_scoring.js" type="text/javascript"></script>
+
+
+<link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="../css/theme.css">
+
 <script type="text/javascript" language="JavaScript">
+
   <!--
   var parent_window = window.opener;
 
@@ -96,22 +102,22 @@
 </head>
 
 <body topmargin="0" bottommargin="4" leftmargin="0" rightmargin="0" ><form name="frmCalc" method="post" action="" >
-          
+
 <table width="672" border="0" cellpadding="1" cellspacing="0">
-	
+
   <tr>
     <td align="left" valign="top"  bgcolor="#6B7782" >
       <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
       	<tr>
 	  <td align="center" background="../images/cal-bg-head.jpg" height="35"><span class="heading">SimpleRisk OWASP Calculator</span></td>
     </tr>
-    
-    
+
+
     <tr>
 	  <td align="left"  height="8"></td>
 	  </tr>
-    
-    
+
+
 	<tr>
     	<td align="left" style="padding-left:10px; padding-right:10px" height="35">This page provides a calculator for creating <a href="https://www.owasp.org/index.php/OWASP_Risk_Rating_Methodology" target="_blank">OWASP</a> vulnerability severity scores.  You'll need to gather information about the threat agent involved, the attack they're using, the vulnerability involved, and the impact of a successful exploit on your business.  There may be multiple possible groups of attackers, or even multiple possible business impacts.  In general, it's best to err on the side of caution by using the worst-case option, as that will result in the highest overall risk. </td>
     </tr>
@@ -142,7 +148,7 @@
                         <td ><div id="VulnerabilityScore">10</div></td>
                       </tr>
                       <tr>
-                        <td>Overall Impact 
+                        <td>Overall Impact
                         <td ><div id="Impact">10</div></td>
                       </tr>
                       <tr>

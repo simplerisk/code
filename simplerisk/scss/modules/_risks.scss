@@ -1,0 +1,277 @@
+.new-tabs{
+  padding-top: 5px;
+  position: relative;
+  z-index: 1030;
+
+  .span9{
+    padding: 0px;
+    margin: 0 0 0 17px !important;
+  }
+
+}
+
+.tab-data{
+  padding-top: 38px;
+}
+
+
+.tabs div.tab.add {
+    margin-left: 0px;
+
+    span{
+      width: 50px !important;
+    }
+}
+
+.tabs div.tab  {
+    span{
+      width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+}
+
+.tabs div.tab:first-child  {
+    span{
+      width: 160px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: inherit;
+    }
+}
+
+
+.risk-form-actions{
+  background-color: $color-4;
+  padding: 10px;
+  line-height: 40px;
+
+  .btn{
+    margin-left: 10px;
+    margin-top: 5px;
+  }
+}
+
+.risk-details{
+  .tabs-nav{
+    @extend .reset;
+    margin: 20px 0;
+    border-bottom: 2px solid $color-4;
+
+    li{
+      float: left;
+      padding: 10px;
+
+      &.ui-tabs-active{
+        background-image: url('../images/small-arraow--up.png');
+        background-repeat: no-repeat;
+        background-position: bottom center;
+
+        a{
+          color: $color-3;
+          text-decoration: none;
+        }
+      }
+    }
+  }
+}
+
+.risk-session.overview{
+  padding: 15px;
+  height: auto;
+}
+
+.risk-session.overview .score {
+    width: 120px;
+    height: 120px;
+    text-align: center;
+
+    span{
+      display: block;
+      font-size: 50px;
+      font-weight: 400;
+      line-height: auto;
+    }
+}
+
+
+.tabs--action{
+  position: absolute;
+  top: 20px;
+  right: 0px;
+
+}
+
+
+.tabs{
+  position: relative;
+}
+
+
+.risk-session.overview{
+  margin-top: 53px;
+
+  .score{
+    margin-bottom: 20px;
+  }
+
+  .row-fluid .span2 {
+    width: 7.529915%;
+  }
+
+  .row-fluid .span10 {
+    width: 89.905983%
+  }
+
+  label{
+    font-size: 16px;
+    font-weight: 400;
+    color: #3f3f3f;
+    padding: 0;
+
+    span{
+      font-size: 24px;
+      line-height: 30px;
+    }
+  }
+
+  .border-top{
+    border-top: 1px solid $border-color;
+    padding-top: 15px;
+    margin-top: 15px;
+  }
+
+  .risk-test a{
+    @extend .reset;
+    font-weight: bold;
+    font-size: 16px;
+    color: $text-color;
+
+  }
+}
+
+.padded{
+  padding: 50px 0px;
+}
+
+.padded-bottom{
+  margin-bottom: 30px;
+
+  @media only screen and (min-width : 320px) {
+    input[type="text"]{
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+
+   @media only screen and (min-width : 1816px) {
+
+   input[type="text"]{
+     max-width: 99%;
+   }
+
+  }
+
+  @media only screen and (min-width : 1919px) {
+
+   input[type="text"]{
+     max-width: 97.5%;
+   }
+
+  }
+}
+
+
+.score--wrapper{
+  width: 130px;
+  float: left;
+  margin-bottom: 25px;
+}
+
+.details--wrapper{
+  float: left;
+  padding-right: 130px;
+  width: 100%;
+  margin-right: -130px;
+}
+
+#risk-submit-form{
+  margin-top: 14px;
+}
+
+.risk-form-actions{
+  margin-top: 40px;
+
+  @media only screen and (min-width : 320px) {
+    span{
+      font-size: 14px;
+    }
+
+    .btn{
+      font-size: 14px;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+  }
+
+  @media only screen and (min-width : 1470px) {
+    span{
+      font-size: 16px;
+    }
+
+    .btn{
+      font-size: 14px;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+  }
+
+
+}
+
+#risk-submit-form .span5,
+.span5.text-right{
+  line-height: 33px;
+}
+
+.span2.text-right{
+  line-height: 37px;
+}
+
+.view--risks{
+  margin-left: 15px;
+}
+
+.risk--score{
+
+  text-transform: uppercase;
+  font-weight: 400;
+
+  span{
+    float: right !important;
+    margin-left: 10px;
+    padding: 8px 10px;
+    border:none;
+    border-radius: 2px;
+    font-weight: 700;
+    color: #fff;
+    font-size: 14px;
+    margin-top: 5px;
+    min-width: 35px;
+    text-align: center;
+
+    &.yellow{
+      color: #000 !important;
+    }
+  }
+
+}
+
+div.doc-link {
+    margin-top: 5px;
+
+    &.edit-mode{
+      margin-left: 10px;
+    }
+}

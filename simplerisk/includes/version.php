@@ -4,6 +4,6 @@
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Application Version Date
-define('APP_VERSION', '20160612-001');
+define('APP_VERSION', '20161023-001');
 
 ?>

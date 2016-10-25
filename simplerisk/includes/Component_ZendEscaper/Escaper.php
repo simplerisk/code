@@ -3,12 +3,11 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Escaper;
-
 
 /**
  * Context specific methods for use in secure output escaping
@@ -25,12 +24,12 @@ class Escaper
      *
      * @var array
      */
-    protected static $htmlNamedEntityMap = array(
+    protected static $htmlNamedEntityMap = [
         34 => 'quot',         // quotation mark
         38 => 'amp',          // ampersand
         60 => 'lt',           // less-than sign
         62 => 'gt',           // greater-than sign
-    );
+    ];
 
     /**
      * Current encoding for escaping. If not UTF-8, we convert strings from this encoding
@@ -42,13 +41,11 @@ class Escaper
 
     /**
      * Holds the value of the special flags passed as second parameter to
-     * htmlspecialchars(). We modify these for PHP 5.4 to take advantage
-     * of the new ENT_SUBSTITUTE flag for correctly dealing with invalid
-     * UTF-8 sequences.
+     * htmlspecialchars().
      *
-     * @var string
+     * @var int
      */
-    protected $htmlSpecialCharsFlags = ENT_QUOTES;
+    protected $htmlSpecialCharsFlags;
 
     /**
      * Static Matcher which escapes characters for HTML Attribute contexts
@@ -76,7 +73,7 @@ class Escaper
      *
      * @var array
      */
-    protected $supportedEncodings = array(
+    protected $supportedEncodings = [
         'iso-8859-1',   'iso8859-1',    'iso-8859-5',   'iso8859-5',
         'iso-8859-15',  'iso8859-15',   'utf-8',        'cp866',
         'ibm866',       '866',          'cp1251',       'windows-1251',
@@ -86,12 +83,11 @@ class Escaper
         'big5-hkscs',   'shift_jis',    'sjis',         'sjis-win',
         'cp932',        '932',          'euc-jp',       'eucjp',
         'eucjp-win',    'macroman'
-    );
+    ];
 
     /**
      * Constructor: Single parameter allows setting of global encoding for use by
-     * the current object. If PHP 5.4 is detected, additional ENT_SUBSTITUTE flag
-     * is set for htmlspecialchars() calls.
+     * the current object.
      *
      * @param string $encoding
      * @throws Exception\InvalidArgumentException
@@ -117,14 +113,13 @@ class Escaper
             $this->encoding = $encoding;
         }
 
-        if (defined('ENT_SUBSTITUTE')) {
-            $this->htmlSpecialCharsFlags|= ENT_SUBSTITUTE;
-        }
+        // We take advantage of ENT_SUBSTITUTE flag to correctly deal with invalid UTF-8 sequences.
+        $this->htmlSpecialCharsFlags = ENT_QUOTES | ENT_SUBSTITUTE;
 
         // set matcher callbacks
-        $this->htmlAttrMatcher = array($this, 'htmlAttrMatcher');
-        $this->jsMatcher       = array($this, 'jsMatcher');
-        $this->cssMatcher      = array($this, 'cssMatcher');
+        $this->htmlAttrMatcher = [$this, 'htmlAttrMatcher'];
+        $this->jsMatcher       = [$this, 'jsMatcher'];
+        $this->cssMatcher      = [$this, 'cssMatcher'];
     }
 
     /**
@@ -146,8 +141,7 @@ class Escaper
      */
     public function escapeHtml($string)
     {
-        $result = htmlspecialchars($string, $this->htmlSpecialCharsFlags, $this->encoding);
-        return $result;
+        return htmlspecialchars($string, $this->htmlSpecialCharsFlags, $this->encoding);
     }
 
     /**
@@ -250,7 +244,7 @@ class Escaper
          * replace it with while grabbing the integer value of the character.
          */
         if (strlen($chr) > 1) {
-            $chr = $this->convertEncoding($chr, 'UTF-16BE', 'UTF-8');
+            $chr = $this->convertEncoding($chr, 'UTF-32BE', 'UTF-8');
         }
 
         $hex = bin2hex($chr);
@@ -283,7 +277,13 @@ class Escaper
             return sprintf('\\x%02X', ord($chr));
         }
         $chr = $this->convertEncoding($chr, 'UTF-16BE', 'UTF-8');
-        return sprintf('\\u%04s', strtoupper(bin2hex($chr)));
+        $hex = strtoupper(bin2hex($chr));
+        if (strlen($hex) <= 4) {
+            return sprintf('\\u%04s', $hex);
+        }
+        $highSurrogate = substr($hex, 0, 4);
+        $lowSurrogate = substr($hex, 4, 4);
+        return sprintf('\\u%04s\\u%04s', $highSurrogate, $lowSurrogate);
     }
 
     /**
@@ -299,7 +299,7 @@ class Escaper
         if (strlen($chr) == 1) {
             $ord = ord($chr);
         } else {
-            $chr = $this->convertEncoding($chr, 'UTF-16BE', 'UTF-8');
+            $chr = $this->convertEncoding($chr, 'UTF-32BE', 'UTF-8');
             $ord = hexdec(bin2hex($chr));
         }
         return sprintf('\\%X ', $ord);
@@ -322,9 +322,9 @@ class Escaper
         }
 
         if (!$this->isUtf8($result)) {
-            throw new Exception\RuntimeException(sprintf(
-                'String to be escaped was not valid UTF-8 or could not be converted: %s', $result
-            ));
+            throw new Exception\RuntimeException(
+                sprintf('String to be escaped was not valid UTF-8 or could not be converted: %s', $result)
+            );
         }
 
         return $result;

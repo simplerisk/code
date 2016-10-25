@@ -91,45 +91,44 @@
 
 ?>
 
-<!doctype html>
-<html>
-
+<html ng-app="SimpleRisk">
   <head>
-    <script src="../js/jquery.min.js"></script>
-    <script src="../js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+      <!-- build:css vendor/vendor.min.css -->
+      <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" media="screen" />
+      <!-- endbuild -->
+      <!-- build:css style.min.css -->
+      <link rel="stylesheet" type="text/css" href="../css/style.css" media="screen" />
+      <!-- endbuild -->
+
+      <link rel="stylesheet" href="../css/bootstrap.css">
+      <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+
+      <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+      <link rel="stylesheet" href="../css/theme.css">
   </head>
 
-  <body>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
-    <div class="navbar">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="brand" href="http://www.simplerisk.org/">SimpleRisk</a>
-          <div class="navbar-content">
-            <ul class="nav">
-              <li>
-                <a href="upgrade.php">Database Upgrade Script</a>
-              </li>
-              <li>
-                <a href="upgrade.php?logout=true">Logout</a>
-              </li>
-            </ul>
+  <body ng-controller="MainCtrl" class="login--page">
+    
+    <header class="l-header">
+      <div class="navbar">
+        <div class="navbar-inner">
+          <div class="container-fluid">
+            <a class="brand" href="https://www.simplerisk.com/"><img src="../images/logo@2x.png" alt="SimpleRisk Logo" /></a>
+            <div class="navbar-content pull-right">
+              <ul class="nav"> 
+                <li>
+                  <a href="upgrade.php">Database Upgrade Script</a>
+                </li>
+                <li>
+                  <a href="upgrade.php?logout=true">Logout</a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </header>
 <?php
 	// Get any alert messages
 	get_alert();
@@ -139,7 +138,7 @@
         <div class="span12">
           <div class="row-fluid">
             <div class="span12">
-              <div class="hero-unit">
+              <div class="login-wrapper clearfix">
 <?php
 	// If access was not granted display the login form
 	if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")

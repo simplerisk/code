@@ -66,6 +66,7 @@
 		if (is_int($user_id))
 		{
 			// Get the submitted values
+			$type = $_POST['type'];
 			$name = $_POST['name'];
 			$email = $_POST['email'];
 			$teams = isset($_POST['team']) ? $_POST['team'] : array('none');
@@ -83,6 +84,21 @@
                 	$review_low = isset($_POST['review_low']) ? '1' : '0';
 			$review_insignificant = isset($_POST['review_insignificant']) ? '1' : '0';
 			$multi_factor = (int)$_POST['multi_factor'];
+
+			// Change the type from a numeric to alpha
+			switch($type){
+				case "1":
+					$type = "simplerisk";
+					break;
+				case "2":
+					$type = "ldap";
+					break;
+				case "3":
+					$type = "saml";
+					break;
+				default:
+					$type = "simplerisk";
+			}
 
                         // Create a boolean for all
                         $all = false;
@@ -114,7 +130,7 @@
                         if ($none) $team = "none";
 
 			// Update the user
-			update_user($user_id, $name, $email, $team, $language, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
+			update_user($user_id, $type, $name, $email, $team, $language, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
 			// Display an alert
 			set_alert(true, "good", "The user was updated successfully.");
@@ -177,7 +193,7 @@
 
 <!doctype html>
 <html>
-  
+
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
@@ -187,7 +203,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
     <script type="text/javascript">
       $(function(){
@@ -197,17 +213,17 @@
           });
       });
     </script>
-  </head>
-  
-  <body>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
+
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
+  </head>
+
+  <body>
+
     <script type="text/javascript">
       function checkAll(bx) {
         var cbs = document.getElementsByTagName('input');
@@ -290,7 +306,26 @@
                 <input name="user" type="hidden" value="<?php echo $escaper->escapeHtml($user_id); ?>" />
                 <table border="0" cellspacing="0" cellpadding="0">
                   <tr><td colspan="2"><h4>Update an Existing User:</h4></td></tr>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['Type']); ?>:&nbsp;</td><td><input style="cursor: default;" name="type" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($type); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($type); ?>" /></td></tr>
+                  <tr>
+                    <td><?php echo $escaper->escapeHtml($lang['Type']); ?>:&nbsp;</td>
+                    <td>
+                      <select name="type" id="select">
+                        <option value="1"<?php echo ($type == "simplerisk" ? " selected" : ""); ?>>SimpleRisk</option>
+                        <?php
+                        	// If the custom authentication extra is enabeld
+                                if (custom_authentication_extra())
+                                {
+                                        // Display the LDAP option
+                                        echo "<option value=\"2\"" . ($type == "ldap" ? " selected" : "") . ">LDAP</option>\n";
+
+                                        // Display the SAML option
+                                        echo "<option value=\"3\"" . ($type == "saml" ? " selected" : "") . ">SAML</option>\n";
+                                }
+                        ?>
+                      </select>
+                    </td>
+                 
+                  </tr>
                   <tr><td><?php echo $escaper->escapeHtml($lang['FullName']); ?>:&nbsp;</td><td><input name="name" type="text" maxlength="50" size="20" value="<?php echo $escaper->escapeHtml($name); ?>" /></td></tr>
                   <tr><td><?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>:&nbsp;</td><td><input name="email" type="text" maxlength="200" size="20" value="<?php echo $escaper->escapeHtml($email); ?>" /></td></tr>
                   <tr><td><?php echo $escaper->escapeHtml($lang['Username']); ?>:&nbsp;</td><td><input style="cursor: default;" name="username" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($username); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($username); ?>" /></td></tr>
