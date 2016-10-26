@@ -100,13 +100,16 @@
         if (isset($_POST['submit']))
         {
                 $comment = $_POST['comment'];
-
+               if($comment == null){
+                    set_alert(true, "bad", "Your comment not added to the risk.Please fill the comment field");
+                }
+               if($comment != null){
                 // Add the comment
                 add_comment($id, $_SESSION['uid'], $comment);
 
 		// Display an alert
 		set_alert(true, "good", "Your comment has been successfully added to the risk.");
-
+               }
 		// Check that the id is a numeric value
 		if (is_numeric($id))
 		{
@@ -114,14 +117,15 @@
                 	$url = "view.php?id=" . $id;
 
 	                // Redirect to risk view page
-        	        header("Location: " . $url); 
+        	        header("Location: " . $url);
 		}
+                
         }
 ?>
 
 <!doctype html>
 <html>
-  
+
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -129,9 +133,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
   </head>
-  
+
   <body>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -141,6 +145,9 @@
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
+
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
 
     <?php view_top_menu("RiskManagement"); ?>
 

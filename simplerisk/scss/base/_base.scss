@@ -1,0 +1,53 @@
+/*--------------------------------------------------------------
+ ## Box Model and Font Smoothing
+ --------------------------------------------------------------*/
+*{
+  -webkit-font-smoothing: antialiased;
+  -moz-font-smoothing: antialiased;
+  font-smoothing: antialiased;
+  box-sizing: border-box;
+}
+
+
+/*--------------------------------------------------------------
+ ## Body Styles
+ --------------------------------------------------------------*/
+ body {
+   color: $text-color;
+   font-size: $base-font-size;
+   font-family: $base-font-family;
+   font-weight: $base-font-weight;
+   line-height: 1.6;
+
+   background-color:$theme-bg-color;
+ }
+
+
+/*--------------------------------------------------------------
+ ## Link Styles
+ --------------------------------------------------------------*/
+a{
+    text-decoration:none;
+
+    &:focus,
+    &:active{
+        outline:none;
+    }
+}
+
+/*--------------------------------------------------------------
+ ## Separator Styles
+ --------------------------------------------------------------*/
+hr{
+    margin:0px;
+    padding:0px;
+    border:1px solid $border-color;
+}
+
+
+/*--------------------------------------------------------------
+ ## Label and Span
+ --------------------------------------------------------------*/
+label{
+  font-weight:700;
+}

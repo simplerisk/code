@@ -7,6 +7,8 @@
 // Include required configuration files
 require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
+require_once(realpath(__DIR__ . '/messages.php'));
+require_once(realpath(__DIR__ . '/alerts.php'));
 
 /*******************************
  * FUNCTION: OLD GENERATE SALT *
@@ -441,17 +443,17 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
 {
 	$userid = is_simplerisk_user($username);
 
-        // Check the password
-        $error_code = valid_password($password, $repeat_password);
-
-        // If the password is valid
-        if ($error_code == 1)
+	// If the reset token is valid
+	if (is_valid_reset_token($username, $token))
 	{
-        	// If the username exists
-        	if ($userid != 0)
-        	{
-			// If the reset token is valid
-			if (is_valid_reset_token($username, $token))
+		// If the username exists
+		if ($userid != 0)
+		{
+        		// Check the password
+        		$error_code = valid_password($password, $repeat_password);
+
+        		// If the password is valid
+        		if ($error_code == 1)
 			{
 			        // Open the database connection
         			$db = db_open();
@@ -479,12 +481,39 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
                                         set_enc_pass($username, $password, $_SESSION['encrypted_pass']);
                                 }
 
+				// Display an alert
+				set_alert(true, "good", "Your password has been reset successfully!");
 				return true;
 			}
+			// The password is not valid
+			else
+			{
+				// Display an alert
+				set_alert(true, "bad", password_error_message($error_code));
+
+				// Return false
+				return false;
+			}
 		}
-		else return false;
+		// Username was invalid
+		else
+		{
+			// Display an alert
+			set_alert(true, "bad", "There was an error with your password reset.");
+
+			// Return false
+			return false;
+		}
 	}
-	else return false;
+	// Reset token was invalid
+	else
+	{
+		// Display an alert
+		set_alert(true, "bad", "There was an error with your password reset.");
+
+		// Return false
+		return false;
+	}
 }
 
 /**********************************
@@ -514,8 +543,6 @@ function is_valid_reset_token($username, $token)
         // Store the list in the array
         $array = $stmt->fetchAll();
 
-        $attempts = $array[0]['attempts'];
-
         // Close the database connection
         db_close($db);
 
@@ -526,10 +553,8 @@ function is_valid_reset_token($username, $token)
 	}
 	else
 	{
-		// Remove the matching token
-		$stmt = $db->prepare("DELETE FROM password_reset WHERE token=:token");
-                $stmt->bindParam(":token", $token, PDO::PARAM_STR, 20);
-                $stmt->execute();
+		// Get the number of attempts
+		$attempts = $array[0]['attempts'];
 
 		// Matching token has been attempted <= 5 times
 		if ($attempts < 5)
@@ -537,8 +562,31 @@ function is_valid_reset_token($username, $token)
 			return true;
 		}
 		// Matching token has been attempted > 5 times
-		else return false;
+		else
+		{
+			// Expire the reset token
+			expire_reset_token($token);
+
+			return false;
+		}
 	}
+}
+
+/********************************
+ * FUNCTION: EXPIRE RESET TOKEN *
+ ********************************/
+function expire_reset_token($token)
+{
+        // Open the database connection
+        $db = db_open();
+
+	// Remove the matching token
+	$stmt = $db->prepare("DELETE FROM password_reset WHERE token=:token");
+	$stmt->bindParam(":token", $token, PDO::PARAM_STR, 20);
+	$stmt->execute();
+
+        // Close the database connection
+        db_close($db);
 }
 
 /***************************

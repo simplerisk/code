@@ -56,6 +56,34 @@
                 exit(0);
         }
 
+	// If the user wants to disable the registration notice
+	if (isset($_POST['disable_registration_notice']))
+	{
+		// Add a setting to disable the registration notice
+		add_setting("disable_registration_notice", "true");
+
+		// Set the registration notice to false
+		$registration_notice = false;
+	}
+	// Otherwise
+	else
+	{
+		// If SimpleRisk is already registered
+		if (get_setting('registration_registered') == 1)
+                {
+                        // Set the registration notice to false
+                        $registration_notice = false;
+                }
+		// If the registration notice has been disabled
+		else if (get_setting("disable_registration_notice") == "true")
+		{
+			// Set the registration notice to false
+			$registration_notice = false;
+		}
+		// Otherwise the registration notice is true
+		else $registration_notice = true;
+	}
+
 	// If SimpleRisk is not registered
 	if (get_setting('registration_registered') == 0)
 	{
@@ -154,7 +182,7 @@
 		else if (isset($_POST['get_authentication_extra']))
 		{
                 	// Download the extra
-                	$result = download_extra("authentication");	
+                	$result = download_extra("authentication");
 
                         // If the installation failed
                         if ($result == 0)
@@ -240,12 +268,48 @@
 				set_alert(true, "good", "Team-Based Separation Extra installed successfully.");
                         }
 		}
+                // If the user wants to install the Risk Assessments Extra
+                else if (isset($_POST['get_assessments_extra']))
+                {
+                        // Download the extra
+                        $result = download_extra("assessments");
+
+                        // If the installation failed
+                        if ($result == 0)
+                        {
+                                // Display an alert
+                                set_alert(true, "bad", "There was a problem installing the Risk Assessments Extra.");
+                        }
+                        else
+                        {
+                                // Display an alert
+                                set_alert(true, "good", "Risk Assessments Extra installed successfully.");
+                        }
+                }
+                // If the user wants to install the API Extra
+                else if (isset($_POST['get_api_extra']))
+                {
+                        // Download the extra
+                        $result = download_extra("api");
+
+                        // If the installation failed
+                        if ($result == 0)
+                        {
+                                // Display an alert
+                                set_alert(true, "bad", "There was a problem installing the API Extra.");
+                        }
+                        else
+                        {
+                                // Display an alert
+                                set_alert(true, "good", "API Extra installed successfully.");
+                        }
+                }
 	}
 ?>
 
 <!doctype html>
 <html>
-  
+
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -253,19 +317,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
-    <link rel="stylesheet" href="../css/paypal.css">
-  </head>
-  
-  <body>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="../css/paypal.css">
+
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
+
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
+  </head>
+
+  <body>
 
 <?php
 	view_top_menu("Configure");
@@ -285,6 +348,12 @@
               <div class="hero-unit">
                 <p><h4><?php echo $escaper->escapeHtml($lang['RegisterSimpleRisk']); ?></h4></p>
                 <p><?php echo $escaper->escapeHtml($lang['RegistrationText']); ?></p>
+                <?php
+                  if ($registration_notice === true)
+                  {
+                    echo "<p><form name=\"no_message\" method=\"post\" action=\"\"><input type=\"submit\" name=\"disable_registration_notice\" value=\"" . $escaper->escapeHtml($lang['DisableRegistrationNotice']) . "\" /></form></p>\n";
+                  }
+                ?>
               </div>
             </div>
           </div>

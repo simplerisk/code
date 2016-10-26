@@ -1,0 +1,140 @@
+/*--------------------------------------------------------------
+ ## Header Styles
+ --------------------------------------------------------------*/
+.l-header{
+	z-index: 1031;
+	position: relative;
+	max-height: 75px;
+
+	&:after{
+		clear: both;
+		display: block;
+		content: "";
+	}
+
+	.navbar .brand {
+	    padding: 11px 20px 10px;
+	    margin: 0px;
+	    color: #777777;
+	    text-shadow: none;
+	    height: 70px;
+	    max-width: 200px;
+			outline: none;
+
+			img{ width: 100%;  margin-top: 7px; }
+
+			@media only screen and (min-width : 1300px ) {
+			 	  max-width: 250px;
+					padding: 5px 20px 10px;
+			}
+	}
+
+	.navbar .nav > li > a {
+    float: none;
+    padding: 10px 20px 20px 10px;
+    color: #fff;
+    text-decoration: none;
+    text-shadow: none;
+    font-weight: 600;
+
+		@extend .animation;
+	}
+
+	.navbar .nav > .active > a,
+	.navbar .nav > .active > a:hover,
+	.navbar .nav > li > a:hover,
+	.navbar .nav > .active > a:focus {
+    color: $color-3 !important;
+    text-decoration: none;
+    background-color: transparent;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+	}
+
+	.navbar .nav {
+    margin: 20px 0px 0 50px;
+	}
+
+	.navbar .nav > .active > a{
+		background-image: url('../images/arrow-top.png');
+		background-repeat: no-repeat;
+		background-position: 50% bottom;
+	}
+
+}
+
+.navbar-inner{
+	height: 75px;
+	background-color: $color-1;
+	color: #fff;
+	padding: 0px;
+	box-shadow: none;
+	border: none;
+	background-image: none;
+	border-radius: 0px;
+	text-shadow: none;
+	border-bottom: 5px solid $color-2;
+}
+
+
+.user--info{
+	margin: 29px 20px 20px 20px;
+
+	a{
+		@extend .reset;
+
+		color: #fff;
+		font-weight: 600;
+	}
+
+	.caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    vertical-align: top;
+    border-top: 4px solid #fff;
+    margin-top: 12px;
+    margin-left: 10px;
+	}
+
+}
+
+
+.search-risks {
+    margin-top: 20px;
+    margin-right: 50px;
+    max-width: 150px;
+
+		form{
+			margin: 0px;
+		}
+
+		input[type="text"]{
+			background-color: transparent !important;
+			width: 130px;
+			border: none;
+			box-shadow: none;
+			color: #fff;
+			border-bottom: 2px solid $color-3;
+			border-radius: 0px;
+			padding-right: 33px
+		}
+
+		.search--wrapper{
+			display: block;
+			position: relative;
+
+			a{
+				display: block;
+				position: absolute;
+				top: 0px;
+				right: 0px;
+				width: 33px;
+				height: 33px;
+				text-align:center;
+				color: #fff;
+				line-height: 33px;
+			}
+		}
+}

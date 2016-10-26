@@ -57,7 +57,7 @@ function discover_assets($range)
 					$name = gethostbyaddr(long2ip($ip));
 
                         		$AvailableIPs[] = array("ip"=>long2ip($ip), "name"=>$name);
-                		}       
+                		}
 			}
 		}
 
@@ -194,7 +194,7 @@ function display_asset_table()
 	// Display the table header
 	echo "<thead>\n";
 	echo "<tr>\n";
-	echo "<th align=\"left\" width=\"75\"><input type=\"checkbox\" onclick=\"checkAll(this)\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "</th>\n";
+	echo "<th align=\"left\" width=\"75\"><input class=\"hidden-checkbox\" id=\"delete-all\" type=\"checkbox\" onclick=\"checkAll(this)\" /><label for=\"delete-all\" >" . $escaper->escapeHtml($lang['Delete']) . "</label></th>\n";
 	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetName']) . "</th>\n";
 	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['IPAddress']) . "</th>\n";
 	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetValuation']) . "</th>\n";
@@ -232,7 +232,7 @@ function display_asset_table()
 
 		echo "<tr>\n";
 		echo "<td align=\"center\">\n";
-		echo "<input type=\"checkbox\" name=\"assets[]\" value=\"" . $escaper->escapeHtml($asset['id']) . "\" />\n";
+		echo "<input id=\"".$asset['id']."\" class=\"hidden-checkbox\" type=\"checkbox\" name=\"assets[]\" value=\"" . $escaper->escapeHtml($asset['id']) . "\" /> <label for=\"".$asset['id']."\"></label> \n";
 		echo "</td>\n";
 		echo "<td>" . $escaper->escapeHtml($asset['name']) . "</td>\n";
 		echo "<td>" . $escaper->escapeHtml($asset['ip']) . "</td>\n";
@@ -303,7 +303,7 @@ function tag_assets_to_risk($risk_id, $assets)
 	// Add the asset_id column to risks_to_assets
 	$stmt = $db->prepare("UPDATE `risks_to_assets` INNER JOIN `assets` ON `assets`.name = `risks_to_assets`.asset SET `risks_to_assets`.asset_id = `assets`.id;");
 	$stmt->execute();
-	
+
 	// Close the database connection
 	db_close($db);
 }
@@ -346,7 +346,7 @@ function get_list_of_assets($risk_id, $trailing_comma = true)
 	foreach ($assets as $asset)
 	{
 		$string .= $asset['asset'] . ", ";
-	}	
+	}
 
 	// If we don't want a trailing comma
 	if (!$trailing_comma)
@@ -512,7 +512,7 @@ function update_asset_value($id, $min_value, $max_value)
 	$stmt->bindParam(":min_value", $min_value, PDO::PARAM_INT, 11);
 	$stmt->bindParam(":max_value", $max_value, PDO::PARAM_INT, 11);
 	$stmt->execute();
-	
+
         // Close the database connection
         db_close($db);
 
@@ -790,7 +790,7 @@ function asset_valuation_for_risk_id($risk_id)
 		//$min_total = $min_total + $min_value;
 		$max_total = $max_total + $max_value;
 	}
-	
+
 	// Return the asset valuation
 	//return "$" . number_format($min_total) . " to $" . number_format($max_total);
 	return $max_total;

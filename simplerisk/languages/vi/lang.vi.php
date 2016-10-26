@@ -483,6 +483,20 @@ $lang = array(
     'SentTo'=>'Gửi Đến',
     'From'=>'Từ',
     'Key'=>'Chìa khóa',
+    'GoToSSOLoginPage'=>'Tới SSO Trang Đăng Nhập',
+    'APIKey'=>'API Chìa khóa',
+    'GenerateAPIKey'=>'phát ra API Chìa khóa',
+    'RotateAPIKey'=>'Quay API Chìa khóa',
+    'InvalidateAPIKey'=>'làm mất hiệu lực API Chìa khóa',
+    'Deactivate'=>'tắt',
+    'ImportExportExtra'=>'Import-Export Extra',
+    'SaveDetails'=>'Lưu Chi tiết',
+    'ClearForm'=>'Hình thức rõ ràng',
+    'SaveMitigation'=>'Lưu Giảm nhẹ',
+    'Cancel'=>'hủy bỏ',
+    'SubmitReview'=>'Gửi nhận xét',
+    'UnassignedRisks'=>'Rủi ro Unassigned'
+    'DisableRegistrationNotice'=>'Thông báo đăng ký Disable',
     ''=>'',
 );
 

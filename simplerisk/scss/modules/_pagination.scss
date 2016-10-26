@@ -1,0 +1,39 @@
+.pagination ul {
+    display: inline-block;
+    margin-bottom: 0;
+    margin-left: 0;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    box-shadow: none;
+
+    li a{
+      background-color: #c1b4b4;
+      color: #fff;
+      margin: 0 2px;
+      border-radius: 2px !important;
+      border:none;
+      border-radius: 2px;
+      font-size: 14px;
+      font-weight: bold;
+
+      &:hover,&:active{
+        background-color:$color-1;
+      }
+
+    }
+
+    .active a{
+        background-color:$color-1;
+        color: #fff;
+    }
+
+    .no-bg{
+      background-color: transparent;
+      color:#c1b4b4;
+
+      &:hover{
+        background-color: transparent;
+        color: $color-1;
+      }
+    }
+}

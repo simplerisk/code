@@ -5,20 +5,68 @@
 
         // Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
-	require_once(realpath(__DIR__ . '/../includes/services.php'));
+	require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+	require_once(realpath(__DIR__ . '/../includes/epiphany/src/Epi.php'));
+	require_once(realpath(__DIR__ . '/../includes/api.php'));
 
-	// If the API Extra is installed
-	if (api_extra())
+	// Add various security headers
+	header("X-Frame-Options: DENY");
+	header("X-XSS-Protection: 1; mode=block");
+
+	// If we want to enable the Content Security Policy (CSP) - This may break Chrome
+	if (CSP_ENABLED == "true")
 	{
-		// Include the API Extra
-		require_once(realpath(__DIR__ . '/../extras/api/index.php'));
-
-		process_api_request();
+		// Add the Content-Security-Policy header
+		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
 	}
-	// Otherwise, if the API Extra is not installed
-	else
+
+	// Session handler is database
+	if (USE_DATABASE_FOR_SESSIONS == "true")
 	{
-		// Send the JSON response that the API Extra is not installed
-		json_response(400, "The API Extra is either not installed or not activated.", NULL);
+		session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+	}
+
+	// Start the session
+	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+	session_start('SimpleRisk');
+
+	// Check for session timeout or renegotiation
+	session_check();
+
+	// If access is authenticated
+	if (is_authenticated())
+	{
+        	// Set the base path for epiphany
+	        Epi::setPath('base', realpath(__DIR__ . '/../includes/epiphany/src'));
+
+        	// Initialize the epiphany api
+	        Epi::init('api', 'route', 'session');
+
+        	// Disable exceptions
+	        Epi::setSetting('exceptions', true);
+
+		// Define the normal routes
+		getRoute()->get('/', 'show_endpoints');
+		getRoute()->get('/version', 'show_version');
+		getRoute()->get('/whoami', 'whoami');
+		getRoute()->get('/management', 'show_management');
+		getRoute()->get('/management/risk/view', 'viewrisk');
+		getRoute()->get('/management/risk/add', 'addrisk');
+		getRoute()->get('/management/mitigation/view', 'viewmitigation');
+		getRoute()->get('/management/mitigation/add', 'addmitigation');
+		getRoute()->get('/management/review/view', 'viewreview');
+		getRoute()->get('/management/review/add', 'addreview');
+		getRoute()->get('/admin', 'show_admin');
+		getRoute()->get('/admin/users/all', 'allusers');
+		getRoute()->get('/admin/users/enabled', 'enabledusers');
+		getRoute()->get('/admin/users/disabled', 'disabledusers');
+		getRoute()->get('/reports', 'show_reports');
+		getRoute()->get('/reports/dynamic', 'dynamicrisk');
+
+		// Define the API routes
+		getApi()->get('/version.json', 'api_version', EpiApi::external);
+
+		// Run epiphany
+		getRoute()->run();
 	}
 ?>

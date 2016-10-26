@@ -155,7 +155,7 @@ function get_risk_trend($title = null)
         $opened_risks = $stmt->fetchAll();
 
         // Query the database
-	$stmt = $db->prepare("SELECT DATE(a.closure_date) date, COUNT(DISTINCT b.id) count FROM `closures` a JOIN `risks` b ON a.risk_id = b.id WHERE b.status = \"Closed\" GROUP BY DATE(a.closure_date)");
+	$stmt = $db->prepare("SELECT DATE(a.closure_date) date, COUNT(DISTINCT a.risk_id) count FROM (SELECT MAX(closure_date) closure_date, risk_id FROM `closures` group by risk_id) a JOIN risks b ON a.risk_id = b.id WHERE b.status=\"Closed\" GROUP BY DATE(a.closure_date)");
         $stmt->execute();
 
         // Store the list in the array
@@ -1427,7 +1427,7 @@ function get_review_needed_table()
         			echo "<table class=\"table table-bordered table-condensed sortable\">\n";
         			echo "<thead>\n";
         			echo "<tr>\n";
-        			echo "<th bgcolor=\"#0088CC\" colspan=\"6\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($review_status) ."</font></center></th>\n";
+        			echo "<th bgcolor=\"#0088CC\" colspan=\"6\"><center>". $escaper->escapeHtml($review_status) ."</center></th>\n";
         			echo "</tr>\n";
         			echo "<tr>\n";
         			echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -1539,7 +1539,7 @@ function risks_and_assets_table($report)
                                 echo "<table class=\"table table-bordered table-condensed sortable\">\n";
                                 echo "<thead>\n";
                                 echo "<tr>\n";
-                                echo "<th bgcolor=\"#0088CC\" colspan=\"5\"><center><font color=\"#FFFFFF\">" . $escaper->escapeHtml($lang['AssetName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_name) . "<br />" . $escaper->escapeHtml($lang['AssetValue']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml(get_asset_value_by_id($asset_value)) . "</font></center></th>\n";
+                                echo "<th bgcolor=\"#0088CC\" colspan=\"5\"><center>" . $escaper->escapeHtml($lang['AssetName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_name) . "<br />" . $escaper->escapeHtml($lang['AssetValue']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml(get_asset_value_by_id($asset_value)) . "</center></th>\n";
 				echo "</tr>\n";
                                 echo "<tr>\n";
 				echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -1913,7 +1913,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 				echo "<table class=\"table table-bordered table-condensed sortable\">\n";
 				echo "<thead>\n";
 				echo "<tr>\n";
-				echo "<th bgcolor=\"#0088CC\" colspan=\"100%\"><center><font color=\"#FFFFFF\">". $escaper->escapeHtml($current_group) ."</font></center></th>\n";
+				echo "<th bgcolor=\"#0088CC\" colspan=\"100%\"><center>". $escaper->escapeHtml($current_group) ."</center></th>\n";
 				echo "</tr>\n";
 				echo "<tr>\n";
 
@@ -2282,6 +2282,226 @@ function risks_by_month_table()
 	echo "</tr>\n";
 	echo "</tbody>\n";
 	echo "</table>\n";
+}
+
+/*************************
+ * FUNCTION: RISKS QUERY *
+ *************************/
+function risks_query($status, $sort, $group)
+{
+        // Check the status
+        switch ($status)
+        {
+                // Open risks
+                case 0:
+                        $status_query = " WHERE a.status != \"Closed\" ";
+                        break;
+                // Closed risks
+                case 1:
+                        $status_query = " WHERE a.status = \"Closed\" ";
+                        break;
+                case 2:
+                // All risks
+                        $status_query = " ";
+                        break;
+                // Default to open risks
+                default:
+                        $status_query = " WHERE a.status != \"Closed\" ";
+                        break;
+        }
+
+        // Check the sort
+        switch ($sort)
+        {
+                // Calculated Risk
+                case 0:
+                        $sort_name = " calculated_risk DESC ";
+                        break;
+                // ID
+                case 1:
+                        $sort_name = " a.id ASC ";
+                        break;
+                // Subject
+                case 2:
+                        $sort_name = " a.subject ASC ";
+                        break;
+                // Default to calculated risk
+                default:
+                        $sort_name = " calculated_risk DESC ";
+                        break;
+        }
+
+        // Check the group
+        switch ($group)
+        {
+                // None
+                case 0:
+                        $order_query = "GROUP BY id ORDER BY" . $sort_name;
+                        $group_name = "none";
+                        break;
+                // Risk Level
+                case 1:
+                        $order_query = "GROUP BY id ORDER BY calculated_risk DESC, " . $sort_name;
+                        $group_name = "risk_level";
+                        break;
+                // Status
+                case 2:
+                        $order_query = "GROUP BY id ORDER BY a.status," . $sort_name;
+                        $group_name = "status";
+                        break;
+                // Site/Location
+                case 3:
+                        $order_query = "GROUP BY id ORDER BY location," . $sort_name;
+                        $group_name = "location";
+                        break;
+                // Source
+                case 4:
+                        $order_query = "GROUP BY id ORDER BY source," . $sort_name;
+                        $group_name = "source";
+                        break;
+                // Category
+                case 5:
+                        $order_query = "GROUP BY id ORDER BY category," . $sort_name;
+                        $group_name = "category";
+                        break;
+                // Team
+                case 6:
+                        $order_query = "GROUP BY id ORDER BY team," . $sort_name;
+                        $group_name = "team";
+                        break;
+                // Technology
+                case 7:
+                        $order_query = "GROUP BY id ORDER BY technology," . $sort_name;
+                        $group_name = "technology";
+                        break;
+                // Owner
+                case 8:
+                        $order_query = "GROUP BY id ORDER BY owner," . $sort_name;
+                        $group_name = "owner";
+                        break;
+                // Owners Manager
+                case 9:
+                        $order_query = "GROUP BY id ORDER BY manager," . $sort_name;
+                        $group_name = "manager";
+                        break;
+                // Risk Scoring Method
+                case 10:
+                        $order_query = "GROUP BY id ORDER BY scoring_method," . $sort_name;
+                        $group_name = "scoring_method";
+                        break;
+                // Regulation
+                case 11:
+                        $order_query = "GROUP BY id ORDER BY regulation," . $sort_name;
+                        $group_name = "regulation";
+                        break;
+                // Project
+                case 12:
+                        $order_query = "GROUP BY id ORDER BY project," . $sort_name;
+                        $group_name = "project";
+                        break;
+                // Next Step
+                case 13:
+                        $order_query = "GROUP BY id ORDER BY next_step," . $sort_name;
+                        $group_name = "next_step";
+                        break;
+                // Month Submitted
+                case 14:
+                        $order_query = "GROUP BY id ORDER BY submission_date DESC," . $sort_name;
+                        $group_name = "month_submitted";
+                        break;
+                // Default to calculated risk
+                default:
+                        $order_query = "GROUP BY id ORDER BY" . $sort_name;
+                        $group_name = "none";
+                        break;
+	}
+
+        // Make the big query
+        $query = "SELECT a.id + 1000 AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $order_query;
+
+        // Query the database
+        $db = db_open();
+        $stmt = $db->prepare($query);
+        $stmt->execute();
+        db_close($db);
+
+        // Store the results in the risks array
+        $risks = $stmt->fetchAll();
+
+        // If team separation is enabled
+        if (team_separation_extra())
+        {
+                // Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                // Strip out risks the user should not have access to
+                $risks = strip_no_access_risks($risks);
+        }
+
+        // Initialize the data array
+        $data = array();
+
+        // For each risk in the risks array
+        foreach ($risks as $risk)
+        {
+                $risk_id = (int)$risk['id'];
+                $status = $risk['status'];
+                $subject = try_decrypt($risk['subject']);
+                $reference_id = $risk['reference_id'];
+                $control_number = $risk['control_number'];
+                $submission_date = $risk['submission_date'];
+                $last_update = $risk['last_update'];
+                $review_date = $risk['review_date'];
+                $scoring_method = get_scoring_method_name($risk['scoring_method']);
+                $calculated_risk = (float)$risk['calculated_risk'];
+                $color = get_risk_color($risk['calculated_risk']);
+                $risk_level = get_risk_level_name($risk['calculated_risk']);
+                $location = $risk['location'];
+                $source = $risk['source'];
+                $category = $risk['category'];
+                $team = $risk['team'];
+                $technology = $risk['technology'];
+                $owner = $risk['owner'];
+                $manager = $risk['manager'];
+                $submitted_by = $risk['submitted_by'];
+                $regulation = $risk['regulation'];
+                $project = try_decrypt($risk['project']);
+                $mitigation_id = $risk['mitigation_id'];
+                $mgmt_review = $risk['mgmt_review'];
+                $days_open = dayssince($risk['submission_date']);
+                $next_review_date = next_review($color, $risk_id, $risk['next_review'], false);
+                $next_review_date_html = next_review($color, $risk_id, $risk['next_review']);
+                $next_step = $risk['next_step'];
+                $affected_assets = $risk['affected_assets'];
+                $month_submitted = date('Y F', strtotime($risk['submission_date']));
+                $planning_strategy = $risk['planning_strategy'];
+                $mitigation_effort = $risk['mitigation_effort'];
+                $mitigation_min_cost = $risk['mitigation_min_cost'];
+                $mitigation_max_cost = $risk['mitigation_max_cost'];
+                $mitigation_cost = $risk['mitigation_min_cost'];
+                $mitigation_owner = $risk['mitigation_owner'];
+                $mitigation_team = $risk['mitigation_team'];
+
+                // If the group name is not none
+                if ($group_name != "none")
+                {
+                        $group_value = ${$group_name};
+
+                        // If the selected group value is empty
+                        if ($group_value == "")
+                        {
+                                // Current group is Unassigned
+                                $group_vaue = $lang['Unassigned'];
+                        }
+                }
+		else $group_value = $group_name;
+
+                // Create the new data array
+                $data[] = array("id" => $risk_id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "control_number" => $control_number, "submission_date" => $submission_date, "last_update" => $last_update, "review_date" => $review_date, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "color" => $color, "risk_level" => $risk_level, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "technology" => $technology, "owner" => $owner, "manager" => $manager, "submitted_by" => $submitted_by, "regulation" => $regulation, "project" => $project, "mgmt_review" => $mgmt_review, "days_open" => $days_open, "next_review_date" => $next_review_date, "next_step" => $next_step, "affected_assets" => $affected_assets, "month_submitted" => $month_submitted, "planning_strategy" => $planning_strategy, "mitigation_id" => $mitigation_id, "mitigation_effort" => $mitigation_effort, "mitigation_min_cost" => $mitigation_min_cost, "mitigation_max_cost" => $mitigation_max_cost, "mitigation_cost" => $mitigation_cost, "mitigation_owner" => $mitigation_owner, "mitigation_team" => $mitigation_team, "group_name" => $group_name, "group_value" => $group_value);
+	}
+
+	// Return the data array
+	return $data;
 }
 
 ?>

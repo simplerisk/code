@@ -35,21 +35,22 @@ function get_alert()
         	{
                 	echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 	echo "<div class=\"row-fluid\">\n";
-                	echo "<div class=\"span12 greenalert\">" . $escaper->escapeHtml($_SESSION['alert_message']) . "</div>\n";
+                	echo "<div class=\"span10 greenalert\"><span><i class=\"fa fa-check\"></i>" . $escaper->escapeHtml($_SESSION['alert_message']) . "</span></div>\n";
                 	echo "</div>\n";
                 	echo "</div>\n";
-                	echo "<br />\n";
+
 		}
         	else if ($_SESSION['alert_type'] == "bad")
         	{
                 	echo "<div id=\"alert\" class=\"container-fluid\">\n";
                 	echo "<div class=\"row-fluid\">\n";
-                	echo "<div class=\"span12 redalert\">" . $escaper->escapeHtml($_SESSION['alert_message']) . "</div>\n";
+                	echo "<div class=\"span10 redalert\"><span><i class=\"fa fa-close\"></i>" . $escaper->escapeHtml($_SESSION['alert_message']) . "</span></div>\n";
                 	echo "</div>\n";
                 	echo "</div>\n";
-                	echo "<br />\n";
+
 		}
         }
+
 
 	// Clear the alert
 	clear_alert();
@@ -63,6 +64,7 @@ function clear_alert()
 	$_SESSION['alert'] = false;
 	$_SESSION['alert_type'] = "";
 	$_SESSION['alert_message'] = "";
+
 }
 
 ?>

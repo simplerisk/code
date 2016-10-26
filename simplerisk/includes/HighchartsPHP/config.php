@@ -5,54 +5,64 @@
  */
 $jsFiles = array(
     'jQuery' => array(
-        'name' => 'jquery.min.js',
-        'path' => 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/'
+        'name' => 'jquery-2.1.3.min.js',
+        'path' => '//code.jquery.com/'
     ),
 
     'mootools' => array(
         'name' => 'mootools-yui-compressed.js',
-        'path' => 'https://ajax.googleapis.com/ajax/libs/mootools/1.4.5/'
+        'path' => '//ajax.googleapis.com/ajax/libs/mootools/1.4.5/'
     ),
 
     'prototype' => array(
         'name' => 'prototype.js',
-        'path' => 'https://ajax.googleapis.com/ajax/libs/prototype/1.7.0.0/'
+        'path' => '//ajax.googleapis.com/ajax/libs/prototype/1.7.0.0/'
     ),
 
     'highcharts' => array(
         'name' => 'highcharts.js',
-        'path' => 'https://code.highcharts.com/'
+        'path' => '//code.highcharts.com/'
     ),
 
     'highchartsMootoolsAdapter' => array(
         'name' => 'mootools-adapter.js',
-        'path' => 'https://code.highcharts.com/adapters/'
+        'path' => '//code.highcharts.com/adapters/'
     ),
 
     'highchartsPrototypeAdapter' => array(
         'name' => 'prototype-adapter.js',
-        'path' => 'https://code.highcharts.com/adapters/'
+        'path' => '//code.highcharts.com/adapters/'
     ),
 
     'highstock' => array(
         'name' => 'highstock.js',
-        'path' => 'https://code.highcharts.com/stock/'
+        'path' => '//code.highcharts.com/stock/'
     ),
 
     'highstockMootoolsAdapter' => array(
         'name' => 'mootools-adapter.js',
-        'path' => 'https://code.highcharts.com/stock/adapters/'
+        'path' => '//code.highcharts.com/stock/adapters/'
     ),
 
     'highstockPrototypeAdapter' => array(
         'name' => 'prototype-adapter.js',
-        'path' => 'https://code.highcharts.com/stock/adapters/'
+        'path' => '//code.highcharts.com/stock/adapters/'
     ),
 
+    'highmaps' => array(
+        'name' => 'highmaps.js',
+        'path' => '//code.highcharts.com/maps/'
+    ),
+
+    //Extra scripts used by Highcharts 3.0 charts
     'extra' => array(
-        array(
+        'highcharts-more' => array(
             'name' => 'highcharts-more.js',
-            'path' => 'https://code.highcharts.com/'
-        )
+            'path' => '//code.highcharts.com/'
+        ),
+        'exporting' => array(
+            'name' => 'exporting.js',
+            'path' => '//code.highcharts.com/modules/'
+        ),
     )
 );

@@ -95,25 +95,26 @@
 
   // -->
 </script>
+
 </head>
 
 <body topmargin="0" bottommargin="4" leftmargin="0" rightmargin="0" ><form name="frmCalc" method="post" action="" >
-          
+
 <table width="672" border="0" cellpadding="1" cellspacing="0">
-	
+
   <tr>
     <td align="left" valign="top"  bgcolor="#6B7782" >
       <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#FFFFFF">
       	<tr>
 	  <td align="center" background="../images/cal-bg-head.jpg" height="35"><span class="heading">SimpleRisk CVSS V2.0 Calculator</span></td>
     </tr>
-    
-    
+
+
     <tr>
 	  <td align="left"  height="8"></td>
 	  </tr>
-    
-    
+
+
 	<tr>
     	<td align="left" style="padding-left:10px; padding-right:10px" height="35">This page provides a calculator for creating <A href="http://www.first.org/cvss/" target="_blank">CVSS</A> vulnerability severity scores.  The scores are computed in sequence such that the Base Score is used to calculate the Temporal Score and the Temporal Score is used to calculate the Environmental Score.</td>
     </tr>

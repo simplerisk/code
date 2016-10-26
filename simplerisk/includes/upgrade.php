@@ -91,15 +91,16 @@ function display_login_form()
 	global $lang;
 	global $escaper;
 
-        echo "<form name=\"authenticate\" method=\"post\" action=\"\">\n";
-	echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
-	echo "<tr><td colspan=\"2\"><label><u>" . $escaper->escapeHtml($lang['LogInHere']) . "</u></label></td></tr>\n";
-	echo "<tr><td>" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td><input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
-	echo "<tr><td>" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</td><td><input class=\"input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
+	echo "<h1 class=\"text-center welcome--msg\">Upgrade the SimpleRisk Database </h1>";
+        echo "<form name=\"authenticate\" method=\"post\" action=\"\" class=\"loginForm\">\n";
+	echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+	echo "<tr><td colspan=\"2\"><label class=\"login--label\">" . $escaper->escapeHtml($lang['LogInHere']) . "</label></td></tr>\n";
+	echo "<tr><td width=\"20%\"><label for=\"\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</label></td><td class=\"80%\"><input class=\"form-control input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
+	echo "<tr><td width=\"20%\"><label for=\"\">" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</label></td><td class=\"80%\"><input class=\"form-control input-medium\" name=\"pass\" id=\"pass\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
 	echo "</table>\n";
 	echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary\">" . $escaper->escapeHtml($lang['Login']) . "</button>\n";
-	echo "<input class=\"btn\" value=\"Reset\" type=\"reset\">\n";
+        echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-primary pull-right\">" . $escaper->escapeHtml($lang['Login']) . "</button>\n";
+	echo "<input class=\"btn btn-default pull-right\" value=\"" . $escaper->escapeHtml($lang['Reset']) . "\" type=\"reset\">\n";
 	echo "</div>\n";
         echo "</form>\n";
 }
@@ -111,6 +112,10 @@ function display_upgrade_info()
 {
 	global $escaper;
 
+	echo "<div class=\"container-fluid\">\n";
+	echo "<div class=\"row-fluid\">\n";
+        echo "<div class=\"span9\">\n";
+        echo "<div class=\"well\">\n";
 	// Get the current application version
 	$app_version = current_version("app");
 
@@ -126,6 +131,10 @@ function display_upgrade_info()
         echo "<form name=\"upgrade_database\" method=\"post\" action=\"\">\n";
         echo "<button type=\"submit\" name=\"upgrade_database\" class=\"btn btn-primary\">CONTINUE</button>\n";
         echo "</form>\n";
+	echo "</div>\n";
+	echo "</div>\n";
+	echo "</div>\n";
+	echo "</div>\n";
 }
 
 /**************************
@@ -1167,6 +1176,45 @@ function upgrade_from_20160331001($db)
         echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/**************************************
+ * FUNCTION: UPGRADE FROM 20160612001 *
+ **************************************/
+function upgrade_from_20160612001($db)
+{
+        // Database version to upgrade
+        $version_to_upgrade = '20160612-001';
+
+        // Database version upgrading to
+        $version_upgrading_to = '20161023-001';
+
+        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+        // Find all risks with a status of Closed an no closures entry
+        echo "Searching for risks with a status of Closed and no closures entry.<br />\n";
+        $stmt = $db->prepare("SELECT * FROM `risks` WHERE status=\"Closed\" AND close_id = 0;");
+        $stmt->execute();
+	$array = $stmt->fetchAll();
+
+	// For each risk
+	foreach ($array as $risk)
+	{
+		$id = $risk['id'];
+		$risk_id = $id + 1000;
+		$status = "Closed";
+		$close_reason = "";
+		$note = "";
+		
+		// Close the risk
+		close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
+		echo "Created a closures entry for risk ID " . $risk_id . ".<br />\n";
+	}
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -1174,6 +1222,11 @@ function upgrade_database()
 {
 	// Connect to the database
 	$db = db_open();
+
+        echo "<div class=\"container-fluid\">\n";
+        echo "<div class=\"row-fluid\">\n";
+        echo "<div class=\"span9\">\n";
+        echo "<div class=\"well\">\n";
 
 	// If the grant check for the database user is successful
 	if (check_grants($db))
@@ -1244,6 +1297,10 @@ function upgrade_database()
 				upgrade_from_20160331001($db);
 				upgrade_database();
 				break;
+			case "20160612-001":
+				upgrade_from_20160612001($db);
+				upgrade_database();
+				break;
 			default:
 				echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
 		}
@@ -1253,6 +1310,11 @@ function upgrade_database()
 	{
 		echo "A check of your database user privileges found that one of the necessary grants was missing.  Please ensure that you have granted SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, and ALTER permissions to the user.<br />\n";
 	}
+
+        echo "</div>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+        echo "</div>\n";
 
 	// Disconnect from the database
 	db_close($db);

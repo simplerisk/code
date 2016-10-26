@@ -56,56 +56,61 @@
                 exit(0);
         }
 
-	// If the user selected to import a CSV
-	if (isset($_POST['import_csv']))
+	// If the extra directory exists
+	if (is_dir(realpath(__DIR__ . '/../extras/import-export')))
 	{
 		// Include the Import-Export Extra
 		require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
 
-		// Import the CSV file
-		$display = import_csv($_FILES['file']);
+                // If the user wants to activate the extra
+                if (isset($_POST['activate']))
+                {
+                        // Enable the Import Export Extra
+                        enable_import_export_extra();
+                }
+
+                // If the user wants to deactivate the extra
+                if (isset($_POST['deactivate']))
+                {
+                        // Disable the Import Export Extra
+                        disable_import_export_extra();
+                }
+
+		// If the user selected to import a CSV
+		if (isset($_POST['import_csv']))
+		{
+			// Import the CSV file
+			$display = import_csv($_FILES['file']);
+		}
+
+		// If the user selected to do a combined export
+		if (isset($_POST['combined_export']))
+		{
+			// Export the CSV file
+			export_csv("combined");
+		}
+
+        	// If the user selected to do a combined export
+        	if (isset($_POST['risks_export']))
+        	{
+                	// Export the CSV file
+                	export_csv("risks");
+        	}
+
+        	// If the user selected to do a combined export
+        	if (isset($_POST['mitigations_export']))
+        	{
+                	// Export the CSV file
+                	export_csv("mitigations");
+        	}
+
+        	// If the user selected to do a combined export
+        	if (isset($_POST['reviews_export']))
+        	{
+                	// Export the CSV file
+                	export_csv("reviews");
+        	}
 	}
-
-	// If the user selected to do a combined export
-	if (isset($_POST['combined_export']))
-	{
-		// Include the Import-Export Extra
-		require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
-
-		// Export the CSV file
-		export_csv("combined");
-	}
-
-        // If the user selected to do a combined export
-        if (isset($_POST['risks_export']))
-        {
-                // Include the Import-Export Extra
-                require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
-
-                // Export the CSV file
-                export_csv("risks");
-        }
-
-        // If the user selected to do a combined export
-        if (isset($_POST['mitigations_export']))
-        {
-                // Include the Import-Export Extra
-                require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
-
-                // Export the CSV file
-                export_csv("mitigations");
-        }
-
-        // If the user selected to do a combined export
-        if (isset($_POST['reviews_export']))
-        {
-                // Include the Import-Export Extra
-                require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
-
-                // Export the CSV file
-                export_csv("reviews");
-        }
-
 
 /*********************
  * FUNCTION: DISPLAY *
@@ -122,9 +127,9 @@ function display($display = "")
                 if (!import_export_extra())
                 {
 			echo "<div class=\"hero-unit\">\n";
-			echo "<h4>" . $escaper->escapeHtml($lang['ActivateTheImportExportExtra']) . "</h4>\n";
-                        echo "<form name=\"activate\" method=\"post\" action=\"../extras/import-export/\">\n";
-                        echo "<input type=\"submit\" value=\"Activate\" name=\"activate\" /><br />";
+			echo "<h4>" . $escaper->escapeHtml($lang['ImportExportExtra']) . "</h4>\n";
+                        echo "<form name=\"activate\" method=\"post\" action=\"\">\n";
+                        echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
                         echo "</form>\n";
 			echo "</div>\n";
                 }
@@ -134,6 +139,8 @@ function display($display = "")
 			// Include the Import-Export Extra
                 	require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
 
+			display_import_export();
+
 			display_import();
 
 			display_export();
@@ -141,13 +148,18 @@ function display($display = "")
 			display_import_assets();
 		}
         }
+        // Otherwise, the Extra does not exist
+        else
+        {
+                echo "<a href=\"https://www.simplerisk.it/extras\" target=\"_blank\">Purchase the Extra</a>\n";
+        }
 }
 
 ?>
 
 <!doctype html>
 <html>
-  
+
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -156,18 +168,17 @@ function display($display = "")
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css"> 
-  </head>
-  
-  <body>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
+
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
+  </head>
+
+  <body>
 
 <?php
 	view_top_menu("Configure");
