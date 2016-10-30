@@ -71,7 +71,6 @@ if (isset($_POST['subject']) && $_POST['subject'] == "")
 
 // Check if a new risk was submitted and the user has permissions to submit new risks
 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' && $submit_risks)
-//if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
 {
   $status = "New";
   $subject = $_POST['subject'];
@@ -825,12 +824,20 @@ $(document).ready(function() {
       success: function(data){
         var message = $(data).filter('#alert');
         var risk_id = $(data).filter('#risk_hid_id');
+
         $('#show-alert').append(message);
         if (message[0].innerText != 'The subject of a risk cannot be empty.'){
           if (isNaN(index)){
-            $('#tab span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+$('input[name="subject"]', getForm).val());
+            var subject = $('input[name="subject"]', getForm).val();
+            var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            $('#tab span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+subject);
+            //$('#tab span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+$('input[name="subject"]', getForm).val());
           } else {
-            $('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+$('input[name="subject"]', getForm).val());
+            var subject = escapeHtml($('input[name="subject"]', getForm).val());
+            var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").rep
+lace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            $('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+subject);
+            //$('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+$('input[name="subject"]', getForm).val());
           }
           $('input, select, textarea', getForm).prop('disabled', true);
           $(that).prop('disabled', true);

@@ -443,7 +443,7 @@ if ((isset($_POST['submit'])) && $plan_mitigations)
           <div class="tab-append">
             <div class="tab selected form-tab tab-show" id="tab"><div><span><a href="plan_mitigations.php">Risk list</a></span></div>
             </div>
-            <div class="tab selected form-tab tab-show" id="tab"><div><span><strong>ID: <?php echo $id.'</strong> '.try_decrypt($subject); ?></span></div>
+            <div class="tab selected form-tab tab-show" id="tab"><div><span><strong>ID: <?php echo $id.'</strong> '.$escaper->escapeHtml(try_decrypt($subject)); ?></span></div>
             </div>
           </div>
         </div>

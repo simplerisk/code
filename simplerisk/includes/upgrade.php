@@ -1189,7 +1189,7 @@ function upgrade_from_20160612001($db)
 
         echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
-        // Find all risks with a status of Closed an no closures entry
+        // Find all risks with a status of Closed and no closures entry
         echo "Searching for risks with a status of Closed and no closures entry.<br />\n";
         $stmt = $db->prepare("SELECT * FROM `risks` WHERE status=\"Closed\" AND close_id = 0;");
         $stmt->execute();
@@ -1208,6 +1208,25 @@ function upgrade_from_20160612001($db)
 		close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
 		echo "Created a closures entry for risk ID " . $risk_id . ".<br />\n";
 	}
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/**************************************
+ * FUNCTION: UPGRADE FROM 20161023001 *
+ **************************************/
+function upgrade_from_20161023001($db)
+{
+        // Database version to upgrade
+        $version_to_upgrade = '20161023-001';
+
+        // Database version upgrading to
+        $version_upgrading_to = '20161030-001';
+
+        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
         // Update the database version
         update_database_version($db, $version_to_upgrade, $version_upgrading_to);
@@ -1299,6 +1318,10 @@ function upgrade_database()
 				break;
 			case "20160612-001":
 				upgrade_from_20160612001($db);
+				upgrade_database();
+				break;
+			case "20161023-001":
+				upgrade_from_20161023001($db);
 				upgrade_database();
 				break;
 			default:

@@ -126,7 +126,6 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "granted"))
 // If the user has already authorized and we are authorizing with duo
 if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
 {
-  var_dump('here');
   // If a response has been posted
   if (isset($_POST['sig_response']))
   {
@@ -144,7 +143,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
     }
 
     // Get the response back from Duo
-    $resp = Duo::verifyResponse($IKEY, $SKEY, get_duo_akey(), $_POST['sig_response']);
+    $resp = Duo\Web::verifyResponse($IKEY, $SKEY, get_duo_akey(), $_POST['sig_response']);
 
     // If the response is not null
     if ($resp != NULL)

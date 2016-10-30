@@ -1345,7 +1345,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $assessment
         // Insert the new user
         $stmt = $db->prepare("INSERT INTO user (`type`, `username`, `name`, `email`, `salt`, `password`, `teams`, `assessments`, `asset`, `admin`, `review_veryhigh`, `review_high`, `review_medium`, `review_low`, `review_insignificant`, `submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`) VALUES (:type, :user, :name, :email, :salt, :hash, :teams, :assessments, :asset, :admin, :review_veryhigh, :review_high, :review_medium, :review_low, :review_insignificant, :submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor)");
 	$stmt->bindParam(":type", $type, PDO::PARAM_STR, 20);
-	$stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
+	$stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
 	$stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":salt", $salt, PDO::PARAM_STR, 20);
@@ -1529,7 +1529,7 @@ function update_password($user, $hash)
 
         // Update password
         $stmt = $db->prepare("UPDATE user SET password=:hash WHERE username=:user");
-	$stmt->bindParam(":user", $user, PDO::PARAM_STR, 20);
+	$stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":hash", $hash, PDO::PARAM_STR, 60);
 	$stmt->execute();
 
