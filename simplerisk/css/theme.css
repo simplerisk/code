@@ -305,7 +305,7 @@ select {
 
 textarea,
 textarea.form-control {
-  resize: vertical;
+  resize: both;
   overflow: auto;
   height: 100px; }
   textarea:disabled,
