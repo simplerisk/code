@@ -333,9 +333,7 @@ label, .title {
 .tabs-nav li a{
   color:black;
 }
- textarea, textarea.form-control {
-     height: 53px !important;
-   }
+
 
  #submit_mitigation .row-fluid .span6 .row-fluid > .span5{
      text-align: right;
