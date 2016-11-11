@@ -303,7 +303,7 @@ select {
 
 textarea,
 textarea.form-control {
-  resize: both;
+  resize: vertical;
   overflow: auto;
   height: 100px; }
   textarea:disabled,
@@ -1489,13 +1489,13 @@ div.doc-link {
 
 @media (min-width:1025px) { 
 	textarea.form-control{
-		min-width:300px;
+		max-width:300px;
 	} 
 }
 
 
 @media (min-width:1281px) { 
 	textarea.form-control{
-		min-width:300px;
+		max-width:300px;
 	} 
 }
