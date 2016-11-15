@@ -815,7 +815,7 @@ $(document).ready(function() {
     $('#show-alert').html('');
     $.ajax({
       type: "POST",
-      url: "/management/index.php",
+      url: "index.php",
       data: form,
       async: false,
       cache: false,
