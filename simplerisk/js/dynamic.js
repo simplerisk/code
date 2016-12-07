@@ -510,7 +510,7 @@ function check_next_step()
 function check_affected_assets()
 {
   elements = document.getElementsByClassName("affected_assets");
-  checkbox = document.getElementById("checkbox_affected_assets");
+  checkbox = document.getElementById("AffectedAssets");
 
   if(checkbox.checked)
   {
