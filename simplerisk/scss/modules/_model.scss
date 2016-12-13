@@ -18,7 +18,9 @@
     padding-bottom: 0px;
   }
 
-  input[type="text"]{
+  input[type="text"], textarea,
+  textarea.form-control 
+  {
     max-width: 100%;
   }
 

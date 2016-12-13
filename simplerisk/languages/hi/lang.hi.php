@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'समीक्षा जमा करें',
     'UnassignedRisks'=>'अनअसाइन्ड जोखिम',
     'DisableRegistrationNotice'=>'पंजीकरण सूचना अक्षम',
+    'UserPolicy'=>'उपयोगकर्ता नीति',
+    'UseCaseSensitiveValidationOfUsername'=>'प्रयोक्ता नाम का केस सेंसिटिव मान्यता का उपयोग',
     ''=>'',
 );
 

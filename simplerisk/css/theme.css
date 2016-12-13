@@ -1,14 +1,3 @@
-/**
- *
- * Theme 		  : Simple Risk
- * Description: Admin Panel Theme made for the Simple Risk
- * Author 		: Lakahan Mahagamage | Integritas Inc.
- * Version 		: 0.1
- * Date       : 04-Jul-2016
- *
- * Note 		: Please DO NOT Edit the CSS file Directly. This is a automatically Generated file via SASS Compiler.
- *
- */
 @import url(https://fonts.googleapis.com/css?family=Titillium+Web:400,300,600,700);
 /*--------------------------------------------------------------
  ## Helper Classes
@@ -157,18 +146,25 @@ input[type="submit"], .add-comments, .aside--nav li a, .status-tabs .tabs-nav li
 
 .score--wrapper .red {
   background-color: red !important; }
+
 .score--wrapper .orangered {
   background-color: orangered !important; }
+
 .score--wrapper .orange {
   background-color: orange !important; }
+
 .score--wrapper .yellow {
   background-color: yellow !important; }
+
 .score--wrapper .white {
   background-color: white !important; }
 
 td.risk-cell {
   position: relative;
   vertical-align: middle; }
+  td.risk-cell .risk-cell-holder {
+    width: 40px; }
+
 td .risk-color {
   position: absolute;
   width: 20px;
@@ -177,14 +173,19 @@ td .risk-color {
   top: 50%;
   transform: translateY(-50%);
   border-radius: 2px; }
+
 td.red .risk-color {
   background-color: red !important; }
+
 td.orangered .risk-color {
   background-color: orangered !important; }
+
 td.orange .risk-color {
   background-color: orange !important; }
+
 td.yellow .risk-color {
   background-color: yellow !important; }
+
 td.white .risk-color {
   background-color: white !important; }
 
@@ -202,6 +203,7 @@ div#show-alert + #tab-content-container .tab-data {
     margin-left: 16px; }
     .subject-field .span8 {
       margin-left: 9px; } }
+
 @media only screen and (min-width: 1400px) {
   .subject-field {
     margin-left: 22px; }
@@ -260,8 +262,7 @@ input[type="number"],
 input[type="tel"],
 input[type="email"],
 input[type="date"],
-input[type="text"]
-{
+input[type="text"] {
   border: 1px solid #d1d3d4;
   padding: 10px;
   border-radius: 2px;
@@ -362,12 +363,26 @@ select + input[type="submit"] {
 .file-uploader .file-count {
   margin-left: 10px;
   font-size: 13px; }
-.file-uploader .file-list {
+
+.file-uploader .file-list, .file-uploader .exist-files {
   margin-top: 10px;
   list-style: none;
   margin-left: 0px;
   color: #187bd0;
   font-size: 14px; }
+  .file-uploader .file-list > li, .file-uploader .exist-files > li {
+    margin-bottom: 10px; }
+    .file-uploader .file-list > li .file-name, .file-uploader .exist-files > li .file-name {
+      float: left;
+      width: calc(100% - 30px);
+      word-wrap: break-word; }
+    .file-uploader .file-list > li .remove-file, .file-uploader .exist-files > li .remove-file {
+      float: right;
+      font-size: 20px; }
+    .file-uploader .file-list > li:after, .file-uploader .exist-files > li:after {
+      content: "";
+      clear: both;
+      display: table; }
 
 .delete-link-check {
   margin: -3px 0px 0px 10px !important; }
@@ -467,12 +482,13 @@ input[type="color"]:focus,
 .table tbody tr td:first-child a {
   font-weight: 400;
   color: #3a3a3a; }
-/*
-.table tbody tr td:last-child a {
-  font-weight: 400;
-  color: #3a3a3a; }
-*/
 
+/*
+.table tbody tr td:last-child a{
+  font-weight: 400;
+  color: $color-1;
+}
+*/
 .active-cell a {
   color: #0088cc !important;
   font-weight: bold !important; }
@@ -579,14 +595,13 @@ p {
 
 .search-risks {
   margin-top: 10px;
-  /*margin-top: 28px;*/
-  /*margin-right: 50px;*/
+  /*    margin-right: 50px;*/
   max-width: 150px;
   position: relative; }
   .search-risks form {
     margin: 0px; }
-  .search-risks input[type="text"], .search-risks textarea,
-  .search-risks textarea.form-control {
+  .search-risks input[type="text"],
+  .search-risks textarea, .search-risks textarea.form-control {
     background-color: transparent !important;
     width: 130px;
     border: none;
@@ -609,45 +624,40 @@ p {
       color: #fff;
       line-height: 33px; }
 
-  .search-risks .search-popup {
-    display: none;
-    padding: 8px;
-    background: #002;
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: auto;
-    background: #6F6F6F;
-    border-radius: 6px;
-    vertical-align: middle;
+.search-risks .search-popup {
+  display: none;
+  padding: 8px;
+  background: #002;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: auto;
+  background: #6F6F6F;
+  border-radius: 6px;
+  vertical-align: middle; }
 
-  }
-  .edit-subject{
-    display:none;
-  }
+.edit-subject {
+  display: none; }
 
-   .search-popup i.fa.fa-search{
-    color: red;
-  }
+.search-popup i.fa.fa-search {
+  color: red; }
 
-  .search-risks input[type="text"],
-   .search-risks textarea,
-    .search-risks textarea.form-control{
-      width: 214px;
-      hesight: 40px;
-      padding: 10px;
-      background-color: white !important;
-      border: none;
-      margin-right: 36px;
-      margin-bottom: 0;
-    }
+.search-risks input[type="text"],
+.search-risks textarea,
+.search-risks textarea.form-control {
+  width: 214px;
+  hesight: 40px;
+  padding: 10px;
+  background-color: white !important;
+  border: none;
+  margin-right: 36px;
+  margin-bottom: 0; }
 
-    a#show-search-pop i.fa.fa-search{
-      margin-top: 22px;
-      color: white;
-      padding-right: 2px;
-      cursor: pointer;
-    }
+a#show-search-pop i.fa.fa-search {
+  margin-top: 22px;
+  color: white;
+  padding-right: 2px;
+  cursor: pointer; }
 
 /*--------------------------------------------------------------
  ## Main Section Styles
@@ -957,6 +967,7 @@ form#comment {
 .password_reset textarea.form-control,
 .password_reset input[type="password"] {
   max-width: 100%; }
+
 .send_reset_email .login--label,
 .password_reset .login--label {
   padding-bottom: 20px;
@@ -1144,9 +1155,8 @@ form#comment {
     margin-left: 110px; }
     .status-tabs .tabs-nav li {
       float: left;
-      /*margin-left: 10px;*/
-      margin-left: 5px; 
-       }
+      /*      margin-left: 10px;*/
+      margin-left: 5px; }
       .status-tabs .tabs-nav li a {
         display: block;
         padding: 10px;
@@ -1179,12 +1189,14 @@ form#comment {
   clear: both;
   content: "";
   display: block; }
+
 .project-block--header,
 .project-block-unassined--header {
   background-color: #fff;
   border: 1px solid #d1d3d4;
   border-right: none;
   height: 45px; }
+
 .project-block--delete,
 .project-block-unassined--delete {
   border-left: 1px solid #d1d3d4;
@@ -1192,6 +1204,7 @@ form#comment {
   width: 45px;
   display: block;
   text-align: center; }
+
 .project-block--priority, .project-block--name, .project-block--risks,
 .project-block-unassined--priority,
 .project-block-unassined--name,
@@ -1203,12 +1216,15 @@ form#comment {
   float: left;
   font-weight: 600;
   padding-left: 10px; }
+
 .project-block--priority,
 .project-block-unassined--priority {
   width: 8%; }
+
 .project-block--name,
 .project-block-unassined--name {
   width: 72%; }
+
 .project-block--risks,
 .project-block-unassined--risks {
   width: 20%; }
@@ -1341,17 +1357,14 @@ form#comment {
 .padded-bottom {
   margin-bottom: 30px; }
   @media only screen and (min-width: 320px) {
-    .padded-bottom input[type="text"], .padded-bottom textarea,
-    .padded-bottom textarea.form-control {
+    .padded-bottom input[type="text"], .padded-bottom textarea, .padded-bottom textarea.form-control {
       width: 100%;
       max-width: 100%; } }
   @media only screen and (min-width: 1816px) {
-    .padded-bottom input[type="text"], .padded-bottom textarea,
-    .padded-bottom textarea.form-control {
+    .padded-bottom input[type="text"], .padded-bottom textarea, .padded-bottom textarea.form-control {
       max-width: 99%; } }
   @media only screen and (min-width: 1919px) {
-    .padded-bottom input[type="text"], .padded-bottom textarea,
-    .padded-bottom textarea.form-control {
+    .padded-bottom input[type="text"], .padded-bottom textarea, .padded-bottom textarea.form-control {
       max-width: 97.5%; } }
 
 .score--wrapper {
@@ -1476,26 +1489,19 @@ div.doc-link {
 #tabs {
   position: relative; }
 
-.actions.risk-form-actions span{
-    max-width: 69%;
-    display: inline-block;
-    line-height: 16px;
-    vertical-align: middle;
-}
+.actions.risk-form-actions span {
+  max-width: 69%;
+  display: inline-block;
+  line-height: 16px;
+  vertical-align: middle; }
 
-.wrap-text{
-  line-height: 20px !important;
-}
+.wrap-text {
+  line-height: 20px !important; }
 
-@media (min-width:1025px) { 
-	textarea.form-control{
-		max-width:300px;
-	} 
-}
+@media (min-width: 1025px) {
+  textarea.form-control {
+    max-width: 300px; } }
 
-
-@media (min-width:1281px) { 
-	textarea.form-control{
-		max-width:300px;
-	} 
-}
+@media (min-width: 1281px) {
+  textarea.form-control {
+    max-width: 300px; } }

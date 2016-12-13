@@ -82,17 +82,17 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         <div class="row-fluid">
           <div class="span4">
             <div class="well">
-              <?php open_closed_pie($escaper->escapeHtml($lang['OpenVsClosed'])); ?>
+              <?php open_closed_pie(js_string_escape($lang['OpenVsClosed'])); ?>
             </div>
           </div>
           <div class="span4">
             <div class="well">
-              <?php open_mitigation_pie($escaper->escapeHtml($lang['MitigatedVsUnmitigated'])); ?>
+              <?php open_mitigation_pie(js_string_escape($lang['MitigatedVsUnmitigated'])); ?>
             </div>
           </div>
           <div class="span4">
             <div class="well">
-              <?php open_review_pie($escaper->escapeHtml($lang['ReviewedVsUnreviewed'])); ?>
+              <?php open_review_pie(js_string_escape($lang['ReviewedVsUnreviewed'])); ?>
             </div>
           </div>
         </div>

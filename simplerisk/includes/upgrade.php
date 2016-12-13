@@ -1234,6 +1234,35 @@ function upgrade_from_20161023001($db)
         echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/**************************************
+ * FUNCTION: UPGRADE FROM 20161030001 *
+ **************************************/
+function upgrade_from_20161030001($db)
+{
+        // Database version to upgrade
+        $version_to_upgrade = '20161030-001';
+
+        // Database version upgrading to
+        $version_upgrading_to = '20161122-001';
+
+        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+        // Create a setting for strict user validation
+        echo "Enabling the new strict user validation policy.<br />\n";
+        $stmt = $db->prepare("INSERT IGNORE INTO `settings` (name, value) VALUES ('strict_user_validation', 1)");
+        $stmt->execute();
+
+        // Update the user table to allow for a 5 character lang value
+        echo "Updating the user table to use a 5 character lang value.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` MODIFY `lang` VARCHAR(5) DEFAULT null;");
+        $stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+
+        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -1324,6 +1353,10 @@ function upgrade_database()
 				upgrade_from_20161023001($db);
 				upgrade_database();
 				break;
+			case "20161030-001":
+				upgrade_from_20161030001($db);
+				upgrade_database();
+                                break;
 			default:
 				echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
 		}

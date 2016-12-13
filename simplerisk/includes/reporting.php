@@ -31,6 +31,16 @@ function get_open_risks()
         // Close the database connection
         db_close($db);
 
+        // If team separation is enabled
+        if (team_separation_extra())
+        {
+                //Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                // Strip out risks the user should not have access to
+                $array = strip_no_access_risks($array);
+        }
+
         return count($array);
 }
 
@@ -51,6 +61,16 @@ function get_closed_risks()
 
         // Close the database connection
         db_close($db);
+
+        // If team separation is enabled
+        if (team_separation_extra())
+        {
+                //Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                // Strip out risks the user should not have access to
+                $array = strip_no_access_risks($array);
+        }
 
         return count($array);
 }
@@ -148,18 +168,38 @@ function get_risk_trend($title = null)
         $db = db_open();
 
         // Query the database
-        $stmt = $db->prepare("SELECT DATE(submission_date) date, COUNT(DISTINCT id) count FROM `risks` GROUP BY DATE(submission_date) ORDER BY DATE(submission_date)");
+        $stmt = $db->prepare("SELECT id, DATE(submission_date) date, COUNT(DISTINCT id) count FROM `risks` GROUP BY DATE(submission_date) ORDER BY DATE(submission_date)");
         $stmt->execute();
 
         // Store the list in the array
         $opened_risks = $stmt->fetchAll();
 
+        // If team separation is enabled
+        if (team_separation_extra())
+        {
+                //Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                // Strip out risks the user should not have access to
+                $opened_risks = strip_no_access_risks($opened_risks);
+        }
+
         // Query the database
-	$stmt = $db->prepare("SELECT DATE(a.closure_date) date, COUNT(DISTINCT a.risk_id) count FROM (SELECT MAX(closure_date) closure_date, risk_id FROM `closures` group by risk_id) a JOIN risks b ON a.risk_id = b.id WHERE b.status=\"Closed\" GROUP BY DATE(a.closure_date)");
+	$stmt = $db->prepare("SELECT id, DATE(a.closure_date) date, COUNT(DISTINCT a.risk_id) count FROM (SELECT MAX(closure_date) closure_date, risk_id FROM `closures` group by risk_id) a JOIN risks b ON a.risk_id = b.id WHERE b.status=\"Closed\" GROUP BY DATE(a.closure_date)");
         $stmt->execute();
 
         // Store the list in the array
         $closed_risks = $stmt->fetchAll();
+
+        // If team separation is enabled
+        if (team_separation_extra())
+        {
+                //Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                // Strip out risks the user should not have access to
+                $closed_risks = strip_no_access_risks($closed_risks);
+        }
 
         // Close the database connection
         db_close($db);
@@ -289,16 +329,28 @@ function get_risk_pyramid($title = null)
         $medium = $array[2][0];
         $low = $array[3][0];
 
-        // Query the database
-        $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :veryhigh THEN 'Very High' WHEN a.calculated_risk < :veryhigh AND a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
-        $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
-        $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
-        $stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
-        $stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
-        $stmt->execute();
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+                // Query the database
+                $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :veryhigh THEN 'Very High' WHEN a.calculated_risk < :veryhigh AND a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
+                $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
+                $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
+                $stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
+                $stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
+                $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+                // Store the list in the array
+                $array = $stmt->fetchAll();
+        }
+        else
+        {
+                //Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                // Query the database
+                $array = strip_no_access_open_risk_summary($veryhigh, $high, $medium, $low);
+        }
 
         // Close the database connection
         db_close($db);
@@ -419,16 +471,28 @@ function open_risk_level_pie($title = null)
 	$medium = $array[2][0];
 	$low = $array[3][0];
 
-        // Query the database
-        $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :veryhigh THEN 'Very High' WHEN a.calculated_risk < :veryhigh AND a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
-	$stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
-	$stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
-	$stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
-	$stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
-        $stmt->execute();
+	// If the team separation extra is not enabled
+	if (!team_separation_extra())
+	{
+        	// Query the database
+        	$stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :veryhigh THEN 'Very High' WHEN a.calculated_risk < :veryhigh AND a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
+        	$stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
+        	$stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
+        	$stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
+        	$stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
+        	$stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+        	// Store the list in the array
+        	$array = $stmt->fetchAll();
+	}
+	else
+	{
+                //Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+		// Query the database
+		$array = strip_no_access_open_risk_summary($veryhigh, $high, $medium, $low);
+	}
 
         // Close the database connection
         db_close($db);
@@ -506,7 +570,7 @@ function open_risk_level_pie($title = null)
 /**********************************
  * FUNCTION: OPEN RISK STATUS PIE *
  **********************************/
-function open_risk_status_pie($title = null)
+function open_risk_status_pie($array, $title = null)
 {
 	$chart = new Highchart();
 
@@ -528,19 +592,6 @@ function open_risk_status_pie($title = null)
 	$chart->plotOptions->pie->showInLegend = 1;
 	$chart->credits->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
-
-        // Query the database
-        $stmt = $db->prepare("SELECT status, COUNT(*) AS num FROM `risks` WHERE status != \"Closed\" GROUP BY status ORDER BY COUNT(*) DESC");
-        $stmt->execute();
-
-        // Store the list in the array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
         // If the array is empty
         if (empty($array))
         {
@@ -549,21 +600,25 @@ function open_risk_status_pie($title = null)
 	// Otherwise
 	else
 	{
-        	// Create the data array
-        	foreach ($array as $row)
-        	{
-                	$data[] = array($row['status'], (int)$row['num']);
-        	}
+		// Set the sort value
+		$sort = "status";
 
+		// Sort the array
+		$array = sort_array($array, $sort);
+
+		// Count the array by status
+		$data = count_array_values($array, $sort);
+
+		// Create the pie chart
 		$chart->series[] = array('type' => "pie",
-			'name' => "Status",
+			'name' => $sort,
 			'data' => $data);
 	}
 
-    echo "<div id=\"open_risk_status_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_status_pie");
-    echo "</script>\n";
+	echo "<div id=\"open_risk_status_pie\"></div>\n";
+	echo "<script type=\"text/javascript\">";
+	echo $chart->render("open_risk_status_pie");
+	echo "</script>\n";
 }
 
 /************************************
@@ -594,12 +649,24 @@ function closed_risk_reason_pie($title = null)
         // Open the database connection
         $db = db_open();
 
-        // Query the database
-	$stmt = $db->prepare("SELECT a.close_reason, b.id, b.status, c.name, COUNT(*) AS num FROM `closures` a JOIN `risks` b ON a.risk_id = b.id JOIN `close_reason` c ON a.close_reason= c.value WHERE b.status = \"Closed\" GROUP BY c.name ORDER BY COUNT(*) DESC;");
-        $stmt->execute();
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+                // Query the database
+		$stmt = $db->prepare("SELECT name, COUNT(*) as num FROM (SELECT a.close_reason, b.name, MAX(closure_date) FROM `closures` a JOIN `close_reason` b ON a.close_reason = b.value JOIN `risks` c ON a.risk_id = c.id WHERE c.status = \"Closed\" GROUP BY risk_id ORDER BY name DESC) AS close GROUP BY name ORDER BY COUNT(*) DESC;");
+                $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+                // Store the list in the array
+                $array = $stmt->fetchAll();
+        }
+        else
+        {
+                //Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                // Query the database
+                $array = strip_no_access_risk_pie('close_reason');
+        }
 
         // Close the database connection
         db_close($db);
@@ -632,7 +699,7 @@ function closed_risk_reason_pie($title = null)
 /************************************
  * FUNCTION: OPEN RISK LOCATION PIE *
  ************************************/
-function open_risk_location_pie($title = null)
+function open_risk_location_pie($array, $title = null)
 {
         $chart = new Highchart();
 
@@ -654,19 +721,6 @@ function open_risk_location_pie($title = null)
         $chart->plotOptions->pie->showInLegend = 1;
         $chart->credits->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
-
-        // Query the database
-        $stmt = $db->prepare("SELECT b.name, COUNT(*) AS num FROM `risks` a INNER JOIN `location` b ON a.location = b.value WHERE status != \"Closed\" GROUP BY b.name ORDER BY COUNT(*) DESC");
-        $stmt->execute();
-
-        // Store the list in the array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
         // If the array is empty
         if (empty($array))
         {
@@ -675,27 +729,31 @@ function open_risk_location_pie($title = null)
         // Otherwise
         else
         {
-        	// Create the data array
-        	foreach ($array as $row)
-        	{
-                	$data[] = array($row['name'], (int)$row['num']);
-        	}
+                // Set the sort value
+                $sort = "location";
 
-        	$chart->series[] = array('type' => "pie",
-                        'name' => "Status",
+                // Sort the array
+                $array = sort_array($array, $sort);
+
+                // Count the array by status
+                $data = count_array_values($array, $sort);
+
+                // Create the pie chart
+                $chart->series[] = array('type' => "pie",
+                        'name' => $sort,
                         'data' => $data);
-	}
+        }
 
-    echo "<div id=\"open_risk_location_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_location_pie");
-    echo "</script>\n";
+	echo "<div id=\"open_risk_location_pie\"></div>\n";
+	echo "<script type=\"text/javascript\">";
+	echo $chart->render("open_risk_location_pie");
+	echo "</script>\n";
 }
 
 /**********************************
  * FUNCTION: OPEN RISK SOURCE PIE *
  **********************************/
-function open_risk_source_pie($title = null)
+function open_risk_source_pie($array, $title = null)
 {
         $chart = new Highchart();
 
@@ -717,19 +775,6 @@ function open_risk_source_pie($title = null)
         $chart->plotOptions->pie->showInLegend = 1;
         $chart->credits->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
-
-        // Query the database
-        $stmt = $db->prepare("SELECT b.name, COUNT(*) AS num FROM `risks` a INNER JOIN `source` b ON a.source = b.value WHERE status != \"Closed\" GROUP BY b.name ORDER BY COUNT(*) DESC");
-        $stmt->execute();
-
-        // Store the list in the array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
         // If the array is empty
         if (empty($array))
         {
@@ -738,27 +783,31 @@ function open_risk_source_pie($title = null)
         // Otherwise
         else
         {
-                // Create the data array
-                foreach ($array as $row)
-                {
-                        $data[] = array($row['name'], (int)$row['num']);
-                }
+                // Set the sort value
+                $sort = "source";
 
+                // Sort the array
+                $array = sort_array($array, $sort);
+
+                // Count the array by status
+                $data = count_array_values($array, $sort);
+
+                // Create the pie chart
                 $chart->series[] = array('type' => "pie",
-                        'name' => "Status",
+                        'name' => $sort,
                         'data' => $data);
         }
 
-    echo "<div id=\"open_risk_source_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_source_pie");
-    echo "</script>\n";
+	echo "<div id=\"open_risk_source_pie\"></div>\n";
+	echo "<script type=\"text/javascript\">";
+	echo $chart->render("open_risk_source_pie");
+	echo "</script>\n";
 }
 
 /************************************
  * FUNCTION: OPEN RISK CATEGORY PIE *
  ************************************/
-function open_risk_category_pie($title = null)
+function open_risk_category_pie($array, $title = null)
 {
         $chart = new Highchart();
 
@@ -780,19 +829,6 @@ function open_risk_category_pie($title = null)
         $chart->plotOptions->pie->showInLegend = 1;
         $chart->credits->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
-
-        // Query the database
-        $stmt = $db->prepare("SELECT b.name, COUNT(*) AS num FROM `risks` a INNER JOIN `category` b ON a.category = b.value WHERE status != \"Closed\" GROUP BY b.name ORDER BY COUNT(*) DESC");
-        $stmt->execute();
-
-        // Store the list in the array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
         // If the array is empty
         if (empty($array))
         {
@@ -801,27 +837,31 @@ function open_risk_category_pie($title = null)
         // Otherwise
         else
         {
-        	// Create the data array
-        	foreach ($array as $row)
-        	{
-                	$data[] = array($row['name'], (int)$row['num']);
-        	}
+                // Set the sort value
+                $sort = "category";
 
-        	$chart->series[] = array('type' => "pie",
-                        'name' => "Status",
+                // Sort the array
+                $array = sort_array($array, $sort);
+
+                // Count the array by status
+                $data = count_array_values($array, $sort);
+
+                // Create the pie chart
+                $chart->series[] = array('type' => "pie",
+                        'name' => $sort,
                         'data' => $data);
-	}
+        }
 
-    echo "<div id=\"open_risk_category_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_category_pie");
-    echo "</script>\n";
+	echo "<div id=\"open_risk_category_pie\"></div>\n";
+	echo "<script type=\"text/javascript\">";
+	echo $chart->render("open_risk_category_pie");
+	echo "</script>\n";
 }
 
 /********************************
  * FUNCTION: OPEN RISK TEAM PIE *
  ********************************/
-function open_risk_team_pie($title = null)
+function open_risk_team_pie($array, $title = null)
 {
         $chart = new Highchart();
 
@@ -843,19 +883,6 @@ function open_risk_team_pie($title = null)
         $chart->plotOptions->pie->showInLegend = 1;
         $chart->credits->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
-
-        // Query the database
-        $stmt = $db->prepare("SELECT b.name, COUNT(*) AS num FROM `risks` a INNER JOIN `team` b ON a.team = b.value WHERE status != \"Closed\" GROUP BY b.name ORDER BY COUNT(*) DESC");
-        $stmt->execute();
-
-        // Store the list in the array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
         // If the array is empty
         if (empty($array))
         {
@@ -864,27 +891,31 @@ function open_risk_team_pie($title = null)
         // Otherwise
         else
         {
-        	// Create the data array
-        	foreach ($array as $row)
-        	{
-                	$data[] = array($row['name'], (int)$row['num']);
-        	}
+                // Set the sort value
+                $sort = "team";
 
-        	$chart->series[] = array('type' => "pie",
-                        'name' => "Status",
+                // Sort the array
+                $array = sort_array($array, $sort);
+
+                // Count the array by status
+                $data = count_array_values($array, $sort);
+
+                // Create the pie chart
+                $chart->series[] = array('type' => "pie",
+                        'name' => $sort,
                         'data' => $data);
-	}
+        }
 
-    echo "<div id=\"open_risk_team_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_team_pie");
-    echo "</script>\n";
+	echo "<div id=\"open_risk_team_pie\"></div>\n";
+	echo "<script type=\"text/javascript\">";
+	echo $chart->render("open_risk_team_pie");
+	echo "</script>\n";
 }
 
 /**************************************
  * FUNCTION: OPEN RISK TECHNOLOGY PIE *
  **************************************/
-function open_risk_technology_pie($title = null)
+function open_risk_technology_pie($array, $title = null)
 {
         $chart = new Highchart();
 
@@ -906,19 +937,6 @@ function open_risk_technology_pie($title = null)
         $chart->plotOptions->pie->showInLegend = 1;
         $chart->credits->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
-
-        // Query the database
-        $stmt = $db->prepare("SELECT b.name, COUNT(*) AS num FROM `risks` a INNER JOIN `technology` b ON a.technology = b.value WHERE status != \"Closed\" GROUP BY b.name ORDER BY COUNT(*) DESC");
-        $stmt->execute();
-
-        // Store the list in the array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
         // If the array is empty
         if (empty($array))
         {
@@ -927,27 +945,31 @@ function open_risk_technology_pie($title = null)
         // Otherwise
         else
         {
-        	// Create the data array
-        	foreach ($array as $row)
-        	{
-                	$data[] = array($row['name'], (int)$row['num']);
-        	}
+                // Set the sort value
+                $sort = "technology";
 
-        	$chart->series[] = array('type' => "pie",
-                        'name' => "Status",
+                // Sort the array
+                $array = sort_array($array, $sort);
+
+                // Count the array by status
+                $data = count_array_values($array, $sort);
+
+                // Create the pie chart
+                $chart->series[] = array('type' => "pie",
+                        'name' => $sort,
                         'data' => $data);
-	}
+        }
 
-    echo "<div id=\"open_risk_technology_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_technology_pie");
-    echo "</script>\n";
+	echo "<div id=\"open_risk_technology_pie\"></div>\n";
+	echo "<script type=\"text/javascript\">";
+	echo $chart->render("open_risk_technology_pie");
+	echo "</script>\n";
 }
 
 /**************************************
  * FUNCTION: OPEN RISK OWNER PIE *
  **************************************/
-function open_risk_owner_pie($title = null)
+function open_risk_owner_pie($array, $title = null)
 {
         $chart = new Highchart();
 
@@ -969,19 +991,6 @@ function open_risk_owner_pie($title = null)
         $chart->plotOptions->pie->showInLegend = 1;
         $chart->credits->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
-
-        // Query the database
-        $stmt = $db->prepare("SELECT b.name, COUNT(*) AS num FROM `risks` a INNER JOIN `user` b ON a.owner = b.value WHERE status != \"Closed\" GROUP BY b.name ORDER BY COUNT(*) DESC");
-        $stmt->execute();
-
-        // Store the list in the array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
         // If the array is empty
         if (empty($array))
         {
@@ -990,27 +999,31 @@ function open_risk_owner_pie($title = null)
         // Otherwise
         else
         {
-                // Create the data array
-                foreach ($array as $row)
-                {
-                        $data[] = array($row['name'], (int)$row['num']);
-                }
+                // Set the sort value
+                $sort = "owner";
 
+                // Sort the array
+                $array = sort_array($array, $sort);
+
+                // Count the array by status
+                $data = count_array_values($array, $sort);
+
+                // Create the pie chart
                 $chart->series[] = array('type' => "pie",
-                        'name' => "Status",
+                        'name' => $sort,
                         'data' => $data);
         }
 
-    echo "<div id=\"open_risk_owner_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_owner_pie");
-    echo "</script>\n";
+	echo "<div id=\"open_risk_owner_pie\"></div>\n";
+	echo "<script type=\"text/javascript\">";
+	echo $chart->render("open_risk_owner_pie");
+	echo "</script>\n";
 }
 
 /******************************************
  * FUNCTION: OPEN RISK OWNERS MANAGER PIE *
  ******************************************/
-function open_risk_owners_manager_pie($title = null)
+function open_risk_owners_manager_pie($array, $title = null)
 {
         $chart = new Highchart();
 
@@ -1032,19 +1045,6 @@ function open_risk_owners_manager_pie($title = null)
         $chart->plotOptions->pie->showInLegend = 1;
         $chart->credits->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
-
-        // Query the database
-        $stmt = $db->prepare("SELECT b.name, COUNT(*) AS num FROM `risks` a INNER JOIN `user` b ON a.manager = b.value WHERE status != \"Closed\" GROUP BY b.name ORDER BY COUNT(*) DESC");
-        $stmt->execute();
-
-        // Store the list in the array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
         // If the array is empty
         if (empty($array))
         {
@@ -1053,27 +1053,31 @@ function open_risk_owners_manager_pie($title = null)
         // Otherwise
         else
         {
-                // Create the data array
-                foreach ($array as $row)
-                {
-                        $data[] = array($row['name'], (int)$row['num']);
-                }
+                // Set the sort value
+                $sort = "manager";
 
+                // Sort the array
+                $array = sort_array($array, $sort);
+
+                // Count the array by status
+                $data = count_array_values($array, $sort);
+
+                // Create the pie chart
                 $chart->series[] = array('type' => "pie",
-                        'name' => "Status",
+                        'name' => $sort,
                         'data' => $data);
         }
 
-    echo "<div id=\"open_risk_owners_manager_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_owners_manager_pie");
-    echo "</script>\n";
+	echo "<div id=\"open_risk_owners_manager_pie\"></div>\n";
+	echo "<script type=\"text/javascript\">";
+	echo $chart->render("open_risk_owners_manager_pie");
+	echo "</script>\n";
 }
 
 /******************************************
  * FUNCTION: OPEN RISK SCORING METHOD PIE *
  ******************************************/
-function open_risk_scoring_method_pie($title = null)
+function open_risk_scoring_method_pie($array, $title = null)
 {
         $chart = new Highchart();
 
@@ -1095,19 +1099,6 @@ function open_risk_scoring_method_pie($title = null)
         $chart->plotOptions->pie->showInLegend = 1;
         $chart->credits->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
-
-        // Query the database
-        $stmt = $db->prepare("SELECT CASE WHEN scoring_method = 5 THEN 'Custom' WHEN scoring_method = 4 THEN 'OWASP' WHEN scoring_method = 3 THEN 'DREAD' WHEN scoring_method = 2 THEN 'CVSS' WHEN scoring_method = 1 THEN 'Classic' END AS name, COUNT(*) AS num FROM `risks` a INNER JOIN `risk_scoring` b ON a.id = b.id WHERE status != \"Closed\" GROUP BY b.scoring_method ORDER BY COUNT(*) DESC");
-        $stmt->execute();
-
-        // Store the list in the array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
         // If the array is empty
         if (empty($array))
         {
@@ -1116,21 +1107,25 @@ function open_risk_scoring_method_pie($title = null)
         // Otherwise
         else
         {
-                // Create the data array
-                foreach ($array as $row)
-                {
-                        $data[] = array($row['name'], (int)$row['num']);
-                }
+                // Set the sort value
+                $sort = "scoring_method";
 
+                // Sort the array
+                $array = sort_array($array, $sort);
+
+                // Count the array by status
+                $data = count_array_values($array, $sort);
+
+                // Create the pie chart
                 $chart->series[] = array('type' => "pie",
-                        'name' => "Status",
+                        'name' => $sort,
                         'data' => $data);
         }
 
-    echo "<div id=\"open_risk_scoring_method_pie\"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("open_risk_scoring_method_pie");
-    echo "</script>\n";
+	echo "<div id=\"open_risk_scoring_method_pie\"></div>\n";
+	echo "<script type=\"text/javascript\">";
+	echo $chart->render("open_risk_scoring_method_pie");
+	echo "</script>\n";
 }
 
 /*********************************
@@ -1662,7 +1657,7 @@ function risks_and_assets_table($report)
 /********************************
  * FUNCTION: GET RISKS BY TABLE *
  ********************************/
-function get_risks_by_table($status, $group, $sort, $column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_team=false)
+function get_risks_by_table($status, $group, $sort, $column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_team=false, $column_risk_assessment=false, $column_additional_notes=false, $column_current_solution=false, $column_security_recommendations=false, $column_security_requirements=false)
 {
 	global $lang;
 	global $escaper;
@@ -1796,7 +1791,8 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 	}
 
 	// Make the big query
-	$query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $order_query;
+	$query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.current_solution, p.security_recommendations, p.security_requirements
+    FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $order_query;
 
 	// Query the database
 	$db = db_open();
@@ -1824,12 +1820,12 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 	if ($group_name == "none")
 	{
 		// Display the table header
-		echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+		echo "<table class=\"table table-bordered table-striped table-condensed sortable table-margin-top\">\n";
 		echo "<thead>\n";
 		echo "<tr>\n";
 
 		// Header columns go here
-		get_header_columns($column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team);
+		get_header_columns($column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements);
 
 		echo "</tr>\n";
 		echo "</thead>\n";
@@ -1867,7 +1863,12 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 		$next_review_date = next_review($color, $risk_id, $risk['next_review'], false);
 		$next_review_date_html = next_review($color, $risk_id, $risk['next_review']);
 		$next_step = $risk['next_step'];
-		$affected_assets = $risk['affected_assets'];
+        $affected_assets = $risk['affected_assets'];
+        $risk_assessment = $risk['risk_assessment'];
+        $additional_notes = $risk['additional_notes'];
+        $current_solution = $risk['current_solution'];
+        $security_recommendations = $risk['security_recommendations'];
+		$security_requirements = $risk['security_requirements'];
 		$month_submitted = date('Y F', strtotime($risk['submission_date']));
 		$planning_strategy = $risk['planning_strategy'];
 		$mitigation_effort = $risk['mitigation_effort'];
@@ -1910,7 +1911,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 				else $current_group = $lang['Unassigned'];
 
 				// Display the table header
-				echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+				echo "<table class=\"table table-bordered table-striped table-condensed sortable table-margin-top\">\n";
 				echo "<thead>\n";
 				echo "<tr>\n";
 				echo "<th bgcolor=\"#0088CC\" colspan=\"100%\"><center>". $escaper->escapeHtml($current_group) ."</center></th>\n";
@@ -1918,7 +1919,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 				echo "<tr>\n";
 
 				// Header columns go here
-				get_header_columns($column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team);
+				get_header_columns($column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements);
 
 				echo "</tr>\n";
 				echo "</thead>\n";
@@ -1930,7 +1931,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 		echo "<tr>\n";
 
 		// Risk information goes here
-		get_risk_columns($risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team);
+		get_risk_columns($risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements);
 
 		echo "</tr>\n";
 	
@@ -1949,7 +1950,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 /********************************
  * FUNCTION: GET HEADER COLUMNS *
  ********************************/
-function get_header_columns($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team)
+function get_header_columns($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements)
 {
 	global $lang;
 	global $escaper;
@@ -1978,7 +1979,12 @@ function get_header_columns($id, $risk_status, $subject, $reference_id, $regulat
 	echo "<th class=\"days_open\" " . ($days_open == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
 	echo "<th class=\"next_review_date\" " . ($next_review_date == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
 	echo "<th class=\"next_step\" " . ($next_step == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextStep']) ."</th>\n";
-	echo "<th class=\"affected_assets\" " . ($affected_assets == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AffectedAssets']) ."</th>\n";
+    echo "<th class=\"affected_assets\" " . ($affected_assets == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AffectedAssets']) ."</th>\n";
+    echo "<th class=\"risk_assessment\" " . ($risk_assessment == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskAssessment']) ."</th>\n";
+    echo "<th class=\"additional_notes\" " . ($additional_notes == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AdditionalNotes']) ."</th>\n";
+    echo "<th class=\"current_solution\" " . ($current_solution == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['CurrentSolution']) ."</th>\n";
+    echo "<th class=\"security_recommendations\" " . ($security_recommendations == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SecurityRecommendations']) ."</th>\n";
+	echo "<th class=\"security_requirements\" " . ($security_requirements == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SecurityRequirements']) ."</th>\n";
 	echo "<th class=\"planning_strategy\" " . ($planning_strategy == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."</th>\n";
 	echo "<th class=\"mitigation_effort\" " . ($mitigation_effort == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationEffort']) ."</th>\n";
 	echo "<th class=\"mitigation_cost\" " . ($mitigation_cost== true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationCost']) ."</th>\n";
@@ -1989,7 +1995,7 @@ function get_header_columns($id, $risk_status, $subject, $reference_id, $regulat
 /******************************
  * FUNCTION: GET RISK COLUMNS *
  ******************************/
-function get_risk_columns($risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team)
+function get_risk_columns($risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements)
 {
         global $lang;
         global $escaper;
@@ -2035,7 +2041,12 @@ function get_risk_columns($risk, $column_id, $column_status, $column_subject, $c
 	$next_review_date = next_review($color, $risk_id, $risk['next_review'], false);
 	$next_review_date_html = next_review($color, $risk_id, $risk['next_review']);
 	$next_step = $risk['next_step'];
-	$affected_assets = $risk['affected_assets'];
+    $affected_assets = $risk['affected_assets'];
+    $risk_assessment = $risk['risk_assessment'];
+    $additional_notes = $risk['additional_notes'];
+    $current_solution = $risk['current_solution'];
+    $security_recommendations = $risk['security_recommendations'];
+	$security_requirements = $risk['security_requirements'];
 	$planning_strategy = $risk['planning_strategy'];
 	$mitigation_effort = $risk['mitigation_effort'];
 	$mitigation_min_cost = $risk['mitigation_min_cost'];
@@ -2076,7 +2087,7 @@ function get_risk_columns($risk, $column_id, $column_status, $column_subject, $c
 	echo "<td class=\"manager\" " . ($column_manager == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($manager) . "</td>\n";
 	echo "<td class=\"submitted_by\" " . ($column_submitted_by == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($submitted_by) . "</td>\n";
 	echo "<td class=\"scoring_method\" " . ($column_scoring_method == true ? "" : "style=\"display:none;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($scoring_method) . "</td>\n";
-	echo "<td class=\"calculated_risk\" " . ($column_calculated_risk == true ? "" : "style=\"display:none;\" ") . "align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"25px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+	echo "<td class=\"calculated_risk risk-cell ".$escaper->escapeHtml($color)." \" " . ($column_calculated_risk == true ? "" : "style=\"display:none;\" ") . "align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"25px\"><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\"></span></div>"."</td>\n";
 	echo "<td class=\"submission_date\" " . ($column_submission_date == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($submission_date))) . "</td>\n";
 	echo "<td class=\"review_date\" " . ($column_review_date == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($review_date) . "</td>\n";
 	echo "<td class=\"project\" " . ($column_project == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($project) . "</td>\n";
@@ -2086,6 +2097,11 @@ function get_risk_columns($risk, $column_id, $column_status, $column_subject, $c
 	echo "<td class=\"next_review_date\" " . ($column_next_review_date == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $next_review_date_html . "</td>\n";
 	echo "<td class=\"next_step\" " . ($column_next_step == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($next_step) . "</td>\n";
 	echo "<td class=\"affected_assets\" " . ($column_affected_assets == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($affected_assets) . "</td>\n";
+        echo "<td class=\"risk_assessment\" " . ($column_risk_assessment == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk_assessment) . "</td>\n";
+    echo "<td class=\"additional_notes\" " . ($column_additional_notes == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($additional_notes) . "</td>\n";
+    echo "<td class=\"current_solution\" " . ($column_current_solution == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($current_solution) . "</td>\n";
+    echo "<td class=\"security_recommendations\" " . ($column_security_recommendations == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($security_recommendations) . "</td>\n";
+	echo "<td class=\"security_requirements\" " . ($column_security_requirements == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($security_requirements) . "</td>\n";
 	echo "<td class=\"planning_strategy\" " . ($column_planning_strategy == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($planning_strategy) . "</td>\n";
 	echo "<td class=\"mitigation_effort\" " . ($column_mitigation_effort == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_effort) . "</td>\n";
 	echo "<td class=\"mitigation_cost\" " . ($column_mitigation_cost == true ? "" : "style=\"display:none;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_cost) . "</td>\n";
@@ -2417,7 +2433,8 @@ function risks_query($status, $sort, $group)
 	}
 
         // Make the big query
-        $query = "SELECT a.id + 1000 AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $order_query;
+        $query = "SELECT a.id + 1000 AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.current_solution, p.security_recommendations, p.security_requirements
+        FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $order_query;
 
         // Query the database
         $db = db_open();
@@ -2473,6 +2490,11 @@ function risks_query($status, $sort, $group)
                 $next_review_date_html = next_review($color, $risk_id, $risk['next_review']);
                 $next_step = $risk['next_step'];
                 $affected_assets = $risk['affected_assets'];
+                $risk_assessment = $risk['risk_assessment'];
+                $additional_notes = $risk['additional_notes'];
+                $current_solution = $risk['current_solution'];
+                $security_recommendations = $risk['security_recommendations'];
+                $security_requirements = $risk['security_requirements'];
                 $month_submitted = date('Y F', strtotime($risk['submission_date']));
                 $planning_strategy = $risk['planning_strategy'];
                 $mitigation_effort = $risk['mitigation_effort'];
@@ -2497,11 +2519,180 @@ function risks_query($status, $sort, $group)
 		else $group_value = $group_name;
 
                 // Create the new data array
-                $data[] = array("id" => $risk_id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "control_number" => $control_number, "submission_date" => $submission_date, "last_update" => $last_update, "review_date" => $review_date, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "color" => $color, "risk_level" => $risk_level, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "technology" => $technology, "owner" => $owner, "manager" => $manager, "submitted_by" => $submitted_by, "regulation" => $regulation, "project" => $project, "mgmt_review" => $mgmt_review, "days_open" => $days_open, "next_review_date" => $next_review_date, "next_step" => $next_step, "affected_assets" => $affected_assets, "month_submitted" => $month_submitted, "planning_strategy" => $planning_strategy, "mitigation_id" => $mitigation_id, "mitigation_effort" => $mitigation_effort, "mitigation_min_cost" => $mitigation_min_cost, "mitigation_max_cost" => $mitigation_max_cost, "mitigation_cost" => $mitigation_cost, "mitigation_owner" => $mitigation_owner, "mitigation_team" => $mitigation_team, "group_name" => $group_name, "group_value" => $group_value);
+                $data[] = array("id" => $risk_id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "control_number" => $control_number, "submission_date" => $submission_date, "last_update" => $last_update, "review_date" => $review_date, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "color" => $color, "risk_level" => $risk_level, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "technology" => $technology, "owner" => $owner, "manager" => $manager, "submitted_by" => $submitted_by, "regulation" => $regulation, "project" => $project, "mgmt_review" => $mgmt_review, "days_open" => $days_open, "next_review_date" => $next_review_date, "next_step" => $next_step, "affected_assets" => $affected_assets, "risk_assessment" => $risk_assessment, "additional_notes" => $additional_notes, "current_solution" => $current_solution, "security_recommendations" => $security_recommendations, "security_requirements" => $security_requirements, "month_submitted" => $month_submitted, "planning_strategy" => $planning_strategy, "mitigation_id" => $mitigation_id, "mitigation_effort" => $mitigation_effort, "mitigation_min_cost" => $mitigation_min_cost, "mitigation_max_cost" => $mitigation_max_cost, "mitigation_cost" => $mitigation_cost, "mitigation_owner" => $mitigation_owner, "mitigation_team" => $mitigation_team, "group_name" => $group_name, "group_value" => $group_value);
 	}
 
 	// Return the data array
 	return $data;
+}
+
+/***************************
+ * FUNCTION: GET PIE ARRAY *
+ ***************************/
+function get_pie_array($filter = null)
+{
+        // Open the database connection
+        $db = db_open();
+
+	// Check the filter for the query to use
+	switch($filter)
+	{
+               case 'status':
+                        $field = "status";
+                        $stmt = $db->prepare("SELECT id, status FROM `risks` WHERE status != \"Closed\" ORDER BY status DESC");
+                        $stmt->execute();
+                        break;
+                case 'location':
+                        $field = "name";
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `location` b ON a.location = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt->execute();
+                        break;
+                case 'source':
+                        $field = "name";
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `source` b ON a.source = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt->execute();
+                        break;
+                case 'category':
+                        $field = "name";
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `category` b ON a.category = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt->execute();
+                        break;
+                case 'team':
+                        $field = "name";
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `team` b ON a.team = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt->execute();
+                        break;
+                case 'technology':
+                        $field = "name";
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `technology` b ON a.technology = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt->execute();
+                        break;
+                case 'owner':
+                        $field = "name";
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `user` b ON a.owner = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt->execute();
+                        break;
+                case 'manager':
+                        $field = "name";
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `user` b ON a.manager = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt->execute();
+                        break;
+                case 'scoring_method':
+                        $field = "name";
+                        $stmt = $db->prepare("SELECT a.id, CASE WHEN scoring_method = 5 THEN 'Custom' WHEN scoring_method = 4 THEN 'OWASP' WHEN scoring_method = 3 THEN 'DREAD' WHEN scoring_method = 2 THEN 'CVSS' WHEN scoring_method = 1 THEN 'Classic' END AS name, COUNT(*) AS num FROM `risks` a LEFT JOIN `risk_scoring` b ON a.id = b.id WHERE status != \"Closed\" ORDER BY b.scoring_method DESC");
+                        $stmt->execute();
+                        break;
+                case 'close_reason':
+                        $field = "name";
+                        $stmt = $db->prepare("SELECT a.close_reason, a.risk_id as id, b.name, MAX(closure_date) FROM `closures` a JOIN `close_reason` b ON a.close_reason = b.value JOIN `risks` c ON a.risk_id = c.id WHERE c.status = \"Closed\" GROUP BY risk_id ORDER BY name DESC;");
+                        $stmt->execute();
+                        break;
+                default:
+			$stmt = $db->prepare("SELECT a.id, a.status, b.name AS location, c.name AS source, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, CASE WHEN scoring_method = 5 THEN 'Custom' WHEN scoring_method = 4 THEN 'OWASP' WHEN scoring_method = 3 THEN 'DREAD' WHEN scoring_method = 2 THEN 'CVSS' WHEN scoring_method = 1 THEN 'Classic' END AS scoring_method FROM `risks` a LEFT JOIN `location` b ON a.location = b.value LEFT JOIN `source` c ON a.source = c.value LEFT JOIN `category` d ON a.category = d.value LEFT JOIN `team` e ON a.team = e.value LEFT JOIN `technology` f ON a.technology = f.value LEFT JOIN `user` g ON a.owner = g.value LEFT JOIN `user` h ON a.manager = h.value LEFT JOIN `risk_scoring` i ON a.id = i.id WHERE a.status != \"Closed\"");
+			$stmt->execute();
+                        break;
+	}
+
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+	// If team separation is enabled
+        if (team_separation_extra())
+        {
+                //Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                // Strip out risks the user should not have access to
+                $array = strip_no_access_risks($array);
+        }
+
+	return $array;
+}
+
+/************************
+ * FUNCTION: SORT ARRAY *
+ ************************/
+function sort_array($array, $sort)
+{
+	// Create the sort array
+	$sortArray = array();
+
+	// For each risk in the array
+	foreach ($array as $risk)
+	{
+		// For each key value pair in the risk
+		foreach ($risk as $key=>$value)
+		{
+			// If the key is not yet set in the sort array
+			if (!isset($sortArray[$key]))
+			{
+				// Create a new array at that key
+				$sortArray[$key] = array();
+			}
+			// Set the key to the value
+			$sortArray[$key][] = $value;
+		}
+	}
+
+	// Sort the array based on the sort value provided
+	array_multisort($sortArray[$sort],SORT_ASC,$array);
+
+	// Return the sorted array
+	return $array;
+}
+
+/********************************
+ * FUNCTION: COUNT ARRAY VALUES *
+ ********************************/
+function count_array_values($array, $sort)
+{
+	global $lang;
+
+        // Initialize the value and count
+        $value = "";
+	$value_count = 1;
+
+        // Count the number of risks for each value
+        foreach ($array as $risk)
+        {
+                // Get the current value
+                $current_value = $risk[$sort];
+		if ($current_value == null) $current_value = $lang['Unassigned'];
+
+                // If the value is not new
+                if ($current_value == $value)
+                {
+                        $value_count++;
+                }
+                else
+                {
+                        // If the value is not empty
+                        if ($value != "")
+                        {
+                                // Add the previous value to the array
+                                $value_array[] = array($sort=>$value, 'num'=>$value_count);
+                        }
+
+                        // Set the new value and reset the count
+                        $value = $current_value;
+                        $value_count = 1;
+                }
+        }
+
+        // Update the final value
+        $value_array[] = array($sort=>$value, 'num'=>$value_count);
+
+        // Create the data array
+        foreach ($value_array as $row)
+        {
+        	$data[] = array($row[$sort], (int)$row['num']);
+        }
+
+	// Return the data
+        return $data;
 }
 
 ?>

@@ -48,6 +48,10 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../index.php");
   exit(0);
 }
+
+// Get the risk pie array
+$pie_array = get_pie_array();
+
 ?>
 
 <!doctype html>
@@ -71,6 +75,7 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 
 <body>
 
+
   <?php view_top_menu("Reporting"); ?>
 
   <div class="container-fluid">
@@ -85,58 +90,58 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         <div class="row-fluid">
           <div class="span4">
             <div class="well">
-              <?php open_risk_level_pie($escaper->escapeHtml($lang['RiskLevel'])); ?>
+              <?php open_risk_level_pie(js_string_escape($lang['RiskLevel'])); ?>
             </div>
           </div>
           <div class="span4">
             <div class="well">
-              <?php open_risk_status_pie($escaper->escapeHtml($lang['Status'])); ?>
+              <?php open_risk_status_pie($pie_array, js_string_escape($lang['Status'])); ?>
             </div>
           </div>
           <div class="span4">
             <div class="well">
-              <?php open_risk_location_pie($escaper->escapeHtml($lang['SiteLocation'])); ?>
-            </div>
-          </div>
-        </div>
-        <div class="row-fluid">
-          <div class="span4">
-            <div class="well">
-              <?php open_risk_source_pie($escaper->escapeHtml($lang['RiskSource'])); ?>
-            </div>
-          </div>
-          <div class="span4">
-            <div class="well">
-              <?php open_risk_category_pie($escaper->escapeHtml($lang['Category'])); ?>
-            </div>
-          </div>
-          <div class="span4">
-            <div class="well">
-              <?php open_risk_team_pie($escaper->escapeHtml($lang['Team'])); ?>
+              <?php open_risk_location_pie($pie_array, js_string_escape($lang['SiteLocation'])); ?>
             </div>
           </div>
         </div>
         <div class="row-fluid">
           <div class="span4">
             <div class="well">
-              <?php open_risk_technology_pie($escaper->escapeHtml($lang['Technology'])); ?>
+              <?php open_risk_source_pie($pie_array, js_string_escape($lang['RiskSource'])); ?>
             </div>
           </div>
           <div class="span4">
             <div class="well">
-              <?php open_risk_owner_pie($escaper->escapeHtml($lang['Owner'])); ?>
+              <?php open_risk_category_pie($pie_array, js_string_escape($lang['Category'])); ?>
             </div>
           </div>
           <div class="span4">
             <div class="well">
-              <?php open_risk_owners_manager_pie($escaper->escapeHtml($lang['OwnersManager'])); ?>
+              <?php open_risk_team_pie($pie_array, js_string_escape($lang['Team'])); ?>
             </div>
           </div>
         </div>
         <div class="row-fluid">
           <div class="span4">
             <div class="well">
-              <?php open_risk_scoring_method_pie($escaper->escapeHtml($lang['RiskScoringMethod'])); ?>
+              <?php open_risk_technology_pie($pie_array, js_string_escape($lang['Technology'])); ?>
+            </div>
+          </div>
+          <div class="span4">
+            <div class="well">
+              <?php open_risk_owner_pie($pie_array, js_string_escape($lang['Owner'])); ?>
+            </div>
+          </div>
+          <div class="span4">
+            <div class="well">
+              <?php open_risk_owners_manager_pie($pie_array, js_string_escape($lang['OwnersManager'])); ?>
+            </div>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div class="span4">
+            <div class="well">
+              <?php open_risk_scoring_method_pie($pie_array, js_string_escape($lang['RiskScoringMethod'])); ?>
             </div>
           </div>
         </div>
@@ -146,7 +151,7 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         <div class="row-fluid">
           <div class="span4">
             <div class="well">
-              <?php closed_risk_reason_pie($escaper->escapeHtml($lang['Reason'])); ?>
+              <?php closed_risk_reason_pie(js_string_escape($lang['Reason'])); ?>
             </div>
           </div>
         </div>

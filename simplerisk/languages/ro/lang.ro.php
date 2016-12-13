@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'Trimite Recenzie',
     'UnassignedRisks'=>'Riscurile Neatribuite',
     'DisableRegistrationNotice'=>'Observații Înregistrare Dezactivați',
+    'UserPolicy'=>'Politica de Utilizare',
+    'UseCaseSensitiveValidationOfUsername'=>'Use Case Validarea Sensibil de Utilizator',
     ''=>'',
 );
 

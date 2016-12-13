@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'Υποβολή Αξιολόγησης',
     'UnassignedRisks'=>'ανεκχώρητο Κίνδυνοι',
     'DisableRegistrationNotice'=>'Απενεργοποίηση Ανακοίνωση Εγγραφή',
+    'UserPolicy'=>'Πολιτική χρήστη',
+    'UseCaseSensitiveValidationOfUsername'=>'Χρησιμοποιήστε υπόθεση Ευαίσθητα Επικύρωση Όνομα Χρήστη',
     ''=>'',
 );
 

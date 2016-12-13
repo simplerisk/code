@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'Bewertung Abschicken',
     'UnassignedRisks'=>'Nicht Zugewiesene Risiken',
     'DisableRegistrationNotice'=>'Registrierungsmitteilung Deaktivieren',
+    'UserPolicy'=>'Benutzerrichtlinien',
+    'UseCaseSensitiveValidationOfUsername'=>'Use case sensitive Validierung von Benutzernamen',
     ''=>'',
 );
 

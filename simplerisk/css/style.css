@@ -334,7 +334,6 @@ label, .title {
   color:black;
 }
 
-
  #submit_mitigation .row-fluid .span6 .row-fluid > .span5{
      text-align: right;
    }
@@ -380,4 +379,49 @@ div.reviewername{
 }
 p.comment-block{
     white-space: pre-line;
+}
+
+/*------------------------------------------------------------
+## New additions to expand text-areas at pc
+------------------------------------------------------------*/
+@media screen and (min-width:1025px) {
+  #assets, #assessment, #notes, #current_solution, #security_requirements, #security_recommendations, #active-textfield, #comments{
+      width:100%;
+      max-width:300px;
+      transition: all 1s ease;
+  }
+
+  #assets:focus, #assessment:focus, #notes:focus, 
+  #current_solution:focus, #security_requirements:focus, #security_recommendations:focus, #active-textfield:focus,
+  #assets:active, #assessment:active, #notes:active, #comments:focus,
+  #current_solution:active, #security_requirements:active, #security_recommendations:active, #active-textfield:active, #comments:active{
+    position: fixed;
+    max-width:1600px;
+    top: 25%;
+    left: 25%;
+    width: 50%;
+    height: 50%;
+    margin:auto;
+    z-index: 2001;
+    overflow: auto;
+  }
+
+  .affected-assets-title{
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    max-width:2600px;
+    width: 100% !important;
+    height: 100% !important;
+    margin:auto;
+    z-index: 2000;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.4);
+    color: rgba(0, 0, 0, 0.4);
+    padding-top:10%;
+    text-align: center !important;
+    font-size: 30px;
+    color: #fff;
+  }
 }

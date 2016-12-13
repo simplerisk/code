@@ -35,9 +35,6 @@
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         session_start('SimpleRisk');
 
-        // Include the language file
-        require_once(language_file());
-
         require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
         // Check for session timeout or renegotiation
@@ -73,6 +70,9 @@
 			set_alert(true, "bad", "You need to select a valid language");
 		}
 	}
+
+        // Include the language file
+        require_once(language_file());
 
 	// Get the users information
         $user_info = get_user_by_id($_SESSION['uid']);
@@ -200,7 +200,7 @@
                   <tr><td><?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>:&nbsp;</td><td><input style="cursor: default;" name="email" type="text" maxlength="200" size="20" title="<?php echo $escaper->escapeHtml($email); ?>"disabled="disabled" value="<?php echo $escaper->escapeHtml($email); ?>" /></td></tr>
                   <tr><td><?php echo $escaper->escapeHtml($lang['Username']); ?>:&nbsp;</td><td><input style="cursor: default;" name="username" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($username); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($username); ?>" /></td></tr>
                   <tr><td><?php echo $escaper->escapeHtml($lang['LastLogin']); ?>:&nbsp;</td><td><input style="cursor: default;" name="last_login" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($last_login); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($last_login); ?>" /></td></tr>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['Language']); ?>:&nbsp;</td><td><?php create_dropdown("languages", get_value_by_name("languages", $language)); ?><input type="submit" name="change_language" value="Update" /></td></tr>
+                  <tr><td><?php echo $escaper->escapeHtml($lang['Language']); ?>:&nbsp;</td><td><?php create_dropdown("languages", get_value_by_name("languages", $language)); ?><input type="submit" name="change_language" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" /></td></tr>
 
 		<?php
 			// If the API Extra is enabled

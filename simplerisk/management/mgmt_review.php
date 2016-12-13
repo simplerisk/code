@@ -700,8 +700,6 @@ if (isset($_POST['submit']))
         }
       });
 
-      $('.collapsible').hide();
-
       $('.collapsible--toggle span').click(function(event) {
         event.preventDefault();
         $(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
@@ -713,9 +711,47 @@ if (isset($_POST['submit']))
         $(this).parents('.collapsible--toggle').next('.collapsible').slideDown('400');
         $(this).toggleClass('rotate');
         $('#comment').fadeToggle('100');
+        $(this).parent().find('span i').removeClass('fa-caret-right');
+        $(this).parent().find('span i').addClass('fa-caret-down');
       });
 
+      $('.collapsible').hide();
+
+      $(".add-comment-menu").click(function(event){
+        event.preventDefault();
+        $commentsContainer = $("#comment").parents('.well');
+        $commentsContainer.find(".collapsible--toggle").next('.collapsible').slideDown('400');
+        $commentsContainer.find(".add-comments").addClass('rotate');
+        $('#comment').show();
+        $commentsContainer.find(".add-comments").parent().find('span i').removeClass('fa-caret-right');
+        $commentsContainer.find(".add-comments").parent().find('span i').addClass('fa-caret-down');
+        $("#comment-text").focus();
+      })
 
     });
+    </script>
+    <script>
+      /*
+      * Function to add the css class for textarea title and make it popup.
+      * Example usage:
+      * focus_add_css_class("#foo", "#bar");
+      */
+      function focus_add_css_class(id_of_text_head, text_area_id){
+          look_for = "textarea" + text_area_id;
+          console.log(look_for);
+          if( !$(look_for).length ){
+              text_area_id = text_area_id.replace('#','');
+              look_for = "textarea[name=" + text_area_id;
+          }
+          $(look_for).focusin(function() {
+              $(id_of_text_head).addClass("affected-assets-title");
+          });
+          $(look_for).focusout(function() {
+              $(id_of_text_head).removeClass("affected-assets-title");
+          });
+      }
+      $(document).ready(function() {
+          focus_add_css_class("#CommentsTitle", "#comments");
+      });
     </script>
     </html>

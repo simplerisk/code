@@ -187,6 +187,9 @@ td {
 	&.risk-cell{
 		position: relative;
 		vertical-align: middle;
+		.risk-cell-holder{
+			width: 40px;
+		}
 	}
 
 	.risk-color{

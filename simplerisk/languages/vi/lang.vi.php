@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'Gửi nhận xét',
     'UnassignedRisks'=>'Rủi ro Unassigned'
     'DisableRegistrationNotice'=>'Thông báo đăng ký Disable',
+    'UserPolicy'=>'Chính sách người dùng',
+    'UseCaseSensitiveValidationOfUsername'=>'Sử dụng hợp Validation nhạy cảm của Tên đăng nhập',
     ''=>'',
 );
 

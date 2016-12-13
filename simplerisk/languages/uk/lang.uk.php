@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'Додати відгук',
     'UnassignedRisks'=>'Нерозподілені Ризики',
     'DisableRegistrationNotice'=>'Відключити реєстрації Примітка',
+    'UserPolicy'=>'політика користувача',
+    'UseCaseSensitiveValidationOfUsername'=>'Use Case Sensitive Валідація Ім\'я користувача',
     ''=>'',
 );
 

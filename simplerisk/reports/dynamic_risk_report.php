@@ -116,6 +116,11 @@ else $sort = 0;
 (isset($_POST['mitigation_cost']) ? $mitigation_cost = true : $mitigation_cost = false);
 (isset($_POST['mitigation_owner']) ? $mitigation_owner = true : $mitigation_owner = false);
 (isset($_POST['mitigation_team']) ? $mitigation_team = true : $mitigation_team = false);
+(isset($_POST['risk_assessment']) ? $risk_assessment = true : $risk_assessment = false);
+(isset($_POST['additional_notes']) ? $additional_notes = true : $additional_notes = false);
+(isset($_POST['current_solution']) ? $current_solution = true : $current_solution = false);
+(isset($_POST['security_recommendations']) ? $security_recommendations = true : $security_recommendations = false);
+(isset($_POST['security_requirements']) ? $security_requirements = true : $security_requirements = false);
 
 // If there was not a POST
 if (!isset($_POST['status']))
@@ -145,6 +150,8 @@ if (!isset($_POST['status']))
   <link rel="stylesheet" href="../css/bootstrap.css">
   <link rel="stylesheet" href="../css/bootstrap-responsive.css">
 
+  <link rel="stylesheet" href="../css/divshot-canvas.css">
+
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
 </head>
@@ -162,13 +169,13 @@ if (!isset($_POST['status']))
         <div class="row-fluid">
           <div id="selections" class="span12">
             <div class="well">
-              <?php view_get_risks_by_selections($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team); ?>
+              <?php view_get_risks_by_selections($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements); ?>
             </div>
           </div>
         </div>
         <div class="row-fluid">
           <div class="span12">
-            <?php get_risks_by_table($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team); ?>
+            <?php get_risks_by_table($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements); ?>
           </div>
         </div>
       </div>

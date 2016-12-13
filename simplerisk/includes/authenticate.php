@@ -28,8 +28,18 @@ function generateSalt($username)
         // Open the database connection
         $db = db_open();
 
-	// Get the users unique salt
-	$stmt = $db->prepare("SELECT salt FROM user WHERE username = :username");
+        // If strict user validation is disabled
+        if (get_setting('strict_user_validation') == 0)
+        {
+		// Get the users unique salt
+		$stmt = $db->prepare("SELECT salt FROM user WHERE LOWER(`username`) = LOWER(:username)");
+        }
+        else
+        {
+		// Get the users unique salt
+		$stmt = $db->prepare("SELECT salt FROM user WHERE username = :username");
+        }
+
 	$stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
 	$stmt->execute();
 	$values = $stmt->fetchAll();
@@ -61,8 +71,18 @@ function get_user_type($user)
 	// Open the database connection
 	$db = db_open();
 
-	// Query the DB for a matching enabled user
-        $stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND username = :user");
+	// If strict user validation is disabled
+	if (get_setting('strict_user_validation') == 0)
+	{
+		// Query the DB for a matching enabled user
+		$stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND LOWER(`username`) = LOWER(:user)");
+	}
+	else
+	{
+		// Query the DB for a matching enabled user
+        	$stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND username = :user");
+	}
+
         $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
         $stmt->execute();
 
@@ -163,14 +183,32 @@ function set_user_permissions($user, $pass, $upgrade = false)
 	// If we are not doing an upgrade
 	if (!$upgrade)
 	{
-        	// Query the DB for the users complete information
-        	$stmt = $db->prepare("SELECT value, type, name, lang, assessments, asset, admin, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
+        	// If strict user validation is disabled
+        	if (get_setting('strict_user_validation') == 0)
+        	{
+			// Query the DB for the users complete information
+			$stmt = $db->prepare("SELECT value, type, name, lang, assessments, asset, admin, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE LOWER(`username`) = LOWER(:user)");
+        	}
+        	else
+        	{
+			// Query the DB for the users complete information
+			$stmt = $db->prepare("SELECT value, type, name, lang, assessments, asset, admin, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
+        	}
 	}
 	// If we are doing an upgrade
 	else
 	{
-		// Query the DB for minimal user permissions needed
-		$stmt = $db->prepare("SELECT value, type, name, lang, admin FROM user WHERE username = :user");
+                // If strict user validation is disabled
+                if (get_setting('strict_user_validation') == 0)
+                {
+			// Query the DB for minimal user permissions needed
+			$stmt = $db->prepare("SELECT value, type, name, lang, admin FROM user WHERE LOWER(`username`) = LOWER(:user)");
+                }
+                else
+                {
+			// Query the DB for minimal user permissions needed
+			$stmt = $db->prepare("SELECT value, type, name, lang, admin FROM user WHERE username = :user");
+                }
 	}
 
         $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
@@ -259,8 +297,18 @@ function is_valid_simplerisk_user($user, $pass)
         // Open the database connection
         $db = db_open();
 
-        // Query the DB for a matching user and hash
-        $stmt = $db->prepare("SELECT password FROM user WHERE username = :user");
+        // If strict user validation is disabled
+        if (get_setting('strict_user_validation') == 0)
+        {
+		// Query the DB for a matching user and hash
+		$stmt = $db->prepare("SELECT password FROM user WHERE LOWER(`username`) = LOWER(:user)");
+        }
+        else
+        {
+		// Query the DB for a matching user and hash
+		$stmt = $db->prepare("SELECT password FROM user WHERE username = :user");
+        }
+
         $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
         $stmt->execute();
 
@@ -289,8 +337,18 @@ function is_simplerisk_user($username)
         // Open the database connection
         $db = db_open();
 
-        // Query the DB for a matching user and hash
-        $stmt = $db->prepare("SELECT value FROM user WHERE type = 'simplerisk' AND username = :username");
+        // If strict user validation is disabled
+        if (get_setting('strict_user_validation') == 0)
+        {
+		// Query the DB for a matching user and hash
+		$stmt = $db->prepare("SELECT value FROM user WHERE type = 'simplerisk' AND LOWER(`username`) = LOWER(:username)");
+        }
+        else
+        {
+		// Query the DB for a matching user and hash
+		$stmt = $db->prepare("SELECT value FROM user WHERE type = 'simplerisk' AND username = :username");
+        }
+
         $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
         $stmt->execute();
 
@@ -528,13 +586,32 @@ function is_valid_reset_token($username, $token)
 	$stmt = $db->prepare("DELETE FROM password_reset WHERE timestamp < DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
 	$stmt->execute();
 
-	// Increment the attempts for the username
-	$stmt = $db->prepare("UPDATE password_reset SET attempts=attempts+1 WHERE username=:username");
+        // If strict user validation is disabled
+        if (get_setting('strict_user_validation') == 0)
+        {
+		// Increment the attempts for the username
+		$stmt = $db->prepare("UPDATE password_reset SET attempts=attempts+1 WHERE LOWER(`username`) = LOWER(:username)");
+        }
+        else
+        {
+		// Increment the attempts for the username
+		$stmt = $db->prepare("UPDATE password_reset SET attempts=attempts+1 WHERE username=:username");
+        }
+
 	$stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
 	$stmt->execute();
 
-        // Search for a valid token
-        $stmt = $db->prepare("SELECT attempts FROM password_reset WHERE username=:username AND token=:token");
+        // If strict user validation is disabled
+        if (get_setting('strict_user_validation') == 0)
+        {
+		// Search for a valid token
+		$stmt = $db->prepare("SELECT attempts FROM password_reset WHERE LOWER(`username`) = LOWER(:username) AND token=:token");
+        }
+        else
+        {
+		// Search for a valid token
+		$stmt = $db->prepare("SELECT attempts FROM password_reset WHERE username=:username AND token=:token");
+        }
 
         $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":token", $token, PDO::PARAM_STR, 20);
@@ -798,6 +875,21 @@ function logout()
 
         // Destroy the session
         session_destroy();
+}
+
+/************************************
+ * FUNCTION: STRICT USER VALIDATION *
+ ************************************/
+function strict_user_validation($username)
+{
+	// If strict user validation is enabled
+	if (get_setting('strict_user_validation') == 0)
+	{
+		$username = strtolower($username);
+	}
+
+	// Return the username
+	return $username;
 }
 
 ?>

@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'Poster le Commentaire',
     'UnassignedRisks'=>'Risques Unassigned',
     'DisableRegistrationNotice'=>'Avis d\'enregistrement Désactiver',
+    'UserPolicy'=>'Politique Utilisateur',
+    'UseCaseSensitiveValidationOfUsername'=>'Validation de nom d\'utilisateur',
     ''=>'',
 );
 

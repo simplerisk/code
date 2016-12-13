@@ -349,11 +349,11 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
 /*****************************
  * FUNCTION: CREATE DROPDOWN *
  *****************************/
-function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false)
+function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false)
 {
 
 	global $escaper;
-
+    $str = "";
 	// If we want to update the helper when selected
 	if ($help == true)
 	{
@@ -363,14 +363,14 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 
 	if ($rename != NULL)
 	{
-		echo "<select id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "\" class=\"form-field form-control\" style=\"width:auto;\"" . $helper . ">\n";
+		$str .= "<select id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "\" class=\"form-field form-control\" style=\"width:auto;\"" . $helper . ">\n";
 	}
-	else echo "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
+	else $str .= "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
 
 	// If the blank is true
 	if ($blank == true)
 	{
-		echo "    <option value=\"\">--</option>\n";
+		$str .= "    <option value=\"\">--</option>\n";
 	}
 
 	// If we want a table that should be ordered by name instead of value
@@ -418,10 +418,16 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 		}
 		else $text = "";
 
-                echo "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
+                $str .= "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
         }
 
-	echo "  </select>\n";
+	$str .= "  </select>\n";
+    
+    if($returnHtml){
+        return $str;
+    }else{
+        echo $str;
+    }
 }
 
 /**************************************
@@ -1294,10 +1300,15 @@ function check_valid_specials($password)
 /************************************
  * FUNCTION: UPDATE PASSWORD POLICY *
  ************************************/
-function update_password_policy($pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required)
+function update_password_policy($strict_user_validation, $pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required)
 {
 	// Open the database connection
 	$db = db_open();
+
+	// Update the user policy
+	$stmt = $db->prepare("UPDATE `settings` SET value=:strict_user_validation WHERE name='strict_user_validation'");
+	$stmt->bindParam(":strict_user_validation", $strict_user_validation, PDO::PARAM_INT, 1);
+	$stmt->execute();
 
 	// Update the password policy
 	$stmt = $db->prepare("UPDATE `settings` SET value=:pass_policy_enabled WHERE name='pass_policy_enabled'");
@@ -6025,8 +6036,8 @@ function upload_file($risk_id, $file, $view_type = 1)
         // Create an array of allowed types
         foreach ($result as $key => $row)
         {
-		$allowed_types[] = $row['name'];
-	}
+		    $allowed_types[] = $row['name'];
+	    }
 
         // If a file was submitted and the name isn't blank
         if (isset($file) && $file['name'] != "")
@@ -6043,14 +6054,14 @@ function upload_file($risk_id, $file, $view_type = 1)
                         	// If there was no error with the upload
                                 if ($file['error'] == 0)
                                 {
-					// Open the database connection
-					$db = db_open();
-
 					// Read the file
 					$content = fopen($file['tmp_name'], 'rb');
 
 					// Create a unique file name
 					$unique_name = generate_token(30);
+
+                                        // Open the database connection
+                                        $db = db_open();
 
         				// Store the file in the database
         				$stmt = $db->prepare("INSERT INTO files (risk_id, view_type, name, unique_name, type, size, user, content) VALUES (:risk_id, :view_type, :name, :unique_name, :type, :size, :user, :content)");
@@ -6070,7 +6081,36 @@ function upload_file($risk_id, $file, $view_type = 1)
 					// Return a success
 					return 1;
                                 }
-				else return "There was an error with the file upload.";
+				// Otherwise
+				else
+				{
+					switch ($file['error'])
+					{
+						case 1:
+							return "The uploaded file exceeds the upload_max_filesize directive in php.ini.";
+							break;
+						case 2:
+							return "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.";
+							break;
+						case 3:
+							return "The uploaded file was only partially uploaded.";
+							break;
+						case 4:
+							return "No file was uploaded.";
+							break;
+						case 6:
+							return "Missing a temporary folder.";
+							break;
+						case 7:
+							return "Failed to write file to disk.";
+							break;
+						case 8:
+							return "A PHP extension stopped the file upload.";
+							break;
+						default:
+							return "There was an error with the file upload.";
+					}
+				}
                         }
 			else return "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
                 }
@@ -6087,13 +6127,48 @@ function delete_file($unique_name)
         // Open the database connection
         $db = db_open();
 
-	// Delete the file from the database
-	$stmt = $db->prepare("DELETE FROM files WHERE unique_name=:unique_name");
-	$stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
-	$stmt->execute();
+    // Delete the file from the database
+    $stmt = $db->prepare("DELETE FROM files WHERE unique_name=:unique_name");
+    $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
+    $stmt->execute();
 
         // Close the database connection
         db_close($db);
+
+    return 1;
+}
+
+/*************************
+ * FUNCTION: Delete some files except current unique names *
+ *************************/
+function refresh_files_for_risk($unique_names, $risk_id, $view_type = 1)
+{
+    if(!$unique_names){
+        $unique_names = [];
+    }
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT * FROM files WHERE risk_id=:risk_id and view_type=:view_type");
+    $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+    $stmt->bindParam(":view_type", $view_type, PDO::PARAM_INT);
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+    $deleteIds = array();
+    foreach($array as $row){
+        if(!in_array($row['unique_name'], $unique_names)){
+            $deleteIds[] = $row['id'];
+        }
+    }
+    foreach($deleteIds as $deleteId){
+        // Delete the file from the database
+        $stmt = $db->prepare("DELETE FROM files WHERE id=:id");
+        $stmt->bindParam(":id", $deleteId, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    
+    // Close the database connection
+    db_close($db);
 
 	return 1;
 }
@@ -6211,36 +6286,49 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
 		// If the array is empty
 		if (empty($array))
 		{
-			// echo "<input type=\"file\" name=\"file\" />\n";
-      echo '<div class="file-uploader">';
-        echo '<label for="file-upload" class="btn active-textfield">Choose File</label> <span class="file-count">0 Files Added</span>';
-        echo '<ul class="file-list">';
+            // echo "<input type=\"file\" name=\"file\" />\n";
+            echo '<div class="file-uploader">';
+            echo '<label for="file-upload" class="btn active-textfield">Choose File</label> <span class="file-count-html"><span class="file-count">0</span> File Added</span>';
+            echo '<ul class="file-list">';
 
-        echo '</ul>';
-        echo '<input type="file" name="file" id="file-upload" class="hidden-file-upload" />';
-      echo '</div>';
-
+            echo '</ul>';
+            echo '<input type="file" name="file[]" id="file-upload" class="hidden-file-upload active" />';
+            echo '</div>';
 
 		}
 		else
 		{
+            $documentHtml = "";
+            // For each entry in the array
+            foreach ($array as $file)
+            {
+//                $documentHtml .= "<div class =\"doc-link\">
+//                    <a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($file['name']) . "</a>&nbsp;&nbsp;--&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "?<input class=\"delete-link-check active-textfield\" type=\"checkbox\" name=\"delete[]\" value=\"" . $escaper->escapeHtml($file['unique_name']) . "\" /></div>\n";
+                $documentHtml .= "<li>
+                    <div class='file-name'><a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($file['name']) . "</a></div>
+                    <a href='#' class='remove-file' ><i class='fa fa-remove'></i></a>
+                    <input type='hidden' name='unique_names[]' value='".$escaper->escapeHtml($file['unique_name'])."'>
+                </li>";
+            }
 
-      // For each entry in the array
-      foreach ($array as $file)
-      {
-				echo "<div class =\"doc-link\">
-            <a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($file['name']) . "</a>&nbsp;&nbsp;--&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "?<input class=\"delete-link-check active-textfield\" type=\"checkbox\" name=\"delete[]\" value=\"" . $escaper->escapeHtml($file['unique_name']) . "\" /></div>\n";
-			}
 
-
-      // echo "<input type=\"file\" name=\"file\" />\n";
-      echo '<div class="file-uploader">';
-        echo '<label for="file-upload" class="btn active-textfield">Choose File</label> <span class="file-count">0 Files Added</span>';
-        echo '<ul class="file-list">';
-
-        echo '</ul>';
-        echo '<input type="file" name="file" id="file-upload" class="hidden-file-upload" />';
-      echo '</div>';
+            // echo "<input type=\"file\" name=\"file\" />\n";
+            if(count($array)>1){
+                $count = '<span class="file-count">'. count($array)."</span> Files";
+            }else{
+                $count = '<span class="file-count">'. count($array)."</span> File";
+            }
+            echo '
+                <div class="file-uploader">
+                <label for="file-upload" class="btn active-textfield">Choose File</label> <span class="file-count-html">'.$count.' Added</span>
+                    <ul class="exist-files">
+                        '.$documentHtml.'
+                    </ul>
+                    <ul class="file-list">
+                    </ul>
+                    <input type="file" name="file[]" id="file-upload" class="hidden-file-upload active" />
+                </div>
+            ';
 		}
 	}
 }
@@ -6444,7 +6532,7 @@ function write_debug_log($value)
 	if (DEBUG == "true")
 	{
 		// Log file to write to
-		$log_file = "/tmp/debug_log";
+		$log_file = DEBUG_FILE;
 
 		// Write to the error log
 		$return = error_log(date('c')." ".$value."\n", 3, $log_file);
@@ -6723,6 +6811,17 @@ function registration_redirect()
 		// Redirect to the reports index
 		header("Location: reports");
 	}
+}
+
+/******************************
+ * FUNCTION: JS STRING ESCAPE *
+ ******************************/
+function js_string_escape($string)
+{
+	global $escaper;
+	$string = $escaper->escapeHtml($string);
+	$string = str_replace("&#039;", "'", $string);
+	return $string;
 }
 
 ?>

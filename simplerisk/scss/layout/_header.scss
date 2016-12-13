@@ -102,20 +102,21 @@
 
 
 .search-risks {
-    margin-top: 20px;
-    margin-right: 50px;
-    max-width: 150px;
-
+    margin-top: 10px;
+/*    margin-right: 50px;*/
+	max-width: 150px;
+  position: relative; 
 		form{
 			margin: 0px;
 		}
 
-		input[type="text"]{
+		input[type="text"], 
+		textarea, textarea.form-control{
 			background-color: transparent !important;
 			width: 130px;
 			border: none;
 			box-shadow: none;
-			color: #fff;
+			color: #000;
 			border-bottom: 2px solid $color-3;
 			border-radius: 0px;
 			padding-right: 33px
@@ -138,3 +139,43 @@
 			}
 		}
 }
+.search-risks .search-popup {
+    display: none;
+    padding: 8px;
+    background: #002;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: auto;
+    background: #6F6F6F;
+    border-radius: 6px;
+    vertical-align: middle;
+
+  }
+  .edit-subject{
+    display:none;
+  }
+
+   .search-popup i.fa.fa-search{
+    color: red;
+  }
+
+  .search-risks input[type="text"],
+   .search-risks textarea,
+    .search-risks textarea.form-control{
+      width: 214px;
+      hesight: 40px;
+      padding: 10px;
+      background-color: white !important;
+      border: none;
+      margin-right: 36px;
+      margin-bottom: 0;
+    }
+
+    a#show-search-pop i.fa.fa-search{
+      margin-top: 22px;
+      color: white;
+      padding-right: 2px;
+      cursor: pointer;
+    }
+

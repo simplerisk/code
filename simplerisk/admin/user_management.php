@@ -282,6 +282,7 @@ if (isset($_POST['password_reset']))
 // Check if a password policy update was requested
 if (isset($_POST['password_policy_update']))
 {
+  $strict_user_validation = (isset($_POST['strict_user_validation'])) ? 1 : 0;
   $pass_policy_enabled = (isset($_POST['pass_policy_enabled'])) ? 1 : 0;
   $min_characters = (int)$_POST['min_characters'];
   $alpha_required = (isset($_POST['alpha_required'])) ? 1 : 0;
@@ -290,10 +291,10 @@ if (isset($_POST['password_policy_update']))
   $digits_required = (isset($_POST['digits_required'])) ? 1 : 0;
   $special_required = (isset($_POST['special_required'])) ? 1 : 0;
 
-  update_password_policy($pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required);
+  update_password_policy($strict_user_validation, $pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required);
 
   // Display an alert
-  set_alert(true, "good", "The password policy was updated successfully.");
+  set_alert(true, "good", "The settings were updated successfully.");
 }
 
 ?>
@@ -560,6 +561,9 @@ if (isset($_POST['password_policy_update']))
           </div>
           <div class="hero-unit">
             <form name="password_policy" method="post" action="">
+              <p><h4><?php echo $escaper->escapeHtml($lang['UserPolicy']); ?>:</h4></p>
+              <p><input class="hidden-checkbox" type="checkbox" id="strict_user_validation" name="strict_user_validation"<?php if (get_setting('strict_user_validation') == 1) echo " checked" ?> /><label for="strict_user_validation"><?php echo $escaper->escapeHtml($lang['UseCaseSensitiveValidationOfUsername']); ?></label></p>
+              <br />
               <p><h4><?php echo $escaper->escapeHtml($lang['PasswordPolicy']); ?>:</h4></p>
 
               <p><input class="hidden-checkbox" type="checkbox" id="pass_policy_enabled" name="pass_policy_enabled"<?php if (get_setting('pass_policy_enabled') == 1) echo " checked" ?> /><label for="pass_policy_enabled"><?php echo $escaper->escapeHtml($lang['Enabled']); ?></label></p>

@@ -4,6 +4,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Include required configuration files
+require_once(realpath(__DIR__ . '/alerts.php'));
+
+// Include Zend Escaper for HTML Output Encoding
+require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
+$escaper = new Zend\Escaper\Escaper('utf-8');
+
 /*************************************
  * FUNCTION: SIMPLERISK SERVICE CALL *
  *************************************/
@@ -30,6 +37,8 @@ function simplerisk_service_call($data)
  ****************************/
 function download_extra($name)
 {
+	global $escaper;
+
 	// SimpleRisk directory
 	$simplerisk_dir = realpath(__DIR__ . '/../');
 
@@ -42,11 +51,21 @@ function download_extra($name)
 	// If the extras directory does not exist
 	if (!is_dir($extras_dir))
 	{
-		$success = mkdir($extras_dir);
-		
-		// If we couldn't make the extras directory
-		if (!$success)
+		// If the simplerisk directory is not writeable
+		if (!is_writeable($simplerisk_dir))
 		{
+			// Display an alert
+			set_alert(true, "bad", "The " . $escaper->escapeHtml($simplerisk_dir) . " directory is not writeable by the web user.");
+
+			// Return a failure
+			return 0;
+		}
+
+		// If the extras directory can not be created
+		if (!mkdir($extras_dir))
+		{
+			set_alert(true, "bad", "Unable to create the " . $escaper->escapeHtml($extras_dir) . " directory.");
+
 			// Return a failure
 			return 0;
 		}
@@ -89,6 +108,9 @@ function download_extra($name)
 	unlink(sys_get_temp_dir() . '/' . $name . '.tgz');
         unlink(sys_get_temp_dir() . '/' . $name . ".tar");
         delete_dir($source);
+
+	// Display an alert
+	set_alert(true, "good", "Extra installed successfully.");
 
 	// Return a success
 	return 1;

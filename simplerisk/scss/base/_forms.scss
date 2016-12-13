@@ -60,11 +60,16 @@ select{
 	}
 }
 
+textarea:disabled{
+	@extend input[type="text"]:disabled;
 
+}
+textarea:focus{
+	@extend input[type="text"]:focus;
+}
 textarea,
 textarea.form-control{
 
-	@extend input[type="text"];
 
 	resize: vertical;
 	overflow: auto;
@@ -127,7 +132,8 @@ td[align="center"] .hidden-radio+label:before{
 	margin-left: -10px;
 }
 
-input[type="text"]+input[type="submit"],
+input[type="text"]+input[type="submit"],textarea + input[type="submit"],
+textarea.form-control + input[type="submit"],
 select+input[type="submit"]{
 	margin-top: -10px;
 }
@@ -144,12 +150,29 @@ select+input[type="submit"]{
 		font-size: 13px;
 	}
 
-	.file-list{
+	.file-list, .exist-files{
 		margin-top: 10px;
 		list-style: none;
 		margin-left: 0px;
 		color: #187bd0;
 		font-size: 14px;
+        >li{
+            margin-bottom: 10px;
+            .file-name{
+                float: left;
+                width: calc(100% - 30px);
+                word-wrap: break-word;
+            }
+            .remove-file{
+                float: right;
+                font-size: 20px;
+            }
+            &:after{
+                content:"";
+                clear:both;
+                display: table;
+            }
+        }
 	}
 
 }

@@ -1,6 +1,7 @@
 .login--page{
   // background-image: url("../images/login--bg.jpg");
   // background-size: 100%;
+  background-size: 100%;
   background-color: #252525;
 }
 
@@ -24,7 +25,8 @@
       font-size: 16px;
     }
 
-    input[type="text"],
+    input[type="text"],  textarea,
+	textarea.form-control,
     input[type="password"]{
       max-width: 100%;
       background-color: #fff !important;
@@ -68,7 +70,8 @@
 .send_reset_email,
 .password_reset{
 
-  input[type="text"],
+  input[type="text"],textarea, 
+  textarea.form-control,
   input[type="password"]{
     max-width: 100%;
   }

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  *
@@ -12,9 +11,7 @@
  *
  * This library is PHP4 and PHP5 compatible.
  */
-
 // CONFIGURATION:
-
 /**
  * By default, when you include this file csrf-magic will automatically check
  * and exit if the CSRF token is invalid. This will defer executing
@@ -24,21 +21,18 @@
  * with your system.
  */
 $GLOBALS['csrf']['defer'] = false;
-
 /**
  * This is the amount of seconds you wish to allow before any token becomes
  * invalid; the default is two hours, which should be more than enough for
  * most websites.
  */
 $GLOBALS['csrf']['expires'] = 7200;
-
 /**
  * Callback function to execute when there's the CSRF check fails and
  * $fatal == true (see csrf_check). This will usually output an error message
  * about the failure.
  */
 $GLOBALS['csrf']['callback'] = 'csrf_callback';
-
 /**
  * Whether or not to include our JavaScript library which also rewrites
  * AJAX requests on this domain. Set this to the web path. This setting only works
@@ -46,7 +40,6 @@ $GLOBALS['csrf']['callback'] = 'csrf_callback';
  * a list of supported libraries.
  */
 $GLOBALS['csrf']['rewrite-js'] = false;
-
 /**
  * A secret key used when hashing items. Please generate a random string and
  * place it here. If you change this value, all previously generated tokens
@@ -55,14 +48,12 @@ $GLOBALS['csrf']['rewrite-js'] = false;
 $GLOBALS['csrf']['secret'] = '';
 // nota bene: library code should use csrf_get_secret() and not access
 // this global directly
-
 /**
  * Set this to false to disable csrf-magic's output handler, and therefore,
  * its rewriting capabilities. If you're serving non HTML content, you should
  * definitely set this false.
  */
 $GLOBALS['csrf']['rewrite'] = true;
-
 /**
  * Whether or not to use IP addresses when binding a user to a token. This is
  * less reliable and less secure than sessions, but is useful when you need
@@ -70,14 +61,12 @@ $GLOBALS['csrf']['rewrite'] = true;
  * of valid keys.
  */
 $GLOBALS['csrf']['allow-ip'] = true;
-
 /**
  * If this information is available, use the cookie by this name to determine
  * whether or not to allow the request. This is a shortcut implementation
  * very similar to 'key', but we randomly set the cookie ourselves.
  */
 $GLOBALS['csrf']['cookie'] = '__csrf_cookie';
-
 /**
  * If this information is available, set this to a unique identifier (it
  * can be an integer or a unique username) for the current "user" of this
@@ -85,7 +74,6 @@ $GLOBALS['csrf']['cookie'] = '__csrf_cookie';
  * operations, but no one else. This requires that 'secret' be set.
  */
 $GLOBALS['csrf']['user'] = false;
-
 /**
  * This is an arbitrary secret value associated with the user's session. This
  * will most probably be the contents of a cookie, as an attacker cannot easily
@@ -103,36 +91,29 @@ $GLOBALS['csrf']['user'] = false;
  * users. (If you haven't guessed, this scheme was(?) used for MediaWiki).
  */
 $GLOBALS['csrf']['key'] = false;
-
 /**
  * The name of the magic CSRF token that will be placed in all forms, i.e.
  * the contents of <input type="hidden" name="$name" value="CSRF-TOKEN" />
  */
 $GLOBALS['csrf']['input-name'] = '__csrf_magic';
-
 /**
  * Set this to false if your site must work inside of frame/iframe elements,
  * but do so at your own risk: this configuration protects you against CSS
  * overlay attacks that defeat tokens.
  */
 $GLOBALS['csrf']['frame-breaker'] = true;
-
 /**
  * Whether or not CSRF Magic should be allowed to start a new session in order
  * to determine the key.
  */
 $GLOBALS['csrf']['auto-session'] = true;
-
 /**
  * Whether or not csrf-magic should produce XHTML style tags.
  */
 $GLOBALS['csrf']['xhtml'] = true;
-
 // FUNCTIONS:
-
 // Don't edit this!
 $GLOBALS['csrf']['version'] = '1.0.4';
-
 /**
  * Rewrites <form> on the fly to add CSRF tokens to them. This can also
  * inject our JavaScript library.
@@ -175,7 +156,6 @@ function csrf_ob_handler($buffer, $flags) {
     }
     return $buffer;
 }
-
 /**
  * Checks if this is a post request, and if it is, checks if the nonce is valid.
  * @param bool $fatal Whether or not to fatally error out if there is a problem.
@@ -203,26 +183,24 @@ function csrf_check($fatal = true) {
     }
     return $ok;
 }
-
 /**
  * Retrieves a valid token(s) for a particular context. Tokens are separated
  * by semicolons.
  */
 function csrf_get_tokens() {
     $has_cookies = !empty($_COOKIE);
-
     // $ip implements a composite key, which is sent if the user hasn't sent
     // any cookies. It may or may not be used, depending on whether or not
     // the cookies "stick"
     $secret = csrf_get_secret();
     if (!$has_cookies && $secret) {
         // :TODO: Harden this against proxy-spoofing attacks
-        $ip = ';ip:' . csrf_hash($_SERVER['IP_ADDRESS']);
+        $IP_ADDRESS = (isset($_SERVER['IP_ADDRESS']) ? $_SERVER['IP_ADDRESS'] : $_SERVER['REMOTE_ADDR']);
+        $ip = ';ip:' . csrf_hash($IP_ADDRESS);
     } else {
         $ip = '';
     }
     csrf_start();
-
     // These are "strong" algorithms that don't require per se a secret
     if (session_id()) return 'sid:' . csrf_hash(session_id()) . $ip;
     if ($GLOBALS['csrf']['cookie']) {
@@ -241,7 +219,6 @@ function csrf_get_tokens() {
     }
     return 'invalid';
 }
-
 function csrf_flattenpost($data) {
     $ret = array();
     foreach($data as $n => $v) {
@@ -258,7 +235,6 @@ function csrf_flattenpost2($level, $key, $data) {
     }
     return $ret;
 }
-
 /**
  * @param $tokens is safe for HTML consumption
  */
@@ -278,7 +254,6 @@ function csrf_callback($tokens) {
         <p>Debug: $tokens</p></body></html>
 ";
 }
-
 /**
  * Checks if a composite token is valid. Outward facing code should use this
  * instead of csrf_check_token()
@@ -290,7 +265,6 @@ function csrf_check_tokens($tokens) {
     }
     return false;
 }
-
 /**
  * Checks if a token is valid.
  */
@@ -327,11 +301,11 @@ function csrf_check_token($token) {
             if ($GLOBALS['csrf']['user'] !== false) return false;
             if (!empty($_COOKIE)) return false;
             if (!$GLOBALS['csrf']['allow-ip']) return false;
-            return $value === csrf_hash($_SERVER['IP_ADDRESS'], $time);
+            $IP_ADDRESS = (isset($_SERVER['IP_ADDRESS']) ? $_SERVER['IP_ADDRESS'] : $_SERVER['REMOTE_ADDR']);
+            return $value === csrf_hash($IP_ADDRESS, $time);
     }
     return false;
 }
-
 /**
  * Sets a configuration value.
  */
@@ -342,7 +316,6 @@ function csrf_conf($key, $val) {
     }
     $GLOBALS['csrf'][$key] = $val;
 }
-
 /**
  * Starts a session if we're allowed to.
  */
@@ -351,7 +324,6 @@ function csrf_start() {
         session_start('SimpleRisk');
     }
 }
-
 /**
  * Retrieves the secret, and generates one if necessary.
  */
@@ -373,19 +345,17 @@ function csrf_get_secret() {
     }
     return '';
 }
-
 /**
  * Generates a random string as the hash of time, microtime, and mt_rand.
  */
 function csrf_generate_secret($len = 32) {
     $r = '';
-    for ($i = 0; $i < 32; $i++) {
+    for ($i = 0; $i < $len; $i++) {
         $r .= chr(mt_rand(0, 255));
     }
     $r .= time() . microtime();
     return sha1($r);
 }
-
 /**
  * Generates a hash/expiry double. If time isn't set it will be calculated
  * from the current time.
@@ -394,7 +364,6 @@ function csrf_hash($value, $time = null) {
     if (!$time) $time = time();
     return sha1(csrf_get_secret() . $value . $time) . ',' . $time;
 }
-
 // Load user configuration
 if (function_exists('csrf_startup')) csrf_startup();
 // Initialize our handler

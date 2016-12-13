@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'שלח חוות דעת',
     'UnassignedRisks'=>'סיכונים לא הוקצו',
     'DisableRegistrationNotice'=>'הודעת רישום שבת',
+    'UserPolicy'=>'מדיניות משתמש',
+    'UseCaseSensitiveValidationOfUsername'=>'השתמש אימות רגישה מקרה של שם משתמש',
     ''=>'',
 );
 

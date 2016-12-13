@@ -26,8 +26,8 @@
 
     li{
       float: left;
-      margin-left: 10px;
-
+/*      margin-left: 10px;*/
+margin-left: 5px; 
       a{
 
         @extend .animation;

@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'Odeslat Recenzi',
     'UnassignedRisks'=>'Nepřiřazené Rizika',
     'DisableRegistrationNotice'=>'Zakázat Registrace Upozornění',
+    'UserPolicy'=>'User Policy',
+    'UseCaseSensitiveValidationOfUsername'=>'Používat velká a malá písmena ověření uživatelského jména',
     ''=>'',
 );
 

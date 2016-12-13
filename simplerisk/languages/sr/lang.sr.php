@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'Пошаљи коментар',
     'UnassignedRisks'=>'Недодељене Ризици',
     'DisableRegistrationNotice'=>'Дисабле Пријава Обавештење',
+    'UserPolicy'=>'усер Политика',
+    'UseCaseSensitiveValidationOfUsername'=>'Користити велика и мала слова Валидатион усернаме',
     ''=>'',
 );
 

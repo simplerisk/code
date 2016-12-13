@@ -41,4 +41,7 @@ date_default_timezone_set('America/Chicago');
 // Turn on debugging
 define('DEBUG', 'false');
 
+// Debug file
+define('DEBUG_FILE', '/tmp/debug_log');
+
 ?>

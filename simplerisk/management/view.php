@@ -61,28 +61,19 @@ if (isset($_GET['id']))
     //Include the team separation extra
     require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-    // If the user should not have access to the risk
     if (!extra_grant_access($_SESSION['uid'], $id))
     {
-      // If the workflow start value is set
-      if (isset($_SESSION["workflow_start"]))
-      {
-        // Redirect back to the page the workflow started on
-        header("Location: " . $_SESSION["workflow_start"]);
-        exit(0);
-      }
-      // Otherwise
-      else
-      {
-        // Redirect to the review risks page
-        header("Location: management/review_risks.php");
-        exit(0);
-      }
+      // Do not allow the user to update the risk
+      $access = false;
     }
+    // Otherwise, allow the user to update the risk
+    else $access = true;
   }
+  // Otherwise, allow the user to update the risk
+  else $access = true;
 
   // If the classic risk was updated and the user has the ability to modify the risk
-  if (isset($_POST['update_classic']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
+  if (isset($_POST['update_classic']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access)
   {
     $CLASSIC_likelihood = (int)$_POST['likelihood'];
     $CLASSIC_impact = (int)$_POST['impact'];
@@ -91,7 +82,7 @@ if (isset($_GET['id']))
     update_classic_score($id, $CLASSIC_likelihood, $CLASSIC_impact);
   }
   // If the cvss risk was updated and the user has the ability to modify the risk
-  else if (isset($_POST['update_cvss']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
+  else if (isset($_POST['update_cvss']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access)
   {
     $AccessVector = $_POST['AccessVector'];
     $AccessComplexity = $_POST['AccessComplexity'];
@@ -112,7 +103,7 @@ if (isset($_GET['id']))
     update_cvss_score($id, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement);
   }
   // If the dread risk was updated and the user has the ability to modify the risk
-  else if (isset($_POST['update_dread']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
+  else if (isset($_POST['update_dread']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access)
   {
     $DREADDamagePotential = (int)$_POST['DamagePotential'];
     $DREADReproducibility = (int)$_POST['Reproducibility'];
@@ -124,7 +115,7 @@ if (isset($_GET['id']))
     update_dread_score($id, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability);
   }
   // If the owasp risk was updated and the user has the ability to modify the risk
-  else if (isset($_POST['update_owasp']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
+  else if (isset($_POST['update_owasp']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access)
   {
     $OWASPSkillLevel = (int)$_POST['SkillLevel'];
     $OWASPMotive = (int)$_POST['Motive'];
@@ -147,7 +138,7 @@ if (isset($_GET['id']))
     update_owasp_score($id, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation);
   }
   // If the custom risk was updated and the user has the ability to modify the risk
-  else if (isset($_POST['update_custom']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
+  else if (isset($_POST['update_custom']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access)
   {
     $custom = (float)$_POST['Custom'];
 
@@ -267,7 +258,7 @@ if (isset($_GET['id']))
   }
 
   // If the current scoring method was changed to Classic
-  if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 1)
+  if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 1 && $access)
   {
     // Set the new scoring method
     $scoring_method = change_scoring_method($id, "1");
@@ -279,7 +270,7 @@ if (isset($_GET['id']))
     set_alert(true, "good", "The scoring method has been successfully changed to Classic.");
   }
   // If the current scoring method was changed to CVSS
-  else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 2)
+  else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 2 && $access)
   {
     // Set the new scoring method
     $scoring_method = change_scoring_method($id, "2");
@@ -291,7 +282,7 @@ if (isset($_GET['id']))
     set_alert(true, "good", "The scoring method has been successfully changed to CVSS.");
   }
   // If the current scoring method was changed to DREAD
-  else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 3)
+  else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 3 && $access)
   {
     // Set the new scoring method
     $scoring_method = change_scoring_method($id, "3");
@@ -303,7 +294,7 @@ if (isset($_GET['id']))
     set_alert(true, "good", "The scoring method has been successfully changed to DREAD.");
   }
   // If the current scoring method was changed to OWASP
-  else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 4)
+  else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 4 && $access)
   {
     // Set the new scoring method
     $scoring_method = change_scoring_method($id, "4");
@@ -315,7 +306,7 @@ if (isset($_GET['id']))
     set_alert(true, "good", "The scoring method has been successfully changed to OWASP.");
   }
   // If the current scoring method was changed to Custom
-  else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 5)
+  else if (isset($_GET['scoring_method']) && $_GET['scoring_method'] == 5 && $access)
   {
     // Set the new scoring method
     $scoring_method = change_scoring_method($id, "5");
@@ -336,23 +327,8 @@ if (isset($_GET['id']))
   // Get the mitigation for the risk
   $mitigation = get_mitigation_by_id($id);
 
-  // If no mitigation exists for this risk
-  if ($mitigation == false)
-  {
-    // Set the values to empty
-    $mitigation_date = "N/A";
-    $mitigation_date = "";
-    $planning_strategy = "";
-    $mitigation_effort = "";
-    $mitigation_cost = 1;
-    $mitigation_owner = $owner;
-    $mitigation_team = $team;
-    $current_solution = "";
-    $security_requirements = "";
-    $security_recommendations = "";
-  }
-  // If a mitigation exists
-  else
+  // If a mitigation exists for the risk and the user is allowed to access
+  if ($mitigation == true && $access)
   {
     // Set the mitigation values
     $mitigation_date = $mitigation[0]['submission_date'];
@@ -366,23 +342,27 @@ if (isset($_GET['id']))
     $security_requirements = $mitigation[0]['security_requirements'];
     $security_recommendations = $mitigation[0]['security_recommendations'];
   }
+  // Otherwise
+  else
+  {
+    // Set the values to empty
+    $mitigation_date = "N/A";
+    $mitigation_date = "";
+    $planning_strategy = "";
+    $mitigation_effort = "";
+    $mitigation_cost = 1;
+    $mitigation_owner = $owner;
+    $mitigation_team = $team;
+    $current_solution = "";
+    $security_requirements = "";
+    $security_recommendations = "";
+  }
 
   // Get the management reviews for the risk
   $mgmt_reviews = get_review_by_id($id);
 
-  // If no mitigation exists for this risk
-  if ($mgmt_reviews == false)
-  {
-    // Set the values to empty
-    $review_date = "N/A";
-    $review = "";
-    $next_step = "";
-    $next_review = "";
-    $reviewer = "";
-    $comments = "";
-  }
-  // If a mitigation exists
-  else
+  // If a mitigation exists for this risk and the user is allowed to access
+  if ($mgmt_reviews == true && $access)
   {
     // Set the mitigation values
     $review_date = $mgmt_reviews[0]['submission_date'];
@@ -392,6 +372,16 @@ if (isset($_GET['id']))
     $next_review = next_review($color, $id, $next_review, false);
     $reviewer = $mgmt_reviews[0]['reviewer'];
     $comments = $mgmt_reviews[0]['comments'];
+  }
+  // Otherwise
+  {
+    // Set the values to empty
+    $review_date = "N/A";
+    $review = "";
+    $next_step = "";
+    $next_review = "";
+    $reviewer = "";
+    $comments = "";
   }
 }
 
@@ -409,9 +399,8 @@ if (isset($_POST['update_details']))
   else $empty_subject = false;
 
   // If the user has permission to modify risks
-  if (!$empty_subject && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
+  if (!$empty_subject && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access)
   {
-    //$subject = try_encrypt($_POST['subject']);
     $reference_id = $_POST['reference_id'];
     $regulation = (int)$_POST['regulation'];
     $control_number = $_POST['control_number'];
@@ -425,7 +414,6 @@ if (isset($_POST['update_details']))
     $assessment = try_encrypt($_POST['assessment']);
     $notes = try_encrypt($_POST['notes']);
     $assets = $_POST['assets'];
-
     // Update risk
     update_risk($id, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes);
 
@@ -442,12 +430,35 @@ if (isset($_POST['update_details']))
         delete_file($file);
       }
     }
+        refresh_files_for_risk($_POST['unique_names'], $id-1000, 1);
 
+    $error = 1;
     // If a file was submitted
     if (!empty($_FILES))
     {
       // Upload any file that is submitted
-      $error = upload_file($id-1000, $_FILES['file'], 1);
+        for($i=0; $i<count($_FILES['file']['name']); $i++){
+            if($_FILES['file']['error'][$i] || $i==0){
+               continue; 
+            }
+            $file = array(
+                'name' => $_FILES['file']['name'][$i],
+                'type' => $_FILES['file']['type'][$i],
+                'tmp_name' => $_FILES['file']['tmp_name'][$i],
+                'size' => $_FILES['file']['size'][$i],
+                'error' => $_FILES['file']['error'][$i],
+            );
+            // Upload any file that is submitted
+            $error = upload_file($id-1000, $file, 1);
+            if($error != 1){
+                /**
+                * If error, stop uploading files;
+                */
+                break;
+            }
+        }
+      
+//      $error = upload_file($id-1000, $_FILES['file'], 1);
     }
     // Otherwise, success
     else $error = 1;
@@ -479,7 +490,7 @@ if ((isset($_POST['edit_details'])) && ($_SESSION['modify_risks'] != 1))
 }
 
 // Check if a mitigation was updated
-if (isset($_POST['update_mitigation']))
+if (isset($_POST['update_mitigation']) && $access)
 {
   $planning_strategy = (int)$_POST['planning_strategy'];
   $mitigation_effort = (int)$_POST['mitigation_effort'];
@@ -516,12 +527,34 @@ if (isset($_POST['update_mitigation']))
       delete_file($file);
     }
   }
-
+        refresh_files_for_risk($_POST['unique_names'], $id-1000, 2);
+    
+    $error = 1;
   // If a file was submitted
   if (!empty($_FILES))
   {
-    // Upload any file that is submitted
-    $error = upload_file($id-1000, $_FILES['file'], 2);
+      // Upload any file that is submitted
+        for($i=0; $i<count($_FILES['file']['name']); $i++){
+            if($_FILES['file']['error'][$i] || $i==0){
+               continue; 
+            }
+            $file = array(
+                'name' => $_FILES['file']['name'][$i],
+                'type' => $_FILES['file']['type'][$i],
+                'tmp_name' => $_FILES['file']['tmp_name'][$i],
+                'size' => $_FILES['file']['size'][$i],
+                'error' => $_FILES['file']['error'][$i],
+            );
+            // Upload any file that is submitted
+            $error = upload_file($id-1000, $file, 2);
+            if($error != 1){
+                /**
+                * If error, stop uploading files;
+                */
+                break;
+            }
+        }
+      
   }
   // Otherwise, success
   else $error = 1;
@@ -534,7 +567,7 @@ if (isset($_POST['update_mitigation']))
 }
 
 // If the user updated the subject and they have the permission to modify the risk
-if (isset($_POST['update_subject']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1)
+if (isset($_POST['update_subject']) && isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access)
 {
   $id = $_POST['riskid'];
   $new_subject = $_POST['subject'];
@@ -568,6 +601,7 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
   <script src="../js/jquery-ui.min.js"></script>
   <script src="../js/bootstrap.min.js"></script>
   <script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
+  <script src="../js/common.js"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -801,6 +835,35 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
           </div>
         </div>
       </div>
+      <script>
+        /*
+        * Function to add the css class for textarea title and make it popup.
+        * Example usage:
+        * focus_add_css_class("#foo", "#bar");
+        */
+        function focus_add_css_class(id_of_text_head, text_area_id){
+            look_for = "textarea" + text_area_id;
+            console.log(look_for);
+            if( !$(look_for).length ){
+                text_area_id = text_area_id.replace('#','');
+                look_for = "textarea[name=" + text_area_id;
+            }
+            $(look_for).focusin(function() {
+                $(id_of_text_head).addClass("affected-assets-title");
+            });
+            $(look_for).focusout(function() {
+                $(id_of_text_head).removeClass("affected-assets-title");
+            });
+        }
+        $(document).ready(function() {
+            focus_add_css_class("#AffectedAssetsTitle", "#assets");
+            focus_add_css_class("#RiskAssessmentTitle", "#assessment");
+            focus_add_css_class("#NotesTitle", "#notes");
+            focus_add_css_class("#SecurityRequirementsTitle", "#security_requirements");
+            focus_add_css_class("#CurrentSolutionTitle", "#current_solution");
+            focus_add_css_class("#SecurityRecommendationsTitle", "#security_recommendations");
+        });
+    </script>
     </body>
     <script type="text/javascript">
 
@@ -836,25 +899,25 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
                 $("#cancel_disable").removeAttr('disabled');
        });
              
-      $(document).on('change', '.hidden-file-upload', function(event) {
-        event.preventDefault();
+//      $(document).on('change', '.hidden-file-upload', function(event) {
+//        event.preventDefault();
 
-        var $parent = $(this).parents('.file-uploader');
-        var files = $(this)[0].files;
-        if(files.length > 1){ $msg = files.length+" Files Added"; }else{ $msg = "1 File Added"; }
-        $($parent).find('.file-count').html($msg);
+//        var $parent = $(this).parents('.file-uploader');
+//        var files = $(this)[0].files;
+//        if(files.length > 1){ $msg = files.length+" Files Added"; }else{ $msg = "1 File Added"; }
+//        $($parent).find('.file-count').html($msg);
 
-        var files = $(this)[0].files;
+//        var files = $(this)[0].files;
 
-        $(files).each(function(index, el) {
-          var $file = "<li>"+el.name+"</li>";
-          $($parent).find('.file-list').html($file);
-        });
+//        $(files).each(function(index, el) {
+//          var $file = "<li>"+el.name+"</li>";
+//          $($parent).find('.file-list').html($file);
+//        });
 
-        var fileName = $(this).val();
-        $(this).prev('label').text(fileName);
+//        var fileName = $(this).val();
+//        $(this).prev('label').text(fileName);
 
-      });
+//      });
 
       $("#tabs").tabs({ active: 0});
       <?php if (isset($_POST['edit_mitigation'])): ?>
@@ -883,6 +946,8 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
         $(this).parents('.collapsible--toggle').next('.collapsible').slideDown('400');
         $(this).toggleClass('rotate');
         $('#comment').fadeToggle('100');
+        $(this).parent().find('span i').removeClass('fa-caret-right');
+        $(this).parent().find('span i').addClass('fa-caret-down');
       });
 
 
@@ -910,6 +975,17 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
         $('.edit-subject').show();
         $('#static-subject').hide();
       });
+      
+      $(".add-comment-menu").click(function(event){
+        event.preventDefault();
+        $commentsContainer = $("#comment").parents('.well');
+        $commentsContainer.find(".collapsible--toggle").next('.collapsible').slideDown('400');
+        $commentsContainer.find(".add-comments").addClass('rotate');
+        $('#comment').show();
+        $commentsContainer.find(".add-comments").parent().find('span i').removeClass('fa-caret-right');
+        $commentsContainer.find(".add-comments").parent().find('span i').addClass('fa-caret-down');
+        $("#comment-text").focus();
+      })
     });
     </script>
     </html>

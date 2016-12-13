@@ -53,7 +53,7 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 								echo "<li><a href=\"mgmt_review.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PerformAReview']) ."</a></li>\n";
 								echo "<li><a href=\"status.php?id=" . $escaper->escapeHtml($id) . "\">" . $escaper->escapeHtml($lang['ChangeStatus']) . "</a></li>\n";
 								//echo "<li><a href=\"comment.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['AddAComment']) ."</a></li>\n";
-								echo "<li><a href=\"#comment\">". $escaper->escapeHtml($lang['AddAComment']) ."</a></li>\n";
+								echo "<li><a href=\"#comment\" class='add-comment-menu'>". $escaper->escapeHtml($lang['AddAComment']) ."</a></li>\n";
 								echo "<li><a href=\"print_view.php?id=" . $escaper->escapeHtml($id) . "\" target=\"_blank\">". $escaper->escapeHtml($lang['PrintableView']) ."</a></li>\n";
 								echo "</ul>\n";
 								echo "</div>\n";
@@ -482,7 +482,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 	echo "</div>\n";
 	echo "</div>\n";
         echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
+	echo "<div class=\"span5 text-right\" id=\"AffectedAssetsTitle\">\n";
 	echo $escaper->escapeHtml($lang['AffectedAssets']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
@@ -561,7 +561,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 	echo "</div>\n";
 	echo "</div>\n";
 	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
+	echo "<div class=\"span5 text-right\" id=\"RiskAssessmentTitle\">\n";
 	echo $escaper->escapeHtml($lang['RiskAssessment']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
@@ -569,7 +569,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 	echo "</div>\n";
 	echo "</div>\n";
 	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
+	echo "<div class=\"span5 text-right\" id=\"NotesTitle\">\n";
 	echo $escaper->escapeHtml($lang['AdditionalNotes']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
@@ -664,7 +664,7 @@ function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 	echo "</div>\n";
 	echo "<div class=\"span5\">\n";
 	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
+	echo "<div class=\"span5 text-right\" id=\"CurrentSolutionTitle\">\n";
 	echo $escaper->escapeHtml($lang['CurrentSolution']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
@@ -672,7 +672,7 @@ function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 	echo "</div>\n";
 	echo "</div>\n";
 	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
+	echo "<div class=\"span5 text-right\" id=\"t_a_title\">\n";
 	echo $escaper->escapeHtml($lang['SecurityRequirements']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
@@ -680,7 +680,7 @@ function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 	echo "</div>\n";
 	echo "</div>\n";
 	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
+	echo "<div class=\"span5 text-right\" id=\"t_a_title\">\n";
 	echo $escaper->escapeHtml($lang['SecurityRecommendations']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
@@ -821,27 +821,27 @@ function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 	echo "</div>\n";
 	echo "<div class=\"span5\">\n";
 	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
+	echo "<div class=\"span5 text-right\" id=\"CurrentSolutionTitle\">\n";
 	echo $escaper->escapeHtml($lang['CurrentSolution']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<textarea  class=\"active-textfield\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $escaper->escapeHtml($current_solution) . "</textarea>\n";
+	echo "<textarea  class=\"active-textfield\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" tabindex=\"1\">" . $escaper->escapeHtml($current_solution) . "</textarea>\n";
 	echo "</div>\n";
 	echo "</div>\n";
 	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
+	echo "<div class=\"span5 text-right\" id=\"SecurityRequirementsTitle\">\n";
 	echo $escaper->escapeHtml($lang['SecurityRequirements']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<textarea class=\"active-textfield\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . $escaper->escapeHtml($security_requirements) . "</textarea>\n";
+	echo "<textarea class=\"active-textfield\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" tabindex=\"1\">" . $escaper->escapeHtml($security_requirements) . "</textarea>\n";
 	echo "</div>\n";
 	echo "</div>\n";
 	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
+	echo "<div class=\"span5 text-right\" id=\"SecurityRecommendationsTitle\">\n";
 	echo $escaper->escapeHtml($lang['SecurityRecommendations']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<textarea class=\"active-textfield\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>\n";
+	echo "<textarea class=\"active-textfield\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" tabindex=\"1\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>\n";
 	echo "</div>\n";
 	echo "</div>\n";
 	echo "<div class=\"row-fluid\">\n";
@@ -982,7 +982,7 @@ function view_print_review_details($id, $review_date, $reviewer, $review, $next_
 /****************************************
 * FUNCTION: edit_mitigation_submission *
 ****************************************/
-function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
+function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $id=0)
 {
 	global $lang;
 	global $escaper;
@@ -1026,29 +1026,22 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mit
 	echo '<div class="span7">';
 	create_dropdown("team", $mitigation_team, "mitigation_team", true);
 	echo "</div></div></div>";
-	echo '<div class="span6"><div class="row-fluid"><div class="span5">';
+	echo '<div class="span6"><div class="row-fluid"><div class="span5" id="CurrentSolutionTitle">';
 	echo $escaper->escapeHtml($lang['CurrentSolution']) .":</div>";
 	echo '<div class="span7">';
-	echo "<textarea name=\"current_solution\" id=\"active-textfield\" cols=\"50\" rows=\"3\" id=\"current_solution\">" . $escaper->escapeHtml($current_solution) . "</textarea></div>";
-	echo '</div><div class="row-fluid"><div class="span5">';
+	echo "<textarea name=\"current_solution\" id=\"active-textfield\" cols=\"50\" rows=\"3\" tabindex=\"1\">" . $escaper->escapeHtml($current_solution) . "</textarea></div>";
+	echo '</div><div class="row-fluid"><div class="span5" id="SecurityRequirementsTitle">';
 	echo $escaper->escapeHtml($lang['SecurityRequirements']) .":</div>";
 	echo '<div class="span7">';
-	echo "<textarea name=\"security_requirements\" id=\"active-textfield\" cols=\"50\" rows=\"3\" id=\"security_requirements\">" . $escaper->escapeHtml($security_requirements) . "</textarea></div>";
-	echo '</div><div class="row-fluid"><div class="span5">';
+	echo "<textarea name=\"security_requirements\" id=\"active-textfield\" cols=\"50\" rows=\"3\" tabindex=\"1\">" . $escaper->escapeHtml($security_requirements) . "</textarea></div>";
+	echo '</div><div class="row-fluid"><div class="span5" id="SecurityRecommendationsTitle">';
 	echo $escaper->escapeHtml($lang['SecurityRecommendations']) .":</div>";
 	echo '<div class="span7">';
-	echo "<textarea name=\"security_recommendations\" id=\"active-textfield\" cols=\"50\" rows=\"3\" id=\"security_recommendations\">" . $escaper->escapeHtml($security_recommendations) . "</textarea></div>";
+	echo "<textarea name=\"security_recommendations\" id=\"active-textfield\" cols=\"50\" rows=\"3\" tabindex=\"1\">" . $escaper->escapeHtml($security_recommendations) . "</textarea></div>";
 	echo '</div><div class="row-fluid"><div class="span5">';
 	echo $escaper->escapeHtml($lang['SupportingDocumentation']) .":</div>";
 	echo '<div class="span7">';
-	// echo "<input type=\"file\" name=\"file\" />\n";
-	echo '<div class="file-uploader">';
-		echo '<label for="file-upload" class="btn" id="active-button">Choose File</label> <span class="file-count">0 Files Added</span>';
-		echo '<ul class="file-list">';
-
-		echo '</ul>';
-		echo '<input type="file" name="file" id="file-upload" class="hidden-file-upload" />';
-	echo '</div>';
+    supporting_documentation($id, "edit", 2);
 
 	echo "</div>";
 	echo '</div></div></div>';
@@ -1104,7 +1097,7 @@ function edit_review_submission($review, $next_step, $next_review, $comments)
 	echo '<div class="span7">';
 	create_dropdown("next_step", $next_step, NULL, true);
 	echo '</div></div><div class="row-fluid">';
-	echo '<div class="span5 text-right">';
+	echo '<div class="span5 text-right" id="CommentsTitle">';
 	echo $escaper->escapeHtml($lang['Comments']) .":</div>";
 
 	echo "<div class=\"span7\">\n";
@@ -2190,11 +2183,11 @@ function view_classic_help()
 			echo "<tr>\n";
 			echo "<td class=\"cal-text\">\n";
 			echo "<br /><p><b>How technically skilled is this group of threat agents?</b></p>\n";
-			echo "<p>1 = Security Penetration Skills</p>\n";
-			echo "<p>4 = Network and Programming Skills</p>\n";
-			echo "<p>6 = Advanced Computer User</p>\n";
-			echo "<p>7 = Some Technical Skills</p>\n";
-			echo "<p>9 = No Technical Skills</p>\n";
+			echo "<p>1 = No Technical Skills</p>\n";
+			echo "<p>3 = Some Technical Skills</p>\n";
+			echo "<p>5 = Advanced Computer User</p>\n";
+			echo "<p>6 = Network and Programming Skills</p>\n";
+			echo "<p>9 = Security Penetration Skills</p>\n";
 			echo "</td>\n";
 			echo "</tr>\n";
 			echo "</table>\n";
@@ -2306,6 +2299,7 @@ function view_classic_help()
 			echo "<br /><p><b>How much data could be disclosed and how sensitive is it?</b></p>\n";
 			echo "<p>2 = Minimal Non-Sensitive Data Disclosed</p>\n";
 			echo "<p>6 = Minimal Critical Data Disclosed</p>\n";
+			echo "<p>6 = Extensive Non-Sensitive Data Disclosed</p>\n";
 			echo "<p>7 = Extensive Critical Data Disclosed</p>\n";
 			echo "<p>9 = All Data Disclosed</p>\n";
 			echo "</td>\n";
@@ -3049,7 +3043,7 @@ function view_classic_help()
 											echo "});\n";
 											echo "setTimeout(function(){\n";
 											echo "$(\"#alert\").hide();\n";
-											echo "}, 2000);\n";
+											echo "}, 5000);\n";
 											echo "</script>\n";
 
 										endif;
@@ -3343,7 +3337,7 @@ function view_classic_help()
 								/******************************************
 								* FUNCTION: VIEW GET RISKS BY SELECTIONS *
 								******************************************/
-								function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false)
+								function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false)
 								{
 									global $lang;
 									global $escaper;
@@ -3532,6 +3526,18 @@ function view_classic_help()
 									<label for=\"AffectedAssets\">". $escaper->escapeHtml($lang['AffectedAssets']) ."</label>
 									</td>
 									</tr>\n";
+                                    echo "<tr>
+                                    <td>
+                                    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"risk_assessment\" id=\"RiskAssessment\"" . ($risk_assessment == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_risk_assessment()\" />
+                                    <label for=\"RiskAssessment\">". $escaper->escapeHtml($lang['RiskAssessment']) ."</label>
+                                    </td>
+                                    </tr>\n";
+									echo "<tr>
+									<td>
+									<input class=\"hidden-checkbox\" type=\"checkbox\" name=\"additional_notes\" id=\"AdditionalNotes\"" . ($additional_notes == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_additional_notes()\" />
+									<label for=\"AdditionalNotes\">". $escaper->escapeHtml($lang['AdditionalNotes']) ."</label>
+									</td>
+									</tr>\n";
 									echo "</table>\n";
 									echo "</div>\n";
 									echo "</div>\n";
@@ -3579,6 +3585,24 @@ function view_classic_help()
 									<label for=\"checkbox_mitigation_team\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</label>
 									</td>
 									</tr>\n";
+                                    echo "<tr>
+                                    <td>
+                                    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"current_solution\" id=\"CurrentSolution\"" . ($current_solution == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_current_solution()\" />
+                                    <label for=\"CurrentSolution\">". $escaper->escapeHtml($lang['CurrentSolution']) ."</label>
+                                    </td>
+                                    </tr>\n";
+                                    echo "<tr>
+                                    <td>
+                                    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"security_recommendations\" id=\"SecurityRecommendations\"" . ($security_recommendations == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_security_recommendations()\" />
+                                    <label for=\"SecurityRecommendations\">". $escaper->escapeHtml($lang['SecurityRecommendations']) ."</label>
+                                    </td>
+                                    </tr>\n";
+                                    echo "<tr>
+                                    <td>
+                                    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"security_requirements\" id=\"SecurityRequirements\"" . ($security_requirements == true ? " checked=\"yes\"" : "") . " onchange=\"javascript: check_security_requirements()\" />
+                                    <label for=\"SecurityRequirements\">". $escaper->escapeHtml($lang['SecurityRequirements']) ."</label>
+                                    </td>
+                                    </tr>\n";
 									echo "</table>\n";
 									echo "</div>\n";
 									echo "</div>\n";
@@ -3683,7 +3707,7 @@ function view_classic_help()
 
 																echo "<script>\n";
 																echo "  $(function() {\n";
-																	echo "    var availableAssets = [\n";
+																	echo "    availableAssets = [\n";
 
 																	// For each asset
 																	foreach ($assets as $asset)
@@ -3693,10 +3717,10 @@ function view_classic_help()
 																	}
 
 																	echo "    ];\n";
-																	echo "    function split( val ) {\n";
+																	echo "    split = function( val ) {\n";
 																	echo "      return val.split( /,\s*/ );\n";
 																	echo "    }\n";
-																	echo "    function extractLast( term ) {\n";
+																	echo "    extractLast = function ( term ) {\n";
 																		echo "      return split( term ).pop();\n";
 																		echo "    }\n";
 																		echo "    $( \"#assets\" )\n";

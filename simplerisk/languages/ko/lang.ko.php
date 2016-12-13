@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'검토 제출',
     'UnassignedRisks'=>'할당되지 않은 위험',
     'DisableRegistrationNotice'=>'안 등록주의 사항',
+    'UserPolicy'=>'사용자 정책',
+    'UseCaseSensitiveValidationOfUsername'=>'사용자 이름의 대 / 소문자 구분 유효성 검사 사용',
     ''=>'',
 );
 

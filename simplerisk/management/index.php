@@ -35,10 +35,11 @@ if (USE_DATABASE_FOR_SESSIONS == "true")
 session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 session_start('SimpleRisk');
 
+// Load CSRF Magic
+require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
 // Include the language file
 require_once(language_file());
-
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
 // Check for session timeout or renegotiation
 session_check();
@@ -156,9 +157,20 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   // If a file was submitted
   if (!empty($_FILES))
   {
-
-    // Upload any file that is submitted
-    upload_file($last_insert_id, $_FILES['file'], 1);
+    for($i=0; $i<count($_FILES['file']['name']); $i++){
+        if($_FILES['file']['error'][$i] || $i==0){
+           continue; 
+        }
+        $file = array(
+            'name' => $_FILES['file']['name'][$i],
+            'type' => $_FILES['file']['type'][$i],
+            'tmp_name' => $_FILES['file']['tmp_name'][$i],
+            'size' => $_FILES['file']['size'][$i],
+            'error' => $_FILES['file']['error'][$i],
+        );
+        // Upload any file that is submitted
+        upload_file($last_insert_id, $file, 1);
+    }
   }
 
   // If the notification extra is enabled
@@ -187,6 +199,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   <script src="../js/jquery-ui.min.js"></script>
   <script src="../js/bootstrap.min.js"></script>
   <script src="../js/cve_lookup.js"></script>
+  <script src="../js/common.js"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -354,8 +367,8 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     <div class="span7"><input maxlength="20" name="control_number" id="control_number" class="form-control" type="text"></div>
                   </div>
                   <div class="row-fluid">
-                    <div class="span5 text-right"><?php echo $escaper->escapeHtml($lang['AffectedAssets']); ?>:</div>
-                    <div class="span7"><div class="ui-widget"><textarea type="text" id="assets" name="assets" class="form-control"></textarea></div></div>
+                    <div class="span5 text-right" id="AffectedAssetsTitle"><?php echo $escaper->escapeHtml($lang['AffectedAssets']); ?>:</div>
+                    <div class="span7"><div class="ui-widget"><textarea type="text" id="assets" name="assets" class="assets" class="form-control" tabindex="1"></textarea></div></div>
                   </div>
                   <div class="row-fluid">
                     <div class="span5 text-right"><?php echo $escaper->escapeHtml($lang['Technology']); ?>:</div>
@@ -473,23 +486,23 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     </table>
                   </div>
                   <div class="row-fluid">
-                    <div class="span5 text-right"><?php echo $escaper->escapeHtml($lang['RiskAssessment']); ?>:</div>
-                    <div class="span7"><textarea name="assessment" cols="50" rows="3" id="assessment" class="form-control"></textarea></div>
+                    <div class="span5 text-right" id="RiskAssessmentTitle"><?php echo $escaper->escapeHtml($lang['RiskAssessment']); ?>:</div>
+                    <div class="span7"><textarea name="assessment" cols="50" rows="3" id="assessment" class="form-control" tabindex="1"></textarea></div>
                   </div>
                   <div class="row-fluid">
-                    <div class="span5 text-right"><?php echo $escaper->escapeHtml($lang['AdditionalNotes']); ?>:</div>
-                    <div class="span7"><textarea name="notes" cols="50" rows="3" id="notes" class="form-control"></textarea></div>
+                    <div class="span5 text-right" id="NotesTitle"><?php echo $escaper->escapeHtml($lang['AdditionalNotes']); ?>:</div>
+                    <div class="span7"><textarea name="notes" cols="50" rows="3" id="notes" class="form-control" tabindex="1"></textarea></div>
                   </div>
                   <div class="row-fluid">
                     <div class="wrap-text span5 text-right"><?php echo $escaper->escapeHtml($lang['SupportingDocumentation']); ?>:</div>
                     <div class="span7">
 
                       <div class="file-uploader">
-                        <label for="file-upload" class="btn">Choose File</label> <span class="file-count">0 Files Added</span>
+                        <label for="file-upload" class="btn">Choose File</label><span class="file-count-html"> <span class="file-count">0</span> File Added</span>
                         <ul class="file-list">
-
+                            
                         </ul>
-                        <input type="file" name="file" id="file-upload" class="hidden-file-upload" />
+                        <input type="file" id="file-upload" name="file[]" class="hidden-file-upload hide active" />
                       </div>
 
                     </div>
@@ -555,7 +568,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
             </div>
             <div class="row-fluid">
               <div class="span5 text-right"><?php echo $escaper->escapeHtml($lang['AffectedAssets']); ?>:</div>
-              <div class="span7"><div class="ui-widget"><textarea type="text" id="assets" name="assets" class="form-control" ></textarea></div></div>
+              <div class="span7"><div class="ui-widget"><textarea type="text" id="assets" name="assets" class="assets" class="form-control" tabindex="1"></textarea></div></div>
             </div>
             <div class="row-fluid">
               <div class="span5 text-right"><?php echo $escaper->escapeHtml($lang['Technology']); ?>:</div>
@@ -673,22 +686,22 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
             </div>
             <div class="row-fluid">
               <div class="span5 text-right"><?php echo $escaper->escapeHtml($lang['RiskAssessment']); ?>:</div>
-              <div class="span7"><textarea name="assessment" cols="50" rows="3" id="assessment" class="form-control"></textarea></div>
+              <div class="span7"><textarea name="assessment" cols="50" rows="3" id="assessment" class="form-control" tabindex="1"></textarea></div>
             </div>
             <div class="row-fluid">
               <div class="span5 text-right"><?php echo $escaper->escapeHtml($lang['AdditionalNotes']); ?>:</div>
-              <div class="span7"><textarea name="notes" cols="50" rows="3" id="notes" class="form-control"></textarea></div>
+              <div class="span7"><textarea name="notes" cols="50" rows="3" id="notes" class="form-control" tabindex="1"></textarea></div>
             </div>
             <div class="row-fluid">
               <div class="wrap-text span5 text-right"><?php echo $escaper->escapeHtml($lang['SupportingDocumentation']); ?>:</div>
               <div class="span7">
 
                   <div class="file-uploader">
-                    <label for="file-upload" class="btn">Choose File</label> <span class="file-count">0 Files Added</span>
+                    <label for="file-upload" class="btn">Choose File</label> <span class="file-count-html"> <span class="file-count">0</span> File Added</span>
                     <ul class="file-list">
 
                     </ul>
-                    <input type="file" name="file" id="file-upload" class="hidden-file-upload" />
+                    <input type="file" name="file[]" id="file-upload" class="hidden-file-upload hide active" />
                   </div>
 
               </div>
@@ -716,70 +729,83 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 <script>
 $(document).ready(function() {
 
-  window.onbeforeunload = function() {
-    if ($('#subject:enabled').val() != ''){
-      return "Are you sure you want to procced wihout save risk?";
+    window.onbeforeunload = function() {
+        if ($('#subject:enabled').val() != ''){
+            return "Are you sure you want to procced without saving the risk?";
+        }
     }
-  }
 
    $('#tab-content-container').delegate('input[type="reset"]', 'click', function (){
-      var getForm = $(this).parent().parent().parent().parent();
-      $('.hidden-file-upload',getForm).prev('label').text('');
-      $(getForm).find('.file-count').html('0 Files Added');
-      $(getForm).find('.file-list').html('');
+        var getForm = $(this).parent().parent().parent().parent();
+        $('.hidden-file-upload',getForm).prev('label').text('');
+        $(getForm).find('.file-count-html').html('<span class="file-count">0</span> File Added');
+        $(getForm).find('.file-list').html('');
    })
 
-  var length = $('.tab-close').length;
-  if (length == 1){
-    $('.tab-show button').hide();
-  }
+    var length = $('.tab-close').length;
+    if (length == 1){
+        $('.tab-show button').hide();
+    }
+    
 
-  $(document).on('change', '.hidden-file-upload', function(event) {
-    event.preventDefault();
+    $("div#tabs").tabs();
+    $("div#add-tab").click(function() {
+    
+        $('.tab-show button').show();
+        var num_tabs = $("div.container-fluid div.new").length + 1;
+        var form = $('#tab-append-div').html();
 
-    var $parent = $(this).parents('.file-uploader');
-    var files = $(this)[0].files;
-    if(files.length > 1){ $msg = files.length+" Files Added"; }else{ $msg = "1 File Added"; }
-    $($parent).find('.file-count').html($msg);
+        $('.tab-show').removeClass('selected');
+        $("div.tab-append").prepend(
+          "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span>New Risk ("+num_tabs+")</span></div>"
+          +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
+          +"<i class='fa fa-close'></i>"
+          +"</button>"
+          +"</div>"
+        );
+        $('.tab-data').css({'display':'none'});
+        $("#tab-content-container").append(
+          "<div class='tab-data' id='tab-container"+num_tabs+"'>"+form+"</div>"
+        );
 
-    var files = $(this)[0].files;
+        $("#tab-container"+num_tabs)
+        .find('.file-uploader label').attr('for', 'file_upload'+num_tabs);
 
-    $(files).each(function(index, el) {
-      var $file = "<li>"+el.name+"</li>";
-      $($parent).find('.file-list').html($file);
-    });
+            $("#tab-container"+num_tabs)
+              .find('.hidden-file-upload')
+              .attr('id', 'file_upload'+num_tabs)
+              .prev('label').attr('for', 'file_upload'+num_tabs);
 
-    var fileName = $(this).val();
-    $(this).prev('label').text(fileName);
-
-  });
-
-  $("div#tabs").tabs();
-  $("div#add-tab").click(function() {
-    $('.tab-show button').show();
-    var num_tabs = $("div.container-fluid div.new").length + 1;
-    var form = $('#tab-append-div').html();
-
-    $('.tab-show').removeClass('selected');
-    $("div.tab-append").prepend(
-      "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span>New Risk ("+num_tabs+")</span></div>"
-      +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
-      +"<i class='fa fa-close'></i>"
-      +"</button>"
-      +"</div>"
-    );
-    $('.tab-data').css({'display':'none'});
-    $("#tab-content-container").append(
-      "<div class='tab-data' id='tab-container"+num_tabs+"'>"+form+"</div>"
-    );
-
-    $("#tab-container"+num_tabs)
-    .find('.file-uploader label').attr('for', 'file_upload'+num_tabs);
-
-    $("#tab-container"+num_tabs)
-      .find('.hidden-file-upload')
-      .attr('id', 'file_upload'+num_tabs)
-      .prev('label').attr('for', 'file_upload'+num_tabs);
+        $( "#tab-container"+num_tabs +" .assets" )
+          .bind( "keydown", function( event ) {
+            if ( event.keyCode === $.ui.keyCode.TAB && $( this ).autocomplete( "instance" ).menu.active ) {
+              event.preventDefault();
+            }
+          })
+          .autocomplete({
+                minLength: 0,
+                source: function( request, response ) {
+                // delegate back to autocomplete, but extract the last term
+                response( $.ui.autocomplete.filter(
+                availableAssets, extractLast( request.term ) ) );
+              },
+              focus: function() {
+                // prevent value inserted on focus
+                return false;
+              },
+              select: function( event, ui ) {
+                var terms = split( this.value );
+                // remove the current input
+                terms.pop();
+                // add the selected item
+                terms.push( ui.item.value );
+                // add placeholder to get the comma-and-space at the end
+                terms.push( "" );
+                this.value = terms.join( ", " );
+                return false;
+              }
+          });
+  
   });
 
 
@@ -805,49 +831,94 @@ $(document).ready(function() {
       return false;
     }
   });
-
-  $('#tab-content-container').delegate('.save-risk-form', 'click', function (){
-    var that = this;
-    var getForm = $(this).parent().parent().parent().parent();
+  
+  function submitRisk($this){
+    var getForm = $this.parent().parent().parent().parent();
     var div = getForm.parent().parent();
     var index = parseInt((div).attr('id').replace(/[A-Za-z$-]/g, ""));
     var form = new FormData($(getForm)[0]);
+    $.each($("input[type=file]"), function(i, obj) {
+        $.each(obj.files,function(j, file){
+            form.append('file['+j+']', file);
+        })
+    });
+    console.log(form)
     $('#show-alert').html('');
     $.ajax({
-      type: "POST",
-      url: "index.php",
-      data: form,
-      async: false,
-      cache: false,
-      contentType: false,
-      processData: false,
-      success: function(data){
-        var message = $(data).filter('#alert');
-        var risk_id = $(data).filter('#risk_hid_id');
+        type: "POST",
+        url: "index.php",
+        data: form,
+        async: true,
+        cache: false,
+        contentType: false,
+        processData: false,
+        success: function(data){
+            var message = $(data).filter('#alert');
+            var risk_id = $(data).filter('#risk_hid_id');
 
-        $('#show-alert').append(message);
-        if (message[0].innerText != 'The subject of a risk cannot be empty.'){
-          if (isNaN(index)){
-            var subject = $('input[name="subject"]', getForm).val();
-            var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-            $('#tab span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+subject);
-            //$('#tab span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+$('input[name="subject"]', getForm).val());
-          } else {
-            var subject = escapeHtml($('input[name="subject"]', getForm).val());
-            var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").rep
-lace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-            $('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+subject);
-            //$('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+$('input[name="subject"]', getForm).val());
-          }
-          $('input, select, textarea', getForm).prop('disabled', true);
-          $(that).prop('disabled', true);
-        } else {
-          $(that).removeAttr('disabled');
+            $('#show-alert').append(message);
+            if (message[0].innerText != 'The subject of a risk cannot be empty.'){
+                if (isNaN(index)){
+                    var subject = $('input[name="subject"]', getForm).val();
+                    var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                    $('#tab span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+subject);
+                    //$('#tab span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+$('input[name="subject"]', getForm).val());
+                } else {
+                    var subject = $('input[name="subject"]', getForm).val();
+                    var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                    $('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+subject);
+                    //$('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+$('input[name="subject"]', getForm).val());
+                }
+                $('input, select, textarea', getForm).prop('disabled', true);
+                $this.prop('disabled', true);
+            } else {
+                $this.removeAttr('disabled');
+            }
         }
-      }
-    });
+    })
+    .fail(function(xhr, textStatus){
+        var obj = $('<div/>').html(xhr.responseText);
+        var token = obj.find('input[name="__csrf_magic"]').val();
+        if(token){
+            $('input[name="__csrf_magic"]').val(token);
+            submitRisk($this);
+        }
+    })
+    ;
+      
+  }
+
+  $('#tab-content-container').delegate('.save-risk-form', 'click', function (){
+    submitRisk($(this));
   })
 });
+</script>
+<script>
+/*
+* Function to add the css class for textarea title and make it popup.
+* Example usage:
+* focus_add_css_class("#foo", "#bar");
+*/
+function focus_add_css_class(id_of_text_head, text_area_id){
+    look_for = "textarea" + text_area_id;
+    console.log(look_for);
+    if( !$(look_for).length ){
+        text_area_id = text_area_id.replace('#','');
+        look_for = "textarea[name=" + text_area_id;
+    }
+    $(look_for).focusin(function() {
+      $(id_of_text_head).addClass("affected-assets-title");
+    });
+    $(look_for).focusout(function() {
+      $(id_of_text_head).removeClass("affected-assets-title");
+    });
+}
+$(document).ready(function() {
+    focus_add_css_class("#AffectedAssetsTitle", "#assets");
+    focus_add_css_class("#RiskAssessmentTitle", "#assessment");
+    focus_add_css_class("#NotesTitle", "#notes");
+});
+
 </script>
 </body>
 </html>

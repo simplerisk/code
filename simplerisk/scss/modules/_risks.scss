@@ -159,7 +159,7 @@
   margin-bottom: 30px;
 
   @media only screen and (min-width : 320px) {
-    input[type="text"]{
+    input[type="text"], textarea, textarea.form-control {
       width: 100%;
       max-width: 100%;
     }
@@ -167,7 +167,7 @@
 
    @media only screen and (min-width : 1816px) {
 
-   input[type="text"]{
+   input[type="text"], textarea, textarea.form-control {
      max-width: 99%;
    }
 
@@ -175,7 +175,7 @@
 
   @media only screen and (min-width : 1919px) {
 
-   input[type="text"]{
+   input[type="text"], textarea, textarea.form-control {
      max-width: 97.5%;
    }
 

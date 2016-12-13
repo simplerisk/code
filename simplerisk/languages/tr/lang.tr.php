@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'Yorum Gönder',
     'UnassignedRisks'=>'Atanmamış Riskler',
     'DisableRegistrationNotice'=>'Devre Dışı Kayıt Bildirimi',
+    'UserPolicy'=>'Kullanıcı Politikası',
+    'UseCaseSensitiveValidationOfUsername'=>'Kullanıcı Adı İçin Büyük / Küçük Harf Geçerli Doğrulama kullanın',
     ''=>'',
 );
 

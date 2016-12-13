@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'提交评论',
     'UnassignedRisks'=>'未分配风险',
     'DisableRegistrationNotice'=>'禁用注册通知',
+    'UserPolicy'=>'用戶策略',
+    'UseCaseSensitiveValidationOfUsername'=>'使用用戶名的大小寫敏感驗證',
     ''=>'',
 );
 

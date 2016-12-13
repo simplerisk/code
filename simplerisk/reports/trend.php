@@ -82,7 +82,7 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
       </div>
       <div class="span9">
         <div class="row-fluid">
-          <?php get_risk_trend($escaper->escapeHtml($lang['RisksOpenedAndClosedOverTime'])); ?>
+          <?php get_risk_trend(js_string_escape($lang['RisksOpenedAndClosedOverTime'])); ?>
         </div>
       </div>
     </div>

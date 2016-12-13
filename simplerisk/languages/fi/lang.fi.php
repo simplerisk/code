@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'Lähetä Arvostelu',
     'UnassignedRisks'=>'Unassigned Riskit',
     'DisableRegistrationNotice'=>'Poista Rekisteröinti Notice',
+    'UserPolicy'=>'Käyttäjän Policy',
+    'UseCaseSensitiveValidationOfUsername'=>'Käytä Asia Sensitive validointi Käyttäjätunnus',
     ''=>'',
 );
 

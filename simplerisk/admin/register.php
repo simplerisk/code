@@ -165,144 +165,48 @@
 		{
 	                // Download the extra
         	        $result = download_extra("upgrade");
-
-                        // If the installation failed
-                        if ($result == 0)
-                        {
-				// Display an alert
-				set_alert(true, "bad", "There was a problem installing the Upgrade Extra.");
-                        }
-                        else
-                        {
-				// Display an alert
-				set_alert(true, "good", "Upgrade Extra installed successfully.");
-                        }
 		}
 		// If the user wants to install the Authentication Extra
 		else if (isset($_POST['get_authentication_extra']))
 		{
                 	// Download the extra
                 	$result = download_extra("authentication");
-
-                        // If the installation failed
-                        if ($result == 0)
-                        {
-				// Display an alert
-				set_alert(true, "bad", "There was a problem installing the Custom Authentication Extra.");
-                        }
-                        else
-                        {
-				// Display an alert
-				set_alert(true, "good", "Custom Authentication Extra installed successfully.");
-                        }
 		}
 		// If the user wants to install the Encryption Extra
 		else if (isset($_POST['get_encryption_extra']))
 		{
 	                // Download the extra
         	        $result = download_extra("encryption");
-
-                        // If the installation failed
-                        if ($result == 0)
-                        {
-				// Display an alert
-				set_alert(true, "bad", "There was a problem installing the Encrypted Database Extra.");
-                        }
-                        else
-                        {
-				// Display an alert
-				set_alert(true, "good", "Encrypted Database Extra installed successfully.");
-                        }
 		}
 		// If the user wants to install the Import-Export Extra
 		else if (isset($_POST['get_importexport_extra']))
 		{
 	                // Download the extra
         	        $result = download_extra("import-export");
-
-                        // If the installation failed
-                        if ($result == 0)
-                        {
-				// Display an alert
-				set_alert(true, "bad", "There was a problem installing the Import/Export Extra.");
-                        }
-                        else
-                        {
-				// Display an alert
-				set_alert(true, "good", "Import/Export Extra installed successfully.");
-                        }
 		}
 		// If the user wants to install the Notification Extra
 		else if (isset($_POST['get_notification_extra']))
 		{
 	                // Download the extra
         	        $result = download_extra("notification");
-
-                        // If the installation failed
-                        if ($result == 0)
-                        {
-				// Display an alert
-				set_alert(true, "bad", "There was a problem installing the E-mail Notification Extra.");
-                        }
-                        else
-                        {
-				// Display an alert
-				set_alert(true, "good", "E-mail Notification Extra installed successfully.");
-                        }
 		}
 		// If the user wants to install the Separation Extra
 		else if (isset($_POST['get_separation_extra']))
 		{
 	                // Download the extra
         	        $result = download_extra("separation");
-
-                        // If the installation failed
-                        if ($result == 0)
-                        {
-				// Display an alert
-				set_alert(true, "bad", "There was a problem installing the Team-Based Separation Extra.");
-                        }
-                        else
-                        {
-				// Display an alert
-				set_alert(true, "good", "Team-Based Separation Extra installed successfully.");
-                        }
 		}
                 // If the user wants to install the Risk Assessments Extra
                 else if (isset($_POST['get_assessments_extra']))
                 {
                         // Download the extra
                         $result = download_extra("assessments");
-
-                        // If the installation failed
-                        if ($result == 0)
-                        {
-                                // Display an alert
-                                set_alert(true, "bad", "There was a problem installing the Risk Assessments Extra.");
-                        }
-                        else
-                        {
-                                // Display an alert
-                                set_alert(true, "good", "Risk Assessments Extra installed successfully.");
-                        }
                 }
                 // If the user wants to install the API Extra
                 else if (isset($_POST['get_api_extra']))
                 {
                         // Download the extra
                         $result = download_extra("api");
-
-                        // If the installation failed
-                        if ($result == 0)
-                        {
-                                // Display an alert
-                                set_alert(true, "bad", "There was a problem installing the API Extra.");
-                        }
-                        else
-                        {
-                                // Display an alert
-                                set_alert(true, "good", "API Extra installed successfully.");
-                        }
                 }
 	}
 ?>

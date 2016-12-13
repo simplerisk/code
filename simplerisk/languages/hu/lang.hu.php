@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'Vélemény Elküldése',
     'UnassignedRisks'=>'Függetlenek Kockázatok',
     'DisableRegistrationNotice'=>'Letiltása Regisztráció Közlemény',
+    'UserPolicy'=>'Felhasználási Feltételek',
+    'UseCaseSensitiveValidationOfUsername'=>'Használja nagybetű érvényesítése Felhasználónév',
     ''=>'',
 );
 

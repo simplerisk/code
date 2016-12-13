@@ -367,13 +367,37 @@ if ((isset($_POST['submit'])) && $plan_mitigations)
     // Update the mitigation
     update_mitigation($id, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
   }
+  
+        refresh_files_for_risk($_POST['unique_names'], $id-1000, 2);
+    $error = 1;
+    // If a file was submitted
+    if (!empty($_FILES))
+    {
+      // Upload any file that is submitted
+        for($i=0; $i<count($_FILES['file']['name']); $i++){
+            if($_FILES['file']['error'][$i] || $i==0){
+               continue; 
+            }
+            $file = array(
+                'name' => $_FILES['file']['name'][$i],
+                'type' => $_FILES['file']['type'][$i],
+                'tmp_name' => $_FILES['file']['tmp_name'][$i],
+                'size' => $_FILES['file']['size'][$i],
+                'error' => $_FILES['file']['error'][$i],
+            );
+            // Upload any file that is submitted
+            $error = upload_file($id-1000, $file, 2);
+            if($error != 1){
+                /**
+                * If error, stop uploading files;
+                */
+                break;
+            }
+        }
+      
+//      $error = upload_file($id-1000, $_FILES['file'], 2);
+    }
 
-  // If a file was submitted
-  if (!empty($_FILES))
-  {
-    // Upload any file that is submitted
-    $error = upload_file($id-1000, $_FILES['file'], 2);
-  }
   // Otherwise, success
   else $error = 1;
 
@@ -393,6 +417,7 @@ if ((isset($_POST['submit'])) && $plan_mitigations)
   <script src="../js/jquery-ui.min.js"></script>
   <script src="../js/bootstrap.min.js"></script>
   <script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
+  <script src="../js/common.js"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -542,7 +567,7 @@ if ((isset($_POST['submit'])) && $plan_mitigations)
                     <?php view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact); ?>
                   </div>
                   <div id="tabs2">
-                    <?php edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations); ?>
+                    <?php edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $id); ?>
                   </div>
                   <div id="tabs3">
                     <?php view_review_details($id, $review_date, $reviewer, $review, $next_step, $next_review, $comments); ?>
@@ -641,25 +666,25 @@ if ((isset($_POST['submit'])) && $plan_mitigations)
 
   
             
-    $(document).on('change', '.hidden-file-upload', function(event) {
-      event.preventDefault();
+//    $(document).on('change', '.hidden-file-upload', function(event) {
+//      event.preventDefault();
 
-      var $parent = $(this).parents('.file-uploader');
-      var files = $(this)[0].files;
-      if(files.length > 1){ $msg = files.length+" Files Added"; }else{ $msg = "1 File Added"; }
-      $($parent).find('.file-count').html($msg);
+//      var $parent = $(this).parents('.file-uploader');
+//      var files = $(this)[0].files;
+//      if(files.length > 1){ $msg = files.length+" Files Added"; }else{ $msg = "1 File Added"; }
+//      $($parent).find('.file-count').html($msg);
 
-      var files = $(this)[0].files;
+//      var files = $(this)[0].files;
 
-      $(files).each(function(index, el) {
-        var $file = "<li>"+el.name+"</li>";
-        $($parent).find('.file-list').html($file);
-      });
+//      $(files).each(function(index, el) {
+//        var $file = "<li>"+el.name+"</li>";
+//        $($parent).find('.file-list').html($file);
+//      });
 
-      var fileName = $(this).val();
-      $(this).prev('label').text(fileName);
+//      var fileName = $(this).val();
+//      $(this).prev('label').text(fileName);
 
-    });
+//    });
 
       $("#tabs" ).tabs({
           activate:function(event,ui){
@@ -681,24 +706,62 @@ if ((isset($_POST['submit'])) && $plan_mitigations)
       });
       $("#tabs").tabs({ active: 1});
 
-    $('.collapsible').hide();
+      $('.collapsible--toggle span').click(function(event) {
+        event.preventDefault();
+        $(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
+        $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
+      });
 
-    $('.collapsible--toggle span').click(function(event) {
-      event.stopPropagation()
-      event.preventDefault();
-      $(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
-      $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
-    });
+      $('.add-comments').click(function(event) {
+        event.preventDefault();
+        $(this).parents('.collapsible--toggle').next('.collapsible').slideDown('400');
+        $(this).toggleClass('rotate');
+        $('#comment').fadeToggle('100');
+        $(this).parent().find('span i').removeClass('fa-caret-right');
+        $(this).parent().find('span i').addClass('fa-caret-down');
+      });
 
-    $('.add-comments').click(function(event) {
-      event.preventDefault();
-      $(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
-      $(this).toggleClass('rotate');
-      $('#comment').fadeToggle('100');
-    });
+        $('.collapsible').hide();
+
+      $(".add-comment-menu").click(function(event){
+        event.preventDefault();
+        $commentsContainer = $("#comment").parents('.well');
+        $commentsContainer.find(".collapsible--toggle").next('.collapsible').slideDown('400');
+        $commentsContainer.find(".add-comments").addClass('rotate');
+        $('#comment').show();
+        $commentsContainer.find(".add-comments").parent().find('span i').removeClass('fa-caret-right');
+        $commentsContainer.find(".add-comments").parent().find('span i').addClass('fa-caret-down');
+        $("#comment-text").focus();
+      })
 
 
 
   });
   </script>
+  <script>
+  /*
+  * Function to add the css class for textarea title and make it popup.
+  * Example usage:
+  * focus_add_css_class("#foo", "#bar");
+  */
+  function focus_add_css_class(id_of_text_head, text_area_id){
+      look_for = "textarea" + text_area_id;
+      console.log(look_for);
+      if( !$(look_for).length ){
+          text_area_id = text_area_id.replace('#','');
+          look_for = "textarea[name=" + text_area_id;
+      }
+      $(look_for).focusin(function() {
+          $(id_of_text_head).addClass("affected-assets-title");
+      });
+      $(look_for).focusout(function() {
+          $(id_of_text_head).removeClass("affected-assets-title");
+      });
+  }
+  $(document).ready(function() {
+      focus_add_css_class("#SecurityRequirementsTitle", "#security_requirements");
+      focus_add_css_class("#CurrentSolutionTitle", "#current_solution");
+      focus_add_css_class("#SecurityRecommendationsTitle", "#security_recommendations");
+  });
+</script>
   </html>

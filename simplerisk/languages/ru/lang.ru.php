@@ -497,6 +497,8 @@ $lang = array(
     'SubmitReview'=>'добавить отзыв',
     'UnassignedRisks'=>'Нераспределенные Риски',
     'DisableRegistrationNotice'=>'Отключить регистрации Примечание',
+    'UserPolicy'=>'Политика пользователя',
+    'UseCaseSensitiveValidationOfUsername'=>'Use Case Sensitive Валидация Имя пользователя',
     ''=>'',
 );
 
