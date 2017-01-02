@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Deaktiver Registrering Meddelelse',
     'UserPolicy'=>'Bruger Politik',
     'UseCaseSensitiveValidationOfUsername'=>'Brug Case Sensitive Validering af Brugernavn',
+    'MitigationPlanning'=>'Planlagt Mitigation Dato',
+    'AssetDetails'=>'Asset Detaljer',
+    'RiskList'=>'Risk List',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Er du sikker på at du vil lukke risikoen? Alle ændringer vil gå tabt!',
+    'MinimumPasswordAge' => 'Minimum Password Age',
+    'MaximumPasswordAge' => 'Maksimal Password Age',
+    'MaximumAttemptsLockout' => 'Maksimum Forsøg Lockout',
+    'MaximumAttemptsLockoutTime' => 'Maksimum Forsøg Lockout Tid',
+    'attempts'=>'forsøg',
+    'minutes'=>'minutter',
+    'AccountLockedOut'=>'Konto låst ude',
+    'AccountLockoutPolicy'=>'Konto Lockout Policy',
     ''=>'',
 );
 

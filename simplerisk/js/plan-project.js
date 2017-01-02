@@ -86,7 +86,7 @@ jQuery(document).ready(function($){
             //return false;
             $('#show-alert').html('');
             $.ajax({
-              url: '/management/plan-projects.php',
+              url: 'plan-projects.php',
               type: 'POST',
               data: {update_order: true, project_ids : order},
               success : function (data){
@@ -128,7 +128,7 @@ jQuery(document).ready(function($){
           var status = $(this).attr('data-status');
           $('#show-alert').html('');
           $.ajax({
-            url: '/management/plan-projects.php',
+            url: 'plan-projects.php',
             type: 'POST',
             data: {update_project_status: true, project_id : project_id, status:status},
             success : function (data){
@@ -157,7 +157,7 @@ jQuery(document).ready(function($){
           $('#show-alert').html('');
 
         $.ajax({
-          url: '/management/plan-projects.php',
+          url: 'plan-projects.php',
           type: 'POST',
           data: {update_projects: true, risk_id : risk_id, project_id : project_id},
           success : function (data){
@@ -193,7 +193,7 @@ jQuery(document).ready(function($){
       var project_id = $(form).find('input');
       $('#show-alert').html('');
         $.ajax({
-          url: '/management/plan-projects.php',
+          url: 'plan-projects.php',
           type: 'POST',
           data: {delete_project: true, project_id : project_id[0]['value']},
           success : function (data){
@@ -219,7 +219,7 @@ jQuery(document).ready(function($){
       };
 
       $.ajax({
-        url: '/management/plan-projects.php',
+        url: 'plan-projects.php',
         type: 'POST',
         data: {add_project: true, new_project : projectName},
         success : function (data){

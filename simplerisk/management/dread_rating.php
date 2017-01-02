@@ -6,7 +6,7 @@
         // Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-	require_once(realpath(__DIR__ . '/../includes/display.php'));
+	    require_once(realpath(__DIR__ . '/../includes/display.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -30,8 +30,13 @@
         }
 
         // Start the session
-	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-        session_start('SimpleRisk');
+	    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
+        if (!isset($_SESSION))
+        {
+        	session_name('SimpleRisk');
+        	session_start();
+        }
 
         // Include the language file
         require_once(language_file());
@@ -51,37 +56,49 @@
 
 <html>
 <head>
-<title>SimpleRisk DREAD Calculator</title>
-<link rel="stylesheet" type="text/css" href="../css/style.css">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link href="../css/front-style.css" rel="stylesheet" type="text/css">
-<script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
-<script language="javascript" src="../js/dread_scoring.js" type="text/javascript"></script>
-<script type="text/javascript" language="JavaScript">
-  <!--
-  var parent_window = window.opener;
+    <title>SimpleRisk DREAD Calculator</title>
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link href="../css/front-style.css" rel="stylesheet" type="text/css">
+    <script src="../js/jquery.min.js"></script>
+    <script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
+    <script language="javascript" src="../js/dread_scoring.js" type="text/javascript"></script>
+    <script type="text/javascript" language="JavaScript">
+      <!--
+      var parent_window = window.opener;
+      
+      $(document).ready(function(){
+          // Initialize values for elements
 
-  function dreadSubmit() {
-    if (parent_window && !parent_window.closed) {
-      parent_window.document.getElementById('DREADDamage').value=this.document.getElementById('DamagePotential').value;
-      parent_window.document.getElementById('DREADReproducibility').value=this.document.getElementById('Reproducibility').value;
-      parent_window.document.getElementById('DREADExploitability').value=this.document.getElementById('Exploitability').value;
-      parent_window.document.getElementById('DREADAffectedUsers').value=this.document.getElementById('AffectedUsers').value;
-      parent_window.document.getElementById('DREADDiscoverability').value=this.document.getElementById('Discoverability').value;
-    }
-  }
+            $("#DamagePotential").val(parent_window.$("#DREADDamage", parent_window.parentOfScores).val());
+            $("#Reproducibility").val(parent_window.$("#DREADReproducibility", parent_window.parentOfScores).val());
+            $("#Exploitability").val(parent_window.$("#DREADExploitability", parent_window.parentOfScores).val());
+            $("#AffectedUsers").val(parent_window.$("#DREADAffectedUsers", parent_window.parentOfScores).val());
+            $("#Discoverability").val(parent_window.$("#DREADDiscoverability", parent_window.parentOfScores).val());
+            updateScore();
+      })
 
-  function closeWindow() {
-    window.opener.closepopup();
-  }
+      function dreadSubmit() {
+        if (parent_window && !parent_window.closed) {
+            parent_window.$("#DREADDamage", parent_window.parentOfScores).val( $("#DamagePotential").val() )
+            parent_window.$("#DREADReproducibility", parent_window.parentOfScores).val( $("#Reproducibility").val() )
+            parent_window.$("#DREADExploitability", parent_window.parentOfScores).val( $("#Exploitability").val() )
+            parent_window.$("#DREADAffectedUsers", parent_window.parentOfScores).val( $("#AffectedUsers").val() )
+            parent_window.$("#DREADDiscoverability", parent_window.parentOfScores).val( $("#Discoverability").val() )
+        }
+      }
 
-  function submitandclose() {
-    dreadSubmit();
-    closeWindow();
-  }
+      function closeWindow() {
+        window.opener.closepopup();
+      }
 
-  // -->
-</script>
+      function submitandclose() {
+        dreadSubmit();
+        closeWindow();
+      }
+
+      // -->
+    </script>
 </head>
 
 <body topmargin="0" bottommargin="4" leftmargin="0" rightmargin="0" ><form name="frmCalc" method="post" action="" >

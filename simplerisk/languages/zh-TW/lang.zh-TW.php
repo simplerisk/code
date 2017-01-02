@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'禁用注册通知',
     'UserPolicy'=>'用戶策略',
     'UseCaseSensitiveValidationOfUsername'=>'使用用戶名的大小寫敏感驗證',
+    'MitigationPlanning'=>'計劃減免日期',
+    'AssetDetails'=>'資產詳細信息',
+    'RiskList'=>'風險列表',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'您確定要關閉風險嗎？ 所有更改將丟失！',
+    'MinimumPasswordAge' => '最低密碼期限',
+    'MaximumPasswordAge' => '最大密碼期限',
+    'MaximumAttemptsLockout' => '最大嘗試鎖定',
+    'MaximumAttemptsLockoutTime' => '最大嘗試鎖定時間',
+    'attempts'=>'嘗試',
+    'minutes'=>'分鐘',
+    'AccountLockedOut'=>'帳戶已鎖定',
+    'AccountLockoutPolicy'=>'帳戶鎖定策略',
     ''=>'',
 );
 

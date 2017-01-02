@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'無効に登録通知',
     'UserPolicy'=>'ユーザーポリシー',
     'UseCaseSensitiveValidationOfUsername'=>'ユーザー名の大文字と小文字を区別する検証',
+    'MitigationPlanning'=>'計画された緩和日',
+    'AssetDetails'=>'資産の詳細',
+    'RiskList'=>'リスクリスト',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'あなたは本当にリスクを閉じたいですか？ すべての変更は失われます！',
+    'MinimumPasswordAge' => 'パスワードの最小有効期間',
+    'MaximumPasswordAge' => 'パスワードの最大使用期間',
+    'MaximumAttemptsLockout' => '最大試行回数のロックアウト',
+    'MaximumAttemptsLockoutTime' => '最大試行回数ロックアウト時間',
+    'attempts'=>'試み',
+    'minutes'=>'分',
+    'AccountLockedOut'=>'アカウントロックアウト',
+    'AccountLockoutPolicy'=>'アカウントロックアウトポリシー',
     ''=>'',
 );
 

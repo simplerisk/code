@@ -11,7 +11,7 @@
 }
 
 .tab-data{
-  padding-top: 38px;
+  padding-top: 51px;
 }
 
 
@@ -54,6 +54,73 @@
 }
 
 .risk-details{
+    *{
+        color: inherit;
+    }
+    &.ui-corner-all, &.ui-corner-bottom, &.ui-corner-right, &.ui-corner-br{
+        border: 0px;
+        background: transparent;
+        color: inherit;
+    }
+    &.ui-widget{
+        font-family: inherit;
+        font-size: inherit;
+    }
+    &.ui-tabs{
+        padding: inherit;
+    }
+    .ui-widget-header{
+        border: 0px;
+        background: inherit;
+        color: inherit;
+        font-weight: inherit;
+    }
+    
+    .ui-tabs-nav{
+        padding: inherit;
+    }
+    
+    .ui-widget-content{
+        border: 0px;
+    }
+    
+    .ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active{
+        border: 0px;
+        background: inherit;
+        font-weight: inherit;
+        color: inherit;
+    }
+    
+    .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default{
+        border: 0px;
+        background: inherit;
+        font-weight: inherit;
+        color: inherit
+    }
+    
+    input,  select,  textarea,  button{
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+    }
+    
+    .ui-tabs-nav li.ui-tabs-active{
+        padding-bottom: 10px;
+    }
+    
+    .ui-tabs-nav li a{
+        padding: 0px;
+        float: none;
+    }
+    
+    .ui-tabs-nav li{
+        margin: 0px;
+    }
+    
+    .ui-tabs-panel{
+        padding: 0px;
+    }
+    
   .tabs-nav{
     @extend .reset;
     margin: 20px 0;
@@ -100,6 +167,9 @@
   position: absolute;
   top: 20px;
   right: 0px;
+	.on-edit{
+/*		display: none;*/
+	}
 
 }
 
@@ -110,7 +180,7 @@
 
 
 .risk-session.overview{
-  margin-top: 53px;
+/*  margin-top: 53px;*/
 
   .score{
     margin-bottom: 20px;
@@ -197,7 +267,7 @@
 }
 
 #risk-submit-form{
-  margin-top: 14px;
+/*  margin-top: 14px;*/
 }
 
 .risk-form-actions{
@@ -273,5 +343,19 @@ div.doc-link {
 
     &.edit-mode{
       margin-left: 10px;
+    }
+}
+#risk-table-container{
+    padding-bottom: 50px;
+    .risk-datatable{
+        &.table-bordered{
+            margin-bottom: 0px;
+        }
+         thead th{
+            border-bottom: 0px;
+        }
+    }
+    .dataTables_wrapper.no-footer .dataTables_scrollBody{
+        border-bottom: 0px;
     }
 }

@@ -31,7 +31,12 @@
 
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-        session_start('SimpleRisk');
+
+        if (!isset($_SESSION))
+        {
+        	session_name('SimpleRisk');
+        	session_start();
+        }
 
         // Include the language file
         require_once(language_file());
@@ -132,7 +137,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" media="screen" />
+<!--    <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" media="screen" />-->
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
 
     <link rel="stylesheet" href="../css/divshot-util.css">
@@ -156,18 +161,11 @@
           <div class="row-fluid">
               <?php view_top_table($id, $calculated_risk, $subject, $status, false); ?>
           </div>
-          <div class="row-fluid">
-            <div class="well">
-              <form name="add_comment" method="post" action="">
-                <?php
-        			echo $escaper->escapeHtml($lang['SetRiskStatusTo']);
-        			echo "&nbsp;&nbsp;";
-        			create_dropdown("status");
-        			echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Update']) . "\" name=\"update_status\" />\n";
-        		?>
-              </form>
-            </div>
-          </div>
+          
+          <?php 
+              include(realpath(__DIR__ . '/partials/changestatus.php'));
+          ?>
+          
         </div>
       </div>
     </div>

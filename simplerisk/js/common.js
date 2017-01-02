@@ -1,3 +1,9 @@
+/**
+* When a file is added, should call this method
+* 
+* @param $parent
+* @param currentButtonId: button ID for input[type=file].active
+*/
 function refreshFilelist($parent, currentButtonId){
     var files = $("input[type=file]", $parent);
 
@@ -24,10 +30,63 @@ function refreshFilelist($parent, currentButtonId){
     }
     $($parent).find('.file-count-html').html($msg);
     if(currentButtonId){
-        $parent.prepend($('<input id="'+currentButtonId+'" name="file[]" class="hidden-file-upload hide active" type="file">'))
+        $parent.prepend($('<input id="'+currentButtonId+'" name="file[]" class="hidden-file-upload active" type="file">'))
     }
     
 }
+/**
+* popup when click "Score Using CVSS"
+* 
+* @param parent
+*/
+function popupcvss(parent)
+{
+    parentOfScores = parent;
+    
+    var cve_id = $("#reference_id", parent).val();
+    var pattern = /cve\-\d{4}-\d{4}/i;
+
+    // If the field is a CVE ID
+    if (cve_id.match(pattern))
+    {
+        my_window = window.open('cvss_rating.php?cve_id='+ cve_id ,'popupwindow','width=850,height=680,menu=0,status=0');
+    }
+    else my_window = window.open('cvss_rating.php','popupwindow','width=850,height=680,menu=0,status=0');
+    
+}
+
+/**
+* popup when click "Score Using DREAD"
+* 
+*/
+function popupdread(parent)
+{
+    parentOfScores = parent;
+    my_window = window.open('dread_rating.php','popupwindow','width=660,height=500,menu=0,status=0');
+}
+
+/**
+* popup when click "Score Using OWASP"
+* 
+*/
+function popupowasp(parent)
+{
+    parentOfScores = parent;
+    my_window = window.open('owasp_rating.php','popupwindow','width=665,height=570,menu=0,status=0');
+}
+
+function closepopup()
+    {
+    if(false == my_window.closed)
+    {
+        my_window.close ();
+    }
+    else
+    {
+        alert('Window already closed!');
+    }
+}
+
 
 $(document).ready(function(){
     $(document).on('click', '.exist-files .remove-file', function(event) {
@@ -45,7 +104,7 @@ $(document).ready(function(){
         refreshFilelist($parent)
     })
     $(document).on('change', '.hidden-file-upload.active', function(event) {
-        event.preventDefault();
+//        event.preventDefault();
 
         var $parent = $(this).parents('.file-uploader');
         $(this).removeClass("active")

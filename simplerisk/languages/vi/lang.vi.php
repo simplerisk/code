@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Thông báo đăng ký Disable',
     'UserPolicy'=>'Chính sách người dùng',
     'UseCaseSensitiveValidationOfUsername'=>'Sử dụng hợp Validation nhạy cảm của Tên đăng nhập',
+    'MitigationPlanning'=>'Theo kế hoạch ngày giảm nhẹ',
+    'AssetDetails'=>'Chi tiết tài sản',
+    'RiskList'=>'Danh sách rủi ro',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Bạn có chắc chắn muốn đóng rủi ro? Mọi thay đổi sẽ bị mất!',
+    'MinimumPasswordAge' => 'Minimum Password Age',
+    'MaximumPasswordAge' => 'Password Age tối đa',
+    'MaximumAttemptsLockout' => 'Những nỗ lực tối đa Lockout',
+    'MaximumAttemptsLockoutTime' => 'Những nỗ lực tối đa Lockout Time',
+    'attempts'=>'nỗ lực',
+    'minutes'=>'từ phút',
+    'AccountLockedOut'=>'Tài khoản đã bị khoá Out',
+    'AccountLockoutPolicy'=>'Chính sách Account Lockout',
     ''=>'',
 );
 

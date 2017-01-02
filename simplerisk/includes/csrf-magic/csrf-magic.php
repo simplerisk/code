@@ -321,7 +321,8 @@ function csrf_conf($key, $val) {
  */
 function csrf_start() {
     if ($GLOBALS['csrf']['auto-session'] && !session_id()) {
-        session_start('SimpleRisk');
+        session_name('SimpleRisk');
+        session_start();
     }
 }
 /**

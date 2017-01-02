@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'पंजीकरण सूचना अक्षम',
     'UserPolicy'=>'उपयोगकर्ता नीति',
     'UseCaseSensitiveValidationOfUsername'=>'प्रयोक्ता नाम का केस सेंसिटिव मान्यता का उपयोग',
+    'MitigationPlanning'=>'योजना बनाई शमन दिनांक',
+    'AssetDetails'=>'एसेट विवरण',
+    'RiskList'=>'जोखिम सूची',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'आप जोखिम को बंद करना चाहते हैं आप सुनिश्चित हैं? सभी परिवर्तन गुम हो जाएगा!',
+    'MinimumPasswordAge' => 'न्यूनतम पासवर्ड उम्र',
+    'MaximumPasswordAge' => 'अधिकतम पासवर्ड उम्र',
+    'MaximumAttemptsLockout' => 'अधिकतम प्रयास तालाबंदी',
+    'MaximumAttemptsLockoutTime' => 'अधिकतम प्रयास तालाबंदी समय',
+    'attempts'=>'प्रयास को',
+    'minutes'=>'मिनटों',
+    'AccountLockedOut'=>'खाता अवरोधित',
+    'AccountLockoutPolicy'=>'खाते में तालाबंदी की नीति',
     ''=>'',
 );
 

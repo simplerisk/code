@@ -32,7 +32,12 @@ if (USE_DATABASE_FOR_SESSIONS == "true")
 
 // Start the session
 session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-session_start('SimpleRisk');
+
+if (!isset($_SESSION))
+{
+        session_name('SimpleRisk');
+        session_start();
+}
 
 // Include the language file
 require_once(language_file());
@@ -297,6 +302,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $current_solution = "";
     $security_requirements = "";
     $security_recommendations = "";
+    $planning_date = "";
   }
   // If a mitigation exists
   else
@@ -312,6 +318,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $current_solution = $mitigation[0]['current_solution'];
     $security_requirements = $mitigation[0]['security_requirements'];
     $security_recommendations = $mitigation[0]['security_recommendations'];
+    $planning_date = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
   }
 
   // Get the management reviews for the risk
@@ -355,20 +362,32 @@ if ((isset($_POST['submit'])) && $plan_mitigations)
   $security_requirements = $_POST['security_requirements'];
   $security_recommendations = $_POST['security_recommendations'];
 
+  $planning_date = $_POST['planning_date'];
+
+  if (!validate_date($planning_date, 'm/d/Y'))
+  {
+    $planning_date = "0000-00-00";
+  }
+  // Otherwise, set the proper format for submitting to the database
+  else
+  {
+    $planning_date = date("Y-m-d", strtotime($planning_date));
+  }
+
   // If a mitigation does not exist
   if ($mitigation == false)
   {
     // Submit a new mitigation
-    submit_mitigation($id, $status, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
+    submit_mitigation($id, $status);
   }
   // Otherwise, a mitigation already exists
   else
   {
     // Update the mitigation
-    update_mitigation($id, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations);
+    update_mitigation($id);
   }
   
-        refresh_files_for_risk($_POST['unique_names'], $id-1000, 2);
+    refresh_files_for_risk($_POST['unique_names'], $id-1000, 2);
     $error = 1;
     // If a file was submitted
     if (!empty($_FILES))
@@ -567,7 +586,7 @@ if ((isset($_POST['submit'])) && $plan_mitigations)
                     <?php view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact); ?>
                   </div>
                   <div id="tabs2">
-                    <?php edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $id); ?>
+                    <?php edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $id); ?>
                   </div>
                   <div id="tabs3">
                     <?php view_review_details($id, $review_date, $reviewer, $review, $next_step, $next_review, $comments); ?>
@@ -664,28 +683,6 @@ if ((isset($_POST['submit'])) && $plan_mitigations)
                    $("#cancel_disable").removeAttr('disabled');
              });
 
-  
-            
-//    $(document).on('change', '.hidden-file-upload', function(event) {
-//      event.preventDefault();
-
-//      var $parent = $(this).parents('.file-uploader');
-//      var files = $(this)[0].files;
-//      if(files.length > 1){ $msg = files.length+" Files Added"; }else{ $msg = "1 File Added"; }
-//      $($parent).find('.file-count').html($msg);
-
-//      var files = $(this)[0].files;
-
-//      $(files).each(function(index, el) {
-//        var $file = "<li>"+el.name+"</li>";
-//        $($parent).find('.file-list').html($file);
-//      });
-
-//      var fileName = $(this).val();
-//      $(this).prev('label').text(fileName);
-
-//    });
-
       $("#tabs" ).tabs({
           activate:function(event,ui){
               if(ui.newPanel.selector== "#tabs1"){
@@ -762,6 +759,7 @@ if ((isset($_POST['submit'])) && $plan_mitigations)
       focus_add_css_class("#SecurityRequirementsTitle", "#security_requirements");
       focus_add_css_class("#CurrentSolutionTitle", "#current_solution");
       focus_add_css_class("#SecurityRecommendationsTitle", "#security_recommendations");
+      $( ".datepicker" ).datepicker();
   });
 </script>
   </html>

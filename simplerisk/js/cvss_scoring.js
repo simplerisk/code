@@ -7,18 +7,21 @@
  *********************/
 function getCVE()
 {
+    return;
 	// Get the CVE ID from the URL
 	var url = window.location.href;
-	var captured = /cve_id=([^&]+)/.exec(url)[1];
-	var cve_id = captured ? captured : '';
+	var captured = /cve_id=([^&]+)/.exec(url);
+    if(captured){
+        var cve_id = captured[1] ? captured[1] : '';
 
-	// Check that it is a valid CVE
-	var pattern = /cve\-\d{4}-\d{4}/i;
-	if (cve_id.match(pattern))
-	{
-		// Get the CVSS info
-		get_cvss_info(cve_id);
-	}
+        // Check that it is a valid CVE
+        var pattern = /cve\-\d{4}-\d*/i;
+        if (cve_id.match(pattern))
+        {
+            // Get the CVSS info
+            get_cvss_info(cve_id);
+        }
+    }
 }
 
 /***************************
@@ -45,27 +48,78 @@ function get_cvss_info(cve)
 function process_cvss_info(cvss_info_json)
 {
         // Parse out the JSON values and process them
-        var access_complexity = cvss_info_json[0]['access complexity'];
+        var access_complexity = cvss_info_json[0]['Access Complexity'];
         process_access_complexity(access_complexity);
-        var access_vector = cvss_info_json[0]['access vector'];
+        var access_vector = cvss_info_json[0]['Access Vector'];
         process_access_vector(access_vector);
-        var authentication = cvss_info_json[0]['authentication'];
+        var authentication = cvss_info_json[0]['Authentication'];
         process_authentication(authentication);
-        var availability_impact = cvss_info_json[0]['availability impact'];
+        var availability_impact = cvss_info_json[0]['Availability Impact'];
         process_availability_impact(availability_impact);
-        //var base = cvss_info_json[0]['base'];
+        //var base = cvss_info_json[0]['Base'];
 	//this.document.getElementById("BaseScore").innerHTML = base;
-        var confidentiality_impact = cvss_info_json[0]['confidentiality impact'];
+        var confidentiality_impact = cvss_info_json[0]['Confidentiality Impact'];
         process_confidentiality_impact(confidentiality_impact);
         //var exploit = cvss_info_json[0]['exploit'];
 	//this.document.getElementById("ExploitabilitySubscore").innerHTML = exploit;
-        //var impact = cvss_info_json[0]['impact'];
+        //var impact = cvss_info_json[0]['Impact'];
 	//this.document.getElementById("ImpactSubscore").innerHTML = impact;
-        var integrity_impact = cvss_info_json[0]['integrity impact'];
+        var integrity_impact = cvss_info_json[0]['Integrity Impact'];
         process_integrity_impact(integrity_impact);
 
 	// Update the score
 	updateScore();
+}
+
+
+/************* start again *********************/
+
+/*********************
+ * FUNCTION: GET CVE *
+ *********************/
+function getCVE()
+{
+    $("#AccessVector").val(parent_window.$("#AccessVector", parent_window.parentOfScores).val());
+    $("#AccessComplexity").val(parent_window.$("#AccessComplexity", parent_window.parentOfScores).val());
+    $("#Authentication").val(parent_window.$("#Authentication", parent_window.parentOfScores).val());
+    $("#ConfImpact").val(parent_window.$("#ConfImpact", parent_window.parentOfScores).val());
+    $("#IntegImpact").val(parent_window.$("#IntegImpact", parent_window.parentOfScores).val());
+    $("#AvailImpact").val(parent_window.$("#AvailImpact", parent_window.parentOfScores).val());
+    $("#Exploitability").val(parent_window.$("#Exploitability", parent_window.parentOfScores).val());
+    $("#RemediationLevel").val(parent_window.$("#RemediationLevel", parent_window.parentOfScores).val());
+    $("#ReportConfidence").val(parent_window.$("#ReportConfidence", parent_window.parentOfScores).val());
+    $("#CollateralDamagePotential").val(parent_window.$("#CollateralDamagePotential", parent_window.parentOfScores).val());
+    $("#TargetDistribution").val(parent_window.$("#TargetDistribution", parent_window.parentOfScores).val());
+    $("#ConfidentialityRequirement").val(parent_window.$("#ConfidentialityRequirement", parent_window.parentOfScores).val());
+    $("#IntegrityRequirement").val(parent_window.$("#IntegrityRequirement", parent_window.parentOfScores).val());
+    $("#AvailabilityRequirement").val(parent_window.$("#AvailabilityRequirement", parent_window.parentOfScores).val());
+    updateScore();
+}
+
+function process_cvss_info()
+{
+        // Parse out the JSON values and process them
+        var access_complexity = cvss_info_json[0]['Access Complexity'];
+        process_access_complexity(access_complexity);
+        var access_vector = cvss_info_json[0]['Access Vector'];
+        process_access_vector(access_vector);
+        var authentication = cvss_info_json[0]['Authentication'];
+        process_authentication(authentication);
+        var availability_impact = cvss_info_json[0]['Availability Impact'];
+        process_availability_impact(availability_impact);
+        //var base = cvss_info_json[0]['Base'];
+    //this.document.getElementById("BaseScore").innerHTML = base;
+        var confidentiality_impact = cvss_info_json[0]['Confidentiality Impact'];
+        process_confidentiality_impact(confidentiality_impact);
+        //var exploit = cvss_info_json[0]['exploit'];
+    //this.document.getElementById("ExploitabilitySubscore").innerHTML = exploit;
+        //var impact = cvss_info_json[0]['Impact'];
+    //this.document.getElementById("ImpactSubscore").innerHTML = impact;
+        var integrity_impact = cvss_info_json[0]['Integrity Impact'];
+        process_integrity_impact(integrity_impact);
+
+    // Update the score
+    updateScore();
 }
 
 /*******************************
@@ -116,7 +170,7 @@ function process_access_vector(access_vector)
                 case "local":
 			var value = "L";
                         break;
-                case "adjacent network":
+                case "adjacent_network":
 			var value = "A";
                         break;
                 case "network":
@@ -137,10 +191,10 @@ function process_authentication(authentication)
                 case "none":
 			var value = "N";
                         break;
-                case "single instance":
+                case "single_instance":
 			var value = "S";
                         break;
-                case "multiple instances":
+                case "multiple_instances":
 			var value = "M";
                         break;
         }

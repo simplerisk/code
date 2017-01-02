@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'הודעת רישום שבת',
     'UserPolicy'=>'מדיניות משתמש',
     'UseCaseSensitiveValidationOfUsername'=>'השתמש אימות רגישה מקרה של שם משתמש',
+    'MitigationPlanning'=>'תאריך מקלים מתוכנן',
+    'AssetDetails'=>'פרטי הנכס',
+    'RiskList'=>'רשימת סיכון',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'האם אתה בטוח שברצונך לסגור את הסיכון?',
+    'MinimumPasswordAge' => 'גיל סיסמא מינימאלי',
+    'MaximumPasswordAge' => 'גיל סיסמה מרבי',
+    'MaximumAttemptsLockout' => 'השבתת מקסימום ניסיונות',
+    'MaximumAttemptsLockoutTime' => 'מקסימום ניסיונות השבתה זמן',
+    'attempts'=>'ניסיונות',
+    'minutes'=>'דקות',
+    'AccountLockedOut'=>'חשבון נעול בחוץ',
+    'AccountLockoutPolicy'=>'מדיניות חשבון השבתה',
     ''=>'',
 );
 

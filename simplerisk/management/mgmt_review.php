@@ -32,7 +32,12 @@ if (USE_DATABASE_FOR_SESSIONS == "true")
 
 // Start the session
 session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-session_start('SimpleRisk');
+
+if (!isset($_SESSION))
+{
+        session_name('SimpleRisk');
+        session_start();
+}
 
 // Include the language file
 require_once(language_file());
@@ -42,8 +47,6 @@ require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 // Check for session timeout or renegotiation
 session_check();
 
-// Default is not approved
-$approved = false;
 
 // Check if access is authorized
 if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
@@ -289,6 +292,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $security_requirements = "";
     $security_recommendations = "";
     $mitigation_date = "N/A";
+    $planning_date = "";
   }
   // If a mitigation exists
   else
@@ -304,6 +308,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $current_solution = $mitigation[0]['current_solution'];
     $security_requirements = $mitigation[0]['security_requirements'];
     $security_recommendations = $mitigation[0]['security_recommendations'];
+    $planning_date = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
   }
 
   // Get the management reviews for the risk
@@ -330,37 +335,10 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $reviewer = $mgmt_reviews[0]['reviewer'];
     $comments = $mgmt_reviews[0]['comments'];
   }
+  
+  
+    $approved = checkApprove($risk_level);
 
-  // If the risk level is very high and they have permission
-  if (($risk_level == "Very High") && ($_SESSION['review_veryhigh'] == 1))
-  {
-    // Review is approved
-    $approved = true;
-  }
-  // If the risk level is high and they have permission
-  else if (($risk_level == "High") && ($_SESSION['review_high'] == 1))
-  {
-    // Review is approved
-    $approved = true;
-  }
-  // If the risk level is medium and they have permission
-  else if (($risk_level == "Medium") && ($_SESSION['review_medium'] == 1))
-  {
-    // Review is approved
-    $approved = true;
-  }
-  // If the risk level is low and they have permission
-  else if (($risk_level == "Low") && ($_SESSION['review_low'] == 1))
-  {
-    // Review is approved
-    $approved = true;
-  }
-  // If the risk level is insignificant and they have permission
-  else if (($risk_level == "Insignificant") && ($_SESSION['review_insignificant'] == 1))
-  {
-    // Review is approved
-    $approved = true;
-  }
 }
 
 // If they are not approved to review the risk
@@ -398,7 +376,12 @@ if (isset($_POST['submit']))
         $custom_review = date("Y-m-d", strtotime($custom_review));
       }
     }
-    else $custom_review = "0000-00-00";
+    else{
+        $custom_review = "0000-00-00";
+        $color = get_risk_color($risk[0]['calculated_risk']);
+        $risk_id = (int)$risk[0]['id'];
+        $custom_review = next_review($color, $risk_id, $custom_review, false);
+    }
 
     // Submit review
     submit_management_review($id, $status, $review, $next_step, $reviewer, $comments, $custom_review);
@@ -427,6 +410,9 @@ if (isset($_POST['submit']))
     set_alert(true, "bad", "You do not have permission to review " . $risk_level . " level risks.  The review that you attempted to submit was not recorded.  Please contact an administrator if you feel that you have reached this message in error.");
   }
 }
+
+    $risk_id = (int)$risk[0]['id'];
+    $default_next_review = get_next_reveiw_default($risk_id);
 ?>
 
 <!doctype html>
@@ -590,10 +576,10 @@ if (isset($_POST['submit']))
                     <?php view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact); ?>
                   </div>
                   <div id="tabs2">
-                    <?php view_mitigation_details($id+1000, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations); ?>
+                    <?php view_mitigation_details($id+1000, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date); ?>
                   </div>
                   <div id="tabs3">
-                    <?php edit_review_submission($review, $next_step, $next_review, $comments); ?>
+                    <?php edit_review_submission($review, $next_step, $next_review, $comments, $default_next_review); ?>
                   </div>
                 </div>
               </div>

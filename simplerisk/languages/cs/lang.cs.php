@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Zakázat Registrace Upozornění',
     'UserPolicy'=>'User Policy',
     'UseCaseSensitiveValidationOfUsername'=>'Používat velká a malá písmena ověření uživatelského jména',
+    'MitigationPlanning'=>'Plánováno Zmírnění Datum',
+    'AssetDetails'=>'Asset Podrobnosti',
+    'RiskList'=>'Seznam Riziko',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Jste si jisti, že chcete zavřít riziko? Všechny změny budou ztraceny!',
+    'MinimumPasswordAge' => 'Minimální stáří hesla',
+    'MaximumPasswordAge' => 'Maximální stáří hesla',
+    'MaximumAttemptsLockout' => 'Maximální Pokusy Lockout',
+    'MaximumAttemptsLockoutTime' => 'Maximální doba blokování Pokusy',
+    'attempts'=>'pokusy',
+    'minutes'=>'zápis',
+    'AccountLockedOut'=>'Account Locked Out',
+    'AccountLockoutPolicy'=>'Zásady uzamčení účtů',
     ''=>'',
 );
 

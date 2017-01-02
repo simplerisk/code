@@ -28,7 +28,12 @@
 
 	// Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-	session_start('SimpleRisk');
+
+        if (!isset($_SESSION))
+        {
+        	session_name('SimpleRisk');
+        	session_start();
+        }
 
 	// Check for session timeout or renegotiation
 	session_check();
@@ -50,6 +55,7 @@
 		getRoute()->get('/version', 'show_version');
 		getRoute()->get('/whoami', 'whoami');
 		getRoute()->get('/management', 'show_management');
+        getRoute()->get('/management/risk/viewhtml', 'viewriskHtml');
 		getRoute()->get('/management/risk/view', 'viewrisk');
 		getRoute()->get('/management/risk/add', 'addrisk');
 		getRoute()->get('/management/mitigation/view', 'viewmitigation');
@@ -61,8 +67,32 @@
 		getRoute()->get('/admin/users/enabled', 'enabledusers');
 		getRoute()->get('/admin/users/disabled', 'disabledusers');
 		getRoute()->get('/reports', 'show_reports');
-		getRoute()->get('/reports/dynamic', 'dynamicrisk');
+		getRoute()->post('/reports/dynamic', 'dynamicrisk');
 
+        // Actions via ajax
+        getRoute()->get('/management/risk/reopen', 'reopen');
+        getRoute()->get('/management/risk/overview', 'overview');
+        
+        getRoute()->get('/management/risk/closerisk', 'closeriskHtml');
+        getRoute()->post('/management/risk/closerisk', 'closerisk');
+        
+        getRoute()->get('/management/risk/view_all_reviews', 'viewAllReviews');
+        getRoute()->get('/management/risk/editdetails', 'editdetails');
+        getRoute()->post('/management/risk/saveDetails', 'saveDetails');
+        getRoute()->post('/management/risk/saveMitigation', 'saveMitigation');
+        getRoute()->post('/management/risk/saveReview', 'saveReview');
+        
+        getRoute()->get('/management/risk/changestatus', 'changestatus');
+        getRoute()->post('/management/risk/updateStatus', 'updateStatus');
+        
+        getRoute()->get('/management/risk/scoreaction', 'scoreaction');
+        getRoute()->post('/management/risk/saveScore', 'saveScore');
+        
+        getRoute()->post('/management/risk/saveSubject', 'saveSubject');
+        
+        getRoute()->post('/management/risk/saveComment', 'saveComment');
+
+        
 		// Define the API routes
 		getApi()->get('/version.json', 'api_version', EpiApi::external);
 

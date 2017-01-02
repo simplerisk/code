@@ -177,7 +177,8 @@ function delete_dir($dir)
 function json_response($status, $status_message, $data)
 {
 	// HTTP Header
-	header("HTTP/1.1 $status, $status_message");
+//    header("HTTP/1.1 $status, $status_message");
+	header("HTTP/1.1 $status");
 	header("Content-Type: application/json");
 
 	// Response
@@ -190,6 +191,7 @@ function json_response($status, $status_message, $data)
 
 	// Display the response
 	echo $json_response;
+    exit;
 }
 
 ?>

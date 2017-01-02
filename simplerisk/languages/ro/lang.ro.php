@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Observații Înregistrare Dezactivați',
     'UserPolicy'=>'Politica de Utilizare',
     'UseCaseSensitiveValidationOfUsername'=>'Use Case Validarea Sensibil de Utilizator',
+    'MitigationPlanning'=>'Planificate de atenuare Data',
+    'AssetDetails'=>'Detalii activ',
+    'RiskList'=>'Listă de Risc',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Sunteți sigur că doriți să închideți riscul? Toate modificările vor fi pierdute!',
+    'MinimumPasswordAge' => 'Vârstă minima parola',
+    'MaximumPasswordAge' => 'Vârstă maximă parolă',
+    'MaximumAttemptsLockout' => 'Numărul maxim de încercări Lockout',
+    'MaximumAttemptsLockoutTime' => 'Încercările de maxim Lockout Timp',
+    'attempts'=>'încercări',
+    'minutes'=>'minutes',
+    'AccountLockedOut'=>'Contul Blocat Out',
+    'AccountLockoutPolicy'=>'Contul Politica Lockout',
     ''=>'',
 );
 

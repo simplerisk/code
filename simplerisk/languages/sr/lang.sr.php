@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Дисабле Пријава Обавештење',
     'UserPolicy'=>'усер Политика',
     'UseCaseSensitiveValidationOfUsername'=>'Користити велика и мала слова Валидатион усернаме',
+    'MitigationPlanning'=>'Планирано ублажавања Датум',
+    'AssetDetails'=>'средство Детаљи',
+    'RiskList'=>'Листа ризик',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Да ли сте сигурни да желите да затворите ризик? Све промене ће бити изгубљене!',
+    'MinimumPasswordAge' => 'Минимална Лозинка Године',
+    'MaximumPasswordAge' => 'Максимални Лозинка Године',
+    'MaximumAttemptsLockout' => 'Макимум покушаји Баттлесхип',
+    'MaximumAttemptsLockoutTime' => 'Максималан број покушаја Баттлесхип Време',
+    'attempts'=>'покушаји',
+    'minutes'=>'минута',
+    'AccountLockedOut'=>'Рачун Лоцкед Оут',
+    'AccountLockoutPolicy'=>'Аццоунт Лоцкоут Политика',
     ''=>'',
 );
 

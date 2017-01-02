@@ -3,9 +3,9 @@
  	 * License, v. 2.0. If a copy of the MPL was not distributed with this
  	 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-        // Include required functions file
-        require_once(realpath(__DIR__ . '/../includes/functions.php'));
-        require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+  // Include required functions file
+  require_once(realpath(__DIR__ . '/../includes/functions.php'));
+  require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
 	require_once(realpath(__DIR__ . '/../includes/messages.php'));
 	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
@@ -33,7 +33,12 @@
 
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-        session_start('SimpleRisk');
+
+        if (!isset($_SESSION))
+        {
+        	session_name('SimpleRisk');
+        	session_start();
+        }
 
         require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
@@ -111,6 +116,12 @@
                 	// If the password is valid
                 	if ($error_code == 1)
                 	{
+				// Get user old data
+				$old_data = get_salt_and_password_by_user_id($_SESSION['uid']);
+
+				// Add the old data to the pass_history table
+				add_last_password_history($_SESSION["uid"], $old_data["salt"], $old_data["password"]);
+
                                 // Generate the salt
                                 $salt = generateSalt($user);
 
@@ -137,7 +148,7 @@
 			else
 			{
 				// Display an alert
-				set_alert(true, "bad", password_error_message($error_code));
+				//set_alert(true, "bad", password_error_message($error_code));
 			}
                 }
 		else

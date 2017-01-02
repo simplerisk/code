@@ -20,19 +20,24 @@ header("X-XSS-Protection: 1; mode=block");
 // If we want to enable the Content Security Policy (CSP) - This may break Chrome
 if (CSP_ENABLED == "true")
 {
-  // Add the Content-Security-Policy header
-  header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+	// Add the Content-Security-Policy header
+	header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
 }
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
 {
-  session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+	session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
 }
 
 // Start session
 session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-session_start('SimpleRisk');
+
+if (!isset($_SESSION))
+{
+	session_name('SimpleRisk');
+	session_start();
+}
 
 // Include the language file
 require_once(language_file());
@@ -40,131 +45,141 @@ require_once(language_file());
 // If the login form was posted
 if (isset($_POST['submit']))
 {
-  $user = $_POST['user'];
-  $pass = $_POST['pass'];
+	$user = $_POST['user'];
+	$pass = $_POST['pass'];
 
-  // If the user is valid
-  if (is_valid_user($user, $pass))
-  {
-    // If the custom authentication extra is installed
-    if (custom_authentication_extra())
-    {
-      // Include the custom authentication extra
-      require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
+	// Check for expired lockouts
+	check_expired_lockouts();
 
-      // Get the enabled authentication for the user
-      $enabled_auth = enabled_auth($user);
+	// If the user is valid
+	if (is_valid_user($user, $pass))
+	{
+		// If the custom authentication extra is installed
+		if (custom_authentication_extra())
+		{
+			// Include the custom authentication extra
+			require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
 
-      // If no multi factor authentication is enabled for the user
-      if ($enabled_auth == 1)
-      {
-        // Grant the user access
-        grant_access();
+			// Get the enabled authentication for the user
+			$enabled_auth = enabled_auth($user);
 
-        // If the encryption extra is enabled
-        if (encryption_extra())
-        {
-          // Load the extra
-          require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+			// If no multi factor authentication is enabled for the user
+			if ($enabled_auth == 1)
+			{
+				// Grant the user access
+				grant_access();
 
-          // Check user enc
-          check_user_enc($user, $pass);
-        }
+				// If the encryption extra is enabled
+				if (encryption_extra())
+				{
+					// Load the extra
+					require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
 
-	// Check for a registration redirect
-	registration_redirect();
-      }
-      // If Duo authentication is enabled for the user
-      else if ($enabled_auth == 2)
-      {
-        // Set session access to duo
-        $_SESSION["access"] = "duo";
-      }
-      // If Toopher authentication is enabled for the user
-      else if ($enabled_auth == 3)
-      {
-        // Set session access to toopher
-        $_SESSION["access"] = "toopher";
-      }
-    }
-    // Otherwise no second factor is necessary
-    else
-    {
-      // Grant the user access
-      grant_access();
+					// Check user enc
+					check_user_enc($user, $pass);
+				}
 
-      // If the encryption extra is enabled
-      if (encryption_extra())
-      {
-        // Load the extra
-        require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+				// Select where to redirect the user next
+				select_redirect();
+			}
+			// If Duo authentication is enabled for the user
+			else if ($enabled_auth == 2)
+			{
+				// Set session access to duo
+				$_SESSION["access"] = "duo";
+			}
+			// If Toopher authentication is enabled for the user
+			else if ($enabled_auth == 3)
+			{
+				// Set session access to toopher
+				$_SESSION["access"] = "toopher";
+			}
+		}
+		// Otherwise the custom authentication extra is not installed
+		else
+		{
+			// Grant the user access
+			grant_access();
 
-        // Check user enc
-        check_user_enc($user, $pass);
-      }
+			// If the encryption extra is enabled
+			if (encryption_extra())
+			{
+				// Load the extra
+				require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
 
-      // Check for a registration redirect
-      registration_redirect();
-    }
-  }
-  // If the user is not a valid user
-  else
-  {
-    $_SESSION["access"] = "denied";
+				// Check user enc
+				check_user_enc($user, $pass);
+			}
 
-    // Display an alert
-    set_alert(true, "bad", "Invalid username or password.");
-  }
+			// Select where to redirect the user next
+			select_redirect();
+		}
+  	}
+  	// If the user is not a valid user
+  	else
+  	{
+    		$_SESSION["access"] = "denied";
+
+		// Display an alert
+		set_alert(true, "bad", "Invalid username or password.");
+
+		// If the password attempt lockout is enabled
+		if(get_setting("pass_policy_attempt_lockout") != 0)
+		{
+			// Add the login attempt and block if necessary
+			add_login_attempt_and_block($user);
+    		}
+  	}
 }
 
 if (isset($_SESSION["access"]) && ($_SESSION["access"] == "granted"))
 {
-  // Check for a registration redirect
-  registration_redirect();
+	// Select where to redirect the user next
+	select_redirect();
 }
 
 // If the user has already authorized and we are authorizing with duo
 if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
 {
-  // If a response has been posted
-  if (isset($_POST['sig_response']))
-  {
-    // Include the custom authentication extra
-    require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
+	// If a response has been posted
+  	if (isset($_POST['sig_response']))
+  	{
+    		// Include the custom authentication extra
+    		require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
 
-    // Get the authentication settings
-    $configs = get_authentication_settings();
+    		// Get the authentication settings
+    		$configs = get_authentication_settings();
 
-    // For each configuration
-    foreach ($configs as $config)
-    {
-      // Set the name value pair as a variable
-      $$config['name'] = $config['value'];
-    }
+    		// For each configuration
+    		foreach ($configs as $config)
+    		{
+      			// Set the name value pair as a variable
+      			$$config['name'] = $config['value'];
+    		}
 
-    // Get the response back from Duo
-    $resp = Duo\Web::verifyResponse($IKEY, $SKEY, get_duo_akey(), $_POST['sig_response']);
+    		// Get the response back from Duo
+    		$resp = Duo\Web::verifyResponse($IKEY, $SKEY, get_duo_akey(), $_POST['sig_response']);
 
-    // If the response is not null
-    if ($resp != NULL)
-    {
-      // Grant the user access
-      grant_access();
+    		// If the response is not null
+    		if ($resp != NULL)
+    		{
+      			// Grant the user access
+      			grant_access();
 
-      // If the encryption extra is enabled
-      if (encryption_extra())
-      {
-        // Load the extra
-        require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+      			// If the encryption extra is enabled
+      			if (encryption_extra())
+      			{
+        			// Load the extra
+        			require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
 
-        // Check user enc
-        check_user_enc($user, $pass);
-      }
+        			// Check user enc
+        			check_user_enc($user, $pass);
+      			}
 
-      // Check for a registration redirect
-      registration_redirect();
-    }
-  }
+			// Select where to redirect the user next
+			select_redirect();
+    		}
+  	}
 }
 ?>
 

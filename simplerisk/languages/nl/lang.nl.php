@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Uitschakelen Registratie Kennisgeving',
     'UserPolicy'=>'Gebruikersverklaring',
     'UseCaseSensitiveValidationOfUsername'=>'Use Case Sensitive Validatie van Gebruikersnaam',
+    'MitigationPlanning'=>'Geplande Mitigation Date',
+    'AssetDetails'=>'Asset Details',
+    'RiskList'=>'Risk List',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Bent u zeker dat u het risico te sluiten? Alle wijzigingen zullen verloren gaan!',
+    'MinimumPasswordAge' => 'Minimum Password Age',
+    'MaximumPasswordAge' => 'Maximum Password Age',
+    'MaximumAttemptsLockout' => 'Maximum Pogingen Lockout',
+    'MaximumAttemptsLockoutTime' => 'Maximum Pogingen Lockout Time',
+    'attempts'=>'pogingen',
+    'minutes'=>'notulen',
+    'AccountLockedOut'=>'Account Locked Out',
+    'AccountLockoutPolicy'=>'Accountvergrendelingsbeleid',
     ''=>'',
 );
 

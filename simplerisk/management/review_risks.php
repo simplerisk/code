@@ -32,7 +32,12 @@ if (USE_DATABASE_FOR_SESSIONS == "true")
 
 // Start the session
 session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-session_start('SimpleRisk');
+
+if (!isset($_SESSION))
+{
+        session_name('SimpleRisk');
+        session_start();
+}
 
 // Include the language file
 require_once(language_file());
@@ -69,8 +74,12 @@ if (isset($_GET['reviewed']))
 
 <head>
   <script src="../js/jquery.min.js"></script>
+  <script src="../js/jquery-ui.min.js"></script>
   <script src="../js/bootstrap.min.js"></script>
+  <script src="../js/cve_lookup.js"></script>
   <script src="../js/sorttable.js"></script>
+  <script src="../js/common.js"></script>
+  <script src="../js/pages/risk.js"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -92,9 +101,9 @@ if (isset($_GET['reviewed']))
   view_top_menu("RiskManagement");
 
   // Get any alert messages
-  get_alert();
+//  get_alert();
   ?>
-  <div class="container-fluid">
+  <!--<div class="container-fluid">
     <div class="row-fluid">
       <div class="span3">
         <?php view_risk_management_menu("ReviewRisksRegularly"); ?>
@@ -107,6 +116,53 @@ if (isset($_GET['reviewed']))
         </div>
       </div>
     </div>
+  </div>-->
+  
+  
+  <div class="tabs new-tabs">
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span3"> </div>
+        <div class="span9">
+          <div class="tab-append">
+            <div class="tab selected form-tab tab-show new" >
+                <div>
+                    <span>
+                        <?php echo $escaper->escapeHtml($lang['RiskList']); ?>
+                    </span>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="span3">
+        <?php view_risk_management_menu("ReviewRisksRegularly"); ?>
+      </div>
+      <div class="span9">
+        <div id="show-alert">
+            <?php  
+                // Get any alert messages
+                get_alert();
+            ?>
+        </div>
+        <div id="tab-content-container" class="row-fluid">
+            <div id="tab-container" class="tab-data">
+                <div class="row-fluid">
+                    <div class="span12 ">
+                        <?php get_reviews_table(3); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <input type="hidden" id="_delete_tab_alert" value="<?php echo $escaper->escapeHtml($lang['Are you sure you want to close the risk? All changes will be lost!']); ?>">
+
+  
 </body>
 </html>

@@ -16,44 +16,52 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
  ***********************/
 function set_alert($alert = false, $type = "good", $message = "")
 {
-	// Write the alert to the session
-	$_SESSION['alert'] = $alert;
-	$_SESSION['alert_type'] = $type;
-	$_SESSION['alert_message'] = $message;
+    // Write the alert to the session
+    $_SESSION['alert'] = $alert;
+    $_SESSION['alert_type'] = $type;
+    $_SESSION['alert_message'] = $message;
 }
 
 /***********************
  * FUNCTION: GET ALERT *
  ***********************/
-function get_alert()
+function get_alert($returnHtml = false)
 {
-	global $escaper;
-
-        if (isset($_SESSION['alert']) && $_SESSION['alert'] == true)
-	{
-		if ($_SESSION['alert_type'] == "good")
-        	{
-                	echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                	echo "<div class=\"row-fluid\">\n";
-                	echo "<div class=\"span10 greenalert\"><span><i class=\"fa fa-check\"></i>" . $escaper->escapeHtml($_SESSION['alert_message']) . "</span></div>\n";
-                	echo "</div>\n";
-                	echo "</div>\n";
-
-		}
-        	else if ($_SESSION['alert_type'] == "bad")
-        	{
-                	echo "<div id=\"alert\" class=\"container-fluid\">\n";
-                	echo "<div class=\"row-fluid\">\n";
-                	echo "<div class=\"span10 redalert\"><span><i class=\"fa fa-close\"></i>" . $escaper->escapeHtml($_SESSION['alert_message']) . "</span></div>\n";
-                	echo "</div>\n";
-                	echo "</div>\n";
-
-		}
+    global $escaper;
+    
+    $html = "";
+    
+    if (isset($_SESSION['alert']) && $_SESSION['alert'] == true)
+    {
+        if ($_SESSION['alert_type'] == "good")
+        {
+            $html .= "
+                <div id=\"alert\" class=\"container-fluid\">
+                    <div class=\"row-fluid\">
+                        <div class=\"span10 greenalert\"><span><i class=\"fa fa-check\"></i>" . $escaper->escapeHtml($_SESSION['alert_message']) . "</span></div>
+                    </div>
+                </div>
+            ";
         }
+        else if ($_SESSION['alert_type'] == "bad")
+        {
+            $html .= "
+                <div id=\"alert\" class=\"container-fluid\">
+                    <div class=\"row-fluid\">
+                        <div class=\"span10 redalert\"><span><i class=\"fa fa-check\"></i>" . $escaper->escapeHtml($_SESSION['alert_message']) . "</span></div>
+                    </div>
+                </div>
+            ";
+        }
+    }
 
-
-	// Clear the alert
-	clear_alert();
+    // Clear the alert
+    clear_alert();
+    if($returnHtml){
+        return $html;
+    }else{
+        echo $html;
+    }
 }
 
 /*************************
@@ -61,10 +69,9 @@ function get_alert()
  *************************/
 function clear_alert()
 {
-	$_SESSION['alert'] = false;
-	$_SESSION['alert_type'] = "";
-	$_SESSION['alert_message'] = "";
-
+    $_SESSION['alert'] = false;
+    $_SESSION['alert_type'] = "";
+    $_SESSION['alert_message'] = "";
 }
 
 ?>

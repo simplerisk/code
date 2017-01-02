@@ -107,3 +107,67 @@
   color: $color-1 !important;
   font-weight: bold;
 }
+
+/**
+* jquery datatable
+*/
+.dataTables_wrapper{
+    .dataTables_length{
+        float: right;
+    }
+    .dataTables_processing{
+        z-index: 99;
+    }
+    
+    .dataTables_paginate{
+        .paginate_button{
+            background-color: #c1b4b4;
+            color: #fff !important;
+            margin: 0 2px;
+            border-radius: 2px ;
+            border: 0px;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 4px 12px;
+            &:hover, &.current{
+                background: #3a3a3a ;
+                color: #fff !important;
+                border: 0px;
+            }
+            &.current:hover{
+                border: 0px;
+                background: #3a3a3a;
+                color: #fff !important;
+            }
+            &.first, &.next, &.previous, &.last{
+                background: transparent;
+                color: #c1b4b4 !important;
+                &:hover{
+                    color: #3a3a3a !important;
+                }
+                &.disabled{
+                    color: #c1b4b4 !important;
+                }
+                
+            }
+        }
+    }
+    .view-all{
+        float: right;
+        margin-left: 15px;
+        cursor: pointer;
+        display: inline-block;
+        padding: 4px 12px;
+        font-size: 14px;
+        font-weight: bold;
+        background-color: #c1b4b4;
+        color: #fff !important;
+        margin-top: 5px;
+        border-radius: 2px;
+        &.current{
+            background: #3a3a3a ;
+            color: #fff !important;
+            border: 0px;
+        }
+    }
+}

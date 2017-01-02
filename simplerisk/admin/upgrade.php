@@ -26,7 +26,12 @@
 
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-        session_start('SimpleRiskDBUpgrade');
+
+        if (!isset($_SESSION))
+        {
+        	session_name('SimpleRiskDBUpgrade');
+        	session_start();
+        }
 
         // Include the language file
         require_once(language_file());
@@ -114,7 +119,7 @@
       <div class="navbar">
         <div class="navbar-inner">
           <div class="container-fluid">
-            <a class="brand" href="https://www.simplerisk.com/"><img src="../images/logo@2x.png" alt="SimpleRisk Logo" /></a>
+            <a class="brand" href="https://www.simplerisk.it/"><img src="../images/logo@2x.png" alt="SimpleRisk Logo" /></a>
             <div class="navbar-content pull-right">
               <ul class="nav"> 
                 <li>

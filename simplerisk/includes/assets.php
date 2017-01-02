@@ -103,8 +103,9 @@ function add_assets($AvailableIPs)
 /***********************
  * FUNCTION: ADD ASSET *
  ***********************/
-function add_asset($ip, $name, $value=5, $location=0, $team=0)
+function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "")
 {
+    $details = try_encrypt($details);
 	// Trim whitespace from the name, ip, and value
 	$name = trim($name);
 	$ip = trim($ip);
@@ -113,12 +114,13 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0)
         // Open the database connection
         $db = db_open();
 
-	$stmt = $db->prepare("INSERT INTO `assets` (ip, name, value, location, team) VALUES (:ip, :name, :value, :location, :team) ON DUPLICATE KEY UPDATE `name`=:name, `ip`=:ip, `value`=:value, `location`=:location, `team`=:team;");
+	$stmt = $db->prepare("INSERT INTO `assets` (ip, name, value, location, team, details) VALUES (:ip, :name, :value, :location, :team, :details) ON DUPLICATE KEY UPDATE `name`=:name, `ip`=:ip, `value`=:value, `location`=:location, `team`=:team;, `details`=:details");
         $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 15);
         $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
 	$stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
-	$stmt->bindParam(":team", $team, PDO::PARAM_INT, 2);
+    $stmt->bindParam(":team", $team, PDO::PARAM_INT, 2);
+	$stmt->bindParam(":details", $details, PDO::PARAM_STR);
         $return = $stmt->execute();
 
         // Update the asset_id column in risks_to_assets
@@ -182,6 +184,75 @@ function delete_asset($asset_id)
 }
 
 /*********************************
+ * FUNCTION: DISPLAY ASSET DETAIL*
+ *********************************/
+function display_asset_detail($id)
+{
+    global $escaper;
+    global $lang;
+    
+    $asset = get_asset_by_id($id)[0];
+
+    // If the IP address is not valid
+        if (!preg_match('/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/', $asset['ip']))
+        {
+            $asset['ip'] = "N/A";
+        }
+
+        // If the location is unspecified
+        if ($asset['location'] == 0)
+        {
+            $asset['location'] = "N/A";
+        }
+        else $asset['location'] = get_name_by_value("location", $asset['location']);
+
+        // If the team is unspecified
+        if ($asset['team'] == 0)
+        {
+            $asset['team'] = "N/A";
+        }
+        else $asset['team'] = get_name_by_value("team", $asset['team']);
+        
+        $display = "
+            <h4>". $escaper->escapeHtml($asset['name']) ."</h4>
+            <br>
+            <div class='row-fluid'>
+                <div class='span3'>
+                    ". $escaper->escapeHtml($lang['IPAddress']) .":
+                </div>
+                <div class='span9'>
+                    ". $escaper->escapeHtml($asset['ip']) ."
+                </div>
+            </div><br>
+            <div class='row-fluid'>
+                <div class='span3'>
+                    ". $escaper->escapeHtml($lang['AssetValuation']) .":
+                </div>
+                <div class='span9'>
+                    ". $escaper->escapeHtml(get_asset_value_by_id($asset['value'])) ."
+                </div>
+            </div><br>
+            <div class='row-fluid'>
+                <div class='span3'>
+                    ". $escaper->escapeHtml($lang['SiteLocation']) .":
+                </div>
+                <div class='span9'>
+                    ". $escaper->escapeHtml($asset['location']) ."
+                </div>
+            </div><br>
+            <div class='row-fluid'>
+                <div class='span3'>
+                    ". $escaper->escapeHtml($lang['Team']) .":
+                </div>
+                <div class='span9'>
+                    ". $escaper->escapeHtml($asset['team']) ."
+                </div>
+            </div>
+        ";
+        echo $display;
+}
+
+/*********************************
  * FUNCTION: DISPLAY ASSET TABLE *
  *********************************/
 function display_asset_table()
@@ -199,7 +270,8 @@ function display_asset_table()
 	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['IPAddress']) . "</th>\n";
 	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetValuation']) . "</th>\n";
 	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['SiteLocation']) . "</th>\n";
-	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['Team']) . "</th>\n";
+    echo "<th align=\"left\">" . $escaper->escapeHtml($lang['Team']) . "</th>\n";
+	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetDetails']) . "</th>\n";
         echo "</tr>\n";
 	echo "</thead>\n";
 	echo "<tbody>\n";
@@ -238,7 +310,8 @@ function display_asset_table()
 		echo "<td>" . $escaper->escapeHtml($asset['ip']) . "</td>\n";
 		echo "<td>" . $escaper->escapeHtml(get_asset_value_by_id($asset['value'])) . "</td>\n";
 		echo "<td>" . $escaper->escapeHtml($asset['location']) . "</td>\n";
-		echo "<td>" . $escaper->escapeHtml($asset['team']) . "</td>\n";
+        echo "<td>" . $escaper->escapeHtml($asset['team']) . "</td>\n";
+		echo "<td>" . $escaper->escapeHtml(try_decrypt($asset['details'])) . "</td>\n";
 		echo "</tr>\n";
 	}
 
@@ -265,6 +338,28 @@ function get_entered_assets()
 
 	// Return the array of assets
 	return $assets;
+}
+
+/********************************
+ * FUNCTION: GET ENTERED ASSETS *
+ ********************************/
+function get_asset_by_id($id)
+{
+        // Open the database connection
+        $db = db_open();
+
+        $stmt = $db->prepare("SELECT * FROM `assets` where id=:id ORDER BY name;");
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Store the list in the assets array
+        $asset = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+    // Return the array of assets
+    return $asset;
 }
 
 /********************************
@@ -395,9 +490,10 @@ function display_edit_asset_table()
         echo "<tr>\n";
         echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetName']) . "</th>\n";
         echo "<th align=\"left\">" . $escaper->escapeHtml($lang['IPAddress']) . "</th>\n";
-	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetValuation']) . "</th>\n";
-	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['SiteLocation']) . "</th>\n";
-	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['Team']) . "</th>\n";
+	    echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetValuation']) . "</th>\n";
+	    echo "<th align=\"left\">" . $escaper->escapeHtml($lang['SiteLocation']) . "</th>\n";
+        echo "<th align=\"left\">" . $escaper->escapeHtml($lang['Team']) . "</th>\n";
+	    echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetDetails']) . "</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -424,8 +520,13 @@ function display_edit_asset_table()
 		echo "<td>\n";
 		create_dropdown("location", $asset['location'], "locations[]");
 		echo "</td>\n";
-		echo "<td>\n";
-		create_dropdown("team", $asset['team'], "teams[]");
+        echo "<td>\n";
+        create_dropdown("team", $asset['team'], "teams[]");
+        echo "</td>\n";
+		echo "<td>\n
+            <textarea name='details[]'>". $escaper->escapeHtml(try_decrypt($asset['details'])) ."</textarea>
+        ";
+        
 		echo "</td>\n";
                 echo "</tr>\n";
         }
@@ -437,16 +538,19 @@ function display_edit_asset_table()
 /************************
  * FUNCTION: EDIT ASSET *
  ************************/
-function edit_asset($id, $value, $location, $team)
+function edit_asset($id, $value, $location, $team, $details)
 {
-        // Open the database connection
-        $db = db_open();
+    $details = try_encrypt($details);
+    
+    // Open the database connection
+    $db = db_open();
 
 	// Update the asset
-	$stmt = $db->prepare("UPDATE assets SET value = :value, location = :location, team = :team WHERE id = :id");
+	$stmt = $db->prepare("UPDATE assets SET value = :value, location = :location, team = :team, details = :details WHERE id = :id");
 	$stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
 	$stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
 	$stmt->bindParam(":team", $team, PDO::PARAM_INT, 2);
+    $stmt->bindParam(":details", $details, PDO::PARAM_STR);
 	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
 

@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Devre Dışı Kayıt Bildirimi',
     'UserPolicy'=>'Kullanıcı Politikası',
     'UseCaseSensitiveValidationOfUsername'=>'Kullanıcı Adı İçin Büyük / Küçük Harf Geçerli Doğrulama kullanın',
+    'MitigationPlanning'=>'Planlanan Azaltma Tarihi',
+    'AssetDetails'=>'Varlık Ayrıntıları',
+    'RiskList'=>'Risk Listesi',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Bu riski kapatmak istediğinizden emin misiniz? Tüm değişiklikler kaybolacak!',
+    'MinimumPasswordAge' => 'Minimum Şifre Yaşı',
+    'MaximumPasswordAge' => 'Maksimum Şifre Yaşı',
+    'MaximumAttemptsLockout' => 'Maksimum Girişimleri Kilitleme',
+    'MaximumAttemptsLockoutTime' => 'Maksimum Denemeler Kilitlenme Süresi',
+    'attempts'=>'denemeler',
+    'minutes'=>'dakika',
+    'AccountLockedOut'=>'Hesap Kilitli',
+    'AccountLockoutPolicy'=>'Hesap Kilitleme Politikası',
     ''=>'',
 );
 

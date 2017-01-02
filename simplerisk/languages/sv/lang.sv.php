@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Inaktivera Registrering Observera',
     'UserPolicy'=>'användarpolicy',
     'UseCaseSensitiveValidationOfUsername'=>'Använd stora bokstäver Validering av användarnamn',
+    'MitigationPlanning'=>'Planerad Mitigation Datum',
+    'AssetDetails'=>'Asset Detaljer',
+    'RiskList'=>'Risk Lista',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Är du säker på att du vill stänga risken? Alla ändringar kommer att gå förlorade!',
+    'MinimumPasswordAge' => 'Minsta Password Ålder',
+    'MaximumPasswordAge' => 'Maximal Password Ålder',
+    'MaximumAttemptsLockout' => 'Max försök Lockout',
+    'MaximumAttemptsLockoutTime' => 'Max försök spärrtid',
+    'attempts'=>'försök',
+    'minutes'=>'minuter',
+    'AccountLockedOut'=>'Konto Låst ut',
+    'AccountLockoutPolicy'=>'Kontoutelåsning Policy',
     ''=>'',
 );
 

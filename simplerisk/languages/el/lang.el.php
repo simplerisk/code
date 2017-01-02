@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Απενεργοποίηση Ανακοίνωση Εγγραφή',
     'UserPolicy'=>'Πολιτική χρήστη',
     'UseCaseSensitiveValidationOfUsername'=>'Χρησιμοποιήστε υπόθεση Ευαίσθητα Επικύρωση Όνομα Χρήστη',
+    'MitigationPlanning'=>'Προγραμματισμένη Ημερομηνία μετριασμού',
+    'AssetDetails'=>'Λεπτομέρειες του ενεργητικού',
+    'RiskList'=>'Λίστα κινδύνου',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Είστε βέβαιοι ότι θέλετε να κλείσετε τον κίνδυνο; Όλες οι αλλαγές θα χαθούν!',
+    'MinimumPasswordAge' => 'Κατώτατο όριο ηλικίας κωδικό πρόσβασης',
+    'MaximumPasswordAge' => 'Μέγιστη ηλικία κωδικού πρόσβασης',
+    'MaximumAttemptsLockout' => 'Μέγιστη Προσπάθειες Lockout',
+    'MaximumAttemptsLockoutTime' => 'Μέγιστη Προσπάθειες Χρόνος κλειδώματος',
+    'attempts'=>'προσπάθειες',
+    'minutes'=>'λεπτά',
+    'AccountLockedOut'=>'Ο λογαριασμός κλειδωθεί έξω',
+    'AccountLockoutPolicy'=>'Ο Λογαριασμός Lockout Πολιτικής',
     ''=>'',
 );
 

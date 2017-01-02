@@ -72,8 +72,15 @@ function get_table($name)
 	// Open the database connection
 	$db = db_open();
 
-	// Query the database
-	$stmt = $db->prepare("SELECT * FROM `$name` ORDER BY value");
+	// If this is the team table
+	if ($name == "team")
+	{
+		// Order by name
+		$stmt = $db->prepare("SELECT * FROM `$name` ORDER BY name");
+	}
+	// Otherwise, order by value
+	else $stmt = $db->prepare("SELECT * FROM `$name` ORDER BY value");
+
 	$stmt->execute();
 
 	// Store the list in the array
@@ -349,7 +356,7 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
 /*****************************
  * FUNCTION: CREATE DROPDOWN *
  *****************************/
-function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false)
+function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false, $customHtml="")
 {
 
 	global $escaper;
@@ -363,9 +370,9 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 
 	if ($rename != NULL)
 	{
-		$str .= "<select id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "\" class=\"form-field form-control\" style=\"width:auto;\"" . $helper . ">\n";
+		$str .= "<select {$customHtml} id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "\" class=\"form-field form-control\" style=\"width:auto;\"" . $helper . ">\n";
 	}
-	else $str .= "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
+	else $str .= "<select {$customHtml} id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
 
 	// If the blank is true
 	if ($blank == true)
@@ -1162,19 +1169,25 @@ function valid_password($password, $repeat_password)
 		if (get_setting('pass_policy_enabled') == 1)
 		{
 			// If the password policy requirements are being met
-			if (check_valid_min_chars($password) && check_valid_alpha($password) && check_valid_upper($password) && check_valid_lower($password) && check_valid_digits($password) && check_valid_specials($password))
+			if (check_valid_min_chars($password) && check_valid_alpha($password) && check_valid_upper($password) && check_valid_lower($password) && check_valid_digits($password) && check_valid_specials($password) && check_current_password_age())
 			{
 				// Return 1
 				return 1;
 			}
-			// Otherwise, return 101
-			else return 101;
+			// Otherwise, return false
+			else return false;
 		}
 		// Otherwise, return 1
 		else return 1;
 	}
-	// Otherwise, return 100
-	else return 100;
+        else
+        {
+        	// Display an alert
+		set_alert(true, "bad", "The new password entered does not match the confirm password entered.  Please try again.");
+        
+                // Return false
+                return false;
+        } 
 }
 
 /***********************************
@@ -1182,14 +1195,23 @@ function valid_password($password, $repeat_password)
  ***********************************/
 function check_valid_min_chars($password)
 {
+	// Get the minimum characters
+	$min_chars = get_setting('pass_policy_min_chars');
+
 	// If the password length is >= the minimum characters
-	if (strlen($password) >= get_setting('pass_policy_min_chars'))
+	if (strlen($password) >= $min_chars)
 	{
 		// Return true
 		return true;
 	}
-	// Otherwise, return false
-	else return false;
+	else
+	{
+        	// Display an alert
+                set_alert(true, "bad", "Unabled to update the password because it does not contain the minimum of ". $min_chars . " characters.");
+
+       		// Return false
+       		return false;
+	}
 }
 
 /*******************************
@@ -1206,8 +1228,14 @@ function check_valid_alpha($password)
 			// Return true
 			return true;
 		}
-		// Otherwise, return false
-		else return false;
+        	else    
+        	{       
+                	// Display an alert
+                	set_alert(true, "bad", "Unabled to update the password because it does not contain an alpha character.");
+
+                	// Return false
+                	return false;
+        	} 
 	}
 	// Otherwise, return true
 	else return true;
@@ -1227,8 +1255,14 @@ function check_valid_upper($password)
                         // Return true
                         return true;
                 }
-                // Otherwise, return false
-                else return false;
+                else
+                {
+                        // Display an alert
+                        set_alert(true, "bad", "Unabled to update the password because it does not contain an uppercase character.");
+        
+                        // Return false
+                        return false;
+                } 
         }
         // Otherwise, return true
         else return true;
@@ -1248,8 +1282,14 @@ function check_valid_lower($password)
                         // Return true
                         return true;
                 }
-                // Otherwise, return false
-                else return false;
+                else
+                {
+                        // Display an alert
+                        set_alert(true, "bad", "Unabled to update the password because it does not contain a lowercase character.");
+        
+                        // Return false
+                        return false;
+                } 
         }
         // Otherwise, return true
         else return true;
@@ -1269,8 +1309,14 @@ function check_valid_digits($password)
 			// Return true
 			return true;
 		}
-		// Otherwise, return false
-        	else return false;
+                else
+                {
+                        // Display an alert
+                        set_alert(true, "bad", "Unabled to update the password because it does not contain a digit.");
+        
+                        // Return false
+                        return false;
+                } 
 	}
 	// Otherwise, return true
 	else return true;
@@ -1290,8 +1336,14 @@ function check_valid_specials($password)
                 	// Return true
                 	return true;
         	}
-        	// Otherwise, return false
-        	else return false;
+                else
+                {
+                        // Display an alert
+                        set_alert(true, "bad", "Unabled to update the password because it does not contain a special character.");
+        
+                        // Return false
+                        return false;
+                } 
 	}
 	// Otherwise, return true
 	else return true;
@@ -1300,7 +1352,7 @@ function check_valid_specials($password)
 /************************************
  * FUNCTION: UPDATE PASSWORD POLICY *
  ************************************/
-function update_password_policy($strict_user_validation, $pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required)
+function update_password_policy($strict_user_validation, $pass_policy_enabled, $min_characters, $alpha_required, $upper_required, $lower_required, $digits_required, $special_required, $pass_policy_attempt_lockout, $pass_policy_attempt_lockout_time, $pass_policy_min_age, $pass_policy_max_age)
 {
 	// Open the database connection
 	$db = db_open();
@@ -1320,19 +1372,34 @@ function update_password_policy($strict_user_validation, $pass_policy_enabled, $
 	$stmt = $db->prepare("UPDATE `settings` SET value=:alpha_required WHERE name='pass_policy_alpha_required'");
 	$stmt->bindParam(":alpha_required", $alpha_required, PDO::PARAM_INT, 1);
 	$stmt->execute();
-        $stmt = $db->prepare("UPDATE `settings` SET value=:upper_required WHERE name='pass_policy_upper_required'");
-        $stmt->bindParam(":upper_required", $upper_required, PDO::PARAM_INT, 1);
-        $stmt->execute();
+    $stmt = $db->prepare("UPDATE `settings` SET value=:upper_required WHERE name='pass_policy_upper_required'");
+    $stmt->bindParam(":upper_required", $upper_required, PDO::PARAM_INT, 1);
+    $stmt->execute();
 	$stmt = $db->prepare("UPDATE `settings` SET value=:lower_required WHERE name='pass_policy_lower_required'");
 	$stmt->bindParam(":lower_required", $lower_required, PDO::PARAM_INT, 1);
 	$stmt->execute();
-        $stmt = $db->prepare("UPDATE `settings` SET value=:digits_required WHERE name='pass_policy_digits_required'");
-        $stmt->bindParam(":digits_required", $digits_required, PDO::PARAM_INT, 1);
-        $stmt->execute();
-        $stmt = $db->prepare("UPDATE `settings` SET value=:special_required WHERE name='pass_policy_special_required'");
-        $stmt->bindParam(":special_required", $special_required, PDO::PARAM_INT, 1);
-        $stmt->execute();
+    $stmt = $db->prepare("UPDATE `settings` SET value=:digits_required WHERE name='pass_policy_digits_required'");
+    $stmt->bindParam(":digits_required", $digits_required, PDO::PARAM_INT, 1);
+    $stmt->execute();
+    $stmt = $db->prepare("UPDATE `settings` SET value=:special_required WHERE name='pass_policy_special_required'");
+    $stmt->bindParam(":special_required", $special_required, PDO::PARAM_INT, 1);
+    $stmt->execute();
 
+    $stmt = $db->prepare("UPDATE `settings` SET value=:pass_policy_attempt_lockout WHERE name='pass_policy_attempt_lockout';");
+    $stmt->bindParam(":pass_policy_attempt_lockout", $pass_policy_attempt_lockout, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $stmt = $db->prepare("UPDATE `settings` SET value=:pass_policy_attempt_lockout_time WHERE name='pass_policy_attempt_lockout_time';");
+    $stmt->bindParam(":pass_policy_attempt_lockout_time", $pass_policy_attempt_lockout_time, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $stmt = $db->prepare("UPDATE `settings` SET value=:pass_policy_min_age WHERE name='pass_policy_min_age';");
+    $stmt->bindParam(":pass_policy_min_age", $pass_policy_min_age, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $stmt = $db->prepare("UPDATE `settings` SET value=:pass_policy_max_age WHERE name='pass_policy_max_age';");
+    $stmt->bindParam(":pass_policy_max_age", $pass_policy_min_age, PDO::PARAM_INT);
+    $stmt->execute();
         // Close the database connection
         db_close($db);
 
@@ -1391,7 +1458,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $assessment
 /*************************
  * FUNCTION: UPDATE USER *
  *************************/
-function update_user($user_id, $type, $name, $email, $teams, $lang, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
+function update_user($user_id, $lockout, $type, $name, $email, $teams, $lang, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor)
 {
         // If the language is empty
         if ($lang == "")
@@ -1404,8 +1471,9 @@ function update_user($user_id, $type, $name, $email, $teams, $lang, $assessments
         $db = db_open();
 
         // Update the user
-        $stmt = $db->prepare("UPDATE user set `type`=:type, `name`=:name, `email`=:email, `teams`=:teams, `lang` =:lang, `assessments`=:assessments, `asset`=:asset, `admin`=:admin, `review_veryhigh`=:review_veryhigh, `review_high`=:review_high, `review_medium`=:review_medium, `review_low`=:review_low, `review_insignificant`=:review_insignificant, `submit_risks`=:submit_risks, `modify_risks`=:modify_risks, `plan_mitigations`=:plan_mitigations, `close_risks`=:close_risks, `multi_factor`=:multi_factor WHERE `value`=:user_id");
+        $stmt = $db->prepare("UPDATE user set `lockout`=:lockout, `type`=:type, `name`=:name, `email`=:email, `teams`=:teams, `lang` =:lang, `assessments`=:assessments, `asset`=:asset, `admin`=:admin, `review_veryhigh`=:review_veryhigh, `review_high`=:review_high, `review_medium`=:review_medium, `review_low`=:review_low, `review_insignificant`=:review_insignificant, `submit_risks`=:submit_risks, `modify_risks`=:modify_risks, `plan_mitigations`=:plan_mitigations, `close_risks`=:close_risks, `multi_factor`=:multi_factor WHERE `value`=:user_id");
 	$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+	$stmt->bindParam(":lockout", $lockout, PDO::PARAM_INT);
 	$stmt->bindParam(":type", $type, PDO::PARAM_STR, 10);
         $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
         $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
@@ -1539,7 +1607,7 @@ function update_password($user, $hash)
         $db = db_open();
 
         // Update password
-        $stmt = $db->prepare("UPDATE user SET password=:hash WHERE username=:user");
+        $stmt = $db->prepare("UPDATE user SET password=:hash, last_password_change_date=NOW() WHERE username=:user");
 	$stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":hash", $hash, PDO::PARAM_STR, 60);
 	$stmt->execute();
@@ -2169,11 +2237,32 @@ function update_risk_scoring($id, $scoring_method, $CLASSIC_likelihood, $CLASSIC
 /*******************************
  * FUNCTION: SUBMIT MITIGATION *
  *******************************/
-function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
+function submit_mitigation($risk_id, $status, $planning_strategy=0, $mitigation_effort=0, $mitigation_cost=0, $mitigation_owner=0, $mitigation_team=0, $current_solution="", $security_requirements="", $security_recommendations="", $planning_date="")
 {
         // Subtract 1000 from id
         $id = (int)$risk_id - 1000;
 
+        $planning_strategy = (int)$_POST['planning_strategy'];
+        $mitigation_effort = (int)$_POST['mitigation_effort'];
+        $mitigation_cost = (int)$_POST['mitigation_cost'];
+        $mitigation_owner = (int)$_POST['mitigation_owner'];
+        $mitigation_team = (int)$_POST['mitigation_team'];
+        $current_solution = try_encrypt($_POST['current_solution']);
+        $security_requirements = try_encrypt($_POST['security_requirements']);
+        $security_recommendations = try_encrypt($_POST['security_recommendations']);
+        $planning_date = $_POST['planning_date'];
+
+        if (!validate_date($planning_date, 'm/d/Y'))
+        {
+            $planning_date = "0000-00-00";
+        }
+        // Otherwise, set the proper format for submitting to the database
+        else
+        {
+            $planning_date = date("Y-m-d", strtotime($planning_date));
+        }
+
+        
         // Get current datetime for last_update
         $current_datetime = date('Y-m-d H:i:s');
 
@@ -2181,18 +2270,18 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
         $db = db_open();
 
         // Add the mitigation
-        $stmt = $db->prepare("INSERT INTO mitigations (`risk_id`, `planning_strategy`, `mitigation_effort`, `mitigation_cost`, `mitigation_owner`, `mitigation_team`, `current_solution`, `security_requirements`, `security_recommendations`, `submitted_by`) VALUES (:risk_id, :planning_strategy, :mitigation_effort, :mitigation_cost, :mitigation_owner, :mitigation_team, :current_solution, :security_requirements, :security_recommendations, :submitted_by)");
-
+        $stmt = $db->prepare("INSERT INTO mitigations (`risk_id`, `planning_strategy`, `mitigation_effort`, `mitigation_cost`, `mitigation_owner`, `mitigation_team`, `current_solution`, `security_requirements`, `security_recommendations`, `submitted_by`, `planning_date`) VALUES (:risk_id, :planning_strategy, :mitigation_effort, :mitigation_cost, :mitigation_owner, :mitigation_team, :current_solution, :security_requirements, :security_recommendations, :submitted_by, :planning_date)");
         $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":planning_strategy", $planning_strategy, PDO::PARAM_INT);
-	$stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
-	$stmt->bindParam(":mitigation_cost", $mitigation_cost, PDO::PARAM_INT);
-	$stmt->bindParam(":mitigation_owner", $mitigation_owner, PDO::PARAM_INT);
-	$stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
-	$stmt->bindParam(":current_solution", try_encrypt($current_solution), PDO::PARAM_STR);
-	$stmt->bindParam(":security_requirements", try_encrypt($security_requirements), PDO::PARAM_STR);
-	$stmt->bindParam(":security_recommendations", try_encrypt($security_recommendations), PDO::PARAM_STR);
-	$stmt->bindParam(":submitted_by", $_SESSION['uid'], PDO::PARAM_INT);
+	    $stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
+	    $stmt->bindParam(":mitigation_cost", $mitigation_cost, PDO::PARAM_INT);
+	    $stmt->bindParam(":mitigation_owner", $mitigation_owner, PDO::PARAM_INT);
+	    $stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
+	    $stmt->bindParam(":current_solution", try_encrypt($current_solution), PDO::PARAM_STR);
+	    $stmt->bindParam(":security_requirements", try_encrypt($security_requirements), PDO::PARAM_STR);
+	    $stmt->bindParam(":security_recommendations", try_encrypt($security_recommendations), PDO::PARAM_STR);
+        $stmt->bindParam(":submitted_by", $_SESSION['uid'], PDO::PARAM_INT);
+	    $stmt->bindParam(":planning_date", $planning_date, PDO::PARAM_STR, 10);
         $stmt->execute();
 
 	// Get the new mitigation id
@@ -2217,13 +2306,62 @@ function submit_mitigation($risk_id, $status, $planning_strategy, $mitigation_ef
 		notify_new_mitigation($id);
         }
 
-	// Audit log
-	$message = "A mitigation was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-	write_log($risk_id, $_SESSION['uid'], $message);
+	    // Audit log
+	    $message = "A mitigation was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+	    write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);
 
+        
+        /***** upload files ******/
+        // If the delete value exists
+        if (!empty($_POST['delete']))
+        {
+            // For each file selected
+            foreach ($_POST['delete'] as $file)
+            {
+                // Delete the file
+                delete_file($file);
+            }
+        }
+        if(!empty($_POST['unique_names'])){
+            refresh_files_for_risk($_POST['unique_names'], $id, 2);
+        }
+
+        $error = 1;
+        // If a file was submitted
+        if (!empty($_FILES))
+        {
+            // Upload any file that is submitted
+            for($i=0; $i<count($_FILES['file']['name']); $i++){
+                if($_FILES['file']['error'][$i] || $i==0){
+                    continue; 
+                }
+                $file = array(
+                    'name' => $_FILES['file']['name'][$i],
+                    'type' => $_FILES['file']['type'][$i],
+                    'tmp_name' => $_FILES['file']['tmp_name'][$i],
+                    'size' => $_FILES['file']['size'][$i],
+                    'error' => $_FILES['file']['error'][$i],
+                );
+            // Upload any file that is submitted
+                $error = upload_file($id, $file, 2);
+                if($error != 1){
+                    /**
+                    * If error, stop uploading files;
+                    */
+                    break;
+                }
+            }
+
+        }
+        // Otherwise, success
+        else $error = 1;
+        /****** end uploading files *******/
+        
+        
+        
         return $current_datetime;
 }
 
@@ -2245,11 +2383,11 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         $stmt = $db->prepare("INSERT INTO mgmt_reviews (`risk_id`, `review`, `reviewer`, `next_step`, `comments`, `next_review`) VALUES (:risk_id, :review, :reviewer, :next_step, :comments, :next_review)");
 
         $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
-	$stmt->bindParam(":review", $review, PDO::PARAM_INT);
-	$stmt->bindParam(":reviewer", $reviewer, PDO::PARAM_INT);
-	$stmt->bindParam(":next_step", $next_step, PDO::PARAM_INT);
-	$stmt->bindParam(":comments", try_encrypt($comments), PDO::PARAM_STR);
-	$stmt->bindParam(":next_review", $next_review, PDO::PARAM_STR, 10);
+	    $stmt->bindParam(":review", $review, PDO::PARAM_INT);
+	    $stmt->bindParam(":reviewer", $reviewer, PDO::PARAM_INT);
+	    $stmt->bindParam(":next_step", $next_step, PDO::PARAM_INT);
+	    $stmt->bindParam(":comments", try_encrypt($comments), PDO::PARAM_STR);
+	    $stmt->bindParam(":next_review", $next_review, PDO::PARAM_STR, 10);
 
         $stmt->execute();
 
@@ -2260,29 +2398,29 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         $stmt = $db->prepare("UPDATE risks SET status=:status, last_update=:last_update, review_date=:review_date, mgmt_review=:mgmt_review WHERE id = :risk_id");
         $stmt->bindParam(":status", $status, PDO::PARAM_STR, 20);
         $stmt->bindParam(":last_update", $current_datetime, PDO::PARAM_STR, 20);
-	$stmt->bindParam(":review_date", $current_datetime, PDO::PARAM_STR, 20);
+	    $stmt->bindParam(":review_date", $current_datetime, PDO::PARAM_STR, 20);
         $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":mgmt_review", $mgmt_review, PDO::PARAM_INT);
 
         $stmt->execute();
 
-	// If this is not a risk closure
-	if (!$close)
-	{
-        	// If notification is enabled
-        	if (notification_extra())
-        	{
-                	// Include the notification extra
-                	require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+	    // If this is not a risk closure
+	    if (!$close)
+	    {
+        	    // If notification is enabled
+        	    if (notification_extra())
+        	    {
+                	    // Include the notification extra
+                	    require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
-			// Send the notification
-			notify_new_review($id);
-        	}
+			    // Send the notification
+			    notify_new_review($id);
+        	    }
 
-		// Audit log
-		$message = "A management review was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-		write_log($risk_id, $_SESSION['uid'], $message);
-	}
+		    // Audit log
+		    $message = "A management review was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+		    write_log($risk_id, $_SESSION['uid'], $message);
+	    }
 
         // Close the database connection
         db_close($db);
@@ -2293,19 +2431,36 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
 /*************************
  * FUNCTION: UPDATE RISK *
  *************************/
-function update_risk($risk_id, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes)
+function update_risk($risk_id)
 {
 	// Subtract 1000 from risk_id
 	$id = (int)$risk_id - 1000;
+    
+    
+    $reference_id = $_POST['reference_id'];
+    $regulation = (int)$_POST['regulation'];
+    $control_number = $_POST['control_number'];
+    $location = (int)$_POST['location'];
+    $source = (int)$_POST['source'];
+    $category = (int)$_POST['category'];
+    $team = (int)$_POST['team'];
+    $technology = (int)$_POST['technology'];
+    $owner = (int)$_POST['owner'];
+    $manager = (int)$_POST['manager'];
+    $assessment = try_encrypt($_POST['assessment']);
+    $notes = try_encrypt($_POST['notes']);
+    $assets = $_POST['assets'];
+    $submission_date = $_POST['submission_date'];
+    $submission_date = date("Y-m-d H:i:s", strtotime($submission_date));
 
 	// Get current datetime for last_update
 	$current_datetime = date('Y-m-d H:i:s');
-
-        // Open the database connection
-        $db = db_open();
+//print_r($submission_date);exit;
+    // Open the database connection
+    $db = db_open();
 
         // Update the risk
-	$stmt = $db->prepare("UPDATE risks SET reference_id=:reference_id, regulation=:regulation, control_number=:control_number, location=:location, source=:source, category=:category, team=:team, technology=:technology, owner=:owner, manager=:manager, assessment=:assessment, notes=:notes, last_update=:date WHERE id = :id");
+	$stmt = $db->prepare("UPDATE risks SET reference_id=:reference_id, regulation=:regulation, control_number=:control_number, location=:location, source=:source, category=:category, team=:team, technology=:technology, owner=:owner, manager=:manager, assessment=:assessment, notes=:notes, last_update=:date, submission_date=:submission_date WHERE id = :id");
 
 	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
 	$stmt->bindParam(":reference_id", $reference_id, PDO::PARAM_STR, 20);
@@ -2313,34 +2468,85 @@ function update_risk($risk_id, $reference_id, $regulation, $control_number, $loc
 	$stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR, 20);
 	$stmt->bindParam(":location", $location, PDO::PARAM_INT);
 	$stmt->bindParam(":source", $source, PDO::PARAM_INT);
-        $stmt->bindParam(":category", $category, PDO::PARAM_INT);
-        $stmt->bindParam(":team", $team, PDO::PARAM_INT);
-        $stmt->bindParam(":technology", $technology, PDO::PARAM_INT);
-        $stmt->bindParam(":owner", $owner, PDO::PARAM_INT);
-        $stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
-        $stmt->bindParam(":assessment", $assessment, PDO::PARAM_STR);
-        $stmt->bindParam(":notes", $notes, PDO::PARAM_STR);
+    $stmt->bindParam(":category", $category, PDO::PARAM_INT);
+    $stmt->bindParam(":team", $team, PDO::PARAM_INT);
+    $stmt->bindParam(":technology", $technology, PDO::PARAM_INT);
+    $stmt->bindParam(":owner", $owner, PDO::PARAM_INT);
+    $stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
+    $stmt->bindParam(":assessment", $assessment, PDO::PARAM_STR);
+    $stmt->bindParam(":notes", $notes, PDO::PARAM_STR);
 	$stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
-        $stmt->execute();
+    $stmt->bindParam(":submission_date", $submission_date, PDO::PARAM_STR, 19);
+    $stmt->execute();
 
-        // If notification is enabled
-        if (notification_extra())
-        {
-                // Include the notification extra
-                require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+    // If notification is enabled
+    if (notification_extra())
+    {
+        // Include the notification extra
+        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
-		// Send the notification
-		notify_risk_update($id);
-        }
+	    // Send the notification
+	    notify_risk_update($id);
+    }
 
 	// Audit log
 	$message = "Risk details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
 	write_log($risk_id, $_SESSION['uid'], $message);
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        return true;
+    // Tag the assets to the risk id
+    tag_assets_to_risk($id, $assets);
+
+    // If the delete value exists
+    if (!empty($_POST['delete']))
+    {
+      // For each file selected
+      foreach ($_POST['delete'] as $file)
+      {
+        // Delete the file
+        delete_file($file);
+      }
+    }
+    if(!empty($_POST['unique_names'])){
+        refresh_files_for_risk($_POST['unique_names'], $id, 1);
+    }
+        
+    $error = 1;
+    // If a file was submitted
+    if (!empty($_FILES))
+    {
+      // Upload any file that is submitted
+        for($i=0; $i<count($_FILES['file']['name']); $i++){
+            if($_FILES['file']['error'][$i] || $i==0){
+               continue; 
+            }
+            $file = array(
+                'name' => $_FILES['file']['name'][$i],
+                'type' => $_FILES['file']['type'][$i],
+                'tmp_name' => $_FILES['file']['tmp_name'][$i],
+                'size' => $_FILES['file']['size'][$i],
+                'error' => $_FILES['file']['error'][$i],
+            );
+            // Upload any file that is submitted
+            $error = upload_file($id, $file, 1);
+            if($error != 1){
+                /**
+                * If error, stop uploading files;
+                */
+                break;
+            }
+        }
+      
+//      $error = upload_file($id-1000, $_FILES['file'], 1);
+    }
+    // Otherwise, success
+    else $error = 1;
+        
+        
+        
+    return $error;
 }
 
 /*********************************
@@ -2372,14 +2578,14 @@ function update_risk_subject($risk_id, $subject)
         db_close($db);
 
         // If notification is enabled
-        /*if (notification_extra())
+        if (notification_extra())
         {
                 // Include the notification extra
                 require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
                 // Send the notification
                 notify_risk_update($id);
-        }*/
+        }
 }
 
 /************************
@@ -3480,42 +3686,42 @@ function get_risk_table($sort_order=0, $activecol="")
 		// Get the risk color
 		$color = get_risk_color($risk['calculated_risk']);
 
-		echo "<tr>\n";
-		echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+		echo "<tr data-id='" . $escaper->escapeHtml(convert_id($risk['id'])) . "'>\n";
+		echo "<td align=\"left\" width=\"50px\" class='open-risk'><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
 		echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
 		echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml(substr(try_decrypt($risk['subject']),0, 40)) . "</td>\n";
 		echo "<td align=\"center\" class=\"" . $escaper->escapeHtml($color) . " risk-cell \">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\"></span></td>\n";
 		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIME,strtotime($risk['submission_date']))) . "</td>\n";
 
-	// If the active column is management
-	if ($activecol == 'management')
-	{
-		// Active cell is management
-		$mitigation = "";
-		$management = "active-cell";
-	}
-	// If the active column is mitigation
-	else if ($activecol == 'mitigation')
-	{
-		// Active cell is mitigation
-		$mitigation = "active-cell";
-		$management = "";
-	}
-	// Otherwise
-	else
-	{
-		// No active cell
-		$mitigation = "";
-		$management = "";
-	}
+	    // If the active column is management
+	    if ($activecol == 'management')
+	    {
+		    // Active cell is management
+		    $mitigation = "";
+		    $management = "active-cell";
+	    }
+	    // If the active column is mitigation
+	    else if ($activecol == 'mitigation')
+	    {
+		    // Active cell is mitigation
+		    $mitigation = "active-cell";
+		    $management = "";
+	    }
+	    // Otherwise
+	    else
+	    {
+		    // No active cell
+		    $mitigation = "";
+		    $management = "";
+	    }
 
-		echo "<td align=\"center\" width=\"100px\" class=\"text-center mitigation ".$mitigation."\">" . planned_mitigation(convert_id($risk['id']), $risk['mitigation_id']) . "</td>\n";
-		echo "<td align=\"center\" width=\"100px\" class=\"text-center management ".$management."\">" . management_review(convert_id($risk['id']), $risk['mgmt_review']) . "</td>\n";
+		echo "<td align=\"center\" width=\"100px\" class=\"text-center open-mitigation mitigation ".$mitigation."\">" . planned_mitigation(convert_id($risk['id']), $risk['mitigation_id']) . "</td>\n";
+		echo "<td align=\"center\" width=\"100px\" class=\"text-center open-review management ".$management."\">" . management_review(convert_id($risk['id']), $risk['mgmt_review']) . "</td>\n";
 		echo "</tr>\n";
 	}
 
-	echo "</tbody>\n";
-	echo "</table>\n";
+	    echo "</tbody>\n";
+	    echo "</table>\n";
 
         echo "<div class=\"pagination clearfix\"><ul class=\"pull-right\">";
         // range of num links to show
@@ -4781,13 +4987,13 @@ function get_reviews_table($sort_order=3)
                 $next_review = $review['next_review'];
                 $next_review_html = $review['next_review_html'];
 
-                echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                echo "<tr data-id='" . $escaper->escapeHtml(convert_id($risk_id)) . "' >\n";
+                echo "<td align=\"left\" width=\"50px\" class='open-risk'><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml(substr($subject,0, 40)) . "</td>\n";
                 echo "<td align=\"center\" class=\"" . $escaper->escapeHtml($color) . " risk-cell\">" . $escaper->escapeHtml($calculated_risk) . "<span class=\"risk-color\"></span></td>\n";
                 echo "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($dayssince) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . $next_review_html . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\" class=\"text-center open-review \">" . $next_review_html . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -5097,10 +5303,10 @@ function dayssince($date, $date2 = null)
  **********************************/
 function get_last_review($risk_id)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Select the last submission date
+    // Select the last submission date
 	$stmt = $db->prepare("SELECT submission_date FROM mgmt_reviews WHERE risk_id=:risk_id ORDER BY submission_date DESC LIMIT 1");
         $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
         $stmt->execute();
@@ -5117,6 +5323,73 @@ function get_last_review($risk_id)
                 return "";
         }
         else return $array[0]['submission_date'];
+}
+
+/** 
+* Get next review date by risk scoring
+* 
+* @param mixed $risk_id
+*/
+function get_next_reveiw_default($risk_id){
+    global $escaper;
+    
+    $id = intval($risk_id) + 1000;
+    $risk = get_risk_by_id($id);
+    $color = get_risk_color($risk[0]['calculated_risk']);
+    $next_review = $risk[0]['next_review'];
+    try{
+        new DateTime($next_review);
+    }catch(Exception $e){
+        $next_review = "0000-00-00";
+    }
+    if(!$next_review || $next_review == "0000-00-00"){
+        // Get the last review for this risk
+        $last_review = get_last_review($risk_id);
+
+        // Get the review levels
+        $review_levels = get_review_levels();
+
+        // If very high risk
+        if ($color === "red")
+        {
+            // Get days to review very high risks
+            $days = $review_levels[0]['value'];
+        }
+        // If high risk
+        else if ($color == "orangered")
+        {
+            // Get days to review high risks
+            $days = $review_levels[0]['value'];
+        }
+        // If medium risk
+        else if ($color == "orange")
+        {
+                        // Get days to review medium risks
+                        $days = $review_levels[1]['value'];
+        }
+        // If low risk
+        else if ($color == "yellow")
+        {
+                        // Get days to review low risks
+                        $days = $review_levels[2]['value'];
+        }
+        // If insignificant risk
+        else if ($color == "white")
+        {
+            // Get days to review insignificant risks
+            $days = $review_levels[3]['value'];
+        }
+
+        // Next review date
+        $last_review = new DateTime($last_review);
+        $next_review = $last_review->add(new DateInterval('P'.$days.'D'));
+    }else{
+        $next_review = new DateTime($next_review);
+    }
+
+    $text = $next_review->format(DATESIMPLE);
+    
+    return $escaper->escapeHtml($text);
 }
 
 /**********************************
@@ -5177,14 +5450,16 @@ function next_review($color, $risk_id, $next_review, $html = true)
 			}
 
 			// Next review date
-                	$last_review = new DateTime($last_review);
-                	$next_review = $last_review->add(new DateInterval('P'.$days.'D'));
+            $last_review = new DateTime($last_review);
+            $next_review = $last_review->add(new DateInterval('P'.$days.'D'));
 		}
 		// A custom next review date was used
-		else $next_review = new DateTime($next_review);
+		else if($next_review == $lang['PASTDUE']){
+            
+        }else $next_review = new DateTime($next_review);
 
 		// If the next review date is after today
-		if (strtotime($next_review->format('Y-m-d')) > time())
+		if ($next_review != $lang['PASTDUE'] && (strtotime($next_review->format('Y-m-d')) + 24*3600) > time())
 		{
 			$text = $next_review->format(DATESIMPLE);
 		}
@@ -5281,7 +5556,7 @@ function close_risk($risk_id, $user_id, $status, $close_reason, $note)
 
         // Get the new mitigation id
         $close_id = get_close_id($id);
-
+//print_r($id);exit;
         // Update the risk
 	      $stmt = $db->prepare("UPDATE risks SET status=:status,last_update=:date,close_id=:close_id WHERE id = :id");
 
@@ -5394,6 +5669,16 @@ function add_comment($risk_id, $user_id, $comment)
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
         $stmt->execute();
+
+        // If notification is enabled
+        if (notification_extra())
+        {
+                // Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+                // Send the notification
+                notify_risk_comment($id);
+        }
 
 	// Audit log
 	$message = "A comment was added to risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
@@ -5512,11 +5797,32 @@ function get_audit_trail($id = NULL, $days = 7)
 /*******************************
  * FUNCTION: UPDATE MITIGATION *
  *******************************/
-function update_mitigation($risk_id, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
+function update_mitigation($risk_id)
 {
         // Subtract 1000 from risk_id
         $id = (int)$risk_id - 1000;
 
+        $planning_strategy = (int)$_POST['planning_strategy'];
+        $mitigation_effort = (int)$_POST['mitigation_effort'];
+        $mitigation_cost = (int)$_POST['mitigation_cost'];
+        $mitigation_owner = (int)$_POST['mitigation_owner'];
+        $mitigation_team = (int)$_POST['mitigation_team'];
+        $current_solution = try_encrypt($_POST['current_solution']);
+        $security_requirements = try_encrypt($_POST['security_requirements']);
+        $security_recommendations = try_encrypt($_POST['security_recommendations']);
+        $planning_date = $_POST['planning_date'];
+
+        if (!validate_date($planning_date, 'm/d/Y'))
+        {
+            $planning_date = "0000-00-00";
+        }
+        // Otherwise, set the proper format for submitting to the database
+        else
+        {
+            $planning_date = date("Y-m-d", strtotime($planning_date));
+        }
+        
+        
         // Get current datetime for last_update
         $current_datetime = date('Y-m-d H:i:s');
 
@@ -5524,18 +5830,19 @@ function update_mitigation($risk_id, $planning_strategy, $mitigation_effort, $mi
         $db = db_open();
 
         // Update the risk
-	$stmt = $db->prepare("UPDATE mitigations SET last_update=:date, planning_strategy=:planning_strategy, mitigation_effort=:mitigation_effort, mitigation_cost=:mitigation_cost, mitigation_owner=:mitigation_owner, mitigation_team=:mitigation_team, current_solution=:current_solution, security_requirements=:security_requirements, security_recommendations=:security_recommendations WHERE risk_id=:id");
+	$stmt = $db->prepare("UPDATE mitigations SET last_update=:date, planning_strategy=:planning_strategy, mitigation_effort=:mitigation_effort, mitigation_cost=:mitigation_cost, mitigation_owner=:mitigation_owner, mitigation_team=:mitigation_team, current_solution=:current_solution, security_requirements=:security_requirements, security_recommendations=:security_recommendations, planning_date=:planning_date WHERE risk_id=:id");
 
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-	$stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
+	    $stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
         $stmt->bindParam(":planning_strategy", $planning_strategy, PDO::PARAM_INT);
-	$stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
-	$stmt->bindParam(":mitigation_cost", $mitigation_cost, PDO::PARAM_INT);
-	$stmt->bindParam(":mitigation_owner", $mitigation_owner, PDO::PARAM_INT);
-	$stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
+        $stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
+        $stmt->bindParam(":mitigation_cost", $mitigation_cost, PDO::PARAM_INT);
+        $stmt->bindParam(":mitigation_owner", $mitigation_owner, PDO::PARAM_INT);
+        $stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
         $stmt->bindParam(":current_solution", $current_solution, PDO::PARAM_STR);
         $stmt->bindParam(":security_requirements", $security_requirements, PDO::PARAM_STR);
-	$stmt->bindParam(":security_recommendations", $security_recommendations, PDO::PARAM_STR);
+        $stmt->bindParam(":security_recommendations", $security_recommendations, PDO::PARAM_STR);
+        $stmt->bindParam(":planning_date", $planning_date, PDO::PARAM_STR, 10);
         $stmt->execute();
 
         // If notification is enabled
@@ -5544,17 +5851,65 @@ function update_mitigation($risk_id, $planning_strategy, $mitigation_effort, $mi
                 // Include the team separation extra
                 require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
-		// Send the notification
-		notify_mitigation_update($id);
+		    // Send the notification
+		    notify_mitigation_update($id);
         }
 
-	// Audit log
-	$message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-	write_log($risk_id, $_SESSION['uid'], $message);
+	    // Audit log
+	    $message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+	    write_log($risk_id, $_SESSION['uid'], $message);
 
         // Close the database connection
         db_close($db);
 
+        
+        /***** upload files ******/
+        // If the delete value exists
+        if (!empty($_POST['delete']))
+        {
+            // For each file selected
+            foreach ($_POST['delete'] as $file)
+            {
+                // Delete the file
+                delete_file($file);
+            }
+        }
+        if(!empty($_POST['unique_names'])){
+            refresh_files_for_risk($_POST['unique_names'], $id, 2);
+        }
+
+        $error = 1;
+        // If a file was submitted
+        if (!empty($_FILES))
+        {
+            // Upload any file that is submitted
+            for($i=0; $i<count($_FILES['file']['name']); $i++){
+                if($_FILES['file']['error'][$i] || $i==0){
+                    continue; 
+                }
+                $file = array(
+                    'name' => $_FILES['file']['name'][$i],
+                    'type' => $_FILES['file']['type'][$i],
+                    'tmp_name' => $_FILES['file']['tmp_name'][$i],
+                    'size' => $_FILES['file']['size'][$i],
+                    'error' => $_FILES['file']['error'][$i],
+                );
+            // Upload any file that is submitted
+                $error = upload_file($id, $file, 2);
+                if($error != 1){
+                    /**
+                    * If error, stop uploading files;
+                    */
+                    break;
+                }
+            }
+
+        }
+        // Otherwise, success
+        else $error = 1;
+        /****** end uploading files *******/
+        
+        
         return $current_datetime;
 }
 
@@ -5718,8 +6073,8 @@ function write_log($risk_id, $user_id, $message)
         $stmt = $db->prepare("INSERT INTO audit_log (risk_id, user_id, message) VALUES (:risk_id, :user_id, :message)");
 
         $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
-	$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-	$stmt->bindParam(":message", try_encrypt($message), PDO::PARAM_STR);
+	    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+	    $stmt->bindParam(":message", try_encrypt($message), PDO::PARAM_STR);
 
         $stmt->execute();
 
@@ -6144,7 +6499,7 @@ function delete_file($unique_name)
 function refresh_files_for_risk($unique_names, $risk_id, $view_type = 1)
 {
     if(!$unique_names){
-        $unique_names = [];
+        $unique_names = array();
     }
     // Open the database connection
     $db = db_open();
@@ -6230,6 +6585,45 @@ function download_file($unique_name)
 	}
 }
 
+function checkApprove($risk_level){
+    
+    // Default is not approved
+    $approved = false;
+
+  // If the risk level is very high and they have permission
+  if (($risk_level == "Very High") && ($_SESSION['review_veryhigh'] == 1))
+  {
+    // Review is approved
+    $approved = true;
+  }
+  // If the risk level is high and they have permission
+  else if (($risk_level == "High") && ($_SESSION['review_high'] == 1))
+  {
+    // Review is approved
+    $approved = true;
+  }
+  // If the risk level is medium and they have permission
+  else if (($risk_level == "Medium") && ($_SESSION['review_medium'] == 1))
+  {
+    // Review is approved
+    $approved = true;
+  }
+  // If the risk level is low and they have permission
+  else if (($risk_level == "Low") && ($_SESSION['review_low'] == 1))
+  {
+    // Review is approved
+    $approved = true;
+  }
+  // If the risk level is insignificant and they have permission
+  else if (($risk_level == "Insignificant") && ($_SESSION['review_insignificant'] == 1))
+  {
+    // Review is approved
+    $approved = true;
+  }
+  
+  return $approved;
+}
+
 /**************************************
  * FUNCTION: SUPPORTING DOCUMENTATION *
  * TYPE 1 = Risk File                 *
@@ -6274,7 +6668,7 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
 			// For each entry in the array
 			foreach ($array as $file)
 			{
-				echo "<div class =\"doc-link edit-mode\"><a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($file['name']) . "</a></div>\n";
+				echo "<div class =\"doc-link edit-mode\"><a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" target=\"_blank\" >" . $escaper->escapeHtml($file['name']) . "</a></div>\n";
 			}
 		}
 
@@ -6695,19 +7089,19 @@ function update_risk_status($risk_id, $status)
 	// Adjust the risk id
 	$id = $risk_id - 1000;
 
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Update the status
-        $stmt = $db->prepare("UPDATE risks SET `status`=:status WHERE `id`=:id");
-        $stmt->bindParam(":status", $status, PDO::PARAM_STR, 50);
-        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-        $stmt->execute();
+    // Update the status
+    $stmt = $db->prepare("UPDATE risks SET `status`=:status WHERE `id`=:id");
+    $stmt->bindParam(":status", $status, PDO::PARAM_STR, 50);
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        return true;
+    return true;
 }
 
 /*************************
@@ -6771,6 +7165,39 @@ function get_current_url()
 	return $url;
 }
 
+/*****************************
+ * FUNCTION: SELECT REDIRECT *
+ *****************************/
+function select_redirect()
+{
+	// If a maximum age for the password is set
+	if(get_setting("pass_policy_max_age") != 0)
+	{
+		// If the user needs to reset their password
+		if(check_password_max_time($_SESSION['uid']) === "CHANGE")
+		{
+			// Use the password max age redirect
+			password_max_age_redirect();
+		}
+		// Otherwise use the registration redirect
+		else registration_redirect();
+	}
+	// Otherwise use the registration redirect
+	else registration_redirect();
+}
+
+/***************************************
+ * FUNCTION: PASSWORD MAX AGE REDIRECT *
+ ***************************************/
+function password_max_age_redirect()
+{
+	// Send an alert
+	set_alert(true, "bad", "Your password is too old and needs to be changed.");
+
+	// Redirect to change_password page
+	header("Location: account/change_password.php");
+}
+
 /***********************************
  * FUNCTION: REGISTRATION REDIRECT *
  ***********************************/
@@ -6818,10 +7245,214 @@ function registration_redirect()
  ******************************/
 function js_string_escape($string)
 {
-	global $escaper;
-	$string = $escaper->escapeHtml($string);
-	$string = str_replace("&#039;", "'", $string);
-	return $string;
+    global $escaper;
+    $string = $escaper->escapeHtml($string);
+    $string = str_replace("&#039;", "'", $string);
+    return $string;
+}
+
+
+/******************************
+ * FUNCTION: CHECK TEAM ACCESS *
+ * $risk_id: Risk ID from front
+ ******************************/
+function check_access_for_risk($risk_id)
+{
+    // If team separation is enabled
+    if (team_separation_extra())
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        if (!extra_grant_access($_SESSION['uid'], $risk_id))
+        {
+            // Do not allow the user to update the risk
+            $access = false;
+        }
+        // Otherwise, allow the user to update the risk
+        else $access = true;
+    }
+    // Otherwise, allow the user to update the risk
+    else $access = true;   
+    
+    return $access; 
+}
+
+/********************************
+* FUNCTION: CALCULATE DATE DIFF *
+* Params: dates that can be in  *
+* any format and for            * 
+* diff_format:                  *
+* %y = year                     *
+* %m = month                    *
+* %d = day                      *
+* %h = hours                    *
+* %i = minutes                  *
+* %s = seconds                  *
+* Example of usage:             *
+* calculate_date_diff(          *
+* "2015-12-23 11:36:49",        *
+* "2016-12-06 14:36:49",        *
+* "%a days and %h hours");      *
+********************************/
+function calculate_date_diff($first_date, $second_date, $diff_format = '%a')
+{
+    $datetime_1 = date_create($first_date);
+    $datetime_2 = date_create($second_date);
+
+    $interval = date_diff($datetime_1, $datetime_2);
+
+    return $interval->format($diff_format);
+}
+
+/**************************************
+* FUNCTION: add_last_password_history *
+**************************************/
+function add_last_password_history($user_id, $old_salt, $old_password)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Check if row exists
+    $stmt = $db->prepare("SELECT user_id, salt, password FROM user_pass_history WHERE user_id LIKE :user_id AND salt LIKE :salt AND password LIKE :password;");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->bindParam(":salt", $old_salt, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":password", $old_password, PDO::PARAM_STR, 60);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if(count($result) == 0){
+        // There is no entry like that, adding new one
+        $stmt = $db->prepare("INSERT INTO user_pass_history (user_id, salt, password) VALUES (:user_id, :salt, :password);");
+        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+        $stmt->bindParam(":salt", $old_salt, PDO::PARAM_STR, 20);
+        $stmt->bindParam(":password", $old_password, PDO::PARAM_STR, 60);
+        $stmt->execute();        
+    }
+
+    // Close the database connection
+    db_close($db);
+}
+
+/*************************************
+ * FUNCTION: CHECK PASSWORD MAX TIME *
+ *************************************/
+function check_password_max_time($user_id)
+{
+    $db = db_open();
+    $password_max_time = get_setting('pass_policy_max_age');
+
+    // Get last password change date
+    $stmt = $db->prepare("SELECT last_password_change_date FROM user WHERE value=:user_id;");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+    db_close($db);
+    $last_password_change_date = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try{
+        if(isset($last_password_change_date) && count($last_password_change_date[0]) == 1) {
+            if((int)calculate_date_diff(date("Y-m-d h:i:s"), $last_password_change_date[0]['last_password_change_date'], "%d") < (int)$password_max_time){
+                return TRUE;
+            }else{
+                return "CHANGE";
+            }
+        }else{
+            throw new Exception("last_password_change_date is empty or ir returned too much results to fetch them correctly.");
+        }
+    }catch(Exception $e){
+        echo 'Exception thrown: ' . $e->getLine() . " : " . $e->getMessage() . PHP_EOL;
+        return FALSE;
+    }
+}
+
+function get_salt_and_password_by_user_id($user_id){
+    $db = db_open();
+    $stmt = $db->prepare("SELECT salt, password FROM user WHERE value=:user_id;");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $res = array("salt" => $result[0]["salt"], "password" => $result[0]["password"]);
+    db_close($db);
+    return $res;
+}
+
+function check_if_password_can_be_used($user_id, $new_password, $user_salt){
+    $db = db_open();
+    //Get all user history
+    $stmt = $db->prepare("SELECT salt, password, add_date FROM user_pass_history WHERE user_id=:user_id;");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $pass_exists = false;
+    $password_min_time = get_setting("pass_policy_min_age");
+    foreach($data as $single_data){
+        // For comparing
+        $new_password_hash = generateHash($user_salt, $new_password);
+        // Iterate over again with new password with use of old salt
+        foreach($data as $single_data_2){
+            echo "checking if " . $new_password_hash . " equals to " . $single_data_2["password"] . "<br />";
+            if($new_password_hash == $single_data_2["password"]){
+                $pass_exists = True;
+                if((int)calculate_date_diff($single_data_2['add_date'], date("Y-m-d h:i:s"), "%d") > (int)$password_min_time){
+                        // We can use the password
+                        return True;
+                }else{
+                    echo "Password cannot be used.1";
+                    return False;
+                }
+            }
+        }
+
+    }
+    if($pass_exists == True){
+        return False;
+    }else{
+        return True;
+    }
+    db_close();
+}
+
+/****************************************
+ * FUNCTION: CHECK CURRENT PASSWORD AGE *
+ ****************************************/
+function check_current_password_age()
+{
+	// Get the minimum password age
+	$min_password_age = get_setting("pass_policy_min_age");
+
+	// If the minimum age policy is enabled
+	if ($min_password_age != 0)
+	{
+		// Open the database connection
+		$db = db_open();
+
+		// Get the last time the password for this user was updated
+		$stmt = $db->prepare("SELECT last_password_change_date FROM user WHERE value=:user_id;");
+		$stmt->bindParam(":user_id", $_SESSION["uid"], PDO::PARAM_INT);
+		$stmt->execute();
+		$value = $stmt->fetch();
+		$last_password_change_date = strtotime($value['last_password_change_date']);
+
+		// Close the database connection
+		db_close($db);
+
+		// Get the min password age date by subtracting today from the number of days x 86400
+		$min_password_age_date = time() - ($min_password_age * 86400);
+	
+		// If the last time the password was changed is older than the min password age
+		if ($last_password_change_date < $min_password_age_date)
+		{
+			return true;
+		}
+		else
+		{
+			// Display an alert
+			set_alert(true, "bad", "Unabled to update the password because the minimum age of ". $min_password_age . " days has not elapsed.");
+
+			// Return false
+			return false;
+		}
+	}
+	// Otherwise, the minimum age policy is disabled so return true
+	else return true;
 }
 
 ?>

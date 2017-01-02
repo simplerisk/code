@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Poista Rekisteröinti Notice',
     'UserPolicy'=>'Käyttäjän Policy',
     'UseCaseSensitiveValidationOfUsername'=>'Käytä Asia Sensitive validointi Käyttäjätunnus',
+    'MitigationPlanning'=>'Suunnitellut lieventäminen Date',
+    'AssetDetails'=>'Asset tiedot',
+    'RiskList'=>'Riski List',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Oletko varma, että haluat sulkea riski? Kaikki muutokset menetetään!',
+    'MinimumPasswordAge' => 'Pienin Salasana ikä',
+    'MaximumPasswordAge' => 'Maximum Password Ikä',
+    'MaximumAttemptsLockout' => 'Suurin Yritykset lukitus',
+    'MaximumAttemptsLockoutTime' => 'Suurin Yritykset lukitusaikaa',
+    'attempts'=>'yrityksiä',
+    'minutes'=>'minuutit',
+    'AccountLockedOut'=>'Tili lukittu',
+    'AccountLockoutPolicy'=>'Tilin Lockout Policy',
     ''=>'',
 );
 

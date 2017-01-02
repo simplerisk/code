@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Letiltása Regisztráció Közlemény',
     'UserPolicy'=>'Felhasználási Feltételek',
     'UseCaseSensitiveValidationOfUsername'=>'Használja nagybetű érvényesítése Felhasználónév',
+    'MitigationPlanning'=>'Tervezett enyhítő dátuma',
+    'AssetDetails'=>'Tartalom részletei',
+    'RiskList'=>'Kockázati Listája',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Biztosan be akarja zárni a kockázatot? Minden módosítás el fog veszni!',
+    'MinimumPasswordAge' => 'Jelszó minimális korát',
+    'MaximumPasswordAge' => 'Jelszó maximális korát',
+    'MaximumAttemptsLockout' => 'Maximum kísérletek kizárás',
+    'MaximumAttemptsLockoutTime' => 'Maximális kísérletek kizárás ideje',
+    'attempts'=>'próbálkozás',
+    'minutes'=>'percek',
+    'AccountLockedOut'=>'Fiók kizárva',
+    'AccountLockoutPolicy'=>'Fiókzárolási Policy',
     ''=>'',
 );
 

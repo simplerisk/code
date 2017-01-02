@@ -1263,6 +1263,70 @@ function upgrade_from_20161030001($db)
         echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20161122-001 *
+ ***************************************/
+function upgrade_from_20161122001($db)
+{
+        // Database version to upgrade
+        $version_to_upgrade = '20161122-001';
+
+        // Database version upgrading to
+        $version_upgrading_to = '20170102-001';
+
+        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+        // Added a new field mitigate planning date to the mitigate table
+        echo "Adding a new field mitigate planning date to the mitigate table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD `planning_date` DATE NOT NULL AFTER `submitted_by`;");
+        $stmt->execute();
+
+        // Updated user to be able to allow for more teams
+        echo "Updating the user to be able to allow for more teams.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` MODIFY `teams` VARCHAR(4000) NOT NULL DEFAULT 'none'");
+        $stmt->execute();
+
+        // Added a new field, details to the asset table
+        echo "Adding a new field, details to the asset table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `assets` ADD  `details` LONGTEXT  AFTER `team`;");
+        $stmt->execute();
+
+        // Added new rows, pass_policy_min_age, pass_policy_max_age, pass_policy_attempt_lockout, pass_policy_re_use_tracking to the settings table.
+        echo "Adding new rows for pass_policy_min_age, pass_policy_max_age, pass_policy_attempt_lockout, pass_policy_re_use_tracking to the settings table. <br />\n";
+        $stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('pass_policy_min_age', 0), ('pass_policy_max_age', 0), ('pass_policy_re_use_tracking', 0), ('pass_policy_attempt_lockout', 0), ('pass_policy_attempt_lockout_time', 10);");
+        $stmt->execute();
+
+
+        // Add a table to track password re-use
+        echo "Adding the table to track password re-use.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `user_pass_history` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `user_id` int(11) NOT NULL, `salt` varchar(20) NOT NULL, `password` binary(60) NOT NULL, `add_date` TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+
+	// Add a table to track failed login attempts
+	echo "Adding the table to track failed login attempts.<br />\n";
+	$stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `failed_login_attempts` (`id` int(11) AUTO_INCREMENT PRIMARY KEY, `expired` TINYINT DEFAULT 0, `user_id` int(11) NOT NULL, `ip` VARCHAR(15) DEFAULT '0.0.0.0', `date` TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+	$stmt->execute();
+
+        // Added last_password_change_date to user table:
+        echo "Adding last_password_change_date to user table. <br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `last_password_change_date` TIMESTAMP DEFAULT NOW() AFTER `last_login`;");
+        $stmt->execute();
+
+	// Set last password change date to current date for all users
+	echo "Setting the last password change date to now for all users.<br />\n";
+	$stmt = $db->prepare("UPDATE `user` set last_password_change_date=NOW();");
+	$stmt->execute();
+
+	// Add lockout to user table
+	echo "Adding lockout to user table.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `user` ADD `lockout` TINYINT NOT NULL DEFAULT 0 AFTER `enabled`;");
+	$stmt->execute();
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -1289,8 +1353,8 @@ function upgrade_database()
 				upgrade_from_20140728001($db);
 				upgrade_database();
 				break;
-                        case "20141013-001":
-                                upgrade_from_20141013001($db);
+            		case "20141013-001":
+                		upgrade_from_20141013001($db);
 				upgrade_database();
 				break;
 			case "20141129-001":
@@ -1353,10 +1417,14 @@ function upgrade_database()
 				upgrade_from_20161023001($db);
 				upgrade_database();
 				break;
-			case "20161030-001":
-				upgrade_from_20161030001($db);
-				upgrade_database();
-                                break;
+            		case "20161030-001":
+                		upgrade_from_20161030001($db);
+                		upgrade_database();
+                		break;
+            		case "20161122-001":
+                		upgrade_from_20161122001($db);
+                		upgrade_database();
+                		break;
 			default:
 				echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
 		}

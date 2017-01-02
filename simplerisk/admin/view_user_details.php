@@ -32,7 +32,12 @@
 
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-        session_start('SimpleRisk');
+
+        if (!isset($_SESSION))
+        {
+        	session_name('SimpleRisk');
+        	session_start();
+        }
 
         // Include the language file
         require_once(language_file());
@@ -66,6 +71,7 @@
 		if (is_int($user_id))
 		{
 			// Get the submitted values
+			$lockout = isset($_POST['lockout']) ? '1' : '0';
 			$type = $_POST['type'];
 			$name = $_POST['name'];
 			$email = $_POST['email'];
@@ -130,7 +136,7 @@
                         if ($none) $team = "none";
 
 			// Update the user
-			update_user($user_id, $type, $name, $email, $team, $language, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
+			update_user($user_id, $lockout, $type, $name, $email, $team, $language, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor);
 
 			// Display an alert
 			set_alert(true, "good", "The user was updated successfully.");
@@ -145,6 +151,7 @@
 
                 // Get the users information
                 $user_info = get_user_by_id($user_id);
+		$lockout = $user_info['lockout'];
 		$type = $user_info['type'];
                 $username = $user_info['username'];
                 $name = $user_info['name'];
@@ -169,6 +176,7 @@
 	else
 	{
 		$user_id = "";
+		$lockout = false;
                 $type = "N/A";
                 $username = "N/A";
                 $name = "N/A";
@@ -306,6 +314,9 @@
                 <input name="user" type="hidden" value="<?php echo $escaper->escapeHtml($user_id); ?>" />
                 <table border="0" cellspacing="0" cellpadding="0">
                   <tr><td colspan="2"><h4>Update an Existing User:</h4></td></tr>
+                  <tr>
+                    <td colspan="2"><input name="lockout" type="checkbox"<?php if ($lockout) echo " checked" ?> />&nbsp;&nbsp;<?php echo $lang['AccountLockedOut']; ?></td>
+                  </tr>
                   <tr>
                     <td><?php echo $escaper->escapeHtml($lang['Type']); ?>:&nbsp;</td>
                     <td>

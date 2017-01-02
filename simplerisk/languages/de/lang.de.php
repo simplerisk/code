@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Registrierungsmitteilung Deaktivieren',
     'UserPolicy'=>'Benutzerrichtlinien',
     'UseCaseSensitiveValidationOfUsername'=>'Use case sensitive Validierung von Benutzernamen',
+    'MitigationPlanning'=>'Geplanter Mitigation Date',
+    'AssetDetails'=>'Bestandsdetails',
+    'RiskList'=>'Risikoliste',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Möchten Sie das Risiko wirklich beenden? Alle Änderungen gehen verloren!',
+    'MinimumPasswordAge' => 'Minimales Passwortalter',
+    'MaximumPasswordAge' => 'Maximales Passwortalter',
+    'MaximumAttemptsLockout' => 'Maximale Versuchssperre',
+    'MaximumAttemptsLockoutTime' => 'Maximale Versuche Verriegelungszeit',
+    'attempts'=>'versuche',
+    'minutes'=>'protokoll',
+    'AccountLockedOut'=>'Konto gesperrt',
+    'AccountLockoutPolicy'=>'Kontosperrungsrichtlinie',
     ''=>'',
 );
 

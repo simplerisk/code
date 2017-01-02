@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Desactivar Avís de Registre',
     'UserPolicy'=>'Condicions d\'Utilització',
     'UseCaseSensitiveValidationOfUsername'=>'Cas d\'ús sensible Validació de nom d\'usuari',
+    'MitigationPlanning'=>'Data prevista de mitigació',
+    'AssetDetails'=>'Detalls d\'actius',
+    'RiskList'=>'Llista de Riscos',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Esteu segur que voleu tancar el risc? Tots els canvis es perdran!',
+    'MinimumPasswordAge' => 'Mínima de la contrasenya',
+    'MaximumPasswordAge' => 'Màxima de la contrasenya',
+    'MaximumAttemptsLockout' => 'Màxim d\'intents de bloqueig',
+    'MaximumAttemptsLockoutTime' => 'Màxim d\'intents de bloqueig Temps',
+    'attempts'=>'intents',
+    'minutes'=>'acta',
+    'AccountLockedOut'=>'compte bloquejat',
+    'AccountLockoutPolicy'=>'Directiva de bloqueig',
     ''=>'',
 );
 

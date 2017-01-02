@@ -31,7 +31,12 @@
 
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-        session_start('SimpleRisk');
+
+        if (!isset($_SESSION))
+        {
+        	session_name('SimpleRisk');
+        	session_start();
+        }
 
         // Include the language file
         require_once(language_file());
@@ -55,6 +60,7 @@
 <link rel="stylesheet" type="text/css" href="../css/style.css">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link href="../css/front-style.css" rel="stylesheet" type="text/css">
+<script src="../js/jquery.min.js"></script>
 <script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
 <script language="javascript" src="../js/owasp_scoring.js" type="text/javascript"></script>
 
@@ -66,25 +72,47 @@
 
   <!--
   var parent_window = window.opener;
+  
+  $(document).ready(function(){
+      // Initialize values for elements
+
+    $("#SkillLevel").val(parent_window.$("#OWASPSkillLevel", parent_window.parentOfScores).val());
+    $("#Motive").val(parent_window.$("#OWASPMotive", parent_window.parentOfScores).val());
+    $("#Opportunity").val(parent_window.$("#OWASPOpportunity", parent_window.parentOfScores).val());
+    $("#Size").val(parent_window.$("#OWASPSize", parent_window.parentOfScores).val());
+    $("#EaseOfDiscovery").val(parent_window.$("#OWASPEaseOfDiscovery", parent_window.parentOfScores).val());
+    $("#EaseOfExploit").val(parent_window.$("#OWASPEaseOfExploit", parent_window.parentOfScores).val());
+    $("#Awareness").val(parent_window.$("#OWASPAwareness", parent_window.parentOfScores).val());
+    $("#IntrusionDetection").val(parent_window.$("#OWASPIntrusionDetection", parent_window.parentOfScores).val());
+    $("#LossOfConfidentiality").val(parent_window.$("#OWASPLossOfConfidentiality", parent_window.parentOfScores).val());
+    $("#LossOfIntegrity").val(parent_window.$("#OWASPLossOfIntegrity", parent_window.parentOfScores).val());
+    $("#LossOfAvailability").val(parent_window.$("#OWASPLossOfAvailability", parent_window.parentOfScores).val());
+    $("#LossOfAccountability").val(parent_window.$("#OWASPLossOfAccountability", parent_window.parentOfScores).val());
+    $("#FinancialDamage").val(parent_window.$("#OWASPFinancialDamage", parent_window.parentOfScores).val());
+    $("#ReputationDamage").val(parent_window.$("#OWASPReputationDamage", parent_window.parentOfScores).val());
+    $("#NonCompliance").val(parent_window.$("#OWASPNonCompliance", parent_window.parentOfScores).val());
+    $("#PrivacyViolation").val(parent_window.$("#OWASPPrivacyViolation", parent_window.parentOfScores).val());
+      updateScore();
+  })
 
   function owaspSubmit() {
     if (parent_window && !parent_window.closed) {
-      parent_window.document.getElementById('OWASPSkillLevel').value=this.document.getElementById('SkillLevel').value;
-      parent_window.document.getElementById('OWASPMotive').value=this.document.getElementById('Motive').value;
-      parent_window.document.getElementById('OWASPOpportunity').value=this.document.getElementById('Opportunity').value;
-      parent_window.document.getElementById('OWASPSize').value=this.document.getElementById('Size').value;
-      parent_window.document.getElementById('OWASPEaseOfDiscovery').value=this.document.getElementById('EaseOfDiscovery').value;
-      parent_window.document.getElementById('OWASPEaseOfExploit').value=this.document.getElementById('EaseOfExploit').value;
-      parent_window.document.getElementById('OWASPAwareness').value=this.document.getElementById('Awareness').value;
-      parent_window.document.getElementById('OWASPIntrusionDetection').value=this.document.getElementById('IntrusionDetection').value;
-      parent_window.document.getElementById('OWASPLossOfConfidentiality').value=this.document.getElementById('LossOfConfidentiality').value;
-      parent_window.document.getElementById('OWASPLossOfIntegrity').value=this.document.getElementById('LossOfIntegrity').value;
-      parent_window.document.getElementById('OWASPLossOfAvailability').value=this.document.getElementById('LossOfAvailability').value;
-      parent_window.document.getElementById('OWASPLossOfAccountability').value=this.document.getElementById('LossOfAccountability').value;
-      parent_window.document.getElementById('OWASPFinancialDamage').value=this.document.getElementById('FinancialDamage').value;
-      parent_window.document.getElementById('OWASPReputationDamage').value=this.document.getElementById('ReputationDamage').value;
-      parent_window.document.getElementById('OWASPNonCompliance').value=this.document.getElementById('NonCompliance').value;
-      parent_window.document.getElementById('OWASPPrivacyViolation').value=this.document.getElementById('PrivacyViolation').value;
+        parent_window.$("#OWASPSkillLevel", parent_window.parentOfScores).val( $("#SkillLevel").val() )
+        parent_window.$("#OWASPMotive", parent_window.parentOfScores).val( $("#Motive").val() )
+        parent_window.$("#OWASPOpportunity", parent_window.parentOfScores).val( $("#Opportunity").val() )
+        parent_window.$("#OWASPSize", parent_window.parentOfScores).val( $("#Size").val() )
+        parent_window.$("#OWASPEaseOfDiscovery", parent_window.parentOfScores).val( $("#EaseOfDiscovery").val() )
+        parent_window.$("#OWASPEaseOfExploit", parent_window.parentOfScores).val( $("#EaseOfExploit").val() )
+        parent_window.$("#OWASPAwareness", parent_window.parentOfScores).val( $("#Awareness").val() )
+        parent_window.$("#OWASPIntrusionDetection", parent_window.parentOfScores).val( $("#IntrusionDetection").val() )
+        parent_window.$("#OWASPLossOfConfidentiality", parent_window.parentOfScores).val( $("#LossOfConfidentiality").val() )
+        parent_window.$("#OWASPLossOfIntegrity", parent_window.parentOfScores).val( $("#LossOfIntegrity").val() )
+        parent_window.$("#OWASPLossOfAvailability", parent_window.parentOfScores).val( $("#LossOfAvailability").val() )
+        parent_window.$("#OWASPLossOfAccountability", parent_window.parentOfScores).val( $("#LossOfAccountability").val() )
+        parent_window.$("#OWASPFinancialDamage", parent_window.parentOfScores).val( $("#FinancialDamage").val() )
+        parent_window.$("#OWASPReputationDamage", parent_window.parentOfScores).val( $("#ReputationDamage").val() )
+        parent_window.$("#OWASPNonCompliance", parent_window.parentOfScores).val( $("#NonCompliance").val() )
+        parent_window.$("#OWASPPrivacyViolation", parent_window.parentOfScores).val( $("#PrivacyViolation").val() )
     }
   }
 

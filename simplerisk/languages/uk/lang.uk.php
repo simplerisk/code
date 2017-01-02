@@ -499,6 +499,18 @@ $lang = array(
     'DisableRegistrationNotice'=>'Відключити реєстрації Примітка',
     'UserPolicy'=>'політика користувача',
     'UseCaseSensitiveValidationOfUsername'=>'Use Case Sensitive Валідація Ім\'я користувача',
+    'MitigationPlanning'=>'Планована дата Пом\'якшення',
+    'AssetDetails'=>'деталі активів',
+    'RiskList'=>'список ризиків',
+    'Are you sure you want to close the risk? All changes will be lost!'=>'Ви впевнені, що хочете закрити цей ризик? Всі зміни будуть втрачені!',
+    'MinimumPasswordAge' => 'Мінімальний термін дії пароля',
+    'MaximumPasswordAge' => 'Максимальний термін дії пароля',
+    'MaximumAttemptsLockout' => 'Максимальна кількість спроб блокування',
+    'MaximumAttemptsLockoutTime' => 'Максимальна кількість спроб Час блокування',
+    'attempts'=>'спроби',
+    'minutes'=>'хвилин',
+    'AccountLockedOut'=>'Блокування облікового запису',
+    'AccountLockoutPolicy'=>'Рахунок Політика блокування',
     ''=>'',
 );
 

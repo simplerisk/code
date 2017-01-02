@@ -174,24 +174,24 @@ td .risk-color {
   transform: translateY(-50%);
   border-radius: 2px; }
 
-td.red .risk-color {
+td.red .risk-color, td > .red .risk-color {
   background-color: red !important; }
 
-td.orangered .risk-color {
+td.orangered .risk-color, td > .orangered .risk-color {
   background-color: orangered !important; }
 
-td.orange .risk-color {
+td.orange .risk-color, td > .orange .risk-color {
   background-color: orange !important; }
 
-td.yellow .risk-color {
+td.yellow .risk-color, td > .yellow .risk-color {
   background-color: yellow !important; }
 
-td.white .risk-color {
+td.white .risk-color, td > .white .risk-color {
   background-color: white !important; }
 
 div#show-alert + #tab-content-container .tab-data {
   margin-top: 0px;
-  padding: 0px; }
+  /*    padding: 0px; */ }
 
 .comments--list .comment-block:first-child {
   border: none;
@@ -252,6 +252,20 @@ hr {
 label {
   font-weight: 700; }
 
+.dropdown-menu {
+  z-index: 99999; }
+
+ul.ui-autocomplete {
+  list-style-type: none;
+  color: #3f3f3f;
+  font-family: "Titillium Web", sans-serif;
+  font-size: 14px; }
+  ul.ui-autocomplete > li.ui-menu-item {
+    padding-left: 10px; }
+  ul.ui-autocomplete .ui-state-focus {
+    background: #F0F0F0;
+    color: #000; }
+
 /*--------------------------------------------------------------
  ## Form and From Related Element Styles
  --------------------------------------------------------------*/
@@ -299,18 +313,20 @@ select {
     appearance: none;
     background-color: transparent;
     border: transparent;
-    font-weight: 700;
-    padding-left: 10px; }
+    font-weight: 700 !important;
+    padding-left: 10px;
+    cursor: default; }
 
 textarea,
 textarea.form-control {
-  resize: vertical;
+  resize: both;
   overflow: auto;
   height: 100px; }
   textarea:disabled,
   textarea.form-control:disabled {
-    resize: none;
-    padding: 5px 10px; }
+    resize: both;
+    padding: 5px 10px;
+    transition: inherit !important; }
 
 .hidden-checkbox,
 .hidden-radio {
@@ -358,7 +374,8 @@ select + input[type="submit"] {
   margin-top: -10px; }
 
 .hidden-file-upload {
-  visibility: hidden; }
+  visibility: hidden;
+  display: none; }
 
 .file-uploader .file-count {
   margin-left: 10px;
@@ -500,6 +517,57 @@ input[type="color"]:focus,
 .management.yes {
   color: #3a3a3a !important;
   font-weight: bold; }
+
+/**
+* jquery datatable
+*/
+.dataTables_wrapper .dataTables_length {
+  float: right; }
+
+.dataTables_wrapper .dataTables_processing {
+  z-index: 99; }
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+  background-color: #c1b4b4;
+  color: #fff !important;
+  margin: 0 2px;
+  border-radius: 2px;
+  border: 0px;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 4px 12px; }
+  .dataTables_wrapper .dataTables_paginate .paginate_button:hover, .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #3a3a3a;
+    color: #fff !important;
+    border: 0px; }
+  .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    border: 0px;
+    background: #3a3a3a;
+    color: #fff !important; }
+  .dataTables_wrapper .dataTables_paginate .paginate_button.first, .dataTables_wrapper .dataTables_paginate .paginate_button.next, .dataTables_wrapper .dataTables_paginate .paginate_button.previous, .dataTables_wrapper .dataTables_paginate .paginate_button.last {
+    background: transparent;
+    color: #c1b4b4 !important; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.first:hover, .dataTables_wrapper .dataTables_paginate .paginate_button.next:hover, .dataTables_wrapper .dataTables_paginate .paginate_button.previous:hover, .dataTables_wrapper .dataTables_paginate .paginate_button.last:hover {
+      color: #3a3a3a !important; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.first.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.next.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.previous.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.last.disabled {
+      color: #c1b4b4 !important; }
+
+.dataTables_wrapper .view-all {
+  float: right;
+  margin-left: 15px;
+  cursor: pointer;
+  display: inline-block;
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #c1b4b4;
+  color: #fff !important;
+  margin-top: 5px;
+  border-radius: 2px; }
+  .dataTables_wrapper .view-all.current {
+    background: #3a3a3a;
+    color: #fff !important;
+    border: 0px; }
 
 /*--------------------------------------------------------------
  ## Heading Styles
@@ -844,7 +912,8 @@ form#comment {
 
 .ui-datepicker tbody td {
   padding: 0;
-  border-right: 1px solid #bbb; }
+  border-right: 1px solid #bbb;
+  background-color: white; }
 
 .ui-datepicker tbody td:last-child {
   border-right: 0px; }
@@ -1136,6 +1205,9 @@ form#comment {
       background-color: transparent;
       color: #3a3a3a; }
 
+#project--add.modal {
+  z-index: 9999; }
+
 .status-tabs {
   position: relative; }
   .status-tabs .project--add {
@@ -1263,7 +1335,7 @@ form#comment {
     margin: 0 0 0 17px !important; }
 
 .tab-data {
-  padding-top: 38px; }
+  padding-top: 51px; }
 
 .tabs div.tab.add {
   margin-left: 0px; }
@@ -1289,6 +1361,63 @@ form#comment {
   .risk-form-actions .btn {
     margin-left: 10px;
     margin-top: 5px; }
+
+.risk-details * {
+  color: inherit; }
+
+.risk-details.ui-corner-all, .risk-details.ui-corner-bottom, .risk-details.ui-corner-right, .risk-details.ui-corner-br {
+  border: 0px;
+  background: transparent;
+  color: inherit; }
+
+.risk-details.ui-widget {
+  font-family: inherit;
+  font-size: inherit; }
+
+.risk-details.ui-tabs {
+  padding: inherit; }
+
+.risk-details .ui-widget-header {
+  border: 0px;
+  background: inherit;
+  color: inherit;
+  font-weight: inherit; }
+
+.risk-details .ui-tabs-nav {
+  padding: inherit; }
+
+.risk-details .ui-widget-content {
+  border: 0px; }
+
+.risk-details .ui-state-active, .risk-details .ui-widget-content .ui-state-active, .risk-details .ui-widget-header .ui-state-active {
+  border: 0px;
+  background: inherit;
+  font-weight: inherit;
+  color: inherit; }
+
+.risk-details .ui-state-default, .risk-details .ui-widget-content .ui-state-default, .risk-details .ui-widget-header .ui-state-default {
+  border: 0px;
+  background: inherit;
+  font-weight: inherit;
+  color: inherit; }
+
+.risk-details input, .risk-details select, .risk-details textarea, .risk-details button {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit; }
+
+.risk-details .ui-tabs-nav li.ui-tabs-active {
+  padding-bottom: 10px; }
+
+.risk-details .ui-tabs-nav li a {
+  padding: 0px;
+  float: none; }
+
+.risk-details .ui-tabs-nav li {
+  margin: 0px; }
+
+.risk-details .ui-tabs-panel {
+  padding: 0px; }
 
 .risk-details .tabs-nav {
   margin: 20px 0;
@@ -1322,12 +1451,14 @@ form#comment {
   position: absolute;
   top: 20px;
   right: 0px; }
+  .tabs--action .on-edit {
+    /*		display: none;*/ }
 
 .tabs {
   position: relative; }
 
 .risk-session.overview {
-  margin-top: 53px; }
+  /*  margin-top: 53px;*/ }
   .risk-session.overview .score {
     margin-bottom: 20px; }
   .risk-session.overview .row-fluid .span2 {
@@ -1379,7 +1510,7 @@ form#comment {
   margin-right: -130px; }
 
 #risk-submit-form {
-  margin-top: 14px; }
+  /*  margin-top: 14px;*/ }
 
 .risk-form-actions {
   margin-top: 40px; }
@@ -1430,6 +1561,15 @@ div.doc-link {
   margin-top: 5px; }
   div.doc-link.edit-mode {
     margin-left: 10px; }
+
+#risk-table-container {
+  padding-bottom: 50px; }
+  #risk-table-container .risk-datatable.table-bordered {
+    margin-bottom: 0px; }
+  #risk-table-container .risk-datatable thead th {
+    border-bottom: 0px; }
+  #risk-table-container .dataTables_wrapper.no-footer .dataTables_scrollBody {
+    border-bottom: 0px; }
 
 .score--help {
   width: 25px;

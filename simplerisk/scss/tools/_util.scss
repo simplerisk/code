@@ -202,16 +202,26 @@ td {
 		border-radius: 2px;
 	}
 
-	&.red .risk-color{  background-color: red !important;  }
-	&.orangered .risk-color{ background-color:  orangered !important;  }
-	&.orange .risk-color{ background-color: orange !important;  }
-	&.yellow .risk-color{ background-color: yellow !important;  }
-	&.white .risk-color{	background-color: white !important; }
+	&.red, >.red{
+		.risk-color{  background-color: red !important;  }
+	} 
+	&.orangered, >.orangered{
+		.risk-color{ background-color:  orangered !important;  }
+	} 
+	&.orange, >.orange{
+		.risk-color{ background-color: orange !important;  }
+	} 
+	&.yellow, >.yellow{
+		.risk-color{ background-color: yellow !important;  }
+	} 
+	&.white, >.white{
+		.risk-color{	background-color: white !important; }
+	} 
 }
 
 div#show-alert + #tab-content-container .tab-data {
     margin-top: 0px;
-    padding: 0px;
+/*    padding: 0px; */
 }
 
 

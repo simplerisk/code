@@ -266,7 +266,7 @@ label, .title {
 .risk-session {
   background: #F0F0F0;
   padding: 5px 10px;
-  margin: 10px 0;
+/*  margin: 10px 0;*/
 }
 
 .risk-session.overview {
@@ -360,7 +360,7 @@ input#assets, textarea#assets{
 /*review date and reviwer styles */
 input#nextreviewvalue{
     width: 240px;
-    height: 32px;
+/*    height: 32px;*/
 }
 div.reviewdate{
     font-weight: 600;
@@ -379,6 +379,10 @@ div.reviewername{
 }
 p.comment-block{
     white-space: pre-line;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 /*------------------------------------------------------------
@@ -387,19 +391,19 @@ p.comment-block{
 @media screen and (min-width:1025px) {
   #assets, #assessment, #notes, #current_solution, #security_requirements, #security_recommendations, #active-textfield, #comments{
       width:100%;
-      max-width:300px;
+/*      max-width:300px;*/
       transition: all 1s ease;
   }
 
-  #assets:focus, #assessment:focus, #notes:focus, 
-  #current_solution:focus, #security_requirements:focus, #security_recommendations:focus, #active-textfield:focus,
-  #assets:active, #assessment:active, #notes:active, #comments:focus,
-  #current_solution:active, #security_requirements:active, #security_recommendations:active, #active-textfield:active, #comments:active{
+  #assets:not([disabled]):focus, #assessment:not([disabled]):focus, #notes:not([disabled]):focus, 
+  #current_solution:not([disabled]):focus, #security_requirements:not([disabled]):focus, #security_recommendations:not([disabled]):focus, #active-textfield:not([disabled]):focus,
+  #assets:not([disabled]):active, #assessment:not([disabled]):active, #notes:not([disabled]):active, #comments:not([disabled]):focus,
+  #current_solution:not([disabled]):active, #security_requirements:not([disabled]):active, #security_recommendations:not([disabled]):active, #active-textfield:not([disabled]):active, #comments:not([disabled]):active{
     position: fixed;
     max-width:1600px;
     top: 25%;
     left: 25%;
-    width: 50%;
+    width: 50% !important;
     height: 50%;
     margin:auto;
     z-index: 2001;
@@ -416,12 +420,17 @@ p.comment-block{
     margin:auto;
     z-index: 2000;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-    background: rgba(0, 0, 0, 0.4);
-    color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.8);
+    color: rgba(0, 0, 0, 0.8);
     padding-top:10%;
     text-align: center !important;
-    font-size: 30px;
+    font-size: 42px;
     color: #fff;
   }
+  
+  .ui-widget-content{
+      z-index: 9999;
+  }
 }
+

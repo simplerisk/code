@@ -32,7 +32,12 @@ if (USE_DATABASE_FOR_SESSIONS == "true")
 
 // Start the session
 session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-session_start('SimpleRisk');
+
+if (!isset($_SESSION))
+{
+        session_name('SimpleRisk');
+        session_start();
+}
 
 // Include the language file
 require_once(language_file());
@@ -65,9 +70,10 @@ if ((isset($_POST['add_asset'])) && $manage_assets)
   $value = $_POST['value'];
   $location = $_POST['location'];
   $team = $_POST['team'];
+  $details = $_POST['details'];
 
   // Add the asset
-  $success = add_asset($ip, $name, $value, $location, $team);
+  $success = add_asset($ip, $name, $value, $location, $team, $details);
 
   // If the asset add was successful
   if ($success)
@@ -163,7 +169,7 @@ if ((isset($_POST['delete_assets'])) && $manage_assets)
           <div class="span12">
             <div class="hero-unit">
               <h4><?php echo $escaper->escapeHTML($lang['AddANewAsset']); ?></h4>
-              <form name="add" method="post" action="">
+              <form name="add" method="post" action="" id="add-asset-container">
                 <table>
                   <tr>
                     <tr>
@@ -194,6 +200,13 @@ if ((isset($_POST['delete_assets'])) && $manage_assets)
                       <td><?php echo $escaper->escapeHTML($lang['Team']);
                       ?>: &nbsp;</td>
                       <td><?php create_dropdown("team"); ?></td>
+                    </tr>
+                    <tr>
+                      <td><?php echo $escaper->escapeHTML($lang['AssetDetails']);
+                      ?>: &nbsp;</td>
+                      <td>
+                        <textarea name="details" cols="" rows="" style="width: 100%;"></textarea>
+                      </td>
                     </tr>
                   </table>
                   <button type="submit" name="add_asset" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>

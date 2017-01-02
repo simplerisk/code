@@ -32,7 +32,12 @@ if (USE_DATABASE_FOR_SESSIONS == "true")
 
 // Start the session
 session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-session_start('SimpleRisk');
+
+if (!isset($_SESSION))
+{
+        session_name('SimpleRisk');
+        session_start();
+}
 
 // Include the language file
 require_once(language_file());
@@ -65,6 +70,7 @@ if ((isset($_POST['update_asset'])) && $manage_assets)
   $values = $_POST['values'];
   $locations = $_POST['locations'];
   $teams = $_POST['teams'];
+  $details = $_POST['details'];
 
   // For each asset
   for ($i=0; $i<count($ids); $i++)
@@ -78,7 +84,7 @@ if ((isset($_POST['update_asset'])) && $manage_assets)
       // If the team is empty set it to zero
       if ($teams[$i] == "") $teams[$i] = 0;
 
-      edit_asset($ids[$i], $values[$i], $locations[$i], $teams[$i]);
+      edit_asset($ids[$i], $values[$i], $locations[$i], $teams[$i], $details[$i]);
     }
   }
 }

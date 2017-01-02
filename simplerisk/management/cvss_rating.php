@@ -6,7 +6,7 @@
         // Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-	require_once(realpath(__DIR__ . '/../includes/display.php'));
+	    require_once(realpath(__DIR__ . '/../includes/display.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -30,8 +30,13 @@
         }
 
         // Start the session
-	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-        session_start('SimpleRisk');
+	    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
+        if (!isset($_SESSION))
+        {
+        	session_name('SimpleRisk');
+        	session_start();
+        }
 
         // Include the language file
         require_once(language_file());
@@ -51,50 +56,53 @@
 
 <html>
 <head>
-<script src="../js/jquery.min.js"></script>
-<title>SimpleRisk CVSS Calculator</title>
-<link rel="stylesheet" type="text/css" href="../css/style.css">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link href="../css/front-style.css" rel="stylesheet" type="text/css">
-<script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
-<script language="javascript" src="../js/cvss_scoring.js" type="text/javascript"></script>
-<script type="text/javascript" language="JavaScript">
-  <!--
-  var parent_window = window.opener;
+    <title>SimpleRisk CVSS Calculator</title>
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link href="../css/front-style.css" rel="stylesheet" type="text/css">
+    <script src="../js/jquery.min.js"></script>
+    <script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
+    <script language="javascript" src="../js/cvss_scoring.js" type="text/javascript"></script>
+    <script type="text/javascript" language="JavaScript">
+    
+      var parent_window = window.opener;
+      $(document).ready(function(){
+          getCVE();
+      })
+      // Get the CVE information
 
-  // Get the CVE information
-  getCVE();
+    //    var AccessVector = parent_window.$("#AccessVector", parent_window.parentOfScores).val();
+    //    var AccessComplexity = parent_window.$("#AccessComplexity", parent_window.parentOfScores).val();
 
-  function cvssSubmit() {
-    if (parent_window && !parent_window.closed) {
-      parent_window.document.getElementById('AccessVector').value=this.document.getElementById('AccessVector').value;
-      parent_window.document.getElementById('AccessComplexity').value=this.document.getElementById('AccessComplexity').value;
-      parent_window.document.getElementById('Authentication').value=this.document.getElementById('Authentication').value;
-      parent_window.document.getElementById('ConfImpact').value=this.document.getElementById('ConfImpact').value;
-      parent_window.document.getElementById('IntegImpact').value=this.document.getElementById('IntegImpact').value;
-      parent_window.document.getElementById('AvailImpact').value=this.document.getElementById('AvailImpact').value;
-      parent_window.document.getElementById('Exploitability').value=this.document.getElementById('Exploitability').value;
-      parent_window.document.getElementById('RemediationLevel').value=this.document.getElementById('RemediationLevel').value;
-      parent_window.document.getElementById('ReportConfidence').value=this.document.getElementById('ReportConfidence').value;
-      parent_window.document.getElementById('CollateralDamagePotential').value=this.document.getElementById('CollateralDamagePotential').value;
-      parent_window.document.getElementById('TargetDistribution').value=this.document.getElementById('TargetDistribution').value;
-      parent_window.document.getElementById('ConfidentialityRequirement').value=this.document.getElementById('ConfidentialityRequirement').value;
-      parent_window.document.getElementById('IntegrityRequirement').value=this.document.getElementById('IntegrityRequirement').value;
-      parent_window.document.getElementById('AvailabilityRequirement').value=this.document.getElementById('AvailabilityRequirement').value;
-    }
-  }
+      function cvssSubmit() {
+        if (parent_window && !parent_window.closed) {
+            parent_window.$("#AccessVector", parent_window.parentOfScores).val( $("#AccessVector").val() )
+            parent_window.$("#AccessComplexity", parent_window.parentOfScores).val( $("#AccessComplexity").val() )
+            parent_window.$("#Authentication", parent_window.parentOfScores).val( $("#Authentication").val() )
+            parent_window.$("#ConfImpact", parent_window.parentOfScores).val( $("#ConfImpact").val() )
+            parent_window.$("#IntegImpact", parent_window.parentOfScores).val( $("#IntegImpact").val() )
+            parent_window.$("#AvailImpact", parent_window.parentOfScores).val( $("#AvailImpact").val() )
+            parent_window.$("#Exploitability", parent_window.parentOfScores).val( $("#Exploitability").val() )
+            parent_window.$("#RemediationLevel", parent_window.parentOfScores).val( $("#RemediationLevel").val() )
+            parent_window.$("#ReportConfidence", parent_window.parentOfScores).val( $("#ReportConfidence").val() )
+            parent_window.$("#CollateralDamagePotential", parent_window.parentOfScores).val( $("#CollateralDamagePotential").val() )
+            parent_window.$("#TargetDistribution", parent_window.parentOfScores).val( $("#TargetDistribution").val() )
+            parent_window.$("#ConfidentialityRequirement", parent_window.parentOfScores).val( $("#ConfidentialityRequirement").val() )
+            parent_window.$("#IntegrityRequirement", parent_window.parentOfScores).val( $("#IntegrityRequirement").val() )
+            parent_window.$("#AvailabilityRequirement", parent_window.parentOfScores).val( $("#AvailabilityRequirement").val() )
+        }
+      }
 
-  function closeWindow() {
-    window.opener.closepopup();
-  }
+      function closeWindow() {
+        window.opener.closepopup();
+      }
 
-  function submitandclose() {
-    cvssSubmit();
-    closeWindow();
-  }
+      function submitandclose() {
+        cvssSubmit();
+        closeWindow();
+      }
 
-  // -->
-</script>
+    </script>
 
 </head>
 

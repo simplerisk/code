@@ -66,7 +66,7 @@ function generateHash($salt, $password)
 /***************************
  * FUNCTION: GET USER TYPE *
  ***************************/
-function get_user_type($user)
+function get_user_type($user, $upgrade = false)
 {
 	// Open the database connection
 	$db = db_open();
@@ -74,13 +74,23 @@ function get_user_type($user)
 	// If strict user validation is disabled
 	if (get_setting('strict_user_validation') == 0)
 	{
-		// Query the DB for a matching enabled user
-		$stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND LOWER(`username`) = LOWER(:user)");
+		// If we are upgrading
+		if ($upgrade)
+		{
+			// Query the DB for a matching enabled user
+			$stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND LOWER(`username`) = LOWER(:user)");
+		}
+		else $stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND lockout = 0 AND LOWER(`username`) = LOWER(:user)");
 	}
 	else
 	{
-		// Query the DB for a matching enabled user
-        	$stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND username = :user");
+		// If we are upgrading
+		if ($upgrade)
+		{
+			// Query the DB for a matching enabled user
+        		$stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND username = :user");
+		}
+		else $stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND lockout = 0 AND username = :user");
 	}
 
         $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
@@ -120,7 +130,7 @@ function is_valid_user($user, $pass, $upgrade = false)
 	$valid_saml = false;
 
 	// Find the type of the user in the database
-	$type = get_user_type($user);
+	$type = get_user_type($user, $upgrade);
 
 	// If the user does not exist
 	if ($type == "DNE")
@@ -271,6 +281,9 @@ function grant_access()
 
 	// Grant access
 	$_SESSION["access"] = "granted";
+
+	// Clear any failed login attempts
+	clear_failed_logins($_SESSION['uid']);
 
         // Update the last login
         update_last_login($_SESSION['uid']);
@@ -547,7 +560,7 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
 			else
 			{
 				// Display an alert
-				set_alert(true, "bad", password_error_message($error_code));
+				//set_alert(true, "bad", password_error_message($error_code));
 
 				// Return false
 				return false;
@@ -673,7 +686,6 @@ function session_check()
 {
 	// Perform session garbage collection
 	sess_gc(1440);
-
         // Last request was more $last_activity
         if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > LAST_ACTIVITY_TIMEOUT))
         {
@@ -830,6 +842,7 @@ function sess_destroy($sess_id)
  ****************************************/
 function sess_gc($sess_maxlifetime)
 {
+    $sess_maxlifetime = LAST_ACTIVITY_TIMEOUT;
 	$old = time() - $sess_maxlifetime;
 
         // Open the database connection
@@ -890,6 +903,115 @@ function strict_user_validation($username)
 
 	// Return the username
 	return $username;
+}
+
+/****************************************
+* FUNCTION: ADD LOGIN ATTEMPT AND BLOCK *
+****************************************/
+function add_login_attempt_and_block($user)
+{
+	// Check if the user exists
+	$user_id = is_simplerisk_user($user);
+
+	// If the user exists
+	if($user_id !== 0)
+	{
+		// Get the IP of the login request
+		$ip = $_SERVER['REMOTE_ADDR'];
+		
+		// Open the database connection
+		$db = db_open();
+
+		// Add a failed login for the user
+		$stmt = $db->prepare("INSERT INTO `failed_login_attempts` (`user_id`, `ip`) VALUE (:user_id, :ip);");
+		$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+		$stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 15);
+		$stmt->execute();
+
+		// Clear any expired login attempts
+		check_expired_lockouts();
+
+		// Get the number of failed attempts for the user
+		$stmt = $db->prepare("SELECT id FROM `failed_login_attempts` WHERE user_id=:user_id AND expired=0;");
+		$stmt->bindParam(":user_id", $user_id);
+		$stmt->execute();
+		$array = $stmt->fetchAll();
+		$failed_attempts = count($array);
+
+		// Close the database connection
+		db_close($db);
+
+		// Get how many attempts before a lockout
+		$lockout_attempts = (int)get_setting("pass_policy_attempt_lockout");
+
+		// If the user has met or exceeded the lockout attempts
+		if ($failed_attempts >= $lockout_attempts)
+		{
+			// Block the user
+			block_user($user_id);
+
+	       		// Write to audit log
+	        	$message = 'Username "' . $user . '" has been blocked due to reaching maximum login attempt counter.';
+		        write_log(1000, $user_id, $message);
+		}
+	}
+}
+
+/************************************
+ * FUNCTION: CHECK EXPIRED LOCKOUTS *
+ ************************************/
+function check_expired_lockouts()
+{
+	// Get the lockout time
+	$lockout_time = get_setting('pass_policy_attempt_lockout_time');
+
+	// If the lockout time isn't unlimited
+	if ($lockout_time != 0)
+	{
+        	// Open the database connection
+        	$db = db_open();
+
+		// Expire entries in the failed login table older than lockout time
+        	$stmt = $db->prepare("UPDATE `failed_login_attempts` SET expired=1 WHERE date < (NOW() - INTERVAL :lockout_time MINUTE);");
+		$stmt->bindParam(":lockout_time", $lockout_time, PDO::PARAM_INT);
+        	$stmt->execute();
+
+		// Close the database connection
+		db_close($db);
+	}
+}
+
+/***********************
+* FUNCTION: BLOCK USER *
+***********************/
+function block_user($user_id)
+{
+	// Open the database connection
+	$db = db_open();
+
+	$stmt = $db->prepare("UPDATE user SET lockout=1 WHERE value=:user_id;");
+	$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+	$stmt->execute();
+
+	// Close the database connection
+	db_close($db);
+}
+
+/*********************************
+ * FUNCTION: CLEAR FAILED LOGINS *
+ *********************************/
+function clear_failed_logins($user_id)
+{
+	// Open the database connection
+	$db = db_open();
+
+	// Expire entries in the failed login table for the user
+	$stmt = $db->prepare("UPDATE `failed_login_attempts` SET expired=1 WHERE user_id=:user_id;");
+	$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+	$stmt->execute();
+
+	// Close the database connection
+	db_close($db);
 }
 
 ?>

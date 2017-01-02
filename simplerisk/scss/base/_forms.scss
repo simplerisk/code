@@ -22,7 +22,7 @@ input[type="text"]{
 
 	&:disabled{
 		background-color: transparent;
-	  border: 1px solid transparent;
+		border: 1px solid transparent;
 		font-weight: 700;
 		padding-left: 10px;
 	}
@@ -53,10 +53,11 @@ select{
 		-webkit-appearance: none;
 		-moz-appearance: none;
 		appearance: none;
-    background-color: transparent;
-    border: transparent;
-		font-weight: 700;
+		background-color: transparent;
+		border: transparent;
+		font-weight: 700 !important;
 		padding-left: 10px;
+		cursor: default;
 	}
 }
 
@@ -71,13 +72,14 @@ textarea,
 textarea.form-control{
 
 
-	resize: vertical;
+	resize: both;
 	overflow: auto;
 	height: 100px;
 
 	&:disabled{
-		resize:none;
+		resize:both;
 		padding: 5px 10px;
+		transition: inherit !important;
 	}
 
 }
@@ -141,6 +143,7 @@ select+input[type="submit"]{
 
 .hidden-file-upload{
 	visibility: hidden;
+    display: none;
 }
 
 

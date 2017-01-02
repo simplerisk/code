@@ -23,70 +23,73 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 	$subject = try_decrypt($subject);
 
 	echo "<div class=\"risk-session overview clearfix\">";
-	  echo "<div class=\"row-fluid\">";
+        echo "<div class=\"row-fluid\">";
 
-	    echo "<div class=\"score--wrapper\">";
-			echo "<div class=\"score ". $escaper->escapeHtml(get_risk_color($calculated_risk)) ."\">";
-			echo "<span>".$escaper->escapeHtml($calculated_risk)."</span>".$escaper->escapeHtml(get_risk_level_name($calculated_risk))."</div>";
+	        echo "<div class=\"score--wrapper\">";
+			    echo "<div class=\"score ". $escaper->escapeHtml(get_risk_color($calculated_risk)) ."\">";
+			        echo "<span>".$escaper->escapeHtml($calculated_risk)."</span>".$escaper->escapeHtml(get_risk_level_name($calculated_risk));
+                echo "</div>";
 			echo "</div>";
 
-	    echo "<div class=\"details--wrapper\">";
-	      echo "<div class=\"row-fluid\">";
-	        echo "<div class=\"span3\"><label>ID #: <span class=\"large-text\">".$escaper->escapeHtml($id)."</span></label></div>";
-	        echo "<div class=\"span5\"><label>Status: <span class=\"large-text\">".$escaper->escapeHtml($status)."</span></label></div>";
-	        echo "<div class=\"span4\">";
+	        echo "<div class=\"details--wrapper\">";
+                
+                echo "<div class=\"row-fluid\">";
+	                echo "<div class=\"span3\"><label>ID #: <span class=\"large-text risk-id\">".$escaper->escapeHtml($id)."</span></label></div>";
+	                echo "<div class=\"span5\"><label>Status: <span class=\"large-text status-text\">".$escaper->escapeHtml($status)."</span></label></div>";
+	                echo "<div class=\"span4\">";
 
-								echo "<div class=\"btn-group pull-right\">\n";
+							echo "<div class=\"btn-group pull-right\">\n";
 								echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">". $escaper->escapeHtml($lang['RiskActions']) ."<span class=\"caret\"></span></a>\n";
 								echo "<ul class=\"dropdown-menu\">\n";
 
 								// If the risk is closed, offer to reopen
-								if ($status == "Closed") { echo "<li><a href=\"reopen.php?id=".$escaper->escapeHtml($id)."\">". $escaper->escapeHtml($lang['ReopenRisk']) ."</a></li>\n"; }
+								if ($status == "Closed") { echo "<li><a class='reopen-risk' href=\"reopen.php?id=".$escaper->escapeHtml($id)."\">". $escaper->escapeHtml($lang['ReopenRisk']) ."</a></li>\n"; }
 								// Otherwise, offer to close
 								else{
 									// If the user has permission to close risks
-									if (isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1) { echo "<li><a href=\"close.php?id=".$escaper->escapeHtml($id)."\">". $escaper->escapeHtml($lang['CloseRisk']) ."</a></li>\n";							}
+									if (isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1) { echo "<li><a class='close-risk' href=\"close.php?id=".$escaper->escapeHtml($id)."\">". $escaper->escapeHtml($lang['CloseRisk']) ."</a></li>\n";							}
 								}
 
-								echo "<li><a href=\"view.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['EditRisk']) ."</a></li>\n";
-								echo "<li><a href=\"mitigate.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PlanAMitigation']) ."</a></li>\n";
-								echo "<li><a href=\"mgmt_review.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PerformAReview']) ."</a></li>\n";
-								echo "<li><a href=\"status.php?id=" . $escaper->escapeHtml($id) . "\">" . $escaper->escapeHtml($lang['ChangeStatus']) . "</a></li>\n";
+								echo "<li><a class='edit-risk' href=\"view.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['EditRisk']) ."</a></li>\n";
+								echo "<li><a class='edit-mitigation' href=\"mitigate.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PlanAMitigation']) ."</a></li>\n";
+								echo "<li><a class='perform-review' href=\"mgmt_review.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PerformAReview']) ."</a></li>\n";
+								echo "<li><a class='change-status' href=\"status.php?id=" . $escaper->escapeHtml($id) . "\">" . $escaper->escapeHtml($lang['ChangeStatus']) . "</a></li>\n";
 								//echo "<li><a href=\"comment.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['AddAComment']) ."</a></li>\n";
 								echo "<li><a href=\"#comment\" class='add-comment-menu'>". $escaper->escapeHtml($lang['AddAComment']) ."</a></li>\n";
-								echo "<li><a href=\"print_view.php?id=" . $escaper->escapeHtml($id) . "\" target=\"_blank\">". $escaper->escapeHtml($lang['PrintableView']) ."</a></li>\n";
+								echo "<li><a class='printable-veiw' href=\"print_view.php?id=" . $escaper->escapeHtml($id) . "\" target=\"_blank\">". $escaper->escapeHtml($lang['PrintableView']) ."</a></li>\n";
 								echo "</ul>\n";
-								echo "</div>\n";
+							echo "</div>\n";
 
 
 					echo "</div>";
-	      echo "</div>";
+                echo "</div>";
 
-	      echo "<div class=\"row-fluid border-top\">";
-	        echo "<div class=\"span12\"><div id=\"static-subject\"><label>Subject : <span class=\"large-text\">".$escaper->escapeHtml($subject)."</span> <div id=\"edit-subject\" style=\"display:inline;margin:0 0 0 10px; font-size:20px;\"><i class=\"fa fa-pencil-square-o\" aria-hidden=\"true\"></i></div></label></div>";
-	        echo "<form name=\"details\" method=\"post\" action=\"\">";
-	        echo "<div class=\"edit-subject row-fluid\">";
-	        echo "<div class=\"span9\">";
-	        echo "<input type=\"text\" name=\"subject\" value=\"".$escaper->escapeHtml($subject)."\" style=\"max-width:none;\"/>";
-	        echo "<input type=\"hidden\" name=\"riskid\" value=\"".$escaper->escapeHtml($id)."\"/>";
-	        echo "</div>";
-	        echo "<div class=\"span3\">";
-	        echo "<a href=\"/management/view.php?id=" . $escaper->escapeHtml($id) . "&type=0\" class=\"btn\" style=\"margin:0 5px 0 0;\" >Cancel</a>";
-			echo "<button type=\"submit\" name=\"update_subject\" class=\"btn btn-danger\">Save</button>";
-			echo "</div></div></div>";
-			echo "</form>";
-	      echo "</div>";
-	    echo "</div>    ";
-	  echo "</div>";
-	  echo "<div class=\"row-fluid\">";
+                echo "<div class=\"row-fluid border-top\">";
+	                echo "<div class=\"span12\"><div id=\"static-subject\" class='static-subject'><label>Subject : <span class=\"large-text\">".$escaper->escapeHtml($subject)."</span> <div id=\"edit-subject\" class='edit-subject-btn' style=\"display:inline;margin:0 0 0 10px; font-size:20px;\"><i class=\"fa fa-pencil-square-o\" aria-hidden=\"true\"></i></div></label></div>";
+	                    echo "<form name=\"details\" method=\"post\" action=\"\">";
+	                        echo "<div class=\"edit-subject row-fluid\">";
+	                            echo "<div class=\"span9\">";
+	                                echo "<input type=\"text\" name=\"subject\" value=\"".$escaper->escapeHtml($subject)."\" style=\"max-width:none;\"/>";
+	                                echo "<input type=\"hidden\" name=\"riskid\" value=\"".$escaper->escapeHtml($id)."\"/>";
+	                            echo "</div>";
+	                            echo "<div class=\"span3\">";
+	                                echo "<a href=\"/management/view.php?id=" . $escaper->escapeHtml($id) . "&type=0\" class=\"btn cancel-edit-subject \" style=\"margin:0 5px 0 0;\" >Cancel</a>";
+			                        echo "<button type=\"submit\" name=\"update_subject\" class=\"btn btn-danger\">Save</button>";
+			                    echo "</div>
+                                </div>";
+			            echo "</form>";
+	                  echo "</div>";
+	            echo "</div>";
+                echo "<div class=\"row-fluid\">";
+				    echo "<div class=\"span12 details risk-test\">";
+				        echo "<a href=\"#\" id=\"show\" class='show-score' onclick=\"javascript: showScoreDetails();\"> <i class=\"fa fa-caret-right\"></i> ". $escaper->escapeHtml($lang['ShowRiskScoringDetails']) ."</a>";
+				        echo "<a href=\"#\" id=\"hide\" class='hide-score' style=\"display: none;\" onclick=\"javascript: hideScoreDetails();\"> <i class=\"fa fa-caret-down\"></i> ". $escaper->escapeHtml($lang['HideRiskScoringDetails']) ."</a>";
+                    echo "</div>";
+                echo "</div>";
+			echo "</div>";
 
-				echo "<div class=\"span12 details risk-test\">";
-				echo "<a href=\"#\" id=\"show\" onclick=\"javascript: showScoreDetails();\"> <i class=\"fa fa-caret-right\"></i> ". $escaper->escapeHtml($lang['ShowRiskScoringDetails']) ."</a>";
-				echo "<a href=\"#\" id=\"hide\" style=\"display: none;\" onclick=\"javascript: hideScoreDetails();\"> <i class=\"fa fa-caret-down\"></i> ". $escaper->escapeHtml($lang['HideRiskScoringDetails']) ."</a>";
-				echo "</div>";
-
-	  echo "</div>";
-	echo "</div>";
+        echo "</div>";
+    echo "</div>";
 }
 
 /**********************************
@@ -168,7 +171,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo $escaper->escapeHtml($lang['SubmissionDate']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $escaper->escapeHtml($submission_date) . "\" title=\"" . $escaper->escapeHtml($submission_date) . "\" disabled=\"disabled\" />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\"  size=\"50\" value=\"" . $escaper->escapeHtml($submission_date) . "\" title=\"" . $escaper->escapeHtml($submission_date) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
         echo "<div class=\"row-fluid\">\n";
@@ -216,7 +219,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo $escaper->escapeHtml($lang['AffectedAssets']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<textarea style=\"cursor: default;\" type=\"text\" name=\"assets\" id=\"assets\" size=\"50\" cols=\"50\" rows=\"3\" title=\"" . $escaper->escapeHtml(get_list_of_assets($id, false)) . "\" disabled=\"disabled\">". $escaper->escapeHtml(get_list_of_assets($id, false)) ."</textarea>\n";
+	echo "<textarea style=\"cursor: default;\" type=\"text\" name=\"assets\" class=\"assets\" id=\"assets\" size=\"50\" cols=\"50\" rows=\"3\" title=\"" . $escaper->escapeHtml(get_list_of_assets($id, false)) . "\" disabled=\"disabled\">". $escaper->escapeHtml(get_list_of_assets($id, false)) ."</textarea>\n";
 	echo "</div>\n";
 	echo "</div>\n";
         echo "<div class=\"row-fluid\">\n";
@@ -263,6 +266,14 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo "<input style=\"cursor: default;\" type=\"text\" name=\"submitted_by\" id=\"submitted_by\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $submitted_by)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("user", $submitted_by)) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span5 text-right\">\n";
+    echo $escaper->escapeHtml($lang['RiskSource']) .": \n";
+    echo "</div>\n";
+    echo "<div class=\"span7\">\n";
+    echo "<input style=\"cursor: default;\" type=\"text\" name=\"source\" id=\"source\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "\" disabled=\"disabled\" />\n";
+    echo "</div>\n";
+    echo "</div>\n";
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['RiskScoringMethod']) .": \n";
@@ -271,30 +282,24 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo "<input style=\"cursor: default;\" type=\"text\" name=\"scoringMethod\" id=\"scoringMethod\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("scoring_methods", $scoring_method)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("scoring_methods", $scoring_method)) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
+    if($scoring_method == "1"){
         echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['CurrentLikelihood']) .": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"currentLikelihood\" id=\"currentLikelihood\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "\" disabled=\"disabled\" />\n";
-	echo "</div>\n";
-	echo "</div>\n";
-        echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['CurrentImpact']) .": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"currentLikelihood\" id=\"currentLikelihood\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "\" disabled=\"disabled\" />\n";
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['RiskSource']) .": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"source\" id=\"source\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("source", $source)) . "\" disabled=\"disabled\" />\n";
-	echo "</div>\n";
-	echo "</div>\n";
+        echo "<div class=\"span5 text-right\">\n";
+        echo $escaper->escapeHtml($lang['CurrentLikelihood']) .": \n";
+        echo "</div>\n";
+        echo "<div class=\"span7\">\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"currentLikelihood\" id=\"currentLikelihood\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "\" disabled=\"disabled\" />\n";
+        echo "</div>\n";
+        echo "</div>\n";
+            echo "<div class=\"row-fluid\">\n";
+        echo "<div class=\"span5 text-right\">\n";
+        echo $escaper->escapeHtml($lang['CurrentImpact']) .": \n";
+        echo "</div>\n";
+        echo "<div class=\"span7\">\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"currentLikelihood\" id=\"currentLikelihood\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "\" disabled=\"disabled\" />\n";
+        echo "</div>\n";
+        echo "</div>\n";
+    }
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['RiskAssessment']) .": \n";
@@ -413,6 +418,112 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
 	echo "</table>\n";
 }
 
+
+function risk_score_method_html($scoring_method="1", $CLASSIC_likelihood="", $CLASSIC_impact="", $AccessVector="N", $AccessComplexity="L", $Authentication="N", $ConfImpact="C", $IntegImpact="C", $AvailImpact="C", $Exploitability="ND", $RemediationLevel="ND", $ReportConfidence="ND", $CollateralDamagePotential="ND", $TargetDistribution="ND", $ConfidentialityRequirement="ND", $IntegrityRequirement="ND", $AvailabilityRequirement="ND", $DREADDamagePotential="10", $DREADReproducibility="10", $DREADExploitability="10", $DREADAffectedUsers="10", $DREADDiscoverability="10", $OWASPSkillLevel="10", $OWASPMotive="10", $OWASPOpportunity="10", $OWASPSize="10", $OWASPEaseOfDiscovery="10", $OWASPEaseOfExploit="10", $OWASPAwareness="10", $OWASPIntrusionDetection="10", $OWASPLossOfConfidentiality="10", $OWASPLossOfIntegrity="10", $OWASPLossOfAvailability="10", $OWASPLossOfAccountability="10", $OWASPFinancialDamage="10", $OWASPReputationDamage="10", $OWASPNonCompliance="10", $OWASPPrivacyViolation="10", $custom=""){
+    global $escaper;
+    global $lang;
+    
+    $html = "
+        <div class='row-fluid' >
+            <div class='span5 text-right'>". $escaper->escapeHtml($lang['RiskScoringMethod']) .":</div>
+            <div class='span7'>"
+            .create_dropdown("scoring_methods", $scoring_method, "scoring_method", false, false, true).
+            "
+                <!-- select class='form-control' name='scoring_method' id='select' >
+                    <option selected value='1'>Classic</option>
+                    <option value='2'>CVSS</option>
+                    <option value='3'>DREAD</option>
+                    <option value='4'>OWASP</option>
+                    <option value='5'>Custom</option>
+                </select -->
+            </div>
+        </div>
+        <div id='classic' class='classic-holder' style='display:". ($scoring_method == 1 ? "block" : "none") ."'>
+            <div class='row-fluid'>
+                <div class='span5 text-right'>". $escaper->escapeHtml($lang['CurrentLikelihood']) .":</div>
+                <div class='span7'>". create_dropdown('likelihood', $CLASSIC_likelihood, NULL, true, false, true) ."</div>
+            </div>
+            <div class='row-fluid'>
+                <div class='span5 text-right'>". $escaper->escapeHtml($lang['CurrentImpact']) .":</div>
+                <div class='span7'>". create_dropdown('impact', $CLASSIC_impact, NULL, true, false, true) ."</div>
+            </div>
+        </div>
+        <div id='cvss' style='display: ". ($scoring_method == 2 ? "block" : "none") .";' class='cvss-holder'>
+            <table width='100%'>
+                <tr>
+                    <td width='197px'>&nbsp;</td>
+                    <td><p><input type='button' name='cvssSubmit' id='cvssSubmit' value='Score Using CVSS' /></p></td>
+                </tr>
+            </table>
+            <input type='hidden' name='AccessVector' id='AccessVector' value='{$AccessVector}' />
+            <input type='hidden' name='AccessComplexity' id='AccessComplexity' value='{$AccessComplexity}' />
+            <input type='hidden' name='Authentication' id='Authentication' value='{$Authentication}' />
+            <input type='hidden' name='ConfImpact' id='ConfImpact' value='{$ConfImpact}' />
+            <input type='hidden' name='IntegImpact' id='IntegImpact' value='{$IntegImpact}' />
+            <input type='hidden' name='AvailImpact' id='AvailImpact' value='{$AvailImpact}' />
+            <input type='hidden' name='Exploitability' id='Exploitability' value='{$Exploitability}' />
+            <input type='hidden' name='RemediationLevel' id='RemediationLevel' value='{$RemediationLevel}' />
+            <input type='hidden' name='ReportConfidence' id='ReportConfidence' value='{$ReportConfidence}' />
+            <input type='hidden' name='CollateralDamagePotential' id='CollateralDamagePotential' value='{$CollateralDamagePotential}' />
+            <input type='hidden' name='TargetDistribution' id='TargetDistribution' value='{$TargetDistribution}' />
+            <input type='hidden' name='ConfidentialityRequirement' id='ConfidentialityRequirement' value='{$ConfidentialityRequirement}' />
+            <input type='hidden' name='IntegrityRequirement' id='IntegrityRequirement' value='{$IntegrityRequirement}' />
+            <input type='hidden' name='AvailabilityRequirement' id='AvailabilityRequirement' value='{$AvailabilityRequirement}' />
+        </div>
+        <div id='dread' style='display: ". ($scoring_method == 3 ? "block" : "none") .";' class='dread-holder'>
+            <table width='100%'>
+                <tr>
+                    <td width='197px'>&nbsp;</td>
+                    <td><p><input type='button' name='dreadSubmit' id='dreadSubmit' value='Score Using DREAD' onclick='javascript: popupdread();' /></p></td>
+                </tr>
+            </table>
+            <input type='hidden' name='DREADDamage' id='DREADDamage' value='{$DREADDamagePotential}' />
+            <input type='hidden' name='DREADReproducibility' id='DREADReproducibility' value='{$DREADReproducibility}' />
+            <input type='hidden' name='DREADExploitability' id='DREADExploitability' value='{$DREADExploitability}' />
+            <input type='hidden' name='DREADAffectedUsers' id='DREADAffectedUsers' value='{$DREADAffectedUsers}' />
+            <input type='hidden' name='DREADDiscoverability' id='DREADDiscoverability' value='{$DREADDiscoverability}' />
+        </div>
+        <div id='owasp' style='display: ". ($scoring_method == 4 ? "block" : "none") .";' class='owasp-holder'>
+            <table width='100%'>
+                <tr>
+                    <td width='197px'>&nbsp;</td>
+                    <td><p><input type='button' name='owaspSubmit' id='owaspSubmit' value='Score Using OWASP' onclick='javascript: popupowasp();' /></p></td>
+                </tr>
+            </table>
+            <input type='hidden' name='OWASPSkillLevel' id='OWASPSkillLevel' value='{$OWASPSkillLevel}' />
+            <input type='hidden' name='OWASPMotive' id='OWASPMotive' value='{$OWASPMotive}' />
+            <input type='hidden' name='OWASPOpportunity' id='OWASPOpportunity' value='{$OWASPOpportunity}' />
+            <input type='hidden' name='OWASPSize' id='OWASPSize' value='{$OWASPSize}' />
+            <input type='hidden' name='OWASPEaseOfDiscovery' id='OWASPEaseOfDiscovery' value='{$OWASPEaseOfDiscovery}' />
+            <input type='hidden' name='OWASPEaseOfExploit' id='OWASPEaseOfExploit' value='{$OWASPEaseOfExploit}' />
+            <input type='hidden' name='OWASPAwareness' id='OWASPAwareness' value='{$OWASPAwareness}' />
+            <input type='hidden' name='OWASPIntrusionDetection' id='OWASPIntrusionDetection' value='{$OWASPIntrusionDetection}' />
+            <input type='hidden' name='OWASPLossOfConfidentiality' id='OWASPLossOfConfidentiality' value='{$OWASPLossOfConfidentiality}' />
+            <input type='hidden' name='OWASPLossOfIntegrity' id='OWASPLossOfIntegrity' value='{$OWASPLossOfIntegrity}' />
+            <input type='hidden' name='OWASPLossOfAvailability' id='OWASPLossOfAvailability' value='{$OWASPLossOfAvailability}' />
+            <input type='hidden' name='OWASPLossOfAccountability' id='OWASPLossOfAccountability' value='{$OWASPLossOfAccountability}' />
+            <input type='hidden' name='OWASPFinancialDamage' id='OWASPFinancialDamage' value='{$OWASPFinancialDamage}' />
+            <input type='hidden' name='OWASPReputationDamage' id='OWASPReputationDamage' value='{$OWASPReputationDamage}' />
+            <input type='hidden' name='OWASPNonCompliance' id='OWASPNonCompliance' value='{$OWASPNonCompliance}' />
+            <input type='hidden' name='OWASPPrivacyViolation' id='OWASPPrivacyViolation' value='{$OWASPPrivacyViolation}' />
+        </div>
+        <div id='custom' style='display: ". ($scoring_method == 5 ? "block" : "none") .";' class='custom-holder'>
+            <div class='row-fluid'>
+                <div class='span5 text-right'>
+                    ". $escaper->escapeHtml($lang['CustomValue']) .":
+                </div>
+                <div class='span7'>
+                    <input type='text' name='Custom' id='Custom' value='{$custom}' /> 
+                    <small>(Must be a numeric value between 0 and 10)</small>
+                </div>
+            </div>
+        </div>
+    
+    ";
+    
+    echo $html;
+}
+
 /*******************************
 * FUNCTION: EDIT RISK DETAILS *
 *******************************/
@@ -428,8 +539,8 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 
 	echo "<h4>". $escaper->escapeHtml($lang['Details']) ."</h4>\n";
         echo "<div class=\"tabs--action\">";
-    echo "<a href='/management/view.php?id=$id&type=0' id=\"cancel_disable\" class=\"btn\">". $escaper->escapeHtml($lang['Cancel']) ."</a>\n";
-	echo "<button type=\"submit\" name=\"update_details\" class=\"btn btn-danger\">". $escaper->escapeHtml($lang['SaveDetails']) ."</button>\n";
+    echo "<a href='/management/view.php?id=$id&type=0' id=\"cancel_disable\" class=\"btn cancel-edit-details on-edit\">". $escaper->escapeHtml($lang['Cancel']) ."</a>\n";
+	echo "<button type=\"submit\" name=\"update_details\" class=\"btn btn-danger save-details on-edit\">". $escaper->escapeHtml($lang['SaveDetails']) ."</button>\n";
 	echo "</div>\n";
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5\">\n";
@@ -438,7 +549,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 	echo $escaper->escapeHtml($lang['SubmissionDate']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\" id=\"submission_date\" size=\"50\" value=\"" . $escaper->escapeHtml($submission_date) . "\" title=\"" . $escaper->escapeHtml($submission_date) . "\" disabled=\"disabled\" />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\"  size=\"50\" value=\"" . $escaper->escapeHtml($submission_date) . "\" title=\"" . $escaper->escapeHtml($submission_date) . "\" class=\"datepicker\" />\n"; 
 	echo "</div>\n";
 	echo "</div>\n";
         echo "<div class=\"row-fluid\">\n";
@@ -486,7 +597,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 	echo $escaper->escapeHtml($lang['AffectedAssets']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-        echo "<textarea name=\"assets\" class=\"active-textfield\" cols=\"50\" rows=\"3\" id=\"assets\">".$escaper->escapeHtml(get_list_of_assets($id)) . "</textarea>\n";
+        echo "<textarea name=\"assets\" class=\"active-textfield assets\" cols=\"50\" rows=\"3\" id=\"assets\">".$escaper->escapeHtml(get_list_of_assets($id)) . "</textarea>\n";
 	echo "</div>\n";
 	echo "</div>\n";
         echo "<div class=\"row-fluid\">\n";
@@ -525,6 +636,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 
 
         echo "<div class=\"span5\">\n";
+        
 //        echo "<div class=\"row-fluid\">\n";
 //	echo "<div class=\"span5 text-right\">\n";
 //	echo $escaper->escapeHtml($lang['RiskScoringMethod']) .": \n";
@@ -552,6 +664,8 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 //	//echo "<input style=\"cursor: default;\" type=\"text\" name=\"CLASSIC_impact\" id=\"CLASSIC_impact\" size=\"50\" value=\"" . $escaper->escapeHtml($CLASSIC_impact) . "\" title=\"" . $escaper->escapeHtml($CLASSIC_impact) . "\" disabled=\"disabled\" />\n";
 //	echo "</div>\n";
 //	echo "</div>\n";
+
+
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['RiskSource']) .": \n";
@@ -560,6 +674,9 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 	create_dropdown("source", $source);
 	echo "</div>\n";
 	echo "</div>\n";
+
+        risk_score_method_html($scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
+
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\" id=\"RiskAssessmentTitle\">\n";
 	echo $escaper->escapeHtml($lang['RiskAssessment']) .": \n";
@@ -592,7 +709,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 /*************************************
 * FUNCTION: VIEW MITIGATION DETAILS *
 *************************************/
-function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations)
+function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date)
 {
 	global $lang;
 	global $escaper;
@@ -621,6 +738,14 @@ function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 	echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $escaper->escapeHtml($mitigation_date) . "\" title=\"" . $escaper->escapeHtml($mitigation_date) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span5 text-right\">\n";
+    echo $escaper->escapeHtml($lang['MitigationPlanning']) .": \n";
+    echo "</div>\n";
+    echo "<div class=\"span7\">\n";
+    echo "<input style=\"cursor: default;\" type=\"text\" name=\"planning_date\" id=\"planning_date\" size=\"50\" value=\"" . $escaper->escapeHtml($planning_date) . "\" title=\"" . $escaper->escapeHtml($planning_date) . "\" disabled=\"disabled\" />\n";
+    echo "</div>\n";
+    echo "</div>\n";
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['PlanningStrategy']) .": \n";
@@ -753,7 +878,7 @@ function view_print_mitigation_details($mitigation_date, $planning_strategy, $mi
 /*************************************
 * FUNCTION: EDIT MITIGATION DETAILS *
 *************************************/
-function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations)
+function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date)
 {
 	global $lang;
 	global $escaper;
@@ -762,98 +887,108 @@ function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 	$security_requirements = try_decrypt($security_requirements);
 	$security_recommendations = try_decrypt($security_recommendations);
 
-	echo "<h4>". $escaper->escapeHtml($lang['Mitigation']) ."</h4>\n";
-  echo "<div class=\"tabs--action\">";
-  echo "<a href='/management/view.php?id=$risk_id&type=1' id=\"cancel_disable\" class=\"btn\">". $escaper->escapeHtml($lang['Cancel']) ."</a>\n";
-	echo "<button type=\"submit\" name=\"update_mitigation\" class=\"btn btn-danger\">". $escaper->escapeHtml($lang['SaveMitigation']) ."</button>\n";
-	echo "</div>\n";
-	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5\">\n";
-	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['MitigationDate']) .": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $escaper->escapeHtml($mitigation_date) . "\" title=\"" . $escaper->escapeHtml($mitigation_date) . "\" disabled=\"disabled\" />\n";
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "<input type=\"hidden\" name=\"tab_type\" value=\"1\" />";
-	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['PlanningStrategy']) .": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	create_dropdown("planning_strategy", $planning_strategy);
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['MitigationEffort']) .": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	create_dropdown("mitigation_effort", $mitigation_effort);
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['MitigationCost']) .": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	create_asset_valuation_dropdown("mitigation_cost", $mitigation_cost);
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['MitigationOwner']) .": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	create_dropdown("user", $mitigation_owner, "mitigation_owner", true);
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['MitigationTeam']) .": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	create_dropdown("team", $mitigation_team, "mitigation_team", true);
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "<div class=\"span5\">\n";
-	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\" id=\"CurrentSolutionTitle\">\n";
-	echo $escaper->escapeHtml($lang['CurrentSolution']) .": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	echo "<textarea  class=\"active-textfield\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" tabindex=\"1\">" . $escaper->escapeHtml($current_solution) . "</textarea>\n";
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\" id=\"SecurityRequirementsTitle\">\n";
-	echo $escaper->escapeHtml($lang['SecurityRequirements']) .": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	echo "<textarea class=\"active-textfield\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" tabindex=\"1\">" . $escaper->escapeHtml($security_requirements) . "</textarea>\n";
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5 text-right\" id=\"SecurityRecommendationsTitle\">\n";
-	echo $escaper->escapeHtml($lang['SecurityRecommendations']) .": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	echo "<textarea class=\"active-textfield\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" tabindex=\"1\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>\n";
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"wrap-text span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['SupportingDocumentation']) . ": \n";
-	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	supporting_documentation($risk_id, "edit", 2);
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "</div>\n";
-	echo "</div>\n";
+	echo "
+        <h4>". $escaper->escapeHtml($lang['Mitigation']) ."</h4>
+        <div class=\"tabs--action\">
+            <a href='/management/view.php?id=$risk_id&type=1' id=\"cancel_disable\" class=\"btn cancel-edit-mitigation\">". $escaper->escapeHtml($lang['Cancel']) ."</a>
+	        <button type=\"submit\" name=\"update_mitigation\" class=\"btn btn-danger\">". $escaper->escapeHtml($lang['SaveMitigation']) ."</button>
+	    </div>
+	    <div class=\"row-fluid\">
+	        <div class=\"span5\">
+                <div class=\"row-fluid\">
+                    <div class=\"span5 text-right\">"
+                        .$escaper->escapeHtml($lang['MitigationDate']) .": \n
+                    </div>
+                    <div class=\"span7\">
+                        <input style=\"cursor: default;\" type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $escaper->escapeHtml($mitigation_date) . "\" title=\"" . $escaper->escapeHtml($mitigation_date) . "\" disabled=\"disabled\" />
+                    </div>
+                </div>
+	            <div class=\"row-fluid\">
+	                <div class=\"span5 text-right\">"
+	                    .$escaper->escapeHtml($lang['MitigationPlanning']) .": \n
+	                </div>
+	                <div class=\"span7\">
+	                    <input type=\"text\" name=\"planning_date\"  size=\"50\" value=\"" . $escaper->escapeHtml($planning_date) . "\" class='datepicker active-textfield' />
+	                </div>
+	            </div>
+	            <input type=\"hidden\" name=\"tab_type\" value=\"1\" />
+	            <div class=\"row-fluid\">
+	                <div class=\"span5 text-right\">"
+	                    .$escaper->escapeHtml($lang['PlanningStrategy']) .": \n
+	                </div>
+	                <div class=\"span7\">";
+	                    create_dropdown("planning_strategy", $planning_strategy);
+	            echo "</div>
+	            </div>
+	            <div class=\"row-fluid\">
+	                <div class=\"span5 text-right\">"
+	                    .$escaper->escapeHtml($lang['MitigationEffort']) .": 
+	                </div>
+	                <div class=\"span7\">";
+	                    create_dropdown("mitigation_effort", $mitigation_effort);
+	            echo "</div>
+	            </div>
+	            <div class=\"row-fluid\">
+	                <div class=\"span5 text-right\">"
+	                    .$escaper->escapeHtml($lang['MitigationCost']) .": 
+	                </div>
+	                <div class=\"span7\">";
+	                    echo create_asset_valuation_dropdown("mitigation_cost", $mitigation_cost);
+	                "</div>
+	            </div>
+	            <div class=\"row-fluid\">
+	                <div class=\"span5 text-right\">"
+	                    .$escaper->escapeHtml($lang['MitigationOwner']) .": 
+	                </div>
+	                <div class=\"span7\">";
+	                    create_dropdown("user", $mitigation_owner, "mitigation_owner", true);
+	            echo "</div>
+	            </div>
+	            <div class=\"row-fluid\">
+	                <div class=\"span5 text-right\">"
+	                    .$escaper->escapeHtml($lang['MitigationTeam']) .": 
+	                </div>
+	                <div class=\"span7\">";
+	                    create_dropdown("team", $mitigation_team, "mitigation_team", true);
+	                echo "</div>
+	            </div>
+	        </div>
+	        <div class=\"span5\">
+	            <div class=\"row-fluid\">
+	                <div class=\"span5 text-right\" id=\"CurrentSolutionTitle\">"
+	                    .$escaper->escapeHtml($lang['CurrentSolution']) .": 
+	                </div>
+	                <div class=\"span7\">
+	                    <textarea  class=\"active-textfield\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" tabindex=\"1\">" . $escaper->escapeHtml($current_solution) . "</textarea>
+	                </div>
+	            </div>
+	            <div class=\"row-fluid\">
+	                <div class=\"span5 text-right\" id=\"SecurityRequirementsTitle\">"
+	                    .$escaper->escapeHtml($lang['SecurityRequirements']) .": 
+	                </div>
+	                <div class=\"span7\">
+	                    <textarea class=\"active-textfield\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" tabindex=\"1\">" . $escaper->escapeHtml($security_requirements) . "</textarea>
+	                </div>
+	            </div>
+	            <div class=\"row-fluid\">
+	                <div class=\"span5 text-right\" id=\"SecurityRecommendationsTitle\">"
+	                    .$escaper->escapeHtml($lang['SecurityRecommendations']) .": 
+	                </div>
+	                <div class=\"span7\">
+	                    <textarea class=\"active-textfield\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" tabindex=\"1\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>
+	                </div>
+	            </div>
+	            <div class=\"row-fluid\">
+	                <div class=\"wrap-text span5 text-right\">"
+	                    .$escaper->escapeHtml($lang['SupportingDocumentation']) . ": 
+	                </div>
+	                <div class=\"span7\">";
+	                    supporting_documentation($risk_id, "edit", 2);
+	                echo "</div>
+	            </div>
+	        </div>
+	    </div>
+    ";
 
 }
 
@@ -871,7 +1006,7 @@ function view_review_details($id, $review_date, $reviewer, $review, $next_step, 
 	echo "<h4>". $escaper->escapeHtml($lang['LastReview']) ."</h4>\n";
 
 	echo "<div class=\"tabs--action\">";
-  echo "<a class=\"btn\" href=\"reviews.php?id=". $escaper->escapeHtml($id) ."\">". $escaper->escapeHtml($lang['ViewAllReviews']) ."</a>";
+    echo "<a class=\"btn view_all_reviews\" href=\"reviews.php?id=". $escaper->escapeHtml($id) ."\">". $escaper->escapeHtml($lang['ViewAllReviews']) ."</a>";
 	echo "</div>\n";
 
 
@@ -982,7 +1117,7 @@ function view_print_review_details($id, $review_date, $reviewer, $review, $next_
 /****************************************
 * FUNCTION: edit_mitigation_submission *
 ****************************************/
-function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $id=0)
+function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $id=0)
 {
 	global $lang;
 	global $escaper;
@@ -1006,6 +1141,11 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mit
 	echo '<div class="span7">';
 	create_dropdown("planning_strategy", $planning_strategy, NULL, true);
 	echo '</div></div><div class="row-fluid">';
+    echo '<div class="span5">';
+    echo $escaper->escapeHtml($lang['MitigationPlanning']) .":</div>";
+    echo '<div class="span7">';
+    echo "<input type=\"text\" name=\"planning_date\" id=\"planning_date\" size=\"50\" value=\"" . $escaper->escapeHtml($planning_date) . "\" class='datepicker active-textfield' />";
+    echo '</div></div><div class="row-fluid">';
 	echo '<div class="span5">';
 	echo $escaper->escapeHtml($lang['MitigationEffort']) .":</div>";
 	echo '<div class="span7">';
@@ -1054,11 +1194,12 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mit
 /************************************
 * FUNCTION: edit_review_submission *
 ************************************/
-function edit_review_submission($review, $next_step, $next_review, $comments)
+function edit_review_submission($review, $next_step, $next_review, $comments, $default_next_review)
 {
-        global $lang;
+    global $lang;
 	global $escaper;
 
+    $default_next_review = date("m/d/Y", strtotime($default_next_review));
 
 	// Decrypt fields
 	$comments = try_decrypt($comments);
@@ -1068,8 +1209,8 @@ function edit_review_submission($review, $next_step, $next_review, $comments)
 
 	echo "<div class=\"tabs--action\">";
 
-	echo "<input id=\"cancel_disable\" class=\"btn\" value=\"". $escaper->escapeHtml($lang['Cancel']) ."\" type=\"reset\">\n";
-	echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-danger\">". $escaper->escapeHtml($lang['SubmitReview']) ."</button>\n";
+	echo "<input id=\"cancel_disable\" class=\"btn cancel-edit-review \" value=\"". $escaper->escapeHtml($lang['Cancel']) ."\" type=\"reset\">\n";
+	echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-danger save-review\">". $escaper->escapeHtml($lang['SubmitReview']) ."</button>\n";
 	echo "</div>\n";
 
 	echo '<div class="row-fluid">
@@ -1113,28 +1254,29 @@ function edit_review_submission($review, $next_step, $next_review, $comments)
 	echo "<div class=\"span3 text-left\"> </div>";
 	echo "<div class=\"span9 text-left\">";
 
-	echo '<strong class="small-text">'.$escaper->escapeHtml($lang['BasedOnTheCurrentRiskScore']) . $escaper->escapeHtml($next_review) . "<br />\n";
+	echo '<strong class="small-text">'.$escaper->escapeHtml($lang['BasedOnTheCurrentRiskScore']) . $escaper->escapeHtml($default_next_review) . "<br />\n";
 	echo $escaper->escapeHtml($lang['WouldYouLikeToUseADifferentDate']).'</strong>';
 
-	echo "<div class=\"clearfix radio-padded-top-bottom\">";
-        echo "<div class=\"pull-left active-textfield\"><input type=\"radio\" name=\"custom_date\" value=\"no\" onclick=\"hideNextReview()\" id=\"no\" class=\"hidden-radio\" checked /> <label for=\"no\">".$escaper->escapeHtml($lang['No'])."</label></div>";
-	echo "<div class=\"pull-left radio-padded-right\"><input type=\"radio\" name=\"custom_date\" value=\"yes\" onclick=\"showNextReview()\" id=\"yes\" class=\"hidden-radio\" /><label for=\"yes\">".$escaper->escapeHtml($lang['Yes'])."</label></div>";
+	echo "<div class=\"clearfix radio-buttons-holder radio-padded-top-bottom\">";
+        echo "<div class=\"pull-left active-textfield\"><input type=\"radio\" name=\"custom_date\" value=\"no\" onclick=\"hideNextReview()\" id=\"no\" class=\"hidden-radio\" checked /> <label >".$escaper->escapeHtml($lang['No'])."</label></div>";
+	echo "<div class=\"pull-left radio-padded-right\"><input type=\"radio\" name=\"custom_date\" value=\"yes\" onclick=\"showNextReview()\" id=\"yes\" class=\"hidden-radio\" /><label >".$escaper->escapeHtml($lang['Yes'])."</label></div>";
 	echo "</div> </div>";
 
-	echo "<div id=\"nextreview\" style=\"display:none;\">\n";
+	echo "<div id=\"nextreview\" class=\"nextreview\" style=\"display:none;\">\n";
 	echo "<div class=\"span3 text-left\">\n";
 	echo $escaper->escapeHtml($lang['NextReviewDate']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
 	//echo "<input type=\"date\" name=\"next_review\" value=\"" . $escaper->escapeHtml($next_review) . "\" />\n";
-	$next_review = date("m/d/Y", strtotime($next_review));
-	echo "<input type=\"text\" class=\"datepicker active-textfield\" name=\"next_review\" id=\"nextreviewvalue\" value=\"" . $escaper->escapeHtml($next_review) . "\" />\n";
+	echo "<input type=\"text\" class=\"datepicker active-textfield\" name=\"next_review\" id=\"nextreviewvalue\" value=\"" . $escaper->escapeHtml($default_next_review) . "\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
 	echo "</div>\n";
 	echo "</div>\n";
 
 	echo "</form>\n";
+    
+    return;
 }
 
 /********************************
@@ -1149,9 +1291,9 @@ function edit_classic_score($CLASSIC_likelihood, $CLASSIC_impact)
 	echo "<form name=\"update_classic\" method=\"post\" action=\"\">\n";
 	echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
 
-  echo "<div class=\"tabs--action\">";
-	echo "<button type=\"submit\" name=\"update_classic\" class=\"btn btn-danger\">" . $escaper->escapeHtml($lang['Update']) . "</button>\n";
-	echo "</div>\n";
+//  echo "<div class=\"tabs--action\">";
+//	echo "<button type=\"submit\" name=\"update_classic\" class=\"btn btn-danger\">" . $escaper->escapeHtml($lang['Update']) . "</button>\n";
+//	echo "</div>\n";
 
 	echo "<tr>\n";
 	echo "<td width=\"180\" height=\"10\">" . $escaper->escapeHtml($lang['CurrentLikelihood']) . ":</td>\n";
@@ -1723,14 +1865,14 @@ function classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLAS
 	echo "<td colspan=\"3\"><h4>". $escaper->escapeHtml($lang['ClassicRiskScoring']) ."</h4></td>\n";
 	echo "<td colspan=\"1\" style=\"vertical-align:top;\">\n";
 	echo "<div class=\"btn-group pull-right sorting-buttons\">\n";
-	echo "<a class=\"btn\" href=\"#\" onclick=\"javascript:updateScore()\">". $escaper->escapeHtml($lang['UpdateClassicScore']) ."</a>\n";
+	echo "<a class=\"btn updateScore\" href=\"#\" onclick=\"javascript:updateScore()\">". $escaper->escapeHtml($lang['UpdateClassicScore']) ."</a>\n";
 	echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">". $escaper->escapeHtml($lang['RiskScoringActions']) ."<span class=\"caret\"></span></a>\n";
 	echo "<ul class=\"dropdown-menu\">\n";
 	//echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">". $escaper->escapeHtml($lang['UpdateClassicScore']) ."</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=2\">". $escaper->escapeHtml($lang['ScoreByCVSS']) ."</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=3\">". $escaper->escapeHtml($lang['ScoreByDREAD']) ."</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=4\">". $escaper->escapeHtml($lang['ScoreByOWASP']) ."</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=5\">". $escaper->escapeHtml($lang['ScoreByCustom']) ."</a></li>\n";
+	echo "<li><a class='score-action' data-method='2' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=2\">". $escaper->escapeHtml($lang['ScoreByCVSS']) ."</a></li>\n";
+	echo "<li><a class='score-action' data-method='3' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=3\">". $escaper->escapeHtml($lang['ScoreByDREAD']) ."</a></li>\n";
+	echo "<li><a class='score-action' data-method='4' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=4\">". $escaper->escapeHtml($lang['ScoreByOWASP']) ."</a></li>\n";
+	echo "<li><a class='score-action' data-method='5' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=5\">". $escaper->escapeHtml($lang['ScoreByCustom']) ."</a></li>\n";
 	echo "</ul>\n";
 	echo "</div>\n";
 	echo "</td>\n";
@@ -1800,14 +1942,14 @@ function cvss_scoring_table($id, $calculated_risk, $AccessVector, $AccessComplex
 	echo "<td colspan=\"4\"><h4>" . $escaper->escapeHtml($lang['CVSSRiskScoring']) . "</h4></td>\n";
 	echo "<td colspan=\"3\" style=\"vertical-align:top;\">\n";
 	echo "<div class=\"btn-group pull-right sorting-buttons\">\n";
-	echo "<a class=\"btn\" href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateCVSSScore']) . "</a>\n";
+	echo "<a class=\"btn updateScore\" href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateCVSSScore']) . "</a>\n";
 	echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($lang['RiskScoringActions']) . "<span class=\"caret\"></span></a>\n";
 	echo "<ul class=\"dropdown-menu\">\n";
 	//echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateCVSSScore']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=1\">" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=3\">" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=4\">" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=5\">" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='1' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=1\">" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='3' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=3\">" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='4' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=4\">" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='5' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=5\">" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>\n";
 	echo "</ul>\n";
 	echo "</div>\n";
 	echo "</td>\n";
@@ -1892,7 +2034,7 @@ function cvss_scoring_table($id, $calculated_risk, $AccessVector, $AccessComplex
 	echo "</tr>\n";
 
 	echo "<tr>\n";
-	echo "<td colspan=\"7\"><strong>Full details of CVSS Version 2.0 scoring can be found <a href=\"http://www.first.org/cvss/cvss-guide.html\" target=\"_blank\">here</a>.</strong></td>\n";
+	echo "<td colspan=\"7\"><strong>Full details of CVSS Version 2.0 scoring can be found <a href=\"https://www.first.org/cvss/v2/guide\" target=\"_blank\">here</a>.</strong></td>\n";
 	echo "</tr>\n";
 
 	echo "</table>\n";
@@ -1912,14 +2054,14 @@ function dread_scoring_table($id, $calculated_risk, $DREADDamagePotential, $DREA
 	echo "<td colspan=\"2\"><h4>" . $escaper->escapeHtml($lang['DREADRiskScoring']) . "</h4></td>\n";
 	echo "<td colspan=\"1\" style=\"vertical-align:top;\">\n";
 	echo "<div class=\"btn-group pull-right sorting-buttons\">\n";
-	echo "<a class=\"btn\" href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateDREADScore']) . "</a>\n";
+	echo "<a class=\"btn updateScore\" href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateDREADScore']) . "</a>\n";
 	echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($lang['RiskScoringActions']) . "<span class=\"caret\"></span></a>\n";
 	echo "<ul class=\"dropdown-menu\">\n";
 	//echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateDREADScore']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=1\">" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=2\">" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=4\">" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=5\">" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='1' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=1\">" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='2' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=2\">" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='4' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=4\">" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='5' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=5\">" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>\n";
 	echo "</ul>\n";
 	echo "</div>\n";
 	echo "</td>\n";
@@ -1984,14 +2126,14 @@ function owasp_scoring_table($id, $calculated_risk, $OWASPSkillLevel, $OWASPEase
 	echo "<td colspan=\"4\"><h4>" . $escaper->escapeHtml($lang['OWASPRiskScoring']) . "</h4></td>\n";
 	echo "<td colspan=\"5\" style=\"vertical-align:top;\">\n";
 	echo "<div class=\"btn-group pull-right sorting-buttons\">\n";
-	echo "<a class=\"btn\" href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateOWASPScore']) . "</a>\n";
+	echo "<a class=\"btn updateScore\" href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateOWASPScore']) . "</a>\n";
 	echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($lang['RiskScoringActions']) . "<span class=\"caret\"></span></a>\n";
 	echo "<ul class=\"dropdown-menu\">\n";
 	//echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateOWASPScore']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=1\">" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=2\">" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=3\">" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=5\">" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='1' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=1\">" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='2' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=2\">" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='3' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=3\">" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='5' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=5\">" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>\n";
 	echo "</ul>\n";
 	echo "</div>\n";
 	echo "</td>\n";
@@ -2096,14 +2238,14 @@ function custom_scoring_table($id, $custom,$type=0)
 	echo "<td colspan=\"2\"><h4>" . $escaper->escapeHtml($lang['CustomRiskScoring']) . "</h4></td>\n";
 	echo "<td colspan=\"1\" style=\"vertical-align:top;\">\n";
 	echo "<div class=\"btn-group pull-right sorting-buttons\">\n";
-	echo "<a class=\"btn\" href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateCustomScore']) . "</a>\n";
+	echo "<a class=\"btn updateScore\" href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateCustomScore']) . "</a>\n";
 	echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($lang['RiskScoringActions']) . "<span class=\"caret\"></span></a>\n";
 	echo "<ul class=\"dropdown-menu\">\n";
 	//echo "<li><a href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateCustomScore']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=1\">" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=2\">" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=3\">" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>\n";
-	echo "<li><a href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=4\">" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='1' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=1\">" . $escaper->escapeHtml($lang['ScoreByClassic']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='2' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=2\">" . $escaper->escapeHtml($lang['ScoreByCVSS']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='3' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=3\">" . $escaper->escapeHtml($lang['ScoreByDREAD']) . "</a></li>\n";
+	echo "<li><a class='score-action' data-method='4' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=4\">" . $escaper->escapeHtml($lang['ScoreByOWASP']) . "</a></li>\n";
 	echo "</ul>\n";
 	echo "</div>\n";
 	echo "</td>\n";
@@ -2908,17 +3050,16 @@ function view_classic_help()
 									global $lang;
 									global $escaper;
 
+									// If the page is in the root directory
+									if ($active == "Home")
+									{
 									echo "<header class=\"l-header\">\n";
 									echo "<div class=\"navbar\">\n";
 									echo "<div class=\"navbar-inner\">\n";
 									echo "<div class=\"container-fluid\">\n";
-									echo "<a class=\"brand\" href=\"https://www.simplerisk.com/\"><img src='../images/logo@2x.png' alt='SimpleRisk Logo' /></a>\n";
+                                                                                echo "<a class=\"brand\" href=\"https://www.simplerisk.it/\"><img src='images/logo@2x.png' alt='SimpleRisk Logo' /></a>\n";
 									echo "<div class=\"navbar-content\">\n";
 									echo "<ul class=\"nav\">\n";
-
-									// If the page is in the root directory
-									if ($active == "Home")
-									{
 										// echo "<li class=\"active\">\n";
 										// echo "<a href=\"index.php\">" . $escaper->escapeHtml($lang['Home']) . "</a>\n";
 										// echo "</li>\n";
@@ -2978,6 +3119,13 @@ function view_classic_help()
 									// If the page is in another sub-directory
 									else
 									{
+                                                                                echo "<header class=\"l-header\">\n";
+                                                                                echo "<div class=\"navbar\">\n";
+                                                                                echo "<div class=\"navbar-inner\">\n";
+                                                                                echo "<div class=\"container-fluid\">\n";
+                                                                                echo "<a class=\"brand\" href=\"https://www.simplerisk.it/\"><img src='../images/logo@2x.png' alt='SimpleRisk Logo' /></a>\n";
+                                                                                echo "<div class=\"navbar-content\">\n";
+                                                                                echo "<ul class=\"nav\">\n";
 										// echo ($active == "Home" ? "<li class=\"active\">\n" : "<li>\n");
 										// echo "<a href=\"../index.php\">" . $escaper->escapeHtml($lang['Home']) . "</a>\n";
 										// echo "</li>\n";
@@ -3368,20 +3516,20 @@ function view_classic_help()
 									echo "<h4>" . $escaper->escapeHtml($lang['GroupBy']) . ":</h4>\n";
 									echo "<select id=\"group\" name=\"group\" onchange=\"javascript: submit()\">\n";
 									echo "<option value=\"0\"" . ($group == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['None']) . "</option>\n";
-									echo "<option value=\"1\"" . ($group == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskLevel']) . "</option>\n";
-									echo "<option value=\"2\"" . ($group == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Status']) . "</option>\n";
-									echo "<option value=\"3\"" . ($group == 3 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['SiteLocation']) . "</option>\n";
-									echo "<option value=\"4\"" . ($group == 4 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskSource']) . "</option>\n";
 									echo "<option value=\"5\"" . ($group == 5 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Category']) . "</option>\n";
-									echo "<option value=\"6\"" . ($group == 6 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Team']) . "</option>\n";
-									echo "<option value=\"7\"" . ($group == 7 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Technology']) . "</option>\n";
+									echo "<option value=\"11\"" . ($group == 11 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ControlRegulation']) . "</option>\n";
+									echo "<option value=\"14\"" . ($group == 14 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['MonthSubmitted']) . "</option>\n";
+									echo "<option value=\"13\"" . ($group == 13 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['NextStep']) . "</option>\n";
 									echo "<option value=\"8\"" . ($group == 8 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Owner']) . "</option>\n";
 									echo "<option value=\"9\"" . ($group == 9 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['OwnersManager']) . "</option>\n";
-									echo "<option value=\"10\"" . ($group == 10 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskScoringMethod']) . "</option>\n";
-									echo "<option value=\"11\"" . ($group == 11 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ControlRegulation']) . "</option>\n";
 									echo "<option value=\"12\"" . ($group == 12 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Project']) . "</option>\n";
-									echo "<option value=\"13\"" . ($group == 13 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['NextStep']) . "</option>\n";
-									echo "<option value=\"14\"" . ($group == 14 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['MonthSubmitted']) . "</option>\n";
+									echo "<option value=\"1\"" . ($group == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskLevel']) . "</option>\n";
+									echo "<option value=\"10\"" . ($group == 10 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskScoringMethod']) . "</option>\n";
+									echo "<option value=\"4\"" . ($group == 4 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskSource']) . "</option>\n";
+									echo "<option value=\"2\"" . ($group == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Status']) . "</option>\n";
+									echo "<option value=\"3\"" . ($group == 3 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['SiteLocation']) . "</option>\n";
+									echo "<option value=\"6\"" . ($group == 6 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Team']) . "</option>\n";
+									echo "<option value=\"7\"" . ($group == 7 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Technology']) . "</option>\n";
 									echo "</select>\n";
 									echo "</div>\n";
 									echo "</div>\n";

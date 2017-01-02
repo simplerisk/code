@@ -49,5 +49,24 @@ hr{
  ## Label and Span
  --------------------------------------------------------------*/
 label{
-  font-weight:700;
+    font-weight:700;
+}
+
+.dropdown-menu{
+    z-index: 99999;
+}
+
+ul.ui-autocomplete {
+    list-style-type: none;
+    color: #3f3f3f;
+    font-family: "Titillium Web", sans-serif;
+    font-size: 14px;
+    > li.ui-menu-item{
+	padding-left: 10px;
+    }
+
+    .ui-state-focus{
+        background: #F0F0F0;
+        color: #000;
+    }
 }

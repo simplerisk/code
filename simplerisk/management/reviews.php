@@ -6,7 +6,7 @@
         // Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-	require_once(realpath(__DIR__ . '/../includes/display.php'));
+	    require_once(realpath(__DIR__ . '/../includes/display.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -30,8 +30,13 @@
         }
 
         // Start the session
-	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-        session_start('SimpleRisk');
+	    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
+        if (!isset($_SESSION))
+        {
+        	session_name('SimpleRisk');
+        	session_start();
+        }
 
         // Include the language file
         require_once(language_file());
@@ -241,12 +246,11 @@
                   ?>
             </div>
           </div>
-          <div class="row-fluid">
-            <div class="well">
-              <h4><?php echo $escaper->escapeHtml($lang['ReviewHistory']); ?></h4>
-              <?php get_reviews($id); ?>
-            </div>
-          </div>
+          
+            <?php
+                include(realpath(__DIR__ . '/partials/review.php'));
+            ?>
+          
         </div>
       </div>
     </div>
