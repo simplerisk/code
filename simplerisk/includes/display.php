@@ -1003,66 +1003,99 @@ function view_review_details($id, $review_date, $reviewer, $review, $next_step, 
 	// Decrypt fields
 	$comments = try_decrypt($comments);
 
-	echo "<h4>". $escaper->escapeHtml($lang['LastReview']) ."</h4>\n";
-
 	echo "<div class=\"tabs--action\">";
-    echo "<a class=\"btn view_all_reviews\" href=\"reviews.php?id=". $escaper->escapeHtml($id) ."\">". $escaper->escapeHtml($lang['ViewAllReviews']) ."</a>";
+	echo "<button type=\"submit\" name=\"view_all_reviews\" class=\"btn all_reviews_btn\">" . $escaper->escapeHtml($lang['ViewAllReviews']) . "</button>\n";
+	echo "<input type=\"hidden\" id=\"lang_last_review\" value=\"" . $escaper->escapeHtml($lang['LastReview']) . "\" />\n";
+	echo "<input type=\"hidden\" id=\"lang_all_reviews\" value=\"" . $escaper->escapeHtml($lang['ViewAllReviews']) . "\" />\n";
 	echo "</div>\n";
 
 
 	echo "<div class=\"row-fluid\">\n";
-	echo "<div class=\"span5\">\n";
+	echo "<div class=\"span7\">\n";
+	
+	echo "<div class=\"current_review\">\n";
+
+	echo "<div class=\"row-fluid\">\n";
+	echo "<div class=\"span5 text-right\">\n";
+	echo "<u>".$escaper->escapeHtml($lang['LastReview'])."</u>";
+	echo "</div>\n";
+	echo "<div class=\"span7\">\n";
+	echo "</div>\n";
+	echo "</div>\n";
+
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['ReviewDate']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"review_date\" id=\"review_date\" size=\"50\" value=\"" . $escaper->escapeHtml($review_date) . "\" title=\"" . $escaper->escapeHtml($review_date) . "\" disabled=\"disabled\" />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"review_date\" id=\"review_date\" size=\"100\" value=\"" . $escaper->escapeHtml($review_date) . "\" title=\"" . $escaper->escapeHtml($review_date) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
+
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['Reviewer']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"reviewer\" id=\"reviewer\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "\" disabled=\"disabled\" />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"reviewer\" id=\"reviewer\" size=\"100\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("user", $reviewer)) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
+
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['Review']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"review\" id=\"review\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "\" disabled=\"disabled\" />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"review\" id=\"review\" size=\"100\" value=\"" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("review", $review)) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
+
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['NextStep']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"next_step\" id=\"next_step\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "\" disabled=\"disabled\" />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"next_step\" id=\"next_step\" size=\"100\" value=\"" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("next_step", $next_step)) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
+
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['NextReviewDate']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"next_review\" id=\"next_review\" size=\"50\" value=\"" . $escaper->escapeHtml($next_review) . "\" title=\"" . $escaper->escapeHtml($next_review) . "\" disabled=\"disabled\" />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"next_review\" id=\"next_review\" size=\"100\" value=\"" . $escaper->escapeHtml($next_review) . "\" title=\"" . $escaper->escapeHtml($next_review) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
+
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['Comments']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<textarea style=\"cursor: default;\" name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\" title=\"" . $escaper->escapeHtml($comments) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($comments) . "</textarea>\n";
+	echo "<textarea style=\"cursor: default;\" name=\"comments\" cols=\"100\" rows=\"3\" id=\"comments\" title=\"" . $escaper->escapeHtml($comments) . "\" disabled=\"disabled\">" . $escaper->escapeHtml($comments) . "</textarea>\n";
 	echo "</div>\n";
 	echo "</div>\n";
+
 	echo "<div class=\"row-fluid\">\n";
+	echo "</div>\n";
 
 	echo "</div>\n";
+
+        echo "<div class=\"all_reviews\" style=\"display:none\">\n";
+
+        echo "<div class=\"row-fluid\">\n";
+        echo "<div class=\"span5 text-right\">\n";
+        echo "<u>".$escaper->escapeHtml($lang['ReviewHistory'])."</u>";
+        echo "</div>\n";
+        echo "<div class=\"span7\">\n";
+        echo "</div>\n";
+        echo "</div>\n";
+
+	get_reviews($id);
+
+	echo "</div>\n";
+
 	echo "</div>\n";
 	echo "</div>\n";
 }
@@ -1208,43 +1241,50 @@ function edit_review_submission($review, $next_step, $next_review, $comments, $d
 	echo "<form name=\"submit_management_review\" method=\"post\" action=\"\">\n";
 
 	echo "<div class=\"tabs--action\">";
-
 	echo "<input id=\"cancel_disable\" class=\"btn cancel-edit-review \" value=\"". $escaper->escapeHtml($lang['Cancel']) ."\" type=\"reset\">\n";
 	echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-danger save-review\">". $escaper->escapeHtml($lang['SubmitReview']) ."</button>\n";
 	echo "</div>\n";
 
-	echo '<div class="row-fluid">
-	<div class="span5">';
-	echo '<div class="row-fluid">';
-	echo '<div class="span5 text-right">';
-	echo $escaper->escapeHtml($lang['ReviewDate']) .":</div>";
-	echo '<div class="span7 reviewdate">';
+	echo "<div class=\"row-fluid\">\n";
+	echo "<div class=\"span5\">\n";
+
+	echo "<div class=\"row-fluid\">\n";
+	echo "<div class=\"span5 text-right\">\n";
+	echo $escaper->escapeHtml($lang['ReviewDate']) .":</div>\n";
+	echo "<div class=\"span7 reviewdate\">\n";
 	echo date("m/d/Y");
-	echo '</div></div><div class="row-fluid">';
+	echo "</div></div>\n";
 
-	echo '<div class="span5 text-right">';
+	echo "<div class=\"row-fluid\">\n";
+
+	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['Reviewer']) .":</div>";
-	echo '<div class="span7 reviewername">';
+	echo "<div class=\"span7 reviewername\">\n";
 	echo $escaper->escapeHtml($_SESSION['name']);
-	echo '</div></div><div class="row-fluid">';
+	echo "</div></div>\n";
 
-	echo '<div class="span5 text-right">';
+	echo "<div class=\"row-fluid\">\n";
+	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['Review']) .":</div>";
-	echo '<div class="span7">';
+	echo "<div class=\"span7\">\n";
 	create_dropdown("review", $review, NULL, true);
-	echo '</div></div><div class="row-fluid">';
-	echo '<div class="span5 text-right">';
-	echo $escaper->escapeHtml($lang['NextStep']) .":</div>";
-	echo '<div class="span7">';
-	create_dropdown("next_step", $next_step, NULL, true);
-	echo '</div></div><div class="row-fluid">';
-	echo '<div class="span5 text-right" id="CommentsTitle">';
-	echo $escaper->escapeHtml($lang['Comments']) .":</div>";
+	echo "</div></div>\n";
 
+	echo "<div class=\"row-fluid\">\n";
+	echo "<div class=\"span5 text-right\">\n";
+	echo $escaper->escapeHtml($lang['NextStep']) .":</div>";
+	echo "<div class=\"span7\">\n";
+	create_dropdown("next_step", $next_step, NULL, true);
+	echo "</div></div>\n";
+
+	echo "<div class=\"row-fluid\">\n";
+	echo "<div class=\"span5 text-right\" id=\"CommentsTitle\">\n";;
+	echo $escaper->escapeHtml($lang['Comments']) .":</div>";
 	echo "<div class=\"span7\">\n";
 	echo "<textarea name=\"comments\" cols=\"50\" rows=\"3\" id=\"comments\">" . $escaper->escapeHtml($comments) . "</textarea>\n";
 	echo "</div>\n";
 	echo "</div>\n";
+
 	echo "</div>\n";
 
 
@@ -1258,8 +1298,8 @@ function edit_review_submission($review, $next_step, $next_review, $comments, $d
 	echo $escaper->escapeHtml($lang['WouldYouLikeToUseADifferentDate']).'</strong>';
 
 	echo "<div class=\"clearfix radio-buttons-holder radio-padded-top-bottom\">";
-        echo "<div class=\"pull-left active-textfield\"><input type=\"radio\" name=\"custom_date\" value=\"no\" onclick=\"hideNextReview()\" id=\"no\" class=\"hidden-radio\" checked /> <label >".$escaper->escapeHtml($lang['No'])."</label></div>";
-	echo "<div class=\"pull-left radio-padded-right\"><input type=\"radio\" name=\"custom_date\" value=\"yes\" onclick=\"showNextReview()\" id=\"yes\" class=\"hidden-radio\" /><label >".$escaper->escapeHtml($lang['Yes'])."</label></div>";
+        echo "<div class=\"pull-left active-textfield\"><input type=\"radio\" name=\"custom_date\" value=\"no\" onclick=\"hideNextReview()\" id=\"no\" class=\"hidden-radio\" checked /> <label for=\"no\">".$escaper->escapeHtml($lang['No'])."</label></div>";
+	echo "<div class=\"pull-left radio-padded-right\"><input type=\"radio\" name=\"custom_date\" value=\"yes\" onclick=\"showNextReview()\" id=\"yes\" class=\"hidden-radio\" /><label for=\"yes\">".$escaper->escapeHtml($lang['Yes'])."</label></div>";
 	echo "</div> </div>";
 
 	echo "<div id=\"nextreview\" class=\"nextreview\" style=\"display:none;\">\n";
@@ -3166,35 +3206,34 @@ function view_classic_help()
 										echo "</div>\n";
 
 
-										if ($active != "Home"):
+										if ($active != "Home"){
+                                            echo "<div class=\"pull-right search-risks\">\n";
+                                            echo "<a id=\"show-search-pop\"><i class=\"fa fa-search\"></i></a>";
+                                            echo "<div class=\"search-popup\">";
+                                            echo "<form name=\"search\" action=\"../management/view.php\" method=\"get\">\n";
+                                            echo "<span class=\"search--wrapper\">";
+                                            echo "<input type=\"text\" size=\"6\" name=\"id\" placeholder=\"ID#\" onClick=\"this.setSelectionRange(0, this.value.length)\" />\n";
+                                            echo "<a href=\"javascript:document.search.submit()\"><i class=\"fa fa-search\"></i></a>\n";
+                                            echo "</span>";
+                                            echo "</form>\n";
+                                            echo "</div>";
+                                            echo "</div>\n";
 
-											echo "<div class=\"pull-right search-risks\">\n";
-											echo "<a id=\"show-search-pop\"><i class=\"fa fa-search\"></i></a>";
-											echo "<div class=\"search-popup\">";
-											echo "<form name=\"search\" action=\"../management/view.php\" method=\"get\">\n";
-											echo "<span class=\"search--wrapper\">";
-											echo "<input type=\"text\" size=\"6\" name=\"id\" placeholder=\"ID#\" onClick=\"this.setSelectionRange(0, this.value.length)\" />\n";
-											echo "<a href=\"javascript:document.search.submit()\"><i class=\"fa fa-search\"></i></a>\n";
-											echo "</span>";
-											echo "</form>\n";
-											echo "</div>";
-											echo "</div>\n";
-
-											echo "<script type=\"text/javascript\">\n";
-											echo "$(document).click(function() {\n";
-        									echo "$(\".search-popup\").hide();";
-      										echo "});\n";
-											echo "$(\"#show-search-pop, .search-popup\").click(function(event) {\n";
-											echo "event.stopPropagation();\n";
-											echo "event.preventDefault()\n";	
-											echo "$(\".search-popup\").show();\n";
-											echo "});\n";
-											echo "setTimeout(function(){\n";
-											echo "$(\"#alert\").hide();\n";
-											echo "}, 5000);\n";
-											echo "</script>\n";
-
-										endif;
+                                            echo "<script type=\"text/javascript\">\n";
+                                            echo "$(document).click(function() {\n";
+                                            echo "$(\".search-popup\").hide();";
+                                              echo "});\n";
+                                            echo "$(\"#show-search-pop, .search-popup\").click(function(event) {\n";
+                                            echo "event.stopPropagation();\n";
+                                            echo "event.preventDefault()\n";    
+                                            echo "$(\".search-popup\").show();\n";
+                                            echo "$(\".search-popup .search--wrapper input[type=text]\").focus();\n";
+                                            echo "});\n";
+                                            echo "setTimeout(function(){\n";
+                                            echo "$(\"#alert\").hide();\n";
+                                            echo "}, 5000);\n";
+                                            echo "</script>\n";
+                                        }
 
 
 										// If the user is logged in
@@ -3490,7 +3529,7 @@ function view_classic_help()
 									global $lang;
 									global $escaper;
 
-									echo "<form name=\"get_risks_by\" method=\"post\" action=\"\">\n";
+									echo "<form name=\"get_risks_by\" method=\"post\" action=\"dynamic_risk_report.php\">\n";
 									echo "<div class=\"row-fluid\">\n";
 									echo "<div class=\"span12\">\n";
 									echo "<a href=\"javascript:;\" onclick=\"javascript: closeSearchBox()\"><img src=\"../images/X-100.png\" width=\"10\" height=\"10\" align=\"right\" /></a>\n";

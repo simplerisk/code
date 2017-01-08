@@ -20,14 +20,14 @@ header("X-XSS-Protection: 1; mode=block");
 // If we want to enable the Content Security Policy (CSP) - This may break Chrome
 if (CSP_ENABLED == "true")
 {
-  // Add the Content-Security-Policy header
-  header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+    // Add the Content-Security-Policy header
+    header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
 }
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
 {
-  session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+    session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
 }
 
 // Start the session
@@ -35,8 +35,8 @@ session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 
 if (!isset($_SESSION))
 {
-        session_name('SimpleRisk');
-        session_start();
+    session_name('SimpleRisk');
+    session_start();
 }
 
 // Include the language file
@@ -50,8 +50,8 @@ session_check();
 // Check if access is authorized
 if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 {
-  header("Location: ../index.php");
-  exit(0);
+    header("Location: ../index.php");
+    exit(0);
 }
 
 // Record the page the workflow started from as a session variable
@@ -60,33 +60,33 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 // Set the status
 if (isset($_POST['status']))
 {
-  $status = (int)$_POST['status'];
+    $status = (int)$_POST['status'];
 }
 else if (isset($_GET['status']))
 {
-  $status = (int)$_GET['status'];
+    $status = (int)$_GET['status'];
 }
 else $status = 0;
 
 // Set the group
 if (isset($_POST['group']))
 {
-  $group = (int)$_POST['group'];
+    $group = (int)$_POST['group'];
 }
 else if (isset($_GET['group']))
 {
-  $group = (int)$_GET['group'];
+    $group = (int)$_GET['group'];
 }
 else $group = 0;
 
 // Set the sort
 if (isset($_POST['sort']))
 {
-  $sort = (int)$_POST['sort'];
+    $sort = (int)$_POST['sort'];
 }
 else if (isset($_GET['sort']))
 {
-  $sort = (int)$_GET['sort'];
+    $sort = (int)$_GET['sort'];
 }
 else $sort = 0;
 
@@ -130,13 +130,28 @@ else $sort = 0;
 // If there was not a POST
 if (!isset($_POST['status']))
 {
-  // Set the default fields to show
-  $id = true;
-  $subject = true;
-  $calculated_risk = true;
-  $submission_date = true;
-  $mitigation_planned = true;
-  $management_review = true;
+    // Set the default fields to show
+    $id = true;
+    $subject = true;
+    $calculated_risk = true;
+    $submission_date = true;
+    $mitigation_planned = true;
+    $management_review = true;
+}
+
+if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "download"){
+
+    if (is_dir(realpath(__DIR__ . '/../extras/import-export')))
+    {
+        // Once it has been activated
+        if (import_export_extra()){
+            
+            // Include the Import-Export Extra
+            require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+
+            download_risks_by_table($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements);
+        }
+    }
 }
 ?>
 
@@ -173,6 +188,9 @@ if (!isset($_POST['status']))
         <?php view_reporting_menu("DynamicRiskReport"); ?>
       </div>
       <div class="span9">
+        <?php
+            get_alert();
+        ?>        
         <div class="row-fluid">
           <div id="selections" class="span12">
             <div class="well">
@@ -180,6 +198,20 @@ if (!isset($_POST['status']))
             </div>
           </div>
         </div>
+        <?php
+		// If the Import-Export Extra is installed
+            	if (is_dir(realpath(__DIR__ . '/../extras/import-export')))
+            	{
+			// And the Extra is activated
+                	if (import_export_extra())
+                	{
+            			// Include the Import-Export Extra
+            			require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+				// Display the download link
+				display_download_link();
+			}
+		}
+        ?>
         <div class="row-fluid">
           <div class="span12">
             <div id="risk-table-container">

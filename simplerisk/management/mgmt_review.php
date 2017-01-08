@@ -412,7 +412,7 @@ if (isset($_POST['submit']))
 }
 
     $risk_id = (int)$risk[0]['id'];
-    $default_next_review = get_next_reveiw_default($risk_id);
+    $default_next_review = get_next_review_default($risk_id);
 ?>
 
 <!doctype html>

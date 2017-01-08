@@ -118,7 +118,8 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
                         <?php
                             if (isset($action) && $action == 'editreview'){
                                 edit_review_submission($review, $next_step, $next_review, $comments, $default_next_review);
-                            }else{
+                            }
+			    else{
                                 view_review_details($id, $review_date, $reviewer, $review, $next_step, $next_review, $comments);
                             }
                         ?>

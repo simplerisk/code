@@ -749,6 +749,21 @@ $(document).ready(function(){
         e.preventDefault();
         updateReview($(this));
     });
+
+    $('body').on('click', '[name=view_all_reviews], .view-all-reviews', function(e){
+        e.preventDefault();
+        var tabContainer = $(this).parents('.tab-data');
+        if($('.current_review', tabContainer).is(":visible")){
+            $('.all_reviews', tabContainer).show();
+            $('.current_review', tabContainer).hide();
+            $('.all_reviews_btn', tabContainer).html($('#lang_last_review').val());
+        }else{
+            $('.all_reviews', tabContainer).hide();
+            $('.current_review', tabContainer).show();
+            $('.all_reviews_btn', tabContainer).html($('#lang_all_reviews').val());
+        }
+    });
+
     $('body').on('click', '.view_all_reviews', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');

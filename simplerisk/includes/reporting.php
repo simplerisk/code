@@ -7,6 +7,8 @@
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/HighchartsPHP/Highchart.php'));
+
+
 require_once(language_file());
 
 // Include Zend Escaper for HTML Output Encoding
@@ -18,27 +20,30 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
  ****************************/
 function get_open_risks()
 {
-        // Open the database connection
-        $db = db_open();
+        // If team separation is not enabled
+        if (!team_separation_extra())
+        {
+                // Open the database connection
+                $db = db_open();
 
-        // Query the database
-        $stmt = $db->prepare("SELECT * FROM `risks` WHERE status != \"Closed\"");
-        $stmt->execute();
+                // Query the database
+		$stmt = $db->prepare("SELECT id FROM `risks` WHERE status != \"Closed\"");
+                $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+                // Store the list in the array
+                $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
-
-        // If team separation is enabled
-        if (team_separation_extra())
+                // Close the database connection
+                db_close($db);
+        }
+        // Otherwise team separation is enabled
+        else
         {
                 //Include the team separation extra
                 require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Strip out risks the user should not have access to
-                $array = strip_no_access_risks($array);
+                // Get the open risks stripped
+                $array = strip_get_open_risks();
         }
 
         return count($array);
@@ -49,27 +54,30 @@ function get_open_risks()
  ******************************/
 function get_closed_risks()
 {
-        // Open the database connection
-        $db = db_open();
+        // If team separation is not enabled
+        if (!team_separation_extra())
+        {
+                // Open the database connection
+                $db = db_open();
+        
+                // Query the database
+		$stmt = $db->prepare("SELECT id FROM `risks` WHERE status = \"Closed\"");
+                $stmt->execute();
 
-        // Query the database
-        $stmt = $db->prepare("SELECT * FROM `risks` WHERE status = \"Closed\"");
-        $stmt->execute();
+                // Store the list in the array
+                $array = $stmt->fetchAll();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
-        // If team separation is enabled
-        if (team_separation_extra())
+                // Close the database connection
+                db_close($db);
+        }
+        // Otherwise team separation is enabled
+        else    
         {
                 //Include the team separation extra
                 require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Strip out risks the user should not have access to
-                $array = strip_no_access_risks($array);
+                // Get the closed risks stripped
+                $array = strip_get_closed_risks();
         }
 
         return count($array);
@@ -1142,28 +1150,30 @@ function open_mitigation_pie($title = null)
         $chart->plotOptions->pie->showInLegend = 1;
         $chart->credits->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
+        // If team separation is not enabled
+        if (!team_separation_extra())
+        {
+                // Open the database connection
+                $db = db_open();
 
-        // Query the database
-        //$stmt = $db->prepare("SELECT CASE WHEN mitigation_id = 0 THEN 'Unmitigated' WHEN mitigation_id != 0 THEN 'Mitigated' END AS name, COUNT(*) AS num FROM `risks` WHERE status != \"Closed\" GROUP BY name ORDER BY name");
-	$stmt = $db->prepare("SELECT id, CASE WHEN mitigation_id = 0 THEN 'Unmitigated' WHEN mitigation_id != 0 THEN 'Mitigated' END AS name FROM `risks` WHERE status != \"Closed\" ORDER BY name");
-        $stmt->execute();
+                // Query the database
+		$stmt = $db->prepare("SELECT id, CASE WHEN mitigation_id = 0 THEN 'Unmitigated' WHEN mitigation_id != 0 THEN 'Mitigated' END AS name FROM `risks` WHERE status != \"Closed\" ORDER BY name");
+                $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+                // Store the list in the array
+                $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
-
-        // If team separation is enabled
-        if (team_separation_extra())
+                // Close the database connection
+                db_close($db);
+        }
+        // Otherwise team separation is enabled
+        else
         {
                 //Include the team separation extra
                 require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Strip out risks the user should not have access to
-                $array = strip_no_access_risks($array);
+                // Get the open mitigation pie with risks stripped
+                $array = strip_open_mitigation_pie();
         }
 
         // Set the defaults
@@ -1256,28 +1266,30 @@ function open_review_pie($title = null)
         $chart->plotOptions->pie->showInLegend = 1;
         $chart->credits->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
+        // If team separation is not enabled
+        if (!team_separation_extra())
+        {
+                // Open the database connection
+                $db = db_open();
 
-        // Query the database
-        //$stmt = $db->prepare("SELECT CASE WHEN mgmt_review = 0 THEN 'Unreviewed' WHEN mgmt_review != 0 THEN 'Reviewed' END AS name, COUNT(*) AS num FROM `risks` WHERE status != \"Closed\" GROUP BY name ORDER BY name");
-	$stmt = $db->prepare("SELECT id, CASE WHEN mgmt_review = 0 THEN 'Unreviewed' WHEN mgmt_review != 0 THEN 'Reviewed' END AS name FROM `risks` WHERE status != \"Closed\" ORDER BY name");
-        $stmt->execute();
+                // Query the database
+		$stmt = $db->prepare("SELECT id, CASE WHEN mgmt_review = 0 THEN 'Unreviewed' WHEN mgmt_review != 0 THEN 'Reviewed' END AS name FROM `risks` WHERE status != \"Closed\" ORDER BY name");
+                $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+                // Store the list in the array
+                $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
-
-        // If team separation is enabled
-        if (team_separation_extra())
+                // Close the database connection
+                db_close($db);
+        }
+        // Otherwise team separation is enabled
+        else
         {
                 //Include the team separation extra
                 require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Strip out risks the user should not have access to
-                $array = strip_no_access_risks($array);
+                // Get the open review pie with risks stripped
+                $array = strip_open_review_pie();
         }
 
         // Set the defaults
@@ -1370,29 +1382,31 @@ function open_closed_pie($title = null)
         $chart->plotOptions->pie->showInLegend = 1;
         $chart->credits->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
+	// If team separation is not enabled
+	if (!team_separation_extra())
+	{
+		// Open the database connection
+		$db = db_open();
 
-        // Query the database
-        //$stmt = $db->prepare("SELECT CASE WHEN status = \"Closed\" THEN 'Closed' WHEN status != \"Closed\" THEN 'Open' END AS name, COUNT(*) AS num FROM `risks` GROUP BY name ORDER BY name");
-	$stmt = $db->prepare("SELECT id, CASE WHEN status = \"Closed\" THEN 'Closed' WHEN status != \"Closed\" THEN 'Open' END AS name FROM `risks` ORDER BY name");
-        $stmt->execute();
+        	// Query the database
+		$stmt = $db->prepare("SELECT id, CASE WHEN status = \"Closed\" THEN 'Closed' WHEN status != \"Closed\" THEN 'Open' END AS name FROM `risks` ORDER BY name");
+		$stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+		// Store the list in the array
+		$array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+		// Close the database connection
+		db_close($db);
+	}
+	// Otherwise team separation is enabled
+	else
+	{
+		//Include the team separation extra
+		require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-        // If team separation is enabled
-        if (team_separation_extra())
-        {
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                // Strip out risks the user should not have access to
-                $array = strip_no_access_risks($array);
-        }
+		// Get the open pie with risks stripped
+		$array = strip_open_closed_pie();
+	}
 
 	// Set the defaults
 	$current_type = "";
@@ -1763,6 +1777,7 @@ function risks_and_assets_table($report)
         db_close($db);
 }
 
+
 /********************************
  * FUNCTION: GET RISKS BY TABLE *
  ********************************/
@@ -1793,26 +1808,26 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 	}
 
 
-        // Check the sort
-        switch ($sort)
-        {
-                // Calculated Risk
-                case 0:
-			$sort_name = " calculated_risk DESC ";
-                        break;
-		// ID
-		case 1:
-			$sort_name = " a.id ASC ";
-			break;
-		// Subject
-		case 2:
-			$sort_name = " a.subject ASC ";
-			break;
-                // Default to calculated risk
-                default:
-			$sort_name = " calculated_risk DESC ";
-                        break;
-        }
+    // Check the sort
+    switch ($sort)
+    {
+            // Calculated Risk
+            case 0:
+		$sort_name = " calculated_risk DESC ";
+                    break;
+	// ID
+	case 1:
+		$sort_name = " a.id ASC ";
+		break;
+	// Subject
+	case 2:
+		$sort_name = " a.subject ASC ";
+		break;
+            // Default to calculated risk
+            default:
+		$sort_name = " calculated_risk DESC ";
+                    break;
+    }
 
 	// Check the group
 	switch ($group)
@@ -1899,9 +1914,26 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 			break;
 	}
 
-	// Make the big query
-	$query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.current_solution, p.security_recommendations, p.security_requirements
-    FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $order_query;
+	// If the team separation extra is not enabled
+	if (!team_separation_extra())
+	{
+		// Make the big query
+		$query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.current_solution, p.security_recommendations, p.security_requirements
+    		FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $order_query;
+	}
+	// Otherwise
+	else
+	{
+		// Include the team separation extra
+		require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+		// Get the separation query string
+		$separation_query = get_user_teams_query("a", false, true);
+
+		// Make the big query
+		$query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.current_solution, p.security_recommendations, p.security_requirements
+		FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $separation_query . $order_query;
+	}
 
 	// Query the database
 	$db = db_open();
@@ -1911,16 +1943,6 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 
 	// Store the results in the risks array
 	$risks = $stmt->fetchAll();
-
-	// If team separation is enabled
-	if (team_separation_extra())
-        {
-                // Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                // Strip out risks the user should not have access to
-                $risks = strip_no_access_risks($risks);
-        }
 
 	// Set the current group to empty
 	$current_group = "";
@@ -2117,8 +2139,8 @@ function get_header_columns($id, $risk_status, $subject, $reference_id, $regulat
  ******************************/
 function get_risk_columns($risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements)
 {
-        global $lang;
-        global $escaper;
+    global $lang;
+    global $escaper;
 
 	$risk_id = (int)$risk['id'];
 	$status = $risk['status'];
@@ -2530,9 +2552,24 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
         }
     }
 
-
+	// If the team separation extra is not enabled
+	if (!team_separation_extra())
+	{
     $query = "SELECT a.id AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.id mitigation_id, p.current_solution, p.security_recommendations, p.security_requirements, ifnull((SELECT name FROM risk_levels WHERE value<=b.calculated_risk ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name
     FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $order_query ;
+	}
+	// Otherwise
+	else
+	{
+		// Include the team separation extra
+		require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+		// Get the separation query string
+		$separation_query = get_user_teams_query("a", false, true);
+
+		$query = "SELECT a.id AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.id mitigation_id, p.current_solution, p.security_recommendations, p.security_requirements, ifnull((SELECT name FROM risk_levels WHERE value<=b.calculated_risk ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name
+		FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $separation_query . $order_query ;
+	}
     
     $query = "
         select t1.*
@@ -2556,17 +2593,6 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
     // Store the results in the risks array
     $risks = $stmt->fetchAll();
     
-    
-    // If team separation is enabled
-    if (team_separation_extra())
-    {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-            // Strip out risks the user should not have access to
-            $risks = strip_no_access_risks($risks);
-    }
-
     // Initialize the data array
     $data = array();
     $rowCount = count($risks);
@@ -2825,25 +2851,30 @@ function count_array_values($array, $sort)
  ************************************/
 function get_opened_risks_array($timeframe)
 {
-	// Open the database connection
-	$db = db_open();
+        // If team separation is not enabled
+        if (!team_separation_extra())
+        {
+                // Open the database connection
+                $db = db_open();
 
-	// Fetch the submission dates
-	$stmt = $db->prepare("SELECT id, submission_date FROM risks ORDER BY submission_date;");
-	$stmt->execute();
-	$array = $stmt->fetchAll();
+                // Query the database
+		$stmt = $db->prepare("SELECT id, submission_date FROM risks ORDER BY submission_date;");
+                $stmt->execute();
 
-	// Close the database connection
-	db_close($db);
+                // Store the list in the array
+                $array = $stmt->fetchAll();
 
-	// If team separation is enabled
-        if (team_separation_extra())
+                // Close the database connection
+                db_close($db);
+        }
+        // Otherwise team separation is enabled
+        else
         {
                 //Include the team separation extra
                 require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Strip out risks the user should not have access to
-                $array = strip_no_access_risks($array);
+                // Get the opened risks stripped
+                $array = strip_get_opened_risks_array();
         }
 
 	// Set the defaults
@@ -2918,25 +2949,30 @@ function get_opened_risks_array($timeframe)
  ************************************/
 function get_closed_risks_array($timeframe)
 {
-        // Open the database connection
-        $db = db_open();
+        // If team separation is not enabled
+        if (!team_separation_extra())
+        {
+                // Open the database connection
+                $db = db_open();
 
-	// Fetch the closure dates
-	$stmt = $db->prepare("SELECT a.risk_id as id, a.closure_date, c.status FROM closures a LEFT JOIN risks c ON a.risk_id=c.id WHERE a.closure_date=(SELECT max(b.closure_date) FROM closures b WHERE a.risk_id=b.risk_id) AND c.status='Closed' order by closure_date;");
-        $stmt->execute();
-        $array = $stmt->fetchAll();
+                // Query the database
+		$stmt = $db->prepare("SELECT a.risk_id as id, a.closure_date, c.status FROM closures a LEFT JOIN risks c ON a.risk_id=c.id WHERE a.closure_date=(SELECT max(b.closure_date) FROM closures b WHERE a.risk_id=b.risk_id) AND c.status='Closed' order by closure_date;");
+                $stmt->execute();
 
-        // Close the database connection
-        db_close($db);
+                // Store the list in the array
+                $array = $stmt->fetchAll();
 
-        // If team separation is enabled
-        if (team_separation_extra())
+                // Close the database connection
+                db_close($db);
+        }
+        // Otherwise team separation is enabled
+        else
         {
                 //Include the team separation extra
                 require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Strip out risks the user should not have access to
-                $array = strip_no_access_risks($array);
+                // Get the closed risks stripped
+                $array = strip_get_closed_risks_array();
         }
 
         // Set the defaults

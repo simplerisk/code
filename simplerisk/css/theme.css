@@ -266,6 +266,9 @@ ul.ui-autocomplete {
     background: #F0F0F0;
     color: #000; }
 
+.bottom-offset-10 {
+  margin-bottom: 10px; }
+
 /*--------------------------------------------------------------
  ## Form and From Related Element Styles
  --------------------------------------------------------------*/
@@ -1570,6 +1573,9 @@ div.doc-link {
     border-bottom: 0px; }
   #risk-table-container .dataTables_wrapper.no-footer .dataTables_scrollBody {
     border-bottom: 0px; }
+
+#export-dynamic-risk-report {
+  cursor: pointer; }
 
 .score--help {
   width: 25px;

@@ -88,6 +88,7 @@
 	$teams = $user_info['teams'];
 	$language = $user_info['lang'];
 	$asset = $user_info['asset'];
+	$assessments = $user_info['assessments'];
         $admin = $user_info['admin'];
 	$review_veryhigh = $user_info['review_veryhigh'];
         $review_high = $user_info['review_high'];
@@ -243,6 +244,10 @@
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_veryhigh" type="checkbox"<?php if ($review_veryhigh) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></td></tr>
                   <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['AssetManagement']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="asset" type="checkbox"<?php if ($asset) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></td></tr>
+                  
+                  <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['Assessments']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="assessments" type="checkbox"<?php if ($assessments) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssessmentsMenu']); ?></td></tr>
+                  
                   <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['Configure']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="admin" type="checkbox"<?php if ($admin) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></td></tr>
 		</table>

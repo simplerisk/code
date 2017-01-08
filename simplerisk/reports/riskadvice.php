@@ -64,9 +64,9 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   <script src="../js/bootstrap.min.js"></script>
   <script src="../js/sorttable.js"></script>
   <script src="../js/obsolete.js"></script>
-  <script src="../js/highcharts.js"></script>
-  <script src="../js/modules/funnel.js"></script>
-  <script src="../js/modules/exporting.js"></script>
+  <script src="../js/highcharts/code/highcharts.js"></script>
+  <script src="../js/highcharts/code/modules/funnel.js"></script>
+  <script src="../js/highcharts/code/modules/exporting.js"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">

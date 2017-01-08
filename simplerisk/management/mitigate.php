@@ -387,7 +387,11 @@ if ((isset($_POST['submit'])) && $plan_mitigations)
     update_mitigation($id);
   }
   
-    refresh_files_for_risk($_POST['unique_names'], $id-1000, 2);
+    $unique_names = empty($_POST['unique_names']) ? "" : $_POST['unique_names'];
+    refresh_files_for_risk($unique_names, $id-1000, 2);
+  
+//    refresh_files_for_risk($_POST['unique_names'], $id-1000, 2);
+
     $error = 1;
     // If a file was submitted
     if (!empty($_FILES))

@@ -826,4 +826,11 @@ $(document).ready(function(){
             
         })
     }
+    
+    $("#export-dynamic-risk-report").click(function(e){
+        document.get_risks_by.action += "?option=download";
+        document.get_risks_by.submit();
+        document.get_risks_by.action = "";
+//        document.location.href = "dynamic_risk_report.php?option";
+    })
 })

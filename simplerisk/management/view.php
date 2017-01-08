@@ -1026,5 +1026,20 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
       })
       $( ".datepicker" ).datepicker();
     });
+
+    $('body').on('click', '[name=view_all_reviews], .view-all-reviews', function(e){
+        e.preventDefault();
+        var tabContainer = $(this).parents('.tab-data');
+        if($('.current_review', tabContainer).is(":visible")){
+            $('.all_reviews', tabContainer).show();
+            $('.current_review', tabContainer).hide();
+	    $('.all_reviews_btn', tabContainer).html("<?php echo $escaper->escapeHtml($lang['LastReview']); ?>");
+        }else{
+            $('.all_reviews', tabContainer).hide();
+            $('.current_review', tabContainer).show();
+	    $('.all_reviews_btn', tabContainer).html("<?php echo $escaper->escapeHtml($lang['ViewAllReviews']); ?>");
+        }
+    });
+
     </script>
     </html>
