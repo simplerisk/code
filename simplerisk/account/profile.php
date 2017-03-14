@@ -112,7 +112,7 @@
 		if (is_valid_user($user, $current_pass))
 		{
 			// Check the password
-			$error_code = valid_password($new_pass, $confirm_pass);
+			$error_code = valid_password($new_pass, $confirm_pass, $_SESSION['uid']);
 
                 	// If the password is valid
                 	if ($error_code == 1)
@@ -259,6 +259,19 @@
 		echo "<form name=\"change_password\" method=\"post\" action=\"\">\n";
 		echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
 		echo "<tr><td colspan=\"2\"><h4>" . $escaper->escapeHtml($lang['ChangePassword']) . "</h4></td><tr>\n";
+        
+        $html = "";
+        $resetRequestMessages = getPasswordReqeustMessages();
+        if(count($resetRequestMessages)){
+            $html .= "<p><b>Password should have the following requirements.</b></p>\n";
+            $html .= "<ul>\n";
+            foreach($resetRequestMessages as $resetRequestMessage){
+                $html .= "<li>{$resetRequestMessage}</li>\n";
+            }
+            $html .= "</ul>\n";
+        }
+        echo $html;
+        
 		echo "<tr><td>" . $escaper->escapeHtml($lang['CurrentPassword']) . ":&nbsp</td><td><input maxlength=\"100\" name=\"current_pass\" id=\"current_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
 		echo "<tr><td>" . $escaper->escapeHtml($lang['NewPassword']) . ":&nbsp</td><td><input maxlength=\"100\" name=\"new_pass\" id=\"new_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";
 		echo "<tr><td>" . $escaper->escapeHtml($lang['ConfirmPassword']) . ":&nbsp;</td><td><input maxlength=\"100\" name=\"confirm_pass\" id=\"confirm_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";

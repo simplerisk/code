@@ -63,7 +63,7 @@
 
             <div class="row-fluid padded-bottom subject-field">
                 <div class="span2 text-right"><?php echo $escaper->escapeHtml($lang['Subject']); ?>:</div>
-                <div class="span8"><input maxlength="90" name="subject" id="subject" class="form-control" type="text"></div>
+                <div class="span8"><input maxlength="300" name="subject" id="subject" class="form-control" type="text"></div>
             </div>
 
             <div class="row-fluid">

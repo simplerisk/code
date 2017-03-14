@@ -154,7 +154,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
     		foreach ($configs as $config)
     		{
       			// Set the name value pair as a variable
-      			$$config['name'] = $config['value'];
+      			${$config['name']} = $config['value'];
     		}
 
     		// Get the response back from Duo

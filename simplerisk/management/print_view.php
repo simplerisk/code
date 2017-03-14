@@ -99,7 +99,8 @@
 			$mgmt_review = $risk[0]['mgmt_review'];
 			$calculated_risk = $risk[0]['calculated_risk'];
 			$next_review = $risk[0]['next_review'];
-			$color = get_risk_color($id);
+			$color = get_risk_color($calculated_risk);
+			$risk_level = get_risk_level_name($calculated_risk);
 
 			$scoring_method = $risk[0]['scoring_method'];
 			$CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
@@ -219,25 +220,25 @@
 		// Get the management reviews for the risk
 		$mgmt_reviews = get_review_by_id($id);
 
-                // If no mitigation exists for this risk
-                if ($mgmt_reviews == false)
-                {
-                        // Set the values to empty
+		// If no mitigation exists for this risk
+		if ($mgmt_reviews == false)
+		{
+			// Set the values to empty
 			$review_date = "N/A";
 			$review = "";
 			$next_step = "";
 			$reviewer = "";
 			$comments = "";
-                }
-                // If a mitigation exists
-                else
-                {
-                        // Set the mitigation values
+		}
+		// If a mitigation exists
+		else
+		{
+			// Set the mitigation values
 			$review_date = $mgmt_reviews[0]['submission_date'];
 			$review_date = date(DATETIME, strtotime($review_date));
 			$review = $mgmt_reviews[0]['review'];
 			$next_step = $mgmt_reviews[0]['next_step'];
-			$next_review = next_review($color, $id-1000, $next_review, false);
+			$next_review = next_review($risk_level, $id-1000, $next_review, false);
 			$reviewer = $mgmt_reviews[0]['reviewer'];
 			$comments = $mgmt_reviews[0]['comments'];
 		}

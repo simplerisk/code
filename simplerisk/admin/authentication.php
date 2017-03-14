@@ -114,7 +114,6 @@ function display($display = "")
                 {
                         // Include the Authentication Extra
                         require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
-
                         display_authentication();
                 }
         }
@@ -173,5 +172,4 @@ function display($display = "")
       </div>
     </div>
   </body>
-
 </html>

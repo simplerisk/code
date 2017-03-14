@@ -80,6 +80,8 @@ if (isset($_GET['reviewed']))
   <script src="../js/sorttable.js"></script>
   <script src="../js/common.js"></script>
   <script src="../js/pages/risk.js"></script>
+  <script src="../js/highcharts/code/highcharts.js"></script>
+
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -153,6 +155,7 @@ if (isset($_GET['reviewed']))
             <div id="tab-container" class="tab-data">
                 <div class="row-fluid">
                     <div class="span12 ">
+                        <p><?php echo $escaper->escapeHtml($lang['ReviewRegularlyHelp']); ?>.</p>
                         <?php get_reviews_table(3); ?>
                     </div>
                 </div>

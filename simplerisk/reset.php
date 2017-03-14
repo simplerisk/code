@@ -42,6 +42,12 @@ if (!isset($_SESSION))
 // Include the language file
 require_once(language_file());
 
+// Check if this is a page from reset password email
+if(isset($_GET['token']) && $_GET['token']){
+    $token = $_GET['token'];
+    $username = $_GET['username'];
+}
+
 // Check if a password reset email was requested
 if (isset($_POST['send_reset_email']))
 {
@@ -66,7 +72,10 @@ if (isset($_POST['password_reset']))
 	if (password_reset_by_token($username, $token, $password, $repeat_password))
 	{
 		// Display an alert
-		set_alert(true, "good", "Your password has been reset successfully.");
+		set_alert(true, "good", "Your password has been reset successfully.  You will be redirected to the login page in 5 seconds.");
+
+		// Redirect back to the login page
+		$redirect_js = true;
 	}
 	else
 	{
@@ -83,6 +92,19 @@ if (isset($_POST['password_reset']))
 <head>
 	<script src="js/jquery.min.js"></script>
 	<script src="js/bootstrap.min.js"></script>
+	<?php
+		// If we need to redirect back to the login page
+		if (!empty($redirect_js))
+		{
+			echo "<script>\n";
+			echo "$(document).ready(function () {\n";
+			echo "window.setTimeout(function () {\n";
+			echo "location.href = \"index.php\";\n";
+			echo "}, 5000);\n";
+			echo "});\n";
+			echo "</script>\n";
+		}
+	?>
 	<title>SimpleRisk: Enterprise Risk Management Simplified</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -108,6 +130,7 @@ if (isset($_POST['password_reset']))
 	get_alert();
 	?>
 	<div class="container-fluid">
+        <?php if(!isset($token) || !$token){ ?>
 		<div class="row-fluid">
 			<div class="span4 offset4">
 				<div class="well">
@@ -126,18 +149,27 @@ if (isset($_POST['password_reset']))
 				</div>
 			</div>
 		</div>
+        <?php } ?>
 		<div class="row-fluid">
 			<div class="span4 offset4">
 				<div class="well">
-					<form name="password_reset" method="post" action="" class="password_reset">
+					<form name="password_reset" method="post" autocomplete="off" action="" class="password_reset">
 						<?php
-						echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
-						echo "<tr><td colspan=\"2\"><label class=\"login--label\">" . $escaper->escapeHtml($lang['PasswordReset']) . "</label></td></tr>\n";
-						echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
-						echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['ResetToken']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"token\" id=\"token\" type=\"password\" maxlength=\"20\" /></td></tr>\n";
-						echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"password\" id=\"password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
-						echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['RepeatPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"repeat_password\" id=\"repeat_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
-						echo "</table>\n";
+						    echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
+						    echo "<tr><td colspan=\"2\"><label class=\"login--label\">" . $escaper->escapeHtml($lang['PasswordReset']) . "</label></td></tr>\n";
+                            if(isset($username)){
+                                echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"user\" value=\"{$username}\" id=\"user\" type=\"text\" /></td></tr>\n";
+                            }else{
+                                echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
+                            }
+                            if(isset($token)){
+                                echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['ResetToken']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" autocomplete=\"off\" value=\"{$token}\" name=\"token\" id=\"token\" type=\"text\" maxlength=\"20\" /></td></tr>\n";
+                            }else{
+                                echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['ResetToken']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" autocomplete=\"off\" name=\"token\" id=\"token\" type=\"text\" maxlength=\"20\" /></td></tr>\n";
+                            }
+						    echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"password\" id=\"password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
+						    echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['RepeatPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"repeat_password\" id=\"repeat_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
+						    echo "</table>\n";
 						?>
 						<div class="form-actions text-right">
 							<input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">

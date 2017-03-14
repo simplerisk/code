@@ -28,37 +28,37 @@ function risk_distribution_analysis()
 	// Open the database connection
 	$db = db_open();
 
-        // Get the risk levels
-        $stmt = $db->prepare("SELECT * from `risk_levels` ORDER BY value DESC");
+    // Get the risk levels
+    $stmt = $db->prepare("SELECT * from `risk_levels` ORDER BY value DESC");
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+    $veryhigh = $array[0][0];
+    $high = $array[1][0];
+    $medium = $array[2][0];
+    $low = $array[3][0];
+
+    // If the team separation extra is not enabled
+    if (!team_separation_extra())
+    {
+	// Query the database
+        $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :veryhigh THEN 'Very High' WHEN a.calculated_risk < :veryhigh AND a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
+        $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
+        $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
+        $stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
+        $stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
         $stmt->execute();
-        $array = $stmt->fetchAll();
-        $veryhigh = $array[0][0];
-        $high = $array[1][0];
-        $medium = $array[2][0];
-        $low = $array[3][0];
 
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-                // Query the database
-                $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :veryhigh THEN 'Very High' WHEN a.calculated_risk < :veryhigh AND a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
-                $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
-                $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
-                $stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
-                $stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
-                $stmt->execute();
-        
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-        else
-        {
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Store the list in the array
+	    $array = $stmt->fetchAll();
+    }
+    else
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Query the database
-                $array = strip_no_access_open_risk_summary($veryhigh, $high, $medium, $low);
-        }
+        // Query the database
+        $array = strip_no_access_open_risk_summary($veryhigh, $high, $medium, $low);
+    }
 
 	echo $escaper->escapeHtml("Your risk level distribution is as follows:\n"); 
 	echo "<ul>\n";
@@ -125,8 +125,8 @@ function risk_distribution_analysis()
 	$stmt = $db->prepare("select a.id, a.subject, c.calculated_risk, b.mitigation_effort FROM risks a JOIN mitigations b ON a.id = b.risk_id LEFT JOIN risk_scoring c ON a.id = c.id WHERE b.mitigation_effort != 0 AND a.status != \"Closed\" ORDER BY b.mitigation_effort ASC, c.calculated_risk DESC LIMIT 10");
 	$stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
 	// If there are risks to be mitigated
 	if (!empty($array))
@@ -146,7 +146,8 @@ function risk_distribution_analysis()
 			$subject = $escaper->escapeHtml(try_decrypt($risk['subject']));
 			$calculated_risk = $risk['calculated_risk'];
 			$mitigation_effort = $risk['mitigation_effort'];
-
+            $color = $escaper->escapeHtml(get_risk_color($calculated_risk));
+            
 			// If team separation is enabled
 			if (team_separation_extra())
 			{
@@ -165,7 +166,7 @@ function risk_distribution_analysis()
 					echo "<table width=\"100%\" height=\"100%\" border=\"2\" style=\"background-color:white\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</font></center></td></tr></table>\n";
 					echo "</td>\n";
 					echo "<td>\n";
-					echo "<table width=\"25px\" height=\"25px\" border=\"2\" class=\"" . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml($calculated_risk) . "</font></center></td></tr></table>\n";
+					echo "<table width=\"25px\" height=\"25px\" border=\"2\" style=\"border: 1px solid {$color}; background-color: {$color};\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml($calculated_risk) . "</font></center></td></tr></table>\n";
 					echo "</td>\n";
 					echo "</tr>\n";
 				}
@@ -182,7 +183,7 @@ function risk_distribution_analysis()
 				echo "<table width=\"100%\" height=\"100%\" border=\"2\" style=\"background-color:white\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</font></center></td></tr></table>\n";
 				echo "</td>\n";
 				echo "<td>\n";
-				echo "<table width=\"25px\" height=\"25px\" border=\"2\" class=\"" . $escaper->escapeHtml(get_risk_color($calculated_risk)) . "\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml($calculated_risk) . "</font></center></td></tr></table>\n";
+				echo "<table width=\"25px\" height=\"25px\" border=\"2\" style=\"border: 1px solid {$color}; background-color: {$color}\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml($calculated_risk) . "</font></center></td></tr></table>\n";
 				echo "</td>\n";
 				echo "</tr>\n";
 			}

@@ -58,11 +58,6 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
                     include(realpath(__DIR__ . '/overview.php'));
                 ?>
             </div>
-            <div class="row-fluid score-container">
-                <?php
-                    include(realpath(__DIR__ . '/score.php'));
-                ?>
-            </div>
         </div>
         
         <div class="content-container">

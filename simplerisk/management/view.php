@@ -178,7 +178,8 @@ if (isset($_GET['id']))
     $mgmt_review = $risk[0]['mgmt_review'];
     $calculated_risk = $risk[0]['calculated_risk'];
     $next_review = $risk[0]['next_review'];
-    $color = get_risk_color($id);
+    $color = get_risk_color($calculated_risk);
+	$risk_level = get_risk_level_name($calculated_risk);
 
     $scoring_method = $risk[0]['scoring_method'];
     $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
@@ -376,7 +377,7 @@ if (isset($_GET['id']))
 
     $review = $mgmt_reviews[0]['review'];
     $next_step = $mgmt_reviews[0]['next_step'];
-    $next_review = next_review($color, $id, $next_review, false);
+    $next_review = next_review($risk_level, $id-1000, $next_review, false);
     $reviewer = $mgmt_reviews[0]['reviewer'];
     $comments = $mgmt_reviews[0]['comments'];
   }else
@@ -554,13 +555,13 @@ if (isset($_POST['update_mitigation']) && $access)
     $status = "Mitigation Planned";
 
     // Submit mitigation and get the mitigation date back
-    $mitigation_date = submit_mitigation($id, $status);
+    $mitigation_date = submit_mitigation($id, $status, $_POST);
     $mitigation_date = date(DATETIME, strtotime($mitigation_date));
   }
   else
   {
     // Update mitigation and get the mitigation date back
-    $mitigation_date = update_mitigation($id);
+    $mitigation_date = update_mitigation($id, $_POST);
     $mitigation_date = date(DATETIME, strtotime($mitigation_date));
   }
 
@@ -608,6 +609,7 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
   <script src="../js/bootstrap.min.js"></script>
   <script src="../js/cve_lookup.js"></script>
   <script src="../js/basescript.js"></script>
+  <script src="../js/highcharts/code/highcharts.js"></script>
   <script src="../js/common.js"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -621,24 +623,25 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
   <link rel="stylesheet" href="../css/theme.css">
 
   <script type="text/javascript">
-  function showScoreDetails() {
-    document.getElementById("scoredetails").style.display = "";
-    document.getElementById("hide").style.display = "block";
-    document.getElementById("show").style.display = "none";
-  }
+      function showScoreDetails() {
+        document.getElementById("scoredetails").style.display = "";
+        document.getElementById("hide").style.display = "block";
+        document.getElementById("show").style.display = "none";
+      }
 
-  function hideScoreDetails() {
-    document.getElementById("scoredetails").style.display = "none";
-    document.getElementById("updatescore").style.display = "none";
-    document.getElementById("hide").style.display = "none";
-    document.getElementById("show").style.display = "";
-  }
+      function hideScoreDetails() {
+        document.getElementById("scoredetails").style.display = "none";
+        document.getElementById("updatescore").style.display = "none";
+        document.getElementById("hide").style.display = "none";
+        document.getElementById("show").style.display = "";
+      }
 
-  function updateScore() {
-    document.getElementById("scoredetails").style.display = "none";
-    document.getElementById("updatescore").style.display = "";
-    document.getElementById("show").style.display = "none";
-  }
+      function updateScore() {
+        document.getElementById("scoredetails").style.display = "none";
+        document.getElementById("updatescore").style.display = "";
+        document.getElementById("show").style.display = "none";
+      }
+      
   </script>
   <?php display_asset_autocomplete_script(get_entered_assets()); ?>
 </head>
@@ -676,180 +679,13 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
         <div class="row-fluid" id="tab-content-container">
             <div class='tab-data' id="tab-container">
                 <?php
+                    
+                    $action = isset($_GET['action']) ? $_GET['action'] : "";
                     include(realpath(__DIR__ . '/partials/viewhtml.php'));
                 ?>
             </div>
         </div>
         
-        
-        <?php if(0): ?>
-            <div class="row-fluid">
-              <?php view_top_table($id, $calculated_risk, $subject, $status, true); ?>
-            </div>
-            <div class="row-fluid">
-              <div id="scoredetails" class="row-fluid" style="display: none;">
-                <div class="well">
-                  <?php
-                  // Scoring method is Classic
-                  if ($scoring_method == "1")
-                  {
-                    classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLASSIC_impact);
-                  }
-                  // Scoring method is CVSS
-                  else if ($scoring_method == "2")
-                  {
-                    cvss_scoring_table($id, $calculated_risk, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement);
-                  }
-                  // Scoring method is DREAD
-                  else if ($scoring_method == "3")
-                  {
-                    dread_scoring_table($id, $calculated_risk, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability);
-                  }
-                  // Scoring method is OWASP
-                  else if ($scoring_method == "4")
-                  {
-                    owasp_scoring_table($id, $calculated_risk, $OWASPSkillLevel, $OWASPEaseOfDiscovery, $OWASPLossOfConfidentiality, $OWASPFinancialDamage, $OWASPMotive, $OWASPEaseOfExploit, $OWASPLossOfIntegrity, $OWASPReputationDamage, $OWASPOpportunity, $OWASPAwareness, $OWASPLossOfAvailability, $OWASPNonCompliance, $OWASPSize, $OWASPIntrusionDetection, $OWASPLossOfAccountability, $OWASPPrivacyViolation);
-                  }
-                  // Scoring method is Custom
-                  else if ($scoring_method == "5")
-                  {
-                    custom_scoring_table($id, $custom);
-                  }
-                  ?>
-                </div>
-              </div>
-              <div id="updatescore" class="row-fluid" style="display: none;">
-                <div class="well">
-                  <?php
-                  // Scoring method is Classic
-                  if ($scoring_method == "1")
-                  {
-                    edit_classic_score($CLASSIC_likelihood, $CLASSIC_impact);
-                  }
-                  // Scoring method is CVSS
-                  else if ($scoring_method == "2")
-                  {
-                    edit_cvss_score($AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement);
-                  }
-                  // Scoring method is DREAD
-                  else if ($scoring_method == "3")
-                  {
-                    edit_dread_score($DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability);
-                  }
-                  // Scoring method is OWASP
-                  else if ($scoring_method == "4")
-                  {
-                    edit_owasp_score($OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation);
-                  }
-                  // Scoring method is Custom
-                  else if ($scoring_method == "5")
-                  {
-                    edit_custom_score($custom);
-                  }
-                  ?>
-                </div>
-              </div>
-            </div>
-            <div id="tabs" class="risk-details">
-              <div class="row-fluid">
-                <ul class="tabs-nav clearfix">
-                  <li><a id="tab_details" href="#tabs1">Details</a></li>
-                  <li><a id="tab_mitigation" href="#tabs2">Mitigation</a></li>
-                  <li><a id="tab_review" class="tabList" href="#tabs3">Review</a></li>
-                </ul>
-
-                <div class="row-fluid">
-                  <div class="span12">
-                    <div id="tabs1">
-                      <form name="details" method="post" action="" enctype="multipart/form-data">
-                        <?php
-                        // If the user has selected to edit the risk
-                        if (isset($_POST['edit_details']))
-                        {
-                          edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
-                        }
-                        // Otherwise we are just viewing the risk
-                        else
-                        {
-                          view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact);
-                        }
-                        ?>
-                      </form>
-                    </div>
-                    <div id="tabs2">
-                      <form name="mitigation" method="post" action="" enctype="multipart/form-data">
-                        <?php
-                        // If the user has selected to edit the mitigation
-                        if (isset($_POST['edit_mitigation']))
-                        {
-                          edit_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date);
-                        }
-                        // Otherwise we are just viewing the mitigation
-                        else
-                        {
-                          view_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date);
-                        }
-                        ?>
-                      </form>
-                    </div>
-                    <div id="tabs3">
-                      <form name="review" method="post" action="">
-                        <?php
-                        view_review_details($id, $review_date, $reviewer, $review, $next_step, $next_review, $comments);
-                        ?>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="row-fluid comments--wrapper">
-
-                <div class="well">
-                  <h4 class="collapsible--toggle clearfix">
-                      <span><i class="fa  fa-caret-right"></i><?php echo $escaper->escapeHtml($lang['Comments']); ?></span>
-                      <a href="#" class="add-comments pull-right"><i class="fa fa-plus"></i></a>
-                  </h4>
-
-                  <div class="collapsible">
-                    <div class="row-fluid">
-                      <div class="span12">
-
-                          <form id="comment" class="comment-form" name="add_comment" method="post" action="/management/comment.php?id=<?php echo $id; ?>">
-                          <textarea style="width: 100%; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;" name="comment" cols="50" rows="3" id="comment-text"></textarea>
-                          <div class="form-actions text-right" id="comment-div">
-                              <input class="btn" id="rest-btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset" disabled=""/>
-                            <button id="comment-submit" type="submit" name="submit" class="btn btn-primary" disabled=""><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
-                          </div>
-                        </form>
-                      </div>
-                    </div>
-
-                    <div class="row-fluid">
-                      <div class="span12">
-                        <div class="comments--list clearfix">
-                          <?php get_comments($id); ?>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="row-fluid">
-                  <div class="well">
-                    <h4 class="collapsible--toggle"><span><i class="fa fa-caret-right"></i><?php echo $escaper->escapeHtml($lang['AuditTrail']); ?></span></h4>
-                    <div class="collapsible">
-                      <div class="row-fluid">
-                        <div class="span12 audit-trail">
-                          <?php get_audit_trail($id,36500); ?>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-        <?php endif; ?>
       </div>
       <script>
         /*
@@ -866,9 +702,11 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
             }
             $(look_for).focusin(function() {
                 $(id_of_text_head).addClass("affected-assets-title");
+                $('.ui-autocomplete').addClass("popup-ui-complete")
             });
             $(look_for).focusout(function() {
                 $(id_of_text_head).removeClass("affected-assets-title");
+                $('.ui-autocomplete').removeClass("popup-ui-complete")
             });
         }
         $(document).ready(function() {

@@ -32,7 +32,7 @@ function generateSalt($username)
         if (get_setting('strict_user_validation') == 0)
         {
 		// Get the users unique salt
-		$stmt = $db->prepare("SELECT salt FROM user WHERE LOWER(`username`) = LOWER(:username)");
+		$stmt = $db->prepare("SELECT salt FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:username)");
         }
         else
         {
@@ -78,9 +78,9 @@ function get_user_type($user, $upgrade = false)
 		if ($upgrade)
 		{
 			// Query the DB for a matching enabled user
-			$stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND LOWER(`username`) = LOWER(:user)");
+			$stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND LOWER(convert(`username` using utf8)) = LOWER(:user)");
 		}
-		else $stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND lockout = 0 AND LOWER(`username`) = LOWER(:user)");
+		else $stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND lockout = 0 AND LOWER(convert(`username` using utf8)) = LOWER(:user)");
 	}
 	else
 	{
@@ -189,7 +189,6 @@ function set_user_permissions($user, $pass, $upgrade = false)
 {
 	// Open the database connection
         $db = db_open();
-
 	// If we are not doing an upgrade
 	if (!$upgrade)
 	{
@@ -197,7 +196,7 @@ function set_user_permissions($user, $pass, $upgrade = false)
         	if (get_setting('strict_user_validation') == 0)
         	{
 			// Query the DB for the users complete information
-			$stmt = $db->prepare("SELECT value, type, name, lang, assessments, asset, admin, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE LOWER(`username`) = LOWER(:user)");
+			$stmt = $db->prepare("SELECT value, type, name, lang, assessments, asset, admin, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
         	}
         	else
         	{
@@ -212,7 +211,7 @@ function set_user_permissions($user, $pass, $upgrade = false)
                 if (get_setting('strict_user_validation') == 0)
                 {
 			// Query the DB for minimal user permissions needed
-			$stmt = $db->prepare("SELECT value, type, name, lang, admin FROM user WHERE LOWER(`username`) = LOWER(:user)");
+			$stmt = $db->prepare("SELECT value, type, name, lang, admin FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
                 }
                 else
                 {
@@ -314,7 +313,7 @@ function is_valid_simplerisk_user($user, $pass)
         if (get_setting('strict_user_validation') == 0)
         {
 		// Query the DB for a matching user and hash
-		$stmt = $db->prepare("SELECT password FROM user WHERE LOWER(`username`) = LOWER(:user)");
+		$stmt = $db->prepare("SELECT password FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
         }
         else
         {
@@ -354,7 +353,7 @@ function is_simplerisk_user($username)
         if (get_setting('strict_user_validation') == 0)
         {
 		// Query the DB for a matching user and hash
-		$stmt = $db->prepare("SELECT value FROM user WHERE type = 'simplerisk' AND LOWER(`username`) = LOWER(:username)");
+		$stmt = $db->prepare("SELECT value FROM user WHERE type = 'simplerisk' AND LOWER(convert(`username` using utf8)) = LOWER(:username)");
         }
         else
         {
@@ -493,11 +492,29 @@ function send_reset_email($username, $name, $email, $token)
         $body = "<html><body>\n";
         $body .= "<p>Hello " . $name.",</p>\n";
         $body .= "<p>A request was submitted to reset your SimpleRisk password.</p>\n";
+    
+    $resetRequestMessages = getPasswordReqeustMessages();
+    if(count($resetRequestMessages)){
+        $body .= "<p><b>Password should have the following requirements.</b></p>\n";
+        $body .= "<ul>\n";
+        foreach($resetRequestMessages as $resetRequestMessage){
+            $body .= "<li>{$resetRequestMessage}</li>\n";
+        }
+        $body .= "</ul>\n";
+    }
+    
+	$base_url = get_current_url();
+	$pattern[0] = "/\/(\w)*\.php$/";
+	$pattern[1] = "/\/admin\/(\w)*\.php$/";
+	$base_url = preg_replace($pattern, "/reset.php", $base_url);
+	$base_url = $base_url . "?token=".$token."&username=".$username;
+    
 	$body .= "<b>Username:</b>&nbsp;&nbsp;".$username."<br/>\n";
 	$body .= "<b>Reset Token:</b>&nbsp;&nbsp;".$token."<br/>\n";
-	$body .= "<p>You may now use the \"<u>Forgot your password</u>\" link on the SimpleRisk log in page to reset your password.</p>";
+	$body .= "<p>You may now use the \"<a href='{$base_url}'>Forgot your password</a>\" link on the SimpleRisk log in page to reset your password.</p>";
 	$body .= "<p>This is an automated message and responses will be ignored or rejected.</p>\n";
 	$body .= "</body></html>\n";
+    
         //mail($to, $subject, $body, $headers);
 
 	// Require the mail functions
@@ -521,7 +538,7 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
 		if ($userid != 0)
 		{
         		// Check the password
-        		$error_code = valid_password($password, $repeat_password);
+        		$error_code = valid_password($password, $repeat_password, $userid);
 
         		// If the password is valid
         		if ($error_code == 1)
@@ -549,7 +566,7 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
                                         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
                                         // Set the new encrypted password
-                                        set_enc_pass($username, $password, $_SESSION['encrypted_pass']);
+                                        set_enc_pass($username, $password);
                                 }
 
 				// Display an alert
@@ -603,7 +620,7 @@ function is_valid_reset_token($username, $token)
         if (get_setting('strict_user_validation') == 0)
         {
 		// Increment the attempts for the username
-		$stmt = $db->prepare("UPDATE password_reset SET attempts=attempts+1 WHERE LOWER(`username`) = LOWER(:username)");
+		$stmt = $db->prepare("UPDATE password_reset SET attempts=attempts+1 WHERE LOWER(convert(`username` using utf8)) = LOWER(:username)");
         }
         else
         {
@@ -618,7 +635,7 @@ function is_valid_reset_token($username, $token)
         if (get_setting('strict_user_validation') == 0)
         {
 		// Search for a valid token
-		$stmt = $db->prepare("SELECT attempts FROM password_reset WHERE LOWER(`username`) = LOWER(:username) AND token=:token");
+		$stmt = $db->prepare("SELECT attempts FROM password_reset WHERE LOWER(convert(`username` using utf8)) = LOWER(:username) AND token=:token");
         }
         else
         {

@@ -87,6 +87,90 @@ function closepopup()
     }
 }
 
+/**
+* Create and Update the risk scoring chart
+* 
+* @param risk_id
+*/
+function riskScoringChart(renderTo, risk_id){
+    var chartObj = new Highcharts.Chart( {
+        chart: {
+            renderTo: renderTo,
+            type: 'spline'
+        },
+        title: {
+            text: $('#_RiskScoringHistory').length ? $("#_RiskScoringHistory").val() : 'Risk Scoring History'
+        },
+
+        yAxis: {
+            title: {
+                text: $('#_RiskScore').length ? $('#_RiskScore').val() : "Risk Score"
+            },
+            min: 0, 
+            max: 10
+        },
+         xAxis: {
+            type: 'datetime',
+            dateTimeLabelFormats: { // don't display the dummy year
+                millisecond: '%Y-%m-%d<br/>%H:%M:%S',
+                second: '%Y-%m-%d<br/>%H:%M:%S',
+                minute: '%Y-%m-%d<br/>%H:%M',
+                hour: '%Y-%m-%d<br/>%H:%M',
+                day: '%Y-%m-%d<br/>%H:%M',
+                month: '%Y-%m-%d<br/>%H:%M',
+                year: '%Y-%m-%d<br/>%H:%M'
+            },
+            title: {
+                text: $("#_DateAndTime").val() ? $("#_DateAndTime").val() : "Date and time"
+            }
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle'
+        },
+
+        plotOptions: {
+            spline: {
+                marker: {
+                    enabled: true
+                }
+            }                    
+        },
+
+        series: [
+            {name: $('#_RiskScore').length ? $('#_RiskScore').val() : "Risk Score" }
+        ]
+
+    });
+    
+
+    chartObj.showLoading('<img src="../images/progress.gif">');
+    $.ajax({
+        type: "GET",
+        url: "../api/scoring_history?risk_id=" + risk_id,
+        dataType: 'json',
+        success: function(data){
+            var histories = data.data;
+            var chartData = [];
+            for(var i=0; i<histories.length; i++){
+                var date = new Date(histories[i].last_update.replace(/\s/, 'T'));
+                chartData.push([date.getTime(), Number(histories[i].calculated_risk)]);
+            }
+            
+            chartObj.series[0].setData(chartData)
+            chartObj.hideLoading();
+            
+        },
+        error: function(xhr,status,error){
+            if(xhr.responseJSON && xhr.responseJSON.status_message){
+                $('#show-alert').html(xhr.responseJSON.status_message);
+            }
+        }
+    })
+    
+}
+
 
 $(document).ready(function(){
     $(document).on('click', '.exist-files .remove-file', function(event) {
@@ -96,6 +180,7 @@ $(document).ready(function(){
         $parent.find('.file-count').html(fileCount)
         $(this).parent().remove();
     })
+    
     $(document).on('click', '.file-list .remove-file', function(event) {
         event.preventDefault();
         var id = $(this).data('id');
@@ -103,6 +188,7 @@ $(document).ready(function(){
         $("#"+id, $parent).remove();
         refreshFilelist($parent)
     })
+    
     $(document).on('change', '.hidden-file-upload.active', function(event) {
 //        event.preventDefault();
 
@@ -113,5 +199,32 @@ $(document).ready(function(){
         refreshFilelist($parent, currentButtonId)
 
     });
+    
+    $('body').on('click', '.show-score-overtime', function(e){
+        e.preventDefault();
+        var tabContainer = $(this).parents('.risk-session');
+        var risk_id = $('.large-text', tabContainer).html();
+        $('.score-overtime-container', tabContainer).show();
+
+        riskScoringChart($('.socre-overtime-chart', tabContainer)[0], risk_id);
+
+        $('.hide-score-overtime', tabContainer).show();
+        $('.show-score-overtime', tabContainer).hide();
+        
+        return false;
+    })
+
+    $('body').on('click', '.hide-score-overtime', function(e){
+        e.preventDefault();
+        var tabContainer = $(this).parents('.risk-session');
+        var risk_id = $('.large-text', tabContainer).html();
+        $('.score-overtime-container', tabContainer).hide();
+
+//        riskScoringChart($('.socre-overtime-chart', tabContainer)[0], risk_id);
+
+        $('.hide-score-overtime', tabContainer).hide();
+        $('.show-score-overtime', tabContainer).show();
+        return false;
+    })
     
 })

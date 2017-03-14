@@ -18,13 +18,13 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
  ******************************/
 function is_authenticated()
 {
-	// If either the session or key is authenticated
-	if (is_session_authenticated() || is_key_authenticated() != false)
-	{
-		// Return true
-		return true;
-	}
-	else unauthenticated_access();
+    // If either the session or key is authenticated
+    if (is_session_authenticated() || is_key_authenticated() != false)
+    {
+        // Return true
+        return true;
+    }
+    else unauthenticated_access();
 }
 
 /**************************************
@@ -32,12 +32,12 @@ function is_authenticated()
  **************************************/
 function is_session_authenticated()
 {
-	// If the session is not authenticated
-	if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-	{
-		return false;
-	}
-	else return true;
+    // If the session is not authenticated
+    if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
+    {
+        return false;
+    }
+    else return true;
 }
 
 /**********************************
@@ -45,17 +45,17 @@ function is_session_authenticated()
  **********************************/
 function is_key_authenticated()
 {
-	// Check if the API Extra is enabled
-	if (api_extra())
-	{
-		// Require the API Extra
-		require_once(realpath(__DIR__ . '/../extras/api/index.php'));
+    // Check if the API Extra is enabled
+    if (api_extra())
+    {
+        // Require the API Extra
+        require_once(realpath(__DIR__ . '/../extras/api/index.php'));
 
-		// Return whether the key is authenticated or not
-		return authenticate_key();
-	}
-	// Otherwise return false
-	else return false;
+        // Return whether the key is authenticated or not
+        return authenticate_key();
+    }
+    // Otherwise return false
+    else return false;
 }
 
 /************************************
@@ -63,8 +63,8 @@ function is_key_authenticated()
  ************************************/
 function unauthenticated_access()
 {
-	// Return a JSON response
-	json_response(401, "Unauthenticated Access.  Please log in or provide a key to use the SimpleRisk API.", NULL);
+    // Return a JSON response
+    json_response(401, "Unauthenticated Access.  Please log in or provide a key to use the SimpleRisk API.", NULL);
 }
 
 /**********************
@@ -72,12 +72,12 @@ function unauthenticated_access()
  **********************/
 function is_admin()
 {
-	// If the user is not logged in as an administrator
-	if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
-	{
-		unauthorized_access();
-	}
-	else return true;
+    // If the user is not logged in as an administrator
+    if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
+    {
+        unauthorized_access();
+    }
+    else return true;
 }
 
 /*********************************
@@ -117,12 +117,14 @@ function show_endpoints()
 function show_management()
 {
   echo '<ul>
-          <li><a href="management/risk/view">/management/risk/view</a> -> (view a risk)</li>
-          <li><a href="management/risk/add">/management/risk/add</a> -> (add a risk)</li>
-          <li><a href="management/mitigation/view">/management/mitigation/view</a> -> (view a mitigation)</li>
-          <li><a href="management/mitigation/add">/management/mitigation/add</a> -> (add a mitigation)</li>
-          <li><a href="management/review/view">/management/review/view</a> -> (view a review)</li>
-          <li><a href="management/review/add">/management/review/add</a> -> (add a review)</li>
+          <li><a href="management/risk/view ">/management/risk/view </a> -> (view a risk)</li>
+          <li><a href="mock.php?option=add_risk">/management/risk/add</a> -> (add a risk)</li>
+
+          <li><a href="management/mitigation/view">/management/mitigation/view </a> -> (view a mitigation)</li>
+          <li><a href="mock.php?option=save_mitigation">/management/mitigation/add</a> -> (add a mitigation)</li>
+
+          <li><a href="management/review/view">/management/review/view </a> -> (view a review)</li>
+          <li><a href="mock.php?option=save_review">/management/review/add</a> -> (add a review)</li>
         </ul>';
 }
 
@@ -153,7 +155,7 @@ function show_reports()
  **************************/
 function show_version()
 {
-	echo 'The version of this api is: ' . getApi()->invoke('/version.json');
+    echo 'The version of this api is: ' . getApi()->invoke('/version.json');
 }
 
 /*************************
@@ -161,7 +163,7 @@ function show_version()
  *************************/
 function api_version()
 {
-  return '1.0';
+  return '1.1';
 }
 
 /********************
@@ -169,15 +171,15 @@ function api_version()
  ********************/
 function whoami()
 {
-	// Get the username and uid
-	$user = $_SESSION['user'];
-	$uid = $_SESSION['uid'];
+    // Get the username and uid
+    $user = $_SESSION['user'];
+    $uid = $_SESSION['uid'];
 
-	// Create the data array
-	$data = array("username" => $user, "uid" => $uid);
+    // Create the data array
+    $data = array("username" => $user, "uid" => $uid);
 
-	// Return a JSON response
-	json_response(200, "whoami", $data);
+    // Return a JSON response
+    json_response(200, "whoami", $data);
 }
 
 /***********************
@@ -185,25 +187,25 @@ function whoami()
  ***********************/
 function allusers()
 {
-	// If the user is an administrator
-	if (is_admin())
-	{
-		// Get the list of users ordered by name
-		$users = get_table_ordered_by_name("user");
+    // If the user is an administrator
+    if (is_admin())
+    {
+        // Get the list of users ordered by name
+        $users = get_table_ordered_by_name("user");
 
-		// Initialize the data array
-		$data = array();
+        // Initialize the data array
+        $data = array();
 
-		// For each item in the users array
-		foreach ($users as $user)
-		{
-			// Create the new data array
-			$data[] = array("uid" => $user['value'], "type" => $user['type'], "username" => $user['username'], "email" => $user['email'], "last_login" => $user['last_login']);
-		}
+        // For each item in the users array
+        foreach ($users as $user)
+        {
+            // Create the new data array
+            $data[] = array("uid" => $user['value'], "type" => $user['type'], "username" => $user['username'], "email" => $user['email'], "last_login" => $user['last_login']);
+        }
 
-		// Return a JSON response
-		json_response(200, "allusers", $data);
-	}
+        // Return a JSON response
+        json_response(200, "allusers", $data);
+    }
 }
 
 /***************************
@@ -211,25 +213,25 @@ function allusers()
  ***************************/
 function enabledusers()
 {
-	// If the user is an administrator
-	if (is_admin())
-	{
-		// Get the list of enabled users ordered by name
-		$users = get_custom_table("enabled_users");
+    // If the user is an administrator
+    if (is_admin())
+    {
+        // Get the list of enabled users ordered by name
+        $users = get_custom_table("enabled_users");
 
                 // Initialize the data array
                 $data = array();
 
-		// For each item in the users array
-		foreach ($users as $user)
-		{
-			// Create the new data array
-			$data[] = array("uid" => $user['value'], "type" => $user['type'], "username" => $user['username'], "email" => $user['email'], "last_login" => $user['last_login']);
-		}
+        // For each item in the users array
+        foreach ($users as $user)
+        {
+            // Create the new data array
+            $data[] = array("uid" => $user['value'], "type" => $user['type'], "username" => $user['username'], "email" => $user['email'], "last_login" => $user['last_login']);
+        }
 
-		// Return a JSON response
-		json_response(200, "enabledusers", $data);
-	}
+        // Return a JSON response
+        json_response(200, "enabledusers", $data);
+    }
 }
 
 /****************************
@@ -237,9 +239,9 @@ function enabledusers()
  ****************************/
 function disabledusers()
 {
-	// If the user is an administrator
-	if (is_admin())
-	{
+    // If the user is an administrator
+    if (is_admin())
+    {
                 // Get the list of disabled users ordered by name
                 $users = get_custom_table("disabled_users");
 
@@ -255,7 +257,7 @@ function disabledusers()
 
                 // Return a JSON response
                 json_response(200, "disabledusers", $data);
-	}
+    }
 }
 
 /************************************
@@ -263,86 +265,25 @@ function disabledusers()
  ************************************/
 function dynamicrisk()
 {
-    global $escaper;
-	// If the status, sort, and group are not sent
-	if (!isset($_POST['status']) || !isset($_POST['sort']) || !isset($_POST['group']))
-	{
-        set_alert(true, "You need to specify a status, sort, and group parameter.");
-        
+    // If the status, sort, and group are not sent
+    if (!isset($_GET['status']) || !isset($_GET['sort']) || !isset($_GET['group']))
+    {
         // Return a JSON response
-        json_response(400, get_alert(true), NULL);
-	}
-	else
-	{
-		// Get the status, sort, and group
-        $draw = $_POST['draw'];
-		$status = $_POST['status'];
-		$sort = $_POST['sort'];
-        $group = $_POST['group'];
-        $start = $_POST['start'] ? $_POST['start'] : 0;
-        $length = $_POST['length'] ? $_POST['length'] : 10;
-		$group_value_from_db = $_POST['group_value'] ? $_POST['group_value'] : "";
-        
-        $rowCount = 0;
-		// Query the risks
-		$risks = risks_query($status, $sort, $group, $rowCount, $start, $length, $group_value_from_db);
-        
-        $rows = array();
-//        for( $i = $start; $i < $start + $length && $risks[$i]; $i++ ){
-        foreach($risks as $row){
-//            $row = $risks[$i];
-            $row['id'] = $row['id'] + 1000;
-            $color = get_risk_color($row['calculated_risk']);
-            
-            $rows[] = array(
-                "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($row['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($row['id'])."</a>",
-                $escaper->escapeHtml($row['status']),
-                $escaper->escapeHtml($row['subject']),
-                $escaper->escapeHtml($row['reference_id']),
-                $escaper->escapeHtml($row['regulation']),
-                $escaper->escapeHtml($row['control_number']),
-                $escaper->escapeHtml($row['location']),
-                $escaper->escapeHtml($row['source']),
-                $escaper->escapeHtml($row['category']),
-                $escaper->escapeHtml($row['team']),
-                $escaper->escapeHtml($row['technology']),
-                $escaper->escapeHtml($row['owner']),
-                $escaper->escapeHtml($row['manager']),
-                $escaper->escapeHtml($row['submitted_by']),
-                $escaper->escapeHtml($row['scoring_method']),
-                "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($row['calculated_risk']) . "<span class=\"risk-color\"></span></div></div>",
-                $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($row['submission_date']))),
-                $escaper->escapeHtml($row['review_date']),
-                $escaper->escapeHtml($row['project']),
-                planned_mitigation($row['id'], $row['mitigation_id']) , // mitigation plan
-                management_review($row['id'], $row['mgmt_review']) , // management review
-                $escaper->escapeHtml($row['days_open']),
-                $row['next_review_date_html'],
-                $escaper->escapeHtml($row['next_step']),
-                $escaper->escapeHtml($row['affected_assets']),
-                $escaper->escapeHtml($row['risk_assessment']),
-                $escaper->escapeHtml($row['additional_notes']),
-                $escaper->escapeHtml($row['current_solution']),
-                $escaper->escapeHtml($row['security_recommendations']),
-                $escaper->escapeHtml($row['security_requirements']),
-                $escaper->escapeHtml($row['planning_strategy']),
-                $escaper->escapeHtml($row['mitigation_effort']),
-                $escaper->escapeHtml($row['mitigation_cost']),
-                $escaper->escapeHtml($row['mitigation_owner']),
-                $escaper->escapeHtml($row['mitigation_team']),
-            );
-        }
-        $results = array(
-            "draw" => $draw,
-            "recordsTotal" => $rowCount,
-            "recordsFiltered" => $rowCount,
-            "data" => $rows
-        );
+        json_response(400, "You need to specify a status, sort, and group parameter.", NULL);
+    }
+    else
+    {
+        // Get the status, sort, and group
+        $status = $_GET['status'];
+        $sort = $_GET['sort'];
+        $group = $_GET['group'];
 
-        // Return a JSON response
-//        json_response(200, "dynamicrisk", $results);
-        echo json_encode($results);
-	}
+        // Query the risks
+        $data = risks_query($status, $sort, $group);
+
+            // Return a JSON response
+            json_response(200, "dynamicrisk", $data);
+    }
 }
 
 /************************************
@@ -358,24 +299,24 @@ function viewrisk()
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
     }
-	else
-	{
-		// Get the id
-		$id = (int)$_GET['id'];
+    else
+    {
+        // Get the id
+        $id = (int)$_GET['id'];
 
-		// Query the risk
-		$risk = get_risk_by_id($id);
+        // Query the risk
+        $risk = get_risk_by_id($id);
 
-		// If the risk was found use the values for the risk
-		if (count($risk) != 0)
-		{
+        // If the risk was found use the values for the risk
+        if (count($risk) != 0)
+        {
             $status = $risk[0]['status'];
             $subject = try_decrypt($risk[0]['subject']);
             $reference_id = $risk[0]['reference_id'];
             $regulation = get_name_by_value("regulation", $risk[0]['regulation']);
             $control_number = $risk[0]['control_number'];
             $location = get_name_by_value("location", $risk[0]['location']);
-			$source = get_name_by_value("source", $risk[0]['source']);
+            $source = get_name_by_value("source", $risk[0]['source']);
             $category = get_name_by_value("category", $risk[0]['category']);
             $team = get_name_by_value("team", $risk[0]['team']);
             $technology = get_name_by_value("technology", $risk[0]['technology']);
@@ -383,13 +324,13 @@ function viewrisk()
             $manager = get_name_by_value("user", $risk[0]['manager']);
             $assessment = try_decrypt($risk[0]['assessment']);
             $notes = try_decrypt($risk[0]['notes']);
-			$assets = get_list_of_assets($id, false);
+            $assets = get_list_of_assets($id, false);
             $submission_date = $risk[0]['submission_date'];
             $mitigation_id = $risk[0]['mitigation_id'];
             $mgmt_review = $risk[0]['mgmt_review'];
             $calculated_risk = $risk[0]['calculated_risk'];
             $next_review = $risk[0]['next_review'];
-            $color = get_risk_color($id);
+            $color = get_risk_color($calculated_risk);
             $scoring_method = get_scoring_method_name($risk[0]['scoring_method']);
             $CLASSIC_likelihood = get_name_by_value("likelihood", $risk[0]['CLASSIC_likelihood']);
             $CLASSIC_impact = get_name_by_value("impact", $risk[0]['CLASSIC_impact']);
@@ -429,19 +370,149 @@ function viewrisk()
             $OWASP_NonCompliance = $risk[0]['OWASP_NonCompliance'];
             $OWASP_PrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
             $custom = $risk[0]['Custom'];
-		
-			$data[] = array("id" => $id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "regulation" => $regulation, "control_number" => $control_number, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "technology" => $technology, "owner" => $owner, "manager" => $manager, "assessment" => $assessment, "notes" => $notes, "assets" => $assets, "submission_date" => $submission_date, "mitigation_id" => $mitigation_id, "mgmt_review" => $mgmt_review, "calculated_risk" => $calculated_risk, "next_review" => $next_review, "color" => $color, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "CLASSIC_likelihood" => $CLASSIC_likelihood, "CLASSIC_impact" => $CLASSIC_impact, "CVSS_AccessVector" => $CVSS_AccessVector, "CVSS_AccessComplexity" => $CVSS_AccessComplexity, "CVSS_Authentication" => $CVSS_Authentication, "CVSS_ConfImpact" => $CVSS_ConfImpact, "CVSS_IntegImpact" => $CVSS_IntegImpact, "CVSS_AvailImpact" => $CVSS_AvailImpact, "CVSS_Exploitability" => $CVSS_Exploitability, "CVSS_RemediationLevel" => $CVSS_RemediationLevel, "CVSS_ReportConfidence" => $CVSS_ReportConfidence, "CVSS_CollateralDamagePotential" => $CVSS_CollateralDamagePotential, "CVSS_TargetDistribution" => $CVSS_TargetDistribution, "CVSS_ConfidentialityRequirement" => $CVSS_ConfidentialityRequirement, "CVSS_IntegrityRequirement" => $CVSS_IntegrityRequirement, "CVSS_AvailabilityRequirement" => $CVSS_AvailabilityRequirement, "DREAD_DamagePotential" => $DREAD_DamagePotential, "DREAD_Reproducibility" => $DREAD_Reproducibility, "DREAD_Exploitability" => $DREAD_Exploitability, "DREAD_AffectedUsers" => $DREAD_AffectedUsers, "DREAD_Discoverability" => $DREAD_Discoverability, "OWASP_SkillLevel" => $OWASP_SkillLevel, "OWASP_Motive" => $OWASP_Motive, "OWASP_Opportunity" => $OWASP_Opportunity, "OWASP_Size" => $OWASP_Size, "OWASP_EaseOfDiscovery" => $OWASP_EaseOfDiscovery, "OWASP_EaseOfExploit" => $OWASP_EaseOfExploit, "OWASP_Awareness" => $OWASP_Awareness, "OWASP_IntrusionDetection" => $OWASP_IntrusionDetection, "OWASP_LossOfConfidentiality" => $OWASP_LossOfConfidentiality, "OWASP_LossOfIntegrity" => $OWASP_LossOfIntegrity, "OWASP_LossOfAvailability" => $OWASP_LossOfAvailability, "OWASP_LossOfAccountability" => $OWASP_LossOfAccountability, "OWASP_FinancialDamage" => $OWASP_FinancialDamage, "OWASP_ReputationDamage" => $OWASP_ReputationDamage, "OWASP_NonCompliance" => $OWASP_NonCompliance, "OWASP_PrivacyViolation" => $OWASP_PrivacyViolation, "Custom" => $custom);
+        
+            $data[] = array("id" => $id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "regulation" => $regulation, "control_number" => $control_number, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "technology" => $technology, "owner" => $owner, "manager" => $manager, "assessment" => $assessment, "notes" => $notes, "assets" => $assets, "submission_date" => $submission_date, "mitigation_id" => $mitigation_id, "mgmt_review" => $mgmt_review, "calculated_risk" => $calculated_risk, "next_review" => $next_review, "color" => $color, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "CLASSIC_likelihood" => $CLASSIC_likelihood, "CLASSIC_impact" => $CLASSIC_impact, "CVSS_AccessVector" => $CVSS_AccessVector, "CVSS_AccessComplexity" => $CVSS_AccessComplexity, "CVSS_Authentication" => $CVSS_Authentication, "CVSS_ConfImpact" => $CVSS_ConfImpact, "CVSS_IntegImpact" => $CVSS_IntegImpact, "CVSS_AvailImpact" => $CVSS_AvailImpact, "CVSS_Exploitability" => $CVSS_Exploitability, "CVSS_RemediationLevel" => $CVSS_RemediationLevel, "CVSS_ReportConfidence" => $CVSS_ReportConfidence, "CVSS_CollateralDamagePotential" => $CVSS_CollateralDamagePotential, "CVSS_TargetDistribution" => $CVSS_TargetDistribution, "CVSS_ConfidentialityRequirement" => $CVSS_ConfidentialityRequirement, "CVSS_IntegrityRequirement" => $CVSS_IntegrityRequirement, "CVSS_AvailabilityRequirement" => $CVSS_AvailabilityRequirement, "DREAD_DamagePotential" => $DREAD_DamagePotential, "DREAD_Reproducibility" => $DREAD_Reproducibility, "DREAD_Exploitability" => $DREAD_Exploitability, "DREAD_AffectedUsers" => $DREAD_AffectedUsers, "DREAD_Discoverability" => $DREAD_Discoverability, "OWASP_SkillLevel" => $OWASP_SkillLevel, "OWASP_Motive" => $OWASP_Motive, "OWASP_Opportunity" => $OWASP_Opportunity, "OWASP_Size" => $OWASP_Size, "OWASP_EaseOfDiscovery" => $OWASP_EaseOfDiscovery, "OWASP_EaseOfExploit" => $OWASP_EaseOfExploit, "OWASP_Awareness" => $OWASP_Awareness, "OWASP_IntrusionDetection" => $OWASP_IntrusionDetection, "OWASP_LossOfConfidentiality" => $OWASP_LossOfConfidentiality, "OWASP_LossOfIntegrity" => $OWASP_LossOfIntegrity, "OWASP_LossOfAvailability" => $OWASP_LossOfAvailability, "OWASP_LossOfAccountability" => $OWASP_LossOfAccountability, "OWASP_FinancialDamage" => $OWASP_FinancialDamage, "OWASP_ReputationDamage" => $OWASP_ReputationDamage, "OWASP_NonCompliance" => $OWASP_NonCompliance, "OWASP_PrivacyViolation" => $OWASP_PrivacyViolation, "Custom" => $custom);
 
-			// Return a JSON response
-			json_response(200, "viewrisk", $data);
-		}
-		else
-		{
+            // Return a JSON response
+            json_response(200, "viewrisk", $data);
+        }
+        else
+        {
             // Return a JSON response
             json_response(404, "Risk ID not found.", NULL);
-		}
-	}
+        }
+    }
 }
+
+/******************************************
+ * FUNCTION: MANAGEMENT - VIEW MITIGATION *
+ ******************************************/
+function viewmitigation()
+{
+        // If the id is not sent
+        if (!isset($_GET['id']))
+        {
+                // Return a JSON response
+                json_response(400, "You need to specify an id parameter.", NULL);
+        }
+}
+
+/**************************************
+ * FUNCTION: MANAGEMENT - VIEW REVIEW *
+ **************************************/
+function viewreview()
+{
+        // If the id is not sent
+        if (!isset($_GET['id']))
+        {
+                // Return a JSON response
+                json_response(400, "You need to specify an id parameter.", NULL);
+        }
+}
+
+/*******************************************************
+ * FUNCTION: GET_PARAM - GET VALUE GET OR POST REQUEST *
+ ******************************************************/
+function get_param($method, $name, $default=""){
+    $value = "";
+    switch(strtoupper($method)){
+        case "POST":
+            $value = isset($_POST[$name]) ? $_POST[$name] : $default;
+        break;
+        
+        case "GET":
+            $value = isset($_GET[$name]) ? $_GET[$name] : $default;
+        break;
+    }
+    return $value;
+}
+
+/************************************
+ * FUNCTION: REPORTS - DYNAMIC RISK *
+ ************************************/
+function dynamicriskForm()
+{
+    global $escaper;
+    // If the status, sort, and group are not sent
+    if (!isset($_POST['status']) || !isset($_POST['sort']) || !isset($_POST['group']))
+    {
+        set_alert(true, "You need to specify a status, sort, and group parameter.");
+        
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+    else
+    {
+        // Get the status, sort, and group
+        $draw = $_POST['draw'];
+        $status = $_POST['status'];
+        $sort = $_POST['sort'];
+        $group = $_POST['group'];
+        $start = $_POST['start'] ? $_POST['start'] : 0;
+        $length = $_POST['length'] ? $_POST['length'] : 10;
+        $group_value_from_db = $_POST['group_value'] ? $_POST['group_value'] : "";
+        
+        $rowCount = 0;
+        // Query the risks
+        $risks = risks_query($status, $sort, $group, $rowCount, $start, $length, $group_value_from_db);
+        
+        $rows = array();
+//        for( $i = $start; $i < $start + $length && $risks[$i]; $i++ ){
+        foreach($risks as $row){
+//            $row = $risks[$i];
+            $row['id'] = $row['id'] + 1000;
+//            $color = get_risk_color($row['calculated_risk']);
+            $color = get_risk_color($row['calculated_risk']);
+            $rows[] = array(
+                "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($row['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($row['id'])."</a>",
+                $escaper->escapeHtml($row['status']),
+                $escaper->escapeHtml($row['subject']),
+                $escaper->escapeHtml($row['reference_id']),
+                $escaper->escapeHtml($row['regulation']),
+                $escaper->escapeHtml($row['control_number']),
+                $escaper->escapeHtml($row['location']),
+                $escaper->escapeHtml($row['source']),
+                $escaper->escapeHtml($row['category']),
+                $escaper->escapeHtml($row['team']),
+                $escaper->escapeHtml($row['technology']),
+                $escaper->escapeHtml($row['owner']),
+                $escaper->escapeHtml($row['manager']),
+                $escaper->escapeHtml($row['submitted_by']),
+                $escaper->escapeHtml($row['scoring_method']),
+                "<div class='".$escaper->escapeHtml($row['color'])."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($row['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>",
+                $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($row['submission_date']))),
+                $escaper->escapeHtml($row['review_date']),
+                $escaper->escapeHtml($row['project']),
+                planned_mitigation($row['id'], $row['mitigation_id']) , // mitigation plan
+                management_review($row['id'], $row['mgmt_review']) , // management review
+                $escaper->escapeHtml($row['days_open']),
+                $row['next_review_date_html'],
+                $escaper->escapeHtml($row['next_step']),
+                $escaper->escapeHtml($row['affected_assets']),
+                $escaper->escapeHtml($row['risk_assessment']),
+                $escaper->escapeHtml($row['additional_notes']),
+                $escaper->escapeHtml($row['current_solution']),
+                $escaper->escapeHtml($row['security_recommendations']),
+                $escaper->escapeHtml($row['security_requirements']),
+                $escaper->escapeHtml($row['planning_strategy']),
+                $escaper->escapeHtml($row['mitigation_effort']),
+                $escaper->escapeHtml($row['mitigation_cost']),
+                $escaper->escapeHtml($row['mitigation_owner']),
+                $escaper->escapeHtml($row['mitigation_team']),
+            );
+        }
+        $results = array(
+            "draw" => $draw,
+            "recordsTotal" => $rowCount,
+            "recordsFiltered" => $rowCount,
+            "data" => $rows
+        );
+
+        // Return a JSON response
+        echo json_encode($results);
+    }
+}
+
 
 /**
 * Get html of tab container
@@ -496,7 +567,8 @@ function getTabHtml($id, $template){
         $mgmt_review = $risk[0]['mgmt_review'];
         $calculated_risk = $risk[0]['calculated_risk'];
         $next_review = $risk[0]['next_review'];
-        $color = get_risk_color($id);
+        $color = get_risk_color($calculated_risk);
+        $risk_level = get_risk_level_name($calculated_risk);
 
         $scoring_method = $risk[0]['scoring_method'];
         $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
@@ -694,7 +766,7 @@ function getTabHtml($id, $template){
 
         $review = $mgmt_reviews[0]['review'];
         $next_step = $mgmt_reviews[0]['next_step'];
-        $next_review = next_review($color, $id, $next_review, false);
+        $next_review = next_review($risk_level, $id, $next_review, false);
         $reviewer = $mgmt_reviews[0]['reviewer'];
         $comments = $mgmt_reviews[0]['comments'];
     }else
@@ -741,7 +813,7 @@ function addCSRTToken($html){
 /************************************
  * FUNCTION: MANAGEMENT - VIEW RISK HTML*
  ************************************/
-function viewriskHtml()
+function viewriskHtmlForm()
 {
     global $escaper;
     // If the id is not sent
@@ -765,7 +837,7 @@ function viewriskHtml()
 /*************************************
  * FUNCTION: MANAGEMENT - REOPEN RISK *
  *************************************/
-function reopen()
+function reopenForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -804,7 +876,7 @@ function reopen()
 /*************************************
  * FUNCTION: MANAGEMENT - REOPEN RISK *
  *************************************/
-function overview()
+function overviewForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -824,7 +896,7 @@ function overview()
 /*************************************
  * FUNCTION: MANAGEMENT - GET CLOSE RISK HTML*
  *************************************/
-function closeriskHtml()
+function closeriskHtmlForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -852,7 +924,7 @@ function closeriskHtml()
 /*************************************
  * FUNCTION: MANAGEMENT - Close RISK *
  *************************************/
-function closerisk(){
+function closeriskForm(){
     // If the id is not sent
     if (!isset($_GET['id']))
     {
@@ -899,7 +971,7 @@ function closerisk(){
 /*************************************
  * FUNCTION: MANAGEMENT - Get Details *
  *************************************/
-function editdetails()
+function editdetailsForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -920,7 +992,7 @@ function editdetails()
 /*************************************
  * FUNCTION: MANAGEMENT - Get All Review HTML *
  *************************************/
-function viewAllReviews()
+function viewAllReviewsForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -941,7 +1013,7 @@ function viewAllReviews()
 /*************************************
  * FUNCTION: MANAGEMENT - Update Details *
  *************************************/
-function saveDetails()
+function saveDetailsForm()
 {
     
     // If the id is not sent
@@ -1060,7 +1132,7 @@ function saveDetails()
 /*************************************
  * FUNCTION: MANAGEMENT - Add/Update Mitigation *
  *************************************/
-function saveMitigation()
+function saveMitigationForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -1075,7 +1147,6 @@ function saveMitigation()
 
     $access = check_access_for_risk($id);
     if(isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access){
-
         $risk = get_risk_by_id($id);
         if (count($risk) != 0){
             $mitigation_id = $risk[0]['mitigation_id'];
@@ -1089,12 +1160,12 @@ function saveMitigation()
             $status = "Mitigation Planned";
 
             // Submit mitigation and get the mitigation date back
-            $mitigation_date = submit_mitigation($id, $status);
+            $mitigation_date = submit_mitigation($id, $status, $_POST);
         }
         else
         {
             // Update mitigation and get the mitigation date back
-            $mitigation_date = update_mitigation($id);
+            $mitigation_date = update_mitigation($id, $_POST);
         }
         
         
@@ -1115,7 +1186,7 @@ function saveMitigation()
 /*************************************
  * FUNCTION: MANAGEMENT - Add/Update Review *
  *************************************/
-function saveReview()
+function saveReviewForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -1138,7 +1209,7 @@ function saveReview()
             $risk_level = "";
         }
         $approved = checkApprove($risk_level);
-        if (!($approved))
+        if (!$approved)
         {
             // Display an alert
             set_alert(true, "bad", "You do not have permission to review " . $risk_level . " level risks.  Any reviews that you attempt to submit will not be recorded.  Please contact an administrator if you feel that you have reached this message in error.");
@@ -1167,9 +1238,10 @@ function saveReview()
             }
             else {
                 $custom_review = "0000-00-00";
-                $color = get_risk_color($risk[0]['calculated_risk']);
+                $risk_level = get_risk_level_name($risk[0]['calculated_risk']);
+
                 $risk_id = (int)$risk[0]['id'];
-                $custom_review = next_review($color, $risk_id, $custom_review, false);
+                $custom_review = next_review($risk_level, $risk_id, $custom_review, false);
             }
             
             submit_management_review($id, $status, $review, $next_step, $reviewer, $comments, $custom_review);
@@ -1182,7 +1254,7 @@ function saveReview()
         json_response(200, get_alert(true), $html);
     }else{
         
-        set_alert(true, "bad", "You do not have permission to modify risks.  Any risks that you attempt to modify will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
+        set_alert(true, "bad", $lang['RiskUpdatePermissionMessage']);
         
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
@@ -1196,7 +1268,7 @@ function saveReview()
 /*************************************
  * FUNCTION: MANAGEMENT - GET CHAGNE STATUS HTML*
  *************************************/
-function changestatus()
+function changestatusForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -1224,7 +1296,7 @@ function changestatus()
 /*************************************
  * FUNCTION: MANAGEMENT - UPDATE STATUS *
  *************************************/
-function updateStatus()
+function updateStatusForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -1272,7 +1344,7 @@ function updateStatus()
 /*****************************************
  * FUNCTION: MANAGEMENT - SCORING ACTION *
  ****************************************/
-function scoreaction()
+function scoreactionForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -1293,7 +1365,7 @@ function scoreaction()
 /*****************************************
  * FUNCTION: MANAGEMENT - UPDATE SUBJECT*
  ****************************************/
-function saveSubject()
+function saveSubjectForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -1341,7 +1413,7 @@ function saveSubject()
 /*****************************************
  * FUNCTION: MANAGEMENT - UPDATE COMMENT*
  ****************************************/
-function saveComment()
+function saveCommentForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -1391,7 +1463,7 @@ function saveComment()
 /*************************************
  * FUNCTION: MANAGEMENT - Save Scores*
  *************************************/
-function saveScore()
+function saveScoreForm()
 {
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -1490,5 +1562,287 @@ function saveScore()
     json_response(200, get_alert(true), $html);
 }
 
+/*************************************
+ * FUNCTION: MANAGEMENT - Get Scoring History*
+ *************************************/
+function scoringHistory()
+{
+    sleep(3);
+    $risk_id= $_GET{'risk_id'};
+    $histories = get_scoring_histories($risk_id);
+    json_response(200, get_alert(true), $histories );
+}
 
+/***************************************************
+ * FUNCTION: ADDRISK - ADD A RISK FROM EXTERNAL APP*
+ **************************************************/
+function addRisk(){
+    global $lang, $escaper;
+    
+    if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1)
+    {
+        $status = "401";
+        $status_message = $escaper->escapeHtml($lang['RiskAddPermissionMessage']);
+        $data = array();
+    }elseif(!isset($_POST['subject']) || $_POST['subject'] == ""){
+        $status = "400";
+        $status_message = $escaper->escapeHtml($lang['SubjectRiskCannotBeEmpty']);
+        $data = array();
+    }else{
+        
+        $status = "New";
+        $subject = get_param("POST", 'subject');
+        $reference_id = get_param("POST", 'reference_id');
+        $regulation = (int)get_param("POST", 'regulation');
+        $control_number = get_param("POST", 'control_number');
+        $location = (int)get_param("POST", 'location');
+        $source = (int)get_param("POST", 'source');
+        $category = (int)get_param("POST", 'category');
+        $team = (int)get_param("POST", 'team');
+        $technology = (int)get_param("POST", 'technology');
+        $owner = (int)get_param("POST", 'owner');
+        $manager = (int)get_param("POST", 'manager');
+        $assessment = get_param("POST", 'assessment');
+        $notes = get_param("POST", 'notes');
+        $assets = get_param("POST", 'assets');
+
+        // Risk scoring method
+        // 1 = Classic
+        // 2 = CVSS
+        // 3 = DREAD
+        // 4 = OWASP
+        // 5 = Custom
+        $scoring_method = (int)get_param("POST", 'scoring_method');
+
+        // Classic Risk Scoring Inputs
+        $CLASSIClikelihood = (int)get_param("POST", 'likelihood');
+        $CLASSICimpact =(int) get_param("POST", 'impact');
+
+        // CVSS Risk Scoring Inputs
+        $CVSSAccessVector = get_param("POST", 'AccessVector');
+        $CVSSAccessComplexity = get_param("POST", 'AccessComplexity');
+        $CVSSAuthentication = get_param("POST", 'Authentication');
+        $CVSSConfImpact = get_param("POST", 'ConfImpact');
+        $CVSSIntegImpact = get_param("POST", 'IntegImpact');
+        $CVSSAvailImpact = get_param("POST", 'AvailImpact');
+        $CVSSExploitability = get_param("POST", 'Exploitability');
+        $CVSSRemediationLevel = get_param("POST", 'RemediationLevel');
+        $CVSSReportConfidence = get_param("POST", 'ReportConfidence');
+        $CVSSCollateralDamagePotential = get_param("POST", 'CollateralDamagePotential');
+        $CVSSTargetDistribution = get_param("POST", 'TargetDistribution');
+        $CVSSConfidentialityRequirement = get_param("POST", 'ConfidentialityRequirement');
+        $CVSSIntegrityRequirement = get_param("POST", 'IntegrityRequirement');
+        $CVSSAvailabilityRequirement = get_param("POST", 'AvailabilityRequirement');
+
+        // DREAD Risk Scoring Inputs
+        $DREADDamage = (int)get_param("POST", 'DREADDamage');
+        $DREADReproducibility = (int)get_param("POST", 'DREADReproducibility');
+        $DREADExploitability = (int)get_param("POST", 'DREADExploitability');
+        $DREADAffectedUsers = (int)get_param("POST", 'DREADAffectedUsers');
+        $DREADDiscoverability = (int)get_param("POST", 'DREADDiscoverability');
+
+        // OWASP Risk Scoring Inputs
+        $OWASPSkillLevel = (int)get_param("POST", 'OWASPSkillLevel');
+        $OWASPMotive = (int)get_param("POST", 'OWASPMotive');
+        $OWASPOpportunity = (int)get_param("POST", 'OWASPOpportunity');
+        $OWASPSize = (int)get_param("POST", 'OWASPSize');
+        $OWASPEaseOfDiscovery = (int)get_param("POST", 'OWASPEaseOfDiscovery');
+        $OWASPEaseOfExploit = (int)get_param("POST", 'OWASPEaseOfExploit');
+        $OWASPAwareness = (int)get_param("POST", 'OWASPAwareness');
+        $OWASPIntrusionDetection = (int)get_param("POST", 'OWASPIntrusionDetection');
+        $OWASPLossOfConfidentiality = (int)get_param("POST", 'OWASPLossOfConfidentiality');
+        $OWASPLossOfIntegrity = (int)get_param("POST", 'OWASPLossOfIntegrity');
+        $OWASPLossOfAvailability = (int)get_param("POST", 'OWASPLossOfAvailability');
+        $OWASPLossOfAccountability = (int)get_param("POST", 'OWASPLossOfAccountability');
+        $OWASPFinancialDamage = (int)get_param("POST", 'OWASPFinancialDamage');
+        $OWASPReputationDamage = (int)get_param("POST", 'OWASPReputationDamage');
+        $OWASPNonCompliance = (int)get_param("POST", 'OWASPNonCompliance');
+        $OWASPPrivacyViolation = (int)get_param("POST", 'OWASPPrivacyViolation');
+
+        // Custom Risk Scoring
+        $custom = (float)get_param("POST", 'Custom');
+
+        // Submit risk and get back the id
+        $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+
+        // Submit risk scoring
+        submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
+
+        // Tag assets to risk
+        tag_assets_to_risk($last_insert_id, $assets);
+
+        // If the notification extra is enabled
+        if (notification_extra())
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+            // Send the notification
+            notify_new_risk($last_insert_id, $subject);
+        }
+        // There is an alert message
+        $risk_id = $last_insert_id + 1000;
+
+        $status = 200;
+        $status_message = "Risk ID " . $risk_id . " submitted successfully!";
+        $data = array(
+            'risk_id' => $risk_id
+        );
+    }
+    
+    // Return a JSON response
+    json_response($status, $status_message, $data);
+}
+
+/*****************************************************************
+ * FUNCTION: SAVEMITIGATION - SAVE A MITIGATION FROM EXTERNAL APP*
+ * PARAM: id: risk_id + 1000
+ ****************************************************************/
+function saveMitigation(){
+    global $lang, $escaper;
+    
+    $data = array();
+    if (!isset($_POST['id']))
+    {
+        $status = 400;
+        $status_message = "You need to specify an id parameter";
+        return json_response($status, $status_message, $data); 
+    }
+
+    $id = get_param("POST", "id");
+
+    $risk = get_risk_by_id($id);
+    // If the risk doesn't exist, return;
+    if(count($risk) == 0){
+        $status = 400;
+        $status_message = $escaper->escapeHtml($lang['InvalidRiskID']);
+        return json_response($status, $status_message, $data); 
+    }
+    
+    $access = check_access_for_risk($id);
+    // If user has permission for modifing risks.
+    if(isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access){
+        $mitigation_id = $risk[0]['mitigation_id'];
+        
+        // Submit mitigation and get the mitigation date back
+        $post = array(
+            'planning_strategy' => get_param("POST", "planning_strategy", 0),
+            'mitigation_effort' => get_param("POST", "mitigation_effort", 0),
+            'mitigation_cost' => get_param("POST", "mitigation_cost", 0),
+            'mitigation_owner' => get_param("POST", "mitigation_owner", 0),
+            'mitigation_team' => get_param("POST", "mitigation_team", 0),
+            'current_solution' => get_param("POST", "current_solution"),
+            'security_requirements' => get_param("POST", "security_requirements"),
+            'security_recommendations' => get_param("POST", "security_recommendations"),
+            'planning_date' => get_param("POST", "planning_strategy"),
+        );
+
+        // If we don't yet have a mitigation
+        if (!$mitigation_id)
+        {
+            $status = "Mitigation Planned";
+
+
+            $mitigation_date = submit_mitigation($id, $status, $post);
+        }
+        else
+        {
+            // Update mitigation and get the mitigation date back
+            $mitigation_date = update_mitigation($id, $post);
+        }
+        $status = 200;
+        $status_message = $lang['Success'];
+        $data = array(
+            'risk_id' => $id,
+            'mitigation_id' => $mitigation_id,
+        );
+    }else{
+        $status = 400;
+        $status_message = $lang['RiskUpdatePermissionMessage'];
+    }
+    return json_response($status, $status_message, $data); 
+}
+
+/*****************************************************************
+ * FUNCTION: SAVEREVIEW - SAVE A REVIEW FROM EXTERNAL APP*
+ * PARAM: id: risk_id + 1000
+ ****************************************************************/
+function saveReview(){
+    global $lang, $escaper;
+    
+    $data = array();
+    if (!isset($_POST['id']))
+    {
+        $status = 400;
+        $status_message = "You need to specify an id parameter";
+        return json_response($status, $status_message, $data); 
+    }
+
+    $id = get_param("POST", "id");
+
+    $risk = get_risk_by_id($id);
+    // If the risk doesn't exist, return;
+    if(count($risk) == 0){
+        $status = 400;
+        $status_message = $escaper->escapeHtml($lang['InvalidRiskID']);
+        return json_response($status, $status_message, $data); 
+    }
+    
+    $access = check_access_for_risk($id);
+    // If user has permission for modifing risks.
+    if(isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access){
+        $risk_level = get_risk_level_name($risk[0]['calculated_risk']);
+
+        $approved = checkApprove($risk_level);
+        if (!$approved){
+            $status = 400;
+            $params = array(
+                'risk_level' => $risk_level
+            );
+            $status_message = _lang('RiskReviewPermission', $params);
+            return json_response($status, $status_message); 
+        }else{
+            $status = "Mgmt Reviewed";
+            $review = (int)get_param('POST', 'review');
+            $next_step = (int)get_param('POST', 'next_step');
+            $reviewer = $_SESSION['uid'];
+            $comments = get_param('POST', 'comments');
+            $custom_date = get_param('POST', 'custom_date');
+
+            if ($custom_date == "yes")
+            {
+                $custom_review = get_param('POST', 'next_review');
+
+                // Check the date format
+                if (!validate_date($custom_review, 'm/d/Y'))
+                {
+                    $custom_review = "0000-00-00";
+                }
+                // Otherwise, set the proper format for submitting to the database
+                else
+                {
+                    $custom_review = date("Y-m-d", strtotime($custom_review));
+                }
+            }
+            else {
+                $custom_review = "0000-00-00";
+                $risk_level = get_risk_level_name($risk[0]['calculated_risk']);
+
+                $risk_id = (int)$risk[0]['id'];
+                $custom_review = next_review($risk_level, $risk_id, $custom_review, false);
+            }
+            $data = array(
+                'risk_id' => $id
+            );
+            submit_management_review($id, $status, $review, $next_step, $reviewer, $comments, $custom_review);
+        }
+        $status = 200;
+        $status_message = $lang['Success'];
+    }else{
+        $status = 400;
+        $status_message = $lang['RiskUpdatePermissionMessage'];
+    }
+    return json_response($status, $status_message, $data); 
+}
+ 
 ?>

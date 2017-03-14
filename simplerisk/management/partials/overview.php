@@ -54,5 +54,23 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 ?>
         
     <div class="row-fluid">
-        <?php view_top_table($id, $calculated_risk, $subject, $status, true); ?>
+        <div class="risk-session overview clearfix">
+            <div class="row-fluid">
+                <?php view_top_table($id, $calculated_risk, $subject, $status, true); ?>
+            </div>
+            
+            <!-- Risk soring form -->
+            <div class="row-fluid">
+                <?php
+                    include(realpath(__DIR__ . '/score.php'));
+                ?>
+            </div>
+            
+            <!-- Show visualization of risk score -->
+            <div class="row-fluid">
+                <?php
+                    include(realpath(__DIR__ . '/score-overtime.php'));
+                ?>
+            </div>
+        </div>
     </div>

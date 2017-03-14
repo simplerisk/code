@@ -301,134 +301,139 @@ function get_risk_trend($title = null)
  ******************************/
 function get_risk_pyramid($title = null)
 {
-        $chart = new Highchart();
+    $chart = new Highchart();
 
-        $chart->chart->type = "pyramid";
-	$chart->chart->marginRight = "100";
-        $chart->title->text = $title;
-        $chart->chart->renderTo = "risk_pyramid_chart";
-        $chart->credits->enabled = false;
+    $chart->chart->type = "pyramid";
+    $chart->chart->marginRight = "100";
+    $chart->title->text = $title;
+    $chart->chart->renderTo = "risk_pyramid_chart";
+    $chart->credits->enabled = false;
 	$chart->plotOptions->series->dataLabels->enabled = true;
 	$chart->plotOptions->series->dataLabels->format = "<b>{point.name}</b> ({point.y:,.0f})";
 	$chart->plotOptions->series->dataLabels->color = "(Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'";
 	$chart->plotOptions->series->dataLabels->softConnector = true;
 	$chart->legend->enabled = false;
 
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Get the risk levels
-        $stmt = $db->prepare("SELECT * from `risk_levels` ORDER BY value DESC");
+    // Get the risk levels
+    $stmt = $db->prepare("SELECT * from `risk_levels` ORDER BY value DESC");
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+    $veryhigh = $array[0]['value'];
+    $high = $array[1]['value'];
+    $medium = $array[2]['value'];
+    $low = $array[3]['value'];
+
+    // If the team separation extra is not enabled
+    if (!team_separation_extra())
+    {
+        // Query the database
+        $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :veryhigh THEN 'Very High' WHEN a.calculated_risk < :veryhigh AND a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
+        $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
+        $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
+        $stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
+        $stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
         $stmt->execute();
+
+        // Store the list in the array
         $array = $stmt->fetchAll();
-        $veryhigh = $array[0][0];
-        $high = $array[1][0];
-        $medium = $array[2][0];
-        $low = $array[3][0];
+    }
+    else
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-                // Query the database
-                $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :veryhigh THEN 'Very High' WHEN a.calculated_risk < :veryhigh AND a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
-                $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
-                $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
-                $stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
-                $stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
-                $stmt->execute();
+        // Query the database
+        $array = strip_no_access_open_risk_summary($veryhigh, $high, $medium, $low);
+    }
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-        else
-        {
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                // Query the database
-                $array = strip_no_access_open_risk_summary($veryhigh, $high, $medium, $low);
-        }
-
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
 	// Reverse the order of the array
 	$array = array_reverse($array);
 
-        // If the array is empty
-        if (empty($array))
-        {
-                $data[] = array("No Data Available", 0);
+    // If the array is empty
+    if (empty($array))
+    {
+            $data[] = array("No Data Available", 0);
+    }
+    // Otherwise
+    else
+    {
+        // Initialize veryhigh, high, medium, low, and insignificant
+        $veryhigh = false;
+        $high = false;
+        $medium = false;
+        $low = false;
+	    $insignificant = false;
+        $color_array = array();
+        
+        $risk_levels = get_risk_levels();
+        $risk_levels_by_color = array();
+        foreach($risk_levels as $risk_level){
+            $risk_levels_by_color[$risk_level['name']] = $risk_level;
         }
-        // Otherwise
-        else
+        // Create the data array
+        foreach ($array as $row)
         {
-                // Initialize veryhigh, high, medium, low, and insignificant
-                $veryhigh = false;
-                $high = false;
-                $medium = false;
-                $low = false;
-		$insignificant = false;
-                $color_array = array();
+            $data[] = array($row['level'], (int)$row['num']);
 
-                // Create the data array
-                foreach ($array as $row)
-                {
-                        $data[] = array($row['level'], (int)$row['num']);
+            // If we have at least one very high risk
+            if ($row['level'] == "Very High" && $veryhigh != true)
+            {
+                $veryhigh = true;
 
-                        // If we have at least one very high risk
-                        if ($row['level'] == "Very High" && $veryhigh != true)
-                        {
-                                $veryhigh = true;
+                // Add red to the color array
+                $color_array[] = $risk_levels_by_color["Very High"]["color"];
+            }
+            // If we have at least one high risk
+            else if ($row['level'] == "High" && $high != true)
+            {
+                $high = true;
 
-                                // Add red to the color array
-                                $color_array[] = "red";
-                        }
-                        // If we have at least one high risk
-                        else if ($row['level'] == "High" && $high != true)
-                        {
-                                $high = true;
+                // Add red to the color array
+                $color_array[] = $risk_levels_by_color["High"]["color"];
+            }
+            // If we have at least one medium risk
+            else if ($row['level'] == "Medium" && $medium != true)
+            {
+                $medium = true;
 
-                                // Add red to the color array
-                                $color_array[] = "orangered";
-                        }
-                        // If we have at least one medium risk
-                        else if ($row['level'] == "Medium" && $medium != true)
-                        {
-                                $medium = true;
+                // Add orange to the color array
+                $color_array[] = $risk_levels_by_color["Medium"]["color"];
+            }
+            // If we have at least one low risk
+            else if ($row['level'] == "Low" && $low != true)
+            {
+                $low = true;
 
-                                // Add orange to the color array
-                                $color_array[] = "orange";
-                        }
-                        // If we have at least one low risk
-                        else if ($row['level'] == "Low" && $low != true)
-                        {
-                                $low = true;
+                // Add yellow to the color array
+                $color_array[] = $risk_levels_by_color["Low"]["color"];
+            }
+	        else if ($row['level'] == "Insignificant" && $insignificant != true)
+	        {
+		        $insignificant = true;
 
-                                // Add yellow to the color array
-                                $color_array[] = "yellow";
-                        }
-			else if ($row['level'] == "Insignificant" && $insignificant != true)
-			{
-				$insignificant = true;
+		        // Add lightgrey to the color array
+		        $color_array[] = "lightgrey";
+	        }
+        }
 
-				// Add lightgrey to the color array
-				$color_array[] = "lightgrey";
-			}
-                }
+        $chart->plotOptions->pyramid->colors = $color_array;
 
-                $chart->plotOptions->pyramid->colors = $color_array;
-
-                $chart->series[] = array(
-                        'name' => "Risk Pyramid",
-                        'data' => $data);
+        $chart->series[] = array(
+                'name' => "Risk Pyramid",
+                'data' => $data);
 	}
 
-        $chart->printScripts();
-        echo "<div id=\"risk_pyramid_chart\"></div>\n";
-        echo "<script type=\"text/javascript\">";
-        echo $chart->render("risk_pyramid_chart");
-        echo "</script>\n";
+    $chart->printScripts();
+    echo "<div id=\"risk_pyramid_chart\"></div>\n";
+    echo "<script type=\"text/javascript\">";
+    echo $chart->render("risk_pyramid_chart");
+    echo "</script>\n";
 }
 
 /**********************************
@@ -436,16 +441,16 @@ function get_risk_pyramid($title = null)
  **********************************/
 function open_risk_level_pie($title = null)
 {
-        $chart = new Highchart();
+    $chart = new Highchart();
 
-        $chart->chart->renderTo = "open_risk_level_pie";
-        $chart->chart->plotBackgroundColor = null;
-        $chart->chart->plotBorderWidth = null;
-        $chart->chart->plotShadow = false;
-        $chart->title->text = $title;
+    $chart->chart->renderTo = "open_risk_level_pie";
+    $chart->chart->plotBackgroundColor = null;
+    $chart->chart->plotBorderWidth = null;
+    $chart->chart->plotShadow = false;
+    $chart->title->text = $title;
 
-        $chart->tooltip->formatter = new HighchartJsExpr("function() {
-        return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
+    $chart->tooltip->formatter = new HighchartJsExpr("function() {
+    return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
 
 	$chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
 	location.href = 'dynamic_risk_report.php?status=0&group=1&sort=0'; }");
@@ -463,10 +468,10 @@ function open_risk_level_pie($title = null)
 	$stmt = $db->prepare("SELECT * from `risk_levels` ORDER BY value DESC");
 	$stmt->execute();
 	$array = $stmt->fetchAll();
-	$veryhigh = $array[0][0];
-	$high = $array[1][0];
-	$medium = $array[2][0];
-	$low = $array[3][0];
+	$veryhigh = $array[0]['value'];
+	$high = $array[1]['value'];
+	$medium = $array[2]['value'];
+	$low = $array[3]['value'];
 
 	// If the team separation extra is not enabled
 	if (!team_separation_extra())
@@ -502,60 +507,74 @@ function open_risk_level_pie($title = null)
         // Otherwise
         else
         {
-		// Initialize veryhigh, high, medium, low, and insignificant
-		$veryhigh = false;
-		$high = false;
-		$medium = false;
-		$low = false;
-		$color_array = array();
+		    // Initialize veryhigh, high, medium, low, and insignificant
+		    $veryhigh = false;
+		    $high = false;
+		    $medium = false;
+		    $low = false;
+		    $insignificant = false;
+		    $color_array = array();
 
-                // Create the data array
-                foreach ($array as $row)
+            $risk_levels = get_risk_levels();
+            $risk_levels_by_color = array();
+            foreach($risk_levels as $risk_level){
+                $risk_levels_by_color[$risk_level['name']] = $risk_level;
+            }
+
+            // Create the data array
+            foreach ($array as $row)
+            {
+                $data[] = array($row['level'], (int)$row['num']);
+
+			    // If we have at least one very high risk
+			    if ($row['level'] == "Very High" && $veryhigh != true)
+			    {
+				    $veryhigh = true;
+
+				    // Add red to the color array
+				    $color_array[] = $risk_levels_by_color["Very High"]["color"];
+			    }
+			    // If we have at least one high risk
+			    else if ($row['level'] == "High" && $high != true)
+			    {
+				    $high = true;
+
+				    // Add red to the color array
+				    $color_array[] = $risk_levels_by_color["High"]["color"];
+			    }
+			    // If we have at least one medium risk
+			    else if ($row['level'] == "Medium" && $medium != true)
+			    {
+				    $medium = true;
+
+				    // Add orange to the color array
+				    $color_array[] = $risk_levels_by_color["Medium"]["color"];
+			    }
+			    // If we have at least one low risk
+			    else if ($row['level'] == "Low" && $low != true)
+			    {
+				    $low = true;
+
+				    // Add yellow to the color array
+				    $color_array[] = $risk_levels_by_color["Low"]["color"];
+			    }
+                else if ($row['level'] == "Insignificant" && $insignificant != true)
                 {
-                        $data[] = array($row['level'], (int)$row['num']);
+                    $insignificant = true;
 
-			// If we have at least one very high risk
-			if ($row['level'] == "Very High" && $veryhigh != true)
-			{
-				$veryhigh = true;
-
-				// Add red to the color array
-				$color_array[] = "red";
-			}
-			// If we have at least one high risk
-			else if ($row['level'] == "High" && $high != true)
-			{
-				$high = true;
-
-				// Add red to the color array
-				$color_array[] = "orangered";
-			}
-			// If we have at least one medium risk
-			else if ($row['level'] == "Medium" && $medium != true)
-			{
-				$medium = true;
-
-				// Add orange to the color array
-				$color_array[] = "orange";
-			}
-			// If we have at least one low risk
-			else if ($row['level'] == "Low" && $low != true)
-			{
-				$low = true;
-
-				// Add yellow to the color array
-				$color_array[] = "yellow";
-			}
+                    // Add lightgrey to the color array
+                    $color_array[] = "lightgrey";
                 }
+            }
 
-		// Add black to color array for insignificant
-		$color_array[] = "lightgrey";
+		    // Add black to color array for insignificant
+		    $color_array[] = "lightgrey";
 
-		$chart->plotOptions->pie->colors = $color_array;
+		    $chart->plotOptions->pie->colors = $color_array;
 
-                $chart->series[] = array('type' => "pie",
-                        'name' => "Level",
-                        'data' => $data);
+            $chart->series[] = array('type' => "pie",
+                    'name' => "Level",
+                    'data' => $data);
         }
 
     	echo "<div id=\"open_risk_level_pie\"></div>\n";
@@ -1478,14 +1497,14 @@ function open_closed_pie($title = null)
  *************************************/
 function get_review_needed_table()
 {
-        global $lang;
+    global $lang;
 	global $escaper;
 
-        // Get risks marked as consider for projects
-        $risks = get_risks(3);
+    // Get risks marked as consider for projects
+    $risks = get_risks(3);
 
-        // Initialize the reviews array
-        $reviews = array();
+    // Initialize the reviews array
+    $reviews = array();
 
 	// Parse through each row in the array
 	foreach ($risks as $key => $row)
@@ -1493,12 +1512,13 @@ function get_review_needed_table()
 		// Create arrays for each value
 		$risk_id[$key] = (int)$row['id'];
 		$subject[$key] = try_decrypt($row['subject']);
-                $status[$key] = $row['status'];
-                $calculated_risk[$key] = $row['calculated_risk'];
-                $color[$key] = get_risk_color($row['calculated_risk']);
-                $dayssince[$key] = dayssince($row['submission_date']);
-                $next_review[$key] = next_review($color[$key], $risk_id[$key], $row['next_review'], false);
-                $next_review_html[$key] = next_review($color[$key], $row['id'], $row['next_review']);
+        $status[$key] = $row['status'];
+        $calculated_risk[$key] = $row['calculated_risk'];
+        $color[$key] = get_risk_color($row['calculated_risk']);
+        $risk_level = get_risk_level_name($row['calculated_risk']);
+        $dayssince[$key] = dayssince($row['submission_date']);
+        $next_review[$key] = next_review($risk_level, $risk_id[$key], $row['next_review'], false);
+        $next_review_html[$key] = next_review($risk_level, $row['id'], $row['next_review']);
 
 		// Create a new array of reviews
 		$reviews[] = array('risk_id' => $risk_id[$key], 'subject' => $subject[$key], 'status' => $status[$key], 'calculated_risk' => $calculated_risk[$key], 'color' => $color[$key], 'dayssince' => $dayssince[$key], 'next_review' => $next_review[$key], 'next_review_html' => $next_review_html[$key]);
@@ -1510,69 +1530,68 @@ function get_review_needed_table()
 	// Start with an empty review status;
 	$review_status = "";
 
-        // For each risk
-        foreach ($reviews as $review)
-        {
-                $risk_id = $review['risk_id'];
-		$subject = $review['subject'];
-		$status = $review['status'];
-		$calculated_risk = $review['calculated_risk'];
-                $color = $review['color'];
-		$dayssince = $review['dayssince'];
-		$next_review = $review['next_review'];
-		$next_review_html = $review['next_review_html'];
+    // For each risk
+    foreach ($reviews as $review)
+    {
+        $risk_id = $review['risk_id'];
+	    $subject = $review['subject'];
+	    $status = $review['status'];
+	    $calculated_risk = $review['calculated_risk'];
+        $color = $review['color'];
+	    $dayssince = $review['dayssince'];
+	    $next_review = $review['next_review'];
+	    $next_review_html = $review['next_review_html'];
 
-		// If we have a new review status and its not a date
-		if (($review_status != $next_review) && (!preg_match('/\d{4}/', $review_status)))
-		{
-			// If its not the first risk
-			if ($review_status != "")
-			{
-				// End the previous table
-        			echo "</tbody>\n";
-        			echo "</table>\n";
-        			echo "<br />\n";
+	    // If we have a new review status and its not a date
+	    if (($review_status != $next_review) && (!preg_match('/\d{4}/', $review_status)))
+	    {
+		    // If its not the first risk
+		    if ($review_status != "")
+		    {
+			    // End the previous table
+        		    echo "</tbody>\n";
+        		    echo "</table>\n";
+        		    echo "<br />\n";
 
-			}
+		    }
 
-			// Set the new review status
-			$review_status = $next_review;
+		    // Set the new review status
+		    $review_status = $next_review;
 
-			// If the review status is not a date
-			if (!preg_match('/\d{4}/', $review_status))
-			{
-				// Start the new table
-        			echo "<table class=\"table table-bordered table-condensed sortable\">\n";
-        			echo "<thead>\n";
-        			echo "<tr>\n";
-        			echo "<th bgcolor=\"#0088CC\" colspan=\"6\"><center>". $escaper->escapeHtml($review_status) ."</center></th>\n";
-        			echo "</tr>\n";
-        			echo "<tr>\n";
-        			echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-        			echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
-        			echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-        			echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
-        			echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
-        			echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
-        			echo "</tr>\n";
-        			echo "</thead>\n";
-        			echo "<tbody>\n";
-			}
-		}
+		    // If the review status is not a date
+		    if (!preg_match('/\d{4}/', $review_status))
+		    {
+			    // Start the new table
+        		    echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        		    echo "<thead>\n";
+        		    echo "<tr>\n";
+        		    echo "<th bgcolor=\"#0088CC\" colspan=\"6\"><center>". $escaper->escapeHtml($review_status) ."</center></th>\n";
+        		    echo "</tr>\n";
+        		    echo "<tr>\n";
+        		    echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        		    echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+        		    echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        		    echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+        		    echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
+        		    echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
+        		    echo "</tr>\n";
+        		    echo "</thead>\n";
+        		    echo "<tbody>\n";
+		    }
+	    }
 
-		// If the review status is not a date
-		if (!preg_match('/\d{4}/', $review_status))
-                {
-                	echo "<tr>\n";
-                	echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
-			echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
-                	echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                	echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($calculated_risk) . "</td>\n";
-			echo "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($dayssince) . "</td>\n";
-                	echo "<td align=\"center\" width=\"150px\">" . $next_review_html . "</td>\n";
-                	echo "</tr>\n";
-		}
-        }
+	    // If the review status is not a date
+	    if (!preg_match('/\d{4}/', $review_status)){
+                    echo "<tr>\n";
+                    echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+		    echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
+                    echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                    echo "<td align=\"center\" class=\"risk-cell\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($calculated_risk) . "<span class=\"risk-color\" style=\"background-color:{$color}\"></span></td>\n";
+		    echo "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($dayssince) . "</td>\n";
+                    echo "<td align=\"center\" width=\"150px\">" . $next_review_html . "</td>\n";
+                    echo "</tr>\n";
+	    }
+    }
 }
 
 /************************************
@@ -1580,11 +1599,11 @@ function get_review_needed_table()
  ************************************/
 function risks_and_assets_table($report)
 {
-        global $lang;
-        global $escaper;
+    global $lang;
+    global $escaper;
 
-        // Open the database
-        $db = db_open();
+    // Open the database
+    $db = db_open();
 
 	// Check the report
 	switch ($report)
@@ -1599,24 +1618,24 @@ function risks_and_assets_table($report)
 			break;
 	}
 
-        $stmt = $db->prepare($query);
-        $stmt->execute();
+    $stmt = $db->prepare($query);
+    $stmt->execute();
 
-        // Store the results in the rows array
-        $rows = $stmt->fetchAll();
+    // Store the results in the rows array
+    $rows = $stmt->fetchAll();
 
-        // If team separation is enabled
-        if (team_separation_extra())
-        {
-                // Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    // If team separation is enabled
+    if (team_separation_extra())
+    {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Strip out risks the user should not have access to
-                $rows = strip_no_access_risks($rows);
-        }
+            // Strip out risks the user should not have access to
+            $rows = strip_no_access_risks($rows);
+    }
 
-        // Set the current group to empty
-        $current_group = "";
+    // Set the current group to empty
+    $current_group = "";
 
 	// If risks by asset
 	if ($report == 0)
@@ -1624,66 +1643,66 @@ function risks_and_assets_table($report)
 		// For each row
 		foreach ($rows as $row)
 		{
-                        // Get the variables for the row
-                        $risk_id = (int)$row['id'];
-                        $asset = $row['asset'];
-                        $asset_id = (isset($row['asset_id']) ? (int)$row['asset_id'] : "N/A");
-                        $asset_ip = (isset($row['asset_ip']) ? $row['asset_ip'] : "N/A");
-                        $asset_name = (isset($row['asset_name']) ? $row['asset_name'] : $asset);
-                        $asset_value = $row['asset_value'];
+            // Get the variables for the row
+            $risk_id = (int)$row['id'];
+            $asset = $row['asset'];
+            $asset_id = (isset($row['asset_id']) ? (int)$row['asset_id'] : "N/A");
+            $asset_ip = (isset($row['asset_ip']) ? $row['asset_ip'] : "N/A");
+            $asset_name = (isset($row['asset_name']) ? $row['asset_name'] : $asset);
+            $asset_value = $row['asset_value'];
 			$asset_location = (isset($row['asset_location']) ? get_name_by_value("location",$row['asset_location']) : "N/A");
-                        $asset_team = (isset($row['asset_team']) ? get_name_by_value("team",$row['asset_team']) : "N/A");
-                        $status = $row['status'];
-                        $subject = try_decrypt($row['subject']);
+            $asset_team = (isset($row['asset_team']) ? get_name_by_value("team",$row['asset_team']) : "N/A");
+            $status = $row['status'];
+            $subject = try_decrypt($row['subject']);
 			$calculated_risk = $row['calculated_risk'];
 			$color = get_risk_color($calculated_risk);
 			$dayssince = dayssince($row['submission_date']);
 
-                        // If the current group is not the asset id
-                        if ($current_group != $asset_id)
-                        {
-                                // If this is not the first group
-                                if ($current_group != "")
-                                {
-                                        // End the table
-                                        echo "</tbody>\n";
-                                        echo "</table>\n";
-                                }
+            // If the current group is not the asset id
+            if ($current_group != $asset_id)
+            {
+                // If this is not the first group
+                if ($current_group != "")
+                {
+                        // End the table
+                        echo "</tbody>\n";
+                        echo "</table>\n";
+                }
 
-                                // Set the current group to the asset id
-                                $current_group = $asset_id;
+                // Set the current group to the asset id
+                $current_group = $asset_id;
 
-                                // Display the table header
-                                echo "<table class=\"table table-bordered table-condensed sortable\">\n";
-                                echo "<thead>\n";
-                                echo "<tr>\n";
-                                echo "<th bgcolor=\"#0088CC\" colspan=\"5\"><center>" . $escaper->escapeHtml($lang['AssetName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_name) . "<br />" . $escaper->escapeHtml($lang['AssetValue']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml(get_asset_value_by_id($asset_value)) . "</center></th>\n";
-				echo "</tr>\n";
-                                echo "<tr>\n";
-				echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-                                echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
-                                echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-				echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
-				echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
-                                echo "</tr>\n";
-                                echo "</thead>\n";
-                                echo "<tbody>\n";
-                        }
+                // Display the table header
+                echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+                echo "<thead>\n";
+                echo "<tr>\n";
+                echo "<th bgcolor=\"#0088CC\" colspan=\"5\"><center>" . $escaper->escapeHtml($lang['AssetName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_name) . "<br />" . $escaper->escapeHtml($lang['AssetValue']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml(get_asset_value_by_id($asset_value)) . "</center></th>\n";
+echo "</tr>\n";
+                echo "<tr>\n";
+echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+                echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+                echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
+                echo "</tr>\n";
+                echo "</thead>\n";
+                echo "<tbody>\n";
+            }
 
-                        // Display the individual asset information
-                        echo "<tr>\n";
+            // Display the individual asset information
+            echo "<tr>\n";
 			echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
 			echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
 			echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-			echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($calculated_risk) . "</td>\n";
+			echo "<td align=\"center\" class=\"risk-cell\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($calculated_risk) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></td>\n";
 			echo "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($dayssince) . "</td>\n";
                         echo "</tr>\n";
 		}
 
-                // End the last table
-                echo "</tbody>\n";
-                echo "</table>\n";
-        }
+        // End the last table
+        echo "</tbody>\n";
+        echo "</table>\n";
+    }
 
 	// If assets by risk
 	if ($report == 1)
@@ -1695,13 +1714,13 @@ function risks_and_assets_table($report)
 			$risk_id = (int)$row['id'];
 			$asset = $row['asset'];
 			$asset_id = (int)$row['asset_id'];
-                        $asset_ip = (isset($row['asset_ip']) ? $row['asset_ip'] : "N/A");
+            $asset_ip = (isset($row['asset_ip']) ? $row['asset_ip'] : "N/A");
 			$asset_ip = ($asset_ip != "" ? $asset_ip : "N/A");
-                        $asset_name = (isset($row['asset_name']) ? $row['asset_name'] : $asset);
-                        $asset_value = $row['asset_value'];
-                        $asset_location = (isset($row['asset_location']) ? get_name_by_value("location",$row['asset_location']) : "N/A");
+            $asset_name = (isset($row['asset_name']) ? $row['asset_name'] : $asset);
+            $asset_value = $row['asset_value'];
+            $asset_location = (isset($row['asset_location']) ? get_name_by_value("location",$row['asset_location']) : "N/A");
 			$asset_location = ($asset_location != "" ? $asset_location : "N/A");
-                        $asset_team = (isset($row['asset_team']) ? get_name_by_value("team",$row['asset_team']) : "N/A");
+            $asset_team = (isset($row['asset_team']) ? get_name_by_value("team",$row['asset_team']) : "N/A");
 			$asset_team = ($asset_team != "" ? $asset_team : "N/A");
 			$status = $row['status'];
 			$subject = try_decrypt($row['subject']);
@@ -1714,10 +1733,10 @@ function risks_and_assets_table($report)
 				if ($current_group != "")
 				{
 					// End the table
-					echo "<tr><td bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"5\"></td></tr>\n";
+					echo "<tr><td style=\"background-color:" . $escaper->escapeHtml($color) . "\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"5\"></td></tr>\n";
 					echo "<tr>\n";
-					echo "<td bgcolor=\"lightgrey\" align=\"left\" width=\"50px\" colspan=\"4\"><b>" . $escaper->escapeHtml($lang['MaximumQuantitativeLoss']) . "</b></td>\n";
-					echo "<td bgcolor=\"lightgrey\" align=\"left\" width=\"50px\"><b>$" . $escaper->escapeHtml(number_format($asset_valuation)) . "</b></td>\n";
+					echo "<td style=\"background-color: lightgrey\" align=\"left\" width=\"50px\" colspan=\"4\"><b>" . $escaper->escapeHtml($lang['MaximumQuantitativeLoss']) . "</b></td>\n";
+					echo "<td style=\"background-color: lightgrey\" align=\"left\" width=\"50px\"><b>$" . $escaper->escapeHtml(number_format($asset_valuation)) . "</b></td>\n";
 					echo "</tr>\n";
 					echo "</tbody>\n";
 					echo "</table>\n";
@@ -1736,7 +1755,7 @@ function risks_and_assets_table($report)
 				echo "<table class=\"table table-bordered table-condensed sortable\">\n";
 				echo "<thead>\n";
 				echo "<tr>\n";
-				echo "<th bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"5\"><center><font color=\"#000000\">" . $escaper->escapeHtml($lang['RiskId']) . ":&nbsp;&nbsp;<a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\" style=\"color:#000000\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a><br />" . $escaper->escapeHtml($lang['Subject']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($subject) . "<br />" . $escaper->escapeHtml($lang['CalculatedRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($calculated_risk) . "&nbsp;&nbsp;(" . $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . ")</font></center></th>\n";
+				echo "<th style=\"background-color:" . $escaper->escapeHtml($color) . "\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"5\"><center><font color=\"#000000\">" . $escaper->escapeHtml($lang['RiskId']) . ":&nbsp;&nbsp;<a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\" style=\"color:#000000\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a><br />" . $escaper->escapeHtml($lang['Subject']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($subject) . "<br />" . $escaper->escapeHtml($lang['CalculatedRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($calculated_risk) . "&nbsp;&nbsp;(" . $escaper->escapeHtml(get_risk_level_name($calculated_risk)) . ")</font></center></th>\n";
 				echo "</tr>\n";
 				echo "<tr>\n";
 				echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AssetName']) ."</th>\n";
@@ -1763,10 +1782,10 @@ function risks_and_assets_table($report)
 		if ($current_group != "")
 		{
 			// End the last table
-			echo "<tr><td bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"5\"></td></tr>\n";
+			echo "<tr><td style=\"background-color:" . $escaper->escapeHtml($color) . "\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"5\"></td></tr>\n";
                 	echo "<tr>\n";
-			echo "<td bgcolor=\"lightgrey\" align=\"left\" width=\"50px\" colspan=\"4\"><b>" . $escaper->escapeHtml($lang['MaximumQuantitativeLoss']) . "</b></td>\n";
-			echo "<td bgcolor=\"lightgrey\" align=\"left\" width=\"50px\"><b>$" . $escaper->escapeHtml(number_format($asset_valuation)) . "</b></td>\n";
+			echo "<td style=\"background-color: lightgrey\" align=\"left\" width=\"50px\" colspan=\"4\"><b>" . $escaper->escapeHtml($lang['MaximumQuantitativeLoss']) . "</b></td>\n";
+			echo "<td style=\"background-color: lightgrey\" align=\"left\" width=\"50px\"><b>$" . $escaper->escapeHtml(number_format($asset_valuation)) . "</b></td>\n";
 			echo "</tr>\n";
 			echo "</tbody>\n";
 			echo "</table>\n";
@@ -1990,8 +2009,8 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 		$mitigation_id = $risk['mitigation_id'];
 		$mgmt_review = $risk['mgmt_review'];
 		$days_open = dayssince($risk['submission_date']);
-		$next_review_date = next_review($color, $risk_id, $risk['next_review'], false);
-		$next_review_date_html = next_review($color, $risk_id, $risk['next_review']);
+		$next_review_date = next_review($risk_level, $risk_id, $risk['next_review'], false);
+		$next_review_date_html = next_review($risk_level, $risk_id, $risk['next_review']);
 		$next_step = $risk['next_step'];
         $affected_assets = $risk['affected_assets'];
         $risk_assessment = $risk['risk_assessment'];
@@ -2180,8 +2199,8 @@ function get_risk_columns($risk, $column_id, $column_status, $column_subject, $c
 		$days_open = dayssince($risk['submission_date'], $risk['closure_date']);
 	}
 
-	$next_review_date = next_review($color, $risk_id, $risk['next_review'], false);
-	$next_review_date_html = next_review($color, $risk_id, $risk['next_review']);
+	$next_review_date = next_review($risk_level, $risk_id, $risk['next_review'], false);
+	$next_review_date_html = next_review($risk_level, $risk_id, $risk['next_review']);
 	$next_step = $risk['next_step'];
     $affected_assets = $risk['affected_assets'];
 	$risk_assessment = try_decrypt($risk['risk_assessment']);
@@ -2229,7 +2248,7 @@ function get_risk_columns($risk, $column_id, $column_status, $column_subject, $c
 	echo "<td class=\"manager\" " . ($column_manager == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($manager) . "</td>\n";
 	echo "<td class=\"submitted_by\" " . ($column_submitted_by == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($submitted_by) . "</td>\n";
 	echo "<td class=\"scoring_method\" " . ($column_scoring_method == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($scoring_method) . "</td>\n";
-	echo "<td class=\"calculated_risk risk-cell ".$escaper->escapeHtml($color)." \" " . ($column_calculated_risk == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"25px\"><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\"></span></div>"."</td>\n";
+	echo "<td class=\"calculated_risk risk-cell ".$escaper->escapeHtml($color)." \" " . ($column_calculated_risk == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"25px\"><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div>"."</td>\n";
 	echo "<td class=\"submission_date\" " . ($column_submission_date == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($submission_date))) . "</td>\n";
 	echo "<td class=\"review_date\" " . ($column_review_date == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($review_date) . "</td>\n";
 	echo "<td class=\"project\" " . ($column_project == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($project) . "</td>\n";
@@ -2555,7 +2574,7 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
 	// If the team separation extra is not enabled
 	if (!team_separation_extra())
 	{
-    $query = "SELECT a.id AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.id mitigation_id, p.current_solution, p.security_recommendations, p.security_requirements, ifnull((SELECT name FROM risk_levels WHERE value<=b.calculated_risk ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name
+    $query = "SELECT a.id AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.id mitigation_id, p.current_solution, p.security_recommendations, p.security_requirements, ifnull((SELECT name FROM risk_levels WHERE value<=b.calculated_risk ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name
     FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $order_query ;
 	}
 	// Otherwise
@@ -2567,7 +2586,7 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
 		// Get the separation query string
 		$separation_query = get_user_teams_query("a", false, true);
 
-		$query = "SELECT a.id AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.id mitigation_id, p.current_solution, p.security_recommendations, p.security_requirements, ifnull((SELECT name FROM risk_levels WHERE value<=b.calculated_risk ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name
+		$query = "SELECT a.id AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.id mitigation_id, p.current_solution, p.security_recommendations, p.security_requirements, ifnull((SELECT name FROM risk_levels WHERE value<=b.calculated_risk ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name
 		FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $separation_query . $order_query ;
 	}
     
@@ -2600,6 +2619,11 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
         $length = $rowCount;
         $start = 0;
     }
+    
+    $risk_levels = get_risk_levels();
+    $review_levels = get_review_levels();
+
+
     // For each risk in the risks array
     for( $i = $start; $i < $start + $length && $i<$rowCount && $risks[$i]; $i++ ){
             $risk = $risks[$i];
@@ -2622,8 +2646,8 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
             
             $scoring_method = get_scoring_method_name($risk['scoring_method']);
             $calculated_risk = (float)$risk['calculated_risk'];
-            $color = get_risk_color($risk['calculated_risk']);
-            $risk_level = get_risk_level_name($risk['calculated_risk']);
+            $color = get_risk_color_from_levels($risk['calculated_risk'], $risk_levels);
+            $risk_level = get_risk_level_name_from_levels($risk['calculated_risk'], $risk_levels);
             $location = $risk['location'];
             $source = $risk['source'];
             $category = $risk['category'];
@@ -2637,8 +2661,8 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
             $mitigation_id = $risk['mitigation_id'];
             $mgmt_review = $risk['mgmt_review'];
             $days_open = dayssince($risk['submission_date']);
-            $next_review_date = next_review($color, $risk_id, $risk['next_review'], false);
-            $next_review_date_html = next_review($color, $risk_id, $risk['next_review']);
+            $next_review_date = next_review($risk_level, $risk_id, $risk['next_review'], false, $review_levels);
+            $next_review_date_html = next_review($risk_level, $risk_id, $risk['next_review'], true, $review_levels);
             $next_step = $risk['next_step'];
             $affected_assets = $risk['affected_assets'];
             $risk_assessment = try_decrypt($risk['risk_assessment']);

@@ -22,11 +22,9 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 	// Decrypt fields
 	$subject = try_decrypt($subject);
 
-	echo "<div class=\"risk-session overview clearfix\">";
-        echo "<div class=\"row-fluid\">";
 
 	        echo "<div class=\"score--wrapper\">";
-			    echo "<div class=\"score ". $escaper->escapeHtml(get_risk_color($calculated_risk)) ."\">";
+			    echo "<div class=\"score \" style=\"background-color: ". $escaper->escapeHtml(get_risk_color($calculated_risk)) ."\">";
 			        echo "<span>".$escaper->escapeHtml($calculated_risk)."</span>".$escaper->escapeHtml(get_risk_level_name($calculated_risk));
                 echo "</div>";
 			echo "</div>";
@@ -50,7 +48,7 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 									if (isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1) { echo "<li><a class='close-risk' href=\"close.php?id=".$escaper->escapeHtml($id)."\">". $escaper->escapeHtml($lang['CloseRisk']) ."</a></li>\n";							}
 								}
 
-								echo "<li><a class='edit-risk' href=\"view.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['EditRisk']) ."</a></li>\n";
+								echo "<li><a class='edit-risk' href=\"view.php?action=editdetail&id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['EditRisk']) ."</a></li>\n";
 								echo "<li><a class='edit-mitigation' href=\"mitigate.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PlanAMitigation']) ."</a></li>\n";
 								echo "<li><a class='perform-review' href=\"mgmt_review.php?id=" . $escaper->escapeHtml($id) . "\">". $escaper->escapeHtml($lang['PerformAReview']) ."</a></li>\n";
 								echo "<li><a class='change-status' href=\"status.php?id=" . $escaper->escapeHtml($id) . "\">" . $escaper->escapeHtml($lang['ChangeStatus']) . "</a></li>\n";
@@ -80,16 +78,8 @@ function view_top_table($id, $calculated_risk, $subject, $status, $show_details 
 			            echo "</form>";
 	                  echo "</div>";
 	            echo "</div>";
-                echo "<div class=\"row-fluid\">";
-				    echo "<div class=\"span12 details risk-test\">";
-				        echo "<a href=\"#\" id=\"show\" class='show-score' onclick=\"javascript: showScoreDetails();\"> <i class=\"fa fa-caret-right\"></i> ". $escaper->escapeHtml($lang['ShowRiskScoringDetails']) ."</a>";
-				        echo "<a href=\"#\" id=\"hide\" class='hide-score' style=\"display: none;\" onclick=\"javascript: hideScoreDetails();\"> <i class=\"fa fa-caret-down\"></i> ". $escaper->escapeHtml($lang['HideRiskScoringDetails']) ."</a>";
-                    echo "</div>";
-                echo "</div>";
 			echo "</div>";
 
-        echo "</div>";
-    echo "</div>";
 }
 
 /**********************************
@@ -934,7 +924,7 @@ function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 	                </div>
 	                <div class=\"span7\">";
 	                    echo create_asset_valuation_dropdown("mitigation_cost", $mitigation_cost);
-	                "</div>
+	            echo "</div>
 	            </div>
 	            <div class=\"row-fluid\">
 	                <div class=\"span5 text-right\">"
@@ -1227,7 +1217,7 @@ function edit_mitigation_submission($planning_strategy, $mitigation_effort, $mit
 /************************************
 * FUNCTION: edit_review_submission *
 ************************************/
-function edit_review_submission($review, $next_step, $next_review, $comments, $default_next_review)
+function edit_review_submission($id, $review, $next_step, $next_review, $comments, $default_next_review)
 {
     global $lang;
 	global $escaper;
@@ -1241,7 +1231,8 @@ function edit_review_submission($review, $next_step, $next_review, $comments, $d
 	echo "<form name=\"submit_management_review\" method=\"post\" action=\"\">\n";
 
 	echo "<div class=\"tabs--action\">";
-	echo "<input id=\"cancel_disable\" class=\"btn cancel-edit-review \" value=\"". $escaper->escapeHtml($lang['Cancel']) ."\" type=\"reset\">\n";
+//	echo "<input id=\"cancel_disable\" class=\"btn cancel-edit-review \" value=\"". $escaper->escapeHtml($lang['Cancel']) ."\" type=\"reset\">\n";
+	echo "<a href=\"view.php?id={$id}&type=2\" id=\"cancel_disable\" class=\"btn cancel-edit-review\" disabled=\"disabled\">Cancel</a>&nbsp;\n";
 	echo "<button type=\"submit\" name=\"submit\" class=\"btn btn-danger save-review\">". $escaper->escapeHtml($lang['SubmitReview']) ."</button>\n";
 	echo "</div>\n";
 

@@ -69,8 +69,18 @@ ul.ui-autocomplete {
         background: #F0F0F0;
         color: #000;
     }
+    
+    &.popup-ui-complete{
+        width: 50% !important;
+        color: #fff;
+    }
 }
 
 .bottom-offset-10{
     margin-bottom: 10px;
 }
+
+.top-offset-15{
+    margin-top: 15px;
+}
+

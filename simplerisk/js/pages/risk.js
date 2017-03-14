@@ -17,7 +17,7 @@
     var index = parseInt((div).attr('id').replace(/[A-Za-z$-]/g, ""));
     var form = new FormData($(getForm)[0]);
     $.each($("input[type=file]", tabContainer), function(i, obj) {
-        $.each(obj.files,function(j, file){
+        $.each(obj.files, function(j, file){
             form.append('file['+j+']', file);
         })
     });
@@ -194,9 +194,11 @@
         }
         $(look_for, parent).focusin(function() {
             $(id_of_text_head, parent).addClass("affected-assets-title");
+            $('.ui-autocomplete').addClass("popup-ui-complete")
         });
         $(look_for, parent).focusout(function() {
             $(id_of_text_head, parent).removeClass("affected-assets-title");
+            $('.ui-autocomplete').removeClass("popup-ui-complete")
         });
     }
 

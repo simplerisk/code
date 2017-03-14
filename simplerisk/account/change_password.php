@@ -59,7 +59,7 @@ if (isset($_POST['change_password']))
 	if (is_valid_user($user, $current_pass))
 	{
 		// Check the password
-		$error_code = valid_password($new_pass, $confirm_pass);
+		$error_code = valid_password($new_pass, $confirm_pass, $_SESSION['uid']);
 
        		// If the password is valid
        		if ($error_code == 1)

@@ -198,20 +198,26 @@ if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "dow
             </div>
           </div>
         </div>
-        <?php
-		// If the Import-Export Extra is installed
-            	if (is_dir(realpath(__DIR__ . '/../extras/import-export')))
-            	{
-			// And the Extra is activated
-                	if (import_export_extra())
-                	{
-            			// Include the Import-Export Extra
-            			require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
-				// Display the download link
-				display_download_link();
-			}
-		}
-        ?>
+        <div class="row-fluid bottom-offset-10">
+            <div class="span6 text-left top-offset-15">
+                <button class="expand-all"><?php echo $lang['ExpandAll'] ?></button>
+            </div>
+            <?php
+		    // If the Import-Export Extra is installed
+            	    if (is_dir(realpath(__DIR__ . '/../extras/import-export')))
+            	    {
+			    // And the Extra is activated
+                	    if (import_export_extra())
+                	    {
+            			    // Include the Import-Export Extra
+            			    require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+				    // Display the download link
+				    display_download_link();
+			    }
+		    }
+            ?>
+        </div>
+
         <div class="row-fluid">
           <div class="span12">
             <div id="risk-table-container">

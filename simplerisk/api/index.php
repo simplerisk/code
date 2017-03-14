@@ -3,8 +3,8 @@
          * License, v. 2.0. If a copy of the MPL was not distributed with this
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-        // Include required functions file
-        require_once(realpath(__DIR__ . '/../includes/functions.php'));
+    // Include required functions file
+    require_once(realpath(__DIR__ . '/../includes/functions.php'));
 	require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/epiphany/src/Epi.php'));
 	require_once(realpath(__DIR__ . '/../includes/api.php'));
@@ -41,56 +41,66 @@
 	// If access is authenticated
 	if (is_authenticated())
 	{
-        	// Set the base path for epiphany
-	        Epi::setPath('base', realpath(__DIR__ . '/../includes/epiphany/src'));
+        // Set the base path for epiphany
+	    Epi::setPath('base', realpath(__DIR__ . '/../includes/epiphany/src'));
 
-        	// Initialize the epiphany api
-	        Epi::init('api', 'route', 'session');
+        // Initialize the epiphany api
+	    Epi::init('api', 'route', 'session');
 
-        	// Disable exceptions
-	        Epi::setSetting('exceptions', true);
+        // Disable exceptions
+	    Epi::setSetting('exceptions', true);
 
 		// Define the normal routes
-		getRoute()->get('/', 'show_endpoints');
-		getRoute()->get('/version', 'show_version');
-		getRoute()->get('/whoami', 'whoami');
-		getRoute()->get('/management', 'show_management');
-        getRoute()->get('/management/risk/viewhtml', 'viewriskHtml');
-		getRoute()->get('/management/risk/view', 'viewrisk');
-		getRoute()->get('/management/risk/add', 'addrisk');
-		getRoute()->get('/management/mitigation/view', 'viewmitigation');
-		getRoute()->get('/management/mitigation/add', 'addmitigation');
-		getRoute()->get('/management/review/view', 'viewreview');
-		getRoute()->get('/management/review/add', 'addreview');
-		getRoute()->get('/admin', 'show_admin');
-		getRoute()->get('/admin/users/all', 'allusers');
-		getRoute()->get('/admin/users/enabled', 'enabledusers');
-		getRoute()->get('/admin/users/disabled', 'disabledusers');
-		getRoute()->get('/reports', 'show_reports');
-		getRoute()->post('/reports/dynamic', 'dynamicrisk');
+        getRoute()->get('/', 'show_endpoints');
+        getRoute()->get('/version', 'show_version');
+        getRoute()->get('/whoami', 'whoami');
+        getRoute()->get('/management', 'show_management');
+        getRoute()->get('/management/risk/view', 'viewrisk');
+        getRoute()->post('/management/risk/add', 'addRisk');
+        getRoute()->get('/management/mitigation/view', 'viewmitigation');
+        getRoute()->post('/management/mitigation/add', 'saveMitigation');
+        getRoute()->get('/management/review/view', 'viewreview');
+        getRoute()->post('/management/review/add', 'saveReview');
+        getRoute()->get('/admin', 'show_admin');
+        getRoute()->get('/admin/users/all', 'allusers');
+        getRoute()->get('/admin/users/enabled', 'enabledusers');
+        getRoute()->get('/admin/users/disabled', 'disabledusers');
+        getRoute()->get('/reports', 'show_reports');
+        getRoute()->get('/reports/dynamic', 'dynamicrisk');
 
-        // Actions via ajax
-        getRoute()->get('/management/risk/reopen', 'reopen');
-        getRoute()->get('/management/risk/overview', 'overview');
+        // RISK API from external app
+
+
+        // RISK API from form
+        getRoute()->get('/management/risk/reopen', 'reopenForm');
+        getRoute()->get('/management/risk/overview', 'overviewForm');
+
+        getRoute()->post('/reports/dynamic', 'dynamicriskForm');
+        getRoute()->get('/management/risk/viewhtml', 'viewriskHtmlForm');
+
         
-        getRoute()->get('/management/risk/closerisk', 'closeriskHtml');
-        getRoute()->post('/management/risk/closerisk', 'closerisk');
+        getRoute()->get('/management/risk/closerisk', 'closeriskHtmlForm');
+        getRoute()->post('/management/risk/closerisk', 'closeriskForm');
         
-        getRoute()->get('/management/risk/view_all_reviews', 'viewAllReviews');
-        getRoute()->get('/management/risk/editdetails', 'editdetails');
-        getRoute()->post('/management/risk/saveDetails', 'saveDetails');
-        getRoute()->post('/management/risk/saveMitigation', 'saveMitigation');
-        getRoute()->post('/management/risk/saveReview', 'saveReview');
+        getRoute()->get('/management/risk/view_all_reviews', 'viewAllReviewsForm');
+        getRoute()->get('/management/risk/editdetails', 'editdetailsForm');
+        getRoute()->post('/management/risk/saveDetails', 'saveDetailsForm');
+        getRoute()->post('/management/risk/saveMitigation', 'saveMitigationForm');
+        getRoute()->post('/management/risk/saveReview', 'saveReviewForm');
         
-        getRoute()->get('/management/risk/changestatus', 'changestatus');
-        getRoute()->post('/management/risk/updateStatus', 'updateStatus');
+        getRoute()->get('/management/risk/changestatus', 'changestatusForm');
+        getRoute()->post('/management/risk/updateStatus', 'updateStatusForm');
         
-        getRoute()->get('/management/risk/scoreaction', 'scoreaction');
-        getRoute()->post('/management/risk/saveScore', 'saveScore');
+        getRoute()->get('/management/risk/scoreaction', 'scoreactionForm');
+        getRoute()->post('/management/risk/saveScore', 'saveScoreForm');
         
-        getRoute()->post('/management/risk/saveSubject', 'saveSubject');
+        getRoute()->post('/management/risk/saveSubject', 'saveSubjectForm');
         
-        getRoute()->post('/management/risk/saveComment', 'saveComment');
+        getRoute()->post('/management/risk/saveComment', 'saveCommentForm');
+        
+        
+        // Return scroing histories
+        getRoute()->get('/scoring_history', 'scoringHistory');
 
         
 		// Define the API routes

@@ -172,7 +172,8 @@ td .risk-color {
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  border-radius: 2px; }
+  border-radius: 2px;
+  border: 1px solid; }
 
 td.red .risk-color, td > .red .risk-color {
   background-color: red !important; }
@@ -265,9 +266,15 @@ ul.ui-autocomplete {
   ul.ui-autocomplete .ui-state-focus {
     background: #F0F0F0;
     color: #000; }
+  ul.ui-autocomplete.popup-ui-complete {
+    width: 50% !important;
+    color: #fff; }
 
 .bottom-offset-10 {
   margin-bottom: 10px; }
+
+.top-offset-15 {
+  margin-top: 15px; }
 
 /*--------------------------------------------------------------
  ## Form and From Related Element Styles
@@ -431,6 +438,12 @@ input[type="color"]:focus,
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 5px rgba(82, 168, 236, 0.5) !important;
   -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 5px rgba(82, 168, 236, 0.5) !important;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 5px rgba(82, 168, 236, 0.5) !important; }
+
+textarea.saml_metadata_xml {
+  width: 100%;
+  min-height: 150px;
+  resize: none;
+  resize: vertical; }
 
 /*--------------------------------------------------------------
  ## Table Styles
@@ -792,6 +805,32 @@ input[type="submit"] {
     margin-left: 0;
     position: absolute;
     right: 10px; }
+
+.colorSelector {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  background: url(../images/colorpicker/select.png); }
+  .colorSelector div {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 30px;
+    height: 30px;
+    background: url(../images/colorpicker/select.png) center; }
+
+.colorpicker input {
+  padding: 0 !important;
+  height: 11px !important;
+  width: auto;
+  border: 0px !important;
+  top: 6px;
+  right: 13px; }
+
+.risk-levels-container .colorSelector {
+  display: inline-block;
+  position: relative;
+  top: 10px; }
 
 .comments--wrapper {
   margin-top: 38px; }
@@ -1504,7 +1543,7 @@ form#comment {
 .score--wrapper {
   width: 130px;
   float: left;
-  margin-bottom: 25px; }
+  /*  margin-bottom: 25px; */ }
 
 .details--wrapper {
   float: left;

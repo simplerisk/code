@@ -85,7 +85,7 @@
 		if (isset($_POST['import_csv']))
 		{
 			// Import the CSV file
-			$display = import_csv($_FILES['file']);
+//			$display = import_csv($_FILES['file']);
 		}
 
 		// If the user selected to do a combined export
@@ -159,7 +159,6 @@ function display($display = "")
                 echo "<a href=\"https://www.simplerisk.it/extras\" target=\"_blank\">Purchase the Extra</a>\n";
         }
 }
-
 ?>
 
 <!doctype html>

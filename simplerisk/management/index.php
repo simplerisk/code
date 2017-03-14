@@ -74,7 +74,6 @@ if (isset($_POST['subject']) && $_POST['subject'] == "")
   // Display an alert
   set_alert(true, "bad", "The subject of a risk cannot be empty.");
 }
-
 // Check if a new risk was submitted and the user has permissions to submit new risks
 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' && $submit_risks)
 {
@@ -209,6 +208,8 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   <script src="../js/basescript.js"></script>
   <script src="../js/common.js"></script>
   <script src="../js/pages/risk.js"></script>
+  <script src="../js/highcharts/code/highcharts.js"></script>
+
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">

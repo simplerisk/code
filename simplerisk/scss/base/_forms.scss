@@ -210,3 +210,10 @@ input[type="color"]:focus,
     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 5px rgba(82, 168, 236, 0.5) !important;
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 5px rgba(82, 168, 236, 0.5) !important;
 }
+
+textarea.saml_metadata_xml{
+    width: 100%;
+    min-height: 150px;
+    resize: none;
+    resize:vertical;
+}

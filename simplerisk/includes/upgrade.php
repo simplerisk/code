@@ -137,6 +137,66 @@ function display_upgrade_info()
 	echo "</div>\n";
 }
 
+/**************************************
+ * FUNCTION: CONVERT TABLES TO INNODB *
+ **************************************/
+function convert_tables_to_innodb()
+{
+        // Connect to the database
+        $db = db_open();
+
+	// Find tables that are not InnoDB
+	$stmt = $db->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema='" . DB_DATABASE . "' AND ENGINE!='InnoDB';");
+	$stmt->execute();
+
+	// Store the list in the array
+	$array = $stmt->fetchAll();
+
+	// For each table that is not InnoDB
+	foreach ($array as $value)
+	{
+		// Get the table name
+		$table_name = $value['table_name'];
+
+		// Change the table to InnoDB
+		$stmt = $db->prepare("ALTER TABLE " . $table_name . " ENGINE=InnoDB;");
+		$stmt->execute();
+	}
+
+        // Disconnect from the database
+        db_close($db);
+}
+
+/************************************
+ * FUNCTION: CONVERT TABLES TO UTF8 *
+ ************************************/
+function convert_tables_to_utf8()
+{
+        // Connect to the database
+        $db = db_open();
+
+        // Find tables that are not InnoDB
+        $stmt = $db->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema='" . DB_DATABASE . "' AND TABLE_COLLATION!='utf8_general_ci';");
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+
+        // For each table that is not InnoDB
+        foreach ($array as $value)
+        {
+                // Get the table name
+                $table_name = $value['table_name'];
+
+                // Change the table to InnoDB
+                $stmt = $db->prepare("ALTER TABLE " . $table_name . " CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;");
+                $stmt->execute();
+        }
+
+        // Disconnect from the database
+        db_close($db);
+}
+
 /**************************
  * FUNCTION: CHECK GRANTS *
  **************************/
@@ -1379,6 +1439,58 @@ function upgrade_from_20170102001($db){
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20170108-001 *
+ ***************************************/
+function upgrade_from_20170108001($db){
+    // Database version to upgrade
+    $version_to_upgrade = '20170108-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20170312-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+	// Set the password reset table to 200 charcter username
+	echo "Updating the password reset table to use a 200 character username.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE password_reset MODIFY COLUMN username VARCHAR(200);");
+        $stmt->execute();
+
+    // Get the list of all reviews with a next review of 0000-00-00 or PAST DUE
+    echo "Fixing next_review bug from 20170106-01 release.<br />\n";
+    $stmt = $db->prepare("UPDATE mgmt_reviews set next_review = '0000-00-00' WHERE next_review='PAST DUE';");
+    $stmt->execute();
+
+    // Updated settings table for value field from varchar(200) to have text type
+    echo "Updated settings table for value field to have text type.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `settings` CHANGE `value` `value` TEXT ;");
+    $stmt->execute();
+    
+	// Removed the "on update CURRENT_TIMESTAMP" on mgmt_reviews
+	echo "Removed the \"on update CURRENT_TIMESTAMP\" on mgmt_reviews.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `mgmt_reviews` CHANGE `submission_date` `submission_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;");
+	$stmt->execute();
+    
+    // Added color field to risk_levels table.
+    echo "Added a color field to risk_levels table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `risk_levels` ADD `color` VARCHAR(20) NOT NULL AFTER `name`; ");
+    $stmt->execute();
+
+    $stmt = $db->prepare("UPDATE `risk_levels` SET `color` = 'red' WHERE `name` = 'Very High'; ");
+    $stmt->execute();
+    $stmt = $db->prepare("UPDATE `risk_levels` SET `color` = 'orangered' WHERE `name` = 'High'; ");
+    $stmt->execute();
+    $stmt = $db->prepare("UPDATE `risk_levels` SET `color` = 'orange' WHERE `name` = 'Medium'; ");
+    $stmt->execute();
+    $stmt = $db->prepare("UPDATE `risk_levels` SET `color` = 'yellow' WHERE `name` = 'Low'; ");
+    $stmt->execute();
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -1481,6 +1593,10 @@ function upgrade_database()
                 		upgrade_from_20170102001($db);
                 		upgrade_database();
                 		break;
+			case "20170108-001":
+				upgrade_from_20170108001($db);
+				upgrade_database();
+				break;
 			default:
 				echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
 		}

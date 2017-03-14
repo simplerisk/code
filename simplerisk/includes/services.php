@@ -174,7 +174,7 @@ function delete_dir($dir)
 /***************************
  * FUNCTION: JSON RESPONSE *
  ***************************/
-function json_response($status, $status_message, $data)
+function json_response($status, $status_message, $data=array())
 {
 	// HTTP Header
 //    header("HTTP/1.1 $status, $status_message");

@@ -272,7 +272,7 @@ function display_asset_table()
 	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['SiteLocation']) . "</th>\n";
     echo "<th align=\"left\">" . $escaper->escapeHtml($lang['Team']) . "</th>\n";
 	echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetDetails']) . "</th>\n";
-        echo "</tr>\n";
+    echo "</tr>\n";
 	echo "</thead>\n";
 	echo "<tbody>\n";
 
@@ -316,7 +316,7 @@ function display_asset_table()
 	}
 
 	echo "</tbody>\n";
-        echo "</table>\n";
+    echo "</table>\n";
 }
 
 /********************************
@@ -363,10 +363,13 @@ function get_asset_by_id($id)
 }
 
 /********************************
- * FUNCTION: TAG ASSETS TO RISK *
+ * FUNCTION: TAG AFFECTED ASSETS TO RISK *
  ********************************/
-function tag_assets_to_risk($risk_id, $assets)
+function tag_assets_to_risk($risk_id, $assets, $entered_assets=false)
 {
+    if($entered_assets === false){
+        $entered_assets = get_entered_assets();
+    }
 	// Create an array from the assets
 	$assets = explode(",", $assets);
 
@@ -377,16 +380,28 @@ function tag_assets_to_risk($risk_id, $assets)
 	$stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE risk_id = :risk_id");
 	$stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
 	$stmt->execute();
-
 	// For each asset
 	foreach ($assets as $asset)
 	{
 		// Trim whitespace
 		$asset = trim($asset);
+//        print_r($entered_assets);exit;
+        
 
 		// If the asset is not null
 		if ($asset != "")
 		{
+            $asset_id = false;
+            foreach($entered_assets as $entered_asset){
+                if(in_array($asset, $entered_asset)){
+                    $asset_id = $entered_asset['id'];
+                    break;
+                }
+            }
+            if(!$asset_id){
+                add_asset('', $asset);
+            }
+
 			// Add the new assets for this risk
 			$stmt = $db->prepare("INSERT INTO `risks_to_assets` (`risk_id`, `asset`) VALUES (:risk_id, :asset)");
 			$stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
@@ -790,38 +805,106 @@ function get_default_asset_valuation()
 }
 
 /***********************************
- * FUNCTION: GET ASSET VALUE BY ID *
+ * FUNCTION: GET ASSET ID BY VALUE *
  ***********************************/
-function get_asset_value_by_id($id)
-{
-	global $escaper;
+function get_asset_id_by_value($value){
+    $value = strtolower(str_replace(array('$', ','), '', $value));
+    
+    $min_max = explode("to", $value);
+    $min = intval($min_max[0]);
+    $max = isset($min_max[1]) ? intval($min_max[1]) : false;
+    if(!isset($GLOBALS['default_asset_valuation'])){
+        $GLOBALS['default_asset_valuation'] = get_default_asset_valuation();
+    }
 
+    if(!isset($GLOBALS['asset_values'])){
         // Open the database connection
         $db = db_open();
 
         // Update the default asset valuation
-        $stmt = $db->prepare("SELECT * FROM `asset_values` WHERE id=:id");
-	$stmt->bindParam(":id", $id, PDO::PARAM_INT, 2);
+        $stmt = $db->prepare("SELECT * FROM `asset_values` ");
         $stmt->execute();
-
-        $value = $stmt->fetchAll();
-
-	// If a value exists
-	if (!empty($value))
-	{
-		$asset_value = get_setting("currency") . number_format($value[0]['min_value']) . " to " . get_setting("currency") . number_format($value[0]['max_value']);
-	}
-	// Otherwise
-	else
-	{
-		$asset_value = "Undefined";
-	}
-
         // Close the database connection
         db_close($db);
 
-        // Return the asset value
-        return $asset_value;
+        $GLOBALS['asset_values'] = $stmt->fetchAll();
+    }
+    
+    $id = $GLOBALS['default_asset_valuation'];
+    if($max === false){
+        // if $value is single dollar.
+        foreach($GLOBALS['asset_values'] as $asset_value){
+            if($asset_value['min_value'] <= $min && $asset_value['max_value'] >= $min){
+                $id = $asset_value['id'];
+                break;
+            }
+        }
+    }else{
+        foreach($GLOBALS['asset_values'] as $asset_value){
+            if($asset_value['min_value'] == $min && $asset_value['max_value'] == $max){
+                $id = $asset_value['id'];
+            }
+        }
+    }
+
+    return $id;
+}
+
+/***********************************
+ * FUNCTION: GET ASSET VALUE BY ID *
+ ***********************************/
+function get_asset_value_by_id($id="")
+{
+	global $escaper;
+    
+    if(!isset($GLOBALS['default_asset_valuation'])){
+        $GLOBALS['default_asset_valuation'] = get_default_asset_valuation();
+    }
+
+    if(!isset($GLOBALS['asset_values'])){
+        // Open the database connection
+        $db = db_open();
+
+        // Update the default asset valuation
+        $stmt = $db->prepare("SELECT * FROM `asset_values` ");
+        $stmt->execute();
+        // Close the database connection
+        db_close($db);
+
+        $GLOBALS['asset_values'] = $stmt->fetchAll();
+    }
+    
+    
+    $value = "";
+    foreach($GLOBALS['asset_values'] as $asset_value){
+        if($asset_value['id'] == $id){
+            $value = $asset_value;
+            break;
+        }
+    }
+
+	// If a value exists
+	if (empty($value))
+	{
+        $id = $GLOBALS['default_asset_valuation'];
+
+        foreach($GLOBALS['asset_values'] as $asset_value){
+            if($asset_value['id'] == $id){
+                $value = $asset_value;
+                break;
+	}
+        }
+        
+	}
+    
+    if(!empty($value)){
+        $asset_value = get_setting("currency") . number_format($value['min_value']) . " to " . get_setting("currency") . number_format($value['max_value']);
+    }else{
+        $asset_value = "Undefined";
+	}
+
+    // Return the asset value
+    return $asset_value;
 }
 
 /***************************************

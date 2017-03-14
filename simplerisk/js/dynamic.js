@@ -805,6 +805,12 @@ $(document).ready(function(){
             }
         })
         
+        $(".expand-all").click(function(e){
+            e.preventDefault();
+            $(".view-all").click();
+
+        })
+        
         $(".view-all").click(function(){
             var $this = $(this);
             var index = $(this).attr('id').replace("view-all-", "");
