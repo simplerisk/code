@@ -18,6 +18,18 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
  ******************************/
 function is_authenticated()
 {
+    // If encryption level is 'user'
+    if (api_extra())
+    {
+        // Require the API Extra
+        require_once(realpath(__DIR__ . '/../extras/api/index.php'));
+        if(!check_encryption_level()){
+            echo uncomfortable_encryption_level();
+            return false;
+        }
+    }
+    
+    
     // If either the session or key is authenticated
     if (is_session_authenticated() || is_key_authenticated() != false)
     {
@@ -61,10 +73,21 @@ function is_key_authenticated()
 /************************************
  * FUNCTION: UNAUTHENTICATED ACCESS *
  ************************************/
+function uncomfortable_encryption_level()
+{
+    global $lang, $escaper;
+    // Return a JSON response
+    json_response(401, $escaper->escapeHtml($lang['APIInCompatibleWithEncryptionLevel']), NULL);
+}
+
+/************************************
+ * FUNCTION: UNAUTHENTICATED ACCESS *
+ ************************************/
 function unauthenticated_access()
 {
+    global $lang, $escaper;
     // Return a JSON response
-    json_response(401, "Unauthenticated Access.  Please log in or provide a key to use the SimpleRisk API.", NULL);
+    json_response(401, $escaper->escapeHtml($lang['UnauthenticatedAccessInAPI']), NULL);
 }
 
 /**********************
@@ -97,8 +120,8 @@ function show_endpoints()
   // Show the main menu
   echo '<ul>
           <li><a href="">/</a> -> (home)</li>
-          <li><a href="version">/version</a> -> (print the version of the api)</li>
-          <li><a href="whoami">/whoami</a> -> (shows the currently authenticated user)</li>
+          <li><a href="mock.php?option=get_version">/version</a> -> (print the version of the api)</li>
+          <li><a href="mock.php?option=get_whoami">/whoami</a> -> (shows the currently authenticated user)</li>
         </ul>';
 
   // Show the management menu
@@ -117,13 +140,13 @@ function show_endpoints()
 function show_management()
 {
   echo '<ul>
-          <li><a href="management/risk/view ">/management/risk/view </a> -> (view a risk)</li>
+          <li><a href="mock.php?option=get_risk_view">/management/risk/view </a> -> (view a risk)</li>
           <li><a href="mock.php?option=add_risk">/management/risk/add</a> -> (add a risk)</li>
 
-          <li><a href="management/mitigation/view">/management/mitigation/view </a> -> (view a mitigation)</li>
+          <li><a href="mock.php?option=get_mitigation_view">/management/mitigation/view </a> -> (view a mitigation)</li>
           <li><a href="mock.php?option=save_mitigation">/management/mitigation/add</a> -> (add a mitigation)</li>
 
-          <li><a href="management/review/view">/management/review/view </a> -> (view a review)</li>
+          <li><a href="mock.php?option=get_review_view">/management/review/view </a> -> (view a review)</li>
           <li><a href="mock.php?option=save_review">/management/review/add</a> -> (add a review)</li>
         </ul>';
 }
@@ -281,8 +304,8 @@ function dynamicrisk()
         // Query the risks
         $data = risks_query($status, $sort, $group);
 
-            // Return a JSON response
-            json_response(200, "dynamicrisk", $data);
+        // Return a JSON response
+        json_response(200, "dynamicrisk", $data);
     }
 }
 
@@ -370,7 +393,7 @@ function viewrisk()
             $OWASP_NonCompliance = $risk[0]['OWASP_NonCompliance'];
             $OWASP_PrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
             $custom = $risk[0]['Custom'];
-        
+
             $data[] = array("id" => $id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "regulation" => $regulation, "control_number" => $control_number, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "technology" => $technology, "owner" => $owner, "manager" => $manager, "assessment" => $assessment, "notes" => $notes, "assets" => $assets, "submission_date" => $submission_date, "mitigation_id" => $mitigation_id, "mgmt_review" => $mgmt_review, "calculated_risk" => $calculated_risk, "next_review" => $next_review, "color" => $color, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "CLASSIC_likelihood" => $CLASSIC_likelihood, "CLASSIC_impact" => $CLASSIC_impact, "CVSS_AccessVector" => $CVSS_AccessVector, "CVSS_AccessComplexity" => $CVSS_AccessComplexity, "CVSS_Authentication" => $CVSS_Authentication, "CVSS_ConfImpact" => $CVSS_ConfImpact, "CVSS_IntegImpact" => $CVSS_IntegImpact, "CVSS_AvailImpact" => $CVSS_AvailImpact, "CVSS_Exploitability" => $CVSS_Exploitability, "CVSS_RemediationLevel" => $CVSS_RemediationLevel, "CVSS_ReportConfidence" => $CVSS_ReportConfidence, "CVSS_CollateralDamagePotential" => $CVSS_CollateralDamagePotential, "CVSS_TargetDistribution" => $CVSS_TargetDistribution, "CVSS_ConfidentialityRequirement" => $CVSS_ConfidentialityRequirement, "CVSS_IntegrityRequirement" => $CVSS_IntegrityRequirement, "CVSS_AvailabilityRequirement" => $CVSS_AvailabilityRequirement, "DREAD_DamagePotential" => $DREAD_DamagePotential, "DREAD_Reproducibility" => $DREAD_Reproducibility, "DREAD_Exploitability" => $DREAD_Exploitability, "DREAD_AffectedUsers" => $DREAD_AffectedUsers, "DREAD_Discoverability" => $DREAD_Discoverability, "OWASP_SkillLevel" => $OWASP_SkillLevel, "OWASP_Motive" => $OWASP_Motive, "OWASP_Opportunity" => $OWASP_Opportunity, "OWASP_Size" => $OWASP_Size, "OWASP_EaseOfDiscovery" => $OWASP_EaseOfDiscovery, "OWASP_EaseOfExploit" => $OWASP_EaseOfExploit, "OWASP_Awareness" => $OWASP_Awareness, "OWASP_IntrusionDetection" => $OWASP_IntrusionDetection, "OWASP_LossOfConfidentiality" => $OWASP_LossOfConfidentiality, "OWASP_LossOfIntegrity" => $OWASP_LossOfIntegrity, "OWASP_LossOfAvailability" => $OWASP_LossOfAvailability, "OWASP_LossOfAccountability" => $OWASP_LossOfAccountability, "OWASP_FinancialDamage" => $OWASP_FinancialDamage, "OWASP_ReputationDamage" => $OWASP_ReputationDamage, "OWASP_NonCompliance" => $OWASP_NonCompliance, "OWASP_PrivacyViolation" => $OWASP_PrivacyViolation, "Custom" => $custom);
 
             // Return a JSON response
@@ -389,12 +412,52 @@ function viewrisk()
  ******************************************/
 function viewmitigation()
 {
-        // If the id is not sent
-        if (!isset($_GET['id']))
-        {
-                // Return a JSON response
-                json_response(400, "You need to specify an id parameter.", NULL);
-        }
+    global $escaper, $lang;
+    
+    // If the id is not sent
+    if (!isset($_GET['id']))
+    {
+        // Return a JSON response
+        json_response(400, $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']), NULL);
+    }
+    $risk_id = $_GET['id'];
+    $mitigation = get_mitigation_by_id($risk_id);
+    
+    if(!isset($mitigation[0])){
+        // Return a JSON response
+        json_response(400, $escaper->escapeHtml($lang['NoMitigation']), NULL);
+    }
+    
+    $mitigation = $mitigation[0];
+    $supporting_files = get_supporting_files($risk_id, 2);
+    $mitigation['supporting_files'] = array();
+    
+    foreach($supporting_files as $supporting_file){
+        $mitigation['supporting_files'][] = BASEURL."/management/download.php?id=" . $escaper->escapeHtml($supporting_file['unique_name']);
+    }
+    
+    $data = array(
+        "submission_date"=> $mitigation['submission_date'],
+        "planning_date"=> $mitigation['planning_date'],
+        "planning_strategy"=> $mitigation['planning_strategy'],
+        "planning_strategy_name"=> $mitigation['planning_strategy_name'],
+        "mitigation_effort"=> $mitigation['mitigation_effort'],
+        "mitigation_effort_name"=> $mitigation['mitigation_effort_name'],
+        "mitigation_cost"=> $mitigation['mitigation_cost'],
+        "mitigation_min_cost"=> $mitigation['mitigation_min_cost'],
+        "mitigation_max_cost"=> $mitigation['mitigation_max_cost'],
+        "mitigation_owner"=> $mitigation['mitigation_owner'],
+        "mitigation_owner_name"=> $mitigation['mitigation_owner_name'],
+        "mitigation_team"=> $mitigation['mitigation_team'],
+        "mitigation_team_name"=> $mitigation['mitigation_team_name'],
+        "current_solution"=> $mitigation['current_solution'],
+        "security_requirements"=> $mitigation['security_requirements'],
+        "security_recommendations"=> $mitigation['security_recommendations'],
+        "submitted_by"=> $mitigation['submitted_by'],
+        "submitted_by_name"=> $mitigation['submitted_by_name'],
+        "supporting_files"=> $mitigation['supporting_files']
+    );
+    json_response(200, "Mitigation View", $data);
 }
 
 /**************************************
@@ -402,12 +465,37 @@ function viewmitigation()
  **************************************/
 function viewreview()
 {
-        // If the id is not sent
-        if (!isset($_GET['id']))
-        {
-                // Return a JSON response
-                json_response(400, "You need to specify an id parameter.", NULL);
-        }
+    global $escaper, $lang;
+    // If the id is not sent
+    if (!isset($_GET['id']))
+    {
+        // Return a JSON response
+        json_response(400, "You need to specify an id parameter.", NULL);
+    }
+    
+    $risk_id = $_GET['id'];
+    $review = get_review_by_id($risk_id);
+    
+    if(!isset($review[0])){
+        // Return a JSON response
+        json_response(400, $escaper->escapeHtml($lang['NoReview']), NULL);
+    }
+    $review = $review[0];
+    $risk = get_risk_by_id($risk_id);
+    $risk = $risk[0];
+    $risk_level = get_risk_level_name($risk['calculated_risk']);
+
+    
+    $data = array(
+        "submission_date"=> $review['submission_date'],
+        "reviewer"=> $review['reviewer'],
+        "review"=> $review['review'],
+        "next_step"=> $review['next_step'],
+        "next_review"=> next_review($risk_level, $risk_id-1000, $risk['next_review'], false),
+        "comments"=> $review['comments']
+    );
+    json_response(200, "Review View", $data);
+    
 }
 
 /*******************************************************

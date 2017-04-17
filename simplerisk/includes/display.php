@@ -708,7 +708,7 @@ function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 	$current_solution = try_decrypt($current_solution);
 	$security_requirements = try_decrypt($security_requirements);
 	$security_recommendations = try_decrypt($security_recommendations);
-        if (basename($_SERVER['PHP_SELF']) == "view.php")
+    if (basename($_SERVER['PHP_SELF']) == "view.php")
 	{
 		// Give the option to edit the mitigation details
 		echo "<div class=\"tabs--action\">";
@@ -3358,8 +3358,11 @@ function view_classic_help()
 									echo ($active == "AllOpenRisksAssignedToMeByRiskLevel" ? "<li class=\"active\">\n" : "<li>\n");
 									echo "<a href=\"my_open.php\">" . $escaper->escapeHtml($lang['AllOpenRisksAssignedToMeByRiskLevel']) . "</a>\n";
 									echo "</li>\n";
-									echo ($active == "AllOpenRisksNeedingReview" ? "<li class=\"active\">\n" : "<li>\n");
-									echo "<a href=\"review_needed.php\">" . $escaper->escapeHtml($lang['AllOpenRisksNeedingReview']) . "</a>\n";
+                                    echo ($active == "AllOpenRisksNeedingReview" ? "<li class=\"active\">\n" : "<li>\n");
+                                    echo "<a href=\"review_needed.php\">" . $escaper->escapeHtml($lang['AllOpenRisksNeedingReview']) . "</a>\n";
+                                    echo "</li>\n";
+									echo ($active == "AllOpenRisksByTeam" ? "<li class=\"active\">\n" : "<li>\n");
+									echo "<a href=\"risks_open_by_team.php\">" . $escaper->escapeHtml($lang['AllOpenRisksByTeamByLevel']) . "</a>\n";
 									echo "</li>\n";
 									echo ($active == "HighRiskReport" ? "<li class=\"active\">\n" : "<li>\n");
 									echo "<a href=\"high.php\">" . $escaper->escapeHtml($lang['HighRiskReport']) . "</a>\n";

@@ -25,22 +25,22 @@ function db_open()
     if(isset($GLOBALS['db']) && $GLOBALS['db']){
         return $GLOBALS['db'];
     }
-        // Connect to the database
-        try
-        {
-                $GLOBALS['db'] = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
-		$GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
-		$GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET CHARACTER SET utf8");
+    // Connect to the database
+    try
+    {
+        $GLOBALS['db'] = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+	    $GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
+	    $GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET CHARACTER SET utf8");
 
-                return $GLOBALS['db'];
-        }
-        catch (PDOException $e)
-        {
-                printf("<br />SimpleRisk is unable to communicate with the database.  You should double-check your settings in the config.php file.  If the problem persists, you can try manually connecting to the database using the command '<i>mysql -h &lt;hostname&gt; -u &lt;username&gt; -p</i>' and specifying the password when prompted.  If the issue persists, contact support and provide a copy of any relevant messages from your web server's error log.<br />\n");
-                //die("Database Connection Failed: " . $e->getMessage());
-        }
+        return $GLOBALS['db'];
+    }
+    catch (PDOException $e)
+    {
+        printf("<br />SimpleRisk is unable to communicate with the database.  You should double-check your settings in the config.php file.  If the problem persists, you can try manually connecting to the database using the command '<i>mysql -h &lt;hostname&gt; -u &lt;username&gt; -p</i>' and specifying the password when prompted.  If the issue persists, contact support and provide a copy of any relevant messages from your web server's error log.<br />\n");
+        //die("Database Connection Failed: " . $e->getMessage());
+    }
 
-        return null;
+    return null;
 }
 
 /*********************************
@@ -457,36 +457,36 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL)
 	global $lang;
 	global $escaper;
 
-        if ($rename != NULL)
+    if ($rename != NULL)
+    {
+        echo "<select multiple=\"multiple\" id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "[]\">\n";
+    }
+    else echo "<select multiple=\"multiple\" id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";
+
+// Create all or none options
+//echo "    <option value=\"all\">" . $escaper->escapeHtml($lang['ALL']) . "</option>\n";
+//echo "    <option value=\"none\">" . $escaper->escapeHtml($lang['NONE']) . "</option>\n";
+
+    // Get the list of options
+    $options = get_table($name);
+
+    // For each option
+    foreach ($options as $option)
+    {
+	    // Pattern is a team id surrounded by colons
+	    $regex_pattern = "/:" . $option['value'] .":/";
+
+        // If the user belongs to the team or all was selected
+        if (preg_match($regex_pattern, $selected, $matches) || $selected == "all")
         {
-                echo "<select multiple=\"multiple\" id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "[]\">\n";
+            $text = " selected";
         }
-        else echo "<select multiple=\"multiple\" id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";
+        else $text = "";
 
-	// Create all or none options
-	//echo "    <option value=\"all\">" . $escaper->escapeHtml($lang['ALL']) . "</option>\n";
-	//echo "    <option value=\"none\">" . $escaper->escapeHtml($lang['NONE']) . "</option>\n";
+        echo "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
+    }
 
-        // Get the list of options
-        $options = get_table($name);
-
-        // For each option
-        foreach ($options as $option)
-        {
-		// Pattern is a team id surrounded by colons
-		$regex_pattern = "/:" . $option['value'] .":/";
-
-                // If the user belongs to the team or all was selected
-                if (preg_match($regex_pattern, $selected, $matches) || $selected == "all")
-                {
-                        $text = " selected";
-                }
-                else $text = "";
-
-                echo "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
-        }
-
-        echo "  </select>\n";
+    echo "  </select>\n";
 }
 
 /*******************************
@@ -901,16 +901,17 @@ function update_table($table, $name, $value)
  *************************/
 function add_setting($name, $value)
 {
-        // Open the database connection
-        $db = db_open();
+    
+    // Open the database connection
+    $db = db_open();
+    
+    $stmt = $db->prepare("INSERT IGNORE INTO settings (`name`,`value`) VALUES (:name, :value);");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
+    $stmt->bindParam(":value", $value, PDO::PARAM_STR, 200);
+    $stmt->execute();
 
-	$stmt = $db->prepare("INSERT INTO settings (`name`,`value`) VALUES (:name, :value);");
-	$stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
-	$stmt->bindParam(":value", $value, PDO::PARAM_STR, 200);
-	$stmt->execute();
-
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 }
 
 /*************************
@@ -951,11 +952,16 @@ function update_setting($name, $value)
 	// Open the database connection
 	$db = db_open();
 
+    // Delete existing setting value before adding.
+    $stmt = $db->prepare("DELETE FROM `settings` WHERE name=:name");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
+    $stmt->execute();
+
 	// Update the setting
-	$stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name=:name;");
-	$stmt->bindParam(":value", $value, PDO::PARAM_STR, 200);
-	$stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
-	$stmt->execute();
+    $stmt = $db->prepare("INSERT IGNORE INTO settings (`name`,`value`) VALUES (:name, :value);");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
+    $stmt->bindParam(":value", $value, PDO::PARAM_STR, 200);
+    $stmt->execute();
 
 	// Audit log
 	switch ($name)
@@ -995,13 +1001,18 @@ function delete_setting($name)
  **********************/
 function add_name($table, $name, $size=20)
 {
-        // Open the database connection
-        $db = db_open();
+    if(!$name){
+        return false;
+    }
+    
+    // Open the database connection
+    $db = db_open();
 
-        // Get the risk levels
-        $stmt = $db->prepare("INSERT INTO $table (`name`) VALUES (:name)");
-        $stmt->bindParam(":name", $name, PDO::PARAM_STR, $size);
-        $stmt->execute();
+    // Get the risk levels
+    $stmt = $db->prepare("INSERT INTO $table (`name`) VALUES (:name)");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, $size);
+    $stmt->execute();
+    $insertedId = $db->lastInsertId();
 
 	// Audit log
 	switch ($table)
@@ -1060,10 +1071,10 @@ function add_name($table, $name, $size=20)
 			break;
 	}
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        return true;
+    return $insertedId;
 }
 
 /**************************
@@ -1663,10 +1674,21 @@ function get_id_by_user($user)
 function get_value_by_name($table, $name, $return_name = false)
 {
     // if name is null or empty string, return null
-    if(!$name){
-        return null;
+//    if(!$name){
+//        return null;
+//    }
+
+    $value = false;
+    if(isset($GLOBALS[$table])){
+        foreach($GLOBALS[$table] as $row){
+            if(strtolower($row['name']) == strtolower($name)){
+                $value = $row['value'];
+                break;
+            }
+        }
     }
-    if(!isset($GLOBALS[$table])){
+
+    if(!$value || !isset($GLOBALS[$table])){
         // Open the database connection
         $db = db_open();
 
@@ -1679,15 +1701,15 @@ function get_value_by_name($table, $name, $return_name = false)
 
         // Close the database connection
         db_close($db);
-    }
-    
-    $value = false;
-    foreach($GLOBALS[$table] as $row){
-        if(strtolower($row['name']) == strtolower($name)){
-            $value = $row['value'];
-            break;
+
+        foreach($GLOBALS[$table] as $row){
+            if(strtolower($row['name']) == strtolower($name)){
+                $value = $row['value'];
+                break;
+            }
         }
     }
+    
 
 	// If the array is empty
 	if ($value === false && $return_name)
@@ -2772,8 +2794,8 @@ function convert_id($id)
  ****************************/
 function get_risk_by_id($id)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
 	// Subtract 1000 from the id
 	$id = $id - 1000;
@@ -2814,33 +2836,48 @@ function get_risk_by_id($id)
  **********************************/
 function get_mitigation_by_id($risk_id)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Subtract 1000 from the id
-        $risk_id = $risk_id - 1000;
+    // Subtract 1000 from the id
+    $risk_id = $risk_id - 1000;
 
-        // Query the database
-        $stmt = $db->prepare("SELECT mitigations.*, mitigations.risk_id AS id FROM mitigations WHERE risk_id=:risk_id");
-        $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+    // Query the database
+    $stmt = $db->prepare("SELECT t1.*, t1.risk_id AS id,
+            t2.name as planning_strategy_name,
+            t3.name as mitigation_effort_name,
+            t4.min_value AS mitigation_min_cost, t4.max_value AS mitigation_max_cost,
+            t5.name as mitigation_owner_name,
+            t6.name as mitigation_team_name,
+            t7.name as submitted_by_name
+        FROM mitigations t1
+            left join planning_strategy t2 on t1.planning_strategy=t2.value
+            left join mitigation_effort t3 on t1.mitigation_effort=t3.value
+            left join asset_values t4 on t1.mitigation_cost=t4.id
+            left join user t5 on t1.mitigation_owner=t5.value
+            left join team t6 on t1.mitigation_team=t6.value
+            left join user t7 on t1.submitted_by=t7.value
+        WHERE t1.risk_id=:risk_id"
+    );
+    $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
 
-        $stmt->execute();
+    $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // If team separation is enabled
-        if (team_separation_extra())
-        {
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    // If team separation is enabled
+    if (team_separation_extra())
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Strip out risks the user should not have access to
-                $array = strip_no_access_risks($array);
-        }
+        // Strip out risks the user should not have access to
+        $array = strip_no_access_risks($array);
+    }
 
 	// If the array is empty
 	if (empty($array))
@@ -2851,44 +2888,69 @@ function get_mitigation_by_id($risk_id)
 }
 
 /******************************
+ * FUNCTION: GET SUPPORTING FILES BY ID *
+ ******************************/
+function get_supporting_files($risk_id, $view_type)
+{
+    $risk_id = $risk_id-1000;
+
+    // Open the database connection
+    $db = db_open();
+
+    // Get the file from the database
+    $stmt = $db->prepare("SELECT name, unique_name FROM files WHERE risk_id=:id AND view_type=:view_type");
+    $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+    $stmt->bindParam(":view_type", $view_type, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Store the results in an array
+    $array = $stmt->fetchAll();
+
+    // Close the database connection
+    db_close($db);
+    
+    return $array;
+}
+
+/******************************
  * FUNCTION: GET REVIEW BY ID *
  ******************************/
 function get_review_by_id($risk_id)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Subtract 1000 from the id
-        $risk_id = $risk_id - 1000;
+    // Subtract 1000 from the id
+    $risk_id = $risk_id - 1000;
 
-        // Query the database
-        $stmt = $db->prepare("SELECT mgmt_reviews.*, mgmt_reviews.risk_id AS id FROM mgmt_reviews WHERE risk_id=:risk_id ORDER BY submission_date DESC");
-        $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+    // Query the database
+    $stmt = $db->prepare("SELECT mgmt_reviews.*, mgmt_reviews.risk_id AS id FROM mgmt_reviews WHERE risk_id=:risk_id ORDER BY submission_date DESC");
+    $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
 
-        $stmt->execute();
+    $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // If team separation is enabled
-        if (team_separation_extra())
-        {
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    // If team separation is enabled
+    if (team_separation_extra())
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Strip out risks the user should not have access to
-                $array = strip_no_access_risks($array);
-        }
+        // Strip out risks the user should not have access to
+        $array = strip_no_access_risks($array);
+    }
 
-        // If the array is empty
-        if (empty($array))
-        {
-                return false;
-        }
-        else return $array;
+    // If the array is empty
+    if (empty($array))
+    {
+            return false;
+    }
+    else return $array;
 }
 
 /******************************
@@ -2896,30 +2958,30 @@ function get_review_by_id($risk_id)
  ******************************/
 function get_close_by_id($risk_id)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Subtract 1000 from the id
-        $risk_id = $risk_id - 1000;
+    // Subtract 1000 from the id
+    $risk_id = $risk_id - 1000;
 
-        // Query the database
-        $stmt = $db->prepare("SELECT * FROM closures WHERE risk_id=:risk_id ORDER BY closure_date DESC limit 1");
-        $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+    // Query the database
+    $stmt = $db->prepare("SELECT * FROM closures WHERE risk_id=:risk_id ORDER BY closure_date DESC limit 1");
+    $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
 
-        $stmt->execute();
+    $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // If the array is empty
-        if (empty($array))
-        {
-                return false;
-        }
-        else return $array;
+    // If the array is empty
+    if (empty($array))
+    {
+            return false;
+    }
+    else return $array;
 }
 
 /*****************************
@@ -2927,1228 +2989,662 @@ function get_close_by_id($risk_id)
  *****************************/
 function get_risks_count($sort_order)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // 1 = Show risks requiring mitigations
-        // If this is the default, sort by risk
-        if ($sort_order == 0)
+    // 1 = Show risks requiring mitigations
+    // If this is the default, sort by risk
+    if ($sort_order == 0)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            // Query the database
+            $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
 			// Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
+
+    // 1 = Show risks requiring mitigations
+    else if ($sort_order == 1)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+            // Query the database
+            $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mitigation_id = 0 AND status != \"Closed\" ORDER BY calculated_risk DESC");
+		}
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
+
+            // Query the database
+	        $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mitigation_id = 0 AND status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
         }
 
-        // 1 = Show risks requiring mitigations
-        else if ($sort_order == 1)
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
+
+    // 2 = Show risks requiring management review
+    else if ($sort_order == 2)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mitigation_id = 0 AND status != \"Closed\" ORDER BY calculated_risk DESC");
+        // Query the database
+        $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mgmt_review = 0 AND status != \"Closed\" ORDER BY calculated_risk DESC");
 		}
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mitigation_id = 0 AND status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 2 = Show risks requiring management review
-        else if ($sort_order == 2)
+        else
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mgmt_review = 0 AND status != \"Closed\" ORDER BY calculated_risk DESC");
-		}
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-                
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-        
-                        // Query the database
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
+
+            // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mgmt_review = 0 AND status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 3 = Show risks by review date
-        else if ($sort_order == 3)
+    // 3 = Show risks by review date
+    else if ($sort_order == 3)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id LEFT JOIN mgmt_reviews c ON b.mgmt_review = c.id WHERE status != \"Closed\" ORDER BY review_date ASC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            // Query the database
+            $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id LEFT JOIN mgmt_reviews c ON b.mgmt_review = c.id WHERE status != \"Closed\" ORDER BY review_date ASC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
-                        // Query the database
+                    // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id LEFT JOIN mgmt_reviews c ON b.mgmt_review = c.id WHERE status != \"Closed\" " . $separation_query . " ORDER BY review_date ASC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 4 = Show risks that are closed
-        else if ($sort_order == 4)
+    // 4 = Show risks that are closed
+    else if ($sort_order == 4)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status = \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            // Query the database
+            $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status = \"Closed\" ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status = \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
 	// 5 = Show open risks that should be considered for projects
 	else if ($sort_order == 5)
 	{
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-		// Query the database
-		$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+		    // Query the database
+		    $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 6 = Show open risks accepted until next review
+    // 6 = Show open risks accepted until next review
 	else if ($sort_order == 6)
 	{
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-		// Query the database
-		$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+		    // Query the database
+		    $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
-                        // Query the database
-			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id WHERE status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
+            // Query the database
+            $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id WHERE status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 7 = Show open risks to submit as production issues
+    // 7 = Show open risks to submit as production issues
 	else if ($sort_order == 7)
 	{
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-		// Query the database
-		$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 3) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+		    // Query the database
+		    $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 3) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 3) AS c ON a.id = c.risk_id WHERE status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 8 = Show all open risks assigned to this user by risk level
-        else if ($sort_order == 8)
+    // 8 = Show all open risks assigned to this user by risk level
+    else if ($sort_order == 8)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND (owner = :uid OR manager = :uid) ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            // Query the database
+            $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND (owner = :uid OR manager = :uid) ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND (owner = :uid OR manager = :uid) " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->bindParam(":uid", $_SESSION['uid'], PDO::PARAM_INT);
-                $stmt->execute();
+        $stmt->bindParam(":uid", $_SESSION['uid'], PDO::PARAM_INT);
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 9 = Show open risks scored by CVSS Scoring
-        else if ($sort_order == 9)
+    // 9 = Show open risks scored by CVSS Scoring
+    else if ($sort_order == 9)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-		// Query the database
-		$stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 2 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+		    // Query the database
+		    $stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 2 ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 2 " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 10 = Show open risks scored by Classic Scoring
-        else if ($sort_order == 10)
+    // 10 = Show open risks scored by Classic Scoring
+    else if ($sort_order == 10)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            // Query the database
+            $stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 11 = Show All Risks by Date Submitted
-        else if ($sort_order == 11)
-        {
+    // 11 = Show All Risks by Date Submitted
+    else if ($sort_order == 11)
+    {
 		// If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN team d ON b.team = d.value ORDER BY DATE(b.submission_date) DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        if (!team_separation_extra())
+        {
+            // Query the database
+            $stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN team d ON b.team = d.value ORDER BY DATE(b.submission_date) DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", true, false);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", true, false);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN team d ON b.team = d.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 12 = Show management reviews by date
-        else if ($sort_order == 12)
+    // 12 = Show management reviews by date
+    else if ($sort_order == 12)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.id FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value ORDER BY DATE(b.submission_date) DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            // Query the database
+            $stmt = $db->prepare("SELECT a.id FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value ORDER BY DATE(b.submission_date) DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
+            // Get the separation query string
 			$separation_query = get_user_teams_query("a", true, false);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT a.id FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 13 = Show mitigations by date
-        else if ($sort_order == 13)
+    // 13 = Show mitigations by date
+    else if ($sort_order == 13)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                	// Query the database
-                	$stmt = $db->prepare("SELECT a.id FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value ORDER BY DATE(b.submission_date) DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            // Query the database
+            $stmt = $db->prepare("SELECT a.id FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value ORDER BY DATE(b.submission_date) DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("a", true, false);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("a", true, false);
 
-                // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT a.id FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 14 = Show open risks scored by DREAD Scoring
-        else if ($sort_order == 14)
+    // 14 = Show open risks scored by DREAD Scoring
+    else if ($sort_order == 14)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                	// Query the database
-                	$stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 3 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            // Query the database
+            $stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 3 ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
+            // Get the separation query string
 			$separation_query = get_user_teams_query("b", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 3 " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 15 = Show open risks scored by OWASP Scoring
-        else if ($sort_order == 15)
+    // 15 = Show open risks scored by OWASP Scoring
+    else if ($sort_order == 15)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                	// Query the database
-                	$stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 4 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            // Query the database
+            $stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 4 ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 4 " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 16 = Show open risks scored by Custom Scoring
-        else if ($sort_order == 16)
+    // 16 = Show open risks scored by Custom Scoring
+    else if ($sort_order == 16)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                	// Query the database
-                	$stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 5 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            // Query the database
+            $stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 5 ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 5 " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 17 = Show closed risks by date
-        else if ($sort_order == 17)
+    // 17 = Show closed risks by date
+    else if ($sort_order == 17)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                	// Query the database
-                	$stmt = $db->prepare("SELECT a.id FROM risks a LEFT JOIN closures b ON a.close_id = b.id LEFT JOIN team c ON a.team = c.value LEFT JOIN user d ON b.user_id = d.value LEFT JOIN close_reason e ON b.close_reason = e.value LEFT JOIN risk_scoring f ON a.id = f.id WHERE a.status='Closed' ORDER BY b.closure_date DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            // Query the database
+            $stmt = $db->prepare("SELECT a.id FROM risks a LEFT JOIN closures b ON a.close_id = b.id LEFT JOIN team c ON a.team = c.value LEFT JOIN user d ON b.user_id = d.value LEFT JOIN close_reason e ON b.close_reason = e.value LEFT JOIN risk_scoring f ON a.id = f.id WHERE a.status='Closed' ORDER BY b.closure_date DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
+            // Get the separation query string
 			$separation_query = get_user_teams_query("a", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT a.id FROM risks a LEFT JOIN closures b ON a.close_id = b.id LEFT JOIN team c ON a.team = c.value LEFT JOIN user d ON b.user_id = d.value LEFT JOIN close_reason e ON b.close_reason = e.value LEFT JOIN risk_scoring f ON a.id = f.id WHERE a.status='Closed' " . $separation_query . " ORDER BY b.closure_date DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-        // 18 = Get open risks by team
-        else if ($sort_order == 18)
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
+    // 18 = Get open risks by team
+    else if ($sort_order == 18)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-			// Query the database
-                	$stmt = $db->prepare("SELECT a.id FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN team c ON a.team = c.value WHERE status != 'Closed' ORDER BY a.team, b.calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+		    // Query the database
+            $stmt = $db->prepare("SELECT a.id FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN team c ON a.team = c.value WHERE status != 'Closed' ORDER BY a.team, b.calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("a", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("a", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT a.id FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN team c ON a.team = c.value WHERE status != 'Closed' " . $separation_query . " ORDER BY a.team, b.calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-        // 19 = Get open risks by technology
-        else if ($sort_order == 19)
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
+    // 19 = Get open risks by technology
+    else if ($sort_order == 19)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-			// Query the database
-                	$stmt = $db->prepare("SELECT a.id FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN technology c ON a.technology = c.value WHERE status != 'Closed' ORDER BY a.technology, b.calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+		    // Query the database
+            $stmt = $db->prepare("SELECT a.id FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN technology c ON a.technology = c.value WHERE status != 'Closed' ORDER BY a.technology, b.calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("a", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("a", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT a.id FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN technology c ON a.technology = c.value WHERE status != 'Closed' " . $separation_query . " ORDER BY a.technology, b.calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-        // 20 = Get open high risks
-        else if ($sort_order == 20)
-        {
+    // 20 = Get open high risks
+    else if ($sort_order == 20)
+    {
 		// Get the high risk level
-                $stmt = $db->prepare("SELECT value FROM `risk_levels` WHERE name = 'High'");
-                $stmt->execute();
-                $array = $stmt->fetch();
-                $high = $array['value'];
+        $stmt = $db->prepare("SELECT value FROM `risk_levels` WHERE name = 'High'");
+        $stmt->execute();
+        $array = $stmt->fetch();
+        $high = $array['value'];
 
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                	// Query the database
-                	$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :high ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+            // Query the database
+            $stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :high ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
+            // Get the separation query string
 			$separation_query = get_user_teams_query("b", false, true);
 
-                        // Query the database
+            // Query the database
 			$stmt = $db->prepare("SELECT b.id FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :high " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
-                $stmt->execute();
+        $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
+
+    // 21 = Get all risks
+    else if ($sort_order == 21)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+            // Query the database
+            $stmt = $db->prepare("SELECT * FROM risks ORDER BY id ASC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+            // Get the separation query string
+            $separation_query = get_user_teams_query(false, true, false);
+
+            // Query the database
+            $stmt = $db->prepare("SELECT * FROM risks " . $separation_query . " ORDER BY id ASC");
         }
 
-        // 21 = Get all risks
-        else if ($sort_order == 21)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                	// Query the database
-                	$stmt = $db->prepare("SELECT * FROM risks ORDER BY id ASC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $stmt->execute();
 
-                        // Get the separation query string
-			$separation_query = get_user_teams_query(false, true, false);
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
-                        // Query the database
-			$stmt = $db->prepare("SELECT * FROM risks " . $separation_query . " ORDER BY id ASC");
-		}
+    // 22 = Get all open risks by team level by score
+    else if ($sort_order == 22)
+    {
+        if(!empty($_GET['teams'])){
+            $teams = explode(",", $_GET['teams']);
+            
+            $teamsArray = array();
+            foreach($teams as $team){
+                $teamsArray[] = "b.team = ". $team;
+            }
+            $team_query_string = implode(" OR ", $teamsArray);
+            
+            $team_query = ' AND ('.$team_query_string.') ';
+            
+            $sql = "SELECT b.id, c.name team_name
+                    FROM risk_scoring a 
+                        LEFT JOIN risks b ON a.id = b.id 
+                        LEFT JOIN team c ON b.team = c.value 
+                    WHERE b.status != \"Closed\"  " . $team_query;
 
-                $stmt->execute();
+            // If the team separation extra is not enabled
+            if (team_separation_extra())
+            {
+                // Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+                // Get the separation query string
+                $separation_query = get_user_teams_query("b", false, true);
 
-        // Close the database connection
-        db_close($db);
-
-	// Return the number of elements in the array
-        return count($array);
-}
-
-/*********************************
- * FUNCTION: GET MITIGATION LIST *
- *********************************/
-function get_mitigation_list($sort_order = 0, $offset, $rowsperpage)
-{
-        $db = db_open();
-        if ($sort_order == 0)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 1 = Show risks requiring mitigations
-        else if ($sort_order == 1)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
                 // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mitigation_id = 0 AND status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+                $sql .=  $separation_query;
+            }
+            
+            $sql .= " ORDER BY calculated_risk DESC";
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Query the database
+            $stmt = $db->prepare($sql);
 
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mitigation_id = 0 AND status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
+            $stmt->execute();
 
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+        }else{
+            $array = array();
         }
+    }
 
-        // 2 = Show risks requiring management review
-        else if ($sort_order == 2)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mgmt_review = 0 AND status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    // Close the database connection
+    db_close($db);
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mgmt_review = 0 AND status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 3 = Show risks by review date
-        else if ($sort_order == 3)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.*, c.next_review FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id LEFT JOIN mgmt_reviews c ON b.mgmt_review = c.id WHERE status != \"Closed\" ORDER BY review_date ASC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.*, c.next_review FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id LEFT JOIN mgmt_reviews c ON b.mgmt_review = c.id WHERE status != \"Closed\" " . $separation_query . " ORDER BY review_date ASC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 4 = Show risks that are closed
-        else if ($sort_order == 4)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status = \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status = \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 5 = Show open risks that should be considered for projects
-        else if ($sort_order == 5)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 6 = Show open risks accepted until next review
-        else if ($sort_order == 6)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id WHERE status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 7 = Show open risks to submit as production issues
-        else if ($sort_order == 7)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 3) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 3) AS c ON a.id = c.risk_id WHERE status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 8 = Show all open risks assigned to this user by risk level
-        else if ($sort_order == 8)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND (owner = :uid OR manager = :uid) ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND (owner = :uid OR manager = :uid) " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->bindParam(":uid", $_SESSION['uid'], PDO::PARAM_INT);
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 9 = Show open risks scored by CVSS Scoring
-        else if ($sort_order == 9)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 2 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 2 " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 10 = Show open risks scored by Classic Scoring
-        else if ($sort_order == 10)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 11 = Show All Risks by Date Submitted
-        else if ($sort_order == 11)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, d.name AS team, c.name FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN team d ON b.team = d.value ORDER BY DATE(b.submission_date) DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", true, false);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, d.name AS team, c.name FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN team d ON b.team = d.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 12 = Show management reviews by date
-        else if ($sort_order == 12)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value ORDER BY DATE(b.submission_date) DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("a", true, false);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 13 = Show mitigations by date
-        else if ($sort_order == 13)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, g.name AS mitigation_team FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value ORDER BY DATE(b.submission_date) DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("a", true, false);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, g.name AS mitigation_team FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 14 = Show open risks scored by DREAD Scoring
-        else if ($sort_order == 14)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 3 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 3 " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 15 = Show open risks scored by OWASP Scoring
-        else if ($sort_order == 15)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 4 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 4 " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 16 = Show open risks scored by Custom Scoring
-        else if ($sort_order == 16)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 5 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 5 " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 17 = Show closed risks by date
-        else if ($sort_order == 17)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.id, a.subject, c.name AS team, d.name AS user, b.closure_date, e.name AS close_reason, f.calculated_risk FROM risks a LEFT JOIN closures b ON a.close_id = b.id LEFT JOIN team c ON a.team = c.value LEFT JOIN user d ON b.user_id = d.value LEFT JOIN close_reason e ON b.close_reason = e.value LEFT JOIN risk_scoring f ON a.id = f.id WHERE a.status='Closed' ORDER BY b.closure_date DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("a", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.id, a.subject, c.name AS team, d.name AS user, b.closure_date, e.name AS close_reason, f.calculated_risk FROM risks a LEFT JOIN closures b ON a.close_id = b.id LEFT JOIN team c ON a.team = c.value LEFT JOIN user d ON b.user_id = d.value LEFT JOIN close_reason e ON b.close_reason = e.value LEFT JOIN risk_scoring f ON a.id = f.id WHERE a.status='Closed' " . $separation_query . " ORDER BY b.closure_date DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 18 = Get open risks by team
-        else if ($sort_order == 18)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                        // Query the database
-                $stmt = $db->prepare("SELECT a.id, a.subject, c.name AS team, a.submission_date, b.calculated_risk FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN team c ON a.team = c.value WHERE status != 'Closed' ORDER BY a.team, b.calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("a", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.id, a.subject, c.name AS team, a.submission_date, b.calculated_risk FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN team c ON a.team = c.value WHERE status != 'Closed' " . $separation_query . " ORDER BY a.team, b.calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 19 = Get open risks by technology
-        else if ($sort_order == 19)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                        // Query the database
-                $stmt = $db->prepare("SELECT a.id, a.subject, c.name AS technology, a.submission_date, b.calculated_risk FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN technology c ON a.technology = c.value WHERE status != 'Closed' ORDER BY a.technology, b.calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("a", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.id, a.subject, c.name AS technology, a.submission_date, b.calculated_risk FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN technology c ON a.technology = c.value WHERE status != 'Closed' " . $separation_query . " ORDER BY a.technology, b.calculated_risk DESC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 20 = Get open high risks
-        else if ($sort_order == 20)
-        {
-                // Get the high risk level
-                $stmt = $db->prepare("SELECT value FROM `risk_levels` WHERE name = 'High'");
-                $stmt->execute();
-                $array = $stmt->fetch();
-                $high = $array['value'];
-
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :high ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :high " . $separation_query . " ORDER BY calculated_risk DESC");
-                }
-
-                $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 21 = Get all risks
-        else if ($sort_order == 21)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT * FROM risks ORDER BY id ASC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query(false, true, false);
-
-                        // Query the database
-                        $stmt = $db->prepare("SELECT * FROM risks " . $separation_query . " ORDER BY id ASC");
-                }
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-	// Close the database connection
-	db_close($db);
-
-        return $array;
+    // Return the number of elements in the array
+    return count($array);
 }
 
 /**********************************
@@ -4209,8 +3705,8 @@ function get_risks($sort_order=0)
 		// If the team separation extra is not enabled
 		if (!team_separation_extra())
 		{
-        	// Query the database
-		$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
+        	    // Query the database
+		    $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
 		}
 		else
 		{
@@ -4257,32 +3753,32 @@ function get_risks($sort_order=0)
                 $array = $stmt->fetchAll();
 	}
 
-        // 2 = Show risks requiring management review
-        else if ($sort_order == 2)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
+    // 2 = Show risks requiring management review
+    else if ($sort_order == 2)
+    {
+            // If the team separation extra is not enabled
+            if (!team_separation_extra())
+            {
+            // Query the database
+	$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mgmt_review = 0 AND status != \"Closed\" ORDER BY calculated_risk DESC");
+            }
+            else
+            {
+                    // Include the team separation extra
+                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    
+                    // Get the separation query string
+                    $separation_query = get_user_teams_query("b", false, true);
+
                 // Query the database
-		$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mgmt_review = 0 AND status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+		$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mgmt_review = 0 AND status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
+	}
 
-                	// Query the database
-			$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE mgmt_review = 0 AND status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
-		}
+            $stmt->execute();
 
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+    }
 
 	// 3 = Show risks by review date
 	else if ($sort_order == 3)
@@ -4313,83 +3809,83 @@ function get_risks($sort_order=0)
 
 	// 4 = Show risks that are closed
 	else if ($sort_order == 4)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
+    {
+            // If the team separation extra is not enabled
+            if (!team_separation_extra())
+            {
+	// Query the database
+	$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status = \"Closed\" ORDER BY calculated_risk DESC");
+            }
+            else
+            {
+                    // Include the team separation extra
+                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                    // Get the separation query string
+                    $separation_query = get_user_teams_query("b", false, true);
+
 		// Query the database
-		$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status = \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+		$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status = \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
+	}
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            $stmt->execute();
 
-			// Query the database
-			$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status = \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
-		}
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+    }
 
 	// 5 = Show open risks that should be considered for projects
 	else if ($sort_order == 5)
 	{
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-		// Query the database
-		$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+// Query the database
+$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
 			// Query the database
 			$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
 	// 6 = Show open risks accepted until next review
 	else if ($sort_order == 6)
 	{
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-		// Query the database
-		$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+		    // Query the database
+		    $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id WHERE status != \"Closed\" ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
 			// Query the database
 			$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id WHERE status != \"Closed\" " . $separation_query . " ORDER BY calculated_risk DESC");
 		}
 
-                $stmt->execute();
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
+        // Store the list in the array
+        $array = $stmt->fetchAll();
 	}
 
 	// 7 = Show open risks to submit as production issues
@@ -4419,33 +3915,33 @@ function get_risks($sort_order=0)
                 $array = $stmt->fetchAll();
 	}
 
-        // 8 = Show all open risks assigned to this user by risk level
-        else if ($sort_order == 8)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
+    // 8 = Show all open risks assigned to this user by risk level
+    else if ($sort_order == 8)
+    {
+            // If the team separation extra is not enabled
+            if (!team_separation_extra())
+            {
+            // Query the database
+            $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND (owner = :uid OR manager = :uid) ORDER BY calculated_risk DESC");
+            }
+            else
+            {
+                    // Include the team separation extra
+                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                    // Get the separation query string
+                    $separation_query = get_user_teams_query("b", false, true);
+
                 // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND (owner = :uid OR manager = :uid) ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND (owner = :uid OR manager = :uid) " . $separation_query . " ORDER BY calculated_risk DESC");
+	}
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+	$stmt->bindParam(":uid", $_SESSION['uid'], PDO::PARAM_INT);
+            $stmt->execute();
 
-                	// Query the database
-                	$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND (owner = :uid OR manager = :uid) " . $separation_query . " ORDER BY calculated_risk DESC");
-		}
-
-		$stmt->bindParam(":uid", $_SESSION['uid'], PDO::PARAM_INT);
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+    }
 
 	// 9 = Show open risks scored by CVSS Scoring
 	else if ($sort_order == 9)
@@ -4474,221 +3970,221 @@ function get_risks($sort_order=0)
                 $array = $stmt->fetchAll();
 	}
 
-        // 10 = Show open risks scored by Classic Scoring
-        else if ($sort_order == 10)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
+    // 10 = Show open risks scored by Classic Scoring
+    else if ($sort_order == 10)
+    {
+            // If the team separation extra is not enabled
+            if (!team_separation_extra())
+            {
+            // Query the database
+	$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 ORDER BY calculated_risk DESC");
+            }
+            else
+            {
+                    // Include the team separation extra
+                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    
+                    // Get the separation query string
+                    $separation_query = get_user_teams_query("b", false, true);
+
                 // Query the database
-		$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+		$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 " . $separation_query . " ORDER BY calculated_risk DESC");
+	}
 
-                	// Query the database
-			$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 " . $separation_query . " ORDER BY calculated_risk DESC");
-		}
+            $stmt->execute();
 
-                $stmt->execute();
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+    }
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+    // 11 = Show All Risks by Date Submitted
+    else if ($sort_order == 11)
+    {
+            // If the team separation extra is not enabled
+            if (!team_separation_extra())
+            {
+            // Query the database
+            $stmt = $db->prepare("SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, d.name AS team, c.name FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN team d ON b.team = d.value ORDER BY DATE(b.submission_date) DESC");
+            }
+            else
+            {
+                    // Include the team separation extra
+                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    
+                    // Get the separation query string
+                    $separation_query = get_user_teams_query("b", true, false);
 
-        // 11 = Show All Risks by Date Submitted
-        else if ($sort_order == 11)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
                 // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, d.name AS team, c.name FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN team d ON b.team = d.value ORDER BY DATE(b.submission_date) DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", true, false);
+                $stmt = $db->prepare("SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, d.name AS team, c.name FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN team d ON b.team = d.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
+	}
 
-                	// Query the database
-                	$stmt = $db->prepare("SELECT a.calculated_risk, b.id, b.subject, b.status, b.submission_date, d.name AS team, c.name FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN user c ON b.submitted_by = c.value LEFT JOIN team d ON b.team = d.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
-		}
+            $stmt->execute();
 
-                $stmt->execute();
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+    }
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+    // 12 = Show management reviews by date
+    else if ($sort_order == 12)
+    {
+            // If the team separation extra is not enabled
+            if (!team_separation_extra())
+            {
+            // Query the database
+            $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value ORDER BY DATE(b.submission_date) DESC");
+            }
+            else
+            {
+                    // Include the team separation extra
+                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    
+                    // Get the separation query string
+                    $separation_query = get_user_teams_query("a", true, false);
 
-        // 12 = Show management reviews by date
-        else if ($sort_order == 12)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
                 // Query the database
-                $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value ORDER BY DATE(b.submission_date) DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("a", true, false);
+                $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
+	}
 
-                	// Query the database
-                	$stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
-		}
+            $stmt->execute();
 
-                $stmt->execute();
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+    }
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+    // 13 = Show mitigations by date
+    else if ($sort_order == 13)
+    {
+            // If the team separation extra is not enabled
+            if (!team_separation_extra())
+            {
+            // Query the database
+            $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, g.name AS mitigation_team FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value ORDER BY DATE(b.submission_date) DESC");
+            }
+            else
+            {
+                    // Include the team separation extra
+                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-        // 13 = Show mitigations by date
-        else if ($sort_order == 13)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
+                    // Get the separation query string
+                    $separation_query = get_user_teams_query("a", true, false);
+
                 // Query the database
-                $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, g.name AS mitigation_team FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value ORDER BY DATE(b.submission_date) DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+                $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, g.name AS mitigation_team FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
+	}
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("a", true, false);
+            $stmt->execute();
 
-                	// Query the database
-                	$stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, g.name AS mitigation_team FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
-		}
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+    }
 
-                $stmt->execute();
+    // 14 = Show open risks scored by DREAD Scoring
+    else if ($sort_order == 14)
+    {
+            // If the team separation extra is not enabled
+            if (!team_separation_extra())
+            {
+            // Query the database
+            $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 3 ORDER BY calculated_risk DESC");
+            }
+            else
+            {
+                    // Include the team separation extra
+                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+                    // Get the separation query string
+                    $separation_query = get_user_teams_query("b", false, true);
 
-        // 14 = Show open risks scored by DREAD Scoring
-        else if ($sort_order == 14)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
                 // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 3 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 3 " . $separation_query . " ORDER BY calculated_risk DESC");
+	}
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            $stmt->execute();
 
-                	// Query the database
-                	$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 3 " . $separation_query . " ORDER BY calculated_risk DESC");
-		}
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+    }
 
-                $stmt->execute();
+    // 15 = Show open risks scored by OWASP Scoring
+    else if ($sort_order == 15)
+    {
+            // If the team separation extra is not enabled
+            if (!team_separation_extra())
+            {
+            // Query the database
+            $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 4 ORDER BY calculated_risk DESC");
+            }
+            else
+            {
+                // Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+                // Get the separation query string
+                $separation_query = get_user_teams_query("b", false, true);
 
-        // 15 = Show open risks scored by OWASP Scoring
-        else if ($sort_order == 15)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
                 // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 4 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 4 " . $separation_query . " ORDER BY calculated_risk DESC");
+	}
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+            $stmt->execute();
 
-                	// Query the database
-                	$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 4 " . $separation_query . " ORDER BY calculated_risk DESC");
-		}
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+    }
 
-                $stmt->execute();
+    // 16 = Show open risks scored by Custom Scoring
+    else if ($sort_order == 16)
+    {
+            // If the team separation extra is not enabled
+            if (!team_separation_extra())
+            {
+            // Query the database
+            $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 5 ORDER BY calculated_risk DESC");
+            }
+            else
+            {
+                    // Include the team separation extra
+                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    
+                    // Get the separation query string
+                    $separation_query = get_user_teams_query("b", false, true);
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
-
-        // 16 = Show open risks scored by Custom Scoring
-        else if ($sort_order == 16)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
                 // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 5 ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
+                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 5 " . $separation_query . " ORDER BY calculated_risk DESC");
+	}
 
-                	// Query the database
-                	$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 5 " . $separation_query . " ORDER BY calculated_risk DESC");
-		}
+            $stmt->execute();
 
-                $stmt->execute();
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+    }
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+    // 17 = Show closed risks by date
+    else if ($sort_order == 17)
+    {
+            // If the team separation extra is not enabled
+            if (!team_separation_extra())
+            {
+            // Query the database
+	$stmt = $db->prepare("SELECT a.id, a.subject, c.name AS team, d.name AS user, b.closure_date, e.name AS close_reason, f.calculated_risk FROM risks a LEFT JOIN closures b ON a.close_id = b.id LEFT JOIN team c ON a.team = c.value LEFT JOIN user d ON b.user_id = d.value LEFT JOIN close_reason e ON b.close_reason = e.value LEFT JOIN risk_scoring f ON a.id = f.id WHERE a.status='Closed' ORDER BY b.closure_date DESC");
+            }
+            else
+            {
+                    // Include the team separation extra
+                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-        // 17 = Show closed risks by date
-        else if ($sort_order == 17)
-        {
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
+                    // Get the separation query string
+                    $separation_query = get_user_teams_query("a", false, true);
+
                 // Query the database
-		$stmt = $db->prepare("SELECT a.id, a.subject, c.name AS team, d.name AS user, b.closure_date, e.name AS close_reason, f.calculated_risk FROM risks a LEFT JOIN closures b ON a.close_id = b.id LEFT JOIN team c ON a.team = c.value LEFT JOIN user d ON b.user_id = d.value LEFT JOIN close_reason e ON b.close_reason = e.value LEFT JOIN risk_scoring f ON a.id = f.id WHERE a.status='Closed' ORDER BY b.closure_date DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+		$stmt = $db->prepare("SELECT a.id, a.subject, c.name AS team, d.name AS user, b.closure_date, e.name AS close_reason, f.calculated_risk FROM risks a LEFT JOIN closures b ON a.close_id = b.id LEFT JOIN team c ON a.team = c.value LEFT JOIN user d ON b.user_id = d.value LEFT JOIN close_reason e ON b.close_reason = e.value LEFT JOIN risk_scoring f ON a.id = f.id WHERE a.status='Closed' " . $separation_query . " ORDER BY b.closure_date DESC");
+	}
 
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("a", false, true);
+            $stmt->execute();
 
-                	// Query the database
-			$stmt = $db->prepare("SELECT a.id, a.subject, c.name AS team, d.name AS user, b.closure_date, e.name AS close_reason, f.calculated_risk FROM risks a LEFT JOIN closures b ON a.close_id = b.id LEFT JOIN team c ON a.team = c.value LEFT JOIN user d ON b.user_id = d.value LEFT JOIN close_reason e ON b.close_reason = e.value LEFT JOIN risk_scoring f ON a.id = f.id WHERE a.status='Closed' " . $separation_query . " ORDER BY b.closure_date DESC");
-		}
-
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-        }
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+    }
 
 	// 18 = Get open risks by team
 	else if ($sort_order == 18)
@@ -4744,56 +4240,56 @@ function get_risks($sort_order=0)
                 $array = $stmt->fetchAll();
         }
 
-        // 20 = Get open high risks
-        else if ($sort_order == 20)
+    // 20 = Get open high risks
+    else if ($sort_order == 20)
+    {
+	    // Get the high risk level
+	    $stmt = $db->prepare("SELECT value FROM `risk_levels` WHERE name = 'High'");
+	    $stmt->execute();
+	    $array = $stmt->fetch();
+	    $high = $array['value'];
+
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
         {
-		// Get the high risk level
-		$stmt = $db->prepare("SELECT value FROM `risk_levels` WHERE name = 'High'");
-		$stmt->execute();
-		$array = $stmt->fetch();
-		$high = $array['value'];
-
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-                // Query the database
-                $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :high ORDER BY calculated_risk DESC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query("b", false, true);
-
-                	// Query the database
-                	$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :high " . $separation_query . " ORDER BY calculated_risk DESC");
-		}
-
-		$stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
+        // Query the database
+        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :high ORDER BY calculated_risk DESC");
         }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
+
+            // Query the database
+            $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND a.calculated_risk >= :high " . $separation_query . " ORDER BY calculated_risk DESC");
+	    }
+
+	    $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+    }
 
 	// 21 = Get all risks
 	else if ($sort_order == 21)
 	{
-                // If the team separation extra is not enabled
-                if (!team_separation_extra())
-                {
-		// Query the database
-		$stmt = $db->prepare("SELECT * FROM risks ORDER BY id ASC");
-                }
-                else
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        
-                        // Get the separation query string
-                        $separation_query = get_user_teams_query(false, true, false);
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+		    // Query the database
+		    $stmt = $db->prepare("SELECT * FROM risks ORDER BY id ASC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+            // Get the separation query string
+            $separation_query = get_user_teams_query(false, true, false);
 
 			// Query the database
 			$stmt = $db->prepare("SELECT * FROM risks " . $separation_query . " ORDER BY id ASC");
@@ -4802,13 +4298,62 @@ function get_risks($sort_order=0)
 		$stmt->execute();
 
 		// Store the list in the array
-                $array = $stmt->fetchAll();
+        $array = $stmt->fetchAll();
 	}
+    
+    // 22 = Get all open risks by team level by score
+    else if ($sort_order == 22)
+    {
+        
+        if(!empty($_GET['teams'])){
+            $teams = explode(",", $_GET['teams']);
+            
+            $teamsArray = array();
+            foreach($teams as $team){
+                $teamsArray[] = "b.team = ". $team;
+            }
+            $team_query_string = implode(" OR ", $teamsArray);
+            
+            $team_query = ' AND ('.$team_query_string.') ';
+            
+            $sql = "SELECT a.calculated_risk, b.*, c.name team_name
+                    FROM risk_scoring a 
+                        LEFT JOIN risks b ON a.id = b.id 
+                        LEFT JOIN team c ON b.team = c.value 
+                    WHERE b.status != \"Closed\"  " . $team_query;
 
-        // Close the database connection
-        db_close($db);
+            // If the team separation extra is not enabled
+            if (team_separation_extra())
+            {
+                // Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-        return $array;
+                // Get the separation query string
+                $separation_query = get_user_teams_query("b", false, true);
+
+                // Query the database
+                $sql .=  $separation_query;
+            }
+            
+            $sql .= " ORDER BY calculated_risk DESC";
+
+            // Query the database
+            $stmt = $db->prepare($sql);
+
+            $stmt->execute();
+
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+        }else{
+            $array = array();
+        }
+
+    }
+
+    // Close the database connection
+    db_close($db);
+
+    return $array;
 }
 
 /****************************
@@ -4819,48 +4364,48 @@ function get_risk_table($sort_order=0, $activecol="")
 	global $lang;
 	global $escaper;
 
-        // Get risks
-        $count = get_risks_count($sort_order);
+    // Get risks
+    $count = get_risks_count($sort_order);
 
-        // number of rows to show per page
-        $rowsperpage = 10;
+    // number of rows to show per page
+    $rowsperpage = 10;
 
-        // find out total pages
-        $totalpages = ceil($count / $rowsperpage);
+    // find out total pages
+    $totalpages = ceil($count / $rowsperpage);
 
-        // get the current page or set a default
-        if (isset($_GET['currentpage']) && is_numeric($_GET['currentpage'])) {
-           // cast var as int
-           $currentpage = (int) $_GET['currentpage'];
-        } else {
-           // default page num
-           $currentpage = 1;
-        } // end if
+    // get the current page or set a default
+    if (isset($_GET['currentpage']) && is_numeric($_GET['currentpage'])) {
+       // cast var as int
+       $currentpage = (int) $_GET['currentpage'];
+    } else {
+       // default page num
+       $currentpage = 1;
+    } // end if
 
-        // if current page is greater than total pages...
-        if ($currentpage > $totalpages) {
-           // set current page to last page
-           $currentpage = $totalpages;
-        } // end if
-        // if current page is less than first page...
-        if ($currentpage < 1) {
-           // set current page to first page
-           $currentpage = 1;
-        } // end if
+    // if current page is greater than total pages...
+    if ($currentpage > $totalpages) {
+       // set current page to last page
+       $currentpage = $totalpages;
+    } // end if
+    // if current page is less than first page...
+    if ($currentpage < 1) {
+       // set current page to first page
+       $currentpage = 1;
+    } // end if
 
-        // the offset of the list, based on current page
-        $offset = ($currentpage - 1) * $rowsperpage;
+    // the offset of the list, based on current page
+    $offset = ($currentpage - 1) * $rowsperpage;
 
-        $all_style = '';
-        if(isset($_GET['currentpage']) && $_GET['currentpage'] == 'all') {
-                $offset = 0;
-                $rowsperpage = $count;
-                $currentpage = -1;
-                $all_style = 'class="active"';   
-        }
+    $all_style = '';
+    if(isset($_GET['currentpage']) && $_GET['currentpage'] == 'all') {
+        $offset = 0;
+        $rowsperpage = $count;
+        $currentpage = -1;
+        $all_style = 'class="active"';   
+    }
 
-        // Get the list of mitigations
-        $risks = get_mitigation_list($sort_order, $offset, $rowsperpage);
+    // Get the list of mitigations
+    $risks = get_risks($sort_order);
 
 	echo "<table class=\"table table-bordered table-striped table-condensed sortable\">\n";
 	echo "<thead>\n";
@@ -4868,7 +4413,11 @@ function get_risk_table($sort_order=0, $activecol="")
 	echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."#</th>\n";
 	echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
 	echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-	echo "<th align=\"center\" width=\"80px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+    // If current page is All Open Risks by Team by Risk Level
+    if($sort_order == 22){
+        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Team']) ."</th>\n";
+    }
+    echo "<th align=\"center\" width=\"80px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
 	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Submitted']) ."</th>\n";
 	echo "<th align=\"center\" width=\"150px\" class=\"mitigation-head\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</th>\n";
 	echo "<th align=\"center\" width=\"160px\">". $escaper->escapeHtml($lang['ManagementReview']) ."</th>\n";
@@ -4889,6 +4438,9 @@ function get_risk_table($sort_order=0, $activecol="")
 		echo "<td align=\"left\" width=\"50px\" class='open-risk'><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
 		echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
 		echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml(try_decrypt($risk['subject'])) . "</td>\n";
+        if($sort_order == 22){
+            echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml(try_decrypt($risk['team_name'])) ."</th>\n";
+        }
 		echo "<td align=\"center\" class=\"" . $escaper->escapeHtml($color) . " risk-cell \">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></td>\n";
 		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIME, strtotime($risk['submission_date']))) . "</td>\n";
 
@@ -4919,24 +4471,30 @@ function get_risk_table($sort_order=0, $activecol="")
 		echo "</tr>\n";
 	}
 
-	    echo "</tbody>\n";
-	    echo "</table>\n";
+	echo "</tbody>\n";
+	echo "</table>\n";
 
-        echo "<div class=\"pagination clearfix\"><ul class=\"pull-right\">";
-        // range of num links to show
-        $range = 3;
+    echo "<div class=\"pagination clearfix\"><ul class=\"pull-right\">";
+    // range of num links to show
+    $range = 3;
 
-        if (!empty ($risks))
-        {
+    if(isset($_GET['teams'])){
+        $teamsQueryString = "teams=". $_GET['teams'];
+    }else{
+        $teamsQueryString = "teams=";
+    }
 
-                // if not on page 1, don't show back links
+    if (!empty ($risks))
+    {
+
+        // if not on page 1, don't show back links
         if ($currentpage > 1) {
            // show << link to go back to page 1
-           echo "<li><a href='{$_SERVER['PHP_SELF']}?currentpage=1' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i></a></li>";
+           echo "<li><a href='{$_SERVER['PHP_SELF']}?currentpage=1&". $teamsQueryString ."' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i></a></li>";
            // get previous page num
            $prevpage = $currentpage - 1;
            // show < link to go back to 1 page
-           echo " <li><a href='{$_SERVER['PHP_SELF']}?currentpage=$prevpage' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i></a></li> ";
+           echo " <li><a href='{$_SERVER['PHP_SELF']}?currentpage={$prevpage}&". $teamsQueryString ."' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i></a></li> ";
         } else {// end if
            echo " <li><a href='javascript:void();' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i></a></li> ";
         }
@@ -4948,11 +4506,11 @@ function get_risk_table($sort_order=0, $activecol="")
               // if we're on current page...
               if ($x == $currentpage) {
                  // 'highlight' it but don't make a link
-                 echo "<li class=\"active\"><a href=\"#\">$x</a></li>";
+                 echo "<li class=\"active\"><a href=\"#\">{$x}</a></li>";
               // if not current page...
               } else {
                  // make it a link
-                 echo " <li><a href='{$_SERVER['PHP_SELF']}?currentpage=$x'>$x</a></li> ";
+                 echo " <li><a href='{$_SERVER['PHP_SELF']}?currentpage={$x}&". $teamsQueryString ."'>{$x}</a></li> ";
               } // end else
            } // end if
         } // end for
@@ -4962,18 +4520,18 @@ function get_risk_table($sort_order=0, $activecol="")
            // get next page
            $nextpage = $currentpage + 1;
             // echo forward link for next page
-           echo " <li><a href='{$_SERVER['PHP_SELF']}?currentpage=$nextpage' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i></a></li> ";
+           echo " <li><a href='{$_SERVER['PHP_SELF']}?currentpage={$nextpage}&". $teamsQueryString ."' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i></a></li> ";
            // echo forward link for lastpage
-          echo "<li><a href='{$_SERVER['PHP_SELF']}?currentpage=$totalpages' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i><i class=\"fa fa-chevron-right\"></i></a></li>";
+          echo "<li><a href='{$_SERVER['PHP_SELF']}?currentpage={$totalpages}". $teamsQueryString ."' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i><i class=\"fa fa-chevron-right\"></i></a></li>";
         } else { // end if
            echo " <li><a href='javascript:void(0);' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i></a></li> ";
         }
         /****** end build pagination links ******/
-        }
+    }
 
-        echo " <li $all_style><a href='{$_SERVER['PHP_SELF']}?currentpage=all'>All</a></li> ";
+    echo " <li {$all_style}><a href='{$_SERVER['PHP_SELF']}?currentpage=all&". $teamsQueryString ."'>All</a></li> ";
 
-        echo "</ul></div>";
+    echo "</ul></div>";
 
 	return true;
 }
@@ -6117,7 +5675,7 @@ function get_reviews_table($sort_order=3)
 
 
         // Get the list of reviews
-        $risks = get_mitigation_list($sort_order, $offset, $rowsperpage);
+        $risks = get_risks($sort_order);
 
         // Initialize the arrays
 	$need_reviews = array();
@@ -7439,6 +6997,9 @@ function custom_authentication_extra()
         else return false;
 }
 
+/*****************************************
+ * FUNCTION: GET SETTING VALUE BY NAME *
+ *****************************************/
 function get_settting_by_name($name){
 	// Open the database connection
 	$db = db_open();
@@ -7590,30 +7151,37 @@ function api_extra()
  *******************************/
 function assessments_extra()
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // See if the assessments extra is available
-        $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'assessments'");
-        $stmt->execute();
+    // See if the assessments extra is available
+    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'assessments'");
+    $stmt->execute();
 
-        // Get the results array
-        $array = $stmt->fetchAll();
+    // Get the results array
+    $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // If no value was found
-        if (empty($array))
-        {
-                return false;
-        }
-        // If the value is true
-        else if ($array[0]['value'] == "true")
-        {
-                return true;
-        }
-        else return false;
+    // If no value was found
+    if (empty($array))
+    {
+        return false;
+    }
+    // If the value is true
+    else if ($array[0]['value'] == "true")
+    {
+        return true;
+    }
+    else return false;
+}
+
+/******************************
+ * FUNCTION: CHECK INSTALLED PHP-MCRYPT *
+ ******************************/
+function installed_mcrypt(){
+    return extension_loaded("mcrypt");
 }
 
 /******************************
@@ -7621,38 +7189,38 @@ function assessments_extra()
  ******************************/
 function encryption_extra()
 {
-        if(isset($GLOBALS['encryption_extra'])){
-            return $GLOBALS['encryption_extra'];
-        }
-        // Open the database connection
-        $db = db_open();
+    if(isset($GLOBALS['encryption_extra'])){
+        return $GLOBALS['encryption_extra'];
+    }
+    // Open the database connection
+    $db = db_open();
 
-        // See if the encryption extra is available
-        $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'encryption'");
-        $stmt->execute();
+    // See if the encryption extra is available
+    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'encryption'");
+    $stmt->execute();
 
-        // Get the results array
-        $array = $stmt->fetchAll();
+    // Get the results array
+    $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // If no value was found
-        if (empty($array))
-        {
-            $GLOBALS['encryption_extra'] = false;
-            return false;
-        }
-        // If the value is true
-        else if ($array[0]['value'] == "true")
-        {
-            $GLOBALS['encryption_extra'] = true;
-            return true;
-        }
-        else {
-            $GLOBALS['encryption_extra'] = false;
-            return false;
-        }
+    // If no value was found
+    if (empty($array))
+    {
+        $GLOBALS['encryption_extra'] = false;
+        return false;
+    }
+    // If the value is true
+    else if ($array[0]['value'] == "true")
+    {
+        $GLOBALS['encryption_extra'] = true;
+        return true;
+    }
+    else {
+        $GLOBALS['encryption_extra'] = false;
+        return false;
+    }
 }
 
 /*************************
@@ -7660,51 +7228,51 @@ function encryption_extra()
  *************************/
 function upload_file($risk_id, $file, $view_type = 1)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Get the list of allowed file types
-        $stmt = $db->prepare("SELECT `name` FROM `file_types`");
-        $stmt->execute();
+    // Get the list of allowed file types
+    $stmt = $db->prepare("SELECT `name` FROM `file_types`");
+    $stmt->execute();
 
-        // Get the result
-        $result = $stmt->fetchAll();
+    // Get the result
+    $result = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // Create an array of allowed types
-        foreach ($result as $key => $row)
+    // Create an array of allowed types
+    foreach ($result as $key => $row)
+    {
+		$allowed_types[] = $row['name'];
+	}
+
+    // If a file was submitted and the name isn't blank
+    if (isset($file) && $file['name'] != "")
+    {
+        // If the file type is appropriate
+        if (in_array($file['type'], $allowed_types))
         {
-		    $allowed_types[] = $row['name'];
-	    }
-
-        // If a file was submitted and the name isn't blank
-        if (isset($file) && $file['name'] != "")
-        {
-        	// If the file type is appropriate
-                if (in_array($file['type'], $allowed_types))
-                {
 			// Get the maximum upload file size
 			$max_upload_size = get_setting("max_upload_size");
 
-                	// If the file size is less than 5MB
-                        if ($file['size'] < $max_upload_size)
-                        {
-                        	// If there was no error with the upload
-                                if ($file['error'] == 0)
-                                {
+            // If the file size is less than 5MB
+            if ($file['size'] < $max_upload_size)
+            {
+                // If there was no error with the upload
+                if ($file['error'] == 0)
+                {
 					// Read the file
 					$content = fopen($file['tmp_name'], 'rb');
 
 					// Create a unique file name
 					$unique_name = generate_token(30);
 
-                                        // Open the database connection
-                                        $db = db_open();
+                    // Open the database connection
+                    $db = db_open();
 
-        				// Store the file in the database
-        				$stmt = $db->prepare("INSERT INTO files (risk_id, view_type, name, unique_name, type, size, user, content) VALUES (:risk_id, :view_type, :name, :unique_name, :type, :size, :user, :content)");
+        			// Store the file in the database
+        			$stmt = $db->prepare("INSERT INTO files (risk_id, view_type, name, unique_name, type, size, user, content) VALUES (:risk_id, :view_type, :name, :unique_name, :type, :size, :user, :content)");
 					$stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
 					$stmt->bindParam(":view_type", $view_type, PDO::PARAM_INT);
 					$stmt->bindParam(":name", $file['name'], PDO::PARAM_STR, 30);
@@ -7713,14 +7281,15 @@ function upload_file($risk_id, $file, $view_type = 1)
 					$stmt->bindParam(":size", $file['size'], PDO::PARAM_INT);
 					$stmt->bindParam(":user", $_SESSION['uid'], PDO::PARAM_INT);
 					$stmt->bindParam(":content", $content, PDO::PARAM_LOB);
-        				$stmt->execute();
+        			$stmt->execute();
 
-        				// Close the database connection
-        				db_close($db);
+        			// Close the database connection
+        			db_close($db);
 
 					// Return a success
 					return 1;
-                                }
+                                
+                }
 				// Otherwise
 				else
 				{
@@ -7751,9 +7320,9 @@ function upload_file($risk_id, $file, $view_type = 1)
 							return "There was an error with the file upload.";
 					}
 				}
-                        }
+            }
 			else return "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
-                }
+        }
 		else return "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
 	}
 	else return 1;
@@ -7764,16 +7333,16 @@ function upload_file($risk_id, $file, $view_type = 1)
  *************************/
 function delete_file($unique_name)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
     // Delete the file from the database
     $stmt = $db->prepare("DELETE FROM files WHERE unique_name=:unique_name");
     $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
     $stmt->execute();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
     return 1;
 }
@@ -7929,7 +7498,7 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
         // Get the file from the database
         $stmt = $db->prepare("SELECT name, unique_name FROM files WHERE risk_id=:id AND view_type=:view_type");
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-	       $stmt->bindParam(":view_type", $view_type, PDO::PARAM_INT);
+        $stmt->bindParam(":view_type", $view_type, PDO::PARAM_INT);
         $stmt->execute();
 
         // Store the results in an array
@@ -8403,7 +7972,6 @@ function try_decrypt($value)
 
 		// Decrypt the value
 		$decrypted_value = decrypt($_SESSION['encrypted_pass'], $value);
-
 		// Return the decrypted value
 		return $decrypted_value;
 	}
@@ -8416,26 +7984,26 @@ function try_decrypt($value)
  *************************/
 function try_encrypt($value)
 {
-        // If the encryption extra is enabled
-        if (encryption_extra())
-        {
-                // Load the extra
-                require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+    // If the encryption extra is enabled
+    if (encryption_extra())
+    {
+        // Load the extra
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
 		// If the encrypted password is set
 		if (isset($_SESSION['encrypted_pass']))
 		{
-                	// Encrypt the value
-                	$encrypted_value = encrypt($_SESSION['encrypted_pass'], $value);
+            // Encrypt the value
+            $encrypted_value = encrypt($_SESSION['encrypted_pass'], $value);
 
-                	// Return the encrypted value
-                	return $encrypted_value;
+            // Return the encrypted value
+            return $encrypted_value;
 		}
 		// Otherwise return the value
 		else return $value;
-        }
-        // Otherwise return the value
-        else return $value;
+    }
+    // Otherwise return the value
+    else return $value;
 }
 
 /*****************************
@@ -8886,6 +8454,29 @@ function get_scoring_histories($risk_id){
     $stmt->execute();
     $histories = $stmt->fetchAll();
     return $histories;
+}
+
+/****************************************
+ * FUNCTION: CHECK IF SUBMITTED *
+ ****************************************/
+function is_submitted(){
+    if(isset($_POST) && count($_POST)){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+/****************************************
+ * FUNCTION: CHECK IF EXTERNAL PROCESS EXISTS *
+ ****************************************/
+function is_process($name){
+    $cmd = $name;
+    if(exec($cmd)){
+        return true;
+    }else{
+        return false;
+    }
 }
 
 ?>

@@ -363,3 +363,11 @@ div.doc-link {
 #export-dynamic-risk-report{
     cursor: pointer;
 }
+
+.modal{
+    z-index: 9999;
+}
+
+#risks-open-by-team-container{
+    margin-top: 14px;
+}

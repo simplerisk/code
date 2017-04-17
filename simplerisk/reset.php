@@ -79,8 +79,11 @@ if (isset($_POST['password_reset']))
 	}
 	else
 	{
-		// Display an alert
-		set_alert(true, "bad", "There was a problem with your password reset request.  Please try again.");
+        if (isset($_SESSION['alert']) && $_SESSION['alert'] == true){
+        }else{
+            // Display an alert
+            set_alert(true, "bad", "There was a problem with your password reset request.  Please try again.");
+        }
 	}
 }
 

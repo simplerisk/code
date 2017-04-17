@@ -106,7 +106,6 @@ if (isset($_POST['submit']))
 			{
 				// Load the extra
 				require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
-
 				// Check user enc
 				check_user_enc($user, $pass);
 			}
@@ -118,7 +117,7 @@ if (isset($_POST['submit']))
   	// If the user is not a valid user
   	else
   	{
-    		$_SESSION["access"] = "denied";
+		$_SESSION["access"] = "denied";
 
 		// Display an alert
 		set_alert(true, "bad", "Invalid username or password.");
@@ -128,7 +127,7 @@ if (isset($_POST['submit']))
 		{
 			// Add the login attempt and block if necessary
 			add_login_attempt_and_block($user);
-    		}
+		}
   	}
 }
 
@@ -185,7 +184,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
 
 <html ng-app="SimpleRisk">
 <head>
-  <title>Simple Risk</title>
+  <title>SimpleRisk</title>
   <!-- build:css vendor/vendor.min.css -->
   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" media="screen" />
   <!-- endbuild -->
