@@ -161,7 +161,8 @@ if (isset($_GET['mitigated']))
       </div>
     </div>
   </div>
-  <input type="hidden" id="_delete_tab_alert" value="<?php echo $escaper->escapeHtml($lang['Are you sure you want to close the risk? All changes will be lost!']); ?>">
+    <input type="hidden" id="_delete_tab_alert" value="<?php echo $escaper->escapeHtml($lang['Are you sure you want to close the risk? All changes will be lost!']); ?>">
+    <input type="hidden" id="enable_popup" value="<?php echo get_setting('enable_popup'); ?>">
 
 </body>
 

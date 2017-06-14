@@ -54,65 +54,25 @@ if (isset($_POST['submit']))
 	// If the user is valid
 	if (is_valid_user($user, $pass))
 	{
-		// If the custom authentication extra is installed
-		if (custom_authentication_extra())
-		{
-			// Include the custom authentication extra
-			require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
+        $uid = get_id_by_user($user);
+        $array = get_user_by_id($uid);
+        if($array['change_password']){
+            $_SESSION['first_login_uid'] = $uid;
 
-			// Get the enabled authentication for the user
-			$enabled_auth = enabled_auth($user);
+            if (encryption_extra())
+            {
+                // Load the extra
+                require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
 
-			// If no multi factor authentication is enabled for the user
-			if ($enabled_auth == 1)
-			{
-				// Grant the user access
-				grant_access();
+                // Get the current password encrypted with the temp key
+                check_user_enc($user, $pass);
+            }
+            header("location: reset_password.php");exit;
+        }
+        
+        // Set login status
+        login($user, $pass);
 
-				// If the encryption extra is enabled
-				if (encryption_extra())
-				{
-					// Load the extra
-					require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
-
-					// Check user enc
-					check_user_enc($user, $pass);
-				}
-
-				// Select where to redirect the user next
-				select_redirect();
-			}
-			// If Duo authentication is enabled for the user
-			else if ($enabled_auth == 2)
-			{
-				// Set session access to duo
-				$_SESSION["access"] = "duo";
-			}
-			// If Toopher authentication is enabled for the user
-			else if ($enabled_auth == 3)
-			{
-				// Set session access to toopher
-				$_SESSION["access"] = "toopher";
-			}
-		}
-		// Otherwise the custom authentication extra is not installed
-		else
-		{
-			// Grant the user access
-			grant_access();
-
-			// If the encryption extra is enabled
-			if (encryption_extra())
-			{
-				// Load the extra
-				require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
-				// Check user enc
-				check_user_enc($user, $pass);
-			}
-
-			// Select where to redirect the user next
-			select_redirect();
-		}
   	}
   	// If the user is not a valid user
   	else
@@ -184,7 +144,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
 
 <html ng-app="SimpleRisk">
 <head>
-  <title>SimpleRisk</title>
+  <title>Simple Risk</title>
   <!-- build:css vendor/vendor.min.css -->
   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" media="screen" />
   <!-- endbuild -->

@@ -147,10 +147,10 @@ function is_valid_user($user, $pass, $upgrade = false)
     // If the type is ldap
     else if ($type == "ldap")
     {
-                // If custom authentication is enabled
-                if (custom_authentication_extra())
-                {
-                        // Include the custom authentication extra
+        // If custom authentication is enabled
+        if (custom_authentication_extra())
+        {
+            // Include the custom authentication extra
             require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
 
             // Check for a valid Active Directory user
@@ -227,7 +227,13 @@ function set_user_permissions($user, $pass, $upgrade = false)
     // Store the list in the array
     $array = $stmt->fetchAll();
 
+    // Get base url
+    $base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['SCRIPT_NAME']}";
+    $base_url = htmlspecialchars( $base_url, ENT_QUOTES, 'UTF-8' );
+    $base_url = pathinfo($base_url)['dirname'];
+
     // Set the minimal session values
+    $_SESSION['base_url'] = $base_url;
     $_SESSION['uid'] = $array[0]['value'];
     $_SESSION['user'] = $user;
     $_SESSION['name'] = $array[0]['name'];
@@ -280,17 +286,16 @@ function grant_access()
 
     // Grant access
     $_SESSION["access"] = "granted";
-
     // Clear any failed login attempts
     clear_failed_logins($_SESSION['uid']);
 
-        // Update the last login
-        update_last_login($_SESSION['uid']);
+    // Update the last login
+    update_last_login($_SESSION['uid']);
 
-        // Audit log
-        $risk_id = 1000;
-        $message = "Username \"" . $_SESSION['user'] . "\" logged in successfully.";
-        write_log($risk_id, $_SESSION['uid'], $message);
+    // Audit log
+    $risk_id = 1000;
+    $message = "Username \"" . $_SESSION['user'] . "\" logged in successfully.";
+    write_log($risk_id, $_SESSION['uid'], $message);
 }
 
 /**************************************
@@ -306,36 +311,37 @@ function is_valid_simplerisk_user($user, $pass)
     $salt = generateSalt($user);
     $providedPassword = generateHash($salt, $pass);
 
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // If strict user validation is disabled
-        if (get_setting('strict_user_validation') == 0)
-        {
+    // If strict user validation is disabled
+    if (get_setting('strict_user_validation') == 0)
+    {
         // Query the DB for a matching user and hash
-        $stmt = $db->prepare("SELECT password FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
-        }
-        else
-        {
+        $stmt = $db->prepare("SELECT value, password FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
+    }
+    else
+    {
         // Query the DB for a matching user and hash
-        $stmt = $db->prepare("SELECT password FROM user WHERE username = :user");
-        }
+        $stmt = $db->prepare("SELECT value, password FROM user WHERE username = :user");
+    }
 
-        $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
-        $stmt->execute();
+    $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
+    $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
     // Get the stored password
     $storedPassword = $array[0]['password'];
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
     // If the passwords are equal
     if (($providedPassword == $storedPassword) || ($oldProvidedPassword == $storedPassword))
     {
+        
         return true;
     }
     else return false;
@@ -502,8 +508,8 @@ function send_reset_email($username, $name, $email, $token)
     $headers .= "Content-type: text/html; charset=UTF-8\r\n";
 
     // Additional headers
-    $headers .= "From: SimpleRisk <noreply@simplerisk.it>\r\n";
-    $headers .= "Reply-To: SimpleRisk <noreply@simplerisk.it>\r\n";
+    $headers .= "From: SimpleRisk <noreply@simplerisk.com>\r\n";
+    $headers .= "Reply-To: SimpleRisk <noreply@simplerisk.com>\r\n";
     $headers .= "X-Mailer: PHP/" . phpversion();
 
     // Create the full HTML message
@@ -851,20 +857,20 @@ function sess_read($sess_id)
 function sess_write($sess_id, $data)
 {
     $access = time();
+    
+    // Open the database connection
+    $db = db_open();
 
-        // Open the database connection
-        $db = db_open();
+    $stmt = $db->prepare("REPLACE INTO sessions VALUES (:sess_id, :access, :data)");
+    $stmt->bindParam(":sess_id", $sess_id, PDO::PARAM_STR);
+    $stmt->bindParam(":access", $access, PDO::PARAM_INT);
+    $stmt->bindParam(":data", $data, PDO::PARAM_LOB);
+    $stmt->execute();
 
-        $stmt = $db->prepare("REPLACE INTO sessions VALUES (:sess_id, :access, :data)");
-        $stmt->bindParam(":sess_id", $sess_id, PDO::PARAM_STR, 32);
-        $stmt->bindParam(":access", $access, PDO::PARAM_INT);
-        $stmt->bindParam(":data", $data, PDO::PARAM_STR);
-        $stmt->execute();
+    // Close the database connection
+    db_close($db);
 
-        // Close the database connection
-        db_close($db);
-
-        return true;
+    return true;
 }
 
 /*****************************
@@ -1063,6 +1069,194 @@ function clear_failed_logins($user_id)
 
     // Close the database connection
     db_close($db);
+}
+
+/**************************************
+* FUNCTION: add_last_password_history *
+**************************************/
+function add_last_password_history($user_id, $old_salt, $old_password)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Check if row exists
+    $stmt = $db->prepare("SELECT user_id, salt, password FROM user_pass_history WHERE user_id LIKE :user_id AND salt LIKE :salt AND password LIKE :password;");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->bindParam(":salt", $old_salt, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":password", $old_password, PDO::PARAM_STR, 60);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if(count($result) == 0){
+        // There is no entry like that, adding new one
+        $stmt = $db->prepare("INSERT INTO user_pass_history (user_id, salt, password) VALUES (:user_id, :salt, :password);");
+        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+        $stmt->bindParam(":salt", $old_salt, PDO::PARAM_STR, 20);
+        $stmt->bindParam(":password", $old_password, PDO::PARAM_STR, 60);
+        $stmt->execute();        
+    }
+
+    // Close the database connection
+    db_close($db);
+}
+
+/**************************************
+* FUNCTION: check_add_password_reuse_history *
+**************************************/
+function check_add_password_reuse_history($user_id, $password)
+{
+    $pass_policy_reuse_limit = get_setting('pass_policy_reuse_limit');
+
+    // Open the database connection
+    $db = db_open();
+
+    // Check if row exists
+    $stmt = $db->prepare("SELECT * FROM user_pass_reuse_history WHERE user_id = :user_id AND password LIKE :password;");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->bindParam(":password", $password, PDO::PARAM_STR, 60);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if(!$result){
+        // Insert new record
+        $stmt = $db->prepare("INSERT INTO user_pass_reuse_history(`user_id`, password) VALUES(:user_id, :password);");
+        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+        $stmt->bindParam(":password", $password, PDO::PARAM_STR, 60);
+        $stmt->execute();
+    }elseif($result['counts'] < $pass_policy_reuse_limit){
+        $stmt = $db->prepare("UPDATE user_pass_reuse_history SET `counts`=`counts`+1 WHERE `user_id`=:user_id AND password=:password ");
+        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+        $stmt->bindParam(":password", $password, PDO::PARAM_STR, 60);
+        $stmt->execute();
+    }else{
+        return false;
+    }
+    
+    return true;
+}
+
+/**************************************
+* FUNCTION: REST PASSWORD *
+**************************************/
+function reset_password($user_id, $password, $confirm_pass=false)
+{
+    global $lang;
+    
+    
+    if($confirm_pass === false){
+        $confirm_pass = $password;
+    }
+    // Check if password is valid
+    $error_code = valid_password($password, $confirm_pass, $user_id);
+    if ($error_code == 1)
+    {
+        $user = get_user_by_id($user_id);
+        $username = $user['username'];
+        
+        // Generate the salt
+        $salt = generateSalt($username);
+
+        // Generate the password hash
+        $hash = generateHash($salt, $password);
+
+        // If it is possible to reuse password
+        if(check_add_password_reuse_history($user_id, $hash)){
+            // Get user old data
+            $old_data = get_salt_and_password_by_user_id($user_id);
+
+            // Add the old data to the pass_history table
+            add_last_password_history($user_id, $old_data["salt"], $old_data["password"]);
+
+            // Update the password
+            update_password($username, $hash);
+
+            // If the encryption extra is enabled
+            if (encryption_extra())
+            {
+                // Load the extra
+                require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+                // Set the new encrypted password
+                set_enc_pass($username, $password, $_SESSION['encrypted_pass']);
+            }
+            
+            // Display an alert
+            set_alert(true, "good", "Your password has been updated successfully!");
+            
+            if(isset($_SESSION['change_password'])){
+                unset($_SESSION['change_password']);
+            }
+            
+            // Set login status
+            login($username, $password);
+        }else{
+            set_alert(true, "bad", $lang['PasswordNoLongerUse']);
+        }
+    }
+}
+
+/**************************************
+* FUNCTION:  LOGIN USER*
+**************************************/
+function login($user, $pass){
+    // If the custom authentication extra is installed
+    if (custom_authentication_extra())
+    {
+        // Include the custom authentication extra
+        require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
+
+        // Get the enabled authentication for the user
+        $enabled_auth = enabled_auth($user);
+
+        // If no multi factor authentication is enabled for the user
+        if ($enabled_auth == 1)
+        {
+            // Grant the user access
+            grant_access();
+
+            // If the encryption extra is enabled
+            if (encryption_extra())
+            {
+                // Load the extra
+                require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+                // Check user enc
+                check_user_enc($user, $pass);
+            }
+
+            // Select where to redirect the user next
+            select_redirect();
+        }
+        // If Duo authentication is enabled for the user
+        else if ($enabled_auth == 2)
+        {
+            // Set session access to duo
+            $_SESSION["access"] = "duo";
+        }
+        // If Toopher authentication is enabled for the user
+        else if ($enabled_auth == 3)
+        {
+            // Set session access to toopher
+            $_SESSION["access"] = "toopher";
+        }
+    }
+    // Otherwise the custom authentication extra is not installed
+    else
+    {
+        // Grant the user access
+        grant_access();
+
+        // If the encryption extra is enabled
+        if (encryption_extra())
+        {
+            // Load the extra
+            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+            // Check user enc
+            check_user_enc($user, $pass);
+        }
+        // Select where to redirect the user next
+        select_redirect();
+    }
+    return;
 }
 
 ?>

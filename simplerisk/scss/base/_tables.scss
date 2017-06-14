@@ -171,3 +171,44 @@
         }
     }
 }
+
+th{
+    &.sorting_asc > .fa{
+        display: inline-block;
+        position: relative;
+        left: 10px;
+        top: 3px;
+        &:before{
+            content: "\f0de";
+        }
+    }
+
+    &.sorting_desc > .fa{
+        display: inline-block;
+        position: relative;
+        left: 10px;
+        top: -3px;
+        &:before{
+            content: "\f0dd";
+        }
+    }
+}
+
+/*jQueryTablesort*/
+.tablesorter-header{
+    background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
+    background-repeat: no-repeat;
+    background-position: center right;
+    padding: 4px 18px 4px 4px;
+    white-space: normal;
+    cursor: pointer;
+}
+ .headerSortUp,  .tablesorter-headerSortUp, .tablesorter-headerAsc {
+    background-color: #9fbfdf;
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
+}
+ .headerSortDown, .tablesorter-headerSortDown, .tablesorter-headerDesc{
+    background-color: #8cb3d9;
+    background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
+}
+    

@@ -258,48 +258,50 @@
           <?php view_configure_menu("Register"); ?>
         </div>
         <div class="span9">
-          <div class="row-fluid">
-            <div class="span12">
-              <div class="hero-unit">
-                <p><h4><?php echo $escaper->escapeHtml($lang['RegisterSimpleRisk']); ?></h4></p>
-                <p><?php echo $escaper->escapeHtml($lang['RegistrationText']); ?></p>
-                <?php
-                  if ($registration_notice === true)
-                  {
-                    echo "<p><form name=\"no_message\" method=\"post\" action=\"\"><input type=\"submit\" name=\"disable_registration_notice\" value=\"" . $escaper->escapeHtml($lang['DisableRegistrationNotice']) . "\" /></form></p>\n";
-                  }
-                ?>
-              </div>
-            </div>
-          </div>
-          <div class="row-fluid">
-            <div class="span12">
-              <div class="hero-unit">
-                <font size="3"><b>Instance ID:</b>&nbsp;<?php echo $escaper->escapeHtml(get_setting("instance_id")); ?></font>
-              </div>
-            </div>
-          </div>
-          
             <div class="row-fluid">
                 <div class="span12">
                     <div class="hero-unit">
-                        <p></p>
-                        <h4>Set Mysql Service Path</h4>
-                        <form method="POST" action="">
-                            <table name="mail" id="mail" border="0" width="100%">
-                                <tbody>
-                                    <tr>
-                                        <td width="140px">Mysqldump Path: &nbsp;</td>
-                                        <td><input <?php if(is_process("mysqldump")){ echo "readonly"; } ?> name="mysqldump_path" value="<?php echo get_settting_by_name('mysqldump_path') ?>" type="text"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <input value="Submit" name="submit_mysqlpath" type="submit">
-                        </form>
+                        <p><h4><?php echo $escaper->escapeHtml($lang['RegisterSimpleRisk']); ?></h4></p>
+                        <p><?php echo $escaper->escapeHtml($lang['RegistrationText']); ?></p>
+                        <?php
+                            if ($registration_notice === true)
+                            {
+                                echo "<p><form name=\"no_message\" method=\"post\" action=\"\"><input type=\"submit\" name=\"disable_registration_notice\" value=\"" . $escaper->escapeHtml($lang['DisableRegistrationNotice']) . "\" /></form></p>\n";
+                            }
+                        ?>
                     </div>
                 </div>
             </div>
-              
+            <div class="row-fluid">
+                <div class="span12">
+                    <div class="hero-unit">
+                        <font size="3"><b>Instance ID:</b>&nbsp;<?php echo $escaper->escapeHtml(get_setting("instance_id")); ?></font>
+                    </div>
+                </div>
+            </div>
+          
+            <?php if(!is_process("mysqldump")){ ?>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <div class="hero-unit">
+                            <p></p>
+                            <h4>Set Mysql Service Path</h4>
+                            <form method="POST" action="">
+                                <table name="mail" id="mail" border="0" width="100%">
+                                    <tbody>
+                                        <tr>
+                                            <td width="140px">Mysqldump Path: &nbsp;</td>
+                                            <td><input  name="mysqldump_path" value="<?php echo get_settting_by_name('mysqldump_path') ?>" type="text"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <input value="Submit" name="submit_mysqlpath" type="submit">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <?php } ?>
+            
             <div class="row-fluid">
                 <div class="span6">
                   <div class="hero-unit">
@@ -332,41 +334,41 @@
                   </div>
                 </div>
                 <div class="span6">
-                  <div class="hero-unit">
-                    <p><h4><?php echo $escaper->escapeHtml($lang['UpgradeSimpleRisk']); ?></h4></p>
-		            <?php
-			            // If the instance is not registered
-			            if (!$registered)
-			            {
-				            echo "Please register in order to be able to use the easy upgrade feature.";
-			            }
-			            // The instance is registered
-			            else
-			            {
-				            display_upgrade();
-			            }
-		            ?>
-                  </div>
+                    <div class="hero-unit">
+                        <p><h4><?php echo $escaper->escapeHtml($lang['UpgradeSimpleRisk']); ?></h4></p>
+                        <?php
+	                        // If the instance is not registered
+	                        if (!$registered)
+	                        {
+		                        echo "Please register in order to be able to use the easy upgrade feature.";
+	                        }
+	                        // The instance is registered
+	                        else
+	                        {
+		                        display_upgrade();
+	                        }
+                        ?>
+                    </div>
                 </div>
-          </div>
-          <div class="row-fluid">
-            <div class="span12">
-              <div class="hero-unit">
-                <?php
-		// If the instance is not registered
-                        if (!$registered)
-                        {
-                                echo "Please register in order to be able to use the easy upgrade feature.";
-                        }
-                        // The instance is registered
-                        else
-                        {
-                                display_upgrade_extras();
-                        }
-                ?>
-              </div>
             </div>
-          </div>
+            <div class="row-fluid">
+                <div class="span12">
+                    <div class="hero-unit">
+                        <?php
+                            // If the instance is not registered
+                            if (!$registered)
+                            {
+                                echo "Please register in order to be able to use the easy upgrade feature.";
+                            }
+                            // The instance is registered
+                            else
+                            {
+                                display_upgrade_extras();
+                            }
+                        ?>
+                    </div>
+                </div>
+            </div>
         </div>
       </div>
     </div>

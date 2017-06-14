@@ -17,7 +17,7 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 function simplerisk_service_call($data)
 {
         // Call the URL
-        $url = "https://services.simplerisk.it/index.php";
+        $url = "https://services.simplerisk.com/index.php";
         $options = array(
                 'http' => array(
                 'header' => "Content-type: application/x-www-form-urlencoded\r\r",

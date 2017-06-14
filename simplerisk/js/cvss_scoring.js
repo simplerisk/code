@@ -31,7 +31,7 @@ function get_cvss_info(cve)
 {
         $.ajax({
         type:'GET',
-        url:'https://vfeed.simplerisk.it/?method=get_cvss&id='+cve,
+        url:'https://vfeed.simplerisk.com/?method=get_cvss&id='+cve,
         processData: true,
         cache: true,
         data: {},

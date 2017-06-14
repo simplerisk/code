@@ -113,58 +113,52 @@ if (isset($_GET['mitigated']))
   <?php
   view_top_menu("RiskManagement");
   ?>
-  <div class="tabs new-tabs">
-    <div class="container-fluid">
-
-      <div class="row-fluid">
-
-        <div class="span3"> </div>
-        <div class="span9">
-
-          <div class="tab-append">
-            <div class="tab selected form-tab tab-show new" >
-                <div>
-                    <span>
-                    <!--<a href="plan_mitigations.php"><?php echo $escaper->escapeHtml($lang['RiskList']); ?></a>-->
-                    <?php echo $escaper->escapeHtml($lang['RiskList']); ?>
-                    </span>
-                </div>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-  </div>
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span3">
-        <?php view_risk_management_menu("PlanYourMitigations"); ?>
-      </div>
-      <div class="span9">
-            <div id="show-alert">
-                <?php  
-                    // Get any alert messages
-                    get_alert();
-                ?>
-            </div>
-            <div id="tab-content-container" class="row-fluid">
-                <div id="tab-container" class="tab-data">
-                    <div class="row-fluid">
-                        <div class="span12 ">
-                            <p><?php echo $escaper->escapeHtml($lang['MitigationPlanningHelp']); ?>.</p>
-                            <?php get_risk_table(1,$activecol="mitigation"); ?>
+    <div class="tabs new-tabs">
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="span3"> </div>
+                <div class="span9">
+                    <div class="tab-append">
+                        <div class="tab selected form-tab tab-show new" >
+                            <div>
+                                <span>
+                                    <!--<a href="plan_mitigations.php"><?php echo $escaper->escapeHtml($lang['RiskList']); ?></a>-->
+                                    <?php echo $escaper->escapeHtml($lang['RiskList']); ?>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-      </div>
+        </div>
     </div>
-  </div>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span3">
+            <?php view_risk_management_menu("PlanYourMitigations"); ?>
+            </div>
+            <div class="span9">
+                <div id="show-alert">
+                    <?php  
+                        // Get any alert messages
+                        get_alert();
+                    ?>
+                </div>
+                <div id="tab-content-container" class="row-fluid">
+                    <div id="tab-container" class="tab-data">
+                        <div class="row-fluid">
+                            <div class="span12 ">
+                                <p><?php echo $escaper->escapeHtml($lang['MitigationPlanningHelp']); ?>.</p>
+                                <?php get_risk_table(1,$activecol="mitigation"); ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <input type="hidden" id="_delete_tab_alert" value="<?php echo $escaper->escapeHtml($lang['Are you sure you want to close the risk? All changes will be lost!']); ?>">
-  
+    <input type="hidden" id="enable_popup" value="<?php echo get_setting('enable_popup'); ?>">
 </body>
 
 </html>

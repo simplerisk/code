@@ -756,17 +756,18 @@ $(document).ready(function(){
                 bLengthChange: false,
                 processing: true,
                 serverSide: true,
-                bSort: false,
+                bSort: true,
                 pagingType: "full_numbers",
                 dom : "flrti<'#view-all-"+ index +".view-all'>p",
                 ajax: {
                     url: '/api/reports/dynamic',
                     type: "post",
                     data: function(d){
-                        d.status = $("#status").val();
-                        d.group = $("#group").val();
-                        d.sort = $("#sort").val();
-                        d.group_value = $this.data('group');
+                        d.status            = $("#status").val();
+                        d.group             = $("#group").val();
+                        d.sort              = $("#sort").val();
+                        d.affected_asset    = $("#affected_asset").val();
+                        d.group_value       = $this.data('group');
                     }
                 },
                 columnDefs : [

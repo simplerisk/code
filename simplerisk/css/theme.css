@@ -135,7 +135,7 @@ input[type="submit"], .add-comments, .aside--nav li a, .status-tabs .tabs-nav li
   border-radius: 2px !important; }
 
 #Custom {
-  width: 50px !important; }
+  width: 60px !important; }
 
 .reviewdate,
 .reviewername {
@@ -146,16 +146,12 @@ input[type="submit"], .add-comments, .aside--nav li a, .status-tabs .tabs-nav li
 
 .score--wrapper .red {
   background-color: red !important; }
-
 .score--wrapper .orangered {
   background-color: orangered !important; }
-
 .score--wrapper .orange {
   background-color: orange !important; }
-
 .score--wrapper .yellow {
   background-color: yellow !important; }
-
 .score--wrapper .white {
   background-color: white !important; }
 
@@ -164,7 +160,6 @@ td.risk-cell {
   vertical-align: middle; }
   td.risk-cell .risk-cell-holder {
     width: 40px; }
-
 td .risk-color {
   position: absolute;
   width: 20px;
@@ -174,19 +169,14 @@ td .risk-color {
   transform: translateY(-50%);
   border-radius: 2px;
   border: 1px solid; }
-
 td.red .risk-color, td > .red .risk-color {
   background-color: red !important; }
-
 td.orangered .risk-color, td > .orangered .risk-color {
   background-color: orangered !important; }
-
 td.orange .risk-color, td > .orange .risk-color {
   background-color: orange !important; }
-
 td.yellow .risk-color, td > .yellow .risk-color {
   background-color: yellow !important; }
-
 td.white .risk-color, td > .white .risk-color {
   background-color: white !important; }
 
@@ -204,7 +194,6 @@ div#show-alert + #tab-content-container .tab-data {
     margin-left: 16px; }
     .subject-field .span8 {
       margin-left: 9px; } }
-
 @media only screen and (min-width: 1400px) {
   .subject-field {
     margin-left: 22px; }
@@ -390,7 +379,6 @@ select + input[type="submit"] {
 .file-uploader .file-count {
   margin-left: 10px;
   font-size: 13px; }
-
 .file-uploader .file-list, .file-uploader .exist-files {
   margin-top: 10px;
   list-style: none;
@@ -539,10 +527,8 @@ textarea.saml_metadata_xml {
 */
 .dataTables_wrapper .dataTables_length {
   float: right; }
-
 .dataTables_wrapper .dataTables_processing {
   z-index: 99; }
-
 .dataTables_wrapper .dataTables_paginate .paginate_button {
   background-color: #c1b4b4;
   color: #fff !important;
@@ -567,7 +553,6 @@ textarea.saml_metadata_xml {
       color: #3a3a3a !important; }
     .dataTables_wrapper .dataTables_paginate .paginate_button.first.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.next.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.previous.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.last.disabled {
       color: #c1b4b4 !important; }
-
 .dataTables_wrapper .view-all {
   float: right;
   margin-left: 15px;
@@ -584,6 +569,38 @@ textarea.saml_metadata_xml {
     background: #3a3a3a;
     color: #fff !important;
     border: 0px; }
+
+th.sorting_asc > .fa {
+  display: inline-block;
+  position: relative;
+  left: 10px;
+  top: 3px; }
+  th.sorting_asc > .fa:before {
+    content: "\f0de"; }
+th.sorting_desc > .fa {
+  display: inline-block;
+  position: relative;
+  left: 10px;
+  top: -3px; }
+  th.sorting_desc > .fa:before {
+    content: "\f0dd"; }
+
+/*jQueryTablesort*/
+.tablesorter-header {
+  background-image: url(data:image/gif;base64,R0lGODlhFQAJAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAkAAAIXjI+AywnaYnhUMoqt3gZXPmVg94yJVQAAOw==);
+  background-repeat: no-repeat;
+  background-position: center right;
+  padding: 4px 18px 4px 4px;
+  white-space: normal;
+  cursor: pointer; }
+
+.headerSortUp, .tablesorter-headerSortUp, .tablesorter-headerAsc {
+  background-color: #9fbfdf;
+  background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7); }
+
+.headerSortDown, .tablesorter-headerSortDown, .tablesorter-headerDesc {
+  background-color: #8cb3d9;
+  background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAACMtMP///yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7); }
 
 /*--------------------------------------------------------------
  ## Heading Styles
@@ -888,6 +905,9 @@ form#comment {
   /* Chrome, Safari, Opera */
   transform: rotate(45deg); }
 
+.caret {
+  vertical-align: middle; }
+
 /* DatePicker Container */
 .ui-datepicker {
   width: 216px;
@@ -1021,6 +1041,13 @@ form#comment {
   height: 29px;
   margin-bottom: 0; }
 
+.daterange-picker {
+  width: auto;
+  background: #fff;
+  cursor: pointer;
+  padding: 5px 10px;
+  border: 1px solid #ccc; }
+
 .login--page {
   background-size: 100%;
   background-color: #252525; }
@@ -1078,7 +1105,6 @@ form#comment {
 .password_reset textarea.form-control,
 .password_reset input[type="password"] {
   max-width: 100%; }
-
 .send_reset_email .login--label,
 .password_reset .login--label {
   padding-bottom: 20px;
@@ -1303,14 +1329,12 @@ form#comment {
   clear: both;
   content: "";
   display: block; }
-
 .project-block--header,
 .project-block-unassined--header {
   background-color: #fff;
   border: 1px solid #d1d3d4;
   border-right: none;
   height: 45px; }
-
 .project-block--delete,
 .project-block-unassined--delete {
   border-left: 1px solid #d1d3d4;
@@ -1318,7 +1342,6 @@ form#comment {
   width: 45px;
   display: block;
   text-align: center; }
-
 .project-block--priority, .project-block--name, .project-block--risks,
 .project-block-unassined--priority,
 .project-block-unassined--name,
@@ -1330,15 +1353,12 @@ form#comment {
   float: left;
   font-weight: 600;
   padding-left: 10px; }
-
 .project-block--priority,
 .project-block-unassined--priority {
   width: 8%; }
-
 .project-block--name,
 .project-block-unassined--name {
   width: 72%; }
-
 .project-block--risks,
 .project-block-unassined--risks {
   width: 20%; }
@@ -1367,6 +1387,9 @@ form#comment {
 .delete_project {
   min-width: 80px;
   margin-left: 5px; }
+
+select#languages {
+  width: auto !important; }
 
 .new-tabs {
   padding-top: 5px;
@@ -1406,61 +1429,47 @@ form#comment {
 
 .risk-details * {
   color: inherit; }
-
 .risk-details.ui-corner-all, .risk-details.ui-corner-bottom, .risk-details.ui-corner-right, .risk-details.ui-corner-br {
   border: 0px;
   background: transparent;
   color: inherit; }
-
 .risk-details.ui-widget {
   font-family: inherit;
   font-size: inherit; }
-
 .risk-details.ui-tabs {
   padding: inherit; }
-
 .risk-details .ui-widget-header {
   border: 0px;
   background: inherit;
   color: inherit;
   font-weight: inherit; }
-
 .risk-details .ui-tabs-nav {
   padding: inherit; }
-
 .risk-details .ui-widget-content {
   border: 0px; }
-
 .risk-details .ui-state-active, .risk-details .ui-widget-content .ui-state-active, .risk-details .ui-widget-header .ui-state-active {
   border: 0px;
   background: inherit;
   font-weight: inherit;
   color: inherit; }
-
 .risk-details .ui-state-default, .risk-details .ui-widget-content .ui-state-default, .risk-details .ui-widget-header .ui-state-default {
   border: 0px;
   background: inherit;
   font-weight: inherit;
   color: inherit; }
-
 .risk-details input, .risk-details select, .risk-details textarea, .risk-details button {
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit; }
-
 .risk-details .ui-tabs-nav li.ui-tabs-active {
   padding-bottom: 10px; }
-
 .risk-details .ui-tabs-nav li a {
   padding: 0px;
   float: none; }
-
 .risk-details .ui-tabs-nav li {
   margin: 0px; }
-
 .risk-details .ui-tabs-panel {
   padding: 0px; }
-
 .risk-details .tabs-nav {
   margin: 20px 0;
   border-bottom: 2px solid #e6e6e6; }
@@ -1506,7 +1515,7 @@ form#comment {
   .risk-session.overview .row-fluid .span2 {
     width: 7.529915%; }
   .risk-session.overview .row-fluid .span10 {
-    width: 89.905983%; }
+    width: 89.90598%; }
   .risk-session.overview label {
     font-size: 16px;
     font-weight: 400;
@@ -1616,12 +1625,60 @@ div.doc-link {
 #export-dynamic-risk-report {
   cursor: pointer; }
 
+.table-scroll {
+  overflow-x: auto; }
+  .table-scroll > table.table {
+    margin-bottom: 0px; }
+
 .modal {
   z-index: 9999; }
 
 #risks-open-by-team-container {
   margin-top: 14px; }
 
+/*------------------------------------------------------------
+## New additions to expand text-areas at pc
+------------------------------------------------------------*/
+@media screen and (min-width: 1025px) {
+  #assets, #assessment, #notes, #current_solution, #security_requirements, #security_recommendations, #active-textfield, #comments {
+    width: 100%;
+    /*      max-width:300px;*/
+    transition: all 1s ease; }
+
+  #assets:not([disabled]):focus.enable-popup, #assessment:not([disabled]):focus.enable-popup, #notes:not([disabled]):focus.enable-popup,
+  #current_solution:not([disabled]):focus.enable-popup, #security_requirements:not([disabled]):focus.enable-popup, #security_recommendations:not([disabled]):focus.enable-popup, #active-textfield:not([disabled]):focus.enable-popup,
+  #assets:not([disabled]):active.enable-popup, #assessment:not([disabled]):active.enable-popup, #notes:not([disabled]):active.enable-popup, #comments:not([disabled]):focus.enable-popup,
+  #current_solution:not([disabled]):active.enable-popup, #security_requirements:not([disabled]):active.enable-popup, #security_recommendations:not([disabled]):active.enable-popup, #active-textfield:not([disabled]):active.enable-popup, #comments:not([disabled]):active.enable-popup {
+    position: fixed;
+    max-width: 1600px;
+    top: 25%;
+    left: 25%;
+    width: 50% !important;
+    height: 50%;
+    margin: auto;
+    z-index: 2001;
+    overflow: auto; }
+
+  .affected-assets-title {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    max-width: 2600px;
+    width: 100% !important;
+    height: 100% !important;
+    margin: auto;
+    z-index: 2000;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.8);
+    color: rgba(0, 0, 0, 0.8);
+    padding-top: 10%;
+    text-align: center !important;
+    font-size: 42px;
+    color: #fff; }
+
+  .ui-widget-content {
+    z-index: 9999; } }
 .score--help {
   width: 25px;
   height: 25px;
@@ -1692,7 +1749,8 @@ div.doc-link {
 @media (min-width: 1025px) {
   textarea.form-control {
     max-width: 300px; } }
-
 @media (min-width: 1281px) {
   textarea.form-control {
     max-width: 300px; } }
+
+/*# sourceMappingURL=theme.css.map */

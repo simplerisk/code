@@ -3,54 +3,54 @@
  	 * License, v. 2.0. If a copy of the MPL was not distributed with this
  	 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-  // Include required functions file
-  require_once(realpath(__DIR__ . '/../includes/functions.php'));
-  require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-	require_once(realpath(__DIR__ . '/../includes/display.php'));
-	require_once(realpath(__DIR__ . '/../includes/messages.php'));
-	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+    // Include required functions file
+    require_once(realpath(__DIR__ . '/../includes/functions.php'));
+    require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+    require_once(realpath(__DIR__ . '/../includes/display.php'));
+    require_once(realpath(__DIR__ . '/../includes/messages.php'));
+    require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
-        // Include Zend Escaper for HTML Output Encoding
-        require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-        $escaper = new Zend\Escaper\Escaper('utf-8');
+    // Include Zend Escaper for HTML Output Encoding
+    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
+    $escaper = new Zend\Escaper\Escaper('utf-8');
 
-        // Add various security headers
-        header("X-Frame-Options: DENY");
-        header("X-XSS-Protection: 1; mode=block");
+    // Add various security headers
+    header("X-Frame-Options: DENY");
+    header("X-XSS-Protection: 1; mode=block");
 
-        // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-        if (CSP_ENABLED == "true")
-        {
-                // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-        }
+    // If we want to enable the Content Security Policy (CSP) - This may break Chrome
+    if (CSP_ENABLED == "true")
+    {
+            // Add the Content-Security-Policy header
+	header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+    }
 
-        // Session handler is database
-        if (USE_DATABASE_FOR_SESSIONS == "true")
-        {
+    // Session handler is database
+    if (USE_DATABASE_FOR_SESSIONS == "true")
+    {
 		session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
 	}
 
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 
-        if (!isset($_SESSION))
-        {
-        	session_name('SimpleRisk');
-        	session_start();
-        }
+    if (!isset($_SESSION))
+    {
+        session_name('SimpleRisk');
+        session_start();
+    }
 
-        require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
-        // Check for session timeout or renegotiation
-        session_check();
+    // Check for session timeout or renegotiation
+    session_check();
 
-        // Check if access is authorized
-        if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-        {
-                header("Location: ../index.php");
-                exit(0);
-        }
+    // Check if access is authorized
+    if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
+    {
+            header("Location: ../index.php");
+            exit(0);
+    }
 
 	// If the language was changed
 	if (isset($_POST['change_language']))
@@ -76,37 +76,37 @@
 		}
 	}
 
-        // Include the language file
-        require_once(language_file());
+    // Include the language file
+    require_once(language_file());
 
-	// Get the users information
-        $user_info = get_user_by_id($_SESSION['uid']);
-        $username = $user_info['username'];
-        $name = $user_info['name'];
-        $email = $user_info['email'];
+    // Get the users information
+    $user_info = get_user_by_id($_SESSION['uid']);
+    $username = $user_info['username'];
+    $name = $user_info['name'];
+    $email = $user_info['email'];
 	$last_login = date(DATETIME, strtotime($user_info['last_login']));
 	$teams = $user_info['teams'];
 	$language = $user_info['lang'];
-	$asset = $user_info['asset'];
+    $asset = $user_info['asset'];
 	$assessments = $user_info['assessments'];
-        $admin = $user_info['admin'];
+    $admin = $user_info['admin'];
 	$review_veryhigh = $user_info['review_veryhigh'];
-        $review_high = $user_info['review_high'];
-        $review_medium = $user_info['review_medium'];
-        $review_low = $user_info['review_low'];
+    $review_high = $user_info['review_high'];
+    $review_medium = $user_info['review_medium'];
+    $review_low = $user_info['review_low'];
 	$review_insignificant = $user_info['review_insignificant'];
-        $submit_risks = $user_info['submit_risks'];
-        $modify_risks = $user_info['modify_risks'];
-        $plan_mitigations = $user_info['plan_mitigations'];
+    $submit_risks = $user_info['submit_risks'];
+    $modify_risks = $user_info['modify_risks'];
+    $plan_mitigations = $user_info['plan_mitigations'];
 	$close_risks = $user_info['close_risks'];
 
-        // Check if a new password was submitted
-        if (isset($_POST['change_password']))
-        {
+    // Check if a new password was submitted
+    if (isset($_POST['change_password']))
+    {
 		$user = $_SESSION["user"];
-                $current_pass = $_POST['current_pass'];
+        $current_pass = $_POST['current_pass'];
 		$new_pass = $_POST['new_pass'];
-                $confirm_pass = $_POST['confirm_pass'];
+        $confirm_pass = $_POST['confirm_pass'];
 
 		// If the user and current password are valid
 		if (is_valid_user($user, $current_pass))
@@ -114,50 +114,55 @@
 			// Check the password
 			$error_code = valid_password($new_pass, $confirm_pass, $_SESSION['uid']);
 
-                	// If the password is valid
-                	if ($error_code == 1)
-                	{
-				// Get user old data
-				$old_data = get_salt_and_password_by_user_id($_SESSION['uid']);
+            // If the password is valid
+            if ($error_code == 1)
+            {
+                // Generate the salt
+                $salt = generateSalt($user);
 
-				// Add the old data to the pass_history table
-				add_last_password_history($_SESSION["uid"], $old_data["salt"], $old_data["password"]);
+                // Generate the password hash
+                $hash = generateHash($salt, $new_pass);
+                
+                // If it is possible to reuse password
+                if(check_add_password_reuse_history($_SESSION["uid"], $hash)){
+                    // Get user old data
+                    $old_data = get_salt_and_password_by_user_id($_SESSION['uid']);
 
-                                // Generate the salt
-                                $salt = generateSalt($user);
+                    // Add the old data to the pass_history table
+                    add_last_password_history($_SESSION["uid"], $old_data["salt"], $old_data["password"]);
 
-                                // Generate the password hash
-                                $hash = generateHash($salt, $new_pass);
 
-				// Update the password
-				update_password($user, $hash);
+                    // Update the password
+                    update_password($user, $hash);
 
-                                // If the encryption extra is enabled
-                                if (encryption_extra())
-                                {
-                                        // Load the extra
-                                        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+                    // If the encryption extra is enabled
+                    if (encryption_extra())
+                    {
+                        // Load the extra
+                        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-                                        // Set the new encrypted password
-                                        set_enc_pass($user, $new_pass, $_SESSION['encrypted_pass']);
-                                }
+                        // Set the new encrypted password
+                        set_enc_pass($user, $new_pass, $_SESSION['encrypted_pass']);
+                    }
 
-				// Display an alert
-				set_alert(true, "good", "Your password has been updated successfully!");
-
-                        }
+                    // Display an alert
+                    set_alert(true, "good", "Your password has been updated successfully!");
+                }else{
+                    set_alert(true, "bad", $lang['PasswordNoLongerUse']);
+                }
+            }
 			else
 			{
 				// Display an alert
 				//set_alert(true, "bad", password_error_message($error_code));
 			}
-                }
+        }
 		else
 		{
 			// Display an alert
 			set_alert(true, "bad", "You have entered your current password incorrectly.  Please try again.");
 		}
-        }
+    }
 ?>
 
 <!doctype html>
@@ -180,7 +185,7 @@
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
 
-		<link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <script type="text/javascript">
       $(function(){
@@ -201,7 +206,7 @@
 ?>
     <div class="container-fluid">
       <div class="row-fluid">
-        <div class="span9">
+        <div class="span12">
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
@@ -258,9 +263,9 @@
         	echo "<div class=\"hero-unit\">\n";
 		echo "<form name=\"change_password\" method=\"post\" action=\"\">\n";
 		echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
-		echo "<tr><td colspan=\"2\"><h4>" . $escaper->escapeHtml($lang['ChangePassword']) . "</h4></td><tr>\n";
+		echo "<tr><td colspan=\"2\"><h4>" . $escaper->escapeHtml($lang['ChangePassword']) . "</h4></td></tr>\n";
         
-        $html = "";
+        $html = "<tr><td colspan=\"2\">";
         $resetRequestMessages = getPasswordReqeustMessages();
         if(count($resetRequestMessages)){
             $html .= "<p><b>Password should have the following requirements.</b></p>\n";
@@ -270,6 +275,7 @@
             }
             $html .= "</ul>\n";
         }
+        $html .= "</td></tr>";
         echo $html;
         
 		echo "<tr><td>" . $escaper->escapeHtml($lang['CurrentPassword']) . ":&nbsp</td><td><input maxlength=\"100\" name=\"current_pass\" id=\"current_pass\" class=\"input-medium\" type=\"password\" autocomplete=\"off\" /></td></tr>\n";

@@ -317,9 +317,9 @@ function upgrade_from_20140728001($db)
 	echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
 	// Creating a table to store supporting documentation files
-        echo "Creating a table to store supporting documentation files.<br />\n";
-        $stmt = $db->prepare("CREATE TABLE files(id INT NOT NULL AUTO_INCREMENT, risk_id INT NOT NULL, name VARCHAR(100) NOT NULL, unique_name VARCHAR(30) NOT NULL, type VARCHAR(30) NOT NULL, size INT NOT NULL, timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, user INT NOT NULL, content BLOB NOT NULL, PRIMARY KEY(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-        $stmt->execute();
+    echo "Creating a table to store supporting documentation files.<br />\n";
+    $stmt = $db->prepare("CREATE TABLE files(id INT NOT NULL AUTO_INCREMENT, risk_id INT NOT NULL, name VARCHAR(100) NOT NULL, unique_name VARCHAR(30) NOT NULL, type VARCHAR(30) NOT NULL, size INT NOT NULL, timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, user INT NOT NULL, content BLOB NOT NULL, PRIMARY KEY(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt->execute();
 
 	// Strip slashes from user table entries
 	echo "Stripping slashes from the user table entries.<br />\n";
@@ -341,32 +341,31 @@ function upgrade_from_20140728001($db)
 	$stmt = $db->prepare("SELECT id, close_reason, note FROM closures");
 	$stmt->execute();
 	$array = $stmt->fetchAll();
-	foreach ($array as $value)
-        {
-                $stmt = $db->prepare("UPDATE closures SET close_reason=:close_reason, note=:note WHERE id=:id");
-                $stmt->bindParam(":id", $value['id']);
-                $stmt->bindParam(":close_reason", stripslashes($value['close_reason']));
-                $stmt->bindParam(":note", stripslashes($value['note']));
-                $stmt->execute();
-        }
-
-        // Strip slashes from risks table entries
-        echo "Stripping slashes from the risks table entries.<br />\n";
-        $stmt = $db->prepare("SELECT id, subject, reference_id, control_number, location, assessment, notes FROM risks");
+	foreach ($array as $value){
+        $stmt = $db->prepare("UPDATE closures SET close_reason=:close_reason, note=:note WHERE id=:id");
+        $stmt->bindParam(":id", $value['id']);
+        $stmt->bindParam(":close_reason", stripslashes($value['close_reason']));
+        $stmt->bindParam(":note", stripslashes($value['note']));
         $stmt->execute();
-        $array = $stmt->fetchAll();
-        foreach ($array as $value)
-        {
-                $stmt = $db->prepare("UPDATE risks SET subject=:subject, reference_id=:reference_id, control_number=:control_number, location=:location, assessment=:assessment, notes=:notes WHERE id=:id");
-                $stmt->bindParam(":id", $value['id']);
-                $stmt->bindParam(":subject", stripslashes($value['subject']));
-                $stmt->bindParam(":reference_id", stripslashes($value['reference_id']));
+    }
+
+    // Strip slashes from risks table entries
+    echo "Stripping slashes from the risks table entries.<br />\n";
+    $stmt = $db->prepare("SELECT id, subject, reference_id, control_number, location, assessment, notes FROM risks");
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+    foreach ($array as $value)
+    {
+        $stmt = $db->prepare("UPDATE risks SET subject=:subject, reference_id=:reference_id, control_number=:control_number, location=:location, assessment=:assessment, notes=:notes WHERE id=:id");
+        $stmt->bindParam(":id", $value['id']);
+        $stmt->bindParam(":subject", stripslashes($value['subject']));
+        $stmt->bindParam(":reference_id", stripslashes($value['reference_id']));
 		$stmt->bindParam(":control_number", stripslashes($value['control_number']));
 		$stmt->bindParam(":location", stripslashes($value['location']));
 		$stmt->bindParam(":assessment", stripslashes($value['assessment']));
 		$stmt->bindParam(":notes", stripslashes($value['notes']));
-                $stmt->execute();
-        }
+        $stmt->execute();
+    }
 
         // Strip slashes from comments table entries
         echo "Stripping slashes from the comments table entries.<br />\n";
@@ -1159,11 +1158,11 @@ function upgrade_from_20160124001($db)
 	echo "Adding PHPMailer settings.<br />\n";
 	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_transport', 'sendmail');");
 	$stmt->execute();
-	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_from_email', 'noreply@simplerisk.it');");
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_from_email', 'noreply@simplerisk.com');");
 	$stmt->execute();
 	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_from_name', 'SimpleRisk');");
 	$stmt->execute();
-	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_replyto_email', 'noreply@simplerisk.it');");
+	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_replyto_email', 'noreply@simplerisk.com');");
 	$stmt->execute();
 	$stmt = $db->prepare("INSERT INTO `settings` VALUES ('phpmailer_replyto_name', 'SimpleRisk');");
 	$stmt->execute();
@@ -1265,7 +1264,7 @@ function upgrade_from_20160612001($db)
 		$note = "";
 		
 		// Close the risk
-		close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
+		close_risk($risk_id, $_SESSION['uid'], $status, $close_reason, $note);
 		echo "Created a closures entry for risk ID " . $risk_id . ".<br />\n";
 	}
 
@@ -1502,9 +1501,76 @@ function upgrade_from_20170312001($db){
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
+
+    // Set the sessions table to use 256 charcter id
+    echo "Updating the sessions table to use max 256 characters id.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `sessions` CHANGE `id` `id` VARCHAR(256) NOT NULL;");
+    $stmt->execute();
+
+    // Set enable_popup to true by default
+    echo "Set enable_popup to true by default.<br />\n";
+    $stmt = $db->prepare("INSERT INTO `settings` (`name`, `value`) VALUES ('enable_popup', '1'); ");
+    $stmt->execute();
+
+    // Change a next_review field type to DATE
+    echo "Change a next_review field type to DATE.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `mgmt_reviews` CHANGE `next_review` `next_review` DATE NOT NULL DEFAULT '0000-00-00'; ");
+    $stmt->execute();
+
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
         echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20170416-001 *
+ ***************************************/
+function upgrade_from_20170416001($db){
+    	// Database version to upgrade
+    	$version_to_upgrade = '20170416-001';
+
+    	// Database version upgrading to
+    	$version_upgrading_to = '20170614-001';
+
+   	 echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Change the sessions data type to BLOB
+    echo "Changing the data field type in the sessions table to BLOB.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `sessions` MODIFY `data` BLOB;");
+    $stmt->execute();
+
+    // Add default remember password limit value
+    echo "Add default remember password limit value.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `settings` (`name`, `value`) VALUES ('pass_policy_reuse_limit', '0');");
+    $stmt->execute();
+
+	// Add a table to track password history reused
+	echo "Adding a table to track password history reused.<br />\n";
+	$stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `user_pass_reuse_history` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `user_id` int(11) NOT NULL,
+          `password` binary(60) NOT NULL,
+          `counts` int(11) NOT NULL DEFAULT '1', 
+          PRIMARY KEY(id)
+
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+	$stmt->execute();
+
+    // Add new file types
+    echo "Add new file types, text/csv, application/csv.<br />\n";
+    $stmt = $db->prepare("INSERT INTO `file_types` (`value`, `name`) VALUES (NULL, 'text/csv'), (NULL, 'application/csv');");
+    $stmt->execute();
+
+    // Add a new field, `change_password` to user table
+    echo "Add a new field, `change_password` to user table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `user` ADD `change_password` TINYINT NOT NULL DEFAULT '0';");
+    $stmt->execute();
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /******************************
@@ -1615,6 +1681,10 @@ function upgrade_database()
 				break;
 			case "20170312-001":
 				upgrade_from_20170312001($db);
+				upgrade_database();
+				break;
+			case "20170416-001":
+				upgrade_from_20170416001($db);
 				upgrade_database();
 				break;
 			default:

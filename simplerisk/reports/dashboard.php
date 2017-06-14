@@ -54,8 +54,27 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   exit(0);
 }
 
+$teamOptions = get_teams_by_login_user();
+array_unshift($teamOptions, array(
+    'value' => "0",
+    'name' => $lang['Unassigned'],
+));
+
+// Get teams submitted by user
+if(isset($_GET['teams'])){
+    $teams = $_GET['teams'];
+}elseif(is_array($teamOptions)){
+    $teamValueArr = array();
+    foreach($teamOptions as $teamOption){
+        $teamValueArr[] = $teamOption['value'];
+    }
+    $teams = implode(",", $teamValueArr);
+}else{
+    $teams = "";
+}
+
 // Get the risk pie array
-$pie_array = get_pie_array();
+$pie_array = get_pie_array(null, $teams);
 
 ?>
 
@@ -65,6 +84,7 @@ $pie_array = get_pie_array();
 <head>
   <script src="../js/jquery.min.js"></script>
   <script src="../js/bootstrap.min.js"></script>
+  <script src="../js/bootstrap-multiselect.js"></script>
   <script src="../js/sorttable.js"></script>
   <script src="../js/obsolete.js"></script>
   <script src="../js/highcharts/code/highcharts.js"></script>
@@ -76,6 +96,25 @@ $pie_array = get_pie_array();
 
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+  <script type="">
+    $(function(){
+        $("#teams").multiselect({
+            allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllTeams']); ?>',
+            includeSelectAllOption: true,
+            onChange: function(element, checked){
+                var brands = $('#teams option:selected');
+                var selected = [];
+                $(brands).each(function(index, brand){
+                    selected.push($(this).val());
+                });
+                
+                $("#team_options").val(selected.join(","));
+                $("#risks_dashboard_form").submit();
+            }
+        });
+    });
+  
+  </script>
 </head>
 
 <body>
@@ -92,10 +131,20 @@ $pie_array = get_pie_array();
         <div class="row-fluid">
           <h3><?php echo $escaper->escapeHtml($lang['OpenRisks']); ?> (<?php echo $escaper->escapeHtml(get_open_risks()); ?>)</h3>
         </div>
+        <div class="row-fluid" style="margin-top: -8px;">
+            <div class="span4">
+                <u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u>: &nbsp;
+                <?php create_multiple_dropdown("teams", ":".implode(":", explode(",", $teams)).":" , NULL, $teamOptions); ?>
+                <form id="risks_dashboard_form" method="GET">
+                    <input type="hidden" value="<?php echo $teams; ?>" name="teams" id="team_options">
+                </form>
+            </div>
+        </div>
+        
         <div class="row-fluid">
           <div class="span4">
             <div class="well">
-              <?php open_risk_level_pie(js_string_escape($lang['RiskLevel'])); ?>
+              <?php open_risk_level_pie(js_string_escape($lang['RiskLevel']), $teams); ?>
             </div>
           </div>
           <div class="span4">
@@ -151,12 +200,12 @@ $pie_array = get_pie_array();
           </div>
         </div>
         <div class="row-fluid">
-          <h3><?php echo $escaper->escapeHtml($lang['ClosedRisks']); ?>: (<?php echo $escaper->escapeHtml(get_closed_risks()); ?>)</h3>
+          <h3><?php echo $escaper->escapeHtml($lang['ClosedRisks']); ?>: (<?php echo $escaper->escapeHtml(get_closed_risks($teams)); ?>)</h3>
         </div>
         <div class="row-fluid">
           <div class="span4">
             <div class="well">
-              <?php closed_risk_reason_pie(js_string_escape($lang['Reason'])); ?>
+              <?php closed_risk_reason_pie(js_string_escape($lang['Reason']), $teams); ?>
             </div>
           </div>
         </div>

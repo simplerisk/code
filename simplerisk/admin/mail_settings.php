@@ -32,7 +32,7 @@
         }
 
         // Start the session
-	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+	    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 
         if (!isset($_SESSION))
         {
@@ -211,7 +211,7 @@
                     </tr>
                     <tr>
                       <td><?php echo $escaper->escapeHTML($lang['FromEmail']); ?>:&nbsp;&nbsp;</td>
-                      <td><input type="text" name="from_email" value="<?php echo $escaper->escapeHTML($from_email); ?>" /></td>
+                      <td><input type="email" name="from_email" value="<?php echo $escaper->escapeHTML($from_email); ?>" /></td>
                     </tr>
                     <tr>
                       <td><?php echo $escaper->escapeHTML($lang['ReplyToName']); ?>:&nbsp;&nbsp;</td>
@@ -219,7 +219,7 @@
                     </tr>
                     <tr>
                       <td><?php echo $escaper->escapeHTML($lang['ReplyToEmail']); ?>:&nbsp;&nbsp;</td>
-                      <td><input type="text" name="replyto_email" value="<?php echo $escaper->escapeHTML($replyto_email); ?>" /></td>
+                      <td><input type="email" name="replyto_email" value="<?php echo $escaper->escapeHTML($replyto_email); ?>" /></td>
                     </tr>
                     <tr class="smtp"<?php echo ($transport=="sendmail") ? " style=\"display: none;\"" : "" ?>>
                       <td><?php echo $escaper->escapeHTML($lang['Host']); ?>:&nbsp;&nbsp;</td>

@@ -379,7 +379,7 @@ if (isset($_POST['submit']))
         //$custom_review = "0000-00-00";
         //$color = get_risk_color($risk[0]['calculated_risk']);
         //$risk_id = (int)$risk[0]['id'];
-	$custom_review = next_review_by_score($calculated_risk);
+		$custom_review = next_review_by_score($calculated_risk);
         //$custom_review = next_review($color, $risk_id, $custom_review, false);
     }
 
@@ -530,117 +530,125 @@ if (isset($_POST['submit']))
             </div>
         </div>
       </div>
+      <input type="hidden" id="enable_popup" value="<?php echo get_setting('enable_popup'); ?>">
     </body>
     <script type="text/javascript">
 
-    $( function() {
-        $("#comment-submit").attr('disabled','disabled');
-        $("#cancel_disable").attr('disabled','disabled');
-        
-        $("#rest-btn").attr('disabled','disabled');
-        $("#comment-text").click(function(){
-            $("#comment-submit").removeAttr('disabled');
-            $("#rest-btn").removeAttr('disabled');
-        });
-
-        $("#comment-submit").click(function(){
-            var submitbutton = document.getElementById("comment-text").value;
-             if(submitbutton == ''){
-           $("#comment-submit").attr('disabled','disabled');
-           $("#rest-btn").attr('disabled','disabled');
-       }
-       });
-         $("#rest-btn").click(function(){
-
-           $("#comment-submit").attr('disabled','disabled');
-
-
-       });
-       
-       $(".active-textfield").click(function(){
-                $("#cancel_disable").removeAttr('disabled');
-            });
+        $( function() {
+            $("#comment-submit").attr('disabled','disabled');
+            $("#cancel_disable").attr('disabled','disabled');
             
-       $("select").change(function changeOption(){
-                $("#cancel_disable").removeAttr('disabled');
-       });
-      $("#tabs").tabs({ active: 2});
+            $("#rest-btn").attr('disabled','disabled');
+            $("#comment-text").click(function(){
+                $("#comment-submit").removeAttr('disabled');
+                $("#rest-btn").removeAttr('disabled');
+            });
 
-      $( ".datepicker" ).datepicker();
+            $("#comment-submit").click(function(){
+                var submitbutton = document.getElementById("comment-text").value;
+                 if(submitbutton == ''){
+               $("#comment-submit").attr('disabled','disabled');
+               $("#rest-btn").attr('disabled','disabled');
+           }
+           });
+             $("#rest-btn").click(function(){
 
-      $("#tabs" ).tabs({
-        activate:function(event,ui){
-          if(ui.newPanel.selector== "#tabs1"){
-            $("#tab_details").addClass("tabList");
-            $("#tab_mitigation").removeClass("tabList");
-            $("#tab_review").removeClass("tabList");
-          } else if(ui.newPanel.selector== "#tabs2"){
-            $("#tab_mitigation").addClass("tabList");
-            $("#tab_review").removeClass("tabList");
-            $("#tab_details").removeClass("tabList");
-          }else{
-            $("#tab_review").addClass("tabList");
-            $("#tab_mitigation").removeClass("tabList");
-            $("#tab_details").removeClass("tabList");
-          }
+               $("#comment-submit").attr('disabled','disabled');
 
-        }
-      });
 
-      $('.collapsible--toggle span').click(function(event) {
-        event.preventDefault();
-        $(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
-        $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
-      });
+           });
+           
+           $(".active-textfield").click(function(){
+                    $("#cancel_disable").removeAttr('disabled');
+                });
+                
+           $("select").change(function changeOption(){
+                    $("#cancel_disable").removeAttr('disabled');
+           });
+          $("#tabs").tabs({ active: 2});
 
-      $('.add-comments').click(function(event) {
-        event.preventDefault();
-        $(this).parents('.collapsible--toggle').next('.collapsible').slideDown('400');
-        $(this).toggleClass('rotate');
-        $('#comment').fadeToggle('100');
-        $(this).parent().find('span i').removeClass('fa-caret-right');
-        $(this).parent().find('span i').addClass('fa-caret-down');
-      });
+          $( ".datepicker" ).datepicker();
 
-      $('.collapsible').hide();
+          $("#tabs" ).tabs({
+            activate:function(event,ui){
+              if(ui.newPanel.selector== "#tabs1"){
+                $("#tab_details").addClass("tabList");
+                $("#tab_mitigation").removeClass("tabList");
+                $("#tab_review").removeClass("tabList");
+              } else if(ui.newPanel.selector== "#tabs2"){
+                $("#tab_mitigation").addClass("tabList");
+                $("#tab_review").removeClass("tabList");
+                $("#tab_details").removeClass("tabList");
+              }else{
+                $("#tab_review").addClass("tabList");
+                $("#tab_mitigation").removeClass("tabList");
+                $("#tab_details").removeClass("tabList");
+              }
 
-      $(".add-comment-menu").click(function(event){
-        event.preventDefault();
-        $commentsContainer = $("#comment").parents('.well');
-        $commentsContainer.find(".collapsible--toggle").next('.collapsible').slideDown('400');
-        $commentsContainer.find(".add-comments").addClass('rotate');
-        $('#comment').show();
-        $commentsContainer.find(".add-comments").parent().find('span i').removeClass('fa-caret-right');
-        $commentsContainer.find(".add-comments").parent().find('span i').addClass('fa-caret-down');
-        $("#comment-text").focus();
-      })
+            }
+          });
 
-    });
+          $('.collapsible--toggle span').click(function(event) {
+            event.preventDefault();
+            $(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
+            $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
+          });
+
+          $('.add-comments').click(function(event) {
+            event.preventDefault();
+            $(this).parents('.collapsible--toggle').next('.collapsible').slideDown('400');
+            $(this).toggleClass('rotate');
+            $('#comment').fadeToggle('100');
+            $(this).parent().find('span i').removeClass('fa-caret-right');
+            $(this).parent().find('span i').addClass('fa-caret-down');
+          });
+
+          $('.collapsible').hide();
+
+          $(".add-comment-menu").click(function(event){
+            event.preventDefault();
+            $commentsContainer = $("#comment").parents('.well');
+            $commentsContainer.find(".collapsible--toggle").next('.collapsible').slideDown('400');
+            $commentsContainer.find(".add-comments").addClass('rotate');
+            $('#comment').show();
+            $commentsContainer.find(".add-comments").parent().find('span i').removeClass('fa-caret-right');
+            $commentsContainer.find(".add-comments").parent().find('span i').addClass('fa-caret-down');
+            $("#comment-text").focus();
+          })
+
+        });
     </script>
     <script>
-      /*
-      * Function to add the css class for textarea title and make it popup.
-      * Example usage:
-      * focus_add_css_class("#foo", "#bar");
-      */
-      function focus_add_css_class(id_of_text_head, text_area_id){
-          look_for = "textarea" + text_area_id;
-          console.log(look_for);
-          if( !$(look_for).length ){
-              text_area_id = text_area_id.replace('#','');
-              look_for = "textarea[name=" + text_area_id;
-          }
-          $(look_for).focusin(function() {
-              $(id_of_text_head).addClass("affected-assets-title");
-              $('.ui-autocomplete').addClass("popup-ui-complete")
-          });
-          $(look_for).focusout(function() {
-              $(id_of_text_head).removeClass("affected-assets-title");
-              $('.ui-autocomplete').removeClass("popup-ui-complete")
-          });
-      }
-      $(document).ready(function() {
-          focus_add_css_class("#CommentsTitle", "#comments");
-      });
+        /*
+        * Function to add the css class for textarea title and make it popup.
+        * Example usage:
+        * focus_add_css_class("#foo", "#bar");
+        */
+        function focus_add_css_class(id_of_text_head, text_area_id){
+            // If enable_popup setting is false, disable popup
+            if($("#enable_popup").val() != 1){
+                $("textarea").removeClass("enable-popup");
+                return;
+            }else{
+                $("textarea").addClass("enable-popup");
+            }
+            look_for = "textarea" + text_area_id;
+            console.log(look_for);
+            if( !$(look_for).length ){
+                text_area_id = text_area_id.replace('#','');
+                look_for = "textarea[name=" + text_area_id;
+            }
+            $(look_for).focusin(function() {
+                $(id_of_text_head).addClass("affected-assets-title");
+                $('.ui-autocomplete').addClass("popup-ui-complete")
+            });
+            $(look_for).focusout(function() {
+                $(id_of_text_head).removeClass("affected-assets-title");
+                $('.ui-autocomplete').removeClass("popup-ui-complete")
+            });
+        }
+        $(document).ready(function() {
+            focus_add_css_class("#CommentsTitle", "#comments");
+        });
     </script>
-    </html>
+</html>

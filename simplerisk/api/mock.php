@@ -224,6 +224,25 @@
         return;
     }
     
+    function mock_get_scoring_history(&$results){
+        $results = array();
+        $results['url'] = "/api/management/risk/scoring_history?key={key}";
+        $results['method'] = "GET";
+        $results['params'] = 'id';
+
+        $results['response'] = '{
+            "status": 200,
+            "status_message": "scoring_history",
+            "data": {
+                "risk_id": "1001",
+		"calculated_risk": "10",
+		"last_update": "2017-03-05 17:55:57"
+            }
+        }';
+
+        return;
+    }
+    
     function mock_get_risk_view(&$results){
         $results = array();
         $results['url'] = "/api/management/risk/view?key={key}&id=2281";
@@ -332,8 +351,8 @@
             "submitted_by": "1",
             "submitted_by_name": "Admin",
             "supporting_files": [
-              "http://simplerisk.it/management/download.php?id=w7rtvQ1nmtOsPf0pGLSby5pqQ9ouAZ",
-              "http://simplerisk.it/management/download.php?id=IcyuIqRRoaG3ukaSk8IuVwc1HUGrgn"
+              "http://demo.simplerisk.com/management/download.php?id=w7rtvQ1nmtOsPf0pGLSby5pqQ9ouAZ",
+              "http://demo.simplerisk.com/management/download.php?id=IcyuIqRRoaG3ukaSk8IuVwc1HUGrgn"
             ]
           }
         }';
@@ -357,6 +376,44 @@
             "next_step": "1",
             "next_review": "2017-06-30",
             "comments": "This is a comment."
+          }
+        }';
+        
+        return;
+    }
+    
+    function mock_get_risk_levels(&$results){
+        $results = array();
+        $results['url'] = "/api/risk_levels";
+        $results['method'] = "GET";
+        $results['params'] = '';
+
+        $results['response'] = '{
+          "status": 200,
+          "status_message": "Success",
+          "data": {
+            "risk_levels": [
+              {
+                "value": "1.0",
+                "name": "Low",
+                "color": "#003cff"
+              },
+              {
+                "value": "4.0",
+                "name": "Medium",
+                "color": "#30d156"
+              },
+              {
+                "value": "7.0",
+                "name": "High",
+                "color": "#2ee5e8"
+              },
+              {
+                "value": "9.0",
+                "name": "Very High",
+                "color": "#ff0000"
+              }
+            ]
           }
         }';
         

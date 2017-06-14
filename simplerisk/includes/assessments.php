@@ -183,101 +183,110 @@ function push_pending_risk()
 	// Get the risk id to push
 	$pending_risk_id = (int)$_POST['pending_risk_id'];
 
-                // Get the posted risk values
-                $submission_date = $_POST['submission_date'];
-                $subject = $_POST['subject'];
-                $custom = (float)$_POST['risk_score'];
-                $owner = (int)$_POST['owner'];
-                $notes = $_POST['note'];
-		$assets = $_POST['asset'];
+    // Get the posted risk values
+    $submission_date = $_POST['submission_date'];
+    $subject = $_POST['subject'];
+    $custom = (float)$_POST['risk_score'];
+    $owner = (int)$_POST['owner'];
+    $notes = $_POST['note'];
+    $assets = $_POST['asset'];
 
-                // Set the other risk values
-                $status = "New";
-                $reference_id = "";
-                $regulation = "";
-                $control_number = "";
-                $location = "";
-                $source = "";
-                $category = "";
-                $team = "";
-                $technology = "";
-                $manager = "";
-                $assessment = "";
-                $CLASSIClikelihood = 5;
-                $CLASSICimpact = 5;
-                $CVSSAccessVector = 10;
-                $CVSSAccessComplexity = 10;
-                $CVSSAuthentication = 10;
-                $CVSSConfImpact = 10;
-                $CVSSIntegImpact = 10;
-                $CVSSAvailImpact = 10;
-                $CVSSExploitability = 10;
-                $CVSSRemediationLevel = 10;
-                $CVSSReportConfidence = 10;
-                $CVSSCollateralDamagePotential = 10;
-                $CVSSTargetDistribution = 10;
-                $CVSSConfidentialityRequirement = 10;
-                $CVSSIntegrityRequirement = 10;
-                $CVSSAvailabilityRequirement = 10;
-                $DREADDamage = 10;
-                $DREADReproducibility = 10;
-                $DREADExploitability = 10;
-                $DREADAffectedUsers = 10;
-                $DREADDiscoverability = 10;
-                $OWASPSkillLevel = 10;
-                $OWASPMotive = 10;
-                $OWASPOpportunity = 10;
-                $OWASPSize = 10;
-                $OWASPEaseOfDiscovery = 10;
-                $OWASPEaseOfExploit = 10;
-                $OWASPAwareness = 10;
-                $OWASPIntrusionDetection = 10;
-                $OWASPLossOfConfidentiality = 10;
-                $OWASPLossOfIntegrity = 10;
-                $OWASPLossOfAvailability = 10;
-                $OWASPLossOfAccountability = 10;
-                $OWASPFinancialDamage = 10;
-                $OWASPReputationDamage = 10;
-                $OWASPNonCompliance = 10;
-                $OWASPPrivacyViolation = 10;
+    // Set the other risk values
+    $status = "New";
+    $reference_id = "";
+    $regulation = "";
+    $control_number = "";
+    $location = "";
+    $source = "";
+    $category = "";
+    $team = "";
+    $technology = "";
+    $manager = "";
+    $assessment = "";
+    $CLASSIClikelihood = 5;
+    $CLASSICimpact = 5;
+    $CVSSAccessVector = 10;
+    $CVSSAccessComplexity = 10;
+    $CVSSAuthentication = 10;
+    $CVSSConfImpact = 10;
+    $CVSSIntegImpact = 10;
+    $CVSSAvailImpact = 10;
+    $CVSSExploitability = 10;
+    $CVSSRemediationLevel = 10;
+    $CVSSReportConfidence = 10;
+    $CVSSCollateralDamagePotential = 10;
+    $CVSSTargetDistribution = 10;
+    $CVSSConfidentialityRequirement = 10;
+    $CVSSIntegrityRequirement = 10;
+    $CVSSAvailabilityRequirement = 10;
+    $DREADDamage = 10;
+    $DREADReproducibility = 10;
+    $DREADExploitability = 10;
+    $DREADAffectedUsers = 10;
+    $DREADDiscoverability = 10;
+    $OWASPSkillLevel = 10;
+    $OWASPMotive = 10;
+    $OWASPOpportunity = 10;
+    $OWASPSize = 10;
+    $OWASPEaseOfDiscovery = 10;
+    $OWASPEaseOfExploit = 10;
+    $OWASPAwareness = 10;
+    $OWASPIntrusionDetection = 10;
+    $OWASPLossOfConfidentiality = 10;
+    $OWASPLossOfIntegrity = 10;
+    $OWASPLossOfAvailability = 10;
+    $OWASPLossOfAccountability = 10;
+    $OWASPFinancialDamage = 10;
+    $OWASPReputationDamage = 10;
+    $OWASPNonCompliance = 10;
+    $OWASPPrivacyViolation = 10;
 
-                // Set the scoring method to custom
-                $scoring_method = 5;
+    // Set the scoring method to custom
+    $scoring_method = 5;
 
-                // Submit the pending risk
-                $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+    // Submit the pending risk
+    $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+    
+    // If the encryption extra is enabled, updates order_by_subject
+    if (encryption_extra())
+    {
+        // Load the extra
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-                // Submit risk scoring
-                submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
+        create_subject_order($_SESSION['encrypted_pass']);
+    }
 
-		// Tag assets to risk
-		tag_assets_to_risk($last_insert_id, $assets);
+    // Submit risk scoring
+    submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
 
-                // If a file was submitted
-                if (!empty($_FILES))
-                {
-                        // Upload any file that is submitted
-                        upload_file($last_insert_id, $_FILES['file'], 1);
-                }
+	// Tag assets to risk
+	tag_assets_to_risk($last_insert_id, $assets);
 
-                // If the notification extra is enabled
-                if (notification_extra())
-                {
-                        // Include the team separation extra
-                        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+    // If a file was submitted
+    if (!empty($_FILES))
+    {
+        // Upload any file that is submitted
+        upload_file($last_insert_id, $_FILES['file'], 1);
+    }
 
-                        // Send the notification
-                        notify_new_risk($last_insert_id, $subject);
-                }
+    // If the notification extra is enabled
+    if (notification_extra())
+    {
+        // Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
-                // There is an alert message
-                $risk_id = $last_insert_id + 1000;
+        // Send the notification
+        notify_new_risk($last_insert_id, $subject);
+    }
 
-                // Delete the pending risk
-                delete_pending_risk($pending_risk_id);
+    // There is an alert message
+    $risk_id = $last_insert_id + 1000;
 
-                // Set the alert message
-                set_alert(true, "good", "Risk ID " . $risk_id . " submitted successfully!");
+    // Delete the pending risk
+    delete_pending_risk($pending_risk_id);
+
+    // Set the alert message
+    set_alert(true, "good", "Risk ID " . $risk_id . " submitted successfully!");
 }
 
 /***************************************************

@@ -108,7 +108,7 @@
                   <li>You are running Database version <?php echo $escaper->escapeHtml(current_version("db")); ?></li>
                 </ul>
                 </p>
-                <p>You can download the most recent code <a href="https://simplerisk.it/downloads" target="newwindow">here</a>.</p>
+                <p>You can download the most recent code <a href="https://www.simplerisk.com/download" target="newwindow">here</a>.</p>
               </div>
             </div>
           </div>

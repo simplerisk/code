@@ -52,35 +52,47 @@ function get_open_risks()
 /******************************
  * FUNCTION: GET CLOSED RISKS *
  ******************************/
-function get_closed_risks()
+function get_closed_risks($teams = false)
 {
-        // If team separation is not enabled
-        if (!team_separation_extra())
-        {
-                // Open the database connection
-                $db = db_open();
-        
-                // Query the database
-		$stmt = $db->prepare("SELECT id FROM `risks` WHERE status = \"Closed\"");
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-
-                // Close the database connection
-                db_close($db);
+    if($teams !== false){
+        if($teams == ""){
+            $teams_query = " AND 0 ";
+        }else{
+            $options = explode(",", $teams);
+            $teams_query = generate_or_query($options, 'team');
+            $teams_query = " AND ( {$teams_query} ) ";
         }
-        // Otherwise team separation is enabled
-        else    
-        {
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    }else{
+        $teams_query = "";
+    }
+    
+    // If team separation is not enabled
+    if (!team_separation_extra())
+    {
+        // Open the database connection
+        $db = db_open();
 
-                // Get the closed risks stripped
-                $array = strip_get_closed_risks();
-        }
+        // Query the database
+	    $stmt = $db->prepare("SELECT id FROM `risks` WHERE status = \"Closed\" {$teams_query} ");
+        $stmt->execute();
 
-        return count($array);
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+    }
+    // Otherwise team separation is enabled
+    else    
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        // Get the closed risks stripped
+        $array = strip_get_closed_risks($teams);
+    }
+
+    return count($array);
 }
 
 /****************************
@@ -166,7 +178,7 @@ function get_veryhigh_risks()
  ****************************/
 function get_risk_trend($title = null)
 {
-        $chart = new Highchart();
+    $chart = new Highchart();
 	$chart->includeExtraScripts();
 
 	$chart->chart->type = "arearange";
@@ -438,11 +450,24 @@ function get_risk_pyramid($title = null)
 
 /**********************************
  * FUNCTION: OPEN RISK LEVEL PIE *
+ * $teams: ex: 1:2:3:4
  **********************************/
-function open_risk_level_pie($title = null)
+function open_risk_level_pie($title = null, $teams = false)
 {
     $chart = new Highchart();
-
+    
+    if($teams !== false){
+        if($teams == ""){
+            $teams_query = " AND 0 ";
+        }else{
+            $options = explode(",", $teams);
+            $teams_query = generate_or_query($options, 'team', 'b');
+            $teams_query = " AND ( {$teams_query} ) ";
+        }
+    }else{
+        $teams_query = "";
+    }
+    
     $chart->chart->renderTo = "open_risk_level_pie";
     $chart->chart->plotBackgroundColor = null;
     $chart->chart->plotBorderWidth = null;
@@ -476,117 +501,118 @@ function open_risk_level_pie($title = null)
 	// If the team separation extra is not enabled
 	if (!team_separation_extra())
 	{
-        	// Query the database
-        	$stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :veryhigh THEN 'Very High' WHEN a.calculated_risk < :veryhigh AND a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
-        	$stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
-        	$stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
-        	$stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
-        	$stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
-        	$stmt->execute();
+        // Query the database
+        $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :veryhigh THEN 'Very High' WHEN a.calculated_risk < :veryhigh AND a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" ". $teams_query ." GROUP BY level ORDER BY a.calculated_risk DESC");
+        $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
+        $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
+        $stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
+        $stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
+        $stmt->execute();
 
-        	// Store the list in the array
-        	$array = $stmt->fetchAll();
+        // Store the list in the array
+        $array = $stmt->fetchAll();
 	}
 	else
 	{
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
 		// Query the database
-		$array = strip_no_access_open_risk_summary($veryhigh, $high, $medium, $low);
+		$array = strip_no_access_open_risk_summary($veryhigh, $high, $medium, $low, $teams);
 	}
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // If the array is empty
-        if (empty($array))
-        {
-                $data[] = array("No Data Available", 0);
+    
+    // If the array is empty
+    if (empty($array))
+    {
+        $data[] = array("No Data Available", 0);
+    }
+    // Otherwise
+    else
+    {
+		// Initialize veryhigh, high, medium, low, and insignificant
+		$veryhigh = false;
+		$high = false;
+		$medium = false;
+        $low = false;
+		$insignificant = false;
+		$color_array = array();
+
+        $risk_levels = get_risk_levels();
+        $risk_levels_by_color = array();
+        foreach($risk_levels as $risk_level){
+            $risk_levels_by_color[$risk_level['name']] = $risk_level;
         }
-        // Otherwise
-        else
+
+        // Create the data array
+        foreach ($array as $row)
         {
-		    // Initialize veryhigh, high, medium, low, and insignificant
-		    $veryhigh = false;
-		    $high = false;
-		    $medium = false;
-		    $low = false;
-		    $insignificant = false;
-		    $color_array = array();
+            $data[] = array($row['level'], (int)$row['num']);
 
-            $risk_levels = get_risk_levels();
-            $risk_levels_by_color = array();
-            foreach($risk_levels as $risk_level){
-                $risk_levels_by_color[$risk_level['name']] = $risk_level;
-            }
+			// If we have at least one very high risk
+			if ($row['level'] == "Very High" && $veryhigh != true)
+			{
+				$veryhigh = true;
 
-            // Create the data array
-            foreach ($array as $row)
+				// Add red to the color array
+				$color_array[] = $risk_levels_by_color["Very High"]["color"];
+			}
+			// If we have at least one high risk
+			else if ($row['level'] == "High" && $high != true)
+			{
+				$high = true;
+
+				// Add red to the color array
+				$color_array[] = $risk_levels_by_color["High"]["color"];
+			}
+			// If we have at least one medium risk
+			else if ($row['level'] == "Medium" && $medium != true)
+			{
+				$medium = true;
+
+				// Add orange to the color array
+				$color_array[] = $risk_levels_by_color["Medium"]["color"];
+			}
+			// If we have at least one low risk
+			else if ($row['level'] == "Low" && $low != true)
+			{
+				$low = true;
+
+				// Add yellow to the color array
+				$color_array[] = $risk_levels_by_color["Low"]["color"];
+			}
+            else if ($row['level'] == "Insignificant" && $insignificant != true)
             {
-                $data[] = array($row['level'], (int)$row['num']);
+                $insignificant = true;
 
-			    // If we have at least one very high risk
-			    if ($row['level'] == "Very High" && $veryhigh != true)
-			    {
-				    $veryhigh = true;
-
-				    // Add red to the color array
-				    $color_array[] = $risk_levels_by_color["Very High"]["color"];
-			    }
-			    // If we have at least one high risk
-			    else if ($row['level'] == "High" && $high != true)
-			    {
-				    $high = true;
-
-				    // Add red to the color array
-				    $color_array[] = $risk_levels_by_color["High"]["color"];
-			    }
-			    // If we have at least one medium risk
-			    else if ($row['level'] == "Medium" && $medium != true)
-			    {
-				    $medium = true;
-
-				    // Add orange to the color array
-				    $color_array[] = $risk_levels_by_color["Medium"]["color"];
-			    }
-			    // If we have at least one low risk
-			    else if ($row['level'] == "Low" && $low != true)
-			    {
-				    $low = true;
-
-				    // Add yellow to the color array
-				    $color_array[] = $risk_levels_by_color["Low"]["color"];
-			    }
-                else if ($row['level'] == "Insignificant" && $insignificant != true)
-                {
-                    $insignificant = true;
-
-                    // Add lightgrey to the color array
-                    $color_array[] = "lightgrey";
-                }
+                // Add lightgrey to the color array
+                $color_array[] = "lightgrey";
             }
-
-		    // Add black to color array for insignificant
-		    $color_array[] = "lightgrey";
-
-		    $chart->plotOptions->pie->colors = $color_array;
-
-            $chart->series[] = array('type' => "pie",
-                    'name' => "Level",
-                    'data' => $data);
         }
 
-    	echo "<div id=\"open_risk_level_pie\"></div>\n";
-    	echo "<script type=\"text/javascript\">";
-    	echo $chart->render("open_risk_level_pie");
-    	echo "</script>\n";
+		// Add black to color array for insignificant
+		$color_array[] = "lightgrey";
+
+		$chart->plotOptions->pie->colors = $color_array;
+
+        $chart->series[] = array('type' => "pie",
+                'name' => "Level",
+                'data' => $data);
+    }
+
+    echo "<div id=\"open_risk_level_pie\"></div>\n";
+    echo "<script type=\"text/javascript\">";
+    echo $chart->render("open_risk_level_pie");
+    echo "</script>\n";
 }
 
 /**********************************
  * FUNCTION: OPEN RISK STATUS PIE *
  **********************************/
-function open_risk_status_pie($array, $title = null)
+function open_risk_status_pie($array, $title = null, $teams = false)
 {
 	$chart = new Highchart();
 
@@ -608,9 +634,9 @@ function open_risk_status_pie($array, $title = null)
 	$chart->plotOptions->pie->showInLegend = 1;
 	$chart->credits->enabled = false;
 
-        // If the array is empty
-        if (empty($array))
-        {
+    // If the array is empty
+    if (empty($array))
+    {
 		$data[] = array("No Data Available", 0);
 	}
 	// Otherwise
@@ -640,70 +666,82 @@ function open_risk_status_pie($array, $title = null)
 /************************************
  * FUNCTION: CLOSED RISK REASON PIE *
  ************************************/
-function closed_risk_reason_pie($title = null)
+function closed_risk_reason_pie($title = null, $teams = false)
 {
-        $chart = new Highchart();
-
-        $chart->chart->renderTo = "closed_risk_reason_pie";
-        $chart->chart->plotBackgroundColor = null;
-        $chart->chart->plotBorderWidth = null;
-        $chart->chart->plotShadow = false;
-        $chart->title->text = $title;
-
-        $chart->tooltip->formatter = new HighchartJsExpr("function() {
-        return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
-
-        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
-        location.href = 'dynamic_risk_report.php?status=1&group=0&sort=0'; }");
-
-        $chart->plotOptions->pie->allowPointSelect = 1;
-        $chart->plotOptions->pie->cursor = "pointer";
-        $chart->plotOptions->pie->dataLabels->enabled = false;
-        $chart->plotOptions->pie->showInLegend = 1;
-        $chart->credits->enabled = false;
-
-        // Open the database connection
-        $db = db_open();
-
-        // If the team separation extra is not enabled
-        if (!team_separation_extra())
-        {
-                // Query the database
-		$stmt = $db->prepare("SELECT name, COUNT(*) as num FROM (SELECT a.close_reason, b.name, MAX(closure_date) FROM `closures` a JOIN `close_reason` b ON a.close_reason = b.value JOIN `risks` c ON a.risk_id = c.id WHERE c.status = \"Closed\" GROUP BY risk_id ORDER BY name DESC) AS close GROUP BY name ORDER BY COUNT(*) DESC;");
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
+    if($teams !== false){
+        if($teams == ""){
+            $teams_query = " AND 0 ";
+        }else{
+            $options = explode(",", $teams);
+            $teams_query = generate_or_query($options, 'team', 'c');
+            $teams_query = " AND ( {$teams_query} ) ";
         }
-        else
-        {
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    }else{
+        $teams_query = "";
+    }
 
-                // Query the database
-                $array = strip_no_access_risk_pie('close_reason');
+    $chart = new Highchart();
+
+    $chart->chart->renderTo = "closed_risk_reason_pie";
+    $chart->chart->plotBackgroundColor = null;
+    $chart->chart->plotBorderWidth = null;
+    $chart->chart->plotShadow = false;
+    $chart->title->text = $title;
+
+    $chart->tooltip->formatter = new HighchartJsExpr("function() {
+    return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
+
+    $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
+    location.href = 'dynamic_risk_report.php?status=1&group=0&sort=0'; }");
+
+    $chart->plotOptions->pie->allowPointSelect = 1;
+    $chart->plotOptions->pie->cursor = "pointer";
+    $chart->plotOptions->pie->dataLabels->enabled = false;
+    $chart->plotOptions->pie->showInLegend = 1;
+    $chart->credits->enabled = false;
+
+    // Open the database connection
+    $db = db_open();
+
+    // If the team separation extra is not enabled
+    if (!team_separation_extra())
+    {
+            // Query the database
+	$stmt = $db->prepare("SELECT name, COUNT(*) as num FROM (SELECT a.close_reason, b.name, MAX(closure_date) FROM `closures` a JOIN `close_reason` b ON a.close_reason = b.value JOIN `risks` c ON a.risk_id = c.id WHERE c.status = \"Closed\" {$teams_query} GROUP BY risk_id ORDER BY name DESC) AS close GROUP BY name ORDER BY COUNT(*) DESC;");
+            $stmt->execute();
+
+            // Store the list in the array
+            $array = $stmt->fetchAll();
+    }
+    else
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        // Query the database
+        $array = strip_no_access_risk_pie('close_reason');
+    }
+
+    // Close the database connection
+    db_close($db);
+
+    // If the array is empty
+    if (empty($array))
+    {
+            $data[] = array("No Data Available", 0);
+    }
+    // Otherwise
+    else
+    {
+        // Create the data array
+        foreach ($array as $row)
+        {
+            $data[] = array($row['name'], (int)$row['num']);
         }
 
-        // Close the database connection
-        db_close($db);
-
-        // If the array is empty
-        if (empty($array))
-        {
-                $data[] = array("No Data Available", 0);
-        }
-        // Otherwise
-        else
-        {
-        	// Create the data array
-        	foreach ($array as $row)
-        	{
-                	$data[] = array($row['name'], (int)$row['num']);
-        	}
-
-        	$chart->series[] = array('type' => "pie",
-                        'name' => "Status",
-                        'data' => $data);
+        $chart->series[] = array('type' => "pie",
+                    'name' => "Status",
+                    'data' => $data);
 	}
 
     echo "<div id=\"closed_risk_reason_pie\"></div>\n";
@@ -1562,20 +1600,20 @@ function get_review_needed_table()
 		    if (!preg_match('/\d{4}/', $review_status))
 		    {
 			    // Start the new table
-        		    echo "<table class=\"table table-bordered table-condensed sortable\">\n";
-        		    echo "<thead>\n";
-        		    echo "<tr>\n";
-        		    echo "<th bgcolor=\"#0088CC\" colspan=\"6\"><center>". $escaper->escapeHtml($review_status) ."</center></th>\n";
-        		    echo "</tr>\n";
-        		    echo "<tr>\n";
-        		    echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-        		    echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
-        		    echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-        		    echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
-        		    echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
-        		    echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
-        		    echo "</tr>\n";
-        		    echo "</thead>\n";
+        		echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        		echo "<thead>\n";
+        		echo "<tr>\n";
+        		echo "<th bgcolor=\"#0088CC\" colspan=\"6\"><center>". $escaper->escapeHtml($review_status) ."</center></th>\n";
+        		echo "</tr>\n";
+        		echo "<tr>\n";
+        		echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+        		echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+        		echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+        		echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+        		echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
+        		echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
+        		echo "</tr>\n";
+        		echo "</thead>\n";
         		    echo "<tbody>\n";
 		    }
 	    }
@@ -1800,7 +1838,7 @@ echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen
 /********************************
  * FUNCTION: GET RISKS BY TABLE *
  ********************************/
-function get_risks_by_table($status, $group, $sort, $column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_team=false, $column_risk_assessment=false, $column_additional_notes=false, $column_current_solution=false, $column_security_recommendations=false, $column_security_requirements=false)
+function get_risks_by_table($status, $group, $sort, $affected_asset, $column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_team=false, $column_risk_assessment=false, $column_additional_notes=false, $column_current_solution=false, $column_security_recommendations=false, $column_security_requirements=false)
 {
 	global $lang;
 	global $escaper;
@@ -1975,7 +2013,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 		echo "<tr class='main'>\n";
 
 		// Header columns go here
-		get_header_columns($column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements);
+		get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements);
 
 		echo "</tr>\n";
 		echo "</thead>\n";
@@ -2080,7 +2118,7 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 				echo "<tr class='main'>\n";
 
 				// Header columns go here
-				get_header_columns($column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements);
+				get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements);
 
 				echo "</tr>\n";
 				echo "</thead>\n";
@@ -2111,46 +2149,52 @@ function get_risks_by_table($status, $group, $sort, $column_id=true, $column_sta
 /********************************
  * FUNCTION: GET HEADER COLUMNS *
  ********************************/
-function get_header_columns($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements)
+function get_header_columns($hide, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements)
 {
 	global $lang;
 	global $escaper;
-
-	echo "<th class=\"id\" data-name='id' " . ($id == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"25px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-	echo "<th class=\"status\" data-name='risk_status' " . ($risk_status == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
-        echo "<th class=\"subject\" data-name='subject' " . ($subject == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-        echo "<th class=\"reference_id\" data-name='reference_id' " . ($reference_id == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ExternalReferenceId']) ."</th>\n";
-        echo "<th class=\"regulation\" data-name='regulation' " . ($regulation == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ControlRegulation']) ."</th>\n";
-        echo "<th class=\"control_number\" data-name='control_number' " . ($control_number == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ControlNumber']) ."</th>\n";
-        echo "<th class=\"location\" data-name='location' " . ($location == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SiteLocation']) ."</th>\n";
-	echo "<th class=\"source\" data-name='source' " . ($source == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskSource']) ."</th>\n";
-        echo "<th class=\"category\" data-name='category' " . ($category == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Category']) ."</th>\n";
-        echo "<th class=\"team\" data-name='team' " . ($team == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Team']) ."</th>\n";
-        echo "<th class=\"technology\" data-name='technology' " . ($technology == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Technology']) ."</th>\n";
-        echo "<th class=\"owner\" data-name='owner' " . ($owner == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Owner']) ."</th>\n";
-        echo "<th class=\"manager\" data-name='manager' " . ($manager == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['OwnersManager']) ."</th>\n";
-        echo "<th class=\"submitted_by\" data-name='submitted_by' " . ($submitted_by == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</th>\n";
-        echo "<th class=\"scoring_method\" data-name='scoring_method' " . ($scoring_method == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskScoringMethod']) ."</th>\n";
-        echo "<th class=\"calculated_risk\" data-name='calculated_risk' " . ($calculated_risk == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"25px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
-        echo "<th class=\"submission_date\" data-name='submission_date' " . ($submission_date == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
-        echo "<th class=\"review_date\" data-name='review_date' " . ($review_date == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ReviewDate']) ."</th>\n";
-	echo "<th class=\"project\" data-name='project' " . ($project == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Project']) ."</th>\n";
-	echo "<th class=\"mitigation_planned\" data-name='mitigation_planned' " . ($mitigation_planned == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</th>\n";
-	echo "<th class=\"management_review\" data-name='management_review' " . ($management_review == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ManagementReview']) ."</th>\n";
-	echo "<th class=\"days_open\" data-name='days_open' " . ($days_open == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
-	echo "<th class=\"next_review_date\" data-name='next_review_date' " . ($next_review_date == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
-	echo "<th class=\"next_step\" data-name='next_step' " . ($next_step == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextStep']) ."</th>\n";
-    echo "<th class=\"affected_assets\" data-name='affected_assets' " . ($affected_assets == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AffectedAssets']) ."</th>\n";
-    echo "<th class=\"risk_assessment\" data-name='risk_assessment' " . ($risk_assessment == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskAssessment']) ."</th>\n";
-    echo "<th class=\"additional_notes\" data-name='additional_notes' " . ($additional_notes == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AdditionalNotes']) ."</th>\n";
-    echo "<th class=\"current_solution\" data-name='current_solution' " . ($current_solution == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['CurrentSolution']) ."</th>\n";
-    echo "<th class=\"security_recommendations\" data-name='security_recommendations' " . ($security_recommendations == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SecurityRecommendations']) ."</th>\n";
-	echo "<th class=\"security_requirements\" data-name='security_requirements' " . ($security_requirements == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SecurityRequirements']) ."</th>\n";
-	echo "<th class=\"planning_strategy\" data-name='planning_strategy' " . ($planning_strategy == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."</th>\n";
-	echo "<th class=\"mitigation_effort\" data-name='mitigation_effort' " . ($mitigation_effort == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationEffort']) ."</th>\n";
-	echo "<th class=\"mitigation_cost\" data-name='mitigation_cost' " . ($mitigation_cost== true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationCost']) ."</th>\n";
-	echo "<th class=\"mitigation_owner\" data-name='mitigation_owner' " . ($mitigation_owner== true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationOwner']) ."</th>\n";
-	echo "<th class=\"mitigation_team\" data-name='mitigation_team' " . ($mitigation_team == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</th>\n";
+    
+    if($hide){
+        $display = "display: none;";
+    }else{
+        $display = "display: table-cell;";
+    }
+    
+	echo "<th class=\"id\" data-name='id' " . ($id == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"25px\">". $escaper->escapeHtml($lang['ID']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"status\" data-name='risk_status' " . ($risk_status == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Status']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"subject\" data-name='subject' " . ($subject == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Subject']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"reference_id\" data-name='reference_id' " . ($reference_id == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ExternalReferenceId']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"regulation\" data-name='regulation' " . ($regulation == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ControlRegulation']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"control_number\" data-name='control_number' " . ($control_number == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ControlNumber']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"location\" data-name='location' " . ($location == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SiteLocation']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"source\" data-name='source' " . ($source == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskSource']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"category\" data-name='category' " . ($category == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Category']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"team\" data-name='team' " . ($team == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Team']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"technology\" data-name='technology' " . ($technology == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Technology']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"owner\" data-name='owner' " . ($owner == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Owner']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"manager\" data-name='manager' " . ($manager == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['OwnersManager']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"submitted_by\" data-name='submitted_by' " . ($submitted_by == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SubmittedBy']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"scoring_method\" data-name='scoring_method' " . ($scoring_method == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskScoringMethod']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"calculated_risk\" data-name='calculated_risk' " . ($calculated_risk == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"25px\">". $escaper->escapeHtml($lang['Risk']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"submission_date\" data-name='submission_date' " . ($submission_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."<span class='fa'></span></th>\n";
+        echo "<th class=\"review_date\" data-name='review_date' " . ($review_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ReviewDate']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"project\" data-name='project' " . ($project == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Project']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"mitigation_planned\" data-name='mitigation_planned' " . ($mitigation_planned == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"management_review\" data-name='management_review' " . ($management_review == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ManagementReview']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"days_open\" data-name='days_open' " . ($days_open == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['DaysOpen']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"next_review_date\" data-name='next_review_date' " . ($next_review_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"next_step\" data-name='next_step' " . ($next_step == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextStep']) ."<span class='fa'></span></th>\n";
+    echo "<th class=\"affected_assets\" data-name='affected_assets' " . ($affected_assets == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AffectedAssets']) ."<span class='fa'></span></th>\n";
+    echo "<th class=\"risk_assessment\" data-name='risk_assessment' " . ($risk_assessment == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskAssessment']) ."<span class='fa'></span></th>\n";
+    echo "<th class=\"additional_notes\" data-name='additional_notes' " . ($additional_notes == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AdditionalNotes']) ."<span class='fa'></span></th>\n";
+    echo "<th class=\"current_solution\" data-name='current_solution' " . ($current_solution == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['CurrentSolution']) ."<span class='fa'></span></th>\n";
+    echo "<th class=\"security_recommendations\" data-name='security_recommendations' " . ($security_recommendations == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SecurityRecommendations']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"security_requirements\" data-name='security_requirements' " . ($security_requirements == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SecurityRequirements']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"planning_strategy\" data-name='planning_strategy' " . ($planning_strategy == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"mitigation_effort\" data-name='mitigation_effort' " . ($mitigation_effort == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationEffort']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"mitigation_cost\" data-name='mitigation_cost' " . ($mitigation_cost== true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationCost']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"mitigation_owner\" data-name='mitigation_owner' " . ($mitigation_owner== true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationOwner']) ."<span class='fa'></span></th>\n";
+	echo "<th class=\"mitigation_team\" data-name='mitigation_team' " . ($mitigation_team == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationTeam']) ."<span class='fa'></span></th>\n";
 }
 
 /******************************
@@ -2161,113 +2205,364 @@ function get_risk_columns($risk, $column_id, $column_status, $column_subject, $c
     global $lang;
     global $escaper;
 
-	$risk_id = (int)$risk['id'];
-	$status = $risk['status'];
-	$subject = try_decrypt($risk['subject']);
-	$reference_id = $risk['reference_id'];
-	$control_number = $risk['control_number'];
-	$submission_date = $risk['submission_date'];
-	$last_update = $risk['last_update'];
-	$review_date = $risk['review_date'];
-	$scoring_method = get_scoring_method_name($risk['scoring_method']);
-	$calculated_risk = $risk['calculated_risk'];
-	$color = get_risk_color($risk['calculated_risk']);
-	$risk_level = get_risk_level_name($risk['calculated_risk']);
-	$location = $risk['location'];
-	$source = $risk['source'];
-	$category = $risk['category'];
-	$team = $risk['team'];
-	$technology = $risk['technology'];
-	$owner = $risk['owner'];
-	$manager = $risk['manager'];
-	$submitted_by = $risk['submitted_by'];
-	$regulation = $risk['regulation'];
-	$project = try_decrypt($risk['project']);
-	$mitigation_id = $risk['mitigation_id'];
-	$mgmt_review = $risk['mgmt_review'];
+    $risk_id = (int)$risk['id'];
+    $status = $risk['status'];
+    $subject = try_decrypt($risk['subject']);
+    $reference_id = $risk['reference_id'];
+    $control_number = $risk['control_number'];
+    $submission_date = $risk['submission_date'];
+    $last_update = $risk['last_update'];
+    $review_date = $risk['review_date'];
+    $scoring_method = get_scoring_method_name($risk['scoring_method']);
+    $calculated_risk = $risk['calculated_risk'];
+    $color = get_risk_color($risk['calculated_risk']);
+    $risk_level = get_risk_level_name($risk['calculated_risk']);
+    $location = $risk['location'];
+    $source = $risk['source'];
+    $category = $risk['category'];
+    $team = $risk['team'];
+    $technology = $risk['technology'];
+    $owner = $risk['owner'];
+    $manager = $risk['manager'];
+    $submitted_by = $risk['submitted_by'];
+    $regulation = $risk['regulation'];
+    $project = try_decrypt($risk['project']);
+    $mitigation_id = $risk['mitigation_id'];
+    $mgmt_review = $risk['mgmt_review'];
 
-	// If the status is not closed
-	if ($status != "Closed")
-	{
-		// Compare submission date to now
-		$days_open = dayssince($risk['submission_date']);
-	}
-	// Otherwise the status is closed
-	else
-	{
-		// Compare the submission date to the closure date
-		$days_open = dayssince($risk['submission_date'], $risk['closure_date']);
-	}
+    // If the status is not closed
+    if ($status != "Closed")
+    {
+        // Compare submission date to now
+        $days_open = dayssince($risk['submission_date']);
+    }
+    // Otherwise the status is closed
+    else
+    {
+        // Compare the submission date to the closure date
+        $days_open = dayssince($risk['submission_date'], $risk['closure_date']);
+    }
 
-	$next_review_date = next_review($risk_level, $risk_id, $risk['next_review'], false);
-	$next_review_date_html = next_review($risk_level, $risk_id, $risk['next_review']);
-	$next_step = $risk['next_step'];
+    $next_review_date = next_review($risk_level, $risk_id, $risk['next_review'], false);
+    $next_review_date_html = next_review($risk_level, $risk_id, $risk['next_review']);
+    $next_step = $risk['next_step'];
     $affected_assets = $risk['affected_assets'];
-	$risk_assessment = try_decrypt($risk['risk_assessment']);
-	$additional_notes = try_decrypt($risk['additional_notes']);
-	$current_solution = try_decrypt($risk['current_solution']);
-	$security_recommendations = try_decrypt($risk['security_recommendations']);
-	$security_requirements = try_decrypt($risk['security_requirements']);
-	$planning_strategy = $risk['planning_strategy'];
-	$mitigation_effort = $risk['mitigation_effort'];
-	$mitigation_min_cost = $risk['mitigation_min_cost'];
-	$mitigation_max_cost = $risk['mitigation_max_cost'];
+    $risk_assessment = try_decrypt($risk['risk_assessment']);
+    $additional_notes = try_decrypt($risk['additional_notes']);
+    $current_solution = try_decrypt($risk['current_solution']);
+    $security_recommendations = try_decrypt($risk['security_recommendations']);
+    $security_requirements = try_decrypt($risk['security_requirements']);
+    $planning_strategy = $risk['planning_strategy'];
+    $mitigation_effort = $risk['mitigation_effort'];
+    $mitigation_min_cost = $risk['mitigation_min_cost'];
+    $mitigation_max_cost = $risk['mitigation_max_cost'];
 
-	// If the mitigation costs are empty
-	if (empty($mitigation_min_cost) && empty($mitigation_max_cost))
-	{
-		// Return no value
-		$mitigation_cost = "";
-	}
-	else $mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;
+    // If the mitigation costs are empty
+    if (empty($mitigation_min_cost) && empty($mitigation_max_cost))
+    {
+        // Return no value
+        $mitigation_cost = "";
+    }
+    else $mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;
 
-	$mitigation_owner = $risk['mitigation_owner'];
-	$mitigation_team = $risk['mitigation_team'];
+    $mitigation_owner = $risk['mitigation_owner'];
+    $mitigation_team = $risk['mitigation_team'];
 
-	// If the risk hasn't been reviewed yet
-	if ($review_date == "0000-00-00 00:00:00")
-	{
-		// Set the review date to empty
-		$review_date = "";
-	}
-	// Otherwise set the review date to the proper format
-	else $review_date = date(DATETIMESIMPLE, strtotime($review_date));
+    // If the risk hasn't been reviewed yet
+    if ($review_date == "0000-00-00 00:00:00")
+    {
+        // Set the review date to empty
+        $review_date = "";
+    }
+    // Otherwise set the review date to the proper format
+    else $review_date = date(DATETIMESIMPLE, strtotime($review_date));
 
-	echo "<td class=\"id\" " . ($column_id == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"25px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\" target=\"_blank\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
-	echo "<td class=\"status\" " . ($column_status == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($status) . "</td>\n";
-	echo "<td class=\"subject\" " . ($column_subject == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-	echo "<td class=\"reference_id\" " . ($column_reference_id == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($reference_id) . "</td>\n";
-	echo "<td class=\"regulation\" " . ($column_regulation == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($regulation) . "</td>\n";
-	echo "<td class=\"control_number\" " . ($column_control_number == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($control_number) . "</td>\n";
-	echo "<td class=\"location\" " . ($column_location == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($location) . "</td>\n";
-	echo "<td class=\"source\" " . ($column_source == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($source) . "</td>\n";
-	echo "<td class=\"category\" " . ($column_category == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($category) . "</td>\n";
-	echo "<td class=\"team\" " . ($column_team == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($team) . "</td>\n";
-	echo "<td class=\"technology\" " . ($column_technology == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($technology) . "</td>\n";
-	echo "<td class=\"owner\" " . ($column_owner == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($owner) . "</td>\n";
-	echo "<td class=\"manager\" " . ($column_manager == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($manager) . "</td>\n";
-	echo "<td class=\"submitted_by\" " . ($column_submitted_by == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($submitted_by) . "</td>\n";
-	echo "<td class=\"scoring_method\" " . ($column_scoring_method == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($scoring_method) . "</td>\n";
-	echo "<td class=\"calculated_risk risk-cell ".$escaper->escapeHtml($color)." \" " . ($column_calculated_risk == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"25px\"><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div>"."</td>\n";
-	echo "<td class=\"submission_date\" " . ($column_submission_date == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($submission_date))) . "</td>\n";
-	echo "<td class=\"review_date\" " . ($column_review_date == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($review_date) . "</td>\n";
-	echo "<td class=\"project\" " . ($column_project == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($project) . "</td>\n";
-	echo "<td class=\"mitigation_planned\" " . ($column_mitigation_planned == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . planned_mitigation(convert_id($risk_id), $mitigation_id) . "</td>\n";
-	echo "<td class=\"management_review\" " . ($column_management_review == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . management_review(convert_id($risk_id), $mgmt_review) . "</td>\n";
-	echo "<td class=\"days_open\" " . ($column_days_open == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($days_open) . "</td>\n";
-	echo "<td class=\"next_review_date\" " . ($column_next_review_date == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $next_review_date_html . "</td>\n";
-	echo "<td class=\"next_step\" " . ($column_next_step == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($next_step) . "</td>\n";
-	echo "<td class=\"affected_assets\" " . ($column_affected_assets == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($affected_assets) . "</td>\n";
+    echo "<td class=\"id\" " . ($column_id == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"25px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\" target=\"_blank\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+    echo "<td class=\"status\" " . ($column_status == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($status) . "</td>\n";
+    echo "<td class=\"subject\" " . ($column_subject == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+    echo "<td class=\"reference_id\" " . ($column_reference_id == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($reference_id) . "</td>\n";
+    echo "<td class=\"regulation\" " . ($column_regulation == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($regulation) . "</td>\n";
+    echo "<td class=\"control_number\" " . ($column_control_number == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($control_number) . "</td>\n";
+    echo "<td class=\"location\" " . ($column_location == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($location) . "</td>\n";
+    echo "<td class=\"source\" " . ($column_source == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($source) . "</td>\n";
+    echo "<td class=\"category\" " . ($column_category == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($category) . "</td>\n";
+    echo "<td class=\"team\" " . ($column_team == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($team) . "</td>\n";
+    echo "<td class=\"technology\" " . ($column_technology == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($technology) . "</td>\n";
+    echo "<td class=\"owner\" " . ($column_owner == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($owner) . "</td>\n";
+    echo "<td class=\"manager\" " . ($column_manager == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($manager) . "</td>\n";
+    echo "<td class=\"submitted_by\" " . ($column_submitted_by == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($submitted_by) . "</td>\n";
+    echo "<td class=\"scoring_method\" " . ($column_scoring_method == true ? "" : "style=\"display:tnone;\" ") . "align=\"left\" width=\"50px\">" . $escaper->escapeHtml($scoring_method) . "</td>\n";
+    echo "<td class=\"calculated_risk risk-cell ".$escaper->escapeHtml($color)." \" " . ($column_calculated_risk == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"25px\"><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div>"."</td>\n";
+    echo "<td class=\"submission_date\" " . ($column_submission_date == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($submission_date))) . "</td>\n";
+    echo "<td class=\"review_date\" " . ($column_review_date == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($review_date) . "</td>\n";
+    echo "<td class=\"project\" " . ($column_project == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($project) . "</td>\n";
+    echo "<td class=\"mitigation_planned\" " . ($column_mitigation_planned == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . planned_mitigation(convert_id($risk_id), $mitigation_id) . "</td>\n";
+    echo "<td class=\"management_review\" " . ($column_management_review == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . management_review(convert_id($risk_id), $mgmt_review, $next_review_date) . "</td>\n";
+    echo "<td class=\"days_open\" " . ($column_days_open == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($days_open) . "</td>\n";
+    echo "<td class=\"next_review_date\" " . ($column_next_review_date == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $next_review_date_html . "</td>\n";
+    echo "<td class=\"next_step\" " . ($column_next_step == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($next_step) . "</td>\n";
+    echo "<td class=\"affected_assets\" " . ($column_affected_assets == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($affected_assets) . "</td>\n";
         echo "<td class=\"risk_assessment\" " . ($column_risk_assessment == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk_assessment) . "</td>\n";
     echo "<td class=\"additional_notes\" " . ($column_additional_notes == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($additional_notes) . "</td>\n";
     echo "<td class=\"current_solution\" " . ($column_current_solution == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($current_solution) . "</td>\n";
     echo "<td class=\"security_recommendations\" " . ($column_security_recommendations == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($security_recommendations) . "</td>\n";
-	echo "<td class=\"security_requirements\" " . ($column_security_requirements == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($security_requirements) . "</td>\n";
-	echo "<td class=\"planning_strategy\" " . ($column_planning_strategy == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($planning_strategy) . "</td>\n";
-	echo "<td class=\"mitigation_effort\" " . ($column_mitigation_effort == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_effort) . "</td>\n";
-	echo "<td class=\"mitigation_cost\" " . ($column_mitigation_cost == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_cost) . "</td>\n";
-	echo "<td class=\"mitigation_owner\" " . ($column_mitigation_owner == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_owner) . "</td>\n";
-	echo "<td class=\"mitigation_team\" " . ($column_mitigation_team == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_team) . "</td>\n";
+    echo "<td class=\"security_requirements\" " . ($column_security_requirements == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($security_requirements) . "</td>\n";
+    echo "<td class=\"planning_strategy\" " . ($column_planning_strategy == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($planning_strategy) . "</td>\n";
+    echo "<td class=\"mitigation_effort\" " . ($column_mitigation_effort == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_effort) . "</td>\n";
+    echo "<td class=\"mitigation_cost\" " . ($column_mitigation_cost == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_cost) . "</td>\n";
+    echo "<td class=\"mitigation_owner\" " . ($column_mitigation_owner == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_owner) . "</td>\n";
+    echo "<td class=\"mitigation_team\" " . ($column_mitigation_team == true ? "" : "style=\"display:tnone;\" ") . "align=\"center\" width=\"150px\">" . $escaper->escapeHtml($mitigation_team) . "</td>\n";
+}
+
+/******************************
+ * FUNCTION: GET RISK COLUMNS *
+ ******************************/
+function get_risk_columns_new($hide, $risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements)
+{
+    global $lang;
+    global $escaper;
+    
+    if($hide){
+        $display = "display: none;";
+    }else{
+        $display = "display: table-cell;";
+    }
+    
+    $risk['id'] = convert_id($risk['id']);
+    $color = get_risk_color($risk['calculated_risk']);
+        
+    echo "
+        <td class=\"id\" " . ($column_id == true ? "" : "style=\"{$display}\" ") . "align=\"left\" ><a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($risk['id'])."</a></td>
+        <td class=\"status\" " . ($column_status == true ? "" : "style=\"{$display}\" ") . "align=\"left\">".$escaper->escapeHtml($risk['status'])."</td>
+        <td class=\"subject\" " . ($column_subject == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['subject'])."</td>
+        <td class=\"reference_id\" " . ($column_reference_id == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['reference_id'])."</td>
+        <td class=\"regulation\" " . ($column_regulation == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['regulation'])."</td>
+        <td class=\"control_number\" " . ($column_control_number == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['control_number'])."</td>
+        <td class=\"location\" " . ($column_location == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['location'])."</td>
+        <td class=\"source\" " . ($column_source == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['source'])."</td>
+        <td class=\"category\" " . ($column_category == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['category'])."</td>
+        <td class=\"team\" " . ($column_team == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['team'])."</td>
+        <td class=\"technology\" " . ($column_technology == true ? "" : "style=\"{$display}\" ") . "align=\"left\">".$escaper->escapeHtml($risk['technology'])."</td>
+        <td class=\"owner\" " . ($column_owner == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['owner'])."</td>
+        <td class=\"manager\" " . ($column_manager == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['manager'])."</td>
+        <td class=\"submitted_by\" " . ($column_submitted_by == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['submitted_by'])."</td>
+        <td class=\"scoring_method\" " . ($column_scoring_method == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['scoring_method'])."</td>
+        <td class=\"calculated_risk risk-cell \" " . ($column_calculated_risk == true ? "" : "style=\"{$display}\" ") . "align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\"><div class='".$escaper->escapeHtml($risk['color'])."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div></td>
+        <td class=\"submission_date\" " . ($column_submission_date == true ? "" : "style=\"{$display}\" ") . "align=\"center\" >".$escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date'])))."</td>
+        <td class=\"review_date\" " . ($column_review_date == true ? "" : "style=\"{$display}\" ") . "align=\"center\" >".$escaper->escapeHtml($risk['review_date'])."</td>
+        <td class=\"project\" " . ($column_project == true ? "" : "style=\"{$display}\" ") . "align=\"center\">".$escaper->escapeHtml($risk['project'])."</td>
+        <td class=\"mitigation_planned\" " . ($column_mitigation_planned == true ? "" : "style=\"{$display}\" ") . "align=\"center\">".planned_mitigation($risk['id'], $risk['mitigation_id'])."</td>
+        <td class=\"management_review\" " . ($column_management_review == true ? "" : "style=\"{$display}\" ") . "align=\"center\">".management_review($risk['id'], $risk['mgmt_review'], $risk['next_review_date'])."</td>
+        <td class=\"days_open\" " . ($column_days_open == true ? "" : "style=\"{$display}\" ") . "align=\"center\">".$escaper->escapeHtml($risk['days_open'])."</td>
+        <td class=\"next_review_date\" " . ($column_next_review_date == true ? "" : "style=\"{$display}\" ") . "align=\"center\">".$risk['next_review_date_html']."</td>
+        <td class=\"next_step\" " . ($column_next_step == true ? "" : "style=\"{$display}\" ") . "align=\"center\" >".$escaper->escapeHtml($risk['next_step'])."</td>
+        <td class=\"affected_assets\" " . ($column_affected_assets == true ? "" : "style=\"{$display}\" ") . "align=\"center\">".$escaper->escapeHtml($risk['affected_assets'])."</td>
+        <td class=\"risk_assessment\" " . ($column_risk_assessment == true ? "" : "style=\"{$display}\" ") . "align=\"center\" >".$escaper->escapeHtml($risk['risk_assessment'])."</td>
+        <td class=\"additional_notes\" " . ($column_additional_notes == true ? "" : "style=\"{$display}\" ") . "align=\"center\" >".$escaper->escapeHtml($risk['additional_notes'])."</td>
+        <td class=\"current_solution\" " . ($column_current_solution == true ? "" : "style=\"{$display}\" ") . "align=\"center\" >".$escaper->escapeHtml($risk['current_solution'])."</td>
+        <td class=\"security_recommendations\" " . ($column_security_recommendations == true ? "" : "style=\"{$display}\" ") . "align=\"center\">".$escaper->escapeHtml($risk['security_recommendations'])."</td>
+        <td class=\"security_requirements\" " . ($column_security_requirements == true ? "" : "style=\"{$display}\" ") . "align=\"center\" >".$escaper->escapeHtml($risk['security_requirements'])."</td>
+        <td class=\"planning_strategy\" " . ($column_planning_strategy == true ? "" : "style=\"{$display}\" ") . "align=\"center\" >".$escaper->escapeHtml($risk['planning_strategy'])."</td>
+        <td class=\"mitigation_effort\" " . ($column_mitigation_effort == true ? "" : "style=\"{$display}\" ") . "align=\"center\" >".$escaper->escapeHtml($risk['mitigation_effort'])."</td>
+        <td class=\"mitigation_cost\" " . ($column_mitigation_cost == true ? "" : "style=\"{$display}\" ") . "align=\"center\" >".$escaper->escapeHtml($risk['mitigation_cost'])."</td>
+        <td class=\"mitigation_owner\" " . ($column_mitigation_owner == true ? "" : "style=\"{$display}\" ") . "align=\"center\">".$escaper->escapeHtml($risk['mitigation_owner'])."</td>
+        <td class=\"mitigation_team\" " . ($column_mitigation_team == true ? "" : "style=\"{$display}\" ") . "align=\"center\">".$escaper->escapeHtml($risk['mitigation_team'])."</td>
+        
+    ";
+    
+}
+
+/**********************************
+ * FUNCTION: TABLE OF RISK BY TEAM *
+ *********************************/
+function risk_table_open_by_team($teamOptions, $ownerOptions, $managerOptions, $currentpageParam, $column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_team=false, $column_risk_assessment=false, $column_additional_notes=false, $column_current_solution=false, $column_security_recommendations=false, $column_security_requirements=false){
+    global $lang;
+    global $escaper;
+
+    $team_querys = array();
+    
+    $params = array();
+    // If at least one team was selected
+    if($teamOptions != ""){
+        $teams = explode(",", $teamOptions);
+        
+        $teamsArray = array();
+        foreach($teams as $team){
+            $params[] = $team;
+            $teamsArray[] = "a.team = :param". (count($params)-1);
+        }
+        $team_query_string = implode(" OR ", $teamsArray);
+//        $team_query .= ' OR ('.$team_query_string.') ';
+        array_push($team_querys, $team_query_string);
+    }
+
+    // If at least one owner was selected
+    if($ownerOptions != ""){
+        $owners = explode(",", $ownerOptions);
+
+        $teamsArray = array();
+        foreach($owners as $owner){
+            $params[] = $owner;
+            $teamsArray[] = "a.owner = :param". (count($params)-1);
+        }
+        $team_query_string = implode(" OR ", $teamsArray);
+//        $team_query .= ' OR ('.$team_query_string.') ';
+        array_push($team_querys, $team_query_string);
+    }
+                    
+    // If at least one owner's manager was selected
+    if($managerOptions != ""){
+        $ownersmanagers = explode(",", $managerOptions);
+
+        $teamsArray = array();
+        foreach($ownersmanagers as $ownersmanager){
+            $params[] = $ownersmanager;
+            $teamsArray[] = "a.manager = :param". (count($params)-1);
+        }
+        $team_query_string = implode(" OR ", $teamsArray);
+        array_push($team_querys, $team_query_string);
+    }
+    $team_query = implode(" OR ", $team_querys);
+    if($team_query){
+        $team_query = " AND (". $team_query . ")";
+    }else{
+        $team_query = " AND 0 ";
+    }
+    
+    // number of rows to show per page
+    $rowsperpage = 10;
+
+    // get the current page or set a default
+    if ($currentpageParam && is_numeric($currentpageParam)) {
+       // cast var as int
+       $currentpage = (int) $currentpageParam;
+    } else {
+       // default page num
+       $currentpage = 1;
+    } // end if
+
+    // the offset of the list, based on current page
+    $offset = ($currentpage - 1) * $rowsperpage;
+    
+    /**
+    * Get Risks
+    * 
+    * params: status, sort, group, &totalRows, start, length, group_name_by_seperation, custom_query
+    * status: non-closed
+    * sort: calculated_risk desc
+    * group: none
+    */
+    $count; // total counts
+
+    if($currentpageParam == "all"){
+        $risks = risks_query(0, 0, 0, 0, $count, 0, -1, "", $team_query, $params);
+    }else{
+        $risks = risks_query(0, 0, 0, 0, $count, $offset, $rowsperpage, "", $team_query, $params);
+    }
+
+    
+    // find out total pages
+    $totalpages = ceil($count / $rowsperpage);
+
+
+    // if current page is greater than total pages...
+    if ($currentpage > $totalpages) {
+       // set current page to last page
+       $currentpage = $totalpages;
+    } // end if
+    // if current page is less than first page...
+    if ($currentpage < 1) {
+       // set current page to first page
+       $currentpage = 1;
+    } // end if
+
+
+    $all_style = '';
+    if($currentpageParam == 'all') {
+        $offset = 0;
+        $rowsperpage = $count;
+        $currentpage = -1;
+        $all_style = 'class="active"';   
+    }
+
+    
+    echo "<div class=\"table-scroll\">\n";
+    echo "<table class=\"table table-bordered table-striped table-condensed sortable\">\n";
+    echo "<thead>\n";
+    echo "<tr>\n";
+    
+    echo get_header_columns(true, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements);
+
+    echo "</thead>\n";
+    echo "<tbody>\n";
+
+    // For each risk
+    foreach($risks as $risk){
+        echo "<tr>\n";
+        get_risk_columns_new(true, $risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements);
+        echo "</tr>\n";
+    }
+
+    echo "</tbody>\n";
+    echo "</table>\n";
+    echo "</div>\n";
+
+    echo "<div class=\"pagination clearfix\"><ul class=\"pull-right\">";
+    // range of num links to show
+    $range = 3;
+
+
+    if (!empty ($risks))
+    {
+
+        // if not on page 1, don't show back links
+        if ($currentpage > 1) {
+           // show << link to go back to page 1
+           echo "<li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage=1' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i></a></li>";
+           // get previous page num
+           $prevpage = $currentpage - 1;
+           // show < link to go back to 1 page
+           echo " <li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage={$prevpage}' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i></a></li> ";
+        } else {// end if
+           echo " <li><a href='javascript:void();' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i></a></li> ";
+        }
+
+        // loop to show links to range of pages around current page
+        for ($x = ($currentpage - $range); $x < (($currentpage + $range) + 1); $x++) {
+           // if it's a valid page number...
+           if (($x > 0) && ($x <= $totalpages)) {
+              // if we're on current page...
+              if ($x == $currentpage) {
+                 // 'highlight' it but don't make a link
+                 echo "<li class=\"active\"><a href=\"#\">{$x}</a></li>";
+              // if not current page...
+              } else {
+                 // make it a link
+                 echo " <li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage={$x}'>{$x}</a></li> ";
+              } // end else
+           } // end if
+        } // end for
+
+        // if not on last page, show forward and last page links
+        if ($currentpage != $totalpages) {
+           // get next page
+           $nextpage = $currentpage + 1;
+            // echo forward link for next page
+           echo " <li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage={$nextpage}' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i></a></li> ";
+           // echo forward link for lastpage
+          echo "<li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage={$totalpages}' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i><i class=\"fa fa-chevron-right\"></i></a></li>";
+        } else { // end if
+           echo " <li><a href='javascript:void(0);' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i></a></li> ";
+        }
+        /****** end build pagination links ******/
+    }
+
+    echo " <li {$all_style}><a href='{$_SERVER['SCRIPT_NAME']}?currentpage=all'>All</a></li> ";
+
+    echo "</ul></div>";
+
+    return true;
+    
 }
 
 /**********************************
@@ -2422,137 +2717,155 @@ function risks_by_month_table()
 /*************************
  * FUNCTION: RISKS QUERY *
  *************************/
-function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $group_value_from_db="")
+function risks_query($status, $sort, $group, $affected_asset, &$rowCount, $start=0, $length=10, $group_value_from_db="", $custom_query="", $custom_params=array())
 {
-        global $lang;
-        // Check the status
-        switch ($status)
-        {
-                // Open risks
-                case 0:
-                        $status_query = " WHERE a.status != \"Closed\" ";
-                        break;
-                // Closed risks
-                case 1:
-                        $status_query = " WHERE a.status = \"Closed\" ";
-                        break;
-                case 2:
-                // All risks
-                        $status_query = " WHERE 1 ";
-                        break;
-                // Default to open risks
-                default:
-                        $status_query = " WHERE a.status != \"Closed\" ";
-                        break;
-        }
+    global $lang;
+    // Check the status
+    switch ($status)
+    {
+        // Open risks
+        case 0:
+                $status_query = " WHERE a.status != \"Closed\" ";
+                break;
+        // Closed risks
+        case 1:
+                $status_query = " WHERE a.status = \"Closed\" ";
+                break;
+        case 2:
+        // All risks
+                $status_query = " WHERE 1 ";
+                break;
+        // Default to open risks
+        default:
+                $status_query = " WHERE a.status != \"Closed\" ";
+                break;
+    }
+    
+    if($custom_query){
+        $status_query .= $custom_query;
+    }
 
-        // Check the sort
-        switch ($sort)
-        {
-                // Calculated Risk
-                case 0:
-                        $sort_name = " calculated_risk DESC ";
-                        break;
-                // ID
-                case 1:
-                        $sort_name = " a.id ASC ";
-                        break;
-                // Subject
-                case 2:
-                        $sort_name = " a.subject ASC ";
-                        break;
-                // Default to calculated risk
-                default:
-                        $sort_name = " calculated_risk DESC ";
-                        break;
-        }
+    // Check the sort
+    switch ($sort)
+    {
+        // Calculated Risk
+        case 0:
+            $sort_name = " calculated_risk DESC ";
+            break;
+        // ID
+        case 1:
+            $sort_name = " a.id ASC ";
+            break;
+        // Subject
+        case 2:
+            // If the encryption extra is enabled, sort by order_by_subject field
+            if (encryption_extra())
+            {
+                $sort_name = " a.order_by_subject ASC ";
+            }else{
+                $sort_name = " a.subject ASC ";
+            }
 
-        // Check the group
-        switch ($group)
-        {
-                // None
-                case 0:
-                        $order_query = "GROUP BY id ORDER BY" . $sort_name;
-                        $group_name = "none";
-                        break;
-                // Risk Level
-                case 1:
-                        $order_query = "GROUP BY id ORDER BY calculated_risk DESC, " . $sort_name;
-                        $group_name = "risk_level";
-                        break;
-                // Status
-                case 2:
-                        $order_query = "GROUP BY id ORDER BY a.status," . $sort_name;
-                        $group_name = "status";
-                        break;
-                // Site/Location
-                case 3:
-                        $order_query = "GROUP BY id ORDER BY location," . $sort_name;
-                        $group_name = "location";
-                        break;
-                // Source
-                case 4:
-                        $order_query = "GROUP BY id ORDER BY source," . $sort_name;
-                        $group_name = "source";
-                        break;
-                // Category
-                case 5:
-                        $order_query = "GROUP BY id ORDER BY category," . $sort_name;
-                        $group_name = "category";
-                        break;
-                // Team
-                case 6:
-                        $order_query = "GROUP BY id ORDER BY team," . $sort_name;
-                        $group_name = "team";
-                        break;
-                // Technology
-                case 7:
-                        $order_query = "GROUP BY id ORDER BY technology," . $sort_name;
-                        $group_name = "technology";
-                        break;
-                // Owner
-                case 8:
-                        $order_query = "GROUP BY id ORDER BY owner," . $sort_name;
-                        $group_name = "owner";
-                        break;
-                // Owners Manager
-                case 9:
-                        $order_query = "GROUP BY id ORDER BY manager," . $sort_name;
-                        $group_name = "manager";
-                        break;
-                // Risk Scoring Method
-                case 10:
-                        $order_query = "GROUP BY id ORDER BY scoring_method," . $sort_name;
-                        $group_name = "scoring_method";
-                        break;
-                // Regulation
-                case 11:
-                        $order_query = "GROUP BY id ORDER BY regulation," . $sort_name;
-                        $group_name = "regulation";
-                        break;
-                // Project
-                case 12:
-                        $order_query = "GROUP BY id ORDER BY project," . $sort_name;
-                        $group_name = "project";
-                        break;
-                // Next Step
-                case 13:
-                        $order_query = "GROUP BY id ORDER BY next_step," . $sort_name;
-                        $group_name = "next_step";
-                        break;
-                // Month Submitted
-                case 14:
-                        $order_query = "GROUP BY id ORDER BY submission_date DESC," . $sort_name;
-                        $group_name = "month_submitted";
-                        break;
-                // Default to calculated risk
-                default:
-                        $order_query = "GROUP BY id ORDER BY" . $sort_name;
-                        $group_name = "none";
-                        break;
+            break;
+        // Default to calculated risk
+        default:
+            $sort_name = " calculated_risk DESC ";
+            break;
+    }
+
+    // Check the group
+    switch ($group)
+    {
+        // None
+        case 0:
+                $order_query = "GROUP BY id ORDER BY" . $sort_name;
+                $group_name = "none";
+                break;
+        // Risk Level
+        case 1:
+                $order_query = "GROUP BY id ORDER BY calculated_risk DESC, " . $sort_name;
+                $group_name = "risk_level";
+                break;
+        // Status
+        case 2:
+                $order_query = "GROUP BY id ORDER BY a.status," . $sort_name;
+                $group_name = "status";
+                break;
+        // Site/Location
+        case 3:
+                $order_query = "GROUP BY id ORDER BY location," . $sort_name;
+                $group_name = "location";
+                break;
+        // Source
+        case 4:
+                $order_query = "GROUP BY id ORDER BY source," . $sort_name;
+                $group_name = "source";
+                break;
+        // Category
+        case 5:
+                $order_query = "GROUP BY id ORDER BY category," . $sort_name;
+                $group_name = "category";
+                break;
+        // Team
+        case 6:
+                $order_query = "GROUP BY id ORDER BY team," . $sort_name;
+                $group_name = "team";
+                break;
+        // Technology
+        case 7:
+                $order_query = "GROUP BY id ORDER BY technology," . $sort_name;
+                $group_name = "technology";
+                break;
+        // Owner
+        case 8:
+                $order_query = "GROUP BY id ORDER BY owner," . $sort_name;
+                $group_name = "owner";
+                break;
+        // Owners Manager
+        case 9:
+                $order_query = "GROUP BY id ORDER BY manager," . $sort_name;
+                $group_name = "manager";
+                break;
+        // Risk Scoring Method
+        case 10:
+                $order_query = "GROUP BY id ORDER BY scoring_method," . $sort_name;
+                $group_name = "scoring_method";
+                break;
+        // Regulation
+        case 11:
+                $order_query = "GROUP BY id ORDER BY regulation," . $sort_name;
+                $group_name = "regulation";
+                break;
+        // Project
+        case 12:
+                $order_query = "GROUP BY id ORDER BY project," . $sort_name;
+                $group_name = "project";
+                break;
+        // Next Step
+        case 13:
+                $order_query = "GROUP BY id ORDER BY next_step," . $sort_name;
+                $group_name = "next_step";
+                break;
+        // Month Submitted
+        case 14:
+                $order_query = "GROUP BY id ORDER BY submission_date DESC," . $sort_name;
+                $group_name = "month_submitted";
+                break;
+        // Default to calculated risk
+        default:
+                $order_query = "GROUP BY id ORDER BY" . $sort_name;
+                $group_name = "none";
+                break;
 	}
+    
+    // Filter by affected_asset
+    if($affected_asset){
+        $whereQuery = " where t1.asset_id=:affected_asset ";
+    }else{
+        $whereQuery = " where 1 ";
+    }
+    
     $group_field_name = "";
-    $whereQuery = " where 1 ";
     if($group_name != "none"){
         if($group_name == "month_submitted"){
             $group_value_from_db = date('Y-m', strtotime($group_value_from_db))."%"; 
@@ -2571,14 +2884,11 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
         }
     }
 
-	// If the team separation extra is not enabled
-	if (!team_separation_extra())
-	{
-    $query = "SELECT a.id AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.id mitigation_id, p.current_solution, p.security_recommendations, p.security_requirements, ifnull((SELECT name FROM risk_levels WHERE value<=b.calculated_risk ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name
-    FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $order_query ;
-	}
-	// Otherwise
-	else
+    $query = "SELECT a.id AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.id mitigation_id, p.current_solution, p.security_recommendations, p.security_requirements, ifnull((SELECT name FROM risk_levels WHERE value<=b.calculated_risk ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name, n.asset_id
+    FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query ;
+        
+	// If the team separation extra is enabled
+	if (team_separation_extra())
 	{
 		// Include the team separation extra
 		require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
@@ -2586,9 +2896,9 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
 		// Get the separation query string
 		$separation_query = get_user_teams_query("a", false, true);
 
-		$query = "SELECT a.id AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, c.name AS location, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, v.name AS source, p.id mitigation_id, p.current_solution, p.security_recommendations, p.security_requirements, ifnull((SELECT name FROM risk_levels WHERE value<=b.calculated_risk ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name
-		FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON a.team = e.value LEFT JOIN technology f ON a.technology = f.value LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = h.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $separation_query . $order_query ;
+        $query .= $separation_query;
 	}
+    $query .= $order_query;
     
     $query = "
         select t1.*
@@ -2597,21 +2907,31 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
         ) t1
         {$whereQuery}
     ";
-
     // Query the database
     $db = db_open();
     $stmt = $db->prepare($query);
     if($group_name != "none"){
         $stmt->bindParam(":group_value", $group_value_from_db, PDO::PARAM_STR, 250);
     }
+    
+    if($affected_asset){
+        $stmt->bindParam(":affected_asset", $affected_asset, PDO::PARAM_STR, 250);
+    }
+    
+    if($custom_query){
+        // Set params for teams, owners, owner managers
+        for($i=0; $i<count($custom_params); $i++){
+            $stmt->bindParam(":param".$i, $custom_params[$i]);
+        }
+    }
+    
 //    echo $group_value_from_db;exit;
-//    print_r($stmt);exit;
     $stmt->execute();
     db_close($db);
 
     // Store the results in the risks array
     $risks = $stmt->fetchAll();
-    
+
     // Initialize the data array
     $data = array();
     $rowCount = count($risks);
@@ -2678,6 +2998,7 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
             $mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;;
             $mitigation_owner = $risk['mitigation_owner'];
             $mitigation_team = $risk['mitigation_team'];
+            $closure_date = $risk['closure_date'];
 
             // If the group name is not none
             if ($group_name != "none")
@@ -2694,7 +3015,7 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
 		    else $group_value = $group_name;
 
             // Create the new data array
-            $data[] = array("id" => $risk_id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "control_number" => $control_number, "submission_date" => $submission_date, "last_update" => $last_update, "review_date" => $review_date, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "color" => $color, "risk_level" => $risk_level, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "technology" => $technology, "owner" => $owner, "manager" => $manager, "submitted_by" => $submitted_by, "regulation" => $regulation, "project" => $project, "mgmt_review" => $mgmt_review, "days_open" => $days_open, "next_review_date" => $next_review_date, "next_review_date_html" => $next_review_date_html, "next_step" => $next_step, "affected_assets" => $affected_assets, "risk_assessment" => $risk_assessment, "additional_notes" => $additional_notes, "current_solution" => $current_solution, "security_recommendations" => $security_recommendations, "security_requirements" => $security_requirements, "month_submitted" => $month_submitted, "planning_strategy" => $planning_strategy, "mitigation_id" => $mitigation_id, "mitigation_effort" => $mitigation_effort, "mitigation_min_cost" => $mitigation_min_cost, "mitigation_max_cost" => $mitigation_max_cost, "mitigation_cost" => $mitigation_cost, "mitigation_owner" => $mitigation_owner, "mitigation_team" => $mitigation_team, "group_name" => $group_name, "group_value" => $group_value);
+            $data[] = array("id" => $risk_id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "control_number" => $control_number, "submission_date" => $submission_date, "last_update" => $last_update, "review_date" => $review_date, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "color" => $color, "risk_level" => $risk_level, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "technology" => $technology, "owner" => $owner, "manager" => $manager, "submitted_by" => $submitted_by, "regulation" => $regulation, "project" => $project, "mgmt_review" => $mgmt_review, "days_open" => $days_open, "next_review_date" => $next_review_date, "next_review_date_html" => $next_review_date_html, "next_step" => $next_step, "affected_assets" => $affected_assets, "risk_assessment" => $risk_assessment, "additional_notes" => $additional_notes, "current_solution" => $current_solution, "security_recommendations" => $security_recommendations, "security_requirements" => $security_requirements, "month_submitted" => $month_submitted, "planning_strategy" => $planning_strategy, "mitigation_id" => $mitigation_id, "mitigation_effort" => $mitigation_effort, "mitigation_min_cost" => $mitigation_min_cost, "mitigation_max_cost" => $mitigation_max_cost, "mitigation_cost" => $mitigation_cost, "mitigation_owner" => $mitigation_owner, "mitigation_team" => $mitigation_team, "group_name" => $group_name, "group_value" => $group_value, 'closure_date' => $closure_date);
 	}
 
 	// Return the data array
@@ -2704,52 +3025,64 @@ function risks_query($status, $sort, $group, &$rowCount, $start=0, $length=10, $
 /***************************
  * FUNCTION: GET PIE ARRAY *
  ***************************/
-function get_pie_array($filter = null)
+function get_pie_array($filter = null, $teams = false)
 {
-        // Open the database connection
-        $db = db_open();
+    if($teams !== false){
+        if($teams == ""){
+            $teams_query = " AND 0 ";
+        }else{
+            $options = explode(",", $teams);
+            $teams_query = generate_or_query($options, 'team', 'a');
+            $teams_query = " AND ( {$teams_query} ) ";
+        }
+    }else{
+        $teams_query = "";
+    }
+
+    // Open the database connection
+    $db = db_open();
 
 	// Check the filter for the query to use
 	switch($filter)
 	{
                case 'status':
                         $field = "status";
-                        $stmt = $db->prepare("SELECT id, status FROM `risks` WHERE status != \"Closed\" ORDER BY status DESC");
+                        $stmt = $db->prepare("SELECT a.id, a.status FROM `risks` a WHERE a.status != \"Closed\" {$teams_query} ORDER BY a.status DESC");
                         $stmt->execute();
                         break;
                 case 'location':
                         $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `location` b ON a.location = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `location` b ON a.location = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
                         $stmt->execute();
                         break;
                 case 'source':
                         $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `source` b ON a.source = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `source` b ON a.source = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
                         $stmt->execute();
                         break;
                 case 'category':
                         $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `category` b ON a.category = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `category` b ON a.category = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
                         $stmt->execute();
                         break;
                 case 'team':
                         $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `team` b ON a.team = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `team` b ON a.team = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
                         $stmt->execute();
                         break;
                 case 'technology':
                         $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `technology` b ON a.technology = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `technology` b ON a.technology = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
                         $stmt->execute();
                         break;
                 case 'owner':
                         $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `user` b ON a.owner = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `user` b ON a.owner = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
                         $stmt->execute();
                         break;
                 case 'manager':
                         $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `user` b ON a.manager = b.value WHERE status != \"Closed\" ORDER BY b.name DESC");
+                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `user` b ON a.manager = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
                         $stmt->execute();
                         break;
                 case 'scoring_method':
@@ -2758,12 +3091,24 @@ function get_pie_array($filter = null)
                         $stmt->execute();
                         break;
                 case 'close_reason':
+                        if($teams !== false){
+                            if($teams == ""){
+                                $teams_query = " AND 0 ";
+                            }else{
+                                $options = explode(",", $teams);
+                                $teams_query = generate_or_query($options, 'team', 'c');
+                                $teams_query = " AND ( {$teams_query} ) ";
+                            }
+                        }else{
+                            $teams_query = "";
+                        }
+
                         $field = "name";
-                        $stmt = $db->prepare("SELECT a.close_reason, a.risk_id as id, b.name, MAX(closure_date) FROM `closures` a JOIN `close_reason` b ON a.close_reason = b.value JOIN `risks` c ON a.risk_id = c.id WHERE c.status = \"Closed\" GROUP BY risk_id ORDER BY name DESC;");
+                        $stmt = $db->prepare("SELECT a.close_reason, a.risk_id as id, b.name, MAX(closure_date) FROM `closures` a JOIN `close_reason` b ON a.close_reason = b.value JOIN `risks` c ON a.risk_id = c.id WHERE c.status = \"Closed\" {$teams_query} GROUP BY risk_id ORDER BY name DESC;");
                         $stmt->execute();
                         break;
                 default:
-			$stmt = $db->prepare("SELECT a.id, a.status, b.name AS location, c.name AS source, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, CASE WHEN scoring_method = 5 THEN 'Custom' WHEN scoring_method = 4 THEN 'OWASP' WHEN scoring_method = 3 THEN 'DREAD' WHEN scoring_method = 2 THEN 'CVSS' WHEN scoring_method = 1 THEN 'Classic' END AS scoring_method FROM `risks` a LEFT JOIN `location` b ON a.location = b.value LEFT JOIN `source` c ON a.source = c.value LEFT JOIN `category` d ON a.category = d.value LEFT JOIN `team` e ON a.team = e.value LEFT JOIN `technology` f ON a.technology = f.value LEFT JOIN `user` g ON a.owner = g.value LEFT JOIN `user` h ON a.manager = h.value LEFT JOIN `risk_scoring` i ON a.id = i.id WHERE a.status != \"Closed\"");
+			            $stmt = $db->prepare("SELECT a.id, a.status, b.name AS location, c.name AS source, d.name AS category, e.name AS team, f.name AS technology, g.name AS owner, h.name AS manager, CASE WHEN scoring_method = 5 THEN 'Custom' WHEN scoring_method = 4 THEN 'OWASP' WHEN scoring_method = 3 THEN 'DREAD' WHEN scoring_method = 2 THEN 'CVSS' WHEN scoring_method = 1 THEN 'Classic' END AS scoring_method FROM `risks` a LEFT JOIN `location` b ON a.location = b.value LEFT JOIN `source` c ON a.source = c.value LEFT JOIN `category` d ON a.category = d.value LEFT JOIN `team` e ON a.team = e.value LEFT JOIN `technology` f ON a.technology = f.value LEFT JOIN `user` g ON a.owner = g.value LEFT JOIN `user` h ON a.manager = h.value LEFT JOIN `risk_scoring` i ON a.id = i.id WHERE a.status != \"Closed\" {$teams_query} ");
 			$stmt->execute();
                         break;
 	}
@@ -2777,11 +3122,11 @@ function get_pie_array($filter = null)
 	// If team separation is enabled
         if (team_separation_extra())
         {
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Strip out risks the user should not have access to
-                $array = strip_no_access_risks($array);
+            // Strip out risks the user should not have access to
+            $array = strip_no_access_risks($array);
         }
 
 	return $array;

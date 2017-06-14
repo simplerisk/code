@@ -687,6 +687,9 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
         </div>
         
       </div>
+    </div>
+  </div>
+    <input type="hidden" id="enable_popup" value="<?php echo get_setting('enable_popup'); ?>">
       <script>
         /*
         * Function to add the css class for textarea title and make it popup.
@@ -694,8 +697,15 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
         * focus_add_css_class("#foo", "#bar");
         */
         function focus_add_css_class(id_of_text_head, text_area_id){
+            // If enable_popup setting is false, disable popup
+            if($("#enable_popup").val() != 1){
+                $("textarea").removeClass("enable-popup");
+                return;
+            }else{
+                $("textarea").addClass("enable-popup");
+            }
+            
             look_for = "textarea" + text_area_id;
-            console.log(look_for);
             if( !$(look_for).length ){
                 text_area_id = text_area_id.replace('#','');
                 look_for = "textarea[name=" + text_area_id;
@@ -739,7 +749,8 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
             
         });
     </script>
-    </body>
+</body>
+
     <script type="text/javascript">
 
     $( function() {
@@ -759,40 +770,18 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
            $("#rest-btn").attr('disabled','disabled');
        }
        });
-         $("#rest-btn").click(function(){
-
+        $("#rest-btn").click(function(){
            $("#comment-submit").attr('disabled','disabled');
-
-
-       });
+        });
        
        $(".active-textfield").click(function(){
-                $("#cancel_disable").removeAttr('disabled');
-            });
+            $("#cancel_disable").removeAttr('disabled');
+        });
             
        $("select").change(function changeOption(){
-                $("#cancel_disable").removeAttr('disabled');
+            $("#cancel_disable").removeAttr('disabled');
        });
              
-//      $(document).on('change', '.hidden-file-upload', function(event) {
-//        event.preventDefault();
-
-//        var $parent = $(this).parents('.file-uploader');
-//        var files = $(this)[0].files;
-//        if(files.length > 1){ $msg = files.length+" Files Added"; }else{ $msg = "1 File Added"; }
-//        $($parent).find('.file-count').html($msg);
-
-//        var files = $(this)[0].files;
-
-//        $(files).each(function(index, el) {
-//          var $file = "<li>"+el.name+"</li>";
-//          $($parent).find('.file-list').html($file);
-//        });
-
-//        var fileName = $(this).val();
-//        $(this).prev('label').text(fileName);
-
-//      });
 
       $("#tabs").tabs({ active: 0});
       <?php if (isset($_POST['edit_mitigation'])): ?>

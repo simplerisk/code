@@ -67,6 +67,7 @@
         getRoute()->get('/admin/users/disabled', 'disabledusers');
         getRoute()->get('/reports', 'show_reports');
         getRoute()->get('/reports/dynamic', 'dynamicrisk');
+        getRoute()->get('/risk_levels', 'risk_levels');
 
         // RISK API from external app
 
@@ -99,9 +100,8 @@
         getRoute()->post('/management/risk/saveComment', 'saveCommentForm');
         
         
-        // Return scroing histories
-        getRoute()->get('/scoring_history', 'scoringHistory');
-
+        // Return scoring histories
+        getRoute()->get('/management/risk/scoring_history', 'scoringHistory');
         
 		// Define the API routes
 		getApi()->get('/version.json', 'api_version', EpiApi::external);

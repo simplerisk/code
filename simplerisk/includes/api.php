@@ -148,6 +148,8 @@ function show_management()
 
           <li><a href="mock.php?option=get_review_view">/management/review/view </a> -> (view a review)</li>
           <li><a href="mock.php?option=save_review">/management/review/add</a> -> (add a review)</li>
+          <li><a href="mock.php?option=get_scoring_history">/management/risk/scoring_history</a> -> (view scoring history)</li>
+	      <li><a href="mock.php?option=get_risk_levels">/risk_levels</a> -> (get risk levels)</li>
         </ul>';
 }
 
@@ -265,21 +267,21 @@ function disabledusers()
     // If the user is an administrator
     if (is_admin())
     {
-                // Get the list of disabled users ordered by name
-                $users = get_custom_table("disabled_users");
+        // Get the list of disabled users ordered by name
+        $users = get_custom_table("disabled_users");
 
-                // Initialize the data array
-                $data = array();
+        // Initialize the data array
+        $data = array();
 
-                // For each item in the users array
-                foreach ($users as $user)
-                {
-                        // Create the new data array
-                        $data[] = array("uid" => $user['value'], "type" => $user['type'], "username" => $user['username'], "email" => $user['email'], "last_login" => $user['last_login']);
-                }
+        // For each item in the users array
+        foreach ($users as $user)
+        {
+            // Create the new data array
+            $data[] = array("uid" => $user['value'], "type" => $user['type'], "username" => $user['username'], "email" => $user['email'], "last_login" => $user['last_login']);
+        }
 
-                // Return a JSON response
-                json_response(200, "disabledusers", $data);
+        // Return a JSON response
+        json_response(200, "disabledusers", $data);
     }
 }
 
@@ -288,6 +290,7 @@ function disabledusers()
  ************************************/
 function dynamicrisk()
 {
+    global $escaper;
     // If the status, sort, and group are not sent
     if (!isset($_GET['status']) || !isset($_GET['sort']) || !isset($_GET['group']))
     {
@@ -300,12 +303,61 @@ function dynamicrisk()
         $status = $_GET['status'];
         $sort = $_GET['sort'];
         $group = $_GET['group'];
+        $affected_asset = isset($_GET['affected_asset']) ? $_GET['affected_asset'] : 0;
+        $start = (isset($_GET['start']) && $_GET['start']) ? $_GET['start'] : 0;
+        $length = (isset($_GET['length']) && $_GET['length']) ? $_GET['length'] : 10;
+        $rowCount = "";
+
+        $review_levels = get_review_levels();
 
         // Query the risks
-        $data = risks_query($status, $sort, $group);
+        $data = risks_query($status, $sort, $group, $affected_asset, $rowCount, $start, $length);
+        $rows = array();
+        foreach($data as $risk){
+            $row = array(
+                "id"                    => $escaper->escapeHtml($risk['id'] + 1000),
+                "status"                => $escaper->escapeHtml($risk['status']),
+                "subject"               => $escaper->escapeHtml($risk['subject']),
+                "reference_id"          => $escaper->escapeHtml($risk['reference_id']),
+                "regulation"            => $escaper->escapeHtml($risk['regulation']),
+                "control_number"        => $escaper->escapeHtml($risk['control_number']),
+                "location"              => $escaper->escapeHtml($risk['location']),
+                "source"                => $escaper->escapeHtml($risk['source']),
+                "category"              => $escaper->escapeHtml($risk['category']),
+                "team"                  => $escaper->escapeHtml($risk['team']),
+                "technology"            => $escaper->escapeHtml($risk['technology']),
+                "owner"                 => $escaper->escapeHtml($risk['owner']),
+                "manager"               => $escaper->escapeHtml($risk['manager']),
+                "submitted_by"          => $escaper->escapeHtml($risk['submitted_by']),
+                "scoring_method"        => $escaper->escapeHtml($risk['scoring_method']),
+                "calculated_risk"       => $escaper->escapeHtml($risk['calculated_risk']),
+                "color"                 => get_risk_color($risk['calculated_risk']),
+                "submission_date"       => $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))),
+                "review_date"           => $escaper->escapeHtml($risk['review_date']),
+                "project"               => $escaper->escapeHtml($risk['project']),
+                "mitigation_planned"    => getTextBetweenTags(planned_mitigation($risk['id'], $risk['mitigation_id']), "a") , // mitigation plan
+                "management_review"     => getTextBetweenTags(management_review($risk['id'], $risk['mgmt_review'], $risk['next_review_date']), "a"), // management review
+                "days_open"             => $escaper->escapeHtml($risk['days_open']),
+                "next_review_date"      => $risk['next_review_date'],
+                "next_step"             => $escaper->escapeHtml($risk['next_step']),
+                "affected_assets"       => $escaper->escapeHtml($risk['affected_assets']),
+                "risk_assessment"       => $escaper->escapeHtml($risk['risk_assessment']),
+                "additional_notes"      => $escaper->escapeHtml($risk['additional_notes']),
+                "current_solution"      => $escaper->escapeHtml($risk['current_solution']),
+                "security_recommendations" => $escaper->escapeHtml($risk['security_recommendations']),
+                "security_requirements" => $escaper->escapeHtml($risk['security_requirements']),
+                "planning_strategy"     => $escaper->escapeHtml($risk['planning_strategy']),
+                "mitigation_effort"     => $escaper->escapeHtml($risk['mitigation_effort']),
+                "mitigation_cost"       => $escaper->escapeHtml($risk['mitigation_cost']),
+                "mitigation_owner"      => $escaper->escapeHtml($risk['mitigation_owner']),
+                "mitigation_team"       => $escaper->escapeHtml($risk['mitigation_team']),
+                "closure_date"          => $escaper->escapeHtml($risk['closure_date']),
+            );
+            $rows[] = $row;
+        }
 
         // Return a JSON response
-        json_response(200, "dynamicrisk", $data);
+        json_response(200, "dynamicrisk", $rows);
     }
 }
 
@@ -393,8 +445,77 @@ function viewrisk()
             $OWASP_NonCompliance = $risk[0]['OWASP_NonCompliance'];
             $OWASP_PrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
             $custom = $risk[0]['Custom'];
+            
+            // Get closures
+            $closures = get_close_by_id($id);
+            if($closures)
+                $closure_date = $closures[0]['closure_date'];
+            else
+                $closure_date = "";
 
-            $data[] = array("id" => $id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "regulation" => $regulation, "control_number" => $control_number, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "technology" => $technology, "owner" => $owner, "manager" => $manager, "assessment" => $assessment, "notes" => $notes, "assets" => $assets, "submission_date" => $submission_date, "mitigation_id" => $mitigation_id, "mgmt_review" => $mgmt_review, "calculated_risk" => $calculated_risk, "next_review" => $next_review, "color" => $color, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "CLASSIC_likelihood" => $CLASSIC_likelihood, "CLASSIC_impact" => $CLASSIC_impact, "CVSS_AccessVector" => $CVSS_AccessVector, "CVSS_AccessComplexity" => $CVSS_AccessComplexity, "CVSS_Authentication" => $CVSS_Authentication, "CVSS_ConfImpact" => $CVSS_ConfImpact, "CVSS_IntegImpact" => $CVSS_IntegImpact, "CVSS_AvailImpact" => $CVSS_AvailImpact, "CVSS_Exploitability" => $CVSS_Exploitability, "CVSS_RemediationLevel" => $CVSS_RemediationLevel, "CVSS_ReportConfidence" => $CVSS_ReportConfidence, "CVSS_CollateralDamagePotential" => $CVSS_CollateralDamagePotential, "CVSS_TargetDistribution" => $CVSS_TargetDistribution, "CVSS_ConfidentialityRequirement" => $CVSS_ConfidentialityRequirement, "CVSS_IntegrityRequirement" => $CVSS_IntegrityRequirement, "CVSS_AvailabilityRequirement" => $CVSS_AvailabilityRequirement, "DREAD_DamagePotential" => $DREAD_DamagePotential, "DREAD_Reproducibility" => $DREAD_Reproducibility, "DREAD_Exploitability" => $DREAD_Exploitability, "DREAD_AffectedUsers" => $DREAD_AffectedUsers, "DREAD_Discoverability" => $DREAD_Discoverability, "OWASP_SkillLevel" => $OWASP_SkillLevel, "OWASP_Motive" => $OWASP_Motive, "OWASP_Opportunity" => $OWASP_Opportunity, "OWASP_Size" => $OWASP_Size, "OWASP_EaseOfDiscovery" => $OWASP_EaseOfDiscovery, "OWASP_EaseOfExploit" => $OWASP_EaseOfExploit, "OWASP_Awareness" => $OWASP_Awareness, "OWASP_IntrusionDetection" => $OWASP_IntrusionDetection, "OWASP_LossOfConfidentiality" => $OWASP_LossOfConfidentiality, "OWASP_LossOfIntegrity" => $OWASP_LossOfIntegrity, "OWASP_LossOfAvailability" => $OWASP_LossOfAvailability, "OWASP_LossOfAccountability" => $OWASP_LossOfAccountability, "OWASP_FinancialDamage" => $OWASP_FinancialDamage, "OWASP_ReputationDamage" => $OWASP_ReputationDamage, "OWASP_NonCompliance" => $OWASP_NonCompliance, "OWASP_PrivacyViolation" => $OWASP_PrivacyViolation, "Custom" => $custom);
+            $data[] = array(
+                "id" => $id, 
+                "status" => $status, 
+                "subject" => $subject, 
+                "reference_id" => $reference_id, 
+                "regulation" => $regulation, 
+                "control_number" => $control_number, 
+                "location" => $location, "source" => $source, 
+                "category" => $category, "team" => $team, 
+                "technology" => $technology, 
+                "owner" => $owner, 
+                "manager" => $manager, 
+                "assessment" => $assessment, 
+                "notes" => $notes, 
+                "assets" => $assets, 
+                "submission_date" => $submission_date, 
+                "mitigation_id" => $mitigation_id, 
+                "mgmt_review" => $mgmt_review, 
+                "calculated_risk" => $calculated_risk, 
+                "next_review" => $next_review, 
+                "color" => $color, 
+                "scoring_method" => $scoring_method, 
+                "calculated_risk" => $calculated_risk, 
+                "CLASSIC_likelihood" => $CLASSIC_likelihood, 
+                "CLASSIC_impact" => $CLASSIC_impact, 
+                "CVSS_AccessVector" => $CVSS_AccessVector, 
+                "CVSS_AccessComplexity" => $CVSS_AccessComplexity, 
+                "CVSS_Authentication" => $CVSS_Authentication, 
+                "CVSS_ConfImpact" => $CVSS_ConfImpact, 
+                "CVSS_IntegImpact" => $CVSS_IntegImpact, 
+                "CVSS_AvailImpact" => $CVSS_AvailImpact, 
+                "CVSS_Exploitability" => $CVSS_Exploitability, 
+                "CVSS_RemediationLevel" => $CVSS_RemediationLevel, 
+                "CVSS_ReportConfidence" => $CVSS_ReportConfidence, 
+                "CVSS_CollateralDamagePotential" => $CVSS_CollateralDamagePotential, 
+                "CVSS_TargetDistribution" => $CVSS_TargetDistribution, 
+                "CVSS_ConfidentialityRequirement" => $CVSS_ConfidentialityRequirement, 
+                "CVSS_IntegrityRequirement" => $CVSS_IntegrityRequirement, 
+                "CVSS_AvailabilityRequirement" => $CVSS_AvailabilityRequirement, 
+                "DREAD_DamagePotential" => $DREAD_DamagePotential, 
+                "DREAD_Reproducibility" => $DREAD_Reproducibility, 
+                "DREAD_Exploitability" => $DREAD_Exploitability, 
+                "DREAD_AffectedUsers" => $DREAD_AffectedUsers,
+                "DREAD_Discoverability" => $DREAD_Discoverability, 
+                "OWASP_SkillLevel" => $OWASP_SkillLevel, 
+                "OWASP_Motive" => $OWASP_Motive, 
+                "OWASP_Opportunity" => $OWASP_Opportunity, 
+                "OWASP_Size" => $OWASP_Size, 
+                "OWASP_EaseOfDiscovery" => $OWASP_EaseOfDiscovery, 
+                "OWASP_EaseOfExploit" => $OWASP_EaseOfExploit, 
+                "OWASP_Awareness" => $OWASP_Awareness, 
+                "OWASP_IntrusionDetection" => $OWASP_IntrusionDetection, 
+                "OWASP_LossOfConfidentiality" => $OWASP_LossOfConfidentiality, 
+                "OWASP_LossOfIntegrity" => $OWASP_LossOfIntegrity, 
+                "OWASP_LossOfAvailability" => $OWASP_LossOfAvailability, 
+                "OWASP_LossOfAccountability" => $OWASP_LossOfAccountability, 
+                "OWASP_FinancialDamage" => $OWASP_FinancialDamage, 
+                "OWASP_ReputationDamage" => $OWASP_ReputationDamage, 
+                "OWASP_NonCompliance" => $OWASP_NonCompliance, 
+                "OWASP_PrivacyViolation" => $OWASP_PrivacyViolation, 
+                "Custom" => $custom, 
+                "closure_date" => $closure_date
+            );
 
             // Return a JSON response
             json_response(200, "viewrisk", $data);
@@ -431,9 +552,8 @@ function viewmitigation()
     $mitigation = $mitigation[0];
     $supporting_files = get_supporting_files($risk_id, 2);
     $mitigation['supporting_files'] = array();
-    
     foreach($supporting_files as $supporting_file){
-        $mitigation['supporting_files'][] = BASEURL."/management/download.php?id=" . $escaper->escapeHtml($supporting_file['unique_name']);
+        $mitigation['supporting_files'][] = $_SESSION['base_url']."/management/download.php?id=" . $escaper->escapeHtml($supporting_file['unique_name']);
     }
     
     $data = array(
@@ -522,7 +642,7 @@ function dynamicriskForm()
 {
     global $escaper;
     // If the status, sort, and group are not sent
-    if (!isset($_POST['status']) || !isset($_POST['sort']) || !isset($_POST['group']))
+    if (!isset($_REQUEST['status']) || !isset($_REQUEST['sort']) || !isset($_REQUEST['group']))
     {
         set_alert(true, "You need to specify a status, sort, and group parameter.");
         
@@ -532,20 +652,50 @@ function dynamicriskForm()
     else
     {
         // Get the status, sort, and group
-        $draw = $_POST['draw'];
+        $draw   = $escaper->escapeHtml($_POST['draw']);
         $status = $_POST['status'];
-        $sort = $_POST['sort'];
-        $group = $_POST['group'];
-        $start = $_POST['start'] ? $_POST['start'] : 0;
+        $sort   = $_POST['sort'];
+        $group  = $_POST['group'];
+        $affected_asset  = isset($_POST['affected_asset']) ? $_POST['affected_asset'] : 0;
+        $start  = $_POST['start'] ? $_POST['start'] : 0;
         $length = $_POST['length'] ? $_POST['length'] : 10;
         $group_value_from_db = $_POST['group_value'] ? $_POST['group_value'] : "";
         
         $rowCount = 0;
         // Query the risks
-        $risks = risks_query($status, $sort, $group, $rowCount, $start, $length, $group_value_from_db);
+        $risks = risks_query($status, $sort, $group, $affected_asset, $rowCount, $start, $length, $group_value_from_db);
         
+        $orderColumnIndex = $_POST['order'][0]['column'];
+        $orderDir = $_POST['order'][0]['dir'];
+        $orderColumnName = $_POST['columns'][$orderColumnIndex]['name'];
+        $sorted = false;
+        if($orderColumnName == "calculated_risk" || $orderColumnName == "id"){
+            $sorted = true;
+            // Reset order for specific columns
+            usort($risks, function($a, $b) use ($orderDir, $orderColumnName)
+                {
+                    switch($orderColumnName){
+                        case "id":
+                            $aValue = trim($a['id']);
+                            $bValue = trim($b['id']);
+                        break;
+                        case "calculated_risk":
+                            $aValue = trim($a['calculated_risk']);
+                            $bValue = trim($b['calculated_risk']);
+                        break;
+                        default:
+                            return 0;
+                    }
+                    if($orderDir == 'asc'){
+                        return strcasecmp($aValue, $bValue);
+                    }else{
+                        return strcasecmp($bValue, $aValue);
+                    }
+                }
+            );
+        }
+
         $rows = array();
-//        for( $i = $start; $i < $start + $length && $risks[$i]; $i++ ){
         foreach($risks as $row){
 //            $row = $risks[$i];
             $row['id'] = $row['id'] + 1000;
@@ -572,7 +722,7 @@ function dynamicriskForm()
                 $escaper->escapeHtml($row['review_date']),
                 $escaper->escapeHtml($row['project']),
                 planned_mitigation($row['id'], $row['mitigation_id']) , // mitigation plan
-                management_review($row['id'], $row['mgmt_review']) , // management review
+                management_review($row['id'], $row['mgmt_review'], $row['next_review_date']) , // management review
                 $escaper->escapeHtml($row['days_open']),
                 $row['next_review_date_html'],
                 $escaper->escapeHtml($row['next_step']),
@@ -589,6 +739,20 @@ function dynamicriskForm()
                 $escaper->escapeHtml($row['mitigation_team']),
             );
         }
+        
+        if(!$sorted){
+            usort($rows, function($a, $b) use ($orderDir, $orderColumnIndex)
+                {
+                    if($orderDir == 'asc'){
+                        return strcasecmp(trim($a[$orderColumnIndex]), trim($b[$orderColumnIndex]));
+                    }else{
+                        return strcasecmp(trim($b[$orderColumnIndex]), trim($a[$orderColumnIndex]));
+                    }
+                }
+            );
+        }
+
+        
         $results = array(
             "draw" => $draw,
             "recordsTotal" => $rowCount,
@@ -854,7 +1018,7 @@ function getTabHtml($id, $template){
 
         $review = $mgmt_reviews[0]['review'];
         $next_step = $mgmt_reviews[0]['next_step'];
-        $next_review = next_review($risk_level, $id, $next_review, false);
+        $next_review = next_review($risk_level, ($id-1000), $next_review, false, false);
         $reviewer = $mgmt_reviews[0]['reviewer'];
         $comments = $mgmt_reviews[0]['comments'];
     }else
@@ -1329,7 +1493,7 @@ function saveReviewForm()
                 $risk_level = get_risk_level_name($risk[0]['calculated_risk']);
 
                 $risk_id = (int)$risk[0]['id'];
-                $custom_review = next_review($risk_level, $risk_id, $custom_review, false);
+                $custom_review = next_review($risk_level, $risk_id, $custom_review, false, false, date("Y-m-d"));
             }
             
             submit_management_review($id, $status, $review, $next_step, $reviewer, $comments, $custom_review);
@@ -1655,10 +1819,34 @@ function saveScoreForm()
  *************************************/
 function scoringHistory()
 {
-    sleep(3);
-    $risk_id= $_GET{'risk_id'};
-    $histories = get_scoring_histories($risk_id);
-    json_response(200, get_alert(true), $histories );
+	// If the risk id is sent
+	if (isset($_GET['id']))
+	{
+		//sleep(3);
+		$risk_id= $_GET{'id'};
+
+		// Check whether the user should be able to access this risk_id
+		$access = check_access_for_risk($risk_id);
+
+		// If the user has access
+		if ($access)
+		{
+			$histories = get_scoring_histories($risk_id);
+			json_response(200, "scoring_history", $histories );
+		}
+		else
+		{
+			// The user is not authorized to access that risk
+			json_response(401, "The user does not have permission to view this risk.", "");	
+		}
+	}
+	// If the risk id was not sent
+	else
+	{
+		// Return history for all risks
+		$histories = get_scoring_histories();
+		json_response(200, get_alert(true), $histories );
+	}
 }
 
 /***************************************************
@@ -1752,6 +1940,15 @@ function addRisk(){
 
         // Submit risk and get back the id
         $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+        
+        // If the encryption extra is enabled, updates order_by_subject
+        if (encryption_extra())
+        {
+            // Load the extra
+            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+            create_subject_order($_SESSION['encrypted_pass']);
+        }
 
         // Submit risk scoring
         submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
@@ -1917,7 +2114,7 @@ function saveReview(){
                 $risk_level = get_risk_level_name($risk[0]['calculated_risk']);
 
                 $risk_id = (int)$risk[0]['id'];
-                $custom_review = next_review($risk_level, $risk_id, $custom_review, false);
+                $custom_review = next_review($risk_level, $risk_id, $custom_review, false, false, date("Y-m-d"));
             }
             $data = array(
                 'risk_id' => $id
@@ -1931,6 +2128,31 @@ function saveReview(){
         $status_message = $lang['RiskUpdatePermissionMessage'];
     }
     return json_response($status, $status_message, $data); 
+}
+
+/*****************************************************************
+ * FUNCTION: GET RSIK LEVELS*
+ ****************************************************************/
+function risk_levels(){
+    global $lang;
+    
+    $risk_levels = get_risk_levels();
+    $results = array();
+    foreach($risk_levels as $risk_level){
+        $results[] = array(
+            'value' => $risk_level['value'],
+            'name' => $risk_level['name'],
+            'color' => $risk_level['color'],
+        );
+    }
+    
+    $data = array(
+        'risk_levels' => $results
+    );
+    $status = 200;
+    $status_message = $lang['Success'];
+    
+    return json_response($status, $status_message, $data);
 }
  
 ?>

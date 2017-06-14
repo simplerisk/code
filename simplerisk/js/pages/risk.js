@@ -186,8 +186,15 @@
     * focus_add_css_class("#foo", "#bar");
     */
     function focus_add_css_class(id_of_text_head, text_area_id, parent){
+        // If enable_popup setting is false, disable popup
+        if($("#enable_popup").val() != 1){
+            $("textarea").removeClass("enable-popup");
+            return;
+        }else{
+            $("textarea").addClass("enable-popup");
+        }
+        
         look_for = "textarea" + text_area_id;
-        console.log(look_for);
         if( !$(look_for, parent).length ){
             text_area_id = text_area_id.replace('#','');
             look_for = "textarea[name=" + text_area_id;

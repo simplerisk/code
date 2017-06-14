@@ -151,6 +151,15 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
   // Submit risk and get back the id
   $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+  
+    // If the encryption extra is enabled, updates order_by_subject
+    if (encryption_extra())
+    {
+        // Load the extra
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+        create_subject_order($_SESSION['encrypted_pass']);
+    }
 
   // Submit risk scoring
   submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
@@ -164,13 +173,13 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     for($i=0; $i<count($_FILES['file']['name']); $i++){
         if($_FILES['file']['error'][$i] || $i==0){
            continue; 
-        }
+        } 
         $file = array(
-            'name' => $_FILES['file']['name'][$i],
-            'type' => $_FILES['file']['type'][$i],
-            'tmp_name' => $_FILES['file']['tmp_name'][$i],
-            'size' => $_FILES['file']['size'][$i],
-            'error' => $_FILES['file']['error'][$i],
+            'name'      => $_FILES['file']['name'][$i],
+            'type'      => $_FILES['file']['type'][$i],
+            'tmp_name'  => $_FILES['file']['tmp_name'][$i],
+            'size'      => $_FILES['file']['size'][$i],
+            'error'     => $_FILES['file']['error'][$i],
         );
         // Upload any file that is submitted
         upload_file($last_insert_id, $file, 1);
@@ -195,194 +204,191 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
   echo "<script> var global_risk_id = " . $risk_id . ";</script>";
 }
+
+
 ?>
 
 <!doctype html>
 <html>
 
-<head>
-  <script src="../js/jquery.min.js"></script>
-  <script src="../js/jquery-ui.min.js"></script>
-  <script src="../js/bootstrap.min.js"></script>
-  <script src="../js/cve_lookup.js"></script>
-  <script src="../js/basescript.js"></script>
-  <script src="../js/common.js"></script>
-  <script src="../js/pages/risk.js"></script>
-  <script src="../js/highcharts/code/highcharts.js"></script>
+    <head>
+      <script src="../js/jquery.min.js"></script>
+      <script src="../js/jquery-ui.min.js"></script>
+      <script src="../js/bootstrap.min.js"></script>
+      <script src="../js/cve_lookup.js"></script>
+      <script src="../js/basescript.js"></script>
+      <script src="../js/common.js"></script>
+      <script src="../js/pages/risk.js"></script>
+      <script src="../js/highcharts/code/highcharts.js"></script>
 
-  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-<!--  <link rel="stylesheet" href="../css/jquery-ui.min.css">-->
-  <script type="text/javascript">
+      <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+      <link rel="stylesheet" href="../css/bootstrap.css">
+      <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+      <link rel="stylesheet" href="../css/divshot-util.css">
+      <link rel="stylesheet" href="../css/divshot-canvas.css">
+      <link rel="stylesheet" href="../css/style.css">
 
-  </script>
-  <?php display_asset_autocomplete_script(get_entered_assets()); ?>
-</head>
+      <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+      <link rel="stylesheet" href="../css/theme.css">
 
-<body>
-  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/divshot-util.css">
-  <link rel="stylesheet" href="../css/divshot-canvas.css">
-  <link rel="stylesheet" href="../css/style.css">
+      <?php display_asset_autocomplete_script(get_entered_assets()); ?>
+    </head>
 
-  <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="../css/theme.css">
+    <body>
 
-  <?php
-  view_top_menu("RiskManagement");
+        <?php
+            view_top_menu("RiskManagement");
 
-  // Get any alert messages
-  get_alert();
-  ?>
-  <div id="risk_hid_id" style="display: none"  > <?php if (isset($risk_id)) echo $escaper->escapeHtml($risk_id);?></div>
-  <div class="tabs new-tabs">
-    <div class="container-fluid">
+            // Get any alert messages
+            get_alert();
+        ?>
+        <div id="risk_hid_id" style="display: none"  > <?php if (isset($risk_id)) echo $escaper->escapeHtml($risk_id);?></div>
+        <div class="tabs new-tabs">
+        <div class="container-fluid">
 
-      <div class="row-fluid">
+          <div class="row-fluid">
 
-        <div class="span3"> </div>
-        <div class="span9">
+            <div class="span3"> </div>
+            <div class="span9">
 
-          <div class="tab add" id='add-tab'>
-            <span>+</span>
+              <div class="tab add" id='add-tab'>
+                <span>+</span>
+              </div>
+              <div class="tab-append">
+                <div class="tab selected form-tab tab-show new" id="tab"><div><span>New Risk (1)</span></div>
+                  <button class="close tab-close" aria-label="Close" data-id=""><i class="fa fa-close"></i></button>
+                </div>
+              </div>
+            </div>
+
           </div>
-          <div class="tab-append">
-            <div class="tab selected form-tab tab-show new" id="tab"><div><span>New Risk (1)</span></div>
-              <button class="close tab-close" aria-label="Close" data-id=""><i class="fa fa-close"></i></button>
+
+        </div>
+        </div>
+        <div class="container-fluid">
+          <div class="row-fluid">
+            <div class="span3">
+              <?php view_risk_management_menu("SubmitYourRisks"); ?>
+            </div>
+            <div class="span9">
+
+              <div id="show-alert"></div>
+
+              <div class="row-fluid" id="tab-content-container">
+                <div class='tab-data' id="tab-container">
+
+                    <?php
+                        include(realpath(__DIR__ . '/partials/add.php'));
+                    ?>
+                  
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
 
-      </div>
-
-  </div>
-</div>
-<div class="container-fluid">
-  <div class="row-fluid">
-    <div class="span3">
-      <?php view_risk_management_menu("SubmitYourRisks"); ?>
-    </div>
-    <div class="span9">
-
-      <div id="show-alert"></div>
-
-      <div class="row-fluid" id="tab-content-container">
-        <div class='tab-data' id="tab-container">
-
+        <!-- sample form to add as a new form -->
+        <div class="row-fluid" id="tab-append-div" style="display:none;">
             <?php
                 include(realpath(__DIR__ . '/partials/add.php'));
             ?>
-          
         </div>
-      </div>
+        <input type="hidden" id="_delete_tab_alert" value="<?php echo $escaper->escapeHtml($lang['Are you sure you want to close the risk? All changes will be lost!']); ?>">
+        <input type="hidden" id="enable_popup" value="<?php echo get_setting('enable_popup'); ?>">
+        <script>
+            $(document).ready(function() {
 
-    </div>
-  </div>
-</div>
-
-<!-- sample form to add as a new form -->
-<div class="row-fluid" id="tab-append-div" style="display:none;">
-    <?php
-        include(realpath(__DIR__ . '/partials/add.php'));
-    ?>
-</div>
-<input type="hidden" id="_delete_tab_alert" value="<?php echo $escaper->escapeHtml($lang['Are you sure you want to close the risk? All changes will be lost!']); ?>">
-<script>
-    $(document).ready(function() {
-
-        window.onbeforeunload = function() {
-            if ($('#subject:enabled').val() != ''){
-                return "Are you sure you want to procced without saving the risk?";
-            }
-        }
-
-        var length = $('.tab-close').length;
-        if (length == 1){
-            $('.tab-show button').hide();
-        }
-        
-
-        $("div#tabs").tabs();
-    //    temp()
-        $("div#add-tab").click(function() {
-        
-            $('.tab-show button').show();
-            var num_tabs = $("div.container-fluid div.new").length + 1;
-            var form = $('#tab-append-div').html();
-
-            $('.tab-show').removeClass('selected');
-            $("div.tab-append").prepend(
-              "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span>New Risk ("+num_tabs+")</span></div>"
-              +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
-              +"<i class='fa fa-close'></i>"
-              +"</button>"
-              +"</div>"
-            );
-            $('.tab-data').css({'display':'none'});
-            $("#tab-content-container").append(
-              "<div class='tab-data' id='tab-container"+num_tabs+"'>"+form+"</div>"
-            );
-            
-            focus_add_css_class("#AffectedAssetsTitle", "#assets", $("#tab-container" + num_tabs));
-            focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container" + num_tabs));
-            focus_add_css_class("#NotesTitle", "#notes", $("#tab-container" + num_tabs));
-
-
-            $("#tab-container"+num_tabs)
-            .find('.file-uploader label').attr('for', 'file_upload'+num_tabs);
-
-                $("#tab-container"+num_tabs)
-                  .find('.hidden-file-upload')
-                  .attr('id', 'file_upload'+num_tabs)
-                  .prev('label').attr('for', 'file_upload'+num_tabs);
-
-            $( "#tab-container"+num_tabs +" .assets" )
-              .bind( "keydown", function( event ) {
-                if ( event.keyCode === $.ui.keyCode.TAB && $( this ).autocomplete( "instance" ).menu.active ) {
-                  event.preventDefault();
+                window.onbeforeunload = function() {
+                    if ($('#subject:enabled').val() != ''){
+                        return "Are you sure you want to procced without saving the risk?";
+                    }
                 }
-              })
-              .autocomplete({
-                    minLength: 0,
-                    source: function( request, response ) {
-                    // delegate back to autocomplete, but extract the last term
-                    response( $.ui.autocomplete.filter(
-                    availableAssets, extractLast( request.term ) ) );
-                  },
-                  focus: function() {
-                    // prevent value inserted on focus
-                    return false;
-                  },
-                  select: function( event, ui ) {
-                    var terms = split( this.value );
-                    // remove the current input
-                    terms.pop();
-                    // add the selected item
-                    terms.push( ui.item.value );
-                    // add placeholder to get the comma-and-space at the end
-                    terms.push( "" );
-                    this.value = terms.join( ", " );
-                    return false;
-                  }
+
+                var length = $('.tab-close').length;
+                if (length == 1){
+                    $('.tab-show button').hide();
+                }
+                
+
+                $("div#tabs").tabs();
+            //    temp()
+                $("div#add-tab").click(function() {
+                
+                    $('.tab-show button').show();
+                    var num_tabs = $("div.container-fluid div.new").length + 1;
+                    var form = $('#tab-append-div').html();
+
+                    $('.tab-show').removeClass('selected');
+                    $("div.tab-append").prepend(
+                      "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span>New Risk ("+num_tabs+")</span></div>"
+                      +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
+                      +"<i class='fa fa-close'></i>"
+                      +"</button>"
+                      +"</div>"
+                    );
+                    $('.tab-data').css({'display':'none'});
+                    $("#tab-content-container").append(
+                      "<div class='tab-data' id='tab-container"+num_tabs+"'>"+form+"</div>"
+                    );
+                    
+                    focus_add_css_class("#AffectedAssetsTitle", "#assets", $("#tab-container" + num_tabs));
+                    focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container" + num_tabs));
+                    focus_add_css_class("#NotesTitle", "#notes", $("#tab-container" + num_tabs));
+
+
+                    $("#tab-container"+num_tabs)
+                    .find('.file-uploader label').attr('for', 'file_upload'+num_tabs);
+
+                        $("#tab-container"+num_tabs)
+                          .find('.hidden-file-upload')
+                          .attr('id', 'file_upload'+num_tabs)
+                          .prev('label').attr('for', 'file_upload'+num_tabs);
+
+                    $( "#tab-container"+num_tabs +" .assets" )
+                      .bind( "keydown", function( event ) {
+                        if ( event.keyCode === $.ui.keyCode.TAB && $( this ).autocomplete( "instance" ).menu.active ) {
+                          event.preventDefault();
+                        }
+                      })
+                      .autocomplete({
+                            minLength: 0,
+                            source: function( request, response ) {
+                            // delegate back to autocomplete, but extract the last term
+                            response( $.ui.autocomplete.filter(
+                            availableAssets, extractLast( request.term ) ) );
+                          },
+                          focus: function() {
+                            // prevent value inserted on focus
+                            return false;
+                          },
+                          select: function( event, ui ) {
+                            var terms = split( this.value );
+                            // remove the current input
+                            terms.pop();
+                            // add the selected item
+                            terms.push( ui.item.value );
+                            // add placeholder to get the comma-and-space at the end
+                            terms.push( "" );
+                            this.value = terms.join( ", " );
+                            return false;
+                          }
+                      });
+              
               });
-      
-      });
 
 
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
+                function sleep(ms) {
+                    return new Promise(resolve => setTimeout(resolve, ms));
+                }
 
-        focus_add_css_class("#AffectedAssetsTitle", "#assets", $("#tab-container"));
-        focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container"));
-        focus_add_css_class("#NotesTitle", "#notes", $("#tab-container"));
-    });
+                focus_add_css_class("#AffectedAssetsTitle", "#assets", $("#tab-container"));
+                focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container"));
+                focus_add_css_class("#NotesTitle", "#notes", $("#tab-container"));
+            });
 
-</script>
-</body>
+        </script>
+    </body>
 </html>

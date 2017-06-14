@@ -114,7 +114,7 @@ function display()
     // Otherwise, the Extra does not exist
     else
     {
-        echo "<a href=\"https://www.simplerisk.it/extras\" target=\"_blank\">Purchase the Extra</a>\n";
+        echo "<a href=\"https://www.simplerisk.com/extras\" target=\"_blank\">Purchase the Extra</a>\n";
     }
 }
 

@@ -140,6 +140,7 @@
                             <div class="file-uploader">
                                 <label for="file-upload" class="btn">Choose File</label>
                                 <span class="file-count-html"> <span class="file-count">0</span> File Added</span>
+                                <p><font size="2"><strong>Max <?php echo round(get_setting('max_upload_size')/1024/1024); ?> Mb</strong></font></p>
                                 <ul class="file-list">
 
                                 </ul>

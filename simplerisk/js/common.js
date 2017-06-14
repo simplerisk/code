@@ -92,11 +92,42 @@ function closepopup()
 * 
 * @param risk_id
 */
-function riskScoringChart(renderTo, risk_id){
+function riskScoringChart(renderTo, risk_id, risk_levels){
+    var backgroundColor = "#f5f5f5";
+    // Creates stops array
+    var stops = [
+        [0, backgroundColor],
+    ];
+    
+    risk_levels.sort(function(a, b){
+        if(Number(a.value) > Number(b.value) ){
+            return -1;
+        }
+        if(Number(a.value) < Number(b.value) ){
+            return 1;
+        }
+    })
+    risk_levels.push({value: 0, color: "#fff"});
+    
+    var to = 10;
+    var plotBands = [];
+    for(var i=0; i<risk_levels.length; i++){
+        var risk_level = risk_levels[i];
+        plotBands.push({
+            color: risk_level.color,
+            to: to,
+            from: Number(risk_level.value),
+        })
+        to = Number(risk_level.value);
+    }
     var chartObj = new Highcharts.Chart( {
         chart: {
             renderTo: renderTo,
-            type: 'spline'
+            type: 'spline',
+//            backgroundColor: {
+//                linearGradient: [0, 0, 0, 400],
+//               stops: stops,
+//            },
         },
         title: {
             text: $('#_RiskScoringHistory').length ? $("#_RiskScoringHistory").val() : 'Risk Scoring History'
@@ -107,7 +138,9 @@ function riskScoringChart(renderTo, risk_id){
                 text: $('#_RiskScore').length ? $('#_RiskScore').val() : "Risk Score"
             },
             min: 0, 
-            max: 10
+            max: 10,
+            gridLineWidth: 0, 
+            plotBands: plotBands,
         },
          xAxis: {
             type: 'datetime',
@@ -148,7 +181,7 @@ function riskScoringChart(renderTo, risk_id){
     chartObj.showLoading('<img src="../images/progress.gif">');
     $.ajax({
         type: "GET",
-        url: "../api/scoring_history?risk_id=" + risk_id,
+        url: "../api/management/risk/scoring_history?id=" + risk_id,
         dataType: 'json',
         success: function(data){
             var histories = data.data;
@@ -203,13 +236,28 @@ $(document).ready(function(){
     $('body').on('click', '.show-score-overtime', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.risk-session');
-        var risk_id = $('.large-text', tabContainer).html();
-        $('.score-overtime-container', tabContainer).show();
+            
+        $.ajax({
+            type: "GET",
+            url: "../api/risk_levels",
+            dataType: 'json',
+            success: function(result){
+                var risk_id = $('.large-text', tabContainer).html();
+                $('.score-overtime-container', tabContainer).show();
 
-        riskScoringChart($('.socre-overtime-chart', tabContainer)[0], risk_id);
+                var risk_levels = result.data.risk_levels;
+                
+                riskScoringChart($('.socre-overtime-chart', tabContainer)[0], risk_id, risk_levels);
 
-        $('.hide-score-overtime', tabContainer).show();
-        $('.show-score-overtime', tabContainer).hide();
+                $('.hide-score-overtime', tabContainer).show();
+                $('.show-score-overtime', tabContainer).hide();
+            },
+            error: function(xhr,status,error){
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    $('#show-alert').html(xhr.responseJSON.status_message);
+                }
+            }
+        })
         
         return false;
     })

@@ -161,6 +161,9 @@ function send_email($name, $email, $subject, $body)
 	// Create a new PHPMailer instance
 	$mail = new PHPMailer;
 
+	// Set the character set to UTF-8
+	$mail->CharSet = 'UTF-8';
+
 	// Set who the message is to be sent from
 	$mail->setFrom($from_email, $from_name);
 

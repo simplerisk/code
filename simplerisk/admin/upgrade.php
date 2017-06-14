@@ -102,7 +102,7 @@
       <div class="navbar">
         <div class="navbar-inner">
           <div class="container-fluid">
-            <a class="brand" href="https://www.simplerisk.it/"><img src="../images/logo@2x.png" alt="SimpleRisk Logo" /></a>
+            <a class="brand" href="https://www.simplerisk.com/"><img src="../images/logo@2x.png" alt="SimpleRisk Logo" /></a>
             <div class="navbar-content pull-right">
               <ul class="nav"> 
                 <li>
