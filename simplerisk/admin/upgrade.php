@@ -146,12 +146,12 @@
 		// Otherwise, CONTINUE was pressed
 		else
 		{
+			// Upgrade the database
+			upgrade_database();
 			// Convert tables to InnoDB
 			convert_tables_to_innodb();
 			// Convert tables to utf8_general_ci
 			convert_tables_to_utf8();
-			// Upgrade the database
-			upgrade_database();
 		}
 	}
 ?>

@@ -1502,9 +1502,9 @@ function upgrade_from_20170312001($db){
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
 
-    // Set the sessions table to use 256 charcter id
-    echo "Updating the sessions table to use max 256 characters id.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `sessions` CHANGE `id` `id` VARCHAR(256) NOT NULL;");
+    // Set the sessions table to use 255 charcter id
+    echo "Updating the sessions table to use max 255 characters id.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `sessions` CHANGE `id` `id` VARCHAR(255) NOT NULL;");
     $stmt->execute();
 
     // Set enable_popup to true by default
@@ -1533,6 +1533,11 @@ function upgrade_from_20170416001($db){
     	$version_upgrading_to = '20170614-001';
 
    	 echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Set the sessions table to use 255 charcter id
+    echo "Updating the sessions table to use max 255 characters id.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `sessions` CHANGE `id` `id` VARCHAR(255) NOT NULL;");
+    $stmt->execute();
 
     // Change the sessions data type to BLOB
     echo "Changing the data field type in the sessions table to BLOB.<br />\n";
