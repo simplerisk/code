@@ -161,7 +161,7 @@ if (isset($_POST['password_reset']))
 						    echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
 						    echo "<tr><td colspan=\"2\"><label class=\"login--label\">" . $escaper->escapeHtml($lang['PasswordReset']) . "</label></td></tr>\n";
                             if(isset($username)){
-                                echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"user\" value=\"{$username}\" id=\"user\" type=\"text\" /></td></tr>\n";
+                                echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"user\" value=\"" . $escaper->escapeHtml($username) . "\" id=\"user\" type=\"text\" /></td></tr>\n";
                             }else{
                                 echo "<tr><td width=\"20%\">" . $escaper->escapeHtml($lang['Username']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"user\" id=\"user\" type=\"text\" /></td></tr>\n";
                             }
