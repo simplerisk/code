@@ -197,12 +197,12 @@ function set_user_permissions($user, $pass, $upgrade = false)
         if (get_setting('strict_user_validation') == 0)
         {
             // Query the DB for the users complete information
-            $stmt = $db->prepare("SELECT value, type, name, lang, assessments, asset, admin, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
+            $stmt = $db->prepare("SELECT value, type, name, lang, assessments, asset, admin, custom_display_settings, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
         }
         else
         {
             // Query the DB for the users complete information
-            $stmt = $db->prepare("SELECT value, type, name, lang, assessments, asset, admin, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
+            $stmt = $db->prepare("SELECT value, type, name, lang, assessments, asset, admin, custom_display_settings, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
         }
     }
     // If we are doing an upgrade
@@ -254,6 +254,7 @@ function set_user_permissions($user, $pass, $upgrade = false)
         $_SESSION['modify_risks'] = $array[0]['modify_risks'];
         $_SESSION['close_risks'] = $array[0]['close_risks'];
         $_SESSION['plan_mitigations'] = $array[0]['plan_mitigations'];
+        $_SESSION['custom_display_settings'] = empty($array[0]['custom_display_settings']) ? array() : json_decode($array[0]['custom_display_settings'], true);
 
         // If the encryption extra is enabled
         if (encryption_extra())
@@ -262,7 +263,7 @@ function set_user_permissions($user, $pass, $upgrade = false)
             require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
             // Set the encrypted password in the session
-//            $_SESSION['encrypted_pass'] = get_enc_pass($user, $pass);
+            $_SESSION['encrypted_pass'] = get_enc_pass($user, fetch_tmp_pass());
         }
     }
 
@@ -1071,9 +1072,9 @@ function clear_failed_logins($user_id)
     db_close($db);
 }
 
-/**************************************
-* FUNCTION: add_last_password_history *
-**************************************/
+/***************************************
+ * FUNCTION: ADD LAST PASSWORD HISTORY *
+ ***************************************/
 function add_last_password_history($user_id, $old_salt, $old_password)
 {
     // Open the database connection
@@ -1099,9 +1100,9 @@ function add_last_password_history($user_id, $old_salt, $old_password)
     db_close($db);
 }
 
-/**************************************
-* FUNCTION: check_add_password_reuse_history *
-**************************************/
+/**********************************************
+ * FUNCTION: CHECK ADD PASSWORD REUSE HISTORY *
+ **********************************************/
 function check_add_password_reuse_history($user_id, $password)
 {
     $pass_policy_reuse_limit = get_setting('pass_policy_reuse_limit');
@@ -1134,9 +1135,9 @@ function check_add_password_reuse_history($user_id, $password)
     return true;
 }
 
-/**************************************
-* FUNCTION: REST PASSWORD *
-**************************************/
+/****************************
+ * FUNCTION: RESET PASSWORD *
+ ****************************/
 function reset_password($user_id, $password, $confirm_pass=false)
 {
     global $lang;
@@ -1194,9 +1195,9 @@ function reset_password($user_id, $password, $confirm_pass=false)
     }
 }
 
-/**************************************
-* FUNCTION:  LOGIN USER*
-**************************************/
+/********************
+ * FUNCTION:  LOGIN *
+ ********************/
 function login($user, $pass){
     // If the custom authentication extra is installed
     if (custom_authentication_extra())
@@ -1210,8 +1211,6 @@ function login($user, $pass){
         // If no multi factor authentication is enabled for the user
         if ($enabled_auth == 1)
         {
-            // Grant the user access
-            grant_access();
 
             // If the encryption extra is enabled
             if (encryption_extra())
@@ -1222,6 +1221,9 @@ function login($user, $pass){
                 // Check user enc
                 check_user_enc($user, $pass);
             }
+
+	    // Grant the user access
+            grant_access();
 
             // Select where to redirect the user next
             select_redirect();
@@ -1242,8 +1244,6 @@ function login($user, $pass){
     // Otherwise the custom authentication extra is not installed
     else
     {
-        // Grant the user access
-        grant_access();
 
         // If the encryption extra is enabled
         if (encryption_extra())
@@ -1253,7 +1253,11 @@ function login($user, $pass){
             // Check user enc
             check_user_enc($user, $pass);
         }
-        // Select where to redirect the user next
+
+	// Grant the user access
+        grant_access();
+
+	// Select where to redirect the user next
         select_redirect();
     }
     return;

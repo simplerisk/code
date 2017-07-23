@@ -158,9 +158,13 @@ function convert_tables_to_innodb()
 		// Get the table name
 		$table_name = $value['table_name'];
 
-		// Change the table to InnoDB
-		$stmt = $db->prepare("ALTER TABLE " . $table_name . " ENGINE=InnoDB;");
-		$stmt->execute();
+		// We cannot convert the session table due to id characters
+		if ($table_name != "sessions")
+		{
+			// Change the table to InnoDB
+			$stmt = $db->prepare("ALTER TABLE " . $table_name . " ENGINE=InnoDB;");
+			$stmt->execute();
+		}
 	}
 
         // Disconnect from the database
@@ -1578,6 +1582,48 @@ function upgrade_from_20170416001($db){
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20170416-001 *
+ ***************************************/
+function upgrade_from_20170614001($db){
+        // Database version to upgrade
+        $version_to_upgrade = '20170614-001';
+
+        // Database version upgrading to
+        $version_upgrading_to = '20170723-001';
+
+	echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+	// Add a new field, mitigation_percent to mitigations table
+	echo "Add a new field, `mitigation_percent` to `mitigations` table.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `mitigations` ADD `mitigation_percent` INT NOT NULL;");
+	$stmt->execute();
+
+	// Add a new field, custom_display_settings to manage dynamic columns
+	echo "Add a new field, `custom_display_settings` to `user` table.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `user` ADD `custom_display_settings` VARCHAR( 1000 ) NOT NULL;");
+	$stmt->execute();
+
+	// Add a new setting, default risk score
+	echo "Add a new setting, default risk score.<br />\n";
+	$stmt = $db->prepare("INSERT IGNORE INTO `settings` (`name`, `value`) VALUES ('default_risk_score', '10');");
+	$stmt->execute();
+
+	// Add a new field to risks table
+	echo "Add a new field, `additional_stakeholders` to risks table.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE `risks` ADD `additional_stakeholders` VARCHAR( 500 ) NOT NULL;");
+	$stmt->execute();
+
+	// Set NOTIFY_ADDITIONAL_STAKEHOLDERS to true by default
+	echo "Set NOTIFY_ADDITIONAL_STAKEHOLDERS to true by default.<br />\n";
+	$stmt = $db->prepare("INSERT IGNORE INTO `settings` (`name` ,`value`) VALUES ('NOTIFY_ADDITIONAL_STAKEHOLDERS', 'true');");
+	$stmt->execute();
+
+	// Update the database version
+	update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -1690,6 +1736,10 @@ function upgrade_database()
 				break;
 			case "20170416-001":
 				upgrade_from_20170416001($db);
+				upgrade_database();
+				break;
+			case "20170614-001":
+				upgrade_from_20170614001($db);
 				upgrade_database();
 				break;
 			default:

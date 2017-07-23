@@ -57,6 +57,7 @@
     
 
 ?>
+
     <div class="row-fluid">
 
         <form name="submit_risk" method="post" action="" enctype="multipart/form-data" id="risk-submit-form">
@@ -102,6 +103,10 @@
                         <div class="span7"><?php create_dropdown("team"); ?></div>
                     </div>
                     <div class="row-fluid">
+                        <div class="span5 text-right"><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?>:</div>
+                        <div class="span7 multiselect-holder"><?php create_stakeholder_dropdown(); ?></div>
+                    </div>
+                    <div class="row-fluid">
                         <div class="span5 text-right"><?php echo $escaper->escapeHtml($lang['Owner']); ?>:</div>
                         <div class="span7"><?php create_dropdown("user", NULL, "owner"); ?></div>
                     </div>
@@ -122,8 +127,6 @@
                     </div>
                     
                     <?php risk_score_method_html(); ?>
-
-                    
 
                     <div class="row-fluid">
                         <div class="span5 text-right" id="RiskAssessmentTitle" class="RiskAssessmentTitle"><?php echo $escaper->escapeHtml($lang['RiskAssessment']); ?>:</div>
@@ -166,3 +169,4 @@
         </form>
 
     </div>
+    

@@ -26,8 +26,8 @@ class HighchartOptionRenderer
         $options = static::_replaceJsExpr($options, $jsExpressions);
 
         //TODO: Check for encoding errors
-        $result = json_encode($options);
-
+        $result = json_encode($options, JSON_UNESCAPED_SLASHES);
+		$result = str_replace('\r\n', "", $result);
         //Replace any js expression on the json_encoded string
         foreach ($jsExpressions as $key => $expr) {
             $result = str_replace('"' . $key . '"', $expr, $result);

@@ -244,12 +244,16 @@ label {
 
 .dropdown-menu {
   z-index: 99999; }
+  .dropdown-menu a:hover > label, .dropdown-menu li.active label {
+    color: #fff; }
 
 ul.ui-autocomplete {
   list-style-type: none;
   color: #3f3f3f;
   font-family: "Titillium Web", sans-serif;
-  font-size: 14px; }
+  font-size: 14px;
+  background: #fff;
+  border: 1px solid #c5c5c5; }
   ul.ui-autocomplete > li.ui-menu-item {
     padding-left: 10px; }
   ul.ui-autocomplete .ui-state-focus {
@@ -257,13 +261,26 @@ ul.ui-autocomplete {
     color: #000; }
   ul.ui-autocomplete.popup-ui-complete {
     width: 50% !important;
-    color: #fff; }
+    color: #fff;
+    background: transparent;
+    max-height: 100px;
+    overflow: auto; }
 
 .bottom-offset-10 {
   margin-bottom: 10px; }
 
 .top-offset-15 {
   margin-top: 15px; }
+
+.ui-helper-hidden-accessible {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px; }
 
 /*--------------------------------------------------------------
  ## Form and From Related Element Styles
@@ -401,6 +418,9 @@ select + input[type="submit"] {
 
 .delete-link-check {
   margin: -3px 0px 0px 10px !important; }
+
+.multiselect-holder {
+  margin-bottom: 10px; }
 
 textarea:focus,
 select:focus,
@@ -1387,6 +1407,12 @@ form#comment {
 .delete_project {
   min-width: 80px;
   margin-left: 5px; }
+
+.plan-projects .risks .risk .risk--title {
+  width: calc(100% - 140px);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap; }
 
 select#languages {
   width: auto !important; }

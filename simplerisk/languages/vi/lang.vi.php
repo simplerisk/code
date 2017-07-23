@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Kiểm tra sức khỏe',
     'RequirePasswordChangeOnLogin' => 'Yêu cầu thay đổi mật khẩu trên đăng nhập',
     'PasswordChangeRequired' => 'Bạn cần phải thay đổi mật khẩu của bạn trước khi đăng nhập.',
+    'LikelihoodImpact' => 'Khả năng và tác động',
+    'MitigationPercent' => 'Phần trăm giảm nhẹ',
+    'MitigationPermissionMessage' => 'Bạn không có quyền để lên kế hoạch mitigations.  Bất kỳ mitigations bạn cố gắng để gửi sẽ không được ghi lại.  Xin vui lòng liên hệ với quản trị viên nếu bạn cảm thấy rằng bạn đã đạt thông báo lỗi này.',
+    'ResetCustomDisplaySettings' => 'Đặt lại thiết đặt tùy chỉnh hiển thị',
+    'CustomResetSuccessMessage' => 'Thiết đặt tùy chỉnh hiển thị của bạn đã được đặt lại thành công',
+    'DefaultRiskScore' => 'Mặc định rủi ro được điểm',
+    'AdditionalStakeholders' => 'Bổ sung các bên liên quan',
+    'AllSkateholders' => 'Tất cả các bên liên quan',
+    'RiskIdDoesNotExist' => 'Rủi ro ID không tồn tại',
+    'RiskTeamPermission' => 'Bạn không phải là một thành viên của đội tuyển này rủi ro thuộc về',
     '' => '',
 );
 

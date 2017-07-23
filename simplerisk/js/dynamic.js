@@ -796,6 +796,7 @@ $(document).ready(function(){
         $('.view-all').html("All");
         
         $("form[name='get_risks_by'] .hidden-checkbox").click(function(e){
+            
             for(var key in riskDataTables){
                 var column = riskDataTables[key].column("th[data-name='"+ $(this).attr('name') +"']");
                 if($(this).is(':checked')){
@@ -804,6 +805,23 @@ $(document).ready(function(){
                     column.visible(false);
                 }
             }
+            
+            var checkBoxes = $("form[name='get_risks_by'] .hidden-checkbox");
+            var viewColumns = [];
+            checkBoxes.each(function(){
+                if($(this).is(':checked'))
+                    viewColumns.push($(this).attr('name'));
+            })
+            $.ajax({
+                type: "POST",
+                url: BASE_URL + "/api/set_custom_display",
+                data: {
+                    columns: viewColumns,
+                },
+                success: function(data){
+                    console.log('success')
+                }
+            });
         })
         
         $(".expand-all").click(function(e){

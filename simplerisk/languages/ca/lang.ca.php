@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Revisió mèdica',
     'RequirePasswordChangeOnLogin' => 'Exigir el canvi de contrasenya de connexió',
     'PasswordChangeRequired' => 'Cal canviar la contrasenya abans de connectar-se.',
+    'LikelihoodImpact' => 'Probabilitat i impacte',
+    'MitigationPercent' => 'Per cent de mitigació',
+    'MitigationPermissionMessage' => 'No teniu permís per pla mitigadors.  Qualsevol mitigadors que intenta presentar no es registraran.  Contacteu amb un administrador si vostè sent que ha arribat aquest missatge d\'error.',
+    'ResetCustomDisplaySettings' => 'Reinicialitza la configuració de visualització personalitzats',
+    'CustomResetSuccessMessage' => 'La configuració de visualització personalitzats s\'ha reinicialitzat correctament',
+    'DefaultRiskScore' => 'Puntuació de risc de defecte',
+    'AdditionalStakeholders' => 'Grups d\'interès addicionals',
+    'AllSkateholders' => 'Tots els interessats',
+    'RiskIdDoesNotExist' => 'No existeix risc ID',
+    'RiskTeamPermission' => 'No ets soci de l\'equip que pertany aquest risc a',
     '' => '',
 );
 

@@ -90,16 +90,23 @@
         // If the risk was found use the values for the risk
         if (count($risk) != 0)
         {
-                $status = $risk[0]['status'];
-                $subject = $risk[0]['subject'];
-                $calculated_risk = $risk[0]['calculated_risk'];
+            $status = $risk[0]['status'];
+            $subject = $risk[0]['subject'];
+            $calculated_risk = $risk[0]['calculated_risk'];
         }
         // If the risk was not found use null values
         else
         {
-                $status = "Risk ID Does Not Exist";
-                $subject = "N/A";
-                $calculated_risk = "0.0";
+            // If Risk ID exists.
+            if(check_risk_by_id($id)){
+                $status = $lang["RiskTeamPermission"];
+            }
+            // If Risk ID does not exist.
+            else{
+                $status = $lang["RiskIdDoesNotExist"];
+            }
+            $subject = "N/A";
+            $calculated_risk = "0.0";
         }
     }
 
@@ -142,6 +149,6 @@
     </div>
 </div>
 
-        <input type="hidden" id="_token_value" value="<?php echo csrf_get_tokens(); ?>">
-        <input type="hidden" id="_lang_reopen_risk" value="<?php echo $lang['ReopenRisk']; ?>">
-        <input type="hidden" id="_lang_close_risk" value="<?php echo $lang['CloseRisk']; ?>">
+<input type="hidden" id="_token_value" value="<?php echo csrf_get_tokens(); ?>">
+<input type="hidden" id="_lang_reopen_risk" value="<?php echo $lang['ReopenRisk']; ?>">
+<input type="hidden" id="_lang_close_risk" value="<?php echo $lang['CloseRisk']; ?>">

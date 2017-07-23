@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => '健康检查',
     'RequirePasswordChangeOnLogin' => '需要登录的密码更改',
     'PasswordChangeRequired' => '您需要更改您的密码，在登录之前。',
+    'LikelihoodImpact' => '可能性和影响',
+    'MitigationPercent' => '缓解 %',
+    'MitigationPermissionMessage' => '您没有权限来计划缓解措施。 不会记录您尝试提交任何缓解。 请如果你觉得你已经到达此错误消息，与管理员联系。',
+    'ResetCustomDisplaySettings' => '重置自定义显示设置',
+    'CustomResetSuccessMessage' => '您的自定义显示设置已成功重置',
+    'DefaultRiskScore' => '违约风险评分',
+    'AdditionalStakeholders' => '其他利益相关者',
+    'AllSkateholders' => '所有利益攸关者',
+    'RiskIdDoesNotExist' => '风险 ID 不存在',
+    'RiskTeamPermission' => '你不是这种风险属于团队的成员',
     '' => '',
 );
 

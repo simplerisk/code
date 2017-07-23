@@ -95,8 +95,6 @@ if (isset($_POST['delete']))
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
   <link rel="stylesheet" href="../css/bootstrap.css">
   <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-  <link rel="stylesheet" href="../css/jquery-ui.min.css">
-
 
   <link rel="stylesheet" href="../css/divshot-util.css">
   <link rel="stylesheet" href="../css/divshot-canvas.css">

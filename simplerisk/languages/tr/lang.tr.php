@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Sistem durumu denetimi',
     'RequirePasswordChangeOnLogin' => 'Oturum açma parola değişiminde gerektirir',
     'PasswordChangeRequired' => 'Oturum açmadan önce parolanızı değiştirmeniz gerekir.',
+    'LikelihoodImpact' => 'Olasılığı ve etkisi',
+    'MitigationPercent' => 'Azaltma yüzde',
+    'MitigationPermissionMessage' => 'Azaltıcı Etkenler planı iznine sahip değil.  Gönderme girişiminde herhangi bir azaltıcı etken kaydedilmez.  Bu iletide hata ulaştınız düşünüyorsanız lütfen yöneticiye başvurun.',
+    'ResetCustomDisplaySettings' => 'Özel görüntü ayarlarını sıfırlama',
+    'CustomResetSuccessMessage' => 'Özel görüntü ayarlarınızı başarıyla sıfırlandı',
+    'DefaultRiskScore' => 'Varsayılan Risk puanı',
+    'AdditionalStakeholders' => 'Ek paydaşlar',
+    'AllSkateholders' => 'Tüm paydaşların',
+    'RiskIdDoesNotExist' => 'Risk kodu yok',
+    'RiskTeamPermission' => 'Sen bu riski ait ekibinin bir üyesi değilsin',
     '' => '',
 );
 

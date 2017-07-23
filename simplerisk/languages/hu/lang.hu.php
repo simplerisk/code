@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Állapotfelmérés',
     'RequirePasswordChangeOnLogin' => 'Bejelentkezési jelszó módosítására van szükség',
     'PasswordChangeRequired' => 'Meg kell változtatni a jelszót a bejelentkezés előtt.',
+    'LikelihoodImpact' => 'Bekövetkezési valószínűségének és hatásainak',
+    'MitigationPercent' => 'Százalékos mérséklés',
+    'MitigationPermissionMessage' => 'Nincs jogosultsága a terv kijavításában.  Semmilyen enyhítő, amit Ön kísérlet-hoz be nem kerülnek rögzítésre.  Kérjük, forduljon a rendszergazdához, ha úgy érzi, hogy elérte ezt az üzenetet hiba.',
+    'ResetCustomDisplaySettings' => 'Egyéni képernyő-beállítások visszaállítása',
+    'CustomResetSuccessMessage' => 'Az egyéni képernyő-beállítások sikeresen nullázása',
+    'DefaultRiskScore' => 'Alapértelmezett kockázati pontszám',
+    'AdditionalStakeholders' => 'További érintettek',
+    'AllSkateholders' => 'Valamennyi érdekelt fél',
+    'RiskIdDoesNotExist' => 'Kockázat-azonosító nem létezik',
+    'RiskTeamPermission' => 'Te nem vagy tagja a csapat, ez a kockázat tartozik',
     '' => '',
 );
 

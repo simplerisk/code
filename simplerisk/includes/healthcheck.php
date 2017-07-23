@@ -32,20 +32,21 @@ function simplerisk_health_check()
 	// Check that the application and database versions are the same
 	check_same_app_and_db($current_app_version, $current_db_version);
 
+	echo "<br /><b><u>Connectivity</u></b><br />";
+
+        // Check the SimpleRisk database connectivity
+        check_database_connectivity();
+
+        // Check that SimpleRisk can communicate with the API
+        check_api_connectivity();
+
+        // Check that SimpleRisk can connect to the services platform
+        check_web_connectivity();
+
 	echo "<br /><b><u>PHP Extensions</u></b><br />";
 	
 	// Check the necessary PHP extensions are installed
 	check_php_extensions();
-
-	echo "<br /><b><u>Database Connectivity</u></b><br />";
-	
-	// Check the SimpleRisk database connectivity
-	check_database_connectivity();
-
-	echo "<br /><b><u>Web Connectivity</u></b><br />";
-	
-	// Check that SimpleRisk can connect to the services platform
-	check_web_connectivity();
 
 	echo "<br /><b><u>File and Directory Permissions</u></b><br />";
 
@@ -142,10 +143,14 @@ function check_simplerisk_directory_permissions()
 
 	foreach ($objects as $name => $object)
 	{
-		// If the directory is writeable
-		if (!is_writeable($name))
+		// Do not check the directory above the SimpleRisk directory
+		if ($name != $simplerisk_dir . "/..")
 		{
-			health_check_bad("Directory " . $name . " is not writeable by the web user.");
+			// If the directory is writeable
+			if (!is_writeable($name))
+			{
+				health_check_bad($name . " is not writeable by the web user.");
+			}
 		}
 	}
 }
@@ -200,16 +205,43 @@ function check_php_extensions()
 function check_database_connectivity()
 {
 	// Try opening a database connection
-	if (db_open() !== null)
+	$db = db_open();
+	if ($db !== null)
 	{
 		// Close the database connection
-		db_close();
+		db_close($db);
 
 		health_check_good("Communicated with the SimpleRisk database successfully.");
 	}
 	else
 	{
 		health_check_bad("Unable to communicate with the SimpleRisk database.");
+	}
+}
+
+/************************************
+ * FUNCTION: CHECK API CONNECTIVITY *
+ ************************************/
+function check_api_connectivity()
+{
+	// Get the SimpleRisk base URL
+	$base_url = $_SESSION['base_url'];
+
+	// Create the whoami URL
+	$url = $base_url . "/api/whoami";
+
+	// Test the API URL
+	$headers = get_headers($url);
+	$code = substr($headers[0], 9, 3);
+
+	// If the response code is success or unauthorized
+	if ($code == 200 || $code = 401)
+	{
+		health_check_good("Communicated with the SimpleRisk API successfully.");
+	}
+	else
+	{
+		health_check_bad("Unable to communicate with the SimpleRisk API.");
 	}
 }
 

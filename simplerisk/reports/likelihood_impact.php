@@ -54,65 +54,52 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
     exit(0);
 }
 
+// Record the page the workflow started from as a session variable
+$_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
+
+
 ?>
 
 <!doctype html>
 <html>
 
 <head>
-  <script src="../js/jquery.min.js"></script>
-  <script src="../js/bootstrap.min.js"></script>
-  <script src="../js/sorttable.js"></script>
-  <script src="../js/obsolete.js"></script>
-  <script src="../js/highcharts/code/highcharts.js"></script>
-  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-  
-  <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="../css/theme.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/moment.min.js"></script>
+    <script src="../js/daterangepicker.js"></script>
+    <script src="../js/sorttable.js"></script>
+    <script src="../js/obsolete.js"></script>
+
+    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="../css/jquery.dataTables.css">
+    <link rel="stylesheet" href="../css/daterangepicker.css">
+
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
 </head>
 
 <body>
 
-  <?php view_top_menu("Reporting"); ?>
+    <?php view_top_menu("Reporting"); ?>
 
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span3">
-        <?php view_reporting_menu("Overview"); ?>
-      </div>
-      <div class="span9">
+    <div class="container-fluid">
         <div class="row-fluid">
-          <div class="span4">
-            <div class="well">
-              <?php open_closed_pie(js_string_escape($lang['OpenVsClosed'])); ?>
+            <div class="span3">
+                <?php view_reporting_menu("LikelihoodImpact"); ?>
             </div>
-          </div>
-          <div class="span4">
-            <div class="well">
-              <?php open_mitigation_pie(js_string_escape($lang['MitigatedVsUnmitigated'])); ?>
+            <div class="span9">
+                <div style="margin-top: 14px;">
+                    <?php report_likelihood_impact(); ?>
+                </div>
             </div>
-          </div>
-          <div class="span4">
-            <div class="well">
-              <?php open_review_pie(js_string_escape($lang['ReviewedVsUnreviewed'])); ?>
-            </div>
-          </div>
         </div>
-      </div>
-      <div class="span9">
-        <div class="row-fluid">
-          <div class="well">
-            <?php risks_by_month_table(); ?>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+
 </body>
 
 </html>
-

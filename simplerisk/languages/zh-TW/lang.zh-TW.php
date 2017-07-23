@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => '健康檢查',
     'RequirePasswordChangeOnLogin' => '需要登錄的密碼更改',
     'PasswordChangeRequired' => '您需要更改您的密碼，在登錄之前。',
+    'LikelihoodImpact' => '可能性和影響',
+    'MitigationPercent' => '緩解 %',
+    'MitigationPermissionMessage' => '您沒有許可權來計畫緩解措施。 不會記錄您嘗試提交任何緩解。 請如果你覺得你已經到達此錯誤訊息，與管理員聯繫。',
+    'ResetCustomDisplaySettings' => '重置自訂顯示設定',
+    'CustomResetSuccessMessage' => '您的自訂顯示設定已成功重置',
+    'DefaultRiskScore' => '違約風險評分',
+    'AdditionalStakeholders' => '其他利益相關者',
+    'AllSkateholders' => '所有利益攸關者',
+    'RiskIdDoesNotExist' => '風險 ID 不存在',
+    'RiskTeamPermission' => '你不是這種風險屬於團隊的成員',
     '' => '',
 );
 

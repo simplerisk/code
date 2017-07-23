@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Sprawdzanie kondycji',
     'RequirePasswordChangeOnLogin' => 'Wymagana jest zmiana hasła logowania',
     'PasswordChangeRequired' => 'Musisz zmienić hasło przed zalogowaniem.',
+    'LikelihoodImpact' => 'Prawdopodobieństwa i skutków',
+    'MitigationPercent' => 'Łagodzenia procent',
+    'MitigationPermissionMessage' => 'Nie masz uprawnień do planowania czynników ograniczających zagrożenie.  Żadnych czynników ograniczających zagrożenie, które próbują przedstawić nie będą rejestrowane.  Jeśli uważasz, że osiągnąłeś ten komunikat błędu, skontaktuj się z administratorem.',
+    'ResetCustomDisplaySettings' => 'Zresetuj ustawienia wyświetlania niestandardowej',
+    'CustomResetSuccessMessage' => 'Ustawienia wyświetlania niestandardowej została pomyślnie zresetowana',
+    'DefaultRiskScore' => 'Ocena ryzyka domyślne',
+    'AdditionalStakeholders' => 'Inne zainteresowane strony',
+    'AllSkateholders' => 'Wszystkie zainteresowane strony',
+    'RiskIdDoesNotExist' => 'Nie istnieje ryzyko ID',
+    'RiskTeamPermission' => 'Nie jesteś członkiem zespołu, ryzyko to należy do',
     '' => '',
 );
 

@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Провера исправности',
     'RequirePasswordChangeOnLogin' => 'Потребна промена лозинке на логин',
     'PasswordChangeRequired' => 'Морате да промените лозинку пре првог пријављивања.',
+    'LikelihoodImpact' => 'Вероватноћа и утицај',
+    'MitigationPercent' => 'Још више поспјешује посто',
+    'MitigationPermissionMessage' => 'Немате дозволу за планирање олакшице.  Неке олакшице покушате да проследите неће бити снимљен.  Молим вас, обратите се администратору ако сматрате да сте достигли ову поруку грешком.',
+    'ResetCustomDisplaySettings' => 'Поништи поставке прилагођеног приказа',
+    'CustomResetSuccessMessage' => 'Поставке прилагођеног приказа постављена је успјешно',
+    'DefaultRiskScore' => 'Подразумевани ризик резултат',
+    'AdditionalStakeholders' => 'Додатне заинтересованих страна',
+    'AllSkateholders' => 'Свим заинтересованим странама',
+    'RiskIdDoesNotExist' => 'Не постоји ИД ризик',
+    'RiskTeamPermission' => 'Ви нисте члан тима припада овај ризик',
     '' => '',
 );
 

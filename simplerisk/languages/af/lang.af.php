@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Health Check',
     'RequirePasswordChangeOnLogin' => 'Require password change on login',
     'PasswordChangeRequired' => 'You need to change your password before login.',
+    'LikelihoodImpact' => 'Likelihood and Impact',
+    'MitigationPercent' => 'Mitigation Percent',
+    'MitigationPermissionMessage' => 'You do not have permission to plan mitigations.  Any mitigations that you attempt to submit will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.',
+    'ResetCustomDisplaySettings' => 'Reset Custom Display Settings',
+    'CustomResetSuccessMessage' => 'Your custom display settings was reset successfully',
+    'DefaultRiskScore' => 'Default Risk Score',
+    'AdditionalStakeholders' => 'Additional Stakeholders',
+    'AllSkateholders' => 'All Stakeholders',
+    'RiskIdDoesNotExist' => 'Risk ID Does Not Exist',
+    'RiskTeamPermission' => 'You are not a member of the team this risk belongs to',
     '' => '',
 );
 

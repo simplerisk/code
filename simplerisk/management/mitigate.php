@@ -60,7 +60,7 @@ if (!isset($_SESSION["plan_mitigations"]) || $_SESSION["plan_mitigations"] != 1)
   $plan_mitigations = false;
 
   // Display an alert
-  set_alert(true, "bad", "You do not have permission to plan mitigations.  Any mitigations that you attempt to submit will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
+  set_alert(true, "bad", $lang['MitigationPermissionMessage']);
 }
 else $plan_mitigations = true;
 
@@ -241,7 +241,14 @@ if (isset($_GET['id']) || isset($_POST['id']))
   else
   {
     $submitted_by = "";
-    $status = "Risk ID Does Not Exist";
+    // If Risk ID exists.
+    if(check_risk_by_id($id)){
+        $status = $lang["RiskTeamPermission"];
+    }
+    // If Risk ID does not exist.
+    else{
+        $status = $lang["RiskIdDoesNotExist"];
+    }
     $subject = "N/A";
     $reference_id = "N/A";
     $regulation = "";
@@ -292,33 +299,35 @@ if (isset($_GET['id']) || isset($_POST['id']))
   if ($mitigation == false)
   {
     // Set the values to empty
-    $mitigation_date = "N/A";
-    $mitigation_date = "";
-    $planning_strategy = "";
-    $mitigation_effort = "";
-    $mitigation_cost = 1;
-    $mitigation_owner = $owner;
-    $mitigation_team = $team;
-    $current_solution = "";
-    $security_requirements = "";
-    $security_recommendations = "";
-    $planning_date = "";
+    $mitigation_date    = "N/A";
+    $mitigation_date    = "";
+    $planning_strategy  = "";
+    $mitigation_effort  = "";
+    $mitigation_cost    = 1;
+    $mitigation_owner   = $owner;
+    $mitigation_team    = $team;
+    $current_solution   = "";
+    $security_requirements      = "";
+    $security_recommendations   = "";
+    $planning_date      = "";
+    $mitigation_percent = 0;
   }
   // If a mitigation exists
   else
   {
     // Set the mitigation values
-    $mitigation_date = $mitigation[0]['submission_date'];
-    $mitigation_date = date(DATETIME, strtotime($mitigation_date));
-    $planning_strategy = $mitigation[0]['planning_strategy'];
-    $mitigation_effort = $mitigation[0]['mitigation_effort'];
-    $mitigation_cost = $mitigation[0]['mitigation_cost'];
-    $mitigation_owner = $mitigation[0]['mitigation_owner'];
-    $mitigation_team = $mitigation[0]['mitigation_team'];
-    $current_solution = $mitigation[0]['current_solution'];
-    $security_requirements = $mitigation[0]['security_requirements'];
-    $security_recommendations = $mitigation[0]['security_recommendations'];
-    $planning_date = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
+    $mitigation_date    = $mitigation[0]['submission_date'];
+    $mitigation_date    = date(DATETIME, strtotime($mitigation_date));
+    $planning_strategy  = $mitigation[0]['planning_strategy'];
+    $mitigation_effort  = $mitigation[0]['mitigation_effort'];
+    $mitigation_cost    = $mitigation[0]['mitigation_cost'];
+    $mitigation_owner   = $mitigation[0]['mitigation_owner'];
+    $mitigation_team    = $mitigation[0]['mitigation_team'];
+    $current_solution   = $mitigation[0]['current_solution'];
+    $security_requirements      = $mitigation[0]['security_requirements'];
+    $security_recommendations   = $mitigation[0]['security_recommendations'];
+    $planning_date      = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
+    $mitigation_percent = isset($mitigation[0]['mitigation_percent']) ? $mitigation[0]['mitigation_percent'] : 0;
   }
 
   // Get the management reviews for the risk
@@ -350,7 +359,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
 }
 
 // Check if a new risk mitigation was submitted and the user has permissions to plan mitigations
-if ((isset($_POST['submit'])) && $plan_mitigations)
+if ((isset($_POST['update_mitigation'])) && $plan_mitigations)
 {
   $status = "Mitigation Planned";
   $planning_strategy = (int)$_POST['planning_strategy'];

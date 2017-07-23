@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Kontrola stavu',
     'RequirePasswordChangeOnLogin' => 'Požadovat změnu hesla při přihlášení',
     'PasswordChangeRequired' => 'Potřebujete změnit své heslo před přihlášením.',
+    'LikelihoodImpact' => 'Pravděpodobnost a dopad',
+    'MitigationPercent' => 'Zmírňování procenta',
+    'MitigationPermissionMessage' => 'Nemáte oprávnění k plánování skutečnosti snižující závažnost rizika.  Skutečnosti snižující závažnost rizika pokoušejících se o odeslání nebudou zaznamenány.  Pokud máte pocit, že dosáhli jste tuto zprávu obdrželi omylem, obraťte se na správce.',
+    'ResetCustomDisplaySettings' => 'Obnovit nastavení vlastního zobrazení',
+    'CustomResetSuccessMessage' => 'Nastavení vlastního zobrazení byla úspěšně resetována.',
+    'DefaultRiskScore' => 'Výchozí skóre rizika',
+    'AdditionalStakeholders' => 'Další zainteresované strany',
+    'AllSkateholders' => 'Všechny zúčastněné strany',
+    'RiskIdDoesNotExist' => 'Neexistuje riziko ID',
+    'RiskTeamPermission' => 'Nejste členem týmu, který toto riziko patří k',
     '' => '',
 );
 

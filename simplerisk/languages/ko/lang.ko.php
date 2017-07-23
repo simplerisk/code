@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => '상태 검사',
     'RequirePasswordChangeOnLogin' => '로그인 시 암호 변경 필요',
     'PasswordChangeRequired' => '로그인 하기 전에 암호를 변경 해야 합니다.',
+    'LikelihoodImpact' => '가능성과 영향',
+    'MitigationPercent' => '완화 %',
+    'MitigationPermissionMessage' => '완화 계획을 권한이 없습니다.  제출 하려는 모든 완화는 기록 되지 것입니다.  오류가이 메시지에 도달 했습니다 생각 되 면 관리자를 문의 하십시오.',
+    'ResetCustomDisplaySettings' => '사용자 지정 디스플레이 설정을 다시 설정',
+    'CustomResetSuccessMessage' => '사용자 지정 디스플레이 설정은 성공적으로 재설정 되었습니다.',
+    'DefaultRiskScore' => '기본 위험 점수',
+    'AdditionalStakeholders' => '추가 이해 관계자',
+    'AllSkateholders' => '모든 이해 관계자',
+    'RiskIdDoesNotExist' => '위험 ID 존재 하지 않는',
+    'RiskTeamPermission' => '이 위험에 속한 팀의 회원이',
     '' => '',
 );
 

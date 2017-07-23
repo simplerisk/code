@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Controllo sanitario',
     'RequirePasswordChangeOnLogin' => 'Richiedi modifica della password al login',
     'PasswordChangeRequired' => 'È necessario modificare la password prima login.',
+    'LikelihoodImpact' => 'Probabilità e impatto',
+    'MitigationPercent' => 'Per cento di mitigazione',
+    'MitigationPermissionMessage' => 'Non hai il permesso di pianificare fattori attenuanti.  Non saranno registrati alcun fattore attenuante che si tentano di inviare.  Se ti senti che hai raggiunto questo messaggio per errore, si prega di contattare un amministratore.',
+    'ResetCustomDisplaySettings' => 'Ripristinare le impostazioni di visualizzazione personalizzata',
+    'CustomResetSuccessMessage' => 'Impostazioni di visualizzazione personalizzata è stato reimpostato correttamente',
+    'DefaultRiskScore' => 'Punteggio di rischio predefinito',
+    'AdditionalStakeholders' => 'Altre parti interessate',
+    'AllSkateholders' => 'Tutte le parti interessate',
+    'RiskIdDoesNotExist' => 'ID di rischio non esiste',
+    'RiskTeamPermission' => 'Non sei un membro della squadra a che questo rischio appartiene',
     '' => '',
 );
 

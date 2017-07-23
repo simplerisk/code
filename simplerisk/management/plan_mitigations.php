@@ -84,29 +84,32 @@ if (isset($_GET['mitigated']))
 <html>
 
 <head>
-  <script src="../js/jquery.min.js"></script>
-  <script src="../js/jquery-ui.min.js"></script>
-  <script src="../js/bootstrap.min.js"></script>
-  <script src="../js/cve_lookup.js"></script>
-  <script src="../js/sorttable.js"></script>
-  <script src="../js/common.js"></script>
-  <script src="../js/pages/risk.js"></script>
-  <script src="../js/highcharts/code/highcharts.js"></script>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/jquery-ui.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/cve_lookup.js"></script>
+    <script src="../js/sorttable.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/pages/risk.js"></script>
+    <script src="../js/highcharts/code/highcharts.js"></script>
+    <script src="../js/bootstrap-multiselect.js"></script>
 
-  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
 
-  <link rel="stylesheet" href="../css/divshot-util.css">
-  <link rel="stylesheet" href="../css/divshot-canvas.css">
-  <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/divshot-util.css">
+    <link rel="stylesheet" href="../css/divshot-canvas.css">
+    <link rel="stylesheet" href="../css/style.css">
 
-  <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/theme.css">
-  <?php display_asset_autocomplete_script(get_entered_assets()); ?>
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
+
+	<?php display_asset_autocomplete_script(get_entered_assets()); ?>
 </head>
 
 <body>

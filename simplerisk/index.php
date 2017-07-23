@@ -54,24 +54,34 @@ if (isset($_POST['submit']))
 	// If the user is valid
 	if (is_valid_user($user, $pass))
 	{
-        $uid = get_id_by_user($user);
-        $array = get_user_by_id($uid);
-        if($array['change_password']){
-            $_SESSION['first_login_uid'] = $uid;
+        	$uid = get_id_by_user($user);
+        	$array = get_user_by_id($uid);
 
-            if (encryption_extra())
-            {
-                // Load the extra
-                require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+            	if($array['change_password'])
+		{
+                	$_SESSION['first_login_uid'] = $uid;
 
-                // Get the current password encrypted with the temp key
-                check_user_enc($user, $pass);
-            }
-            header("location: reset_password.php");exit;
-        }
-        
-        // Set login status
-        login($user, $pass);
+            		if (encryption_extra())
+            		{
+                		// Load the extra
+                		require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+
+                		// Get the current password encrypted with the temp key
+                		check_user_enc($user, $pass);
+            		}
+
+            		header("location: reset_password.php");
+			exit;
+        	}
+
+		// Create the SimpleRisk instance ID if it doesn't already exist
+		create_simplerisk_instance_id();
+
+		// Ping the server
+		ping_server();
+
+        	// Set login status
+        	login($user, $pass);
 
   	}
   	// If the user is not a valid user
@@ -122,8 +132,6 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
     		// If the response is not null
     		if ($resp != NULL)
     		{
-      			// Grant the user access
-      			grant_access();
 
       			// If the encryption extra is enabled
       			if (encryption_extra())
@@ -135,6 +143,8 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
         			check_user_enc($user, $pass);
       			}
 
+      			// Grant the user access
+      			grant_access();
 			// Select where to redirect the user next
 			select_redirect();
     		}

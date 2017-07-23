@@ -371,12 +371,18 @@ if (isset($_POST['password_policy_update']))
 <body>
 <script type="text/javascript">
 function checkAll(bx) {
-    var cbs = document.getElementsByTagName('input');
-    for(var i=0; i < cbs.length; i++) {
-        if (cbs[i].type == 'checkbox') {
-            cbs[i].checked = bx.checked;
-        }
+    if(bx.checked){
+        $(bx).parents('table').find('input[type=checkbox]').prop('checked', true);
+    }else{
+        $(bx).parents('table').find('input[type=checkbox]').prop('checked', false);
     }
+    
+//    var cbs = document.getElementsByTagName('input');
+//    for(var i=0; i < cbs.length; i++) {
+//        if (cbs[i].type == 'checkbox') {
+//            cbs[i].checked = bx.checked;
+//        }
+//    }
 }
 
 function checkAllRiskMgmt(bx) {

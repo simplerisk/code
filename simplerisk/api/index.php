@@ -103,6 +103,9 @@
         // Return scoring histories
         getRoute()->get('/management/risk/scoring_history', 'scoringHistory');
         
+        // Interal api for ajax
+        getRoute()->post('/set_custom_display', 'setCustomDisplay');
+        
 		// Define the API routes
 		getApi()->get('/version.json', 'api_version', EpiApi::external);
 

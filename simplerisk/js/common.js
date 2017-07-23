@@ -201,11 +201,16 @@ function riskScoringChart(renderTo, risk_id, risk_levels){
             }
         }
     })
-    
 }
 
-
 $(document).ready(function(){
+    if(jQuery.ui !== undefined){
+        jQuery.ui.autocomplete.prototype._resizeMenu = function () {
+            var ul = this.menu.element;
+            ul.outerWidth(this.element.outerWidth());
+        }                
+    }
+
     $(document).on('click', '.exist-files .remove-file', function(event) {
         event.preventDefault();
         var $parent = $(this).parents('.file-uploader');
@@ -264,15 +269,19 @@ $(document).ready(function(){
 
     $('body').on('click', '.hide-score-overtime', function(e){
         e.preventDefault();
+
         var tabContainer = $(this).parents('.risk-session');
         var risk_id = $('.large-text', tabContainer).html();
+
         $('.score-overtime-container', tabContainer).hide();
-
-//        riskScoringChart($('.socre-overtime-chart', tabContainer)[0], risk_id);
-
         $('.hide-score-overtime', tabContainer).hide();
         $('.show-score-overtime', tabContainer).show();
+
         return false;
     })
+    
+    if($("#tab-container .multiselect").length){
+        $("#tab-container .multiselect").multiselect();
+    }
     
 })

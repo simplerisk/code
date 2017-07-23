@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Terveystarkastus',
     'RequirePasswordChangeOnLogin' => 'Edellytä salasanan vaihto kirjautuminen',
     'PasswordChangeRequired' => 'Sinun täytyy vaihtaa salasana ennen kirjautumista.',
+    'LikelihoodImpact' => 'Todennäköisyyden ja vaikutusten',
+    'MitigationPercent' => 'Lieventäminen prosenttia',
+    'MitigationPermissionMessage' => 'Sinulla ei ole oikeutta suunnitella lieventävät tekijät.  Lieventävät tekijät, jotka yrität lähettää ei kirjata.  Ota yhteyttä järjestelmänvalvojaan, jos sinusta tuntuu, että olet saavuttanut tämän ilmoituksen syyttä.',
+    'ResetCustomDisplaySettings' => 'Palauta mukautetut näyttöasetukset',
+    'CustomResetSuccessMessage' => 'Muokatut näyttöominaisuudet palautettiin onnistuneesti',
+    'DefaultRiskScore' => 'Oletus riskiluku',
+    'AdditionalStakeholders' => 'Muita sidosryhmiä',
+    'AllSkateholders' => 'Kaikki sidosryhmät',
+    'RiskIdDoesNotExist' => 'Riskin tunnus ei ole',
+    'RiskTeamPermission' => 'Et ole jäsen joukkue, tämä riski kuuluu',
     '' => '',
 );
 

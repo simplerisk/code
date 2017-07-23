@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Bilan de santé',
     'RequirePasswordChangeOnLogin' => 'Besoin de changement de mot de passe lors de la connexion',
     'PasswordChangeRequired' => 'Vous devrez modifier votre mot de passe avant la connexion.',
+    'LikelihoodImpact' => 'Probabilité et l’Impact',
+    'MitigationPercent' => 'D’atténuation pour cent',
+    'MitigationPermissionMessage' => 'Vous n’êtes pas autorisé à planifier des mesures d’atténuation.  Des mesures d’atténuation que vous essayez de soumettre ne seront pas enregistrés.  Si vous sentez que vous avez atteint ce message par erreur, veuillez communiquer avec un administrateur.',
+    'ResetCustomDisplaySettings' => 'Réinitialiser les paramètres d’affichage personnalisé',
+    'CustomResetSuccessMessage' => 'Vos paramètres d’affichage personnalisé a été réinitialisé correctement',
+    'DefaultRiskScore' => 'Default Risk Score',
+    'AdditionalStakeholders' => 'Autres intervenants',
+    'AllSkateholders' => 'Toutes les parties prenantes',
+    'RiskIdDoesNotExist' => 'ID de risque n’existe pas',
+    'RiskTeamPermission' => 'Vous n’êtes pas un membre de l’équipe à que ce risque appartient',
     '' => '',
 );
 

@@ -240,7 +240,8 @@ array_unshift($ownersManagerOptions, array(
                             <input type="hidden" value="<?php echo $currentpage; ?>" name="currentpage" id="currentpage" >
                             <input type="hidden" value="<?php echo $teams; ?>" name="teams" id="team_options">
                             <input type="hidden" value="<?php echo $owners; ?>" name="owners" id="owner_options">
-                            <input type="hidden" value="<?php echo $ownersmanagers; ?>" name="ownersmanagers" id="ownersmanager_options">                           <div class="colums-select-container">
+                            <input type="hidden" value="<?php echo $ownersmanagers; ?>" name="ownersmanagers" id="ownersmanager_options">
+                            <div class="colums-select-container">
                                 <?php echo display_risk_columns($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements) ?>
                             </div>
                         </form>

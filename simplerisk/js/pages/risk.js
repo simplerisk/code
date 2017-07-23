@@ -1,16 +1,4 @@
-  
-
-    function hideNextReview(){
-    }
-    function showNextReview(){
-    }
-    function showScoreDetails(){
-    }
-    
-    function hideScoreDetails(){
-    }
-    
-  function addRisk($this){
+function addRisk($this){
     var tabContainer = $this.parents('.tab-data');
     var getForm = $this.parent().parent().parent().parent();
     var div = getForm.parent().parent();
@@ -159,10 +147,21 @@
                 terms.push( ui.item.value );
                 // add placeholder to get the comma-and-space at the end
                 terms.push( "" );
+
+                terms = terms.reverse().filter(function (e, i, arr) {
+                    return arr.indexOf(e, i+1) === -1;
+                }).reverse();
+
                 this.value = terms.join( ", " );
                 return false;
               }
-          });  
+          })
+        .focus(function(){
+            var self = $(this);
+            window.setTimeout(function(){
+                self.autocomplete("search", "");
+            }, 1000)
+        });
           
         /**
         * Set background on focus of textarea
@@ -178,7 +177,12 @@
         * Set Risk Scoring Method dropdown and show/hide the sub views
         */
         handleSelection($("[name=scoring_method]", tabContainer).val(), tabContainer)
-  }
+        
+        /**
+        * Build multiselect box
+        */
+        $(".multiselect", tabContainer).multiselect();
+    }
     
     /*
     * Function to add the css class for textarea title and make it popup.
@@ -210,31 +214,31 @@
     }
 
   
-  /**
-  * Add empty container
-  * 
-  */
-  function addTabContainer(){
-        $('.tab-show button').show();
-        var num_tabs = $("div.container-fluid div.new").length + 1;
+/**
+* Add empty container
+* 
+*/
+function addTabContainer(){
+    $('.tab-show button').show();
+    var num_tabs = $("div.container-fluid div.new").length + 1;
 
-        $('.tab-show').removeClass('selected');
-        $("div.tab-append").append(
-          "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span>New Risk ("+num_tabs+")</span></div>"
-          +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
-          +"<i class='fa fa-close'></i>"
-          +"</button>"
-          +"</div>"
-        );
-        $('.tab-data').css({'display':'none'});
-        var tabContainerID = 'tab-container' + num_tabs;
-        $("#tab-content-container").append(
-          "<div class='tab-data' id='tab-container"+num_tabs+"'>&nbsp;</div>"
-        );
-        
-        return tabContainerID;
+    $('.tab-show').removeClass('selected');
+    $("div.tab-append").append(
+        "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span>New Risk ("+num_tabs+")</span></div>"
+        +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
+        +"<i class='fa fa-close'></i>"
+        +"</button>"
+        +"</div>"
+    );
+    $('.tab-data').css({'display':'none'});
+    var tabContainerID = 'tab-container' + num_tabs;
+    $("#tab-content-container").append(
+        "<div class='tab-data' id='tab-container"+num_tabs+"'>&nbsp;</div>"
+    );
 
-  }
+    return tabContainerID;
+
+}
 
   /**
   * Check edit status
@@ -256,6 +260,13 @@
   
   
 $(document).ready(function(){
+    if(jQuery.ui !== undefined){
+        jQuery.ui.autocomplete.prototype._resizeMenu = function () {
+            var ul = this.menu.element;
+            ul.outerWidth(this.element.outerWidth());
+        }                
+    }
+
     /**
     * Open new risk
     * 

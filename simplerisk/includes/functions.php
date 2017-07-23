@@ -398,6 +398,38 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
         echo "  </select>\n";
 }
 
+/***************************************
+ * FUNCTION: CREATE SKATEHOLDER DROPDOWN *
+ **************************************/
+function create_stakeholder_dropdown($selected = "", $name="additional_stakeholders[]"){
+    global $escaper;
+    
+    // Make selected to array
+    $selected = explode(",", $selected);
+    if(!is_array($selected)){
+        $selected = array();
+    }
+    
+    $options = get_table_ordered_by_name('user');
+    $str = "<select class=\"multiselect\" name=\"{$name}\" multiple class=\"form-field form-control\" style=\"width:auto;\">\n";
+    // For each option
+    foreach ($options as $option)
+    {
+        // If the option is selected
+        if (in_array($option['value'], $selected))
+        {
+            $text = " selected";
+        }
+        else $text = "";
+
+        $str .= "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
+    }
+    $str .= "  </select>\n";
+    echo $str;
+
+    return;
+}
+
 /*****************************
  * FUNCTION: CREATE DROPDOWN *
  *****************************/
@@ -661,7 +693,7 @@ function calculate_risk($impact, $likelihood)
 		$risk = round($risk * (10 / $max_risk), 1);
 	}
 	// If the impact or likelihood were not specified risk is 10
-	else $risk = 10;
+	else $risk = get_setting('default_risk_score');
 
 	return $risk;
 }
@@ -1799,7 +1831,7 @@ function update_password($user, $hash)
 /*************************
  * FUNCTION: SUBMIT RISK *
  *************************/
-function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false)
+function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders="")
 {
     $submitted_by || ($submitted_by = $_SESSION['uid']);
     // Open the database connection
@@ -1808,12 +1840,14 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
 	// Set numeric null to 0
 	if ($location == NULL) $location = 0;
 
-    $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `location`, `source`, `category`, `team`, `technology`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :location, :source, :category, :team, :technology, :owner, :manager, :assessment, :notes, :project_id, :submitted_by)";
     
     // Add the risk
     if($submission_date !== false){
-        $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `location`, `source`, `category`, `team`, `technology`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :location, :source, :category, :team, :technology, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date)";
+        $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `location`, `source`, `category`, `team`, `technology`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`, `additional_stakeholders`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :location, :source, :category, :team, :technology, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date, :additional_stakeholders)";
+    }else{
+        $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `location`, `source`, `category`, `team`, `technology`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `additional_stakeholders`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :location, :source, :category, :team, :technology, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :additional_stakeholders)";
     }
+
     $stmt = $db->prepare($sql);
 	$stmt->bindParam(":status", $status, PDO::PARAM_STR, 10);
     $stmt->bindParam(":subject", try_encrypt($subject), PDO::PARAM_STR, 1000);
@@ -1831,6 +1865,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $stmt->bindParam(":notes", try_encrypt($notes), PDO::PARAM_STR);
 	$stmt->bindParam(":project_id", $project_id, PDO::PARAM_STR);
     $stmt->bindParam(":submitted_by", $submitted_by, PDO::PARAM_INT);
+    $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR);
     if($submission_date !== false){
         $stmt->bindParam(":submission_date", $submission_date, PDO::PARAM_STR);
     }
@@ -2000,7 +2035,7 @@ function submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIC_likeliho
 		if (!(($custom >= 0) && ($custom <= 10)))
 		{
 			// Set the custom value to 10
-			$custom = 10;
+			$custom = get_setting('default_risk_score');
 		}
 
 		// Calculated risk is the custom value
@@ -2485,6 +2520,7 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     $security_recommendations   = isset($post['security_recommendations']) ? $post['security_recommendations'] : "";
     $planning_date              = isset($post['planning_date']) ? $post['planning_date'] : "";
     $mitigation_date            = isset($post['mitigation_date']) ? $post['mitigation_date'] : date('Y-m-d H:i:s');
+    $mitigation_percent         = isset($post['mitigation_percent']) ? $post['mitigation_percent'] : "";
 
     if (!validate_date($planning_date, 'm/d/Y'))
     {
@@ -2504,7 +2540,7 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     $db = db_open();
 
     // Add the mitigation
-    $stmt = $db->prepare("INSERT INTO mitigations (`risk_id`, `planning_strategy`, `mitigation_effort`, `mitigation_cost`, `mitigation_owner`, `mitigation_team`, `current_solution`, `security_requirements`, `security_recommendations`, `submitted_by`, `planning_date`, `submission_date`) VALUES (:risk_id, :planning_strategy, :mitigation_effort, :mitigation_cost, :mitigation_owner, :mitigation_team, :current_solution, :security_requirements, :security_recommendations, :submitted_by, :planning_date, :submission_date)");
+    $stmt = $db->prepare("INSERT INTO mitigations (`risk_id`, `planning_strategy`, `mitigation_effort`, `mitigation_cost`, `mitigation_owner`, `mitigation_team`, `current_solution`, `security_requirements`, `security_recommendations`, `submitted_by`, `planning_date`, `submission_date`, `mitigation_percent`) VALUES (:risk_id, :planning_strategy, :mitigation_effort, :mitigation_cost, :mitigation_owner, :mitigation_team, :current_solution, :security_requirements, :security_recommendations, :submitted_by, :planning_date, :submission_date, :mitigation_percent)");
     $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
     $stmt->bindParam(":planning_strategy", $planning_strategy, PDO::PARAM_INT);
 	$stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
@@ -2516,7 +2552,8 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
 	$stmt->bindParam(":security_recommendations", try_encrypt($security_recommendations), PDO::PARAM_STR);
     $stmt->bindParam(":submitted_by", $submitted_by_id, PDO::PARAM_INT);
     $stmt->bindParam(":planning_date", $planning_date, PDO::PARAM_STR, 10);
-	$stmt->bindParam(":submission_date", $mitigation_date, PDO::PARAM_STR, 10);
+    $stmt->bindParam(":submission_date", $mitigation_date, PDO::PARAM_STR, 10);
+	$stmt->bindParam(":mitigation_percent", $mitigation_percent, PDO::PARAM_INT);
     $stmt->execute();
 
 	// Get the new mitigation id
@@ -2531,73 +2568,70 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
 
 	$stmt->execute();
 
-        // If notification is enabled
-        if (notification_extra())
-        {
-            // Include the notification extra
-            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+    // If notification is enabled
+    if (notification_extra())
+    {
+        // Include the notification extra
+        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
-		    // Send the notification
-		    notify_new_mitigation($id);
+		// Send the notification
+		notify_new_mitigation($id);
+    }
+
+	// Audit log
+	$message = "A mitigation was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
+
+    // Close the database connection
+    db_close($db);
+
+    
+    /***** upload files ******/
+    // If the delete value exists
+    if (!empty($post['delete']))
+    {
+        // For each file selected
+        foreach ($post['delete'] as $file)
+        {
+            // Delete the file
+            delete_file($file);
         }
+    }
+    $unique_names = empty($post['unique_names']) ? "" : $post['unique_names'];
+    refresh_files_for_risk($unique_names, $id, 2);
 
-	    // Audit log
-	    $message = "A mitigation was submitted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-	    write_log($risk_id, $_SESSION['uid'], $message);
-
-        // Close the database connection
-        db_close($db);
-
-        
-        /***** upload files ******/
-        // If the delete value exists
-        if (!empty($post['delete']))
-        {
-            // For each file selected
-            foreach ($post['delete'] as $file)
-            {
-                // Delete the file
-                delete_file($file);
+    $error = 1;
+    // If a file was submitted
+    if (!empty($_FILES))
+    {
+        // Upload any file that is submitted
+        for($i=0; $i<count($_FILES['file']['name']); $i++){
+            if($_FILES['file']['error'][$i] || $i==0){
+                continue; 
+            }
+            $file = array(
+                'name' => $_FILES['file']['name'][$i],
+                'type' => $_FILES['file']['type'][$i],
+                'tmp_name' => $_FILES['file']['tmp_name'][$i],
+                'size' => $_FILES['file']['size'][$i],
+                'error' => $_FILES['file']['error'][$i],
+            );
+            // Upload any file that is submitted
+            $error = upload_file($id, $file, 2);
+            if($error != 1){
+                /**
+                * If error, stop uploading files;
+                */
+                break;
             }
         }
-//        if(!empty($post['unique_names'])){
-//            refresh_files_for_risk($post['unique_names'], $id, 2);
-//        }
-        $unique_names = empty($post['unique_names']) ? "" : $post['unique_names'];
-        refresh_files_for_risk($unique_names, $id, 2);
 
-        $error = 1;
-        // If a file was submitted
-        if (!empty($_FILES))
-        {
-            // Upload any file that is submitted
-            for($i=0; $i<count($_FILES['file']['name']); $i++){
-                if($_FILES['file']['error'][$i] || $i==0){
-                    continue; 
-                }
-                $file = array(
-                    'name' => $_FILES['file']['name'][$i],
-                    'type' => $_FILES['file']['type'][$i],
-                    'tmp_name' => $_FILES['file']['tmp_name'][$i],
-                    'size' => $_FILES['file']['size'][$i],
-                    'error' => $_FILES['file']['error'][$i],
-                );
-            // Upload any file that is submitted
-                $error = upload_file($id, $file, 2);
-                if($error != 1){
-                    /**
-                    * If error, stop uploading files;
-                    */
-                    break;
-                }
-            }
-
-        }
-        // Otherwise, success
-        else $error = 1;
-        /****** end uploading files *******/
-        
-        return $current_datetime;
+    }
+    // Otherwise, success
+    else $error = 1;
+    /****** end uploading files *******/
+    
+    return $current_datetime;
 }
 
 /**************************************
@@ -2671,7 +2705,6 @@ function update_risk($risk_id)
 	// Subtract 1000 from risk_id
 	$id = (int)$risk_id - 1000;
     
-    
     $reference_id = $_POST['reference_id'];
     $regulation = (int)$_POST['regulation'];
     $control_number = $_POST['control_number'];
@@ -2679,6 +2712,7 @@ function update_risk($risk_id)
     $source = (int)$_POST['source'];
     $category = (int)$_POST['category'];
     $team = (int)$_POST['team'];
+    $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
     $technology = (int)$_POST['technology'];
     $owner = (int)$_POST['owner'];
     $manager = (int)$_POST['manager'];
@@ -2694,8 +2728,8 @@ function update_risk($risk_id)
     // Open the database connection
     $db = db_open();
 
-        // Update the risk
-	$stmt = $db->prepare("UPDATE risks SET reference_id=:reference_id, regulation=:regulation, control_number=:control_number, location=:location, source=:source, category=:category, team=:team, technology=:technology, owner=:owner, manager=:manager, assessment=:assessment, notes=:notes, last_update=:date, submission_date=:submission_date WHERE id = :id");
+    // Update the risk
+	$stmt = $db->prepare("UPDATE risks SET reference_id=:reference_id, regulation=:regulation, control_number=:control_number, location=:location, source=:source, category=:category, team=:team, technology=:technology, owner=:owner, manager=:manager, assessment=:assessment, notes=:notes, last_update=:date, submission_date=:submission_date, additional_stakeholders=:additional_stakeholders WHERE id = :id");
 
 	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
 	$stmt->bindParam(":reference_id", $reference_id, PDO::PARAM_STR, 20);
@@ -2705,6 +2739,7 @@ function update_risk($risk_id)
 	$stmt->bindParam(":source", $source, PDO::PARAM_INT);
     $stmt->bindParam(":category", $category, PDO::PARAM_INT);
     $stmt->bindParam(":team", $team, PDO::PARAM_INT);
+    $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR);
     $stmt->bindParam(":technology", $technology, PDO::PARAM_INT);
     $stmt->bindParam(":owner", $owner, PDO::PARAM_INT);
     $stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
@@ -2781,7 +2816,6 @@ function update_risk($risk_id)
     // Otherwise, success
     else $error = 1;
     
-    
     // If the encryption extra is enabled, updates order_by_subject
     if (encryption_extra())
     {
@@ -2790,7 +2824,6 @@ function update_risk($risk_id)
 
         create_subject_order($_SESSION['encrypted_pass']);
     }
-
 
     return $error;
 }
@@ -2845,6 +2878,33 @@ function convert_id($id)
 	return $id;
 }
 
+/****************************************
+ * FUNCTION: CHECK IF A RISK EXIST BY ID*
+ ****************************************/
+function check_risk_by_id($id){
+    // Open the database connection
+    $db = db_open();
+
+    // Subtract 1000 from the id
+    $id = $id - 1000;
+
+    // Query the database
+    $stmt = $db->prepare("SELECT a.*, b.*, c.next_review FROM risk_scoring a INNER JOIN risks b on a.id = b.id LEFT JOIN mgmt_reviews c on b.mgmt_review = c.id WHERE b.id=:id LIMIT 1");
+    
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll();
+    
+    if($array){
+        return true;
+    }else{
+        return false;
+    }
+    
+}
+
 /****************************
  * FUNCTION: GET RISK BY ID *
  ****************************/
@@ -2876,15 +2936,15 @@ function get_risk_by_id($id)
 	}
 
 	$stmt->bindParam(":id", $id, PDO::PARAM_INT);
-        $stmt->execute();
+    $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        return $array;
+    return $array;
 }
 
 /**********************************
@@ -3745,7 +3805,7 @@ function get_risks_count($sort_order)
 /**********************************
  * FUNCTION: GET RISK FOR PROJECT *
  **********************************/
-function get_risk_for_project ($project_id)
+function get_risk_for_project($project_id)
 {
         $db = db_open();
         $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" AND b.project_id = $project_id ORDER BY calculated_risk DESC");
@@ -4182,28 +4242,28 @@ function get_risks($sort_order=0)
     // 10 = Show open risks scored by Classic Scoring
     else if ($sort_order == 10)
     {
-            // If the team separation extra is not enabled
-            if (!team_separation_extra())
-            {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
             // Query the database
-	$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 ORDER BY calculated_risk DESC");
-            }
-            else
-            {
-                    // Include the team separation extra
-                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-    
-                    // Get the separation query string
-                    $separation_query = get_user_teams_query("b", false, true);
+    $stmt = $db->prepare("SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Query the database
-		$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 " . $separation_query . " ORDER BY calculated_risk DESC");
-	}
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
 
-            $stmt->execute();
+            // Query the database
+		    $stmt = $db->prepare("SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.* FROM risk_scoring a JOIN risks b ON a.id = b.id JOIN risk_scoring c on b.id = c.id WHERE b.status != \"Closed\" AND c.scoring_method = 1 " . $separation_query . " ORDER BY calculated_risk DESC");
+	    }
 
-            // Store the list in the array
-            $array = $stmt->fetchAll();
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // 11 = Show All Risks by Date Submitted
@@ -4613,6 +4673,15 @@ function get_risks($sort_order=0)
 
     // Close the database connection
     db_close($db);
+    
+    if(is_array($array)){
+        foreach($array as &$row){
+            $row['subject'] = isset($row['subject']) ? try_decrypt($row['subject']) : "";
+            $row['assessment'] = isset($row['assessment']) ? try_decrypt($row['assessment']) : "";
+            $row['notes'] = isset($row['notes']) ? try_decrypt($row['notes']) : "";
+        }
+        unset($row);
+    }
 
     return $array;
 }
@@ -4709,7 +4778,7 @@ function get_risk_table($sort_order=0, $activecol="")
         }
 
 		echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
-		echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml(try_decrypt($risk['subject'])) . "</td>\n";
+		echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
 
         // if this is All Open Risks by Team by Risk Levle page
         if($sort_order == 22){
@@ -4823,7 +4892,7 @@ function get_submitted_risks_table($sort_order=11)
         echo "<tr>\n";
         echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
         echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['SubmissionDate']) ."</th>\n";
+	    echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['SubmissionDate']) ."</th>\n";
         echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['CalculatedRisk']) ."</th>\n";
         echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
         echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Team']) ."</th>\n";
@@ -4835,20 +4904,18 @@ function get_submitted_risks_table($sort_order=11)
         // For each risk
         foreach ($risks as $risk)
         {
-		$subject = try_decrypt($risk['subject']);
+            // Get the risk color
+            $color = get_risk_color($risk['calculated_risk']);
 
-                // Get the risk color
-                $color = get_risk_color($risk['calculated_risk']);
-
-                echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
-		echo "<td class=\"risk-cell\" align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . " \"></span> </td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['team']) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
-                echo "</tr>\n";
+            echo "<tr>\n";
+            echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+            echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+	echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
+	echo "<td class=\"risk-cell\" align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . " \"></span> </td>\n";
+            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
+            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['team']) . "</td>\n";
+            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
+            echo "</tr>\n";
         }
 
         echo "</tbody>\n";
@@ -4887,19 +4954,17 @@ function get_mitigations_table($sort_order=13)
         // For each risk
         foreach ($risks as $risk)
         {
-		$subject = try_decrypt($risk['subject']);
-
-                echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['planning_strategy']) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_effort']) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(get_asset_value_by_id($risk['mitigation_cost'])) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_owner']) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_team']) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
-                echo "</tr>\n";
+            echo "<tr>\n";
+            echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+            echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+	        echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
+            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['planning_strategy']) . "</td>\n";
+            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_effort']) . "</td>\n";
+	        echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(get_asset_value_by_id($risk['mitigation_cost'])) . "</td>\n";
+	        echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_owner']) . "</td>\n";
+	        echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_team']) . "</td>\n";
+            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
+            echo "</tr>\n";
         }
 
         echo "</tbody>\n";
@@ -4923,11 +4988,11 @@ function get_reviewed_risk_table($sort_order=12)
         echo "<thead>\n";
         echo "<tr>\n";
         echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-	echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+	    echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
         echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['ReviewDate']) ."</th>\n";
         echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Review']) ."</th>\n";
         echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextStep']) ."</th>\n";
-	echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Reviewer']) ."</th>\n";
+	    echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Reviewer']) ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -4935,16 +5000,14 @@ function get_reviewed_risk_table($sort_order=12)
         // For each risk
         foreach ($risks as $risk)
         {
-		$subject = try_decrypt($risk['subject']);
-
-                echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['review']) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['next_step']) . "</td>\n";
-		echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
-                echo "</tr>\n";
+            echo "<tr>\n";
+            echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
+            echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
+	echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
+	echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['review']) . "</td>\n";
+	echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['next_step']) . "</td>\n";
+	echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
+            echo "</tr>\n";
         }
 
         echo "</tbody>\n";
@@ -4981,13 +5044,12 @@ function get_closed_risks_table($sort_order=17)
     // For each risk
     foreach ($risks as $risk)
     {
-	    $subject = try_decrypt($risk['subject']);
         // Get the risk color
         $color = get_risk_color($risk['calculated_risk']);
 
         echo "<tr>\n";
         echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
-        echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+        echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
         echo "<td class=\"risk-cell\" align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . " \"></span> </td>\n";
                 echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['team']) . "</td>\n";
 	    echo "<td align=\"center\" width=\"150px\">" . ( !$risk['closure_date'] ? $lang["Unknown"] : $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['closure_date']))) ) . "</td>\n";
@@ -5362,45 +5424,45 @@ function get_projects_and_risks_table()
 	// For each project
 	foreach ($projects as $project)
 	{
-                $id = (int)$project['value'];
-                $name = $project['name'];
-                $order = (int)$project['order'];
+        $id = (int)$project['value'];
+        $name = $project['name'];
+        $order = (int)$project['order'];
 
-                // If the project is not 0 (ie. Unassigned Risks)
-                if ($id != 0)
+        // If the project is not 0 (ie. Unassigned Risks)
+        if ($id != 0)
+        {
+            echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+            echo "<thead>\n";
+            echo "<tr>\n";
+            echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">" . $escaper->escapeHtml($name) . "</font></center></th>\n";
+            echo "</tr>\n";
+		    echo "<tr>\n";
+            echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+            echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+            echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+            echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
+            echo "</tr>\n";
+            echo "</thead>\n";
+            echo "<tbody>\n";
+
+            // Get risks marked as consider for projects
+            $risks = get_risks(5);
+
+            // For each risk
+            foreach ($risks as $risk)
+            {
+                $subject = $risk['subject'];
+                $risk_id = (int)$risk['id'];
+                $project_id = (int)$risk['project_id'];
+                $color = get_risk_color($risk['calculated_risk']);
+
+                // If the risk is assigned to that project id
+                if ($id == $project_id)
                 {
-        		echo "<table class=\"table table-bordered table-condensed sortable\">\n";
-        		echo "<thead>\n";
-        		echo "<tr>\n";
-        		echo "<th bgcolor=\"#0088CC\" colspan=\"4\"><center><font color=\"#FFFFFF\">" . $escaper->escapeHtml($name) . "</font></center></th>\n";
-        		echo "</tr>\n";
-		        echo "<tr>\n";
-        		echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-        		echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-        		echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
-        		echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
-        		echo "</tr>\n";
-        		echo "</thead>\n";
-        		echo "<tbody>\n";
-
-        		// Get risks marked as consider for projects
-        		$risks = get_risks(5);
-
-                	// For each risk
-                	foreach ($risks as $risk)
-                	{
-                        	$subject = try_decrypt($risk['subject']);
-                        	$risk_id = (int)$risk['id'];
-                        	$project_id = (int)$risk['project_id'];
-                        	$color = get_risk_color($risk['calculated_risk']);
-
-                        	// If the risk is assigned to that project id
-                        	if ($id == $project_id)
-                        	{
 					echo "<tr>\n";
-                			echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
-                			echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                			echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
+                	echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                	echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                	echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
 					echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))) . "</td>\n";
 					echo "</tr>\n";
 				}
@@ -5960,15 +6022,15 @@ function get_reviews_table($sort_order=3)
 	foreach ($risks as $key => $row)
 	{
 		// Create arrays for each value
-                $risk_id[$key] = (int)$row['id'];
-                $subject[$key] = try_decrypt($row['subject']);
-                $status[$key] = $row['status'];
-                $calculated_risk[$key] = $row['calculated_risk'];
-                $color[$key] = get_risk_color($row['calculated_risk']);
-                $risk_level = get_risk_level_name($row['calculated_risk']);
-                $dayssince[$key] = dayssince($row['submission_date']);
-                $next_review[$key] = next_review($risk_level, $risk_id[$key], $row['next_review'], false);
-                $next_review_html[$key] = next_review($risk_level, $row['id'], $row['next_review']);
+        $risk_id[$key] = (int)$row['id'];
+        $subject[$key] = $row['subject'];
+        $status[$key] = $row['status'];
+        $calculated_risk[$key] = $row['calculated_risk'];
+        $color[$key] = get_risk_color($row['calculated_risk']);
+        $risk_level = get_risk_level_name($row['calculated_risk']);
+        $dayssince[$key] = dayssince($row['submission_date']);
+        $next_review[$key] = next_review($risk_level, $risk_id[$key], $row['next_review'], false);
+        $next_review_html[$key] = next_review($risk_level, $row['id'], $row['next_review']);
 
 		// If the next review is UNREVIEWED or PAST DUE
 		if ($next_review[$key] == "UNREVIEWED" || $next_review[$key] == $lang['PASTDUE'])
@@ -5980,34 +6042,34 @@ function get_reviews_table($sort_order=3)
 		}
 		// Otherwise it is an actual review date
 		else {
-                	// Create an array of the risks with future reviews
-                	$reviews[] = array('risk_id' => $risk_id[$key], 'subject' => $subject[$key], 'status' => $status[$key], 'calculated_risk' => $calculated_risk[$key], 'color' => $color[$key], 'dayssince' => $dayssince[$key], 'next_review' => $next_review[$key], 'next_review_html' => $next_review_html[$key]);
+            // Create an array of the risks with future reviews
+            $reviews[] = array('risk_id' => $risk_id[$key], 'subject' => $subject[$key], 'status' => $status[$key], 'calculated_risk' => $calculated_risk[$key], 'color' => $color[$key], 'dayssince' => $dayssince[$key], 'next_review' => $next_review[$key], 'next_review_html' => $next_review_html[$key]);
 			$date_next_review[] = $next_review[$key];
 			$date_calculated_risk[] = $calculated_risk[$key];
 		}
 	}
 
-        // Sort the need reviews array by next_review
-        array_multisort($need_next_review, SORT_DESC, SORT_STRING, $need_calculated_risk, SORT_DESC, SORT_NUMERIC, $need_reviews);
+    // Sort the need reviews array by next_review
+    array_multisort($need_next_review, SORT_DESC, SORT_STRING, $need_calculated_risk, SORT_DESC, SORT_NUMERIC, $need_reviews);
 
-        // Sort the reviews array by next_review
-        array_multisort($date_next_review, SORT_ASC, SORT_STRING, $date_calculated_risk, SORT_DESC, SORT_NUMERIC, $reviews);
+    // Sort the reviews array by next_review
+    array_multisort($date_next_review, SORT_ASC, SORT_STRING, $date_calculated_risk, SORT_DESC, SORT_NUMERIC, $reviews);
 
 	// Merge the two arrays back together to a single reviews array
 	$reviews = array_merge($need_reviews, $reviews);
 
-        echo "<table class=\"table table-bordered table-striped table-condensed sortable table-margin-top\">\n";
-        echo "<thead>\n";
-        echo "<tr>\n";
-        echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
-        echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
-        echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-        echo "<th align=\"center\" width=\"65px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
-        echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
-        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
-        echo "</tr>\n";
-        echo "</thead>\n";
-        echo "<tbody>\n";
+    echo "<table class=\"table table-bordered table-striped table-condensed sortable table-margin-top\">\n";
+    echo "<thead>\n";
+    echo "<tr>\n";
+    echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+    echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+    echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+    echo "<th align=\"center\" width=\"65px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+    echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
+    echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
+    echo "</tr>\n";
+    echo "</thead>\n";
+    echo "<tbody>\n";
 
         // For each risk
         //foreach ($reviews as $review)
@@ -6109,7 +6171,7 @@ function get_delete_risk_table()
     echo "<table class=\"table table-bordered table-condensed sortable\">\n";
     echo "<thead>\n";
     echo "<tr>\n";
-echo "<th align=\"left\" width=\"75\"><input type=\"checkbox\" onclick=\"checkAll(this)\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "</th>\n";
+    echo "<th align=\"left\" width=\"75\"><input type=\"checkbox\" onclick=\"checkAll(this)\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "</th>\n";
     echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
     echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
     echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
@@ -6121,7 +6183,7 @@ echo "<th align=\"left\" width=\"75\"><input type=\"checkbox\" onclick=\"checkAl
     foreach ($risks as $risk)
     {
         $risk_id = $risk['id'];
-        $subject = try_decrypt($risk['subject']);
+        $subject = $risk['subject'];
         $status = $risk['status'];
 
         echo "<tr>\n";
@@ -6810,13 +6872,13 @@ function get_audit_trail($id = NULL, $days = 7)
 		// If the ID is greater than 1000
 		if ($id > 1000)
 		{
-        		// Subtract 1000 from id
-	        	$id = $id - 1000;
+        	// Subtract 1000 from id
+	        $id = $id - 1000;
 
-        		// Get the comments for this specific ID
-        		$stmt = $db->prepare("SELECT timestamp, message FROM audit_log WHERE risk_id=:risk_id AND (`timestamp` > CURDATE()-INTERVAL :days DAY) ORDER BY timestamp DESC");
+        	// Get the comments for this specific ID
+        	$stmt = $db->prepare("SELECT timestamp, message FROM audit_log WHERE risk_id=:risk_id AND (`timestamp` > CURDATE()-INTERVAL :days DAY) ORDER BY timestamp DESC");
 
-        		$stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+        	$stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
 			$stmt->bindParam(":days", $days, PDO::PARAM_INT);
 		}
 		// If the ID is NULL
@@ -6827,21 +6889,21 @@ function get_audit_trail($id = NULL, $days = 7)
 			$stmt->bindParam(":days", $days, PDO::PARAM_INT);
 		}
 
-        	$stmt->execute();
+        $stmt->execute();
 
-       		// Store the list in the array
-        	$logs = $stmt->fetchAll();
+       	// Store the list in the array
+        $logs = $stmt->fetchAll();
 
-        	// Close the database connection
-        	db_close($db);
+        // Close the database connection
+        db_close($db);
 
-        	foreach ($logs as $log)
-        	{
-             	  	$text = try_decrypt($log['message']);
-               		$date = date(DATETIME, strtotime($log['timestamp']));
+        foreach ($logs as $log)
+        {
+             	$text = try_decrypt($log['message']);
+               	$date = date(DATETIME, strtotime($log['timestamp']));
 
-               		echo "<p>" . $escaper->escapeHtml($date) . " > " . $escaper->escapeHtml($text) . "</p>\n";
-        	}
+               	echo "<p>" . $escaper->escapeHtml($date) . " > " . $escaper->escapeHtml($text) . "</p>\n";
+        }
 
 		// Return true
 		return true;
@@ -6859,119 +6921,121 @@ function get_audit_trail($id = NULL, $days = 7)
  *******************************/
 function update_mitigation($risk_id, $post)
 {
-        // Subtract 1000 from risk_id
-        $id = (int)$risk_id - 1000;
+    // Subtract 1000 from risk_id
+    $id = (int)$risk_id - 1000;
 
-        $planning_strategy = (int)$post['planning_strategy'];
-        $mitigation_effort = (int)$post['mitigation_effort'];
-        $mitigation_cost = (int)$post['mitigation_cost'];
-        $mitigation_owner = (int)$post['mitigation_owner'];
-        $mitigation_team = (int)$post['mitigation_team'];
-        $current_solution = try_encrypt($post['current_solution']);
-        $security_requirements = try_encrypt($post['security_requirements']);
-        $security_recommendations = try_encrypt($post['security_recommendations']);
-        $planning_date = $post['planning_date'];
+    $planning_strategy  = (int)$post['planning_strategy'];
+    $mitigation_effort  = (int)$post['mitigation_effort'];
+    $mitigation_cost    = (int)$post['mitigation_cost'];
+    $mitigation_owner   = (int)$post['mitigation_owner'];
+    $mitigation_team    = (int)$post['mitigation_team'];
+    $current_solution   = try_encrypt($post['current_solution']);
+    $security_requirements      = try_encrypt($post['security_requirements']);
+    $security_recommendations   = try_encrypt($post['security_recommendations']);
+    $planning_date      = $post['planning_date'];
+    $mitigation_percent = $post['mitigation_percent'];
 
-        if (!validate_date($planning_date, 'm/d/Y'))
-        {
-            $planning_date = "0000-00-00";
-        }
-        // Otherwise, set the proper format for submitting to the database
-        else
-        {
-            $planning_date = date("Y-m-d", strtotime($planning_date));
-        }
-        
-        
-        // Get current datetime for last_update
-        $current_datetime = date('Y-m-d H:i:s');
+    if (!validate_date($planning_date, 'm/d/Y'))
+    {
+        $planning_date = "0000-00-00";
+    }
+    // Otherwise, set the proper format for submitting to the database
+    else
+    {
+        $planning_date = date("Y-m-d", strtotime($planning_date));
+    }
+    
+    
+    // Get current datetime for last_update
+    $current_datetime = date('Y-m-d H:i:s');
 
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
         // Update the risk
-	$stmt = $db->prepare("UPDATE mitigations SET last_update=:date, planning_strategy=:planning_strategy, mitigation_effort=:mitigation_effort, mitigation_cost=:mitigation_cost, mitigation_owner=:mitigation_owner, mitigation_team=:mitigation_team, current_solution=:current_solution, security_requirements=:security_requirements, security_recommendations=:security_recommendations, planning_date=:planning_date WHERE risk_id=:id");
+	$stmt = $db->prepare("UPDATE mitigations SET last_update=:date, planning_strategy=:planning_strategy, mitigation_effort=:mitigation_effort, mitigation_cost=:mitigation_cost, mitigation_owner=:mitigation_owner, mitigation_team=:mitigation_team, current_solution=:current_solution, security_requirements=:security_requirements, security_recommendations=:security_recommendations, planning_date=:planning_date, mitigation_percent=:mitigation_percent WHERE risk_id=:id");
 
-        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-	    $stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
-        $stmt->bindParam(":planning_strategy", $planning_strategy, PDO::PARAM_INT);
-        $stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
-        $stmt->bindParam(":mitigation_cost", $mitigation_cost, PDO::PARAM_INT);
-        $stmt->bindParam(":mitigation_owner", $mitigation_owner, PDO::PARAM_INT);
-        $stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
-        $stmt->bindParam(":current_solution", $current_solution, PDO::PARAM_STR);
-        $stmt->bindParam(":security_requirements", $security_requirements, PDO::PARAM_STR);
-        $stmt->bindParam(":security_recommendations", $security_recommendations, PDO::PARAM_STR);
-        $stmt->bindParam(":planning_date", $planning_date, PDO::PARAM_STR, 10);
-        $stmt->execute();
-        // If notification is enabled
-        if (notification_extra())
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+	$stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
+    $stmt->bindParam(":planning_strategy", $planning_strategy, PDO::PARAM_INT);
+    $stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
+    $stmt->bindParam(":mitigation_cost", $mitigation_cost, PDO::PARAM_INT);
+    $stmt->bindParam(":mitigation_owner", $mitigation_owner, PDO::PARAM_INT);
+    $stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
+    $stmt->bindParam(":current_solution", $current_solution, PDO::PARAM_STR);
+    $stmt->bindParam(":security_requirements", $security_requirements, PDO::PARAM_STR);
+    $stmt->bindParam(":security_recommendations", $security_recommendations, PDO::PARAM_STR);
+    $stmt->bindParam(":planning_date", $planning_date, PDO::PARAM_STR, 10);
+    $stmt->bindParam(":mitigation_percent", $mitigation_percent, PDO::PARAM_INT);
+    $stmt->execute();
+    // If notification is enabled
+    if (notification_extra())
+    {
+        // Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+		// Send the notification
+		notify_mitigation_update($id);
+    }
+
+	// Audit log
+	$message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+	write_log($risk_id, $_SESSION['uid'], $message);
+
+    // Close the database connection
+    db_close($db);
+
+    
+    /***** upload files ******/
+    // If the delete value exists
+    if (!empty($post['delete']))
+    {
+        // For each file selected
+        foreach ($post['delete'] as $file)
         {
-            // Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-		    // Send the notification
-		    notify_mitigation_update($id);
+            // Delete the file
+            delete_file($file);
         }
-
-	    // Audit log
-	    $message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
-	    write_log($risk_id, $_SESSION['uid'], $message);
-
-        // Close the database connection
-        db_close($db);
-
-        
-        /***** upload files ******/
-        // If the delete value exists
-        if (!empty($post['delete']))
-        {
-            // For each file selected
-            foreach ($post['delete'] as $file)
-            {
-                // Delete the file
-                delete_file($file);
-            }
-        }
+    }
 //        if(!empty($post['unique_names'])){
 //            refresh_files_for_risk($post['unique_names'], $id, 2);
 //        }
-        $unique_names = empty($post['unique_names']) ? "" : $post['unique_names'];
-        refresh_files_for_risk($unique_names, $id, 2);
+    $unique_names = empty($post['unique_names']) ? "" : $post['unique_names'];
+    refresh_files_for_risk($unique_names, $id, 2);
 
-        $error = 1;
-        // If a file was submitted
-        if (!empty($_FILES))
-        {
-            // Upload any file that is submitted
-            for($i=0; $i<count($_FILES['file']['name']); $i++){
-                if($_FILES['file']['error'][$i] || $i==0){
-                    continue; 
-                }
-                $file = array(
-                    'name' => $_FILES['file']['name'][$i],
-                    'type' => $_FILES['file']['type'][$i],
-                    'tmp_name' => $_FILES['file']['tmp_name'][$i],
-                    'size' => $_FILES['file']['size'][$i],
-                    'error' => $_FILES['file']['error'][$i],
-                );
-            // Upload any file that is submitted
-                $error = upload_file($id, $file, 2);
-                if($error != 1){
-                    /**
-                    * If error, stop uploading files;
-                    */
-                    break;
-                }
+    $error = 1;
+    // If a file was submitted
+    if (!empty($_FILES))
+    {
+        // Upload any file that is submitted
+        for($i=0; $i<count($_FILES['file']['name']); $i++){
+            if($_FILES['file']['error'][$i] || $i==0){
+                continue; 
             }
-
+            $file = array(
+                'name' => $_FILES['file']['name'][$i],
+                'type' => $_FILES['file']['type'][$i],
+                'tmp_name' => $_FILES['file']['tmp_name'][$i],
+                'size' => $_FILES['file']['size'][$i],
+                'error' => $_FILES['file']['error'][$i],
+            );
+        // Upload any file that is submitted
+            $error = upload_file($id, $file, 2);
+            if($error != 1){
+                /**
+                * If error, stop uploading files;
+                */
+                break;
+            }
         }
-        // Otherwise, success
-        else $error = 1;
-        /****** end uploading files *******/
-        
-        
-        return $current_datetime;
+
+    }
+    // Otherwise, success
+    else $error = 1;
+    /****** end uploading files *******/
+    
+    
+    return $current_datetime;
 }
 
 /**************************
@@ -8078,24 +8142,8 @@ function write_debug_log($value)
  ******************************/
 function add_registration($name, $company, $title, $phone, $email)
 {
-        // Get the instance identifier
-        $instance_id = get_setting("instance_id");
-
-        // If the instance id is false
-        if ($instance_id == false)
-        {
-                // Open the database connection
-                $db = db_open();
-
-                // Create a random instance id
-                $instance_id = generate_token(50);
-                $stmt = $db->prepare("INSERT INTO `settings` VALUES ('instance_id', :instance_id)");
-                $stmt->bindParam(":instance_id", $instance_id, PDO::PARAM_STR, 50);
-                $stmt->execute();
-
-                // Close the database connection
-                db_close($db);
-        }
+	// Create the SimpleRisk instance ID if it doesn't already exist
+	create_simplerisk_instance_id();
 
 	// Create the data to send
 	$data = array(
@@ -8919,6 +8967,197 @@ function get_risks_score_averages($time = "day")
     db_close($db);
     
     return $risk_scores;
+}
+
+/***********************************
+ * FUNCTION: SET CUSTOM DISPLAY SETTINGS *
+ ***********************************/
+function save_custom_display_settings()
+{
+    $custom_display_settings = json_encode($_SESSION['custom_display_settings']);
+    
+    // Open the database connection
+    $db = db_open();
+
+    // Update user
+    $stmt = $db->prepare("UPDATE user SET custom_display_settings=:custom_display_settings WHERE value=:value");
+    $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR, 100);
+    $stmt->bindParam(":value", $_SESSION['uid'], PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/***********************************
+ * FUNCTION: RESET CUSTOM DISPLAY SETTINGS *
+ ***********************************/
+function reset_custom_display_settings()
+{
+    $_SESSION['custom_display_settings'] = array(
+        'id',
+        'subject',
+        'calculated_risk',
+        'submission_date',
+        'mitigation_planned',
+        'management_review'
+    );
+    $custom_display_settings = json_encode($_SESSION['custom_display_settings']);
+    
+    // Open the database connection
+    $db = db_open();
+
+    // Update user
+    $stmt = $db->prepare("UPDATE user SET custom_display_settings=:custom_display_settings WHERE value=:value");
+    $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR, 100);
+    $stmt->bindParam(":value", $_SESSION['uid'], PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/****************************************
+ * FUNCTION: GET STAKEHOLDER NAMES FROM IDs *
+ ****************************************/
+function get_stakeholder_names($ids="")
+{
+    if(!$ids){
+        return "";
+    }
+    
+    $idArray = explode(",", $ids);
+    foreach($idArray as &$id){
+        $id = intval($id);
+    }
+    unset($id);
+    
+    
+    // Open the database connection
+    $db = db_open();
+
+    // Update user
+    $sql = "Select name from user where value in (:ids)";
+    $stmt = $db->prepare("SELECT name FROM user WHERE value in (" . implode(",", $idArray) . "); ");
+    $stmt->execute();
+
+    // Store the list in the array
+    $users = $stmt->fetchAll();
+    // Close the database connection
+    db_close($db);
+    
+    $names = array();
+    
+    foreach($users as $user){
+        $names[] = $user['name'];
+    }
+    
+    return implode(", ", $names);
+}
+
+/*************************
+ * FUNCTION: PING SERVER *
+ *************************/
+function ping_server()
+{
+	global $escaper;
+
+	// Set the default path
+	$path = "?";
+
+        // Get the instance ID
+        $instance_id = get_setting("instance_id");
+
+        // If the instance ID is not false
+        if ($instance_id != false)
+        {
+		// Add the instance ID to the path
+                $path .= "instance_id=" . $instance_id;
+        }
+        else $path .= "instance_id=";
+
+	// Get the timezone
+	$timezone = date_default_timezone_get();
+
+	// Add the timezone to the path
+	$path .= "&timezone=" . $timezone;
+
+        // Open the database connection
+        $db = db_open();
+
+	// Get the total number of risks
+        $stmt = $db->prepare("SELECT COUNT(id) FROM risks");
+        $stmt->execute();
+        $array = $stmt->fetchAll();
+        $risks = $array[0][0];
+
+	// Add the risks to the path
+	$path .= "&risks=" . $risks;
+
+	// Get the total number of users
+        $stmt = $db->prepare("SELECT COUNT(value) FROM user");
+        $stmt->execute();
+        $array = $stmt->fetchAll();
+        $users = $array[0][0];
+
+	// Add the users to the path
+	$path .= "&users=" . $users;
+
+	// Get the application version
+	$app_version = $escaper->escapeHtml(current_version("app"));
+
+	// Add the app version to the path
+	$path .= "&app_version=" . $app_version;
+
+	// Get the database version
+	$db_version = $escaper->escapeHtml(current_version("app"));
+
+	// Add the database version to the path
+	$path .= "&db_version=" . $db_version;
+
+    // Close the database connection
+    db_close($db);
+
+    // Make the https request
+    $fp = fsockopen("tls://ping.simplerisk.com", 443, $errno, $errstr, 30);
+    $out = "GET " . $path . " HTTP/1.1\r\n";
+    $out .= "Host: ping.simplerisk.com\r\n";
+    $out .= "Connection: Close\r\n\r\n";
+    fwrite($fp, $out);
+    fclose($fp);
+}
+
+/*******************************************
+ * FUNCTION: CREATE SIMPLERISK INSTANCE ID *
+ *******************************************/
+function create_simplerisk_instance_id()
+{
+    // Get the instance identifier
+    $instance_id = get_setting("instance_id");
+
+    // If the instance id is false
+    if ($instance_id == false)
+    {
+        // Open the database connection
+        $db = db_open();
+
+        // Create a random instance id
+        $instance_id = generate_token(50);
+        $stmt = $db->prepare("INSERT INTO `settings` VALUES ('instance_id', :instance_id)");
+        $stmt->bindParam(":instance_id", $instance_id, PDO::PARAM_STR, 50);
+        $stmt->execute();
+
+        // Close the database connection
+        db_close($db);
+    }
+}
+
+/*******************************************
+ * FUNCTION: STRIP LINE BREAKS FROM STRING *
+ *******************************************/
+function remove_line_breaks($string){
+    $string = trim(preg_replace("/\s\s+|\r|\n/", ' ', $string));
+    return $string;
 }
 
 ?>

@@ -56,7 +56,7 @@ function calculate_cvss_score($CVSS_AccessVector, $CVSS_AccessComplexity, $CVSS_
 	$overallScore = overall_score($scoreType, $environmentalScore,$temporalScore,$baseScore);
 
 	// Return the overall score
-	return "$overallScore";
+	return $overallScore;
 }
 
 /************************
@@ -177,7 +177,7 @@ function overall_score($scoreType, $environmentalScore,$temporalScore,$baseScore
 	}
 
 	// If we get this far, unknown score type, return a high score of 10
-	return 10;
+	return get_setting('default_risk_score');
 }
 
 /********************

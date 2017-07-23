@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Exame de saúde',
     'RequirePasswordChangeOnLogin' => 'Exigir a alteração de senha no login',
     'PasswordChangeRequired' => 'Você precisa alterar sua senha antes de entrar.',
+    'LikelihoodImpact' => 'Probabilidade e impacto',
+    'MitigationPercent' => 'Por cento de mitigação',
+    'MitigationPermissionMessage' => 'Você não tem permissão para plano de reduções.  Qualquer atenuações que você tentar enviar não serão gravadas.  Entre em contato com um administrador se você sente que chegou esta mensagem de erro.',
+    'ResetCustomDisplaySettings' => 'Redefinir as configurações de exibição personalizado',
+    'CustomResetSuccessMessage' => 'As configurações de exibição personalizada foi redefinida com êxito',
+    'DefaultRiskScore' => 'Escore de risco padrão',
+    'AdditionalStakeholders' => 'Partes interessadas adicionais',
+    'AllSkateholders' => 'Todas as partes interessadas',
+    'RiskIdDoesNotExist' => 'Não existe risco ID',
+    'RiskTeamPermission' => 'Você não é um membro da equipe que este risco pertence ao',
     '' => '',
 );
 

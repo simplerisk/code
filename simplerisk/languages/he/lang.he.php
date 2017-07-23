@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'בדיקת תקינות',
     'RequirePasswordChangeOnLogin' => 'דורשים שינוי סיסמה על הכניסה',
     'PasswordChangeRequired' => 'עליך לשנות את הסיסמה לפני ההתחברות.',
+    'LikelihoodImpact' => 'הסבירות והשפעה',
+    'MitigationPercent' => 'להפחתת אחוז',
+    'MitigationPermissionMessage' => 'אין לך הרשאה לתכנן מקלים.  גורמים מקלים כי תנסה לשלוח לא תוקלט.  נא פנה אל מנהל מערכת אם תרגישי שהגעת הודעה זו בטעות.',
+    'ResetCustomDisplaySettings' => 'איפוס הגדרות תצוגה מותאמות אישית',
+    'CustomResetSuccessMessage' => 'הגדרות תצוגה מותאמת אישית שלך אופס בהצלחה',
+    'DefaultRiskScore' => 'ציון הסיכון המהווה ברירת מחדל',
+    'AdditionalStakeholders' => 'בעלי תפקידים נוספים',
+    'AllSkateholders' => 'כל בעלי התפקידים',
+    'RiskIdDoesNotExist' => 'לא קיים מזהה סיכון',
+    'RiskTeamPermission' => 'אתה לא חבר של קבוצת שסיכון זה שייך',
     '' => '',
 );
 

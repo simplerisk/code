@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Hälsokontroll',
     'RequirePasswordChangeOnLogin' => 'Kräv lösenordsändring vid inloggning',
     'PasswordChangeRequired' => 'Du behöver ändra lösenordet innan inloggning.',
+    'LikelihoodImpact' => 'Sannolikhet och påverkan',
+    'MitigationPercent' => 'Riskreducerande procent',
+    'MitigationPermissionMessage' => 'Du har inte behörighet att planera mildrande åtgärder.  Kommer inte att registreras någon mildrande åtgärder som du försöker skicka.  Vänligen kontakta administratör om du känner att du har nått detta meddelande av misstag.',
+    'ResetCustomDisplaySettings' => 'Återställa anpassade bildskärmsinställningar',
+    'CustomResetSuccessMessage' => 'Din anpassade bildskärmsinställningar återställdes framgångsrikt',
+    'DefaultRiskScore' => 'Standard riskpoäng',
+    'AdditionalStakeholders' => 'Ytterligare intressenter',
+    'AllSkateholders' => 'Alla intressenter',
+    'RiskIdDoesNotExist' => 'Risken finns inte',
+    'RiskTeamPermission' => 'Du är inte medlem i teamet denna risk tillhör',
     '' => '',
 );
 

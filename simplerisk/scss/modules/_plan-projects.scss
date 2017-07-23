@@ -152,3 +152,17 @@ margin-left: 5px;
   min-width: 80px;
   margin-left: 5px;
 }
+
+.plan-projects{
+    .risks{
+        .risk{
+            .risk--title{
+                width: calc(100% - 140px);
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+
+            }
+        }
+    }
+}

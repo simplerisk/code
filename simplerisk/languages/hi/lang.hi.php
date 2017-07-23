@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'स्वास्थ्य जाँच',
     'RequirePasswordChangeOnLogin' => 'लॉगइन पर पासवर्ड बदलने की आवश्यकता',
     'PasswordChangeRequired' => 'आपको लॉगिन करने से पहले अपना पासवर्ड परिवर्तित करने के लिए की जरूरत है।',
+    'LikelihoodImpact' => 'संभावना और प्रभाव',
+    'MitigationPercent' => 'शमन प्रतिशत',
+    'MitigationPermissionMessage' => 'आप mitigations योजना बनाने के लिए अनुमति नहीं है।  आप सबमिट करने का प्रयास किसी भी mitigations दर्ज नहीं किया जाएगा।  अगर आपको लगता है कि आप त्रुटि में इस संदेश तक पहुँच चुके हैं कृपया किसी व्यवस्थापक से संपर्क करें।',
+    'ResetCustomDisplaySettings' => 'कस्टम प्रदर्शन सेटिंग्स रीसेट करें',
+    'CustomResetSuccessMessage' => 'अपने कस्टम प्रदर्शन सेटिंग्स सफलतापूर्वक रीसेट किया गया था',
+    'DefaultRiskScore' => 'डिफ़ॉल्ट जोखिम स्कोर',
+    'AdditionalStakeholders' => 'हितधारकों के अतिरिक्त',
+    'AllSkateholders' => 'सभी हितधारकों',
+    'RiskIdDoesNotExist' => 'जोखिम ID मौजूद नहीं है',
+    'RiskTeamPermission' => 'आप इस जोखिम से संबंधित टीम के सदस्य नहीं हैं',
     '' => '',
 );
 

@@ -54,6 +54,9 @@ label{
 
 .dropdown-menu{
     z-index: 99999;
+    a:hover > label, li.active label{
+        color: #fff;  
+    }
 }
 
 ul.ui-autocomplete {
@@ -61,8 +64,11 @@ ul.ui-autocomplete {
     color: #3f3f3f;
     font-family: "Titillium Web", sans-serif;
     font-size: 14px;
+    background: #fff;
+    border: 1px solid #c5c5c5;
+    
     > li.ui-menu-item{
-	padding-left: 10px;
+	    padding-left: 10px;
     }
 
     .ui-state-focus{
@@ -73,6 +79,9 @@ ul.ui-autocomplete {
     &.popup-ui-complete{
         width: 50% !important;
         color: #fff;
+        background: transparent;
+        max-height: 100px;
+        overflow: auto;
     }
 }
 
@@ -83,4 +92,16 @@ ul.ui-autocomplete {
 .top-offset-15{
     margin-top: 15px;
 }
+
+.ui-helper-hidden-accessible {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+
 

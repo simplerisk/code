@@ -133,7 +133,7 @@ function view_print_top_table($id, $calculated_risk, $subject, $status)
 /*******************************
 * FUNCTION: VIEW RISK DETAILS *
 *******************************/
-function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact)
+function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact)
 {
 	global $lang;
 	global $escaper;
@@ -164,7 +164,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo "<input style=\"cursor: default;\" type=\"text\" name=\"submission_date\"  size=\"50\" value=\"" . $escaper->escapeHtml($submission_date) . "\" title=\"" . $escaper->escapeHtml($submission_date) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
-        echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['Category']) .": \n";
 	echo "</div>\n";
@@ -172,7 +172,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo "<input style=\"cursor: default;\" type=\"text\" name=\"category\" id=\"category\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("category", $category)) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
-        echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['SiteLocation']) .": \n";
 	echo "</div>\n";
@@ -180,7 +180,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo "<input style=\"cursor: default;\" type=\"text\" name=\"location\" id=\"location\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("location", $location)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("location", $location)) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
-        echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"wrap-text span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['ExternalReferenceId']) .": \n";
 	echo "</div>\n";
@@ -188,7 +188,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo " <input style=\"cursor: default;\" type=\"text\" name=\"reference_id\" id=\"reference_id\" size=\"20\" value=\"" . $escaper->escapeHtml($reference_id) . "\" title=\"" . $escaper->escapeHtml($reference_id) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
-        echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['ControlRegulation']) .": \n";
 	echo "</div>\n";
@@ -204,7 +204,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo " <input style=\"cursor: default;\" type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $escaper->escapeHtml($control_number) . "\" title=\"" . $escaper->escapeHtml($control_number) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
-        echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['AffectedAssets']) .": \n";
 	echo "</div>\n";
@@ -212,7 +212,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo "<textarea style=\"cursor: default;\" type=\"text\" name=\"assets\" class=\"assets\" id=\"assets\" size=\"50\" cols=\"50\" rows=\"3\" title=\"" . $escaper->escapeHtml(get_list_of_assets($id, false)) . "\" disabled=\"disabled\">". $escaper->escapeHtml(get_list_of_assets($id, false)) ."</textarea>\n";
 	echo "</div>\n";
 	echo "</div>\n";
-        echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['Technology']) .": \n";
 	echo "</div>\n";
@@ -220,14 +220,25 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo "<input style=\"cursor: default;\" type=\"text\" name=\"technology\" id=\"technology\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("technology", $technology)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("technology", $technology)) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
-        echo "<div class=\"row-fluid\">\n";
+    
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span5 text-right\">\n";
+    echo $escaper->escapeHtml($lang['Team']) .": \n";
+    echo "</div>\n";
+    echo "<div class=\"span7\">\n";
+    echo "<input style=\"cursor: default;\" type=\"text\" name=\"team\" id=\"team\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("team", $team)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("team", $team)) . "\" disabled=\"disabled\" />\n";
+    echo "</div>\n";
+    echo "</div>\n";
+    
+    echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['Team']) .": \n";
+	echo $escaper->escapeHtml($lang['AdditionalStakeholders']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"team\" id=\"team\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("team", $team)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("team", $team)) . "\" disabled=\"disabled\" />\n";
+	echo "<span>" . $escaper->escapeHtml(get_stakeholder_names($additional_stakeholders)) . "</span>\n";
 	echo "</div>\n";
 	echo "</div>\n";
+    
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['Owner']) .": \n";
@@ -247,7 +258,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 	echo "</div>\n";
 	echo "</div>\n";
 
-  echo "<div class=\"span5\">\n";
+    echo "<div class=\"span5\">\n";
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['SubmittedBy']) .": \n";
@@ -409,9 +420,13 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
 }
 
 
-function risk_score_method_html($scoring_method="1", $CLASSIC_likelihood="", $CLASSIC_impact="", $AccessVector="N", $AccessComplexity="L", $Authentication="N", $ConfImpact="C", $IntegImpact="C", $AvailImpact="C", $Exploitability="ND", $RemediationLevel="ND", $ReportConfidence="ND", $CollateralDamagePotential="ND", $TargetDistribution="ND", $ConfidentialityRequirement="ND", $IntegrityRequirement="ND", $AvailabilityRequirement="ND", $DREADDamagePotential="10", $DREADReproducibility="10", $DREADExploitability="10", $DREADAffectedUsers="10", $DREADDiscoverability="10", $OWASPSkillLevel="10", $OWASPMotive="10", $OWASPOpportunity="10", $OWASPSize="10", $OWASPEaseOfDiscovery="10", $OWASPEaseOfExploit="10", $OWASPAwareness="10", $OWASPIntrusionDetection="10", $OWASPLossOfConfidentiality="10", $OWASPLossOfIntegrity="10", $OWASPLossOfAvailability="10", $OWASPLossOfAccountability="10", $OWASPFinancialDamage="10", $OWASPReputationDamage="10", $OWASPNonCompliance="10", $OWASPPrivacyViolation="10", $custom=""){
+function risk_score_method_html($scoring_method="1", $CLASSIC_likelihood="", $CLASSIC_impact="", $AccessVector="N", $AccessComplexity="L", $Authentication="N", $ConfImpact="C", $IntegImpact="C", $AvailImpact="C", $Exploitability="ND", $RemediationLevel="ND", $ReportConfidence="ND", $CollateralDamagePotential="ND", $TargetDistribution="ND", $ConfidentialityRequirement="ND", $IntegrityRequirement="ND", $AvailabilityRequirement="ND", $DREADDamagePotential="10", $DREADReproducibility="10", $DREADExploitability="10", $DREADAffectedUsers="10", $DREADDiscoverability="10", $OWASPSkillLevel="10", $OWASPMotive="10", $OWASPOpportunity="10", $OWASPSize="10", $OWASPEaseOfDiscovery="10", $OWASPEaseOfExploit="10", $OWASPAwareness="10", $OWASPIntrusionDetection="10", $OWASPLossOfConfidentiality="10", $OWASPLossOfIntegrity="10", $OWASPLossOfAvailability="10", $OWASPLossOfAccountability="10", $OWASPFinancialDamage="10", $OWASPReputationDamage="10", $OWASPNonCompliance="10", $OWASPPrivacyViolation="10", $custom=false){
     global $escaper;
     global $lang;
+    
+    if($custom === false){
+        $custom = get_setting("default_risk_score");
+    }
     
     $html = "
         <div class='row-fluid' >
@@ -517,7 +532,7 @@ function risk_score_method_html($scoring_method="1", $CLASSIC_likelihood="", $CL
 /*******************************
 * FUNCTION: EDIT RISK DETAILS *
 *******************************/
-function edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom)
+function edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom)
 {
 	global $lang;
 	global $escaper;
@@ -598,14 +613,25 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 	create_dropdown("technology", $technology);
 	echo "</div>\n";
 	echo "</div>\n";
-        echo "<div class=\"row-fluid\">\n";
+    
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span5 text-right\">\n";
+    echo $escaper->escapeHtml($lang['Team']) .": \n";
+    echo "</div>\n";
+    echo "<div class=\"span7\">\n";
+    create_dropdown("team", $team);
+    echo "</div>\n";
+    echo "</div>\n";
+    
+    echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['Team']) .": \n";
+	echo $escaper->escapeHtml($lang['AdditionalStakeholders']) .": \n";
 	echo "</div>\n";
-	echo "<div class=\"span7\">\n";
-	create_dropdown("team", $team);
+	echo "<div class=\"span7 multiselect-holder\">\n";
+	create_stakeholder_dropdown($additional_stakeholders);
 	echo "</div>\n";
 	echo "</div>\n";
+    
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
 	echo $escaper->escapeHtml($lang['Owner']) .": \n";
@@ -699,7 +725,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 /*************************************
 * FUNCTION: VIEW MITIGATION DETAILS *
 *************************************/
-function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date)
+function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent)
 {
 	global $lang;
 	global $escaper;
@@ -768,14 +794,25 @@ function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 	echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_owner\" id=\"mitigation_owner\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) . "\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
+    
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span5 text-right\">\n";
+    echo $escaper->escapeHtml($lang['MitigationTeam']) .": \n";
+    echo "</div>\n";
+    echo "<div class=\"span7\">\n";
+    echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_team\" id=\"mitigation_team\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("team", $mitigation_team)) . "\" disabled=\"disabled\" />\n";
+    echo "</div>\n";
+    echo "</div>\n";
+    
 	echo "<div class=\"row-fluid\">\n";
 	echo "<div class=\"span5 text-right\">\n";
-	echo $escaper->escapeHtml($lang['MitigationTeam']) .": \n";
+	echo $escaper->escapeHtml($lang['MitigationPercent']) .": \n";
 	echo "</div>\n";
 	echo "<div class=\"span7\">\n";
-	echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_team\" id=\"mitigation_team\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("team", $mitigation_team)) . "\" disabled=\"disabled\" />\n";
+	echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_percent\" id=\"mitigation_percent\" size=\"50\" value=\"" . $escaper->escapeHtml($mitigation_percent) . "%\" disabled=\"disabled\" />\n";
 	echo "</div>\n";
 	echo "</div>\n";
+    
 	echo "</div>\n";
 	echo "<div class=\"span5\">\n";
 	echo "<div class=\"row-fluid\">\n";
@@ -868,7 +905,7 @@ function view_print_mitigation_details($mitigation_date, $planning_strategy, $mi
 /*************************************
 * FUNCTION: EDIT MITIGATION DETAILS *
 *************************************/
-function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date)
+function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent)
 {
 	global $lang;
 	global $escaper;
@@ -934,12 +971,20 @@ function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 	                    create_dropdown("user", $mitigation_owner, "mitigation_owner", true);
 	            echo "</div>
 	            </div>
+                <div class=\"row-fluid\">
+                    <div class=\"span5 text-right\">"
+                        .$escaper->escapeHtml($lang['MitigationTeam']) .": 
+                    </div>
+                    <div class=\"span7\">";
+                        create_dropdown("team", $mitigation_team, "mitigation_team", true);
+                    echo "</div>
+                </div>
 	            <div class=\"row-fluid\">
 	                <div class=\"span5 text-right\">"
-	                    .$escaper->escapeHtml($lang['MitigationTeam']) .": 
+	                    .$escaper->escapeHtml($lang['MitigationPercent']) .": 
 	                </div>
 	                <div class=\"span7\">";
-	                    create_dropdown("team", $mitigation_team, "mitigation_team", true);
+	                    echo "<input type=\"number\" min=\"0\" max=\"100\" name=\"mitigation_percent\"  size=\"50\" value=\"" . $escaper->escapeHtml($mitigation_percent) . "\" class='percent active-textfield' />";
 	                echo "</div>
 	            </div>
 	        </div>
@@ -3080,6 +3125,10 @@ function view_classic_help()
 								{
 									global $lang;
 									global $escaper;
+                                    
+                                    echo "<script>\n";
+                                    echo "var BASE_URL = '". (isset($_SESSION['base_url']) ? $_SESSION['base_url'] : "") ."'; \n";
+                                    echo "</script>\n";
 
 									// If the page is in the root directory
 									if ($active == "Home")
@@ -3351,6 +3400,9 @@ function view_classic_help()
                                     echo "</li>\n";
                                     echo ($active == "RiskAverageOverTime" ? "<li class=\"active\">\n" : "<li>\n");
                                     echo "<a href=\"risk_average_baseline_metric.php\">" . $escaper->escapeHtml($lang['RiskAverageOverTime']) . "</a>\n";
+                                    echo "</li>\n";
+                                    echo ($active == "LikelihoodImpact" ? "<li class=\"active\">\n" : "<li>\n");
+                                    echo "<a href=\"likelihood_impact.php\">" . $escaper->escapeHtml($lang['LikelihoodImpact']) . "</a>\n";
                                     echo "</li>\n";
 									echo ($active == "RiskAdvice" ? "<li class=\"active\">\n" : "<li>\n");
 									echo "<a href=\"riskadvice.php\">" . $escaper->escapeHtml($lang['RiskAdvice']) . "</a>\n";
@@ -3871,7 +3923,7 @@ function view_classic_help()
 									global $escaper;
                                     $asset_array = array();
                                     foreach($assets as $asset){
-                                        $asset_array[] = $escaper->escapeHtml($asset['name']);
+                                        $asset_array[] = remove_line_breaks($escaper->escapeHtml($asset['name']));
                                     }
 
 //                                    echo "<input id='risks_to_assets' value='". json_encode($asset_array) ."' >\n";
@@ -3919,7 +3971,15 @@ function view_classic_help()
 //                                                            echo "        this.value = terms.join( \", \" );\n";
 //                                                            echo "        return false;\n";
 															echo "      }\n";
-															echo "    });\n";
+															echo "    })\n";
+                                                            
+                                                            echo "    .focus(function(){\n";
+                                                            echo "          var self = \$(this);\n";
+                                                            echo "          window.setTimeout(function(){\n";
+                                                            echo "              self.autocomplete(\"search\", \"\");\n";
+                                                            echo "          }, 1000);\n";
+                                                            echo "    });\n";
+                                                            
 															echo "  });\n";
 								    echo "</script>\n";
 							    }
@@ -3939,49 +3999,60 @@ function display_asset_autocomplete_script($assets)
 		foreach ($assets as $asset)
 		{
 			// Display the asset name as an available asset
-			echo "      \"" . $escaper->escapeHtml($asset['name']) . "\",\n";
+			echo "      \"" . remove_line_breaks($escaper->escapeHtml($asset['name'])) . "\",\n";
 		}
 
 		echo "    ];\n";
 		echo "    split = function( val ) {\n";
-		echo "      return val.split( /,\s*/ );\n";
+		echo "          return val.split( /,\s*/ );\n";
 		echo "    }\n";
 		echo "    extractLast = function ( term ) {\n";
-			echo "      return split( term ).pop();\n";
-			echo "    }\n";
-			echo "    $( \"#assets\" )\n";
-			echo "      // don't navigate away from the field on tab when selecting an item\n";
-			echo "      .bind( \"keydown\", function( event ) {\n";
-				echo "        if ( event.keyCode === $.ui.keyCode.TAB && $( this ).autocomplete( \"instance\" ).menu.active ) {\n";
-					echo "          event.preventDefault();\n";
-					echo "        }\n";
-					echo "      })\n";
-					echo "      .autocomplete({\n";
-						echo "        minLength: 0,\n";
-						echo "        source: function( request, response ) {\n";
-							echo "        // delegate back to autocomplete, but extract the last term\n";
-							echo "        response( $.ui.autocomplete.filter(\n";
-							echo "        availableAssets, extractLast( request.term ) ) );\n";
-							echo "      },\n";
-							echo "      focus: function() {\n";
-								echo "        // prevent value inserted on focus\n";
-								echo "        return false;\n";
-								echo "      },\n";
-								echo "      select: function( event, ui ) {\n";
-									echo "        var terms = split( this.value );\n";
-									echo "        // remove the current input\n";
-									echo "        terms.pop();\n";
-									echo "        // add the selected item\n";
-									echo "        terms.push( ui.item.value );\n";
-									echo "        // add placeholder to get the comma-and-space at the end\n";
-									echo "        terms.push( \"\" );\n";
-									echo "        this.value = terms.join( \", \" );\n";
-									echo "        return false;\n";
-									echo "      }\n";
-									echo "    });\n";
-									echo "  });\n";
-									echo "</script>\n";
-								}
+		echo "          return split( term ).pop();\n";
+		echo "    }\n";
+		echo "    $( \"#assets, .assets\" )\n";
+		echo "      // don't navigate away from the field on tab when selecting an item\n";
+		echo "      .bind( \"keydown\", function( event ) {\n";
+			echo "        if ( event.keyCode === $.ui.keyCode.TAB && $( this ).autocomplete( \"instance\" ).menu.active ) {\n";
+				echo "          event.preventDefault();\n";
+				echo "        }\n";
+				echo "      })\n";
+		echo "      .autocomplete({\n";
+		    echo "          minLength: 0,\n";
+		    echo "          source: function( request, response ) {\n";
+			    echo "          // delegate back to autocomplete, but extract the last term\n";
+			    echo "          response( $.ui.autocomplete.filter(\n";
+			    echo "          availableAssets, extractLast( request.term ) ) );\n";
+			    echo "      },\n";
+			    echo "      focus: function() { \n";
+			    echo "          // prevent value inserted on focus\n";
+			    echo "          return false;\n";
+			    echo "      },\n";
+			    echo "      select: function( event, ui ) {\n";
+				    echo "        var terms = split( this.value );\n";
+				    echo "        // remove the current input\n";
+				    echo "        terms.pop();\n";
+				    echo "        // add the selected item\n";
+				    echo "        terms.push( ui.item.value );\n";
+				    echo "        // add placeholder to get the comma-and-space at the end\n";
+				    echo "        terms.push( \"\" );\n";
+                    echo "        terms = terms.reverse().filter(function (e, i, arr) {\n";
+                    echo "              return arr.indexOf(e, i+1) === -1;\n";
+                    echo "        }).reverse();\n";
+                    echo "        this.value = terms.join( \", \" );\n";
+				    echo "        return false;\n";
+			    echo "      }\n";
+			echo "    })\n";
+            echo "    .focus(function(){\n";
+            echo "          var self = \$(this);\n";
+            echo "          window.setTimeout(function(){\n";
+            echo "              self.autocomplete(\"search\", \"\");\n";
+            echo "          }, 1000);\n";
+            echo "    });\n";
+            
+		echo "  });\n";
+	echo "</script>\n";
+}
+
 
 /*********************************************
 * FUNCTION: DISPLAY REGISTRATION TABLE EDIT *
@@ -4369,12 +4440,6 @@ function risk_average_baseline_metric($time = "day", $title = ""){
     // Get the opened risks array by month
     $risk_scores = get_risks_score_averages($time);
     list($date) = array_keys($risk_scores);
-//        $open_count = $risk_scores_by_time[1];
-
-        // Get the closed risks array by month
-//        $closed_risks = get_closed_risks_array("day");
-//        $close_date = $closed_risks[0];
-//        $close_count = $closed_risks[1];
 
         // If the opened risks array is empty
         if (empty($risk_scores))
@@ -4437,6 +4502,99 @@ function risk_average_baseline_metric($time = "day", $title = ""){
         })
     ";
     echo "</script>\n";
+
+    
+}
+
+/******************************************
+ * FUNCTION: RISK FOR LIKELIHOOD AND IMPACT *
+ *****************************************/
+function report_likelihood_impact(){
+    global $lang;
+    global $escaper;
+
+    $chart = new Highchart();
+    $chart->includeExtraScripts();
+    $chart->title->text = "";
+    $chart->chart->renderTo = "likelihood_impact_chart";
+    $chart->chart->type = "scatter";
+    $chart->chart->zoomType = "none";
+    $chart->credits->enabled = false;
+
+    $chart->xAxis->title = array(
+        "text" => "Likelihood"
+    );
+    $chart->xAxis->tickInterval = 1;
+    $chart->xAxis->min = 0;
+    $chart->xAxis->max = 5;
+    $chart->xAxis->gridLineWidth = 1;
+
+    $chart->yAxis->title = array(
+        "text" => "Impact"
+    );
+    $chart->yAxis->tickInterval = 1;
+    $chart->yAxis->min = 0;
+    $chart->yAxis->max = 5;
+    $chart->legend->enabled = false;
+    $chart->plotOptions = array(
+        "scatter" => array(
+            "marker" => array(
+                "radius" => 5,
+                "states" => array(
+                    "hover" => array(
+                        'enabled'=> true,
+                        'lineColor'=> 'rgb(100, 100, 100)',
+                    )
+                ),
+            ),
+        )
+    );
+    
+    // Get classic risks
+    $risks = get_risks(10);
+    
+    $data = array();
+    foreach($risks as $risk){
+        $data[] = [
+            'x'         => intval($risk['CLASSIC_likelihood']), 
+            'y'         => intval($risk['CLASSIC_impact']), 
+            'marker'    => array(
+                'fillColor' => 'rgba(223, 83, 83)'
+            ), 
+            'risk_id'   => $escaper->escapeHtml(convert_id($risk['id'])),
+            'subject'   => $escaper->escapeHtml(strtoupper($risk['subject']))
+        ];
+    }
+
+    $chart->series = array(
+        array(
+//            'name' => "",
+            'color' => "rgba(223, 83, 83)",
+            'data' => $data,
+        )
+    );
+
+    $chart->printScripts();
+    echo "<div id=\"likelihood_impact_chart\" style=\"margin:auto;width:700px;height:700px \"></div>\n";
+    echo "<script type=\"text/javascript\">";
+    echo $chart->render("likelihood_impact_chart");
+
+    echo "
+        likelihood_impact_chart.update({
+            tooltip: {
+                headerFormat: '',
+                useHTML: true,
+                style: {pointerEvents: 'auto'},
+                formatter: function(){
+                    var point = this.point;
+                    return '<a href=\"". $_SESSION['base_url']."/management/view.php?id=' + point.risk_id + '\" ><b>'+point.subject+'</b></a><br> Impact: '+ point.y +', Likelihood: '+ point.x;
+                }
+            }
+        })
+    ";
+
+    echo "</script>\n";
+
 
     
 }

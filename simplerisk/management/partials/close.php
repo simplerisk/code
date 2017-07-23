@@ -33,11 +33,11 @@
     // Start the session
     session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 
-        if (!isset($_SESSION))
-        {
-        	session_name('SimpleRisk');
-        	session_start();
-        }
+    if (!isset($_SESSION))
+    {
+        session_name('SimpleRisk');
+        session_start();
+    }
 
     // Include the language file
     require_once(language_file());
@@ -70,28 +70,28 @@
     {
         if (isset($_GET['id']))
         {
-                // Test that the ID is a numeric value
-                $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
+            // Test that the ID is a numeric value
+            $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
         }
         else if (isset($_POST['id']))
         {
-                // Test that the ID is a numeric value
-                $id = (is_numeric($_POST['id']) ? (int)$_POST['id'] : 0);
+            // Test that the ID is a numeric value
+            $id = (is_numeric($_POST['id']) ? (int)$_POST['id'] : 0);
         }
 
         // If team separation is enabled
         if (team_separation_extra())
         {
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../../extras/separation/index.php'));
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../../extras/separation/index.php'));
 
-                // If the user should not have access to the risk
-                if (!extra_grant_access($_SESSION['uid'], $id))
-                {
-                        // Redirect back to the page the workflow started on
-                        header("Location: " . $_SESSION["workflow_start"]);
-                        exit(0);
-                }
+            // If the user should not have access to the risk
+            if (!extra_grant_access($_SESSION['uid'], $id))
+            {
+                // Redirect back to the page the workflow started on
+                header("Location: " . $_SESSION["workflow_start"]);
+                exit(0);
+            }
         }
 
         // Get the details of the risk
@@ -100,16 +100,23 @@
         // If the risk was found use the values for the risk
         if (count($risk) != 0)
         {
-                $status = $risk[0]['status'];
-                $subject = $risk[0]['subject'];
-                $calculated_risk = $risk[0]['calculated_risk'];
+            $status = $risk[0]['status'];
+            $subject = $risk[0]['subject'];
+            $calculated_risk = $risk[0]['calculated_risk'];
         }
         // If the risk was not found use null values
         else
         {
-                $status = "Risk ID Does Not Exist";
-                $subject = "N/A";
-                $calculated_risk = "0.0";
+            // If Risk ID exists.
+            if(check_risk_by_id($id)){
+                $status = $lang["RiskTeamPermission"];
+            }
+            // If Risk ID does not exist.
+            else{
+                $status = $lang["RiskIdDoesNotExist"];
+            }
+            $subject = "N/A";
+            $calculated_risk = "0.0";
         }
     }
 

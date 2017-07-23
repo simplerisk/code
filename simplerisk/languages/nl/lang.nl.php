@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Healthcheck',
     'RequirePasswordChangeOnLogin' => 'Wachtwoordwijziging op login vereist',
     'PasswordChangeRequired' => 'U moet uw wachtwoord voordat login wijzigen.',
+    'LikelihoodImpact' => 'Waarschijnlijkheid en de Impact',
+    'MitigationPercent' => 'Mitigatie procent',
+    'MitigationPermissionMessage' => 'U bent niet gemachtigd voor het plannen van beperkende factoren.  Elke beperkende factoren die u probeert te dienen worden niet opgenomen.  Neem contact op met een beheerder als u denkt dat u dit bericht bij vergissing hebt bereikt.',
+    'ResetCustomDisplaySettings' => 'Aangepaste weergave-instellingen resetten',
+    'CustomResetSuccessMessage' => 'De aangepaste beeldscherminstellingen met succes opnieuw is ingesteld',
+    'DefaultRiskScore' => 'Standaard risicoscore',
+    'AdditionalStakeholders' => 'Extra belanghebbenden',
+    'AllSkateholders' => 'Alle belanghebbenden',
+    'RiskIdDoesNotExist' => 'Risico-ID bestaat niet',
+    'RiskTeamPermission' => 'U bent geen lid van het team dat dit risico tot behoort',
     '' => '',
 );
 

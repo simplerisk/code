@@ -167,6 +167,7 @@ if (isset($_GET['id']))
     $source = $risk[0]['source'];
     $category = $risk[0]['category'];
     $team = $risk[0]['team'];
+    $additional_stakeholders = $risk[0]['additional_stakeholders'];
     $technology = $risk[0]['technology'];
     $owner = $risk[0]['owner'];
     $manager = $risk[0]['manager'];
@@ -225,7 +226,14 @@ if (isset($_GET['id']))
   else
   {
     $submitted_by = "";
-    $status = "Risk ID Does Not Exist";
+    // If Risk ID exists.
+    if(check_risk_by_id($id)){
+        $status = $lang["RiskTeamPermission"];
+    }
+    // If Risk ID does not exist.
+    else{
+        $status = $lang["RiskIdDoesNotExist"];
+    }
     $subject = "N/A";
     $reference_id = "N/A";
     $regulation = "";
@@ -234,6 +242,7 @@ if (isset($_GET['id']))
     $source = "";
     $category = "";
     $team = "";
+    $additional_stakeholders = "";
     $technology = "";
     $owner = "";
     $manager = "";
@@ -348,6 +357,7 @@ if (isset($_GET['id']))
     $security_requirements = $mitigation[0]['security_requirements'];
     $security_recommendations = $mitigation[0]['security_recommendations'];
     $planning_date = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
+    $mitigation_percent = isset($mitigation[0]['mitigation_percent']) ? $mitigation[0]['mitigation_percent'] : 0;
   }
   // Otherwise
   else
@@ -364,6 +374,7 @@ if (isset($_GET['id']))
     $security_requirements = "";
     $security_recommendations = "";
     $planning_date = "";
+    $mitigation_percent = 0;
   }
 
   // Get the management reviews for the risk
@@ -416,6 +427,7 @@ if (isset($_POST['update_details']))
     $source = (int)$_POST['source'];
     $category = (int)$_POST['category'];
     $team = (int)$_POST['team'];
+    $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
     $technology = (int)$_POST['technology'];
     $owner = (int)$_POST['owner'];
     $manager = (int)$_POST['manager'];
@@ -426,11 +438,6 @@ if (isset($_POST['update_details']))
     $tmp_s_date = date("Y-m-d H:i:s", strtotime($submission_date));
     // Update risk
     $error = update_risk($id);
-
-
-    
-    
-    
     
     // Classic Risk Scoring Inputs
     $scoring_method = (int)$_POST['scoring_method'];
@@ -526,8 +533,18 @@ if ((isset($_POST['edit_details'])) && ($_SESSION['modify_risks'] != 1))
   set_alert(true, "bad", "You do not have permission to modify risks.  Any risks that you attempt to modify will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
 }
 
+// Check if the user has access to plan mitigations
+if (!isset($_SESSION["plan_mitigations"]) || $_SESSION["plan_mitigations"] != 1)
+{
+  $plan_mitigations = false;
+
+  // Display an alert
+  set_alert(true, "bad", $lang['MitigationPermissionMessage']);
+}
+else $plan_mitigations = true;
+
 // Check if a mitigation was updated
-if (isset($_POST['update_mitigation']) && $access)
+if (isset($_POST['update_mitigation']) && $access && $plan_mitigations)
 {
   $planning_strategy = (int)$_POST['planning_strategy'];
   $mitigation_effort = (int)$_POST['mitigation_effort'];
@@ -604,52 +621,56 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
 <html>
 
 <head>
-  <script src="../js/jquery.min.js"></script>
-  <script src="../js/jquery-ui.min.js"></script>
-  <script src="../js/bootstrap.min.js"></script>
-  <script src="../js/cve_lookup.js"></script>
-  <script src="../js/basescript.js"></script>
-  <script src="../js/highcharts/code/highcharts.js"></script>
-  <script src="../js/common.js"></script>
-  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-  <link rel="stylesheet" href="../css/divshot-util.css">
-  <link rel="stylesheet" href="../css/divshot-canvas.css">
-  <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="../css/style.css">
-  <link rel="stylesheet" href="../css/theme.css">
+    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 
-  <script type="text/javascript">
-      function showScoreDetails() {
-        document.getElementById("scoredetails").style.display = "";
-        document.getElementById("hide").style.display = "block";
-        document.getElementById("show").style.display = "none";
-      }
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/jquery-ui.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/cve_lookup.js"></script>
+    <script src="../js/basescript.js"></script>
+    <script src="../js/highcharts/code/highcharts.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/bootstrap-multiselect.js"></script>
 
-      function hideScoreDetails() {
-        document.getElementById("scoredetails").style.display = "none";
-        document.getElementById("updatescore").style.display = "none";
-        document.getElementById("hide").style.display = "none";
-        document.getElementById("show").style.display = "";
-      }
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="../css/divshot-util.css">
+    <link rel="stylesheet" href="../css/divshot-canvas.css">
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
 
-      function updateScore() {
-        document.getElementById("scoredetails").style.display = "none";
-        document.getElementById("updatescore").style.display = "";
-        document.getElementById("show").style.display = "none";
-      }
+    <script type="text/javascript">
+        function showScoreDetails() {
+            document.getElementById("scoredetails").style.display = "";
+            document.getElementById("hide").style.display = "block";
+            document.getElementById("show").style.display = "none";
+        }
+
+        function hideScoreDetails() {
+            document.getElementById("scoredetails").style.display = "none";
+            document.getElementById("updatescore").style.display = "none";
+            document.getElementById("hide").style.display = "none";
+            document.getElementById("show").style.display = "";
+        }
+
+        function updateScore() {
+            document.getElementById("scoredetails").style.display = "none";
+            document.getElementById("updatescore").style.display = "";
+            document.getElementById("show").style.display = "none";
+        }
       
-  </script>
+    </script>
   <?php display_asset_autocomplete_script(get_entered_assets()); ?>
 </head>
 
 <body>
 
   <?php
-  view_top_menu("RiskManagement");
+    view_top_menu("RiskManagement");
 
   ?>
   <div class="tabs new-tabs">

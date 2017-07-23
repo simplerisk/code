@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Перевіркою справності',
     'RequirePasswordChangeOnLogin' => 'Вимагати змінення пароля на вхід',
     'PasswordChangeRequired' => 'Необхідно змінити пароль перед Логін.',
+    'LikelihoodImpact' => 'Вірогідність і вплив',
+    'MitigationPercent' => 'Пом\'якшення відсотків',
+    'MitigationPermissionMessage' => 'Ви не маєте дозволу планувати пом\'якшення.  Пом\'якшення, який ви намагаєтеся надіслати не записується.  Будь ласка, зверніться до адміністратора, якщо ви відчуваєте, що ви отримали це повідомлення помилково.',
+    'ResetCustomDisplaySettings' => 'Скинути настройки екранне',
+    'CustomResetSuccessMessage' => 'Настройки екранне був скинутий успішно',
+    'DefaultRiskScore' => 'Оцінка за замовчуванням ризику',
+    'AdditionalStakeholders' => 'Додаткові зацікавлених сторін',
+    'AllSkateholders' => 'Всіх зацікавлених сторін',
+    'RiskIdDoesNotExist' => 'Ризик ID не існує',
+    'RiskTeamPermission' => 'Ви не є членом команди, цей ризик належить',
     '' => '',
 );
 

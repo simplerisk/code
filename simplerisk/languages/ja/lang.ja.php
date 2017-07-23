@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => '健康チェック',
     'RequirePasswordChangeOnLogin' => 'ログイン時にパスワード変更が必要',
     'PasswordChangeRequired' => 'ログインする前にパスワードを変更する必要があります。',
+    'LikelihoodImpact' => '尤度と影響',
+    'MitigationPercent' => '軽減 %',
+    'MitigationPermissionMessage' => '軽減策を計画するアクセス許可がありません。 提出しようとする任意の緩和策は記録されません。 エラーでこのメッセージに達していることを感じる場合は、管理者にお問い合わせください。',
+    'ResetCustomDisplaySettings' => 'ディスプレイのカスタム設定をリセットします。',
+    'CustomResetSuccessMessage' => 'ディスプレイのカスタム設定は正常にリセットされました',
+    'DefaultRiskScore' => 'デフォルト リスク ・ スコア',
+    'AdditionalStakeholders' => '他の関係者',
+    'AllSkateholders' => 'すべてのステーク ホルダー',
+    'RiskIdDoesNotExist' => 'リスク ID は存在しません',
+    'RiskTeamPermission' => 'このリスクが属するチームのメンバーではないです。',
     '' => '',
 );
 

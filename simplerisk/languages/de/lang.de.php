@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => '"Gesundheitscheck"',
     'RequirePasswordChangeOnLogin' => 'Passwortänderung auf Login erfordern',
     'PasswordChangeRequired' => 'Sie müssen Ihr Kennwort vor dem Anmelden ändern.',
+    'LikelihoodImpact' => 'Wahrscheinlichkeit und Auswirkungen',
+    'MitigationPercent' => 'Schadensminderung Prozent',
+    'MitigationPermissionMessage' => 'Sie sind nicht berechtigt, schadensbegrenzende Maßnahmen zu planen.  Alle Schutzmaßnahmen, die Sie versuchen, senden werden nicht aufgezeichnet werden.  Kontaktieren Sie einen Administrator wenn Sie das Gefühl, dass Sie diese Nachricht irrtümlich erreicht haben.',
+    'ResetCustomDisplaySettings' => 'Benutzerdefinierte Einstellungen zurücksetzen',
+    'CustomResetSuccessMessage' => 'Ihre benutzerdefinierte Anzeigeeinstellungen wurde erfolgreich zurückgesetzt',
+    'DefaultRiskScore' => 'Standard-Risiko-Score',
+    'AdditionalStakeholders' => 'Weitere Akteure',
+    'AllSkateholders' => 'Alle Beteiligten',
+    'RiskIdDoesNotExist' => 'Risiko-ID ist nicht vorhanden',
+    'RiskTeamPermission' => 'Sie sind kein Mitglied des Teams, die dieses Risiko gehört',
     '' => '',
 );
 

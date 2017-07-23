@@ -68,6 +68,13 @@
 
         $enable_popup = (isset($_POST['enable_popup'])) ? 1 : 0;
         update_setting("enable_popup", $enable_popup);
+        $default_risk_score = $_POST['default_risk_score'];
+        if (!(($default_risk_score >= 0) && ($default_risk_score <= 10)))
+        {
+            // Set the custom value to 10
+            $default_risk_score = 10;
+        }
+        update_setting("default_risk_score", $default_risk_score);
     }
 ?>
 
@@ -111,6 +118,7 @@
                 <form name="settings" method="post" action="">
                     <br>
                     <p><input <?php if(get_setting('enable_popup') == 1){ echo "checked"; } ?> name="enable_popup" class="hidden-checkbox" size="2" value="90" id="enable_popup" type="checkbox">  <label for="enable_popup"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnablePopupWindowsForTextBoxes']); ?></label></p>
+                    <p><?php echo $escaper->escapeHtml($lang['DefaultRiskScore']) ?>:&nbsp;&nbsp; <input value="<?php echo (get_setting('default_risk_score') ? get_setting('default_risk_score') : 10); ?>" name="default_risk_score" id="default_risk_score" type="number" min="0" max="10">  </p>
                     <br>
                     <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_settings" />
 

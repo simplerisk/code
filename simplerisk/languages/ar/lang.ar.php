@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'التحقق من الصحة',
     'RequirePasswordChangeOnLogin' => 'يتطلب تغيير كلمة المرور في تسجيل الدخول',
     'PasswordChangeRequired' => 'كنت بحاجة لتغيير كلمة المرور قبل تسجيل الدخول.',
+    'LikelihoodImpact' => 'احتمال والأثر',
+    'MitigationPercent' => 'التخفيف من حدتها بالمئة',
+    'MitigationPermissionMessage' => 'ليس لديك الإذن لخطة عوامل تقليل الأمان الموجودة.  لن يتم تسجيل أي محاولة تقديم عوامل تقليل الأمان الموجودة.  الرجاء الاتصال بمسؤول إذا كنت تشعر بأنك وصلت إلى هذه الرسالة عن طريق الخطأ.',
+    'ResetCustomDisplaySettings' => 'إعادة تعيين إعدادات العرض المخصصة',
+    'CustomResetSuccessMessage' => 'تم إعادة تعيين إعدادات العرض المخصصة الخاصة بك بنجاح',
+    'DefaultRiskScore' => 'درجة المخاطر الافتراضية',
+    'AdditionalStakeholders' => 'إضافية من أصحاب المصلحة',
+    'AllSkateholders' => 'جميع أصحاب المصلحة',
+    'RiskIdDoesNotExist' => 'معرف الخطر غير موجود',
+    'RiskTeamPermission' => 'أنت لست عضوا في فريق ينتمي هذا الخطر إلى',
     '' => '',
 );
 

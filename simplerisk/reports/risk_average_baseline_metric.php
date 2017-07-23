@@ -96,7 +96,7 @@ $time = isset($_GET['time']) ? $_GET['time'] : "day";
             <div class="span9">
                 <div class="row-fluid">
                     <div class="span12">
-                        <form method="GET">
+                        <form method="GET" style="margin-bottom: 0px;">
                             <span >By &nbsp;</span>
                             <select name="time" onchange="submit()" class="form-field" style="width:auto;">
                                 <option <?php if($time == "day"){echo "selected";} ?> value="day"><?php echo $lang['Day'] ?></option>
@@ -106,7 +106,7 @@ $time = isset($_GET['time']) ? $_GET['time'] : "day";
                         </form>
                     </div>
                 </div>
-                <div style="margin-top: 14px;">
+                <div >
                     <?php risk_average_baseline_metric($time); ?>
                 </div>
             </div>

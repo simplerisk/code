@@ -228,7 +228,14 @@ if (isset($_GET['id']) || isset($_POST['id']))
   else
   {
     $submitted_by = "";
-    $status = "Risk ID Does Not Exist";
+    // If Risk ID exists.
+    if(check_risk_by_id($id)){
+        $status = $lang["RiskTeamPermission"];
+    }
+    // If Risk ID does not exist.
+    else{
+        $status = $lang["RiskIdDoesNotExist"];
+    }
     $subject = "N/A";
     $reference_id = "N/A";
     $regulation = "";
@@ -292,6 +299,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $security_recommendations = "";
     $mitigation_date = "N/A";
     $planning_date = "";
+    $mitigation_percent = 0;
   }
   // If a mitigation exists
   else
@@ -308,6 +316,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $security_requirements = $mitigation[0]['security_requirements'];
     $security_recommendations = $mitigation[0]['security_recommendations'];
     $planning_date = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
+    $mitigation_percent = isset($mitigation[0]['mitigation_percent']) ? $mitigation[0]['mitigation_percent'] : 0;
   }
 
   // Get the management reviews for the risk

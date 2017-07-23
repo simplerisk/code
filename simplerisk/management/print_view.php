@@ -1,99 +1,99 @@
 <?php
-        /* This Source Code Form is subject to the terms of the Mozilla Public
-         * License, v. 2.0. If a copy of the MPL was not distributed with this
-         * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+    /* This Source Code Form is subject to the terms of the Mozilla Public
+     * License, v. 2.0. If a copy of the MPL was not distributed with this
+     * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-        // Include required functions file
-        require_once(realpath(__DIR__ . '/../includes/functions.php'));
-        require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+    // Include required functions file
+    require_once(realpath(__DIR__ . '/../includes/functions.php'));
+    require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
 
 	// Include Zend Escaper for HTML Output Encoding
 	require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
 	$escaper = new Zend\Escaper\Escaper('utf-8');
 
-        // Add various security headers
-        header("X-Frame-Options: DENY");
-        header("X-XSS-Protection: 1; mode=block");
+    // Add various security headers
+    header("X-Frame-Options: DENY");
+    header("X-XSS-Protection: 1; mode=block");
 
-        // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-        if (CSP_ENABLED == "true")
-        {
-                // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-        }
+    // If we want to enable the Content Security Policy (CSP) - This may break Chrome
+    if (CSP_ENABLED == "true")
+    {
+        // Add the Content-Security-Policy header
+	    header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+    }
 
-        // Session handler is database
-        if (USE_DATABASE_FOR_SESSIONS == "true")
-        {
-		session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-        }
+    // Session handler is database
+    if (USE_DATABASE_FOR_SESSIONS == "true")
+    {
+	    session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+    }
 
-        // Start the session
+    // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 
-        if (!isset($_SESSION))
+    if (!isset($_SESSION))
+    {
+        session_name('SimpleRisk');
+        session_start();
+    }
+
+    // Include the language file
+    require_once(language_file());
+
+    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
+    // Check for session timeout or renegotiation
+    session_check();
+
+    // Check if access is authorized
+    if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
+    {
+        header("Location: ../index.php");
+        exit(0);
+    }
+
+    // Check if a risk ID was sent
+    if (isset($_GET['id']))
+    {
+        // Test that the ID is a numeric value
+        $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
+
+        // If team separation is enabled
+        if (team_separation_extra())
         {
-        	session_name('SimpleRisk');
-        	session_start();
-        }
-
-        // Include the language file
-        require_once(language_file());
-
-        require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-        // Check for session timeout or renegotiation
-        session_check();
-
-        // Check if access is authorized
-        if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-        {
-                header("Location: ../index.php");
-                exit(0);
-        }
-
-        // Check if a risk ID was sent
-        if (isset($_GET['id']))
-        {
-                // Test that the ID is a numeric value
-                $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
-
-        	// If team separation is enabled
-        	if (team_separation_extra())
-        	{
-                	//Include the team separation extra
-                	require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
 			// If the user should not have access to the risk
 			if (!extra_grant_access($_SESSION['uid'], $id))
 			{
-                                // Redirect back to the page the workflow started on
-                                header("Location: " . $_SESSION["workflow_start"]);
+                // Redirect back to the page the workflow started on
+                header("Location: " . $_SESSION["workflow_start"]);
 				exit(0);
 			}
-        	}
+        }
 
-                // Get the details of the risk
-                $risk = get_risk_by_id($id);
+        // Get the details of the risk
+        $risk = get_risk_by_id($id);
 
 		// If the risk was found use the values for the risk
 		if (count($risk) != 0)
 		{
-                	$status = $risk[0]['status'];
-                	$subject = $risk[0]['subject'];
+            $status = $risk[0]['status'];
+            $subject = $risk[0]['subject'];
 			$reference_id = $risk[0]['reference_id'];
 			$regulation = $risk[0]['regulation'];
 			$control_number = $risk[0]['control_number'];
 			$location = $risk[0]['location'];
 			$source = $risk[0]['source'];
-                	$category = $risk[0]['category'];
-                	$team = $risk[0]['team'];
-                	$technology = $risk[0]['technology'];
-                	$owner = $risk[0]['owner'];
-                	$manager = $risk[0]['manager'];
-                	$assessment = $risk[0]['assessment'];
-                	$notes = $risk[0]['notes'];
+            $category = $risk[0]['category'];
+            $team = $risk[0]['team'];
+            $technology = $risk[0]['technology'];
+            $owner = $risk[0]['owner'];
+            $manager = $risk[0]['manager'];
+            $assessment = $risk[0]['assessment'];
+            $notes = $risk[0]['notes'];
 			$submission_date = $risk[0]['submission_date'];
 			$mitigation_id = $risk[0]['mitigation_id'];
 			$mgmt_review = $risk[0]['mgmt_review'];
@@ -119,7 +119,7 @@
 			$ConfidentialityRequirement = $risk[0]['CVSS_ConfidentialityRequirement'];
 			$IntegrityRequirement = $risk[0]['CVSS_IntegrityRequirement'];
 			$AvailabilityRequirement = $risk[0]['CVSS_AvailabilityRequirement'];
-                	$DREADDamagePotential = $risk[0]['DREAD_DamagePotential'];
+            $DREADDamagePotential = $risk[0]['DREAD_DamagePotential'];
 			$DREADReproducibility = $risk[0]['DREAD_Reproducibility'];
 			$DREADExploitability = $risk[0]['DREAD_Exploitability'];
 			$DREADAffectedUsers = $risk[0]['DREAD_AffectedUsers'];
@@ -145,49 +145,56 @@
 		// If the risk was not found use null values
 		else
 		{
-                        $status = "Risk ID Does Not Exist";
-                        $subject = "N/A";
-                        $reference_id = "N/A";
+            // If Risk ID exists.
+            if(check_risk_by_id($id)){
+                $status = $lang["RiskTeamPermission"];
+            }
+            // If Risk ID does not exist.
+            else{
+                $status = $lang["RiskIdDoesNotExist"];
+            }
+			$subject = "N/A";
+			$reference_id = "N/A";
 			$regulation = "";
 			$control_number = "N/A";
-                        $location = "";
+			$location = "";
 			$source = "";
-                        $category = "";
-                        $team = "";
-                        $technology = "";
-                        $owner = "";
-                        $manager = "";
-                        $assessment = "";
-                        $notes = "";
-                        $submission_date = "";
-                        $mitigation_id = "";
-                        $mgmt_review = "";
-                        $calculated_risk = "0.0";
+            $category = "";
+            $team = "";
+            $technology = "";
+            $owner = "";
+            $manager = "";
+            $assessment = "";
+            $notes = "";
+            $submission_date = "";
+            $mitigation_id = "";
+            $mgmt_review = "";
+            $calculated_risk = "0.0";
 
-                        $scoring_method = "";
-                        $CLASSIC_likelihood = "";
-                        $CLASSIC_impact = "";
-                        $AccessVector = "";
-                        $AccessComplexity = "";
-                        $Authentication = "";
-                        $ConfImpact = "";
-                        $IntegImpact = "";
-                        $AvailImpact = "";
-                        $Exploitability = "";
-                        $RemediationLevel = "";
-                        $ReportConfidence = "";
-                        $CollateralDamagePotential = "";
-                        $TargetDistribution = "";
-                        $ConfidentialityRequirement = "";
-                        $IntegrityRequirement = "";
-                        $AvailabilityRequirement = "";
+            $scoring_method = "";
+            $CLASSIC_likelihood = "";
+            $CLASSIC_impact = "";
+            $AccessVector = "";
+            $AccessComplexity = "";
+            $Authentication = "";
+            $ConfImpact = "";
+            $IntegImpact = "";
+            $AvailImpact = "";
+            $Exploitability = "";
+            $RemediationLevel = "";
+            $ReportConfidence = "";
+            $CollateralDamagePotential = "";
+            $TargetDistribution = "";
+            $ConfidentialityRequirement = "";
+            $IntegrityRequirement = "";
+            $AvailabilityRequirement = "";
 		}
 
-                if ($submission_date == "")
-                {
-                        $submission_date = "N/A";
-                }
-                else $submission_date = date(DATETIME, strtotime($submission_date));
+        if ($submission_date == "")
+        {
+            $submission_date = "N/A";
+        }
+        else $submission_date = date(DATETIME, strtotime($submission_date));
 
 		// Get the mitigation for the risk
 		$mitigation = get_mitigation_by_id($id);
@@ -242,7 +249,7 @@
 			$reviewer = $mgmt_reviews[0]['reviewer'];
 			$comments = $mgmt_reviews[0]['comments'];
 		}
-        }
+    }
 ?>
 
 <!doctype html>

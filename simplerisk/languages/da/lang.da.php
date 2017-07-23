@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Sundhedstjek',
     'RequirePasswordChangeOnLogin' => 'Kræve ændring af adgangskode på login',
     'PasswordChangeRequired' => 'Du skal ændre din adgangskode, før login.',
+    'LikelihoodImpact' => 'Sandsynligheden for og virkningen',
+    'MitigationPercent' => 'Afbødning procent',
+    'MitigationPermissionMessage' => 'Du har ikke tilladelse til at planlægge afhjælpninger.  Enhver afhjælpninger, du forsøger at indsende vil ikke blive registreret.  Kontakt venligst Administrator hvis du føler at du har nået denne meddelelse ved en fejl.',
+    'ResetCustomDisplaySettings' => 'Nulstille brugerdefinerede skærmindstillinger',
+    'CustomResetSuccessMessage' => 'Din brugerdefinerede skærmindstillinger blev nulstillet',
+    'DefaultRiskScore' => 'Standard risikoscore',
+    'AdditionalStakeholders' => 'Yderligere interessenter',
+    'AllSkateholders' => 'Alle interessenter',
+    'RiskIdDoesNotExist' => 'Risiko-ID findes ikke',
+    'RiskTeamPermission' => 'Du er ikke medlem af holdet denne risiko tilhører',
     '' => '',
 );
 

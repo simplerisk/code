@@ -155,7 +155,8 @@
           "mitigation_team": "2",
           "current_solution": "Current solution",
           "security_requirements": "Requirements",
-          "security_recommendations": "Recommends"
+          "security_recommendations": "Recommends",
+          "mitigation_percent": "33"
         }';
         
         $results['response'] = '{

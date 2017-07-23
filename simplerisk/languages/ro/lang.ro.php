@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Stării de sănătate',
     'RequirePasswordChangeOnLogin' => 'Necesita schimbarea parolei pe login',
     'PasswordChangeRequired' => 'Aveţi nevoie pentru a schimba parola înainte de conectare.',
+    'LikelihoodImpact' => 'Probabilitate şi Impact',
+    'MitigationPercent' => 'Atenuare la sută',
+    'MitigationPermissionMessage' => 'Nu aveţi permisiunea de a planifica mitigations.  Orice mitigations care încerca să-şi prezinte nu vor fi înregistrate.  Vă rugăm să contactaţi un Administrator în cazul în care credeţi că aţi ajuns la acest mesaj de eroare.',
+    'ResetCustomDisplaySettings' => 'Reiniţializaţi setările de afişaj personalizate',
+    'CustomResetSuccessMessage' => 'Setările de afişaj personalizate a fost resetat cu succes',
+    'DefaultRiskScore' => 'Default Risk Score',
+    'AdditionalStakeholders' => 'Părţile interesate suplimentare',
+    'AllSkateholders' => 'Toate părţile interesate',
+    'RiskIdDoesNotExist' => 'Nu exista riscul ID',
+    'RiskTeamPermission' => 'Nu sunt un membru al echipei aparţine acest risc',
     '' => '',
 );
 

@@ -1549,7 +1549,7 @@ function get_review_needed_table()
 	{
 		// Create arrays for each value
 		$risk_id[$key] = (int)$row['id'];
-		$subject[$key] = try_decrypt($row['subject']);
+		$subject[$key] = $row['subject'];
         $status[$key] = $row['status'];
         $calculated_risk[$key] = $row['calculated_risk'];
         $color[$key] = get_risk_color($row['calculated_risk']);

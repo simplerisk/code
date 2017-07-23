@@ -163,6 +163,14 @@
 			set_alert(true, "bad", "You have entered your current password incorrectly.  Please try again.");
 		}
     }
+    
+    // Check if a reset_custom_display_setting button is clicked
+    if(isset($_POST['reset_custom_display_settings'])){
+        reset_custom_display_settings();
+        // Display an alert
+        set_alert(true, "good", $lang['CustomResetSuccessMessage']);
+        
+    }
 ?>
 
 <!doctype html>
@@ -219,20 +227,26 @@
                   <tr><td><?php echo $escaper->escapeHtml($lang['LastLogin']); ?>:&nbsp;</td><td><input style="cursor: default;" name="last_login" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($last_login); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($last_login); ?>" /></td></tr>
                   <tr><td><?php echo $escaper->escapeHtml($lang['Language']); ?>:&nbsp;</td><td><?php create_dropdown("languages", get_value_by_name("languages", $language)); ?><input type="submit" name="change_language" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" /></td></tr>
 
-		<?php
-			// If the API Extra is enabled
-			if (api_extra())
-			{
-				// Require the API Extra
-				require_once(realpath(__DIR__ . '/../extras/api/index.php'));
+		            <?php
+			            // If the API Extra is enabled
+			            if (api_extra())
+			            {
+				            // Require the API Extra
+				            require_once(realpath(__DIR__ . '/../extras/api/index.php'));
 
-				// Display the API Profile
-				display_api_profile();
-			}
-		?>
+				            // Display the API Profile
+				            display_api_profile();
+			            }
+		            ?>
 
                 </table>
                 </form>
+                <br>
+                <form action="" method="POST">
+                    <input name="reset_custom_display_settings" value="<?php echo $lang['ResetCustomDisplaySettings']; ?>" type="submit">
+                </form>
+                
+                
                 <h6><u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u></h6>
                 <?php create_multiple_dropdown("team", $teams); ?>
                 <h6><u><?php echo $escaper->escapeHtml($lang['UserResponsibilities']); ?></u></h6>

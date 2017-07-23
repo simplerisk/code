@@ -74,6 +74,7 @@ if (isset($_POST['subject']) && $_POST['subject'] == "")
   // Display an alert
   set_alert(true, "bad", "The subject of a risk cannot be empty.");
 }
+
 // Check if a new risk was submitted and the user has permissions to submit new risks
 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' && $submit_risks)
 {
@@ -92,6 +93,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   $assessment = $_POST['assessment'];
   $notes = $_POST['notes'];
   $assets = $_POST['assets'];
+  $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
 
   // Risk scoring method
   // 1 = Classic
@@ -150,7 +152,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   $custom = (float)$_POST['Custom'];
 
   // Submit risk and get back the id
-  $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+  $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders);
   
     // If the encryption extra is enabled, updates order_by_subject
     if (encryption_extra())
@@ -212,28 +214,30 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 <html>
 
     <head>
-      <script src="../js/jquery.min.js"></script>
-      <script src="../js/jquery-ui.min.js"></script>
-      <script src="../js/bootstrap.min.js"></script>
-      <script src="../js/cve_lookup.js"></script>
-      <script src="../js/basescript.js"></script>
-      <script src="../js/common.js"></script>
-      <script src="../js/pages/risk.js"></script>
-      <script src="../js/highcharts/code/highcharts.js"></script>
+        <script src="../js/jquery.min.js"></script>
+        <script src="../js/jquery-ui.min.js"></script>
+        <script src="../js/bootstrap.min.js"></script>
+        <script src="../js/cve_lookup.js"></script>
+        <script src="../js/basescript.js"></script>
+        <script src="../js/common.js"></script>
+        <script src="../js/pages/risk.js"></script>
+        <script src="../js/highcharts/code/highcharts.js"></script>
+        <script src="../js/bootstrap-multiselect.js"></script>
 
-      <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-      <link rel="stylesheet" href="../css/bootstrap.css">
-      <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-      <link rel="stylesheet" href="../css/divshot-util.css">
-      <link rel="stylesheet" href="../css/divshot-canvas.css">
-      <link rel="stylesheet" href="../css/style.css">
+        <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+        <link rel="stylesheet" href="../css/bootstrap.css">
+        <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+        <link rel="stylesheet" href="../css/divshot-util.css">
+        <link rel="stylesheet" href="../css/divshot-canvas.css">
+        <link rel="stylesheet" href="../css/style.css">
+        <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
 
-      <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
-      <link rel="stylesheet" href="../css/theme.css">
+        <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../css/theme.css">
 
-      <?php display_asset_autocomplete_script(get_entered_assets()); ?>
+        <?php display_asset_autocomplete_script(get_entered_assets()); ?>
     </head>
 
     <body>
@@ -306,78 +310,91 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                         return "Are you sure you want to procced without saving the risk?";
                     }
                 }
-
+                
                 var length = $('.tab-close').length;
                 if (length == 1){
                     $('.tab-show button').hide();
                 }
-                
 
                 $("div#tabs").tabs();
-            //    temp()
+            
                 $("div#add-tab").click(function() {
-                
+
                     $('.tab-show button').show();
                     var num_tabs = $("div.container-fluid div.new").length + 1;
                     var form = $('#tab-append-div').html();
 
                     $('.tab-show').removeClass('selected');
                     $("div.tab-append").prepend(
-                      "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span>New Risk ("+num_tabs+")</span></div>"
-                      +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
-                      +"<i class='fa fa-close'></i>"
-                      +"</button>"
-                      +"</div>"
+                        "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span>New Risk ("+num_tabs+")</span></div>"
+                        +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
+                        +"<i class='fa fa-close'></i>"
+                        +"</button>"
+                        +"</div>"
                     );
                     $('.tab-data').css({'display':'none'});
                     $("#tab-content-container").append(
-                      "<div class='tab-data' id='tab-container"+num_tabs+"'>"+form+"</div>"
+                        "<div class='tab-data' id='tab-container"+num_tabs+"'>"+form+"</div>"
                     );
-                    
+
                     focus_add_css_class("#AffectedAssetsTitle", "#assets", $("#tab-container" + num_tabs));
                     focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container" + num_tabs));
                     focus_add_css_class("#NotesTitle", "#notes", $("#tab-container" + num_tabs));
 
 
                     $("#tab-container"+num_tabs)
-                    .find('.file-uploader label').attr('for', 'file_upload'+num_tabs);
+                        .find('.file-uploader label').attr('for', 'file_upload'+num_tabs);
 
-                        $("#tab-container"+num_tabs)
-                          .find('.hidden-file-upload')
-                          .attr('id', 'file_upload'+num_tabs)
-                          .prev('label').attr('for', 'file_upload'+num_tabs);
+                    $("#tab-container"+num_tabs)
+                        .find('.hidden-file-upload')
+                        .attr('id', 'file_upload'+num_tabs)
+                        .prev('label').attr('for', 'file_upload'+num_tabs);
+                    
 
                     $( "#tab-container"+num_tabs +" .assets" )
-                      .bind( "keydown", function( event ) {
-                        if ( event.keyCode === $.ui.keyCode.TAB && $( this ).autocomplete( "instance" ).menu.active ) {
-                          event.preventDefault();
-                        }
-                      })
-                      .autocomplete({
+                        .bind( "keydown", function( event ) {
+                            if ( event.keyCode === $.ui.keyCode.TAB && $( this ).autocomplete( "instance" ).menu.active ) {
+                                event.preventDefault();
+                            }
+                        })
+                        .autocomplete({
                             minLength: 0,
                             source: function( request, response ) {
-                            // delegate back to autocomplete, but extract the last term
-                            response( $.ui.autocomplete.filter(
-                            availableAssets, extractLast( request.term ) ) );
-                          },
-                          focus: function() {
-                            // prevent value inserted on focus
-                            return false;
-                          },
-                          select: function( event, ui ) {
-                            var terms = split( this.value );
-                            // remove the current input
-                            terms.pop();
-                            // add the selected item
-                            terms.push( ui.item.value );
-                            // add placeholder to get the comma-and-space at the end
-                            terms.push( "" );
-                            this.value = terms.join( ", " );
-                            return false;
-                          }
-                      });
-              
-              });
+                                // delegate back to autocomplete, but extract the last term
+                                response( $.ui.autocomplete.filter(
+                                availableAssets, extractLast( request.term ) ) );
+                            },
+                            focus: function() {
+                                // prevent value inserted on focus
+                                return false;
+                            },
+                            select: function( event, ui ) {
+                                var terms = split( this.value );
+                                // remove the current input
+                                terms.pop();
+                                // add the selected item
+                                terms.push( ui.item.value );
+                                // add placeholder to get the comma-and-space at the end
+                                terms.push( "" );
+                                terms = terms.reverse().filter(function (e, i, arr) {
+                                    return arr.indexOf(e, i+1) === -1;
+                                }).reverse();
+
+                                this.value = terms.join( ", " );
+                                return false;
+                            }
+                        })
+                        .focus(function(){
+                            var self = $(this);
+                            window.setTimeout(function(){
+                                self.autocomplete("search", "");
+                            }, 1000)
+                        });
+                        
+                    // Add multiple selctets
+                    $('.multiselect', "#tab-container"+num_tabs).multiselect();
+
+                });
 
 
                 function sleep(ms) {
@@ -387,6 +404,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                 focus_add_css_class("#AffectedAssetsTitle", "#assets", $("#tab-container"));
                 focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container"));
                 focus_add_css_class("#NotesTitle", "#notes", $("#tab-container"));
+                
             });
 
         </script>

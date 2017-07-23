@@ -366,7 +366,7 @@ if (isset($_POST['delete_project']))
 
             <!-- <div class="status1">asdasdasdas</div> -->
 
-            <div id="tabs">
+            <div id="tabs" class="plan-projects">
 
               <div class="status-tabs">
 

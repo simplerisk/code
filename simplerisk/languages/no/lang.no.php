@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Kontroll av servertilstand',
     'RequirePasswordChangeOnLogin' => 'Kreve endring av passord ved pålogging',
     'PasswordChangeRequired' => 'Du må endre passordet før pålogging.',
+    'LikelihoodImpact' => 'Sannsynlighet og innflytelse',
+    'MitigationPercent' => 'Forminskingsmodulen prosent',
+    'MitigationPermissionMessage' => 'Du har ikke tillatelse til å planlegge begrensninger.  Eventuelle begrensninger du forsøker å sende vil ikke bli registrert.  Vennligst kontakt Administrator hvis du føler at du har fått denne meldingen ved en feil.',
+    'ResetCustomDisplaySettings' => 'Tilbakestille tilpassede skjerminnstillinger',
+    'CustomResetSuccessMessage' => 'Din tilpassede skjerminnstillinger ble tilbakestilt',
+    'DefaultRiskScore' => 'Standard risiko Score',
+    'AdditionalStakeholders' => 'Flere interessenter',
+    'AllSkateholders' => 'Alle interessenter',
+    'RiskIdDoesNotExist' => 'Risiko-ID finnes ikke',
+    'RiskTeamPermission' => 'Du er ikke medlem av laget denne risikoen tilhører',
     '' => '',
 );
 

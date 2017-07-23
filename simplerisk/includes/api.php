@@ -808,6 +808,7 @@ function getTabHtml($id, $template){
         $source = $risk[0]['source'];
         $category = $risk[0]['category'];
         $team = $risk[0]['team'];
+        $additional_stakeholders = $risk[0]['additional_stakeholders'];
         $technology = $risk[0]['technology'];
         $owner = $risk[0]['owner'];
         $manager = $risk[0]['manager'];
@@ -866,7 +867,14 @@ function getTabHtml($id, $template){
     else
     {
         $submitted_by = "";
-        $status = "Risk ID Does Not Exist";
+        // If Risk ID exists.
+        if(check_risk_by_id($id)){
+            $status = $lang["RiskTeamPermission"];
+        }
+        // If Risk ID does not exist.
+        else{
+            $status = $lang["RiskIdDoesNotExist"];
+        }
         $subject = "N/A";
         $reference_id = "N/A";
         $regulation = "";
@@ -978,33 +986,35 @@ function getTabHtml($id, $template){
     if ($mitigation == true && $access)
     {
         // Set the mitigation values
-        $mitigation_date = $mitigation[0]['submission_date'];
-        $mitigation_date = date("m/d/Y", strtotime($mitigation_date));
-        $planning_strategy = $mitigation[0]['planning_strategy'];
-        $mitigation_effort = $mitigation[0]['mitigation_effort'];
-        $mitigation_cost = $mitigation[0]['mitigation_cost'];
-        $mitigation_owner = $mitigation[0]['mitigation_owner'];
-        $mitigation_team = $mitigation[0]['mitigation_team'];
-        $current_solution = $mitigation[0]['current_solution'];
-        $security_requirements = $mitigation[0]['security_requirements'];
-        $security_recommendations = $mitigation[0]['security_recommendations'];
-        $planning_date = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
+        $mitigation_date    = $mitigation[0]['submission_date'];
+        $mitigation_date    = date("m/d/Y", strtotime($mitigation_date));
+        $planning_strategy  = $mitigation[0]['planning_strategy'];
+        $mitigation_effort  = $mitigation[0]['mitigation_effort'];
+        $mitigation_cost    = $mitigation[0]['mitigation_cost'];
+        $mitigation_owner   = $mitigation[0]['mitigation_owner'];
+        $mitigation_team    = $mitigation[0]['mitigation_team'];
+        $current_solution   = $mitigation[0]['current_solution'];
+        $security_requirements      = $mitigation[0]['security_requirements'];
+        $security_recommendations   = $mitigation[0]['security_recommendations'];
+        $planning_date      = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
+        $mitigation_percent = isset($mitigation[0]['mitigation_percent']) ? $mitigation[0]['mitigation_percent'] : 0;
     }
     // Otherwise
     else
     {
         // Set the values to empty
-        $mitigation_date = "N/A";
-        $mitigation_date = "";
-        $planning_strategy = "";
-        $mitigation_effort = "";
-        $mitigation_cost = 1;
-        $mitigation_owner = $owner;
-        $mitigation_team = $team;
-        $current_solution = "";
-        $security_requirements = "";
-        $security_recommendations = "";
-        $planning_date = "";
+        $mitigation_date    = "N/A";
+        $mitigation_date    = "";
+        $planning_strategy  = "";
+        $mitigation_effort  = "";
+        $mitigation_cost    = 1;
+        $mitigation_owner   = $owner;
+        $mitigation_team    = $team;
+        $current_solution   = "";
+        $security_requirements      = "";
+        $security_recommendations   = "";
+        $planning_date      = "";
+        $mitigation_percent = 0;
     }
 
     // Get the management reviews for the risk
@@ -1395,10 +1405,20 @@ function saveMitigationForm()
         json_response(400, get_alert(true), NULL);
     }
 
+    
     $id = $_GET['id'];
-
     $access = check_access_for_risk($id);
-    if(isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access){
+
+    // Check if the user has access to plan mitigations
+    if (!isset($_SESSION["plan_mitigations"]) || $_SESSION["plan_mitigations"] != 1)
+    {
+        $plan_mitigations = false;
+
+        $status = 400;
+        $status_message = $lang['MitigationPermissionMessage'];
+    }
+    // If user has permission for modifing risks.
+    elseif(isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access){
         $risk = get_risk_by_id($id);
         if (count($risk) != 0){
             $mitigation_id = $risk[0]['mitigation_id'];
@@ -1410,7 +1430,6 @@ function saveMitigationForm()
         if (!$mitigation_id)
         {
             $status = "Mitigation Planned";
-
             // Submit mitigation and get the mitigation date back
             $mitigation_date = submit_mitigation($id, $status, $_POST);
         }
@@ -1881,6 +1900,7 @@ function addRisk(){
         $assessment = get_param("POST", 'assessment');
         $notes = get_param("POST", 'notes');
         $assets = get_param("POST", 'assets');
+        $additional_stakeholders = implode(",", get_param("POST", 'additional_stakeholders'));
 
         // Risk scoring method
         // 1 = Classic
@@ -1939,7 +1959,7 @@ function addRisk(){
         $custom = (float)get_param("POST", 'Custom');
 
         // Submit risk and get back the id
-        $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+        $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders);
         
         // If the encryption extra is enabled, updates order_by_subject
         if (encryption_extra())
@@ -1985,7 +2005,7 @@ function addRisk(){
  ****************************************************************/
 function saveMitigation(){
     global $lang, $escaper;
-    
+
     $data = array();
     if (!isset($_POST['id']))
     {
@@ -1997,6 +2017,7 @@ function saveMitigation(){
     $id = get_param("POST", "id");
 
     $risk = get_risk_by_id($id);
+
     // If the risk doesn't exist, return;
     if(count($risk) == 0){
         $status = 400;
@@ -2005,21 +2026,30 @@ function saveMitigation(){
     }
     
     $access = check_access_for_risk($id);
+
+    // Check if the user has access to plan mitigations
+    if (!isset($_SESSION["plan_mitigations"]) || $_SESSION["plan_mitigations"] != 1)
+    {
+        $plan_mitigations = false;
+
+        $status = 400;
+        $status_message = $lang['MitigationPermissionMessage'];
+    }
     // If user has permission for modifing risks.
-    if(isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access){
+    elseif(isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access){
         $mitigation_id = $risk[0]['mitigation_id'];
-        
         // Submit mitigation and get the mitigation date back
         $post = array(
-            'planning_strategy' => get_param("POST", "planning_strategy", 0),
-            'mitigation_effort' => get_param("POST", "mitigation_effort", 0),
-            'mitigation_cost' => get_param("POST", "mitigation_cost", 0),
-            'mitigation_owner' => get_param("POST", "mitigation_owner", 0),
-            'mitigation_team' => get_param("POST", "mitigation_team", 0),
-            'current_solution' => get_param("POST", "current_solution"),
-            'security_requirements' => get_param("POST", "security_requirements"),
-            'security_recommendations' => get_param("POST", "security_recommendations"),
-            'planning_date' => get_param("POST", "planning_strategy"),
+            'planning_strategy'         => get_param("POST", "planning_strategy", 0),
+            'mitigation_effort'         => get_param("POST", "mitigation_effort", 0),
+            'mitigation_cost'           => get_param("POST", "mitigation_cost", 0),
+            'mitigation_owner'          => get_param("POST", "mitigation_owner", 0),
+            'mitigation_team'           => get_param("POST", "mitigation_team", 0),
+            'current_solution'          => get_param("POST", "current_solution"),
+            'security_requirements'     => get_param("POST", "security_requirements"),
+            'security_recommendations'  => get_param("POST", "security_recommendations"),
+            'planning_date'             => get_param("POST", "planning_date"),
+            'mitigation_percent'        => get_param("POST", "mitigation_percent"),
         );
 
         // If we don't yet have a mitigation
@@ -2131,7 +2161,7 @@ function saveReview(){
 }
 
 /*****************************************************************
- * FUNCTION: GET RSIK LEVELS*
+ * FUNCTION: GET RSIK LEVELS *
  ****************************************************************/
 function risk_levels(){
     global $lang;
@@ -2153,6 +2183,14 @@ function risk_levels(){
     $status_message = $lang['Success'];
     
     return json_response($status, $status_message, $data);
+}
+
+/*****************************************************************
+ * FUNCTION: SET CUSTOM DISPLAY COLUMNS *
+ ****************************************************************/
+function setCustomDisplay(){
+    $_SESSION['custom_display_settings'] = isset($_POST['columns']) ? $_POST['columns'] : array();
+    save_custom_display_settings();
 }
  
 ?>

@@ -575,6 +575,16 @@ $lang = array(
     'HealthCheck' => 'Chequeo de salud',
     'RequirePasswordChangeOnLogin' => 'Requieren cambio de contraseña de inicio de sesión',
     'PasswordChangeRequired' => 'Necesita cambiar su contraseña antes de inicio de sesión.',
+    'LikelihoodImpact' => 'Probabilidad y el impacto',
+    'MitigationPercent' => 'Por ciento de mitigación',
+    'MitigationPermissionMessage' => 'No tienes permiso para plan de mitigaciones.  No se grabará ningún mitigaciones que se intentan presentar.  Póngase en contacto con un administrador si usted siente que ha llegado este mensaje de error.',
+    'ResetCustomDisplaySettings' => 'Restablecer la configuración de presentación personalizada',
+    'CustomResetSuccessMessage' => 'La configuración de presentación personalizada se restableció con éxito',
+    'DefaultRiskScore' => 'Puntuación de riesgo de default',
+    'AdditionalStakeholders' => 'Actores adicionales',
+    'AllSkateholders' => 'Todas las partes interesadas',
+    'RiskIdDoesNotExist' => 'Identificación del riesgo no existe',
+    'RiskTeamPermission' => 'No es un miembro del equipo a que este riesgo pertenece',
     '' => '',
 );
 
