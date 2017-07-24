@@ -1619,6 +1619,9 @@ function upgrade_from_20170614001($db){
 	$stmt = $db->prepare("INSERT IGNORE INTO `settings` (`name` ,`value`) VALUES ('NOTIFY_ADDITIONAL_STAKEHOLDERS', 'true');");
 	$stmt->execute();
 
+	// Set default checked values for Dynamic Risk Report
+	update user set custom_display_settings='["id","subject","calculated_risk","submission_date","mitigation_planned","management_review"]';
+
 	// Update the database version
 	update_database_version($db, $version_to_upgrade, $version_upgrading_to);
 	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
