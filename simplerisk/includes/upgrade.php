@@ -1583,7 +1583,7 @@ function upgrade_from_20170416001($db){
 }
 
 /***************************************
- * FUNCTION: UPGRADE FROM 20170416-001 *
+ * FUNCTION: UPGRADE FROM 20170614-001 *
  ***************************************/
 function upgrade_from_20170614001($db){
         // Database version to upgrade
@@ -1625,6 +1625,26 @@ function upgrade_from_20170614001($db){
 	// Update the database version
 	update_database_version($db, $version_to_upgrade, $version_upgrading_to);
 	echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20170723-001 *
+ ***************************************/
+function upgrade_from_20170723001($db){
+        // Database version to upgrade
+        $version_to_upgrade = '20170723-001';
+
+        // Database version upgrading to
+        $version_upgrading_to = '20170724-001';
+
+        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+        // Set default checked values for Dynamic Risk Report
+        update user set custom_display_settings='["id","subject","calculated_risk","submission_date","mitigation_planned","management_review"]';
+
+        // Update the database version
+        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /******************************
@@ -1743,6 +1763,10 @@ function upgrade_database()
 				break;
 			case "20170614-001":
 				upgrade_from_20170614001($db);
+				upgrade_database();
+				break;
+			case "20170723-001":
+				upgrade_from_20170723001($db);
 				upgrade_database();
 				break;
 			default:
