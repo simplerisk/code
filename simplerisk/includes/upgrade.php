@@ -1619,8 +1619,10 @@ function upgrade_from_20170614001($db){
 	$stmt = $db->prepare("INSERT IGNORE INTO `settings` (`name` ,`value`) VALUES ('NOTIFY_ADDITIONAL_STAKEHOLDERS', 'true');");
 	$stmt->execute();
 
-	// Set default checked values for Dynamic Risk Report
-	update user set custom_display_settings='["id","subject","calculated_risk","submission_date","mitigation_planned","management_review"]';
+        // Set default checked values for Dynamic Risk Report
+        echo "Setting default checked values for Dynamic Risk Report.<br />\n";
+        $stmt = $db->prepare("update user set custom_display_settings='[\"id\",\"subject\",\"calculated_risk\",\"submission_date\",\"mitigation_planned\",\"management_review\"]';");
+        $stmt->execute();
 
 	// Update the database version
 	update_database_version($db, $version_to_upgrade, $version_upgrading_to);
@@ -1640,7 +1642,9 @@ function upgrade_from_20170723001($db){
         echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
         // Set default checked values for Dynamic Risk Report
-        update user set custom_display_settings='["id","subject","calculated_risk","submission_date","mitigation_planned","management_review"]';
+        echo "Setting default checked values for Dynamic Risk Report.<br />\n";
+        $stmt = $db->prepare("update user set custom_display_settings='[\"id\",\"subject\",\"calculated_risk\",\"submission_date\",\"mitigation_planned\",\"management_review\"]';");
+        $stmt->execute();
 
         // Update the database version
         update_database_version($db, $version_to_upgrade, $version_upgrading_to);
