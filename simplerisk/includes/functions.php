@@ -8143,7 +8143,7 @@ function write_debug_log($value)
 function add_registration($name, $company, $title, $phone, $email)
 {
 	// Create the SimpleRisk instance ID if it doesn't already exist
-	create_simplerisk_instance_id();
+	$instance_id = create_simplerisk_instance_id();
 
 	// Create the data to send
 	$data = array(
@@ -9149,7 +9149,10 @@ function create_simplerisk_instance_id()
 
         // Close the database connection
         db_close($db);
+
+	return $instance_id;
     }
+    else return $instance_id;
 }
 
 /*******************************************
