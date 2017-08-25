@@ -88,12 +88,24 @@ function download_extra($name)
 	$result = simplerisk_service_call($data);
 	
 	// Write the extra to a file in the temporary directory
-	$extra_file = sys_get_temp_dir() . '/' . $name . '.tgz';
+	$extra_file = sys_get_temp_dir() . '/' . $name . '.tar.gz';
 	$result = file_put_contents($extra_file, $result);
 
+	// Decompress the extra file
+	$buffer_size = 4096;
+	$out_file_name = str_replace('.gz', '', $extra_file);
+	$file = gzopen($extra_file, 'rb');
+	$out_file = fopen($out_file_name, 'wb');
+	while (!gzeof($file))
+	{
+		fwrite($out_file, gzread($file, $buffer_size));
+	}
+	flose($out_file);
+	gzclose($file);
+
 	// Decompress from gz
-        $p = new PharData($extra_file);
-        $p->decompress();
+        //$p = new PharData($extra_file);
+        //$p->decompress();
 
         // Extract the tar to the tmp directory
         $phar = new PharData(sys_get_temp_dir() . '/' . $name . ".tar");
@@ -105,7 +117,7 @@ function download_extra($name)
 	recurse_copy($source, $destination);
 
 	// Clean up files
-	unlink(sys_get_temp_dir() . '/' . $name . '.tgz');
+	unlink(sys_get_temp_dir() . '/' . $name . '.tar.gz');
         unlink(sys_get_temp_dir() . '/' . $name . ".tar");
         delete_dir($source);
 
