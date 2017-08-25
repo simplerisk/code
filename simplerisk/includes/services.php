@@ -100,7 +100,7 @@ function download_extra($name)
 	{
 		fwrite($out_file, gzread($file, $buffer_size));
 	}
-	flose($out_file);
+	fclose($out_file);
 	gzclose($file);
 
 	// Decompress from gz
