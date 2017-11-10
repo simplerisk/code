@@ -1915,7 +1915,7 @@ function edit_custom_score($custom)
 
 	echo "<tr>\n";
 	echo "<td width=\"165\" height=\"10\">" . $escaper->escapeHtml($lang['ManuallyEnteredValue']) . ":</td>\n";
-	echo "<td width=\"60\"><input type=\"number\" name=\"Custom\" id=\"Custom\" style=\"width:30px;\" value=\"" . $escaper->escapeHtml($custom) . "\"></td>\n";
+	echo "<td width=\"60\"><input type=\"number\" min='0' max='10' name=\"Custom\" id=\"Custom\" style=\"width:30px;\" value=\"" . $escaper->escapeHtml($custom) . "\" step='0.1' /></td>\n";
 	echo "<td>(Must be a numeric value between 0 and 10)</td>\n";
 	echo "</tr>\n";
 
