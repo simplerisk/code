@@ -90,6 +90,9 @@ if (isset($_POST['delete']))
   <script src="../js/jquery.min.js"></script>
   <script src="../js/jquery-ui.min.js"></script>
   <script src="../js/bootstrap.min.js"></script>
+  <script src="../js/pages/assessment.js"></script>
+  <script src="../js/common.js"></script>
+  <script src="../js/cve_lookup.js"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">

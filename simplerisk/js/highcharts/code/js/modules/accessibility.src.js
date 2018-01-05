@@ -1,12 +1,13 @@
 /**
- * @license Highcharts JS v5.0.6 (2016-12-07)
+ * @license Highcharts JS v5.0.13 (2017-07-27)
  * Accessibility module
  *
- * (c) 2010-2016 Highsoft AS
+ * (c) 2010-2017 Highsoft AS
  * Author: Oystein Moseng
  *
  * License: www.highcharts.com/license
  */
+'use strict';
 (function(factory) {
     if (typeof module === 'object' && module.exports) {
         module.exports = factory;
@@ -18,12 +19,11 @@
         /**
          * Accessibility module
          *
-         * (c) 2010-2016 Highsoft AS
+         * (c) 2010-2017 Highsoft AS
          * Author: Oystein Moseng
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
 
         var win = H.win,
             doc = win.document,
@@ -71,22 +71,239 @@
                 funnel: ' Funnel charts are used to display reduction of data in stages. ',
                 pyramid: ' Pyramid charts consist of a single pyramid with item heights corresponding to each point value. ',
                 waterfall: ' A waterfall chart is a column chart where each column contributes towards a total end value. '
-            },
-            commonKeys = ['name', 'id', 'category', 'x', 'value', 'y'],
-            specialKeys = ['z', 'open', 'high', 'q3', 'median', 'q1', 'low', 'close']; // Tell user about all properties if points have one of these defined
+            };
 
-        // Default a11y options
+        // If a point has one of the special keys defined, we expose all keys to the
+        // screen reader.
+        H.Series.prototype.commonKeys = ['name', 'id', 'category', 'x', 'value', 'y'];
+        H.Series.prototype.specialKeys = [
+            'z', 'open', 'high', 'q3', 'median', 'q1', 'low', 'close'
+        ];
+
+        // A pie is always simple. Don't quote me on that.
+        if (H.seriesTypes.pie) {
+            H.seriesTypes.pie.prototype.specialKeys = [];
+        }
+
+
+        /**
+         * Accessibility options
+         * @type {Object}
+         * @optionparent
+         */
         H.setOptions({
+
+            /**
+             * Options for configuring accessibility for the chart. Requires the
+             * [accessibility module](//code.highcharts.com/modules/accessibility.
+             * js) to be loaded. For a description of the module and information
+             * on its features, see [Highcharts Accessibility](http://www.highcharts.
+             * com/docs/chart-concepts/accessibility).
+             * 
+             * @since 5.0.0
+             * @product highcharts highstock highmaps
+             */
             accessibility: {
+
+                /**
+                 * Enable accessibility features for the chart.
+                 * 
+                 * @type {Boolean}
+                 * @default true
+                 * @since 5.0.0
+                 * @product highcharts highstock highmaps
+                 */
                 enabled: true,
+
+                /**
+                 * When a series contains more points than this, we no longer expose
+                 * information about individual points to screen readers.
+                 * 
+                 * Set to `false` to disable.
+                 * 
+                 * @type {Number|Boolean}
+                 * @default 30
+                 * @since 5.0.0
+                 * @product highcharts highstock highmaps
+                 */
                 pointDescriptionThreshold: 30, // set to false to disable
+
+                /**
+                 * Options for keyboard navigation.
+                 * 
+                 * @type {Object}
+                 * @since 5.0.0
+                 * @product highcharts highstock highmaps
+                 */
                 keyboardNavigation: {
-                    enabled: true
-                        //	skipNullPoints: false
+
+                    /**
+                     * Enable keyboard navigation for the chart.
+                     * 
+                     * @type {Boolean}
+                     * @default true
+                     * @since 5.0.0
+                     */
+                    enabled: true,
+
+                    /**
+                     * Enable tab navigation for points. Without this, only arrow keys
+                     * can be used to navigate between points.
+                     * 
+                     * @type {Boolean}
+                     * @default {all} true
+                     * @since next
+                     */
+                    tabThroughPoints: true
+
+                    /**
+                     * Skip null points when navigating through points with the
+                     * keyboard.
+                     * 
+                     * @type {Boolean}
+                     * @default false
+                     * @since 5.0.0
+                     * @apioption accessibility.keyboardNavigation.skipNullPoints
+                     */
                 }
-                // describeSingleSeries: false
+
+                /**
+                 * Whether or not to add series descriptions to charts with a single
+                 * series.
+                 * 
+                 * @type {Boolean}
+                 * @default false
+                 * @since 5.0.0
+                 * @product highcharts highstock highmaps
+                 * @apioption accessibility.describeSingleSeries
+                 */
+
+                /**
+                 * Function to run upon clicking the "View as Data Table" link in the
+                 * screen reader region.
+                 * 
+                 * By default Highcharts will insert and set focus to a data table
+                 * representation of the chart.
+                 * 
+                 * @type {Function}
+                 * @since 5.0.0
+                 * @apioption accessibility.onTableAnchorClick
+                 */
+
+                /**
+                 * Date format to use for points on datetime axes when describing them
+                 * to screen reader users.
+                 * 
+                 * Defaults to the same format as in tooltip.
+                 * 
+                 * For an overview of the replacement codes, see [dateFormat](
+                 * #Highcharts.dateFormat).
+                 * 
+                 * @type {String}
+                 * @see [pointDateFormatter](#accessibility.pointDateFormatter)
+                 * @since 5.0.0
+                 * @apioption accessibility.pointDateFormat
+                 */
+
+                /**
+                 * Formatter function to determine the date/time format used with points
+                 * on datetime axes when describing them to screen reader users. Receives
+                 * one argument, `point`, referring to the point to describe. Should
+                 * return a date format string compatible with [dateFormat](#Highcharts.
+                 * dateFormat).
+                 * 
+                 * @type {Function}
+                 * @see [pointDateFormat](#accessibility.pointDateFormat)
+                 * @since 5.0.0
+                 * @apioption accessibility.pointDateFormatter
+                 */
+
+                /**
+                 * Formatter function to use instead of the default for point descriptions.
+                 * Receives one argument, `point`, referring to the point to describe.
+                 * Should return a String with the description of the point for a screen
+                 * reader user.
+                 * 
+                 * @type {Function}
+                 * @see [point.description](#series<line>.data.description)
+                 * @since 5.0.0
+                 * @apioption accessibility.pointDescriptionFormatter
+                 */
+
+                /**
+                 * A formatter function to create the HTML contents of the hidden screen
+                 * reader information region. Receives one argument, `chart`, referring
+                 * to the chart object. Should return a String with the HTML content
+                 * of the region.
+                 * 
+                 * The link to view the chart as a data table will be added automatically
+                 * after the custom HTML content.
+                 * 
+                 * @type {Function}
+                 * @default undefined
+                 * @since 5.0.0
+                 * @apioption accessibility.screenReaderSectionFormatter
+                 */
+
+                /**
+                 * Formatter function to use instead of the default for series descriptions.
+                 * Receives one argument, `series`, referring to the series to describe.
+                 * Should return a String with the description of the series for a
+                 * screen reader user.
+                 * 
+                 * @type {Function}
+                 * @see [series.description](#plotOptions.series.description)
+                 * @since 5.0.0
+                 * @apioption accessibility.seriesDescriptionFormatter
+                 */
             }
         });
+
+        /**
+         * A text description of the chart.
+         * 
+         * If the Accessibility module is loaded, this is included by default
+         * as a long description of the chart and its contents in the hidden
+         * screen reader information region.
+         * 
+         * @type {String}
+         * @see [typeDescription](#chart.typeDescription)
+         * @default undefined
+         * @since 5.0.0
+         * @apioption chart.description
+         */
+
+        /**
+         * A text description of the chart type.
+         * 
+         * If the Accessibility module is loaded, this will be included in the
+         * description of the chart in the screen reader information region.
+         * 
+         * 
+         * Highcharts will by default attempt to guess the chart type, but for
+         * more complex charts it is recommended to specify this property for
+         * clarity.
+         * 
+         * @type {String}
+         * @default undefined
+         * @since 5.0.0
+         * @apioption chart.typeDescription
+         */
+
+        /**
+         * HTML encode some characters vulnerable for XSS.
+         * @param  {string} html The input string
+         * @return {string} The excaped string
+         */
+        function htmlencode(html) {
+            return html
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#x27;')
+                .replace(/\//g, '&#x2F;');
+        }
 
         // Utility function. Reverses child nodes of a DOM element
         function reverseChildNodes(node) {
@@ -99,7 +316,7 @@
         // Utility function to attempt to fake a click event on an element
         function fakeClickEvent(element) {
             var fakeEvent;
-            if (element && element.onclick) {
+            if (element && element.onclick && doc.createEvent) {
                 fakeEvent = doc.createEvent('Events');
                 fakeEvent.initEvent('click', true, false);
                 element.onclick(fakeEvent);
@@ -132,14 +349,21 @@
                         if (point.graphic) {
                             point.graphic.element.setAttribute('role', 'img');
                             point.graphic.element.setAttribute('tabindex', '-1');
-                            point.graphic.element.setAttribute('aria-label', a11yOptions.pointDescriptionFormatter && a11yOptions.pointDescriptionFormatter(point) ||
+                            point.graphic.element.setAttribute('aria-label',
+                                point.series.options.pointDescriptionFormatter &&
+                                point.series.options.pointDescriptionFormatter(point) ||
+                                a11yOptions.pointDescriptionFormatter &&
+                                a11yOptions.pointDescriptionFormatter(point) ||
                                 point.buildPointInfoString());
                         }
                     });
                 }
                 // Make series element accessible
                 if (this.chart.series.length > 1 || a11yOptions.describeSingleSeries) {
-                    seriesEl.setAttribute('role', 'region');
+                    seriesEl.setAttribute(
+                        'role',
+                        this.options.exposeElementToA11y ? 'img' : 'region'
+                    );
                     seriesEl.setAttribute('tabindex', '-1');
                     seriesEl.setAttribute('aria-label', a11yOptions.seriesDescriptionFormatter && a11yOptions.seriesDescriptionFormatter(this) ||
                         this.buildSeriesInfoString());
@@ -149,7 +373,7 @@
 
         // Return string with information about series
         H.Series.prototype.buildSeriesInfoString = function() {
-            var typeInfo = typeToSeriesMap[this.type] || typeToSeriesMap.default,
+            var typeInfo = typeToSeriesMap[this.type] || typeToSeriesMap['default'], // eslint-disable-line dot-notation
                 description = this.description || this.options.description;
             return (this.name ? this.name + ', ' : '') +
                 (this.chart.types.length === 1 ? typeInfo[0] : 'series') + ' ' + (this.index + 1) + ' of ' + (this.chart.series.length) +
@@ -166,25 +390,21 @@
                 series = point.series,
                 a11yOptions = series.chart.options.accessibility,
                 infoString = '',
-                hasSpecialKey = false,
                 dateTimePoint = series.xAxis && series.xAxis.isDatetimeAxis,
                 timeDesc = dateTimePoint && dateFormat(a11yOptions.pointDateFormatter && a11yOptions.pointDateFormatter(point) || a11yOptions.pointDateFormat ||
-                    H.Tooltip.prototype.getXDateFormat(point, series.chart.options.tooltip, series.xAxis), point.x);
-
-            each(specialKeys, function(key) {
-                if (point[key] !== undefined) {
-                    hasSpecialKey = true;
-                }
-            });
+                    H.Tooltip.prototype.getXDateFormat(point, series.chart.options.tooltip, series.xAxis), point.x),
+                hasSpecialKey = H.find(series.specialKeys, function(key) {
+                    return point[key] !== undefined;
+                });
 
             // If the point has one of the less common properties defined, display all that are defined
             if (hasSpecialKey) {
                 if (dateTimePoint) {
                     infoString = timeDesc;
                 }
-                each(commonKeys.concat(specialKeys), function(key) {
+                each(series.commonKeys.concat(series.specialKeys), function(key) {
                     if (point[key] !== undefined && !(dateTimePoint && key === 'x')) {
-                        infoString += (infoString ? '. ' : '') + key + ', ' + this[key];
+                        infoString += (infoString ? '. ' : '') + key + ', ' + point[key];
                     }
                 });
             } else {
@@ -326,9 +546,14 @@
             }
             if (!this.isNull) {
                 this.onMouseOver(); // Show the hover marker
-                chart.tooltip.refresh(chart.tooltip.shared ? [this] : this); // Show the tooltip
+                // Show the tooltip
+                if (chart.tooltip) {
+                    chart.tooltip.refresh(chart.tooltip.shared ? [this] : this);
+                }
             } else {
-                chart.tooltip.hide(0);
+                if (chart.tooltip) {
+                    chart.tooltip.hide(0);
+                }
                 // Don't call blur on the element, as it messes up the chart div's focus
             }
             chart.highlightedPoint = this;
@@ -336,48 +561,71 @@
         };
 
         // Function to highlight next/previous point in chart
-        // Returns highlighted point on success, false on failure (no adjacent point to highlight in chosen direction)
+        // Returns highlighted point on success, false on failure (no adjacent point to
+        // highlight in chosen direction)
         H.Chart.prototype.highlightAdjacentPoint = function(next) {
-            var series = this.series,
-                curPoint = this.highlightedPoint,
+            var chart = this,
+                series = chart.series,
+                curPoint = chart.highlightedPoint,
                 curPointIndex = curPoint && curPoint.index || 0,
+                curPoints = curPoint && curPoint.series.points,
+                lastSeries = chart.series && chart.series[chart.series.length - 1],
+                lastPoint = lastSeries && lastSeries.points &&
+                lastSeries.points[lastSeries.points.length - 1],
                 newSeries,
-                newPoint;
+                newPoint,
+                isSkipPoint = function(point) {
+                    return point.isNull &&
+                        chart.options.accessibility.keyboardNavigation.skipNullPoints ||
+                        point.series.options.skipKeyboardNavigation ||
+                        !point.series.visible;
+                },
+                // Handle connecting ends - where the points array has an extra last
+                // point that is a reference to the first one. We skip this.
+                forwardSkipAmount = curPoint && curPoint.series.connectEnds &&
+                curPointIndex > curPoints.length - 3 ? 2 : 1;
 
             // If no points, return false
             if (!series[0] || !series[0].points) {
                 return false;
             }
 
-            // Use first point if none already highlighted
             if (!curPoint) {
-                return series[0].points[0].highlight();
-            }
-
-            // Find index of current point in series.points array. Necessary for dataGrouping (and maybe zoom?)
-            if (curPoint.series.points[curPointIndex] !== curPoint) {
-                for (var i = 0; i < curPoint.series.points.length; ++i) {
-                    if (curPoint.series.points[i] === curPoint) {
-                        curPointIndex = i;
-                        break;
+                // No point is highlighted yet. Try first/last point depending on move
+                // direction
+                newPoint = next ? series[0].points[0] : lastPoint;
+            } else {
+                // We have a highlighted point.
+                // Find index of current point in series.points array. Necessary for
+                // dataGrouping (and maybe zoom?)
+                if (curPoints[curPointIndex] !== curPoint) {
+                    for (var i = 0; i < curPoints.length; ++i) {
+                        if (curPoints[i] === curPoint) {
+                            curPointIndex = i;
+                            break;
+                        }
                     }
+                }
+
+                // Grab next/prev point & series
+                newSeries = series[curPoint.series.index + (next ? 1 : -1)];
+                newPoint = curPoints[curPointIndex + (next ? forwardSkipAmount : -1)] ||
+                    // Done with this series, try next one
+                    newSeries &&
+                    newSeries.points[next ? 0 : newSeries.points.length - (
+                        newSeries.connectEnds ? 2 : 1
+                    )];
+
+                // If there is no adjacent point, we return false
+                if (newPoint === undefined) {
+                    return false;
                 }
             }
 
-            // Try to grab next/prev point
-            newSeries = series[curPoint.series.index + (next ? 1 : -1)];
-            newPoint = curPoint.series.points[curPointIndex + (next ? 1 : -1)] || newSeries && newSeries.points[next ? 0 : newSeries.points.length - 1];
-
-            // If there is no adjacent point, we return false
-            if (newPoint === undefined) {
-                return false;
-            }
-
-            // Recursively skip null points
-            if (newPoint.isNull && this.options.accessibility.keyboardNavigation &&
-                this.options.accessibility.keyboardNavigation.skipNullPoints) {
-                this.highlightedPoint = newPoint;
-                return this.highlightAdjacentPoint(next);
+            // Recursively skip null points or points in series that should be skipped
+            if (isSkipPoint(newPoint)) {
+                chart.highlightedPoint = newPoint;
+                return chart.highlightAdjacentPoint(next);
             }
 
             // There is an adjacent point, highlight it
@@ -472,12 +720,15 @@
             // The module's keyCode handlers determine when to move to another module.
             // Validate holds a function to determine if there are prerequisites for this module to run that are not met.
             // Init holds a function to run once before any keyCodes are interpreted.
+            // Terminate holds a function to run once before moving to next/prev module.
             // transformTabs determines whether to transform tabs to left/right events or not. Defaults to true.
             function KeyboardNavigationModule(options) {
+                this.id = options.id;
                 this.keyCodeMap = options.keyCodeMap;
                 this.move = options.move;
                 this.validate = options.validate;
                 this.init = options.init;
+                this.terminate = options.terminate;
                 this.transformTabs = options.transformTabs !== false;
             }
             KeyboardNavigationModule.prototype = {
@@ -497,12 +748,15 @@
             };
             // Maintain abstraction between KeyboardNavigationModule and Highcharts
             // The chart object keeps track of a list of KeyboardNavigationModules that we move through
-            function navModuleFactory(keyMap, options) {
+            function navModuleFactory(id, keyMap, options) {
                 return new KeyboardNavigationModule(merge({
                     keyCodeMap: keyMap,
                     // Move to next/prev valid module, or undefined if none, and init it.
                     // Returns true on success and false if there is no valid module to move to.
                     move: function(direction) {
+                        if (this.terminate) {
+                            this.terminate(direction);
+                        }
                         chart.keyboardNavigationModuleIndex += direction;
                         var newModule = chart.keyboardNavigationModules[chart.keyboardNavigationModuleIndex];
                         if (newModule) {
@@ -519,6 +773,8 @@
                         chart.slipNextTab = true; // Allow next tab to slip, as we will have focus on chart now
                         return false;
                     }
+                }, {
+                    id: id
                 }, options));
             }
 
@@ -552,7 +808,7 @@
             // Each mode determines when to move to the next/prev mode.
             chart.keyboardNavigationModules = [
                 // Points
-                navModuleFactory([
+                navModuleFactory('points', [
                     // Left/Right
                     [
                         [37, 39],
@@ -587,26 +843,29 @@
                         }
                     ]
                 ], {
-                    // If coming back to points from other module, highlight last point
-                    init: function(direction) {
-                        var lastSeries = chart.series && chart.series[chart.series.length - 1],
-                            lastPoint = lastSeries && lastSeries.points && lastSeries.points[lastSeries.points.length - 1];
-                        if (direction < 0 && lastPoint) {
-                            lastPoint.highlight();
+                    // Always start highlighting from scratch when entering this module
+                    init: function() {
+                        delete chart.highlightedPoint;
+                    },
+                    // If leaving points, don't show tooltip anymore
+                    terminate: function() {
+                        if (chart.tooltip) {
+                            chart.tooltip.hide(0);
                         }
-                    }
+                        delete chart.highlightedPoint;
+                    },
+
+                    transformTabs: chart.options.accessibility.keyboardNavigation.tabThroughPoints
                 }),
 
                 // Exporting
-                navModuleFactory([
+                navModuleFactory('exporting', [
                     // Left/Up
                     [
                         [37, 38],
                         function() {
                             var i = chart.highlightedExportItem || 0,
-                                reachedEnd = true,
-                                series = chart.series,
-                                newSeries;
+                                reachedEnd = true;
                             // Try to highlight prev item in list. Highlighting e.g. separators will fail.
                             while (i--) {
                                 if (chart.highlightExportItem(i)) {
@@ -616,14 +875,6 @@
                             }
                             if (reachedEnd) {
                                 chart.hideExportMenu();
-                                // Wrap to last point
-                                if (series && series.length) {
-                                    newSeries = series[series.length - 1];
-                                    if (newSeries.points.length) {
-                                        newSeries.points[newSeries.points.length - 1].highlight();
-                                    }
-                                }
-                                // Try to move to prev module (should be points, since we wrapped to last point)
                                 return this.move(-1);
                             }
                         }
@@ -675,7 +926,7 @@
                 }),
 
                 // Map zoom
-                navModuleFactory([
+                navModuleFactory('mapZoom', [
                     // Up/down/left/right
                     [
                         [38, 40, 37, 39],
@@ -740,7 +991,7 @@
                 }),
 
                 // Highstock range selector (minus input boxes)
-                navModuleFactory([
+                navModuleFactory('rangeSelector', [
                     // Left/Right/Up/Down
                     [
                         [37, 39, 38, 40],
@@ -780,7 +1031,7 @@
                 }),
 
                 // Highstock range selector, input boxes
-                navModuleFactory([
+                navModuleFactory('rangeSelectorInput', [
                     // Tab/Up/Down
                     [
                         [9, 38, 40],
@@ -812,7 +1063,7 @@
                 }),
 
                 // Legend navigation
-                navModuleFactory([
+                navModuleFactory('legend', [
                     // Left/Right/Up/Down
                     [
                         [37, 39, 38, 40],
@@ -833,8 +1084,14 @@
                     ]
                 ], {
                     // Only run this module if we have at least one legend - wait for it - item.
+                    // Don't run if the legend is populated by a colorAxis.
+                    // Don't run if legend navigation is disabled.
                     validate: function() {
-                        return chart.legend && chart.legend.allItems && !chart.colorAxis;
+                        return chart.legend && chart.legend.allItems &&
+                            !(chart.colorAxis && chart.colorAxis.length) &&
+                            (chart.options.legend &&
+                                chart.options.legend.keyboardNavigation &&
+                                chart.options.legend.keyboardNavigation.enabled) !== false;
                     },
 
                     // Make elements focusable and accessible
@@ -854,8 +1111,11 @@
             chart.keyboardNavigationModuleIndex = 0;
 
             // Make chart reachable by tab
-            if (!chart.renderTo.tabIndex) {
-                chart.renderTo.setAttribute('tabindex', '0');
+            if (
+                chart.container.hasAttribute &&
+                !chart.container.hasAttribute('tabIndex')
+            ) {
+                chart.container.setAttribute('tabindex', '0');
             }
 
             // Handle keyboard events
@@ -867,15 +1127,15 @@
 
         // Add screen reader region to chart.
         // tableId is the HTML id of the table to focus when clicking the table anchor in the screen reader region.
-        H.Chart.prototype.addScreenReaderRegion = function(tableId) {
+        H.Chart.prototype.addScreenReaderRegion = function(id, tableId) {
             var chart = this,
                 series = chart.series,
                 options = chart.options,
                 a11yOptions = options.accessibility,
                 hiddenSection = chart.screenReaderRegion = doc.createElement('div'),
-                tableShortcut = doc.createElement('h3'),
+                tableShortcut = doc.createElement('h4'),
                 tableShortcutAnchor = doc.createElement('a'),
-                chartHeading = doc.createElement('h3'),
+                chartHeading = doc.createElement('h4'),
                 hiddenStyle = { // CSS style to hide element from visual users while still exposing it to screen readers
                     position: 'absolute',
                     left: '-9999px',
@@ -887,23 +1147,25 @@
                 chartTypes = chart.types || [],
                 // Build axis info - but not for pies and maps. Consider not adding for certain other types as well (funnel, pyramid?)
                 axesDesc = (chartTypes.length === 1 && chartTypes[0] === 'pie' || chartTypes[0] === 'map') && {} || chart.getAxesDescription(),
-                chartTypeInfo = series[0] && typeToSeriesMap[series[0].type] || typeToSeriesMap.default;
+                chartTypeInfo = series[0] && typeToSeriesMap[series[0].type] || typeToSeriesMap['default']; // eslint-disable-line dot-notation
 
+            hiddenSection.setAttribute('id', id);
             hiddenSection.setAttribute('role', 'region');
             hiddenSection.setAttribute('aria-label', 'Chart screen reader information.');
 
             hiddenSection.innerHTML = a11yOptions.screenReaderSectionFormatter && a11yOptions.screenReaderSectionFormatter(chart) ||
-                '<div tabindex="0">Use regions/landmarks to skip ahead to chart' +
-                (series.length > 1 ? ' and navigate between data series' : '') + '.</div><h3>Summary.</h3><div>' + (options.title.text || 'Chart') +
-                (options.subtitle && options.subtitle.text ? '. ' + options.subtitle.text : '') +
-                '</div><h3>Long description.</h3><div>' + (options.chart.description || 'No description available.') +
-                '</div><h3>Structure.</h3><div>Chart type: ' + (options.chart.typeDescription || chart.getTypeDescription()) + '</div>' +
+                '<div>Use regions/landmarks to skip ahead to chart' +
+                (series.length > 1 ? ' and navigate between data series' : '') +
+                '.</div><h3>' + (options.title.text ? htmlencode(options.title.text) : 'Chart') +
+                (options.subtitle && options.subtitle.text ? '. ' + htmlencode(options.subtitle.text) : '') +
+                '</h3><h4>Long description.</h4><div>' + (options.chart.description || 'No description available.') +
+                '</div><h4>Structure.</h4><div>Chart type: ' + (options.chart.typeDescription || chart.getTypeDescription()) + '</div>' +
                 (series.length === 1 ? '<div>' + chartTypeInfo[0] + ' with ' + series[0].points.length + ' ' +
                     (series[0].points.length === 1 ? chartTypeInfo[1] : chartTypeInfo[2]) + '.</div>' : '') +
                 (axesDesc.xAxis ? ('<div>' + axesDesc.xAxis + '</div>') : '') +
                 (axesDesc.yAxis ? ('<div>' + axesDesc.yAxis + '</div>') : '');
 
-            // Add shortcut to data table if export-csv is loaded
+            // Add shortcut to data table if export-data is loaded
             if (chart.getCSV) {
                 tableShortcutAnchor.innerHTML = 'View as data table.';
                 tableShortcutAnchor.href = '#' + tableId;
@@ -913,10 +1175,11 @@
                     doc.getElementById(tableId).focus();
                 };
                 tableShortcut.appendChild(tableShortcutAnchor);
-
                 hiddenSection.appendChild(tableShortcut);
             }
 
+            // Note: JAWS seems to refuse to read aria-label on the container, so add an
+            // h4 element as title for the chart.
             chartHeading.innerHTML = 'Chart graphic.';
             chart.renderTo.insertBefore(chartHeading, chart.renderTo.firstChild);
             chart.renderTo.insertBefore(hiddenSection, chart.renderTo.firstChild);
@@ -942,16 +1205,19 @@
                 textElements = chart.container.getElementsByTagName('text'),
                 titleId = 'highcharts-title-' + chart.index,
                 tableId = 'highcharts-data-table-' + chart.index,
+                hiddenSectionId = 'highcharts-information-region-' + chart.index,
                 chartTitle = options.title.text || 'Chart',
                 oldColumnHeaderFormatter = options.exporting && options.exporting.csv && options.exporting.csv.columnHeaderFormatter,
                 topLevelColumns = [];
 
             // Add SVG title/desc tags
-            titleElement.textContent = chartTitle;
+            titleElement.textContent = htmlencode(chartTitle);
             titleElement.id = titleId;
             descElement.parentNode.insertBefore(titleElement, descElement);
             chart.renderTo.setAttribute('role', 'region');
-            chart.renderTo.setAttribute('aria-label', chartTitle + '. Use up and down arrows to navigate.');
+            //chart.container.setAttribute('aria-details', hiddenSectionId); // JAWS currently doesn't handle this too well
+            chart.renderTo.setAttribute('aria-label', 'Interactive chart. ' + chartTitle +
+                '. Use up and down arrows to navigate with most screen readers.');
 
             // Set screen reader properties on export menu
             if (chart.exportSVGElements && chart.exportSVGElements[0] && chart.exportSVGElements[0].element) {
@@ -988,34 +1254,41 @@
             });
 
             // Add top-secret screen reader region
-            chart.addScreenReaderRegion(tableId);
+            chart.addScreenReaderRegion(hiddenSectionId, tableId);
 
             // Enable keyboard navigation
-            if (a11yOptions.keyboardNavigation) {
+            if (a11yOptions.keyboardNavigation.enabled) {
                 chart.addKeyboardNavEvents();
             }
 
-            /* Wrap table functionality from export-csv */
+            /* Wrap table functionality from export-data */
 
             // Keep track of columns
             merge(true, options.exporting, {
                 csv: {
-                    columnHeaderFormatter: function(series, key, keyLength) {
+                    columnHeaderFormatter: function(item, key, keyLength) {
+                        if (!item) {
+                            return 'Category';
+                        }
+                        if (item instanceof H.Axis) {
+                            return (item.options.title && item.options.title.text) ||
+                                (item.isDatetimeAxis ? 'DateTime' : 'Category');
+                        }
                         var prevCol = topLevelColumns[topLevelColumns.length - 1];
                         if (keyLength > 1) {
                             // We need multiple levels of column headers
-                            // Populate a list of column headers to add in addition to the ones added by export-csv
-                            if ((prevCol && prevCol.text) !== series.name) {
+                            // Populate a list of column headers to add in addition to the ones added by export-data
+                            if ((prevCol && prevCol.text) !== item.name) {
                                 topLevelColumns.push({
-                                    text: series.name,
+                                    text: item.name,
                                     span: keyLength
                                 });
                             }
                         }
                         if (oldColumnHeaderFormatter) {
-                            return oldColumnHeaderFormatter.call(this, series, key, keyLength);
+                            return oldColumnHeaderFormatter.call(this, item, key, keyLength);
                         }
-                        return keyLength > 1 ? key : series.name;
+                        return keyLength > 1 ? key : item.name;
                     }
                 }
             });
@@ -1028,12 +1301,13 @@
 
             // Add accessibility attributes and top level columns
             H.wrap(chart, 'viewData', function(proceed) {
-                if (!this.insertedTable) {
+                if (!this.dataTableDiv) {
                     proceed.apply(this, Array.prototype.slice.call(arguments, 1));
 
                     var table = doc.getElementById(tableId),
+                        head = table.getElementsByTagName('thead')[0],
                         body = table.getElementsByTagName('tbody')[0],
-                        firstRow = body.firstChild.children,
+                        firstRow = head.firstChild.children,
                         columnHeaderRow = '<tr><td></td>',
                         cell,
                         newCell;
@@ -1062,7 +1336,7 @@
                         each(topLevelColumns, function(col) {
                             columnHeaderRow += '<th scope="col" colspan="' + col.span + '">' + col.text + '</th>';
                         });
-                        body.insertAdjacentHTML('afterbegin', columnHeaderRow);
+                        head.insertAdjacentHTML('afterbegin', columnHeaderRow);
                     }
                 }
             });

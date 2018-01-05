@@ -1071,26 +1071,27 @@ $(document).ready(function(){
     
     /**** End js for view html *******/
 
-    
-    
-    
-    
     /****** start comment *******/
-
     $('body').on('click', '.collapsible--toggle span', function(event) {
         event.preventDefault();
+        var container = $(this).parents('.well');
         $(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
         $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
+        if($('.collapsible', container).is(':visible') && $('.add-comments', container).hasClass('rotate')){
+            $('.add-comments', container).click()
+        }
     });
 
     $('body').on('click', '.add-comments', function(event) {
         event.preventDefault();
-        $(this).parents('.collapsible--toggle').next('.collapsible').slideDown('400');
+        var container = $(this).parents('.well');
+        if(!$('.collapsible', container).is(':visible')){
+            $(this).parents('.collapsible--toggle').next('.collapsible').slideDown('400');
+            $(this).parent().find('span i').removeClass('fa-caret-right');
+            $(this).parent().find('span i').addClass('fa-caret-down');
+        }
         $(this).toggleClass('rotate');
-        var tabContainer = $(this).parents('.tab-data');
-        $('.comment-form', tabContainer).fadeToggle('100');
-        $(this).parent().find('span i').removeClass('fa-caret-right');
-        $(this).parent().find('span i').addClass('fa-caret-down');
+        $('.comment-form', container).fadeToggle('100');
     });
 
     function saveComment($this){
@@ -1216,6 +1217,7 @@ $(document).ready(function(){
         var form = $(this).parents('form');
         popupowasp(form);
     })
+    
     
 })
 

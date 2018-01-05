@@ -8,6 +8,7 @@ require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -55,6 +56,9 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../index.php");
   exit(0);
 }
+
+// Enforce that the user has access to risk management
+enforce_permission_riskmanagement();
 
 // If the risks were saved to projects
 if (isset($_POST['update_projects']))
@@ -343,7 +347,7 @@ if (isset($_POST['delete_project']))
         <div class="span9">
 
           <div class="tab-append">
-            <div class="tab selected form-tab tab-show current-projects-tab" id="tab"><div><span>Current Projects</span></div></div>
+            <div class="tab selected form-tab tab-show current-projects-tab" id="tab"><div><span><?php echo $escaper->escapeHtml($lang['CurrentProjects']); ?></span></div></div>
           </div>
 
         </div>
@@ -362,7 +366,7 @@ if (isset($_POST['delete_project']))
         <div id="show-alert"></div>
         <div class="row-fluid">
           <div class="span12">
-            <!-- Container Bigins  -->
+            <!-- Container Begins  -->
 
             <!-- <div class="status1">asdasdasdas</div> -->
 
@@ -373,16 +377,16 @@ if (isset($_POST['delete_project']))
                 <a href="#project--add" role="button" data-toggle="modal" class="project--add"><i class="fa fa-plus"></i></a>
 
                 <ul class="clearfix tabs-nav">
-                  <li><a href="#active-projects" class="status" data-status="1">Active Projects (<?php get_projects_count(1) ?>)</a></li>
-                  <li><a href="#on-hold-projects" class="status" data-status="2">On Hold Projects (<?php get_projects_count(2) ?>)</a></li>
-                  <li><a href="#closed-projects" class="status" data-status="3">Completed Projects (<?php get_projects_count(3) ?>)</a></li>
-                  <li><a href="#canceled-projects" class="status" data-status="4">Canceled Projects (<?php get_projects_count(4) ?>)</a></li>
+                  <li><a href="#active-projects" class="status" data-status="1"><?php echo $escaper->escapeHtml($lang['ActiveProjects']); ?> (<?php get_projects_count(1) ?>)</a></li>
+                  <li><a href="#on-hold-projects" class="status" data-status="2"><?php echo $escaper->escapeHtml($lang['OnHoldProjects']); ?> (<?php get_projects_count(2) ?>)</a></li>
+                  <li><a href="#closed-projects" class="status" data-status="3"><?php echo $escaper->escapeHtml($lang['CompletedProjects']); ?> (<?php get_projects_count(3) ?>)</a></li>
+                  <li><a href="#canceled-projects" class="status" data-status="4"><?php echo $escaper->escapeHtml($lang['CanceledProjects']); ?> (<?php get_projects_count(4) ?>)</a></li>
                 </ul>
 
                 <ul class="project-headers clearfix">
-                  <li class="project-block--priority white-labels">Priority</li>
-                  <li class="project-block--name white-labels">Project Name</li>
-                  <li class="project-block--risks white-labels">Risk</li>
+                  <li class="project-block--priority white-labels"><?php echo $escaper->escapeHtml($lang['Priority']); ?></li>
+                  <li class="project-block--name white-labels"><?php echo $escaper->escapeHtml($lang['ProjectName']); ?></li>
+                  <li class="project-block--risks white-labels"><?php echo $escaper->escapeHtml($lang['Risk']); ?></li>
                 </ul>
 
               </div> <!-- status-tabs -->
@@ -420,13 +424,13 @@ if (isset($_POST['delete_project']))
 
     <form class="" id="project--new" action="#" method="post">
       <div class="form-group">
-        <label for="">New Project Name</label>
+        <label for=""><?php echo $escaper->escapeHtml($lang['NewProjectName']); ?></label>
         <input type="text" name="new_project" id="project--name" value="" class="form-control">
       </div>
 
       <div class="form-group text-right">
-        <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
-        <button type="submit" name="add_project" class="btn btn-danger">Add</button>
+        <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
+        <button type="submit" name="add_project" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
       </div>
     </form>
 
@@ -440,13 +444,13 @@ if (isset($_POST['delete_project']))
 
     <form class="" id="project--delete" action="" method="post">
       <div class="form-group text-center">
-        <label for="">Are you sure you want to delete this project?</label>
+        <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisProject']); ?></label>
         <input type="hidden" name="project_id" value="" />
       </div>
 
       <div class="form-group text-center project-delete-actions">
-        <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">Cancel</button>
-        <button type="submit" name="delete_project" class="delete_project btn btn-danger">Yes</button>
+        <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
+        <button type="submit" name="delete_project" class="delete_project btn btn-danger"><?php echo $escaper->escapeHtml($lang['Yes']); ?></button>
       </div>
     </form>
 
@@ -461,7 +465,7 @@ if (isset($_POST['delete_project']))
     <div class="project-block--header clearfix">
         <div class="project-block--priority pull-left">{{PRIORITY}}</div>
         <div class="project-block--name pull-left">{{NAME}}</div>
-        <div class="project-block--risks pull-left"><a href="#" class="view--risks">View Risks</a> <a href="#" class="project-block--delete pull-right"><i class="fa fa-trash"></i></a></div>
+        <div class="project-block--risks pull-left"><a href="#" class="view--risks"><?php echo $escaper->escapeHtml($lang['ViewRisks']); ?></a> <a href="#" class="project-block--delete pull-right"><i class="fa fa-trash"></i></a></div>
     </div><!-- POJECT-BLOCK--HEADER-->
 
     <div class="risks">

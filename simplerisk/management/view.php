@@ -8,6 +8,7 @@ require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -53,6 +54,9 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../index.php");
   exit(0);
 }
+
+// Enforce that the user has access to risk management
+enforce_permission_riskmanagement();
 
 // Check if a risk ID was sent
 if (isset($_GET['id']))
@@ -180,7 +184,7 @@ if (isset($_GET['id']))
     $calculated_risk = $risk[0]['calculated_risk'];
     $next_review = $risk[0]['next_review'];
     $color = get_risk_color($calculated_risk);
-	$risk_level = get_risk_level_name($calculated_risk);
+    $risk_level = get_risk_level_name($calculated_risk);
 
     $scoring_method = $risk[0]['scoring_method'];
     $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
@@ -228,7 +232,7 @@ if (isset($_GET['id']))
     $submitted_by = "";
     // If Risk ID exists.
     if(check_risk_by_id($id)){
-        $status = $lang["RiskTeamPermission"];
+        $status = $lang["RiskDisplayPermission"];
     }
     // If Risk ID does not exist.
     else{
@@ -358,6 +362,7 @@ if (isset($_GET['id']))
     $security_recommendations = $mitigation[0]['security_recommendations'];
     $planning_date = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
     $mitigation_percent = isset($mitigation[0]['mitigation_percent']) ? $mitigation[0]['mitigation_percent'] : 0;
+    $mitigation_controls = isset($mitigation[0]['mitigation_controls']) ? $mitigation[0]['mitigation_controls'] : "";
   }
   // Otherwise
   else
@@ -375,6 +380,7 @@ if (isset($_GET['id']))
     $security_recommendations = "";
     $planning_date = "";
     $mitigation_percent = 0;
+    $mitigation_controls = "";
   }
 
   // Get the management reviews for the risk
@@ -628,6 +634,7 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/jquery.dataTables.js"></script>
     <script src="../js/cve_lookup.js"></script>
     <script src="../js/basescript.js"></script>
     <script src="../js/highcharts/code/highcharts.js"></script>
@@ -636,6 +643,7 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
 
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="../css/jquery.dataTables.css">
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
@@ -890,4 +898,4 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
     });
 
     </script>
-    </html>
+</html>

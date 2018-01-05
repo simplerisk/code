@@ -1,0 +1,20 @@
+{
+    "name": "simplesamlphp/simplesamlphp-module-modinfo",
+    "description": "A very straightforward module for SimpleSAMLphp that displays the list of modules and their status in the web interface.",
+    "type": "simplesamlphp-module",
+    "keywords": [ "simplesamlphp", "modules" ],
+    "authors": [
+        {
+            "name": "Andreas Åkre Solberg",
+            "email": "andreas.solberg@uninett.no"
+        },
+        {
+            "name": "Olav Morken",
+            "email": "olav.morken@uninett.no"
+        }
+    ],
+    "require": {
+        "simplesamlphp/composer-module-installer": "~1.0"
+    }
+}
+

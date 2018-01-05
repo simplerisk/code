@@ -18,35 +18,47 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 /****************************
  * FUNCTION: GET OPEN RISKS *
  ****************************/
-function get_open_risks()
+function get_open_risks($teams = false)
 {
-        // If team separation is not enabled
-        if (!team_separation_extra())
-        {
-                // Open the database connection
-                $db = db_open();
-
-                // Query the database
-		$stmt = $db->prepare("SELECT id FROM `risks` WHERE status != \"Closed\"");
-                $stmt->execute();
-
-                // Store the list in the array
-                $array = $stmt->fetchAll();
-
-                // Close the database connection
-                db_close($db);
+    if($teams !== false){
+        if($teams == ""){
+            $teams_query = " AND 0 ";
+        }else{
+            $options = explode(",", $teams);
+            $teams_query = generate_or_query($options, 'team');
+            $teams_query = " AND ( {$teams_query} ) ";
         }
-        // Otherwise team separation is enabled
-        else
-        {
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    }else{
+        $teams_query = "";
+    }
 
-                // Get the open risks stripped
-                $array = strip_get_open_risks();
-        }
+    // If team separation is not enabled
+    if (!team_separation_extra())
+    {
+        // Open the database connection
+        $db = db_open();
 
-        return count($array);
+        // Query the database
+	    $stmt = $db->prepare("SELECT id FROM `risks` WHERE status != \"Closed\" {$teams_query} ");
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+    }
+    // Otherwise team separation is enabled
+    else
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        // Get the open risks stripped
+        $array = strip_get_open_risks($teams);
+    }
+
+    return count($array);
 }
 
 /******************************
@@ -719,7 +731,7 @@ function closed_risk_reason_pie($title = null, $teams = false)
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
         // Query the database
-        $array = strip_no_access_risk_pie('close_reason');
+        $array = strip_no_access_risk_pie('close_reason', $teams);
     }
 
     // Close the database connection
@@ -2925,7 +2937,6 @@ function risks_query($status, $sort, $group, $affected_asset, &$rowCount, $start
         }
     }
     
-//    echo $group_value_from_db;exit;
     $stmt->execute();
     db_close($db);
 
@@ -2995,10 +3006,18 @@ function risks_query($status, $sort, $group, $affected_asset, &$rowCount, $start
             $mitigation_effort = $risk['mitigation_effort'];
             $mitigation_min_cost = $risk['mitigation_min_cost'];
             $mitigation_max_cost = $risk['mitigation_max_cost'];
-            $mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;;
             $mitigation_owner = $risk['mitigation_owner'];
             $mitigation_team = $risk['mitigation_team'];
             $closure_date = $risk['closure_date'];
+
+
+            // If the mitigation costs are empty
+            if (empty($mitigation_min_cost) && empty($mitigation_max_cost))
+            {
+                    // Return no value
+                    $mitigation_cost = "";
+            }
+            else $mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;
 
             // If the group name is not none
             if ($group_name != "none")

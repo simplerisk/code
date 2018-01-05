@@ -1,0 +1,14 @@
+Source: simplesamlphp-aselect
+Section: web
+Priority: extra
+Maintainer: Wessel Dankers <W.S.L.Dankers@uvt.nl>
+Build-Depends: cdbs, debhelper (>= 7)
+Standards-Version: 3.9.1
+
+Package: simplesamlphp-aselect
+Architecture: all
+Depends: simplesamlphp, ${misc:Depends}
+Enhances: simplesamlphp
+Description: A-Select IdP support for simpleSAMLphp
+ Allow simpleSAMLphp to use A-Select as an authentication source.
+ This module does not require an A-Select Agent to be present.

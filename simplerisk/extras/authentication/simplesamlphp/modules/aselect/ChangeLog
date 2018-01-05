@@ -1,0 +1,153 @@
+2015-06-25 13:42  wsl
+
+	* docs/aselect.txt, lib/Auth/Source/aselect.php,
+	  www/credentials.php: simplesamlphp-aselect: merge
+	  https://github.com/simplesamlphp/simplesamlphp/commit/364ed7e410170a6e6711a1b3d49a7395e7c38356.patch
+
+2015-01-28 15:35  wsl
+
+	* www/credentials.php: simplesamlphp-aselect: hark code aan
+
+2015-01-28 15:26  wsl
+
+	* ., debian/README.Debian, debian/changelog, debian/control,
+	  debian/install, debian/simplesamlphp-aselectdirect.install,
+	  docs/aselect.txt, docs/aselectdirect.txt,
+	  lib/Auth/Source/ASelectDirect.php, lib/Auth/Source/aselect.php,
+	  www/credentials.php: sources/simplesamlphp-aselect: gesynct van
+	  github-sources
+
+2012-04-20 14:38  thijs
+
+	* yak
+
+2012-04-20 14:01  thijs
+
+	* document compatibility options
+
+2012-04-20 13:58  thijs
+
+	* poging tot documentatie
+
+2012-04-20 13:25  wsl
+
+	* simplesamlphp-aselectdirect: documenteer gefrut met opties
+
+2012-04-20 10:57  wsl
+
+	* simplesamlphp-aselectdirect: versie 1.1
+
+2012-04-20 10:49  wsl
+
+	* simplesamlphp-aselectdirect: accepteer zowel oude als nieuwe
+	  configuratienamen
+
+2012-04-20 10:32  wsl
+
+	* simplesamlphp-aselectdirect: betere foutafhandeling in
+	  decode_attributes)_
+
+2012-04-20 09:58  wsl
+
+	* simplesamlphp-aselectdirect: opschonen en voorzien van commentaar
+
+2012-01-27 14:56  wsl
+
+	* fix exceptions
+
+2012-01-26 08:58  wsl
+
+	* signen op één plek (en optioneel maken)
+
+2012-01-25 09:38  wsl
+
+	* foutmeldingen aanharken
+
+2012-01-25 09:08  wsl
+
+	* SimpleSAML_Utilities::addURLparameter zit gewoon in ssp zelf
+
+2012-01-24 12:25  wsl
+
+	* dependency weg
+
+2012-01-23 14:40  wsl
+
+	* 
+
+2012-01-23 08:38  wsl
+
+	* nette exceptions, aselect RMI op één plek
+
+2012-01-20 16:11  wsl
+
+	* ssp-aselectdirect: stuff om het werkend te krijgen
+
+2012-01-20 15:16  wsl
+
+	* versie van aselect authmethod die geen agent nodig heeft en
+	  daardoor beter geschikt is voor failoverscenarios
+
+2011-11-23 16:57  wsl
+
+	* is misschien robuuster icm MSIE9
+
+2011-08-29 14:37  thijs
+
+	* Correct two leftover instances of 'aselect' to 'aselectagent'
+	  after the Great Rename of 1.1.
+
+2011-03-15 12:13  wsl
+
+	* wijzigingen Thijs integreren
+
+2011-03-15 11:01  wsl
+
+	* moet van debhelper
+
+2011-03-15 10:57  wsl
+
+	* rename simplesamlphp-aselect om naamconflict te voorkomen
+
+2011-03-14 15:25  wsl
+
+	* kortere URLs
+
+2011-03-11 11:08  thijs
+
+	* Enhances: simplesamlphp
+
+2011-03-01 16:58  wsl
+
+	* .: voeg simplesamlphp-aselect toe als debian native package want
+	  lui
+
+2011-03-01 16:32  wsl
+
+	* aselect-php inpakken
+
+2009-11-12 11:00  wsl
+
+	* 
+
+2009-11-12 11:00  wsl
+
+	* meh
+
+2009-11-12 09:43  wsl
+
+	* install: cannot create directory `debian/groeneknop': Not a
+	  directory
+
+2009-11-12 09:33  wsl
+
+	* 
+
+2009-11-12 09:32  wsl
+
+	* 
+
+2009-11-10 12:33  wsl
+
+	* initial version
+

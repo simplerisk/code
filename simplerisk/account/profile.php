@@ -88,6 +88,9 @@
 	$teams = $user_info['teams'];
 	$language = $user_info['lang'];
     $asset = $user_info['asset'];
+	$governance = $user_info['governance'];
+	$riskmanagement = $user_info['riskmanagement'];
+	$compliance = $user_info['compliance'];
 	$assessments = $user_info['assessments'];
     $admin = $user_info['admin'];
 	$review_veryhigh = $user_info['review_veryhigh'];
@@ -251,7 +254,10 @@
                 <?php create_multiple_dropdown("team", $teams); ?>
                 <h6><u><?php echo $escaper->escapeHtml($lang['UserResponsibilities']); ?></u></h6>
 		<table border="0" cellspacing="0" cellpadding="0">
+                  <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['Governance']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="governance" type="checkbox"<?php if ($governance) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToGovernanceMenu']); ?></td></tr>
 		  <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="riskmanagement" type="checkbox"<?php if ($riskmanagement) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToRiskManagementMenu']); ?></td></tr>
 		  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="submit_risks" type="checkbox"<?php if ($submit_risks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToSubmitNewRisks']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="modify_risks" type="checkbox"<?php if ($modify_risks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyExistingRisks']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="close_risks" type="checkbox"<?php if ($close_risks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCloseRisks']); ?></td></tr>
@@ -261,6 +267,8 @@
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_medium" type="checkbox"<?php if ($review_medium) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_high" type="checkbox"<?php if ($review_high) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_veryhigh" type="checkbox"<?php if ($review_veryhigh) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></td></tr>
+                  <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['Compliance']); ?></td></tr>
+                  <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="compliance" type="checkbox"<?php if ($compliance) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToComplianceMenu']); ?></td></tr>
                   <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['AssetManagement']); ?></td></tr>
                   <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="asset" type="checkbox"<?php if ($asset) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></td></tr>
                   

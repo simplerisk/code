@@ -111,14 +111,24 @@
                 </thead>
                 <tbody>
                 <tr>
+                  <td width="155px"><b>API</b></td>
+                  <td>Enables an API for integration of SimpleRisk with other tools and automation tasks.</td>
+                  <td width="60px"><?php echo (api_extra() ? '<a href="api.php">Yes</a>' : '<a href="api.php">No</a>'); ?></td>
+                </tr>
+                <tr>
                   <td width="155px"><b>Custom Authentication</b></td>
-                  <td>Currently provides support for Active Directory Authentication and Duo Security multi-factor authentication, but will have other custom authentication types in the future.</td>
+                  <td>Provides support for Active Directory Authentication, SAML/Single Sign-On and Duo Security multi-factor authentication.</td>
                   <td width="60px"><?php echo (custom_authentication_extra() ? '<a href="authentication.php">Yes</a>' : '<a href="authentication.php">No</a>'); ?></td>
                 </tr>
                 <tr>
                   <td width="155px"><b>Encrypted Database</b></td>
                   <td>Encryption of sensitive text fields in the database.</td>
                   <td width="60px"><?php echo (encryption_extra() ? '<a href="encryption.php">Yes</a>' : '<a href="encryption.php">No</a>'); ?></td>
+                </tr>
+                <tr>
+                  <td width="155px"><b>Governance</b></td>
+                  <td>TBD</td>
+                  <td width="60px"><?php echo (governance_extra() ? '<a href="governance.php">Yes</a>' : '<a href="governance.php">No</a>'); ?></td>
                 </tr>
                 <tr>
                   <td width="155px"><b>Import / Export</b></td>
@@ -131,19 +141,14 @@
                   <td width="60px"><?php echo (notification_extra() ? '<a href="notification.php">Yes</a>' : '<a href="notification.php">No</a>'); ?></td>
                 </tr>
                 <tr>
-                  <td width="155px"><b>Team-Based Separation</b></td>
-                  <td>Restriction of risk viewing to team members the risk is categorized as.</td>
-                  <td width="60px"><?php echo (team_separation_extra() ? '<a href="separation.php">Yes</a>' : '<a href="separation.php">No</a>'); ?></td>
-                </tr>
-                <tr>
-                  <td width="155px"><b>Assessments</b></td>
+                  <td width="155px"><b>Risk Assessments</b></td>
                   <td>Enables ability to create custom risk assessment forms and send them to users.</td>
                   <td width="60px"><?php echo (assessments_extra() ? '<a href="assessments.php">Yes</a>' : '<a href="assessments.php">No</a>'); ?></td>
                 </tr>
                 <tr>
-                  <td width="155px"><b>API</b></td>
-                  <td>Enables an API for integration of SimpleRisk with other tools and automation tasks.</td>
-                  <td width="60px"><?php echo (api_extra() ? '<a href="api.php">Yes</a>' : '<a href="api.php">No</a>'); ?></td>
+                  <td width="155px"><b>Team-Based Separation</b></td>
+                  <td>Restriction of risk viewing to team members the risk is categorized as.</td>
+                  <td width="60px"><?php echo (team_separation_extra() ? '<a href="separation.php">Yes</a>' : '<a href="separation.php">No</a>'); ?></td>
                 </tr>
                 <tbody>
                 </table>

@@ -1,0 +1,117 @@
+{
+	"wrong_IC": {
+		"es": "InfoCard inv&aacute:lido",
+		"zh-tw": "\u7121\u6548\u7684 InfoCard",
+		"da": "Ugyldigt InfoCard"
+	},
+	"get_IC": {
+		"es": "Obtenga su InfoCard",
+		"zh-tw": "\u53d6\u5f97\u60a8\u7684 InfoCard",
+		"da": "Anskaf dig et InfoCard"
+	},
+	"get_IC_link": {
+		"es": "Haga click aqu&iacute; para obtener su InfoCard",
+		"zh-tw": "\u9ede\u6b64\u4f86\u53d6\u5f97\u60a8\u7684 InfoCard",
+		"da": "Klik her for at f\u00e5 dit InfoCard"
+	},
+	"form_username": {
+		"es": "Nombre de usuario",
+		"zh-tw": "\u5e33\u865f",
+		"da": "Brugernavn"
+	},
+	"form_password": {
+		"es": "Contrase&ntilde;a",
+		"zh-tw": "\u5bc6\u78bc",
+		"da": "Kodeord"
+	},
+	"error_header": {
+		"es": "Error",
+		"zh-tw": "\u932f\u8aa4",
+		"da": "Fejl"
+	},
+	"user_IC_header": {
+		"es": "Elija un InfoCard",
+		"zh-tw": "\u9078\u64c7\u4e00\u500b InfoCard",
+		"da": "V\u00e6lg et InfoCard"
+	},
+	"user_IC_text": {
+		"es": "Un servicio solicita que se autentique. Por favor, haga click en la imagen de debajo para iniciar una sesi&oacute;n con InfoCard.",
+		"zh-tw": "\u6709\u500b\u670d\u52d9\u8981\u6c42\u60a8\u9a57\u8b49\u60a8\u81ea\u5df1\u3002\u8acb\u9ede\u53d6\u4e0b\u65b9\u5716\u7247\u4f86\u958b\u555f\u4e00\u500b InfoCard \u9023\u7dda",
+		"da": "En tjeneste har anmodet om at du autentificerer dig selv. Klik venligst p\u00e5 billedet forneden for at p\u00e5begynde en session med et InfoCard."
+	},
+	"login_button": {
+		"es": "Identificarse",
+		"zh-tw": "\u767b\u5165",
+		"da": "Log ind"
+	},
+	"get_button": {
+		"es": "Obtener mi InfoCard",
+		"zh-tw": "\u53d6\u5f97\u6211\u7684 InfoCard",
+		"da": "Giv mig mit InfoCard"
+	},
+	"help_header": {
+		"es": "&iexcl;Ayuda! &iquest;Qu&eacute; es un InfoCard?",
+		"zh-tw": "\u8aaa\u660e\uff01\u4ec0\u9ebc\u662f InfoCard\uff1f",
+		"da": "Hj\u00e6lp! Hvad er et InfoCard?"
+	},
+	"help_text": {
+		"es": "Las Tarjetas de Informaci&oacute;n (tambi&eacute;n conocidas como InfoCard) son una tecnolog&iacute;a de autenticaci&oacute;n. Contacte con su proveedor de servicio para configurar su ordenador apropiadamente y obtener una Tarjeta de Informaci&oacute;n (una tarjeta de identificaci&oacute;n virtual).",
+		"zh-tw": "\u8cc7\u8a0a\u5361(\u7c21\u7a31 InfoCard)\u662f\u4e00\u7a2e\u7db2\u9801\u9a57\u8b49\u6280\u8853\u3002\u806f\u7d61\u60a8\u7684\u670d\u52d9\u4f9b\u61c9\u5546\u4f86\u8a2d\u5b9a\u60a8\u7684\u96fb\u8166\u53ca\u7d66\u60a8\u4e00\u500b\u8cc7\u8a0a\u5361(\u8eab\u5206\u8b58\u5225\u865b\u64ec\u5361)\u3002",
+		"da": "Information Cards (InfoCard) er en teknologi til autentificering p\u00e5 web. Kontakt din tjenesteudbyder for at konfigurere din computer og udstede et Information Card (InfoCard)til dig."
+	},
+	"help_desk_link": {
+		"es": "P&aacute;gina del servicio t&eacute;cnico",
+		"zh-tw": "\u670d\u52d9\u53f0\u9996\u9801",
+		"da": "Helpdesk hjemmeside"
+	},
+	"help_desk_email": {
+		"es": "Enviar un correo al servicio t&eacute;cnico",
+		"zh-tw": "\u50b3\u9001 e-mail \u81f3\u670d\u52d9\u53f0",
+		"da": "Send e-mail til helpdesk"
+	},
+	"contact_info": {
+		"es": "Informaci&oacute;n de contacto",
+		"zh-tw": "\u806f\u7d61\u8cc7\u8a0a",
+		"da": "Kontaktinformation"
+	},
+	"getcardform_title": {
+		"es": "Formulario de autenticaci&oacute;n",
+		"zh-tw": "\u9a57\u8b49\u8868\u55ae",
+		"da": "Autentificeringsformular"
+	},
+	"getcardform_self_title": {
+		"es": "Formulario para tarjetas auto-emitidas",
+		"zh-tw": "\u81ea\u6211\u7c3d\u7f72\u5361\u8868\u55ae",
+		"da": "Selvudstedt Card formular"
+	},
+	"getcardform_self_text": {
+		"es": "Por favor, introduzca una InfoCard auto-emitida para asociarla a la que estamos generando.",
+		"zh-tw": "\u8acb\u8f38\u5165\u4e00\u500b\u81ea\u6211\u7c3d\u5c6c\u7684 InfoCard \u4e26\u9023\u7d50\u81f3\u7531\u6211\u5011\u7522\u751f\u4e26\u7ba1\u7406\u7684\u3002",
+		"da": "Angiv venligst et selvudstedt InfoCard for at k\u00e6de det sammen med det der oprettes."
+	},
+	"getcardform_finished_title": {
+		"es": "Enhorabuena, su InfoCard se ha generado correctamente",
+		"zh-tw": "\u606d\u559c\uff0c\u60a8\u7684 InfoCard \u5df2\u6210\u529f\u7522\u751f",
+		"da": "Tillykke, dit InfoCard blev korrekt oprettet"
+	},
+	"getcardform_finished_text": {
+		"es": "Por favor, siga el siguiente enlace para ir a la p&aacute;gina de autenticaci&oaute;n.",
+		"zh-tw": "\u8acb\u6309\u7167\u4e0b\u4e00\u6b65\u9023\u7d50\u81f3\u767b\u5165\u9801\u9762\u3002",
+		"da": "F\u00f8lg venligst det efterf\u00f8lgende link for at komme til login-siden."
+	},
+	"NO_password": {
+		"es": "Por favor, introduzca su contrase&ntilde;a",
+		"zh-tw": "\u8acb\u8f38\u5165\u60a8\u7684\u5bc6\u78bc",
+		"da": "Indtast venligt dit kodeord"
+	},
+	"NO_user": {
+		"es": "Por favor, introduzca su nombre de usuario",
+		"zh-tw": "\u8acb\u8f38\u5165\u60a8\u7684\u5e33\u865f",
+		"da": "Indtast venligt dit brugernavn"
+	},
+	"Wrong_user_pass": {
+		"es": "Nombre de usuario o contrase&ntilde;a incorrectos",
+		"zh-tw": "\u932f\u8aa4\u7684\u5e33\u865f\u6216\u5bc6\u78bc",
+		"da": "Forkert brugernavn eller kodeord"
+	}
+}

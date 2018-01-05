@@ -77,20 +77,23 @@
 			$email          = $_POST['email'];
 			$teams          = isset($_POST['team']) ? $_POST['team'] : array('none');
 			$language       = get_name_by_value("languages", (int)$_POST['languages']);
+			$governance	= isset($_POST['governance']) ? '1' : '0';
+			$riskmanagement = isset($_POST['riskmanagement']) ? '1' : '0';
+			$compliance	= isset($_POST['compliance']) ? '1' : '0';
 			$assessments    = isset($_POST['assessments']) ? '1' : '0';
 			$asset          = isset($_POST['asset']) ? '1' : '0';
-	        $admin          = isset($_POST['admin']) ? '1' : '0';
-        	$submit_risks   = isset($_POST['submit_risks']) ? '1' : '0';
-            $modify_risks   = isset($_POST['modify_risks']) ? '1' : '0';
+			$admin          = isset($_POST['admin']) ? '1' : '0';
+			$submit_risks   = isset($_POST['submit_risks']) ? '1' : '0';
+			$modify_risks   = isset($_POST['modify_risks']) ? '1' : '0';
 			$close_risks    = isset($_POST['close_risks']) ? '1' : '0';
-            $plan_mitigations = isset($_POST['plan_mitigations']) ? '1' : '0';
+			$plan_mitigations = isset($_POST['plan_mitigations']) ? '1' : '0';
 			$review_veryhigh = isset($_POST['review_veryhigh']) ? '1' : '0';
-            $review_high    = isset($_POST['review_high']) ? '1' : '0';
-            $review_medium  = isset($_POST['review_medium']) ? '1' : '0';
-            $review_low     = isset($_POST['review_low']) ? '1' : '0';
+			$review_high    = isset($_POST['review_high']) ? '1' : '0';
+			$review_medium  = isset($_POST['review_medium']) ? '1' : '0';
+			$review_low     = isset($_POST['review_low']) ? '1' : '0';
 			$review_insignificant = isset($_POST['review_insignificant']) ? '1' : '0';
 			$multi_factor   = (int)$_POST['multi_factor'];
-            $change_password = (int)(isset($_POST['change_password']) ? $_POST['change_password'] : 0);
+			$change_password = (int)(isset($_POST['change_password']) ? $_POST['change_password'] : 0);
 
 			// Change the type from a numeric to alpha
 			switch($type){
@@ -137,7 +140,7 @@
             if ($none) $team = "none";
 
 			// Update the user
-			update_user($user_id, $lockout, $type, $name, $email, $team, $language, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor, $change_password);
+			update_user($user_id, $lockout, $type, $name, $email, $team, $language, $governance, $riskmanagement, $compliance, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor, $change_password);
 
 			// Display an alert
 			set_alert(true, "good", "The user was updated successfully.");
@@ -163,6 +166,9 @@
 		        $teams = $user_info['teams'];
                 $admin = $user_info['admin'];
                 
+		$governance = $user_info['governance'];
+		$riskmanagement = $user_info['riskmanagement'];
+		$compliance = $user_info['compliance'];
 		$assessments = $user_info['assessments'];
         
 		$asset = $user_info['asset'];
@@ -192,6 +198,9 @@
                 $teams      = "none";
                 $admin      = false;
                 
+		$governance = false;
+		$riskmanagement = false;
+		$compliance = false;
 		$assessments = false;
         
 		$asset = false;
@@ -250,8 +259,18 @@
             
         }
 
+	function checkAllGovernance(bx) {
+	    if (document.getElementsByName("check_governance")[0].checked == true) {
+	        document.getElementsByName("governance")[0].checked = true;
+	    }
+	    else {
+	        document.getElementsByName("governance")[0].checked = false;
+	    }
+	}
+
         function checkAllRiskMgmt(bx) {
             if (document.getElementsByName("check_risk_mgmt")[0].checked == true) {
+              document.getElementsByName("riskmanagement")[0].checked = true;
               document.getElementsByName("submit_risks")[0].checked = true;
               document.getElementsByName("modify_risks")[0].checked = true;
               document.getElementsByName("close_risks")[0].checked = true;
@@ -263,6 +282,7 @@
               document.getElementsByName("review_veryhigh")[0].checked = true;
             }
             else {
+              document.getElementsByName("riskmanagement")[0].checked = false;
               document.getElementsByName("submit_risks")[0].checked = false;
               document.getElementsByName("modify_risks")[0].checked = false;
               document.getElementsByName("close_risks")[0].checked = false;
@@ -274,6 +294,15 @@
               document.getElementsByName("review_veryhigh")[0].checked = false;
             }
         }
+
+	function checkAllCompliance(bx) {
+	    if (document.getElementsByName("check_compliance")[0].checked == true) {
+	        document.getElementsByName("compliance")[0].checked = true;
+	    }
+	    else {
+	        document.getElementsByName("compliance")[0].checked = false;
+	    }
+	}
 
         function checkAllAssetMgmt(bx) {
             if (document.getElementsByName("check_asset_mgmt")[0].checked == true) {
@@ -381,7 +410,10 @@
                                 </h6>
                                 <table border="0" cellspacing="0" cellpadding="0">
                                     <tr><td colspan="3"><input class="hidden-checkbox" id="check_all" name="check_all" type="checkbox" onclick="checkAll(this)" />&nbsp;<label for="check_all"> <?php echo $escaper->escapeHtml($lang['CheckAll']); ?> </label></td></tr>
+                                    <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input class="hidden-checkbox" id="check_governance" name="check_governance" type="checkbox" onclick="checkAllGovernance(this)" /> <label for="check_governance"> &nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllGovernance']); ?></label></td></tr>
+                                    <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="governance" name="governance" type="checkbox"<?php if ($governance) echo " checked" ?> /> <label for="governance"> &nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToGovernanceMenu']); ?></label> </td></tr>
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input class="hidden-checkbox" id="check_risk_mgmt" name="check_risk_mgmt" type="checkbox" onclick="checkAllRiskMgmt(this)" /> <label for="check_risk_mgmt"> &nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllRiskMgmt']); ?></label></td></tr>
+                                    <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="riskmanagement" name="riskmanagement" type="checkbox"<?php if ($riskmanagement) echo " checked" ?> /> <label for="riskmanagement"> &nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToRiskManagementMenu']); ?></label> </td></tr>
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="submit_risks" name="submit_risks" type="checkbox"<?php if ($submit_risks) echo " checked" ?> /> <label for="submit_risks"> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToSubmitNewRisks']); ?></label> </td></tr>
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="modify_risks" name="modify_risks" type="checkbox"<?php if ($modify_risks) echo " checked" ?> /> <label for="modify_risks">&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyExistingRisks']); ?></label></td></tr>
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="close_risks" name="close_risks" type="checkbox"<?php if ($close_risks) echo " checked" ?> /> <label for="close_risks">&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCloseRisks']); ?></label></td></tr>
@@ -391,6 +423,8 @@
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" name="review_medium" id="review_medium" type="checkbox"<?php if ($review_medium) echo " checked" ?> /> <label for="review_medium">&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></label></td></tr>
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" name="review_high" id="review_high" type="checkbox"<?php if ($review_high) echo " checked" ?> /> <label for="review_high">&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></label></td></tr>
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" name="review_veryhigh" id="review_veryhigh" type="checkbox"<?php if ($review_veryhigh) echo " checked" ?> /> <label for="review_veryhigh">&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></label></td></tr>
+                                    <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input class="hidden-checkbox" id="check_compliance" name="check_compliance" type="checkbox" onclick="checkAllCompliance(this)" /> <label for="check_compliance"> &nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllCompliance']); ?></label></td></tr>
+                                    <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="compliance" name="compliance" type="checkbox"<?php if ($compliance) echo " checked" ?> /> <label for="compliance"> &nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToComplianceMenu']); ?></label> </td></tr>
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input class="hidden-checkbox" name="check_asset_mgmt" id="check_asset_mgmt" type="checkbox" onclick="checkAllAssetMgmt(this)" /> <label for="check_asset_mgmt">&nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllAssetMgmt']); ?></label></td></tr>
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" name="asset" id="asset" type="checkbox"<?php if ($asset) echo " checked" ?> /> <label for="asset">&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></label></td></tr>
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input class="hidden-checkbox" name="check_assessments" id="check_assessments" type="checkbox" onclick="checkAllAssessments(this)" /> <label for="check_assessments">&nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllAssessments']); ?></label></td></tr>

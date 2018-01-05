@@ -8,6 +8,7 @@ require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -53,6 +54,9 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../index.php");
   exit(0);
 }
+
+// Enforce that the user has access to risk management
+enforce_permission_riskmanagement();
 
 // Check if a risk ID was sent
 if (isset($_GET['id']) || isset($_POST['id']))
@@ -173,6 +177,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $source = $risk[0]['source'];
     $category = $risk[0]['category'];
     $team = $risk[0]['team'];
+    $additional_stakeholders = $risk[0]['additional_stakeholders'];
     $technology = $risk[0]['technology'];
     $owner = $risk[0]['owner'];
     $manager = $risk[0]['manager'];
@@ -230,7 +235,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $submitted_by = "";
     // If Risk ID exists.
     if(check_risk_by_id($id)){
-        $status = $lang["RiskTeamPermission"];
+        $status = $lang["RiskDisplayPermission"];
     }
     // If Risk ID does not exist.
     else{
@@ -244,6 +249,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $source = "";
     $category = "";
     $team = "";
+    $additional_stakeholders = "";
     $technology = "";
     $owner = "";
     $manager = "";
@@ -317,6 +323,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $security_recommendations = $mitigation[0]['security_recommendations'];
     $planning_date = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
     $mitigation_percent = isset($mitigation[0]['mitigation_percent']) ? $mitigation[0]['mitigation_percent'] : 0;
+    $mitigation_controls = isset($mitigation[0]['mitigation_controls']) ? $mitigation[0]['mitigation_controls'] : "";
   }
 
   // Get the management reviews for the risk
@@ -428,18 +435,22 @@ if (isset($_POST['submit']))
 <html>
 
 <head>
-  <script src="../js/jquery.min.js"></script>
-  <script src="../js/jquery-ui.js" type="text/javascript"></script>
-  <script src="../js/bootstrap.min.js"></script>
-  <script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
-  <script src="../js/highcharts/code/highcharts.js"></script>
-  <script src="../js/common.js"></script>
-  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-  <link rel="stylesheet" href="../css/display.css">
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/jquery-ui.js" type="text/javascript"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/jquery.dataTables.js"></script>
+    <script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
+    <script src="../js/highcharts/code/highcharts.js"></script>
+    <script src="../js/common.js"></script>
+
+    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="../css/jquery.dataTables.css">
+    <link rel="stylesheet" href="../css/display.css">
+
   <script type="text/javascript">
       function showScoreDetails() {
         document.getElementById("scoredetails").style.display = "";

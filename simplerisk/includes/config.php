@@ -11,13 +11,13 @@ define('DB_HOSTNAME', '127.0.0.1');
 define('DB_PORT', '3306');
 
 // MySQL Database User Name
-define('DB_USERNAME', 'simplerisk');
+define('DB_USERNAME', 'simplerisk-dev');
 
 // MySQL Database Password
-define('DB_PASSWORD', 'simplerisk');
+define('DB_PASSWORD', 'o11OiqJtJTpQkbzvjBGc');
 
 // MySQL Database Name
-define('DB_DATABASE', 'simplerisk');
+define('DB_DATABASE', 'simplerisk-dev');
 
 // Session last activity timeout (Default: 3600 = 1h)
 define('LAST_ACTIVITY_TIMEOUT', '3600');

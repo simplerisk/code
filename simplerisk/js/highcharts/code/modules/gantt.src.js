@@ -1,5 +1,5 @@
 /**
- * @license Highcharts JS v5.0.6 (2016-12-07)
+ * @license Highcharts JS v5.0.13 (2017-07-27)
  * Gantt series
  *
  * (c) 2016 Lars A. V. Cabrera
@@ -8,6 +8,7 @@
  *
  * License: www.highcharts.com/license
  */
+'use strict';
 (function(factory) {
     if (typeof module === 'object' && module.exports) {
         module.exports = factory;
@@ -22,7 +23,6 @@
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
 
         var dateFormat = H.dateFormat,
             each = H.each,
@@ -168,11 +168,11 @@
                     })
                     .addClass('highcharts-axis-title')
 
-                .css(axisTitleOptions.style)
+                    .css(axisTitleOptions.style)
 
-                // Add to axisParent instead of axisGroup, to ignore the space
-                // it takes
-                .add(axisParent);
+                    // Add to axisParent instead of axisGroup, to ignore the space
+                    // it takes
+                    .add(axisParent);
                 axis.axisTitle.isNew = true;
             }
 
@@ -546,12 +546,11 @@
     }(Highcharts));
     (function(H) {
         /**
-         * (c) 2014-2016 Highsoft AS
+         * (c) 2014-2017 Highsoft AS
          * Authors: Torstein Honsi, Lars A. V. Cabrera
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
 
         var defaultPlotOptions = H.getOptions().plotOptions,
             color = H.Color,
@@ -663,6 +662,10 @@
 
                     plotX = Math.max(plotX, -10);
                     plotX2 = Math.min(Math.max(plotX2, -10), xAxis.len + 10);
+
+                    if (plotX2 < plotX) { // #6107
+                        plotX2 = plotX;
+                    }
 
                     point.shapeArgs = {
                         x: plotX,
@@ -809,7 +812,6 @@
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
         // 
     }(Highcharts));
 }));

@@ -1,0 +1,20 @@
+{
+    "name": "simplesamlphp/simplesamlphp-module-saml2debug",
+    "description": "A module to debug encoding and decoding of SAML message for both the HTTP-redirect and HTTP-POST bindings.",
+    "type": "simplesamlphp-module",
+    "keywords": [ "simplesamlphp", "modules" ],
+    "authors": [
+        {
+            "name": "Andreas Åkre Solberg",
+            "email": "andreas.solberg@uninett.no"
+        },
+        {
+            "name": "Olav Morken",
+            "email": "olav.morken@uninett.no"
+        }
+    ],
+    "require": {
+        "simplesamlphp/composer-module-installer": "~1.0"
+    }
+}
+

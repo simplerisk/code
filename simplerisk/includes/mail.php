@@ -44,7 +44,7 @@ function get_mail_settings()
 /**********************************
  * FUNCTION: UPDATE MAIL SETTINGS *
  **********************************/
-function update_mail_settings($transport, $from_email, $from_name, $replyto_email, $replyto_name, $host, $smtpauth, $username, $password, $encryption, $port)
+function update_mail_settings($transport, $from_email, $from_name, $replyto_email, $replyto_name, $host, $smtpautotls, $smtpauth, $username, $password, $encryption, $port)
 {
         // Open the database connection
         $db = db_open();
@@ -91,12 +91,21 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
         $stmt->bindParam(":value", $host, PDO::PARAM_STR, 200);
         $stmt->execute();
 
+	// If the SMTP Auto TLS is either true or false
+	if ($smtpautotls == "true" || $smtpautotls == "false")
+	{
+		// Update the SMTP Auto TLS
+		$stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_smtpautotls'");
+		$stmt->bindParam(":value", $smtpautotls, PDO::PARAM_STR, 5);
+		$stmt->execute();
+	}
+
 	// If the SMTP Authentication is either true or false
 	if ($smtpauth == "true" || $smtpauth == "false")
 	{
 		// Update the smtp authentication
 		$stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_smtpauth'");
-		$stmt->bindParam(":value", $smtpauth, PDO::PARAM_STR, 200);
+		$stmt->bindParam(":value", $smtpauth, PDO::PARAM_STR, 5);
 		$stmt->execute();
 	}
 
@@ -149,6 +158,7 @@ function send_email($name, $email, $subject, $body)
         $replyto_email = $mail['phpmailer_replyto_email'];
         $replyto_name = $mail['phpmailer_replyto_name'];
         $host = $mail['phpmailer_host'];
+	$smtpautotls = $mail['phpmailer_smtpautotls'];
 	$smtpauth = $mail['phpmailer_smtpauth'];
         $username = $mail['phpmailer_username'];
         $password = $mail['phpmailer_password'];
@@ -160,6 +170,13 @@ function send_email($name, $email, $subject, $body)
 
 	// Create a new PHPMailer instance
 	$mail = new PHPMailer;
+
+	// If SMTP auto TLS is disabled
+	if ($smtpautotls == "false")
+	{
+		// Disable SMTP auto TLS
+		$mail->SMTPAutoTLS = false;
+	}
 
 	// Set the character set to UTF-8
 	$mail->CharSet = 'UTF-8';

@@ -8,6 +8,7 @@
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
 	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+	require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -53,6 +54,9 @@
                 header("Location: ../index.php");
                 exit(0);
         }
+
+	// Enforce that the user has access to risk management
+	enforce_permission_riskmanagement();
 
         // Check if the user has access to close risks
         if (!isset($_SESSION["close_risks"]) || $_SESSION["close_risks"] != 1)
@@ -108,7 +112,7 @@
                 {
                     // If Risk ID exists.
                     if(check_risk_by_id($id)){
-                        $status = $lang["RiskTeamPermission"];
+                        $status = $lang["RiskDisplayPermission"];
                     }
                     // If Risk ID does not exist.
                     else{
@@ -184,7 +188,7 @@
         <div class="span9">
           <div class="row-fluid">
             <div class="well">
-              <?php view_top_table($id, $calculated_risk, $subject, $status, false); ?>
+              <?php view_top_table($id, $calculated_risk, $subject, $status, false, $mitigation_percent); ?>
             </div>
           </div>
           

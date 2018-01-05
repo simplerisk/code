@@ -119,7 +119,7 @@ else
   echo "<div class=\"navbar\">\n";
   echo "<div class=\"navbar-inner\">\n";
   echo "<div class=\"container\">\n";
-  echo "<a class=\"brand\" href=\"http://www.simplerisk.org/\">SimpleRisk</a>\n";
+  echo "<a class=\"brand\" href=\"http://www.simplerisk.org/\"><img src='../images/logo@2x.png' alt='SimpleRisk' /></a>\n";
   echo "</div>\n";
   echo "</div>\n";
   echo "</div>\n";

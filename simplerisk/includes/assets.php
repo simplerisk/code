@@ -111,24 +111,24 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "")
 	$ip = trim($ip);
 	$value = trim($value);
 
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-	$stmt = $db->prepare("INSERT INTO `assets` (ip, name, value, location, team, details) VALUES (:ip, :name, :value, :location, :team, :details) ON DUPLICATE KEY UPDATE `name`=:name, `ip`=:ip, `value`=:value, `location`=:location, `team`=:team;, `details`=:details");
-        $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 15);
-        $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
+	$stmt = $db->prepare("INSERT INTO `assets` (ip, name, value, location, team, details) VALUES (:ip, :name, :value, :location, :team, :details) ON DUPLICATE KEY UPDATE `ip`=:ip, `value`=:value, `location`=:location, `team`=:team, `details`=:details");
+    $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 15);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
 	$stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
 	$stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
     $stmt->bindParam(":team", $team, PDO::PARAM_INT, 2);
 	$stmt->bindParam(":details", $details, PDO::PARAM_STR);
-        $return = $stmt->execute();
+    $return = $stmt->execute();
 
-        // Update the asset_id column in risks_to_assets
-        $stmt = $db->prepare("UPDATE `risks_to_assets` INNER JOIN `assets` ON `assets`.name = `risks_to_assets`.asset SET `risks_to_assets`.asset_id = `assets`.id;");
-	$return = $stmt->execute();
+    // Update the asset_id column in risks_to_assets
+    $stmt = $db->prepare("UPDATE `risks_to_assets` INNER JOIN `assets` ON `assets`.name = `risks_to_assets`.asset SET `risks_to_assets`.asset_id = `assets`.id;");
+$return = $stmt->execute();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
 	// Return success or failure
 	return $return;
@@ -324,17 +324,17 @@ function display_asset_table()
  ********************************/
 function get_entered_assets()
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        $stmt = $db->prepare("SELECT * FROM `assets` ORDER BY name;");
-        $stmt->execute();
+    $stmt = $db->prepare("SELECT * FROM `assets` ORDER BY name;");
+    $stmt->execute();
 
-        // Store the list in the assets array
-        $assets = $stmt->fetchAll();
+    // Store the list in the assets array
+    $assets = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
 	// Return the array of assets
 	return $assets;
@@ -385,9 +385,7 @@ function tag_assets_to_risk($risk_id, $assets, $entered_assets=false)
 	{
 		// Trim whitespace
 		$asset = trim($asset);
-//        print_r($entered_assets);exit;
         
-
 		// If the asset is not null
 		if ($asset != "")
 		{
@@ -788,20 +786,20 @@ function update_default_asset_valuation($value)
  *****************************************/
 function get_default_asset_valuation()
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Update the default asset valuation
-        $stmt = $db->prepare("SELECT value FROM `settings` WHERE name='default_asset_valuation'");
-        $stmt->execute();
+    // Update the default asset valuation
+    $stmt = $db->prepare("SELECT value FROM `settings` WHERE name='default_asset_valuation'");
+    $stmt->execute();
 
 	$value = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // Return the value
-        return $value[0][0];
+    // Return the value
+    return $value[0][0];
 }
 
 /***********************************
@@ -841,7 +839,7 @@ function get_asset_id_by_value($value){
         }
     }else{
         foreach($GLOBALS['asset_values'] as $asset_value){
-            if($asset_value['min_value'] == $min && $asset_value['max_value'] == $max){
+            if($asset_value['min_value'] <= $min && $asset_value['max_value'] >= $max){
                 $id = $asset_value['id'];
             }
         }
@@ -892,7 +890,7 @@ function get_asset_value_by_id($id="")
             if($asset_value['id'] == $id){
                 $value = $asset_value;
                 break;
-	}
+            }
         }
         
 	}
@@ -901,7 +899,7 @@ function get_asset_value_by_id($id="")
         $asset_value = get_setting("currency") . number_format($value['min_value']) . " to " . get_setting("currency") . number_format($value['max_value']);
     }else{
         $asset_value = "Undefined";
-	}
+    }
 
     // Return the asset value
     return $asset_value;

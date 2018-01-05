@@ -1,0 +1,10 @@
+simplesamlphp-aselect
+---------------------
+
+A-Select IdP support for SSP
+
+The debian packaging is maintained in Subversion:
+$Id: README.Debian 42819 2015-01-28 15:26:49Z wsl $
+$URL: https://svn.uvt.nl/its-id/trunk/sources/simplesamlphp-aselect/debian/README.Debian $
+
+ -- Wessel Dankers <wsl@fruit.je>  Wed, 28 Jan 2015 16:23:34 +0100

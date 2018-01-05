@@ -1,0 +1,20 @@
+{
+    "name": "simplesamlphp/simplesamlphp-module-autotest",
+    "description": "This module provides an interface to do automatic testing of authentication sources.",
+    "type": "simplesamlphp-module",
+    "keywords": [ "simplesamlphp", "modules" ],
+    "authors": [
+        {
+            "name": "Andreas Åkre Solberg",
+            "email": "andreas.solberg@uninett.no"
+        },
+        {
+            "name": "Olav Morken",
+            "email": "olav.morken@uninett.no"
+        }
+    ],
+    "require": {
+        "simplesamlphp/composer-module-installer": "~1.0"
+    }
+}
+

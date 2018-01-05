@@ -109,7 +109,7 @@
                 <option value="90"<?php echo ($days == 90) ? " selected" : ""; ?>>Past Quarter</option>
                 <option value="180"<?php echo ($days == 180) ? " selected" : ""; ?>>Past 6 Months</option>
                 <option value="365"<?php echo ($days == 365) ? " selected" : ""; ?>>Past Year</option>
-                <<option value="36500"<?php echo ($days == 36500) ? " selected" : ""; ?>>All Time</option>
+                <option value="36500"<?php echo ($days == 36500) ? " selected" : ""; ?>>All Time</option>
               </select>
               </form>
               <?php get_audit_trail(NULL, $days); ?>

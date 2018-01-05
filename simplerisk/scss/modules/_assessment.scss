@@ -1,0 +1,44 @@
+#edit-assessment-container{
+    #dataTable, .answers-table{
+        input{
+            max-width: none;
+            &[name="risk_score[]"]{
+                width: 63px;
+            }
+        }
+        td{
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+    }
+}
+
+.table.assessment-datatable{
+/*    margin-top: 13px;*/
+}
+
+.multiselect-container{
+    .multiselect-clear-filter{
+        display: none;
+    }
+    *{
+        max-width: none !important;
+    }
+    width: 100%;
+}
+
+.questionnaire-response{
+    .questionnaire-answers{
+        margin-left: 30px;
+        .answer-text{
+            top: 4px;
+            position: relative;
+        }
+    }
+    .button-container{
+        text-align: center;
+    }
+    form.disabled *{
+        pointer-events: none;
+    }
+}

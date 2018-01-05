@@ -1,12 +1,13 @@
 <?php
 // Include required functions file
-require_once(realpath(__DIR__ . '/../includes/functions.php'));
-require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-require_once(realpath(__DIR__ . '/../includes/display.php'));
-require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../../includes/functions.php'));
+require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
+require_once(realpath(__DIR__ . '/../../includes/display.php'));
+require_once(realpath(__DIR__ . '/../../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../../includes/permissions.php'));
 
 // Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
+require_once(realpath(__DIR__ . '/../../includes/Component_ZendEscaper/Escaper.php'));
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
@@ -39,7 +40,7 @@ if (!isset($_SESSION))
 require_once(language_file());
 global $lang;
 
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+require_once(realpath(__DIR__ . '/../../includes/csrf-magic/csrf-magic.php'));
 
 // Check for session timeout or renegotiation
 session_check();
@@ -50,6 +51,9 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../../index.php");
   exit(0);
 }
+
+// Enforce that the user has access to risk management
+enforce_permission_riskmanagement();
 
 ?>
 

@@ -14,7 +14,8 @@ function refreshFilelist($parent, currentButtonId){
             return;
         }
         $(this).attr("id", "file-upload-"+filesLength)
-        var name = $(this)[0].files[0].name;
+        var name = escapeHtml($(this)[0].files[0].name);
+        
         filesHtml += "<li >\
             <div class='file-name'>"+name+"</div>\
             <a href='#' class='remove-file' data-id='file-upload-"+filesLength+"'><i class='fa fa-remove'></i></a>\
@@ -35,6 +36,22 @@ function refreshFilelist($parent, currentButtonId){
     
 }
 /**
+* HTMLSPECIALCHARS
+* 
+* @param text
+*/
+function escapeHtml(text) {
+  var map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+
+  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+/**
 * popup when click "Score Using CVSS"
 * 
 * @param parent
@@ -47,11 +64,11 @@ function popupcvss(parent)
     var pattern = /cve\-\d{4}-\d{4}/i;
 
     // If the field is a CVE ID
-    if (cve_id.match(pattern))
+    if (cve_id !== undefined && cve_id.match(pattern))
     {
-        my_window = window.open('cvss_rating.php?cve_id='+ cve_id ,'popupwindow','width=850,height=680,menu=0,status=0');
+        my_window = window.open(BASE_URL + '/management/cvss_rating.php?cve_id='+ cve_id ,'popupwindow','width=850,height=680,menu=0,status=0');
     }
-    else my_window = window.open('cvss_rating.php','popupwindow','width=850,height=680,menu=0,status=0');
+    else my_window = window.open(BASE_URL + '/management/cvss_rating.php','popupwindow','width=850,height=680,menu=0,status=0');
     
 }
 
@@ -62,7 +79,7 @@ function popupcvss(parent)
 function popupdread(parent)
 {
     parentOfScores = parent;
-    my_window = window.open('dread_rating.php','popupwindow','width=660,height=500,menu=0,status=0');
+    my_window = window.open(BASE_URL + '/management/dread_rating.php','popupwindow','width=660,height=500,menu=0,status=0');
 }
 
 /**
@@ -72,7 +89,7 @@ function popupdread(parent)
 function popupowasp(parent)
 {
     parentOfScores = parent;
-    my_window = window.open('owasp_rating.php','popupwindow','width=665,height=570,menu=0,status=0');
+    my_window = window.open(BASE_URL + '/management/owasp_rating.php','popupwindow','width=665,height=570,menu=0,status=0');
 }
 
 function closepopup()
@@ -283,5 +300,5 @@ $(document).ready(function(){
     if($("#tab-container .multiselect").length){
         $("#tab-container .multiselect").multiselect();
     }
-    
+
 })

@@ -203,7 +203,6 @@ if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "dow
   <link rel="stylesheet" href="../css/jquery.dataTables.css">
   
   <link rel="stylesheet" href="../css/divshot-canvas.css">
-
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
 </head>

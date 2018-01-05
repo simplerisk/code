@@ -1,0 +1,19 @@
+{
+    "name": "simplesamlphp/simplesamlphp-module-infocard",
+    "description": "A SimpleSAMLphp module that works with Information Cards techcnologies.",
+    "type": "simplesamlphp-module",
+    "keywords": [ "simplesamlphp", "InfoCard" ],
+    "authors": [
+        {
+            "name": "Samuel Muñoz Hidalgo",
+            "email": "samuel.mh@gmail.com"
+        }
+    ],
+    "extra": {
+        "ssp-mixedcase-module-name": "InfoCard"
+    },
+    "require": {
+        "simplesamlphp/composer-module-installer": "~1.0"
+    }
+}
+

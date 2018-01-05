@@ -51,6 +51,7 @@
         'params' => '',
         'response' => '',
     );
+    
     if(!empty($_GET['option']) && function_exists("mock_".$_GET['option'])){
         call_user_func_array("mock_".$_GET['option'], array(&$view_options));
     }else{
@@ -227,7 +228,7 @@
     
     function mock_get_scoring_history(&$results){
         $results = array();
-        $results['url'] = "/api/management/risk/scoring_history?key={key}";
+        $results['url'] = "/api/management/risk/scoring_history?key={key}&id={risk_id}";
         $results['method'] = "GET";
         $results['params'] = 'id';
 
@@ -385,7 +386,7 @@
     
     function mock_get_risk_levels(&$results){
         $results = array();
-        $results['url'] = "/api/risk_levels";
+        $results['url'] = "/api/risk_levels?key={key}";
         $results['method'] = "GET";
         $results['params'] = '';
 
@@ -420,6 +421,77 @@
         
         return;
     }
+    
+    function mock_update_risk(&$results){
+        $results = array();
+        $results['url'] = "/api/management/risk/update?key={key}";
+        $results['method'] = "POST";
+        $results['params'] = '{
+          "id": "2287",
+          "subject": "blabla",
+          "category": "1",
+          "location": "6",
+          "reference_id": "",
+          "regulation": "3",
+          "control_number": "",
+          "assets": "credit card data, google-public-dns-a.google.com, ",
+          "technology": "8",
+          "team": "3",
+          "additional_stakeholders": "1,17,16,15",
+          "owner": "16",
+          "manager": "15",
+          "source": "4",
+          "scoring_method": "1",
+          "likelihood": "2",
+          "impact": "2",
+          "AccessVector": "N",
+          "AccessComplexity": "L",
+          "Authentication": "N",
+          "ConfImpact": "C",
+          "IntegImpact": "C",
+          "AvailImpact": "C",
+          "Exploitability": "ND",
+          "RemediationLevel": "ND",
+          "ReportConfidence": "ND",
+          "CollateralDamagePotential": "ND",
+          "TargetDistribution": "ND",
+          "ConfidentialityRequirement": "ND",
+          "IntegrityRequirement": "ND",
+          "AvailabilityRequirement": "ND",
+          "DREADDamage": "10",
+          "DREADReproducibility": "10",
+          "DREADExploitability": "10",
+          "DREADAffectedUsers": "10",
+          "DREADDiscoverability": "10",
+          "OWASPSkillLevel": "10",
+          "OWASPMotive": "10",
+          "OWASPOpportunity": "10",
+          "OWASPSize": "10",
+          "OWASPEaseOfDiscovery": "10",
+          "OWASPEaseOfExploit": "10",
+          "OWASPAwareness": "10",
+          "OWASPIntrusionDetection": "10",
+          "OWASPLossOfConfidentiality": "10",
+          "OWASPLossOfIntegrity": "10",
+          "OWASPLossOfAvailability": "10",
+          "OWASPLossOfAccountability": "10",
+          "OWASPFinancialDamage": "10",
+          "OWASPReputationDamage": "10",
+          "OWASPNonCompliance": "10",
+          "OWASPPrivacyViolation": "10",
+          "Custom": "",
+          "assessment": "Assessment",
+          "notes": "Additional notes"
+        }';
+
+        $results['response'] = '{
+          "status": 200,
+          "status_message": "Risk ID 2287 updated successfully!",
+          "data": null
+        }';
+        
+        return;
+    }
 ?>
 
 <!doctype html>
@@ -447,6 +519,14 @@
             </div>
             <div class="span10">
                 <?php echo $view_options['url']; ?>
+            </div>
+        </div>
+        <div class="row-fluid">
+            <div class="span2">
+                <label>Header:</label>
+            </div>
+            <div class="span10">
+                <strong>Content-Type</strong>: <span>application/x-www-form-urlencoded</span>
             </div>
         </div>
         <div class="row-fluid">

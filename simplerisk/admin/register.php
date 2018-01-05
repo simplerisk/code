@@ -207,6 +207,11 @@
 	        // Download the extra
         	$result = download_extra("separation");
 		}
+		else if (isset($_POST['get_governance_extra']))
+		{
+			// Download the extra
+			$result = download_extra("governance");
+		}
         // If the user wants to install the Risk Assessments Extra
         else if (isset($_POST['get_assessments_extra']))
         {

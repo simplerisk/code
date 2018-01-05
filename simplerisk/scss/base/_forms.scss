@@ -11,21 +11,23 @@ input[type="email"],
 input[type="date"],
 input[type="text"]{
 
-	border: 1px solid $border-color;
-	padding: 10px;
-	border-radius: 2px;
-	box-shadow: none;
-	height: 35px;
-	width: 100%;
-	outline: none;
-	max-width: 300px;
+    border: 1px solid $border-color;
+    padding: 10px;
+    border-radius: 2px;
+    box-shadow: none;
+    height: 35px;
+    width: 100%;
+    outline: none;
+    max-width: 300px;
 
-	&:disabled{
-		background-color: transparent;
-		border: 1px solid transparent;
-		font-weight: 700;
-		padding-left: 10px;
-	}
+    &:disabled{
+        background-color: transparent;
+        border: 1px solid transparent;
+        font-weight: 700;
+        padding-left: 10px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
 
 }
 
@@ -41,46 +43,46 @@ input[type="text"]{
 }
 
 select{
-	border-radius: 2px;
-	border: 1px solid $border-color;
-	height: 35px;
-	width: 100% !important;
-	outline: none !important;
-	font-family: $font-1;
-	max-width: 300px;
+    border-radius: 2px;
+    border: 1px solid $border-color;
+    height: 35px;
+    width: 100% !important;
+    outline: none !important;
+    font-family: $font-1;
+    max-width: 300px;
 
-	&:disabled{
-		-webkit-appearance: none;
-		-moz-appearance: none;
-		appearance: none;
-		background-color: transparent;
-		border: transparent;
-		font-weight: 700 !important;
-		padding-left: 10px;
-		cursor: default;
-	}
+    &:disabled{
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-color: transparent;
+        border: transparent;
+        font-weight: 700 !important;
+        padding-left: 10px;
+        cursor: default;
+    }
 }
 
 textarea:disabled{
-	@extend input[type="text"]:disabled;
+    @extend input[type="text"]:disabled;
 
 }
 textarea:focus{
-	@extend input[type="text"]:focus;
+    @extend input[type="text"]:focus;
 }
 textarea,
 textarea.form-control{
 
 
-	resize: both;
-	overflow: auto;
-	height: 100px;
+    resize: both;
+    overflow: auto;
+    height: 100px;
 
-	&:disabled{
-		resize:both;
-		padding: 5px 10px;
-		transition: inherit !important;
-	}
+    &:disabled{
+        resize:both;
+        padding: 5px 10px;
+        transition: inherit !important;
+    }
 
 }
 
@@ -95,7 +97,7 @@ textarea.form-control{
 .hidden-radio+label{
   position: relative;
   padding-left: 25px;
-	font-weight: 400;
+    font-weight: 400;
 }
 
 .hidden-checkbox+label:before,
@@ -116,7 +118,7 @@ textarea.form-control{
 
 .hidden-radio+label:before{
   border-radius:15px;
-	line-height: 21px;
+    line-height: 21px;
 }
 
 .hidden-checkbox:checked+label:before{
@@ -130,35 +132,35 @@ textarea.form-control{
 
 td[align="center"] .hidden-checkbox+label:before,
 td[align="center"] .hidden-radio+label:before{
-	left: 50%;
-	margin-left: -10px;
+    left: 50%;
+    margin-left: -10px;
 }
 
 input[type="text"]+input[type="submit"],textarea + input[type="submit"],
 textarea.form-control + input[type="submit"],
 select+input[type="submit"]{
-	margin-top: -10px;
+    margin-top: -10px;
 }
 
 
 .hidden-file-upload{
-	visibility: hidden;
+    visibility: hidden;
     display: none;
 }
 
 
 .file-uploader{
-	.file-count{
-		margin-left: 10px;
-		font-size: 13px;
-	}
+    .file-count{
+        margin-left: 10px;
+        font-size: 13px;
+    }
 
-	.file-list, .exist-files{
-		margin-top: 10px;
-		list-style: none;
-		margin-left: 0px;
-		color: #187bd0;
-		font-size: 14px;
+    .file-list, .exist-files{
+        margin-top: 10px;
+        list-style: none;
+        margin-left: 0px;
+        color: #187bd0;
+        font-size: 14px;
         >li{
             margin-bottom: 10px;
             .file-name{
@@ -176,13 +178,13 @@ select+input[type="submit"]{
                 display: table;
             }
         }
-	}
+    }
 
 }
 
 
 .delete-link-check{
-	margin: -3px 0px 0px 10px !important;
+    margin: -3px 0px 0px 10px !important;
 }
 
 .multiselect-holder{
@@ -219,4 +221,8 @@ textarea.saml_metadata_xml{
     min-height: 150px;
     resize: none;
     resize:vertical;
+}
+
+.large-control{
+    max-width: none !important;
 }

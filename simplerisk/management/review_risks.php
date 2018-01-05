@@ -8,6 +8,7 @@
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 
     // Include Zend Escaper for HTML Output Encoding
     require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -54,6 +55,9 @@
         exit(0);
     }
 
+    // Enforce that the user has access to risk management
+    enforce_permission_riskmanagement();
+
     // Record the page the workflow started from as a session variable
     $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 
@@ -67,6 +71,7 @@
             set_alert(true, "good", "Risk review submitted successfully!");
         }
     }
+
 ?>
 
 <!doctype html>
@@ -80,6 +85,7 @@
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/jquery.dataTables.js"></script>
     <script src="../js/cve_lookup.js"></script>
     <script src="../js/sorttable.js"></script>
     <script src="../js/common.js"></script>
@@ -89,15 +95,14 @@
 
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="../css/jquery.dataTables.css">
 
+    <link rel="stylesheet" href="../css/divshot-util.css">
+    <link rel="stylesheet" href="../css/divshot-canvas.css">
+    <link rel="stylesheet" href="../css/style.css">
 
-  <link rel="stylesheet" href="../css/divshot-util.css">
-  <link rel="stylesheet" href="../css/divshot-canvas.css">
-  <link rel="stylesheet" href="../css/style.css">
-
-  <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
     <?php display_asset_autocomplete_script(get_entered_assets()); ?>
 </head>
 

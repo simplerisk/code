@@ -1,0 +1,11 @@
+{
+	"openidtestpage": {
+		"es": "Prueba de autenticaci&oacute;n del cliente de OpenID",
+		"ru": "\u041f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u0430\u0443\u0442\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0446\u0438\u0438 \u043a\u043b\u0438\u0435\u043d\u0442\u0430 OpenID",
+		"zh-tw": "OpenID \u6d88\u8cbb\u8005\u8a8d\u8b49\u6e2c\u8a66",
+		"nl": "OpenID Consumer authenticatietest",
+		"da": "Test af OpenID klient-autentificering",
+		"af": "OpenID Verbruikers Verifikasie Toets",
+		"pt-br": "OpenID Teste de autentica\u00e7\u00e3o do consumidor"
+	}
+}

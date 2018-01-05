@@ -6,7 +6,8 @@
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-	require_once(realpath(__DIR__ . '/../includes/display.php'));
+    require_once(realpath(__DIR__ . '/../includes/display.php'));
+    require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 
 	// Include Zend Escaper for HTML Output Encoding
 	require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -52,6 +53,9 @@
         header("Location: ../index.php");
         exit(0);
     }
+
+    // Enforce that the user has access to risk management
+    enforce_permission_riskmanagement();
 
     // Check if a risk ID was sent
     if (isset($_GET['id']))
@@ -147,7 +151,7 @@
 		{
             // If Risk ID exists.
             if(check_risk_by_id($id)){
-                $status = $lang["RiskTeamPermission"];
+                $status = $lang["RiskDisplayPermission"];
             }
             // If Risk ID does not exist.
             else{
@@ -306,7 +310,7 @@
           <div class="row-fluid">
             <div class="well">
               <h4><?php echo $lang['AuditTrail']; ?></h4>
-              <?php get_audit_trail($id,36500); ?>
+              <?php get_audit_trail($id,36500,'risk'); ?>
             </div>
           </div>
         </div>

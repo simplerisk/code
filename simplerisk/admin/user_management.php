@@ -73,6 +73,9 @@ if (isset($_POST['add_user']))
     $repeat_pass = $_POST['repeat_password'];
     $teams = isset($_POST['team']) ? $_POST['team'] : array('none');
     $admin = isset($_POST['admin']) ? '1' : '0';
+    $governance = isset($_POST['governance']) ? '1' : '0';
+    $riskmanagement = isset($_POST['riskmanagement']) ? '1' : '0';
+    $compliance = isset($_POST['compliance']) ? '1' : '0';
     $assessments = isset($_POST['assessments']) ? '1' : '0';
     $asset = isset($_POST['asset']) ? '1' : '0';
     $submit_risks = isset($_POST['submit_risks']) ? '1' : '0';
@@ -174,7 +177,7 @@ if (isset($_POST['add_user']))
                 if ($none) $team = "none";
 
                 // Insert a new user
-                add_user($type, $user, $email, $name, $salt, $hash, $team, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor, $change_password);
+                add_user($type, $user, $email, $name, $salt, $hash, $team, $governance, $riskmanagement, $compliance, $assessments, $asset, $admin, $review_veryhigh, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor, $change_password);
 
                 // If the encryption extra is enabled
                 if (encryption_extra())
@@ -385,8 +388,18 @@ function checkAll(bx) {
 //    }
 }
 
+function checkAllGovernance(bx) {
+    if (document.getElementsByName("check_governance")[0].checked == true) {
+        document.getElementsByName("governance")[0].checked = true;
+    }
+    else {
+        document.getElementsByName("governance")[0].checked = false;
+    }
+}
+
 function checkAllRiskMgmt(bx) {
     if (document.getElementsByName("check_risk_mgmt")[0].checked == true) {
+        document.getElementsByName("riskmanagement")[0].checked = true;
         document.getElementsByName("submit_risks")[0].checked = true;
         document.getElementsByName("modify_risks")[0].checked = true;
         document.getElementsByName("close_risks")[0].checked = true;
@@ -398,6 +411,7 @@ function checkAllRiskMgmt(bx) {
         document.getElementsByName("review_veryhigh")[0].checked = true;
     }
     else {
+        document.getElementsByName("riskmanagement")[0].checked = false;
         document.getElementsByName("submit_risks")[0].checked = false;
         document.getElementsByName("modify_risks")[0].checked = false;
         document.getElementsByName("close_risks")[0].checked = false;
@@ -407,6 +421,15 @@ function checkAllRiskMgmt(bx) {
         document.getElementsByName("review_medium")[0].checked = false;
         document.getElementsByName("review_high")[0].checked = false;
         document.getElementsByName("review_veryhigh")[0].checked = false;
+    }
+}
+
+function checkAllCompliance(bx) {
+    if (document.getElementsByName("check_compliance")[0].checked == true) {
+        document.getElementsByName("compliance")[0].checked = true;
+    }
+    else {
+        document.getElementsByName("compliance")[0].checked = false;
     }
 }
 
@@ -495,9 +518,18 @@ function checkAllConfigure(bx) {
                                   <li><input name="check_all" class="hidden-checkbox" id="check_all" type="checkbox" onclick="checkAll(this)" /> <label for="check_all"> <?php echo $escaper->escapeHtml($lang['CheckAll']); ?> </label> </li>
                                   <li>
                                     <ul>
+                                        <li><input class="hidden-checkbox" id="check_governance" name="check_governance" type="checkbox" onclick="checkAllGovernance(this)"> <label for="check_governance"><?php echo $escaper->escapeHtml($lang['CheckAllGovernance']); ?></label></li>
+                                        <li>
+                                            <ul>
+                                            <li><input class="hidden-checkbox" id="governance" name="governance" type="checkbox" /> <label for="governance"><?php echo $escaper->escapeHtml($lang['AllowAccessToGovernanceMenu']); ?></label></li>
+                                          </ul>
+                                        </li>
+                                    </ul>
+                                    <ul>
                                         <li><input class="hidden-checkbox" id="check_risk_mgmt" name="check_risk_mgmt" type="checkbox" onclick="checkAllRiskMgmt(this)"> <label for="check_risk_mgmt"><?php echo $escaper->escapeHtml($lang['CheckAllRiskMgmt']); ?></label></li>
                                         <li>
                                             <ul>
+                                            <li><input class="hidden-checkbox" id="riskmanagement" name="riskmanagement" type="checkbox" /> <label for="riskmanagement"><?php echo $escaper->escapeHtml($lang['AllowAccessToRiskManagementMenu']); ?></label></li>
                                             <li><input class="hidden-checkbox" id="submit_risks" name="submit_risks" type="checkbox" />   <label for="submit_risks"><?php echo $escaper->escapeHtml($lang['AbleToSubmitNewRisks']); ?></label></li>
                                             <li><input class="hidden-checkbox" id="modify_risks" name="modify_risks" type="checkbox" />   <label for="modify_risks"><?php echo $escaper->escapeHtml($lang['AbleToModifyExistingRisks']); ?></label></li>
                                             <li><input class="hidden-checkbox" id="close_risks" name="close_risks" type="checkbox" />    <label for="close_risks"><?php echo $escaper->escapeHtml($lang['AbleToCloseRisks']); ?></label></li>
@@ -507,6 +539,14 @@ function checkAllConfigure(bx) {
                                             <li><input class="hidden-checkbox" id="review_medium" name="review_medium" type="checkbox" />  <label for="review_medium"><?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></label></li>
                                             <li><input class="hidden-checkbox" id="review_high" name="review_high" type="checkbox" />  <label for="review_high"><?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></label></li>
                                             <li><input class="hidden-checkbox" id="review_veryhigh" name="review_veryhigh" type="checkbox" />  <label for="review_veryhigh"><?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></label></li>
+                                          </ul>
+                                        </li>
+                                    </ul>
+                                    <ul>
+                                        <li><input class="hidden-checkbox" id="check_compliance" name="check_compliance" type="checkbox" onclick="checkAllCompliance(this)"> <label for="check_compliance"><?php echo $escaper->escapeHtml($lang['CheckAllCompliance']); ?></label></li>
+                                        <li>
+                                            <ul>
+                                            <li><input class="hidden-checkbox" id="compliance" name="compliance" type="checkbox" /> <label for="compliance"><?php echo $escaper->escapeHtml($lang['AllowAccessToComplianceMenu']); ?></label></li>
                                           </ul>
                                         </li>
                                     </ul>
@@ -548,7 +588,7 @@ function checkAllConfigure(bx) {
                                 </tr>
                             </table>
                             <h6><u><?php echo $escaper->escapeHtml($lang['MultiFactorAuthentication']); ?></u></h6>
-                            <input class="hidden-radio" id="none" type="radio" name="multi_factor" value="1" checked /><label for="none">&nbsp;<?php echo $escaper->escapeHtml($lang['None']); ?></label>
+                            <input id="none" type="radio" name="multi_factor" value="1" checked />&nbsp;<?php echo $escaper->escapeHtml($lang['None']); ?><br />
                             <?php
                                 // If the custom authentication extra is installed
                                 if (custom_authentication_extra())

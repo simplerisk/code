@@ -170,6 +170,18 @@ function display($display = "")
         </div>
       </div>
     </div>
+    <script>
+        $(document).ready(function(){
+            $("#cron_period").change(function(){
+                var period = $(this).val();
+                $(".specified_time_holder").hide();
+                $("input, select", ".specified_time_holder").prop('disabled', true);
+                
+                $("#specified_" + period).show();
+                $("input, select", "#specified_" + period).prop('disabled', false);
+            })
+        })
+    </script>
   </body>
 
 </html>

@@ -183,7 +183,7 @@ function check_web_connectivity()
 function check_php_extensions()
 {
 	// List of extensions to check for
-	$extensions = array("mysql", "pdo", "pdo_mysql", "mcrypt", "json", "phar", "zlib", "mbstring");
+	$extensions = array("mysql", "pdo", "pdo_mysql", "mcrypt", "json", "phar", "zlib", "mbstring", "ldap");
 
 	// For each extension
 	foreach ($extensions as $extension)

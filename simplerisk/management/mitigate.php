@@ -8,6 +8,7 @@ require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -53,6 +54,9 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../index.php");
   exit(0);
 }
+
+// Enforce that the user has access to risk management
+enforce_permission_riskmanagement();
 
 // Check if the user has access to plan mitigations
 if (!isset($_SESSION["plan_mitigations"]) || $_SESSION["plan_mitigations"] != 1)
@@ -183,6 +187,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $source = $risk[0]['source'];
     $category = $risk[0]['category'];
     $team = $risk[0]['team'];
+    $additional_stakeholders = $risk[0]['additional_stakeholders'];
     $technology = $risk[0]['technology'];
     $owner = $risk[0]['owner'];
     $manager = $risk[0]['manager'];
@@ -243,7 +248,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $submitted_by = "";
     // If Risk ID exists.
     if(check_risk_by_id($id)){
-        $status = $lang["RiskTeamPermission"];
+        $status = $lang["RiskDisplayPermission"];
     }
     // If Risk ID does not exist.
     else{
@@ -257,6 +262,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $source = "";
     $category = "";
     $team = "";
+    $additional_stakeholders = "";
     $technology = "";
     $owner = "";
     $manager = "";
@@ -311,6 +317,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $security_recommendations   = "";
     $planning_date      = "";
     $mitigation_percent = 0;
+    $mitigation_controls = "";
   }
   // If a mitigation exists
   else
@@ -328,6 +335,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $security_recommendations   = $mitigation[0]['security_recommendations'];
     $planning_date      = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
     $mitigation_percent = isset($mitigation[0]['mitigation_percent']) ? $mitigation[0]['mitigation_percent'] : 0;
+    $mitigation_controls = isset($mitigation[0]['mitigation_controls']) ? $mitigation[0]['mitigation_controls'] : "";
   }
 
   // Get the management reviews for the risk

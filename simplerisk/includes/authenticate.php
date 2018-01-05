@@ -197,12 +197,12 @@ function set_user_permissions($user, $pass, $upgrade = false)
         if (get_setting('strict_user_validation') == 0)
         {
             // Query the DB for the users complete information
-            $stmt = $db->prepare("SELECT value, type, name, lang, assessments, asset, admin, custom_display_settings, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
+            $stmt = $db->prepare("SELECT value, type, name, lang, governance, riskmanagement, compliance, assessments, asset, admin, custom_display_settings, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
         }
         else
         {
             // Query the DB for the users complete information
-            $stmt = $db->prepare("SELECT value, type, name, lang, assessments, asset, admin, custom_display_settings, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
+            $stmt = $db->prepare("SELECT value, type, name, lang, governance, riskmanagement, compliance, assessments, asset, admin, custom_display_settings, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
         }
     }
     // If we are doing an upgrade
@@ -243,6 +243,9 @@ function set_user_permissions($user, $pass, $upgrade = false)
     if (!$upgrade)
     {
         // Set additional session values
+	$_SESSION['governance'] = $array[0]['governance'];
+	$_SESSION['riskmanagement'] = $array[0]['riskmanagement'];
+	$_SESSION['compliance'] = $array[0]['compliance'];
         $_SESSION['assessments'] = $array[0]['assessments'];
         $_SESSION['asset'] = $array[0]['asset'];
         $_SESSION['review_veryhigh'] = $array[0]['review_veryhigh'];
@@ -342,7 +345,6 @@ function is_valid_simplerisk_user($user, $pass)
     // If the passwords are equal
     if (($providedPassword == $storedPassword) || ($oldProvidedPassword == $storedPassword))
     {
-        
         return true;
     }
     else return false;
@@ -562,7 +564,10 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
     {
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-        if(activated_user($username)){
+        
+        // Check if can be encrypted from external
+        if(!check_encryption_from_external($username)){
+            
             // Display an alert
             set_alert(true, "bad", $escaper->escapeHtml($lang['ResetPasswordMessageInUserLevelEncryption']));
 

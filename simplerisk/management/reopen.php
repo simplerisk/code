@@ -6,6 +6,7 @@
         // Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+	require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -51,6 +52,9 @@
                 header("Location: ../index.php");
                 exit(0);
         }
+
+        // Enforce that the user has access to risk management
+        enforce_permission_riskmanagement();
 
         // Check if a risk ID was sent
         if (isset($_GET['id']) || isset($_POST['id']))

@@ -9,6 +9,7 @@ require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/assets.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -55,6 +56,9 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../index.php");
   exit(0);
 }
+
+// Enforce that the user has access to risk management
+enforce_permission_riskmanagement();
 
 // Check if the user has access to submit risks
 if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1)
@@ -217,6 +221,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <script src="../js/jquery.min.js"></script>
         <script src="../js/jquery-ui.min.js"></script>
         <script src="../js/bootstrap.min.js"></script>
+        <script src="../js/jquery.dataTables.js"></script>
         <script src="../js/cve_lookup.js"></script>
         <script src="../js/basescript.js"></script>
         <script src="../js/common.js"></script>
@@ -229,6 +234,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
         <link rel="stylesheet" href="../css/bootstrap.css">
         <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+        <link rel="stylesheet" href="../css/jquery.dataTables.css">
         <link rel="stylesheet" href="../css/divshot-util.css">
         <link rel="stylesheet" href="../css/divshot-canvas.css">
         <link rel="stylesheet" href="../css/style.css">

@@ -56,7 +56,7 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 
 $teamOptions = get_teams_by_login_user();
 array_unshift($teamOptions, array(
-    'value' => "0",
+    'value' => "",
     'name' => $lang['Unassigned'],
 ));
 
@@ -129,7 +129,7 @@ $pie_array = get_pie_array(null, $teams);
       </div>
       <div class="span9">
         <div class="row-fluid">
-          <h3><?php echo $escaper->escapeHtml($lang['OpenRisks']); ?> (<?php echo $escaper->escapeHtml(get_open_risks()); ?>)</h3>
+          <h3><?php echo $escaper->escapeHtml($lang['OpenRisks']); ?> (<?php echo $escaper->escapeHtml(get_open_risks($teams)); ?>)</h3>
         </div>
         <div class="row-fluid" style="margin-top: -8px;">
             <div class="span4">

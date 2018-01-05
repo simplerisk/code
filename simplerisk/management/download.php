@@ -6,6 +6,7 @@
         // Include required functions file
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+	require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 
         // Add various security headers
         header("X-Frame-Options: DENY");
@@ -47,6 +48,9 @@
                 header("Location: ../index.php");
                 exit(0);
         }
+
+        // Enforce that the user has access to risk management
+        enforce_permission_riskmanagement();
 
         // Check if a file id was sent
         if (isset($_GET['id']) || isset($_POST['id']))

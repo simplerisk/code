@@ -61,7 +61,7 @@ a.add-comments.pull-right {
 }
 
 .collapsible--toggle{
-  position: relative;
+/*  position: relative;*/
   z-index: 10;
 }
 
@@ -79,4 +79,9 @@ form#comment{
     transform: rotate(45deg);
   }
 
+}
+
+.assessment-comment{
+    width: 100%;
+    margin-top: 15px;
 }

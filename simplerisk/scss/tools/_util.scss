@@ -169,6 +169,12 @@
 	line-height: 33px !important;
 }
 
+.item-block:nth-child(even){
+    .control-block--header, .framework-block--header {
+      background-color: #ececec; 
+    }
+}
+
 .project-block:nth-child(even) .project-block--header{
 	background-color: #ececec;
 }
@@ -250,6 +256,8 @@ div#show-alert + #tab-content-container .tab-data {
 		}
 	}
 
+}
 
-
+.dropdown-menu > li > a > label{
+    color: #333333;
 }

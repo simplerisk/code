@@ -1,0 +1,22 @@
+{
+    "name": "simplesamlphp/simplesamlphp-module-aggregator2",
+    "description": "A SAML 2.0 metadata aggregator for SimpleSAMLphp.",
+    "type": "simplesamlphp-module",
+    "keywords": [ "saml2", "metadata" ],
+    "homepage": "http://simplesamlphp.org",
+    "license": "LGPL-2.1",
+    "authors": [
+        {
+            "name": "Olav Morken",
+            "email": "olav.morken@uninett.no"
+        },
+        {
+            "name": "Jaime Pérez",
+            "email": "jaime.perez@uninett.no"
+        }
+    ],
+    "require": {
+        "simplesamlphp/composer-module-installer": "~1.0"
+    }
+}
+

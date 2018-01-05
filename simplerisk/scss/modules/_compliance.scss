@@ -1,0 +1,53 @@
+.compliance-content-container{                   
+    .add-test{
+        margin-right: 10px;
+        margin-bottom: 5px;
+    }
+    .framework-control-test-list{
+        margin-left: 10px;
+        margin-right: 10px;
+        .table.table-bordered{
+            border-bottom: 1px solid #dddddd;
+            th{
+                border-bottom: none;
+            }
+        }
+        .delete-row, .edit-test{
+            display: inline-block;
+        }
+    }
+    .text-left{
+        text-align: left;
+    }
+    .comments--wrapper{
+        margin-top: 0px;
+    }
+}
+
+#framework-controls{
+    .sorting_1{
+        padding: 0px;
+    }
+    
+    td{
+        vertical-align: top;
+    }
+}
+
+.red-background{
+    background: pink;
+}
+
+.green-background{
+    background: lightgreen;
+}
+
+#active-audits.table.table-bordered{
+    td{
+/*        padding: 0px;*/
+        > div{
+/*            padding: 10px*/
+        }
+    }
+}
+

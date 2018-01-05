@@ -1,3 +1,15 @@
 .caret{
     vertical-align: middle;
 }
+
+#delete_mapping{
+    position: relative;
+    top: -4px;
+}
+
+.specified_time_holder{
+    display: none;
+    select{
+        width: auto;
+    }
+}

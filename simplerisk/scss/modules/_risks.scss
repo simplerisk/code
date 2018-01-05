@@ -2,6 +2,7 @@
   padding-top: 5px;
   position: relative;
   z-index: 1030;
+  margin-bottom: 20px;
 
   .span9{
     padding: 0px;
@@ -11,9 +12,11 @@
 }
 
 .tab-data{
-  padding-top: 51px;
+/*  padding-top: 51px;*/
+  &.plan-projects{
+      padding-top: 0px;
+  }
 }
-
 
 .tabs div.tab.add {
     margin-left: 0px;
@@ -153,10 +156,11 @@
     width: 120px;
     height: 120px;
     text-align: center;
+    float: left;
 
     span{
       display: block;
-      font-size: 50px;
+      font-size: 30px;
       font-weight: 400;
       line-height: auto;
     }
@@ -184,6 +188,7 @@
 
   .score{
     margin-bottom: 20px;
+    margin-right: 10px;
   }
 
   .row-fluid .span2 {
@@ -254,16 +259,16 @@
 
 
 .score--wrapper{
-  width: 130px;
+  width: 260px;
   float: left;
 /*  margin-bottom: 25px; */
 }
 
 .details--wrapper{
   float: left;
-  padding-right: 130px;
+  padding-right: 260px;
   width: 100%;
-  margin-right: -130px;
+  margin-right: -260px;
 }
 
 #risk-submit-form{
@@ -345,16 +350,28 @@ div.doc-link {
       margin-left: 10px;
     }
 }
-#risk-table-container{
-    padding-bottom: 50px;
-    .risk-datatable{
-        &.table-bordered{
-            margin-bottom: 0px;
-        }
-         thead th{
+
+.risk-datatable{
+    &.table-bordered{
+        margin-bottom: 0px;
+    }
+    &.dataTable{
+        thead th, table.dataTable thead td{
             border-bottom: 0px;
         }
     }
+    &.dataTable.no-footer{
+        border-bottom: 1px solid #dddddd;
+    }
+    &.table.dataTable thead{
+        .sorting_asc, .sorting_desc{
+            background-image: none;
+        }
+    } 
+}
+
+#risk-table-container{
+    padding-bottom: 50px;
     .dataTables_wrapper.no-footer .dataTables_scrollBody{
         border-bottom: 0px;
     }
@@ -377,6 +394,13 @@ div.doc-link {
 
 #risks-open-by-team-container{
     margin-top: 14px;
+}
+
+.select-mitigating-controls{
+    margin-top: 10px;
+}
+.mitigation-controls-table-container td.sorting_1{
+    padding: 0px;
 }
 
 /*------------------------------------------------------------

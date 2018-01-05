@@ -1,10 +1,11 @@
 /**
- * @license Highcharts JS v5.0.6 (2016-12-07)
+ * @license Highcharts JS v5.0.13 (2017-07-27)
  *
  * (c) 2009-2016 Torstein Honsi
  *
  * License: www.highcharts.com/license
  */
+'use strict';
 (function(factory) {
     if (typeof module === 'object' && module.exports) {
         module.exports = factory;
@@ -14,12 +15,12 @@
 }(function(Highcharts) {
     (function(H) {
         /**
-         * (c) 2010-2016 Torstein Honsi
+         * (c) 2010-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
-        var each = H.each,
+        var CenteredSeriesMixin = H.CenteredSeriesMixin,
+            each = H.each,
             extend = H.extend,
             merge = H.merge,
             splat = H.splat;
@@ -27,92 +28,310 @@
          * The Pane object allows options that are common to a set of X and Y axes.
          *
          * In the future, this can be extended to basic Highcharts and Highstock.
+         *
          */
-        function Pane(options, chart, firstAxis) {
-            this.init(options, chart, firstAxis);
+        function Pane(options, chart) {
+            this.init(options, chart);
         }
 
         // Extend the Pane prototype
         extend(Pane.prototype, {
 
+            coll: 'pane', // Member of chart.pane
+
             /**
              * Initiate the Pane object
              */
-            init: function(options, chart, firstAxis) {
-                var pane = this,
-                    backgroundOption,
-                    defaultOptions = pane.defaultOptions;
+            init: function(options, chart) {
+                this.chart = chart;
+                this.background = [];
 
-                pane.chart = chart;
+                chart.pane.push(this);
+
+                this.setOptions(options);
+            },
+
+            setOptions: function(options) {
 
                 // Set options. Angular charts have a default background (#3318)
-                pane.options = options = merge(defaultOptions, chart.angular ? {
-                    background: {}
-                } : undefined, options);
+                this.options = options = merge(
+                    this.defaultOptions,
+                    this.chart.angular ? {
+                        background: {}
+                    } : undefined,
+                    options
+                );
+            },
 
-                backgroundOption = options.background;
+            /**
+             * Render the pane with its backgrounds.
+             */
+            render: function() {
 
-                // To avoid having weighty logic to place, update and remove the backgrounds,
-                // push them to the first axis' plot bands and borrow the existing logic there.
+                var options = this.options,
+                    backgroundOption = this.options.background,
+                    renderer = this.chart.renderer,
+                    len,
+                    i;
+
+                if (!this.group) {
+                    this.group = renderer.g('pane-group')
+                        .attr({
+                            zIndex: options.zIndex || 0
+                        })
+                        .add();
+                }
+
+                this.updateCenter();
+
+                // Render the backgrounds
                 if (backgroundOption) {
-                    each([].concat(splat(backgroundOption)).reverse(), function(config) {
-                        var mConfig,
-                            axisUserOptions = firstAxis.userOptions;
-                        mConfig = merge(pane.defaultBackgroundOptions, config);
+                    backgroundOption = splat(backgroundOption);
 
+                    len = Math.max(
+                        backgroundOption.length,
+                        this.background.length || 0
+                    );
 
-                        if (config.backgroundColor) {
-                            mConfig.backgroundColor = config.backgroundColor;
+                    for (i = 0; i < len; i++) {
+                        if (backgroundOption[i] && this.axis) { // #6641 - if axis exists, chart is circular and apply background
+                            this.renderBackground(
+                                merge(
+                                    this.defaultBackgroundOptions,
+                                    backgroundOption[i]
+                                ),
+                                i
+                            );
+                        } else if (this.background[i]) {
+                            this.background[i] = this.background[i].destroy();
+                            this.background.splice(i, 1);
                         }
-                        mConfig.color = mConfig.backgroundColor; // due to naming in plotBands
-
-
-                        firstAxis.options.plotBands.unshift(mConfig);
-                        axisUserOptions.plotBands = axisUserOptions.plotBands || []; // #3176
-                        if (axisUserOptions.plotBands !== firstAxis.options.plotBands) {
-                            axisUserOptions.plotBands.unshift(mConfig);
-                        }
-                    });
+                    }
                 }
             },
 
             /**
+             * Render an individual pane background.
+             * @param  {Object} backgroundOptions Background options
+             * @param  {number} i The index of the background in this.backgrounds
+             */
+            renderBackground: function(backgroundOptions, i) {
+                var method = 'animate';
+
+                if (!this.background[i]) {
+                    this.background[i] = this.chart.renderer.path()
+                        .add(this.group);
+                    method = 'attr';
+                }
+
+                this.background[i][method]({
+                    'd': this.axis.getPlotBandPath(
+                        backgroundOptions.from,
+                        backgroundOptions.to,
+                        backgroundOptions
+                    )
+                }).attr({
+
+                    'fill': backgroundOptions.backgroundColor,
+                    'stroke': backgroundOptions.borderColor,
+                    'stroke-width': backgroundOptions.borderWidth,
+
+                    'class': 'highcharts-pane ' + (backgroundOptions.className || '')
+                });
+
+            },
+
+            /**
              * The default options object
+             * @optionparent pane
              */
             defaultOptions: {
                 // background: {conditional},
+
+                /**
+                 * The center of a polar chart or angular gauge, given as an array
+                 * of [x, y] positions. Positions can be given as integers that transform
+                 * to pixels, or as percentages of the plot area size.
+                 * 
+                 * @type {Array<String|Number>}
+                 * @sample {highcharts} highcharts/demo/gauge-vu-meter/ Two gauges with different center
+                 * @default ["50%", "50%"]
+                 * @since 2.3.0
+                 * @product highcharts
+                 */
                 center: ['50%', '50%'],
+
+                /**
+                 * The size of the pane, either as a number defining pixels, or a
+                 * percentage defining a percentage of the plot are.
+                 * 
+                 * @type {Number|String}
+                 * @sample {highcharts} highcharts/demo/gauge-vu-meter/ Smaller size
+                 * @default 85%
+                 * @product highcharts
+                 */
                 size: '85%',
+
+                /**
+                 * The start angle of the polar X axis or gauge axis, given in degrees
+                 * where 0 is north. Defaults to 0.
+                 * 
+                 * @type {Number}
+                 * @sample {highcharts} highcharts/demo/gauge-vu-meter/ VU-meter with custom start and end angle
+                 * @since 2.3.0
+                 * @product highcharts
+                 */
                 startAngle: 0
-                    //endAngle: startAngle + 360
+                //endAngle: startAngle + 360
             },
 
             /**
              * The default background options
+             * @optionparent pane.background
              */
             defaultBackgroundOptions: {
-                className: 'highcharts-pane',
+                //className: 'highcharts-pane',
+
+                /**
+                 * Tha shape of the pane background. When `solid`, the background
+                 * is circular. When `arc`, the background extends only from the min
+                 * to the max of the value axis.
+                 * 
+                 * @validvalue ["solid", "arc"]
+                 * @type {String}
+                 * @default solid
+                 * @since 2.3.0
+                 * @product highcharts
+                 */
                 shape: 'circle',
 
+
+                /**
+                 * The pixel border width of the pane background.
+                 * 
+                 * @type {Number}
+                 * @default 1
+                 * @since 2.3.0
+                 * @product highcharts
+                 */
                 borderWidth: 1,
+
+                /**
+                 * The pane background border color.
+                 * 
+                 * @type {Color}
+                 * @default #cccccc
+                 * @since 2.3.0
+                 * @product highcharts
+                 */
                 borderColor: '#cccccc',
+
+                /**
+                 * The background color or gradient for the pane.
+                 * 
+                 * @type {Color}
+                 * @since 2.3.0
+                 * @product highcharts
+                 */
                 backgroundColor: {
+
+                    /**
+                     */
+
+                    /**
+                     */
+
+                    /**
+                     */
+
+                    /**
+                     */
+
+                    /**
+                     */
                     linearGradient: {
                         x1: 0,
                         y1: 0,
                         x2: 0,
                         y2: 1
                     },
+
+                    /**
+                     */
                     stops: [
                         [0, '#ffffff'],
                         [1, '#e6e6e6']
                     ]
                 },
 
+
+                /**
+                 */
                 from: -Number.MAX_VALUE, // corrected to axis min
+
+                /**
+                 * The inner radius of the pane background. Can be either numeric
+                 * (pixels) or a percentage string.
+                 * 
+                 * @type {Number|String}
+                 * @default 0
+                 * @since 2.3.0
+                 * @product highcharts
+                 */
                 innerRadius: 0,
+
+                /**
+                 */
                 to: Number.MAX_VALUE, // corrected to axis max
+
+                /**
+                 * The outer radius of the circular pane background. Can be either
+                 * numeric (pixels) or a percentage string.
+                 * 
+                 * @type {Number|String}
+                 * @default 105%
+                 * @since 2.3.0
+                 * @product highcharts
+                 */
                 outerRadius: '105%'
+            },
+
+            /**
+             * Gets the center for the pane and its axis.
+             */
+            updateCenter: function(axis) {
+                this.center = (axis || this.axis || {}).center =
+                    CenteredSeriesMixin.getCenter.call(this);
+            },
+
+            /**
+             * Destroy the pane item
+             * /
+            destroy: function () {
+            	H.erase(this.chart.pane, this);
+            	each(this.background, function (background) {
+            		background.destroy();
+            	});
+            	this.background.length = 0;
+            	this.group = this.group.destroy();
+            },
+            */
+
+            /**
+             * Update the pane item with new options
+             * @param  {Object} options New pane options
+             */
+            update: function(options, redraw) {
+
+                merge(true, this.options, options);
+                this.setOptions(this.options);
+                this.render();
+                each(this.chart.axes, function(axis) {
+                    if (axis.pane === this) {
+                        axis.pane = null;
+                        axis.update({}, redraw);
+                    }
+                }, this);
             }
 
         });
@@ -122,23 +341,19 @@
     }(Highcharts));
     (function(H) {
         /**
-         * (c) 2010-2016 Torstein Honsi
+         * (c) 2010-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
         var Axis = H.Axis,
-            CenteredSeriesMixin = H.CenteredSeriesMixin,
             each = H.each,
             extend = H.extend,
             map = H.map,
             merge = H.merge,
             noop = H.noop,
-            Pane = H.Pane,
             pick = H.pick,
             pInt = H.pInt,
             Tick = H.Tick,
-            splat = H.splat,
             wrap = H.wrap,
 
 
@@ -251,8 +466,6 @@
                 // Title or label offsets are not counted
                 this.chart.axisOffset[this.side] = 0;
 
-                // Set the center array
-                this.center = this.pane.center = CenteredSeriesMixin.getCenter.call(this.pane);
             },
 
 
@@ -343,7 +556,7 @@
                 if (this.isRadial) {
 
                     // Set the center array
-                    this.center = this.pane.center = CenteredSeriesMixin.getCenter.call(this.pane);
+                    this.pane.updateCenter(this);
 
                     // The sector is used in Axis.translate to compute the translation of reversed axis points (#2570)
                     if (this.isCircular) {
@@ -535,8 +748,7 @@
          * Override axisProto.init to mix in special axis instance functions and function overrides
          */
         wrap(axisProto, 'init', function(proceed, chart, userOptions) {
-            var axis = this,
-                angular = chart.angular,
+            var angular = chart.angular,
                 polar = chart.polar,
                 isX = userOptions.isX,
                 isHidden = angular && isX,
@@ -544,8 +756,8 @@
                 options,
                 chartOptions = chart.options,
                 paneIndex = userOptions.pane || 0,
-                pane,
-                paneOptions;
+                pane = this.pane = chart.pane[paneIndex],
+                paneOptions = pane.options;
 
             // Before prototype.init
             if (angular) {
@@ -571,22 +783,16 @@
                 this.isRadial = false;
             }
 
+            // A pointer back to this axis to borrow geometry
+            if (isCircular) {
+                pane.axis = this;
+            }
+
             // Run prototype.init
             proceed.call(this, chart, userOptions);
 
             if (!isHidden && (angular || polar)) {
                 options = this.options;
-
-                // Create the pane and set the pane options.
-                if (!chart.panes) {
-                    chart.panes = [];
-                }
-                this.pane = pane = chart.panes[paneIndex] = chart.panes[paneIndex] || new Pane(
-                    splat(chartOptions.pane)[paneIndex],
-                    chart,
-                    axis
-                );
-                paneOptions = pane.options;
 
                 // Start and end angle options are
                 // given in degrees relative to top, while internal computations are
@@ -707,44 +913,136 @@
     }(Highcharts));
     (function(H) {
         /**
-         * (c) 2010-2016 Torstein Honsi
+         * (c) 2010-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
         var each = H.each,
             noop = H.noop,
             pick = H.pick,
+            defined = H.defined,
             Series = H.Series,
             seriesType = H.seriesType,
-            seriesTypes = H.seriesTypes;
-        /* 
-         * The arearangeseries series type
+            seriesTypes = H.seriesTypes,
+            seriesProto = Series.prototype,
+            pointProto = H.Point.prototype;
+
+        // The arearangeseries series type
+
+
+        /**
+         * @extends plotOptions.area
+         * @optionparent plotOptions.arearange
          */
         seriesType('arearange', 'area', {
 
+
+            /**
+             * Pixel width of the arearange graph line.
+             * 
+             * @type {Number}
+             * @default 1
+             * @since 2.3.0
+             * @product highcharts highstock
+             */
             lineWidth: 1,
 
-            marker: null,
+
+            /**
+             */
             threshold: null,
+
+            /**
+             */
             tooltip: {
 
+
+                /**
+                 */
                 pointFormat: '<span style="color:{series.color}">\u25CF</span> {series.name}: <b>{point.low}</b> - <b>{point.high}</b><br/>' // eslint-disable-line no-dupe-keys
 
             },
+
+            /**
+             * Whether the whole area or just the line should respond to mouseover
+             * tooltips and other mouse or touch events.
+             * 
+             * @type {Boolean}
+             * @default true
+             * @since 2.3.0
+             * @product highcharts highstock
+             */
             trackByArea: true,
+
+            /**
+             * Extended data labels for range series types. Range series data labels
+             * have no `x` and `y` options. Instead, they have `xLow`, `xHigh`,
+             * `yLow` and `yHigh` options to allow the higher and lower data label
+             * sets individually.
+             * 
+             * @type {Object}
+             * @extends plotOptions.series.dataLabels
+             * @excluding x,y
+             * @since 2.3.0
+             * @product highcharts highstock
+             */
             dataLabels: {
+
+                /**
+                 */
                 align: null,
+
+                /**
+                 */
                 verticalAlign: null,
+
+                /**
+                 * X offset of the lower data labels relative to the point value.
+                 * 
+                 * @type {Number}
+                 * @sample {highcharts} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
+                 * @sample {highstock} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
+                 * @default 0
+                 * @since 2.3.0
+                 * @product highcharts highstock
+                 */
                 xLow: 0,
+
+                /**
+                 * X offset of the higher data labels relative to the point value.
+                 * 
+                 * @type {Number}
+                 * @sample {highcharts} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
+                 * @sample {highstock} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
+                 * @default 0
+                 * @since 2.3.0
+                 * @product highcharts highstock
+                 */
                 xHigh: 0,
+
+                /**
+                 * Y offset of the lower data labels relative to the point value.
+                 * 
+                 * @type {Number}
+                 * @sample {highcharts} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
+                 * @sample {highstock} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
+                 * @default 16
+                 * @since 2.3.0
+                 * @product highcharts highstock
+                 */
                 yLow: 0,
+
+                /**
+                 * Y offset of the higher data labels relative to the point value.
+                 * 
+                 * @type {Number}
+                 * @sample {highcharts} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
+                 * @sample {highstock} highcharts/plotoptions/arearange-datalabels/ Data labels on range series
+                 * @default -6
+                 * @since 2.3.0
+                 * @product highcharts highstock
+                 */
                 yHigh: 0
-            },
-            states: {
-                hover: {
-                    halo: false
-                }
             }
 
             // Prototype members
@@ -768,6 +1066,7 @@
                     xy = this.xAxis.postTranslate(point.rectPlotX, this.yAxis.len - point.plotHigh);
                 point.plotHighX = xy.x - chart.plotLeft;
                 point.plotHigh = xy.y - chart.plotTop;
+                point.plotLowX = point.plotX;
             },
 
             /**
@@ -789,6 +1088,7 @@
 
                     if (high === null || low === null) {
                         point.isNull = true;
+                        point.plotY = null;
                     } else {
                         point.plotLow = plotY;
                         point.plotHigh = yAxis.translate(
@@ -808,6 +1108,10 @@
                 if (this.chart.polar) {
                     each(this.points, function(point) {
                         series.highToXY(point);
+                        point.tooltipPos = [
+                            (point.plotHighX + point.plotLowX) / 2,
+                            (point.plotHigh + point.plotLow) / 2
+                        ];
                     });
                 }
             },
@@ -827,6 +1131,8 @@
                     linePath,
                     lowerPath,
                     options = this.options,
+                    connectEnds = this.chart.polar && options.connectEnds !== false,
+                    connectNulls = options.connectNulls,
                     step = options.step,
                     higherPath,
                     higherAreaPath;
@@ -841,7 +1147,11 @@
                 while (i--) {
                     point = points[i];
 
-                    if (!point.isNull && !options.connectEnds && (!points[i + 1] || points[i + 1].isNull)) {
+                    if (!point.isNull &&
+                        !connectEnds &&
+                        !connectNulls &&
+                        (!points[i + 1] || points[i + 1].isNull)
+                    ) {
                         highAreaPoints.push({
                             plotX: point.plotX,
                             plotY: point.plotY,
@@ -857,9 +1167,16 @@
                         plotY: point.plotHigh,
                         isNull: point.isNull
                     };
+
                     highAreaPoints.push(pointShim);
+
                     highPoints.push(pointShim);
-                    if (!point.isNull && !options.connectEnds && (!points[i - 1] || points[i - 1].isNull)) {
+
+                    if (!point.isNull &&
+                        !connectEnds &&
+                        !connectNulls &&
+                        (!points[i - 1] || points[i - 1].isNull)
+                    ) {
                         highAreaPoints.push({
                             plotX: point.plotX,
                             plotY: point.plotY,
@@ -913,7 +1230,6 @@
                     length = data.length,
                     i,
                     originalDataLabels = [],
-                    seriesProto = Series.prototype,
                     dataLabelOptions = this.options.dataLabels,
                     align = dataLabelOptions.align,
                     verticalAlign = dataLabelOptions.verticalAlign,
@@ -1007,21 +1323,132 @@
                 seriesTypes.column.prototype.alignDataLabel.apply(this, arguments);
             },
 
-            setStackedPoints: noop,
+            drawPoints: function() {
+                var series = this,
+                    pointLength = series.points.length,
+                    point,
+                    i;
 
-            getSymbol: noop,
+                // Draw bottom points
+                seriesProto.drawPoints.apply(series, arguments);
 
-            drawPoints: noop
+                i = 0;
+                while (i < pointLength) {
+                    point = series.points[i];
+                    point.lowerGraphic = point.graphic;
+                    point.graphic = point.upperGraphic;
+                    point._plotY = point.plotY;
+                    point._plotX = point.plotX;
+                    point.plotY = point.plotHigh;
+                    if (defined(point.plotHighX)) {
+                        point.plotX = point.plotHighX;
+                    }
+                    i++;
+                }
+
+                // Draw top points
+                seriesProto.drawPoints.apply(series, arguments);
+
+                i = 0;
+                while (i < pointLength) {
+                    point = series.points[i];
+                    point.upperGraphic = point.graphic;
+                    point.graphic = point.lowerGraphic;
+                    point.plotY = point._plotY;
+                    point.plotX = point._plotX;
+                    i++;
+                }
+            },
+
+            setStackedPoints: noop
+        }, {
+            setState: function() {
+                var prevState = this.state,
+                    series = this.series,
+                    isPolar = series.chart.polar;
+
+
+                if (!defined(this.plotHigh)) {
+                    // Boost doesn't calculate plotHigh
+                    this.plotHigh = series.yAxis.toPixels(this.high, true);
+                }
+
+                if (!defined(this.plotLow)) {
+                    // Boost doesn't calculate plotLow
+                    this.plotLow = this.plotY = series.yAxis.toPixels(this.low, true);
+                }
+
+                // Bottom state:
+                pointProto.setState.apply(this, arguments);
+
+                // Change state also for the top marker
+                this.graphic = this.upperGraphic;
+                this.plotY = this.plotHigh;
+
+                if (isPolar) {
+                    this.plotX = this.plotHighX;
+                }
+
+                this.state = prevState;
+
+                if (series.stateMarkerGraphic) {
+                    series.lowerStateMarkerGraphic = series.stateMarkerGraphic;
+                    series.stateMarkerGraphic = series.upperStateMarkerGraphic;
+                }
+
+                pointProto.setState.apply(this, arguments);
+
+                // Now restore defaults
+                this.plotY = this.plotLow;
+                this.graphic = this.lowerGraphic;
+
+                if (isPolar) {
+                    this.plotX = this.plotLowX;
+                }
+
+                if (series.stateMarkerGraphic) {
+                    series.upperStateMarkerGraphic = series.stateMarkerGraphic;
+                    series.stateMarkerGraphic = series.lowerStateMarkerGraphic;
+                }
+            },
+            haloPath: function() {
+                var isPolar = this.series.chart.polar,
+                    path = [];
+
+                // Bottom halo
+                this.plotY = this.plotLow;
+                if (isPolar) {
+                    this.plotX = this.plotLowX;
+                }
+
+                path = pointProto.haloPath.apply(this, arguments);
+
+                // Top halo
+                this.plotY = this.plotHigh;
+                if (isPolar) {
+                    this.plotX = this.plotHighX;
+                }
+                path = path.concat(
+                    pointProto.haloPath.apply(this, arguments)
+                );
+
+                return path;
+            },
+            destroy: function() {
+                if (this.upperGraphic) {
+                    this.upperGraphic = this.upperGraphic.destroy();
+                }
+                return pointProto.destroy.apply(this, arguments);
+            }
         });
 
     }(Highcharts));
     (function(H) {
         /**
-         * (c) 2010-2016 Torstein Honsi
+         * (c) 2010-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
 
         var seriesType = H.seriesType,
             seriesTypes = H.seriesTypes;
@@ -1036,11 +1463,10 @@
     }(Highcharts));
     (function(H) {
         /**
-         * (c) 2010-2016 Torstein Honsi
+         * (c) 2010-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
         var defaultPlotOptions = H.defaultPlotOptions,
             each = H.each,
             merge = H.merge,
@@ -1050,16 +1476,47 @@
             seriesTypes = H.seriesTypes;
 
         var colProto = seriesTypes.column.prototype;
+        /**
+         * @extends {plotOptions.arearange}
+         * @optionparent plotOptions.columrange
+         */
+        var columnRangeOptions = {
 
+            /**
+             */
+            lineWidth: 1,
+
+            /**
+             */
+            pointRange: null,
+
+            /**
+             */
+            marker: null,
+
+            /**
+             */
+            states: {
+
+                /**
+                 */
+                hover: {
+
+                    /**
+                     */
+                    halo: false
+                }
+            }
+        };
         /**
          * The ColumnRangeSeries class
          */
-        seriesType('columnrange', 'arearange', merge(defaultPlotOptions.column, defaultPlotOptions.arearange, {
-            lineWidth: 1,
-            pointRange: null
+        seriesType('columnrange', 'arearange', merge(
+            defaultPlotOptions.column,
+            defaultPlotOptions.arearange,
+            columnRangeOptions
 
-            // Prototype members
-        }), {
+        ), {
             /**
              * Translate data points from raw values x and y to plotX and plotY
              */
@@ -1071,7 +1528,16 @@
                     start,
                     chart = series.chart,
                     isRadial = series.xAxis.isRadial,
+                    safeDistance = Math.max(chart.chartWidth, chart.chartHeight) + 999,
                     plotHigh;
+
+                // Don't draw too far outside plot area (#6835)
+                function safeBounds(pixelPos) {
+                    return Math.min(Math.max(-safeDistance,
+                        pixelPos
+                    ), safeDistance);
+                }
+
 
                 colProto.translate.apply(series);
 
@@ -1083,8 +1549,10 @@
                         height,
                         y;
 
-                    point.plotHigh = plotHigh = yAxis.translate(point.high, 0, 1, 0, 1);
-                    point.plotLow = point.plotY;
+                    point.plotHigh = plotHigh = safeBounds(
+                        yAxis.translate(point.high, 0, 1, 0, 1)
+                    );
+                    point.plotLow = safeBounds(point.plotY);
 
                     // adjust shape
                     y = plotHigh;
@@ -1110,15 +1578,18 @@
                             d: series.polarArc(y + height, y, start, start + point.pointWidth)
                         };
                     } else {
+
                         shapeArgs.height = height;
                         shapeArgs.y = y;
 
                         point.tooltipPos = chart.inverted ? [
                             yAxis.len + yAxis.pos - chart.plotLeft - y - height / 2,
-                            xAxis.len + xAxis.pos - chart.plotTop - shapeArgs.x - shapeArgs.width / 2,
+                            xAxis.len + xAxis.pos - chart.plotTop - shapeArgs.x -
+                            shapeArgs.width / 2,
                             height
                         ] : [
-                            xAxis.left - chart.plotLeft + shapeArgs.x + shapeArgs.width / 2,
+                            xAxis.left - chart.plotLeft + shapeArgs.x +
+                            shapeArgs.width / 2,
                             yAxis.pos - chart.plotTop + y + height / 2,
                             height
                         ]; // don't inherit from column tooltip position - #3372
@@ -1128,6 +1599,7 @@
             directTouch: true,
             trackerGroups: ['group', 'dataLabelsGroup'],
             drawGraph: noop,
+            getSymbol: noop,
             crispCol: colProto.crispCol,
             drawPoints: colProto.drawPoints,
             drawTracker: colProto.drawTracker,
@@ -1139,16 +1611,17 @@
                 return colProto.polarArc.apply(this, arguments);
             },
             pointAttribs: colProto.pointAttribs
+        }, {
+            setState: colProto.pointClass.prototype.setState
         });
 
     }(Highcharts));
     (function(H) {
         /**
-         * (c) 2010-2016 Torstein Honsi
+         * (c) 2010-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
         var each = H.each,
             isNumber = H.isNumber,
             merge = H.merge,
@@ -1158,24 +1631,120 @@
             Series = H.Series,
             seriesType = H.seriesType,
             TrackerMixin = H.TrackerMixin;
-        /* 
+
+
+        /** 
          * The GaugeSeries class
+         * @extends {plotOptions.line}
+         * @optionparent plotOptions.gauge
          */
         seriesType('gauge', 'line', {
+
+            /**
+             * Data labels for the gauge. For gauges, the data labels are enabled
+             * by default and shown in a bordered box below the point.
+             * 
+             * @type {Object}
+             * @extends plotOptions.series.dataLabels
+             * @since 2.3.0
+             * @product highcharts
+             */
             dataLabels: {
+
+                /**
+                 * Enable or disable the data labels.
+                 * 
+                 * @type {Boolean}
+                 * @since 2.3.0
+                 * @product highcharts highmaps
+                 */
                 enabled: true,
+
+                /**
+                 */
                 defer: false,
+
+                /**
+                 * The y position offset of the label relative to the center of the
+                 * gauge.
+                 * 
+                 * @type {Number}
+                 * @default 15
+                 * @since 2.3.0
+                 * @product highcharts highmaps
+                 */
                 y: 15,
+
+                /**
+                 * The border radius in pixels for the gauge's data label.
+                 * 
+                 * @type {Number}
+                 * @default 3
+                 * @since 2.3.0
+                 * @product highcharts highmaps
+                 */
                 borderRadius: 3,
+
+                /**
+                 */
                 crop: false,
+
+                /**
+                 * The vertical alignment of the data label.
+                 * 
+                 * @type {String}
+                 * @default top
+                 * @product highcharts highmaps
+                 */
                 verticalAlign: 'top',
+
+                /**
+                 * The Z index of the data labels. A value of 2 display them behind
+                 * the dial.
+                 * 
+                 * @type {Number}
+                 * @default 2
+                 * @since 2.1.5
+                 * @product highcharts highmaps
+                 */
                 zIndex: 2,
 
                 // Presentational
+
+                /**
+                 * The border width in pixels for the gauge data label.
+                 * 
+                 * @type {Number}
+                 * @default 1
+                 * @since 2.3.0
+                 * @product highcharts highmaps
+                 */
                 borderWidth: 1,
+
+                /**
+                 * The border color for the data label.
+                 * 
+                 * @type {Color}
+                 * @default #cccccc
+                 * @since 2.3.0
+                 * @product highcharts highmaps
+                 */
                 borderColor: '#cccccc'
 
             },
+
+            /**
+             * Options for the dial or arrow pointer of the gauge.
+             * 
+             * In [styled mode](http://www.highcharts.com/docs/chart-design-and-
+             * style/style-by-css), the dial is styled with the `.highcharts-gauge-
+             * series .highcharts-dial` rule.
+             * 
+             * @type {Object}
+             * @sample {highcharts} highcharts/css/gauge/ Styled mode
+             * @since 2.3.0
+             * @product highcharts
+             */
             dial: {
                 // radius: '80%',
                 // baseWidth: 3,
@@ -1189,6 +1758,19 @@
 
 
             },
+
+            /**
+             * Options for the pivot or the center point of the gauge.
+             * 
+             * In [styled mode](http://www.highcharts.com/docs/chart-design-and-
+             * style/style-by-css), the pivot is styled with the `.highcharts-gauge-
+             * series .highcharts-pivot` rule.
+             * 
+             * @type {Object}
+             * @sample {highcharts} highcharts/css/gauge/ Styled mode
+             * @since 2.3.0
+             * @product highcharts
+             */
             pivot: {
                 //radius: 5,
 
@@ -1197,9 +1779,24 @@
                 //backgroundColor: '#000000'
 
             },
+
+            /**
+             */
             tooltip: {
+
+                /**
+                 */
                 headerFormat: ''
             },
+
+            /**
+             * Whether to display this particular series or series type in the
+             * legend. Defaults to false for gauge series.
+             * 
+             * @type {Boolean}
+             * @since 2.3.0
+             * @product highcharts
+             */
             showInLegend: false
 
             // Prototype members
@@ -1409,11 +2006,10 @@
     }(Highcharts));
     (function(H) {
         /**
-         * (c) 2010-2016 Torstein Honsi
+         * (c) 2010-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
         var each = H.each,
             noop = H.noop,
             pick = H.pick,
@@ -1426,10 +2022,24 @@
          * @constructor seriesTypes.boxplot
          * @augments seriesTypes.column
          */
+
+        /**
+         * @extends {plotOptions.column}
+         * @optionparent plotOptions.boxplot
+         */
         seriesType('boxplot', 'column', {
+
+            /**
+             */
             threshold: null,
+
+            /**
+             */
             tooltip: {
 
+
+                /**
+                 */
                 pointFormat: '<span style="color:{point.color}">\u25CF</span> <b> {series.name}</b><br/>' + // eslint-disable-line no-dupe-keys
                     'Maximum: {point.high}<br/>' +
                     'Upper quartile: {point.q3}<br/>' +
@@ -1438,14 +2048,77 @@
                     'Minimum: {point.low}<br/>'
 
             },
+
+            /**
+             * The length of the whiskers, the horizontal lines marking low and
+             * high values. It can be a numerical pixel value, or a percentage
+             * value of the box width. Set `0` to disable whiskers.
+             * 
+             * @type {Number|String}
+             * @sample {highcharts} highcharts/plotoptions/box-plot-styling/ True by default
+             * @default 50%
+             * @since 3.0
+             * @product highcharts
+             */
             whiskerLength: '50%',
 
+
+            /**
+             * The fill color of the box.
+             * 
+             * @type {Color}
+             * @see In [styled mode](http://www.highcharts.com/docs/chart-design-and-
+             * style/style-by-css), the fill color can be set with the `.highcharts-
+             * boxplot-box` class.
+             * @sample {highcharts} highcharts/plotoptions/box-plot-styling/ Box plot styling
+             * @default #ffffff
+             * @since 3.0
+             * @product highcharts
+             */
             fillColor: '#ffffff',
+
+            /**
+             * The width of the line surrounding the box. If any of [stemWidth](#plotOptions.
+             * boxplot.stemWidth), [medianWidth](#plotOptions.boxplot.medianWidth)
+             * or [whiskerWidth](#plotOptions.boxplot.whiskerWidth) are `null`,
+             *  the lineWidth also applies to these lines.
+             * 
+             * @type {Number}
+             * @sample {highcharts} highcharts/plotoptions/box-plot-styling/ Box plot styling
+             * @sample {highcharts} highcharts/plotoptions/error-bar-styling/ Error bar styling
+             * @default 1
+             * @since 3.0
+             * @product highcharts
+             */
             lineWidth: 1,
             //medianColor: null,
+
+            /**
+             * The pixel width of the median line. If `null`, the [lineWidth](#plotOptions.
+             * boxplot.lineWidth) is used.
+             * 
+             * @type {Number}
+             * @see In [styled mode](http://www.highcharts.com/docs/chart-design-and-
+             * style/style-by-css), the median stroke width can be set with the
+             * `.highcharts-boxplot-median` class ([view live demo](http://jsfiddle.
+             * net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/highcharts/css/boxplot/)).
+             * @sample {highcharts} highcharts/plotoptions/box-plot-styling/ Box plot styling
+             * @default 2
+             * @since 3.0
+             * @product highcharts
+             */
             medianWidth: 2,
+
+            /**
+             */
             states: {
+
+                /**
+                 */
                 hover: {
+
+                    /**
+                     */
                     brightness: -0.3
                 }
             },
@@ -1454,6 +2127,22 @@
             //stemWidth: null,
 
             //whiskerColor: null,
+
+            /**
+             * The line width of the whiskers, the horizontal lines marking low
+             * and high values. When `null`, the general [lineWidth](#plotOptions.
+             * boxplot.lineWidth) applies.
+             * 
+             * @type {Number}
+             * @see In [styled mode](http://www.highcharts.com/docs/chart-design-and-
+             * style/style-by-css), the whisker stroke width can be set with the
+             * `.highcharts-boxplot-whisker` class ([view live demo](http://jsfiddle.
+             * net/gh/get/library/pure/highcharts/highcharts/tree/master/samples/highcharts/css/boxplot/)).
+             * @sample {highcharts} highcharts/plotoptions/box-plot-styling/ Box plot styling
+             * @default 2
+             * @since 3.0
+             * @product highcharts
+             */
             whiskerWidth: 2
 
 
@@ -1579,36 +2268,38 @@
                             point.medianShape = renderer.path(medianPath)
                                 .addClass('highcharts-boxplot-median')
                                 .add(graphic);
-
-
-
-
-                            // Stem attributes
-                            stemAttr.stroke = point.stemColor || options.stemColor || color;
-                            stemAttr['stroke-width'] = pick(point.stemWidth, options.stemWidth, options.lineWidth);
-                            stemAttr.dashstyle = point.stemDashStyle || options.stemDashStyle;
-                            point.stem.attr(stemAttr);
-
-                            // Whiskers attributes
-                            if (whiskerLength) {
-                                whiskersAttr.stroke = point.whiskerColor || options.whiskerColor || color;
-                                whiskersAttr['stroke-width'] = pick(point.whiskerWidth, options.whiskerWidth, options.lineWidth);
-                                point.whiskers.attr(whiskersAttr);
-                            }
-
-                            if (doQuartiles) {
-                                boxAttr = series.pointAttribs(point);
-                                point.box.attr(boxAttr);
-                            }
-
-
-                            // Median attributes
-                            medianAttr.stroke = point.medianColor || options.medianColor || color;
-                            medianAttr['stroke-width'] = pick(point.medianWidth, options.medianWidth, options.lineWidth);
-                            point.medianShape.attr(medianAttr);
-
-
                         }
+
+
+
+
+
+
+                        // Stem attributes
+                        stemAttr.stroke = point.stemColor || options.stemColor || color;
+                        stemAttr['stroke-width'] = pick(point.stemWidth, options.stemWidth, options.lineWidth);
+                        stemAttr.dashstyle = point.stemDashStyle || options.stemDashStyle;
+                        point.stem.attr(stemAttr);
+
+                        // Whiskers attributes
+                        if (whiskerLength) {
+                            whiskersAttr.stroke = point.whiskerColor || options.whiskerColor || color;
+                            whiskersAttr['stroke-width'] = pick(point.whiskerWidth, options.whiskerWidth, options.lineWidth);
+                            point.whiskers.attr(whiskersAttr);
+                        }
+
+                        if (doQuartiles) {
+                            boxAttr = series.pointAttribs(point);
+                            point.box.attr(boxAttr);
+                        }
+
+
+                        // Median attributes
+                        medianAttr.stroke = point.medianColor || options.medianColor || color;
+                        medianAttr['stroke-width'] = pick(point.medianWidth, options.medianWidth, options.lineWidth);
+                        point.medianShape.attr(medianAttr);
+
+
 
 
 
@@ -1713,11 +2404,10 @@
     }(Highcharts));
     (function(H) {
         /**
-         * (c) 2010-2016 Torstein Honsi
+         * (c) 2010-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
         var each = H.each,
             noop = H.noop,
             seriesType = H.seriesType,
@@ -1727,15 +2417,63 @@
         /* ****************************************************************************
          * Start error bar series code                                                *
          *****************************************************************************/
+
+        /**  
+         * @extends {plotOptions.boxplot}
+         * @optionparent plotOptions.errorbar
+         */
         seriesType('errorbar', 'boxplot', {
 
+
+            /**
+             * The main color of the bars. This can be overridden by [stemColor](#plotOptions.
+             * errorbar.stemColor) and [whiskerColor](#plotOptions.errorbar.whiskerColor)
+             * individually.
+             * 
+             * @type {Color}
+             * @sample {highcharts} highcharts/plotoptions/error-bar-styling/ Error bar styling
+             * @default #000000
+             * @since 3.0
+             * @product highcharts
+             */
             color: '#000000',
 
+
+            /**
+             */
             grouping: false,
+
+            /**
+             * The parent series of the error bar. The default value links it to
+             * the previous series. Otherwise, use the id of the parent series.
+             * 
+             * @type {String}
+             * @default :previous
+             * @since 3.0
+             * @product highcharts
+             */
             linkedTo: ':previous',
+
+            /**
+             */
             tooltip: {
+
+                /**
+                 */
                 pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.low}</b> - <b>{point.high}</b><br/>'
             },
+
+            /**
+             * The line width of the whiskers, the horizontal lines marking low
+             * and high values. When `null`, the general [lineWidth](#plotOptions.
+             * errorbar.lineWidth) applies.
+             * 
+             * @type {Number}
+             * @sample {highcharts} highcharts/plotoptions/error-bar-styling/ Error bar styling
+             * @default null
+             * @since 3.0
+             * @product highcharts
+             */
             whiskerWidth: null
 
             // Prototype members
@@ -1773,14 +2511,12 @@
     }(Highcharts));
     (function(H) {
         /**
-         * (c) 2010-2016 Torstein Honsi
+         * (c) 2010-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
         var correctFloat = H.correctFloat,
             isNumber = H.isNumber,
-            noop = H.noop,
             pick = H.pick,
             Point = H.Point,
             Series = H.Series,
@@ -1790,17 +2526,97 @@
         /* ****************************************************************************
          * Start Waterfall series code                                                *
          *****************************************************************************/
+        /**
+         * @extends {plotOptions.column}
+         * @optionparent plotOptions.waterfall
+         */
         seriesType('waterfall', 'column', {
+
+            /**
+             */
             dataLabels: {
+
+                /**
+                 */
                 inside: true
             },
 
+
+            /**
+             * The width of the line connecting waterfall columns.
+             * 
+             * @type {Number}
+             * @default 1
+             * @product highcharts
+             */
             lineWidth: 1,
+
+            /**
+             * The color of the line that connects columns in a waterfall series.
+             * 
+             * 
+             * In [styled mode](http://www.highcharts.com/docs/chart-design-and-
+             * style/style-by-css), the stroke can be set with the `.highcharts-
+             * graph` class.
+             * 
+             * @type {Color}
+             * @default #333333
+             * @since 3.0
+             * @product highcharts
+             */
             lineColor: '#333333',
+
+            /**
+             * A name for the dash style to use for the line connecting the columns
+             * of the waterfall series. Possible values:
+             * 
+             * *   Solid
+             * *   ShortDash
+             * *   ShortDot
+             * *   ShortDashDot
+             * *   ShortDashDotDot
+             * *   Dot
+             * *   Dash
+             * *   LongDash
+             * *   DashDot
+             * *   LongDashDot
+             * *   LongDashDotDot
+             * 
+             * In [styled mode](http://www.highcharts.com/docs/chart-design-and-
+             * style/style-by-css), the stroke dash-array can be set with the `.
+             * highcharts-graph` class.
+             * 
+             * @type {String}
+             * @default Dot
+             * @since 3.0
+             * @product highcharts
+             */
             dashStyle: 'dot',
+
+            /**
+             * The color of the border of each waterfall column.
+             * 
+             * In [styled mode](http://www.highcharts.com/docs/chart-design-and-
+             * style/style-by-css), the border stroke can be set with the `.highcharts-
+             * point` class.
+             * 
+             * @type {Color}
+             * @default #333333
+             * @since 3.0
+             * @product highcharts
+             */
             borderColor: '#333333',
+
+            /**
+             */
             states: {
+
+                /**
+                 */
                 hover: {
+
+                    /**
+                     */
                     lineWidthPlus: 0 // #3126
                 }
             }
@@ -1829,16 +2645,14 @@
                     previousIntermediate,
                     range,
                     minPointLength = pick(options.minPointLength, 5),
+                    halfMinPointLength = minPointLength / 2,
                     threshold = options.threshold,
                     stacking = options.stacking,
-                    // Separate offsets for negative and positive columns:
-                    positiveOffset = 0,
-                    negativeOffset = 0,
                     stackIndicator,
                     tooltipY;
 
                 // run column series translate
-                seriesTypes.column.prototype.translate.apply(this);
+                seriesTypes.column.prototype.translate.apply(series);
 
                 previousY = previousIntermediate = threshold;
                 points = series.points;
@@ -1846,14 +2660,18 @@
                 for (i = 0, len = points.length; i < len; i++) {
                     // cache current point object
                     point = points[i];
-                    yValue = this.processedYData[i];
+                    yValue = series.processedYData[i];
                     shapeArgs = point.shapeArgs;
 
                     // get current stack
                     stack = stacking && yAxis.stacks[(series.negStacks && yValue < threshold ? '-' : '') + series.stackKey];
-                    stackIndicator = series.getStackIndicator(stackIndicator, point.x);
+                    stackIndicator = series.getStackIndicator(
+                        stackIndicator,
+                        point.x,
+                        series.index
+                    );
                     range = stack ?
-                        stack[point.x].points[series.index + ',' + i + ',' + stackIndicator.index] : [0, yValue];
+                        stack[point.x].points[stackIndicator.key] : [0, yValue];
 
                     // override point value for sums
                     // #3710 Update point does not propagate to sum
@@ -1864,29 +2682,30 @@
                     }
                     // up points
                     y = Math.max(previousY, previousY + point.y) + range[0];
-                    shapeArgs.y = yAxis.toPixels(y, true);
-
+                    shapeArgs.y = yAxis.translate(y, 0, 1, 0, 1);
 
                     // sum points
                     if (point.isSum) {
-                        shapeArgs.y = yAxis.toPixels(range[1], true);
-                        shapeArgs.height = Math.min(yAxis.toPixels(range[0], true), yAxis.len) -
-                            shapeArgs.y + positiveOffset + negativeOffset; // #4256
+                        shapeArgs.y = yAxis.translate(range[1], 0, 1, 0, 1);
+                        shapeArgs.height = Math.min(yAxis.translate(range[0], 0, 1, 0, 1), yAxis.len) -
+                            shapeArgs.y; // #4256
 
                     } else if (point.isIntermediateSum) {
-                        shapeArgs.y = yAxis.toPixels(range[1], true);
-                        shapeArgs.height = Math.min(yAxis.toPixels(previousIntermediate, true), yAxis.len) -
-                            shapeArgs.y + positiveOffset + negativeOffset;
+                        shapeArgs.y = yAxis.translate(range[1], 0, 1, 0, 1);
+                        shapeArgs.height = Math.min(yAxis.translate(previousIntermediate, 0, 1, 0, 1), yAxis.len) -
+                            shapeArgs.y;
                         previousIntermediate = range[1];
 
                         // If it's not the sum point, update previous stack end position and get
                         // shape height (#3886)
                     } else {
                         shapeArgs.height = yValue > 0 ?
-                            yAxis.toPixels(previousY, true) - shapeArgs.y :
-                            yAxis.toPixels(previousY, true) - yAxis.toPixels(previousY - yValue, true);
-                        previousY += yValue;
+                            yAxis.translate(previousY, 0, 1, 0, 1) - shapeArgs.y :
+                            yAxis.translate(previousY, 0, 1, 0, 1) - yAxis.translate(previousY - yValue, 0, 1, 0, 1);
+
+                        previousY += stack && stack[point.x] ? stack[point.x].total : yValue;
                     }
+
                     // #3952 Negative sum or intermediate sum not rendered correctly
                     if (shapeArgs.height < 0) {
                         shapeArgs.y += shapeArgs.height;
@@ -1897,25 +2716,22 @@
                     shapeArgs.height = Math.max(Math.round(shapeArgs.height), 0.001); // #3151
                     point.yBottom = shapeArgs.y + shapeArgs.height;
 
-                    // Before minPointLength, apply negative offset:
-                    shapeArgs.y -= negativeOffset;
-
-
                     if (shapeArgs.height <= minPointLength && !point.isNull) {
                         shapeArgs.height = minPointLength;
+                        shapeArgs.y -= halfMinPointLength;
+                        point.plotY = shapeArgs.y;
                         if (point.y < 0) {
-                            negativeOffset -= minPointLength;
+                            point.minPointLengthOffset = -halfMinPointLength;
                         } else {
-                            positiveOffset += minPointLength;
+                            point.minPointLengthOffset = halfMinPointLength;
                         }
+                    } else {
+                        point.minPointLengthOffset = 0;
                     }
 
-                    // After minPointLength is updated, apply positive offset:
-                    shapeArgs.y -= positiveOffset;
-
                     // Correct tooltip placement (#3014)
-                    tooltipY = point.plotY - negativeOffset - positiveOffset +
-                        (point.negative && negativeOffset >= 0 ? shapeArgs.height : 0);
+                    tooltipY = point.plotY + (point.negative ? shapeArgs.height : 0);
+
                     if (series.chart.inverted) {
                         point.tooltipPos[0] = yAxis.len - tooltipY;
                     } else {
@@ -1962,9 +2778,11 @@
 
                 Series.prototype.processData.call(this, force);
 
-                // Record extremes
-                series.dataMin = dataMin;
-                series.dataMax = dataMax;
+                // Record extremes only if stacking was not set:
+                if (!series.options.stacking) {
+                    series.dataMin = dataMin;
+                    series.dataMax = dataMax;
+                }
             },
 
             /**
@@ -2021,6 +2839,7 @@
                     length = data.length,
                     lineWidth = this.graph.strokeWidth() + this.borderWidth,
                     normalizer = Math.round(lineWidth) % 2 / 2,
+                    reversedYAxis = this.yAxis.reversed,
                     path = [],
                     prevArgs,
                     pointArgs,
@@ -2033,12 +2852,17 @@
 
                     d = [
                         'M',
-                        prevArgs.x + prevArgs.width, prevArgs.y + normalizer,
+                        prevArgs.x + prevArgs.width,
+                        prevArgs.y + data[i - 1].minPointLengthOffset + normalizer,
                         'L',
-                        pointArgs.x, prevArgs.y + normalizer
+                        pointArgs.x,
+                        prevArgs.y + data[i - 1].minPointLengthOffset + normalizer
                     ];
 
-                    if (data[i - 1].y < 0) {
+                    if (
+                        (data[i - 1].y < 0 && !reversedYAxis) ||
+                        (data[i - 1].y > 0 && reversedYAxis)
+                    ) {
                         d[2] += prevArgs.height;
                         d[5] += prevArgs.height;
                     }
@@ -2061,9 +2885,39 @@
             },
 
             /**
-             * Extremes are recorded in processData
+             * Waterfall has stacking along the x-values too.
              */
-            getExtremes: noop
+            setStackedPoints: function() {
+                var series = this,
+                    options = series.options,
+                    stackedYLength,
+                    i;
+
+                Series.prototype.setStackedPoints.apply(series, arguments);
+
+                stackedYLength = series.stackedYData ? series.stackedYData.length : 0;
+
+                // Start from the second point:
+                for (i = 1; i < stackedYLength; i++) {
+                    if (!options.data[i].isSum &&
+                        !options.data[i].isIntermediateSum
+                    ) {
+                        // Sum previous stacked data as waterfall can grow up/down:
+                        series.stackedYData[i] += series.stackedYData[i - 1];
+                    }
+                }
+            },
+
+            /**
+             * Extremes for a non-stacked series are recorded in processData.
+             * In case of stacking, use Series.stackedYData to calculate extremes.
+             */
+            getExtremes: function() {
+                if (this.options.stacking) {
+                    return Series.prototype.getExtremes.apply(this, arguments);
+                }
+            }
+
 
             // Point members
         }, {
@@ -2093,11 +2947,10 @@
     }(Highcharts));
     (function(H) {
         /**
-         * (c) 2010-2016 Torstein Honsi
+         * (c) 2010-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
         var LegendSymbolMixin = H.LegendSymbolMixin,
             noop = H.noop,
             Series = H.Series,
@@ -2105,6 +2958,11 @@
             seriesTypes = H.seriesTypes;
         /**
          * The polygon series prototype
+         */
+
+        /**
+         * @extends {plotOptions.scatter}
+         * @optionsparent plotOptions.polygon
          */
         seriesType('polygon', 'scatter', {
             marker: {
@@ -2153,11 +3011,10 @@
     }(Highcharts));
     (function(H) {
         /**
-         * (c) 2010-2016 Torstein Honsi
+         * (c) 2010-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
         var arrayMax = H.arrayMax,
             arrayMin = H.arrayMin,
             Axis = H.Axis,
@@ -2176,46 +3033,198 @@
          * Start Bubble series code											          *
          *****************************************************************************/
 
+
+        /**
+         * @extends plotOptions.scatter
+         * @optionparent plotOptions.bubble
+         */
         seriesType('bubble', 'scatter', {
+
+            /**
+             */
             dataLabels: {
+
+                /**
+                 */
                 formatter: function() { // #2945
                     return this.point.z;
                 },
+
+                /**
+                 */
                 inside: true,
+
+                /**
+                 */
                 verticalAlign: 'middle'
             },
             // displayNegative: true,
+
+            /**
+             * Options for the point markers of line-like series. Properties like
+             * `fillColor`, `lineColor` and `lineWidth` define the visual appearance
+             * of the markers. Other series types, like column series, don't have
+             * markers, but have visual options on the series level instead.
+             * 
+             * In [styled mode](http://www.highcharts.com/docs/chart-design-and-
+             * style/style-by-css), the markers can be styled with the `.highcharts-
+             * point`, `.highcharts-point-hover` and `.highcharts-point-select`
+             * class names.
+             * 
+             * @type {Object}
+             * @extends plotOptions.series.marker
+             * @excluding radius
+             * @product highcharts
+             */
             marker: {
 
                 // fillOpacity: 0.5,
+
+                /**
+                 */
                 lineColor: null, // inherit from series.color
+
+                /**
+                 */
                 lineWidth: 1,
 
                 // Avoid offset in Point.setState
+
+                /**
+                 */
                 radius: null,
+
+                /**
+                 */
                 states: {
+
+                    /**
+                     */
                     hover: {
+
+                        /**
+                         */
                         radiusPlus: 0
                     }
-                }
+                },
+
+                /**
+                 * A predefined shape or symbol for the marker. Possible values are
+                 * "circle", "square", "diamond", "triangle" and "triangle-down".
+                 * 
+                 * Additionally, the URL to a graphic can be given on the form `url(graphic.
+                 * png)`. Note that for the image to be applied to exported charts,
+                 * its URL needs to be accessible by the export server.
+                 * 
+                 * Custom callbacks for symbol path generation can also be added to
+                 * `Highcharts.SVGRenderer.prototype.symbols`. The callback is then
+                 * used by its method name, as shown in the demo.
+                 * 
+                 * @validvalue ["circle", "square", "diamond", "triangle", "triangle-down"]
+                 * @type {String}
+                 * @sample {highcharts} highcharts/plotoptions/bubble-symbol/ Bubble chart with various symbols
+                 * @sample {highcharts} highcharts/plotoptions/series-marker-symbol/ General chart with predefined, graphic and custom markers
+                 * @default circle
+                 * @since 5.0.11
+                 * @product highcharts
+                 */
+                symbol: 'circle'
             },
+
+            /**
+             * Minimum bubble size. Bubbles will automatically size between the
+             * `minSize` and `maxSize` to reflect the `z` value of each bubble.
+             * Can be either pixels (when no unit is given), or a percentage of
+             * the smallest one of the plot width and height.
+             * 
+             * @type {String}
+             * @sample {highcharts} highcharts/plotoptions/bubble-size/ Bubble size
+             * @default 8
+             * @since 3.0
+             * @product highcharts
+             */
             minSize: 8,
+
+            /**
+             * Maximum bubble size. Bubbles will automatically size between the
+             * `minSize` and `maxSize` to reflect the `z` value of each bubble.
+             * Can be either pixels (when no unit is given), or a percentage of
+             * the smallest one of the plot width and height.
+             * 
+             * @type {String}
+             * @sample {highcharts} highcharts/plotoptions/bubble-size/ Bubble size
+             * @default 20%
+             * @since 3.0
+             * @product highcharts
+             */
             maxSize: '20%',
             // negativeColor: null,
             // sizeBy: 'area'
+
+            /**
+             * When this is true, the series will not cause the Y axis to cross
+             * the zero plane (or [threshold](#plotOptions.series.threshold) option)
+             * unless the data actually crosses the plane.
+             * 
+             * For example, if `softThreshold` is `false`, a series of 0, 1, 2,
+             * 3 will make the Y axis show negative values according to the `minPadding`
+             * option. If `softThreshold` is `true`, the Y axis starts at 0.
+             * 
+             * @type {Boolean}
+             * @default false
+             * @since 4.1.9
+             * @product highcharts
+             */
             softThreshold: false,
+
+            /**
+             */
             states: {
+
+                /**
+                 */
                 hover: {
+
+                    /**
+                     */
                     halo: {
+
+                        /**
+                         */
                         size: 5
                     }
                 }
             },
+
+            /**
+             */
             tooltip: {
+
+                /**
+                 */
                 pointFormat: '({point.x}, {point.y}), Size: {point.z}'
             },
+
+            /**
+             */
             turboThreshold: 0,
+
+            /**
+             * When [displayNegative](#plotOptions.bubble.displayNegative) is `false`,
+             * bubbles with lower Z values are skipped. When `displayNegative`
+             * is `true` and a [negativeColor](#plotOptions.bubble.negativeColor)
+             * is given, points with lower Z is colored.
+             * 
+             * @type {Number}
+             * @sample {highcharts} highcharts/plotoptions/bubble-negative/ Negative bubbles
+             * @default 0
+             * @since 3.0
+             * @product highcharts
+             */
             zThreshold: 0,
+
+            /**
+             */
             zoneAxis: 'z'
 
             // Prototype members
@@ -2223,9 +3232,10 @@
             pointArrayMap: ['y', 'z'],
             parallelArrays: ['x', 'y', 'z'],
             trackerGroups: ['group', 'dataLabelsGroup'],
+            specialGroup: 'group', // To allow clipping (#6296)
             bubblePadding: true,
             zoneAxis: 'z',
-            markerAttribs: null,
+            directTouch: true,
 
 
             pointAttribs: function(point, state) {
@@ -2300,16 +3310,26 @@
                 if (!init) { // run the animation
                     each(this.points, function(point) {
                         var graphic = point.graphic,
-                            shapeArgs = point.shapeArgs;
+                            animationTarget;
 
-                        if (graphic && shapeArgs) {
-                            // start values
-                            graphic.attr('r', 1);
+                        if (graphic && graphic.width) { // URL symbols don't have width
+                            animationTarget = {
+                                x: graphic.x,
+                                y: graphic.y,
+                                width: graphic.width,
+                                height: graphic.height
+                            };
 
-                            // animate
-                            graphic.animate({
-                                r: shapeArgs.r
-                            }, animation);
+                            // Start values
+                            graphic.attr({
+                                x: point.plotX,
+                                y: point.plotY,
+                                width: 1,
+                                height: 1
+                            });
+
+                            // Run animation
+                            graphic.animate(animationTarget, animation);
                         }
                     });
 
@@ -2341,12 +3361,11 @@
 
                     if (isNumber(radius) && radius >= this.minPxSize / 2) {
                         // Shape arguments
-                        point.shapeType = 'circle';
-                        point.shapeArgs = {
-                            x: point.plotX,
-                            y: point.plotY,
-                            r: radius
-                        };
+                        point.marker = H.extend(point.marker, {
+                            radius: radius,
+                            width: 2 * radius,
+                            height: 2 * radius
+                        });
 
                         // Alignment box for the data label
                         point.dlBox = {
@@ -2361,31 +3380,6 @@
                 }
             },
 
-            /**
-             * Get the series' symbol in the legend
-             *
-             * @param {Object} legend The legend object
-             * @param {Object} item The series (this) or point
-             */
-            drawLegendSymbol: function(legend, item) {
-                var renderer = this.chart.renderer,
-                    radius = renderer.fontMetrics(
-                        legend.itemStyle && legend.itemStyle.fontSize,
-                        item.legendItem
-                    ).f / 2;
-
-                item.legendSymbol = renderer.circle(
-                    radius,
-                    legend.baseline - radius,
-                    radius
-                ).attr({
-                    zIndex: 3
-                }).add(item.legendGroup);
-                item.legendSymbol.isMarker = true;
-
-            },
-
-            drawPoints: seriesTypes.column.prototype.drawPoints,
             alignDataLabel: seriesTypes.column.prototype.alignDataLabel,
             buildKDTree: noop,
             applyZones: noop
@@ -2395,7 +3389,7 @@
             haloPath: function(size) {
                 return Point.prototype.haloPath.call(
                     this,
-                    size === 0 ? 0 : this.shapeArgs.r + size // #6067
+                    size === 0 ? 0 : (this.marker ? this.marker.radius || 0 : 0) + size // #6067
                 );
             },
             ttBelow: false
@@ -2512,11 +3506,10 @@
     }(Highcharts));
     (function(H) {
         /**
-         * (c) 2010-2016 Torstein Honsi
+         * (c) 2010-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
 
         /**
          * Extensions for polar charts. Additionally, much of the geometry required for polar charts is
@@ -2553,6 +3546,96 @@
         };
 
         /**
+         * #6212 Calculate connectors for spline series in polar chart. 
+         * @param {Boolean} calculateNeighbours - Check if connectors should be calculated for neighbour points as well
+         * allows short recurence
+         */
+        seriesProto.getConnectors = function(segment, index, calculateNeighbours, connectEnds) {
+
+            var i,
+                prevPointInd,
+                nextPointInd,
+                previousPoint,
+                nextPoint,
+                previousX,
+                previousY,
+                nextX,
+                nextY,
+                plotX,
+                plotY,
+                ret,
+                smoothing = 1.5, // 1 means control points midway between points, 2 means 1/3 from the point, 3 is 1/4 etc;
+                denom = smoothing + 1,
+                leftContX,
+                leftContY,
+                rightContX,
+                rightContY,
+                dLControlPoint, //distance left control point
+                dRControlPoint,
+                leftContAngle,
+                rightContAngle,
+                jointAngle,
+                addedNumber = connectEnds ? 1 : 0;
+
+            /** calculate final index of points depending on the initial index value.
+             * Because of calculating neighbours, index may be outisde segment array.
+             */
+            if (index >= 0 && index <= segment.length - 1) {
+                i = index;
+            } else if (index < 0) {
+                i = segment.length - 1 + index;
+            } else {
+                i = 0;
+            }
+
+            prevPointInd = (i - 1 < 0) ? segment.length - (1 + addedNumber) : i - 1;
+            nextPointInd = (i + 1 > segment.length - 1) ? addedNumber : i + 1;
+            previousPoint = segment[prevPointInd];
+            nextPoint = segment[nextPointInd];
+            previousX = previousPoint.plotX;
+            previousY = previousPoint.plotY;
+            nextX = nextPoint.plotX;
+            nextY = nextPoint.plotY;
+            plotX = segment[i].plotX; // actual point
+            plotY = segment[i].plotY;
+            leftContX = (smoothing * plotX + previousX) / denom;
+            leftContY = (smoothing * plotY + previousY) / denom;
+            rightContX = (smoothing * plotX + nextX) / denom;
+            rightContY = (smoothing * plotY + nextY) / denom;
+            dLControlPoint = Math.sqrt(Math.pow(leftContX - plotX, 2) + Math.pow(leftContY - plotY, 2));
+            dRControlPoint = Math.sqrt(Math.pow(rightContX - plotX, 2) + Math.pow(rightContY - plotY, 2));
+            leftContAngle = Math.atan2(leftContY - plotY, leftContX - plotX);
+            rightContAngle = Math.atan2(rightContY - plotY, rightContX - plotX);
+            jointAngle = (Math.PI / 2) + ((leftContAngle + rightContAngle) / 2);
+            // Ensure the right direction, jointAngle should be in the same quadrant as leftContAngle
+            if (Math.abs(leftContAngle - jointAngle) > Math.PI / 2) {
+                jointAngle -= Math.PI;
+            }
+            // Find the corrected control points for a spline straight through the point
+            leftContX = plotX + Math.cos(jointAngle) * dLControlPoint;
+            leftContY = plotY + Math.sin(jointAngle) * dLControlPoint;
+            rightContX = plotX + Math.cos(Math.PI + jointAngle) * dRControlPoint;
+            rightContY = plotY + Math.sin(Math.PI + jointAngle) * dRControlPoint;
+
+            // push current point's connectors into returned object
+
+            ret = {
+                rightContX: rightContX,
+                rightContY: rightContY,
+                leftContX: leftContX,
+                leftContY: leftContY,
+                plotX: plotX,
+                plotY: plotY
+            };
+
+            // calculate connectors for previous and next point and push them inside returned object 
+            if (calculateNeighbours) {
+                ret.prevPointCont = this.getConnectors(segment, prevPointInd, false, connectEnds);
+            }
+            return ret;
+        };
+
+        /**
          * Wrap the buildKDTree function so that it searches by angle (clientX) in case of shared tooltip,
          * and by two dimensional distance in case of non-shared.
          */
@@ -2561,7 +3644,7 @@
                 if (this.kdByAngle) {
                     this.searchPoint = this.searchPointByAngle;
                 } else {
-                    this.kdDimensions = 2;
+                    this.options.findNearestPointBy = 'xy';
                 }
             }
             proceed.apply(this);
@@ -2605,104 +3688,35 @@
              * Overridden method for calculating a spline from one point to the next
              */
             wrap(seriesTypes.spline.prototype, 'getPointSpline', function(proceed, segment, point, i) {
-
                 var ret,
-                    smoothing = 1.5, // 1 means control points midway between points, 2 means 1/3 from the point, 3 is 1/4 etc;
-                    denom = smoothing + 1,
-                    plotX,
-                    plotY,
-                    lastPoint,
-                    nextPoint,
-                    lastX,
-                    lastY,
-                    nextX,
-                    nextY,
-                    leftContX,
-                    leftContY,
-                    rightContX,
-                    rightContY,
-                    distanceLeftControlPoint,
-                    distanceRightControlPoint,
-                    leftContAngle,
-                    rightContAngle,
-                    jointAngle;
-
+                    connectors;
 
                 if (this.chart.polar) {
-
-                    plotX = point.plotX;
-                    plotY = point.plotY;
-                    lastPoint = segment[i - 1];
-                    nextPoint = segment[i + 1];
-
-                    // Connect ends
-                    if (this.connectEnds) {
-                        if (!lastPoint) {
-                            lastPoint = segment[segment.length - 2]; // not the last but the second last, because the segment is already connected
-                        }
-                        if (!nextPoint) {
-                            nextPoint = segment[1];
-                        }
-                    }
-
-                    // find control points
-                    if (lastPoint && nextPoint) {
-
-                        lastX = lastPoint.plotX;
-                        lastY = lastPoint.plotY;
-                        nextX = nextPoint.plotX;
-                        nextY = nextPoint.plotY;
-                        leftContX = (smoothing * plotX + lastX) / denom;
-                        leftContY = (smoothing * plotY + lastY) / denom;
-                        rightContX = (smoothing * plotX + nextX) / denom;
-                        rightContY = (smoothing * plotY + nextY) / denom;
-                        distanceLeftControlPoint = Math.sqrt(Math.pow(leftContX - plotX, 2) + Math.pow(leftContY - plotY, 2));
-                        distanceRightControlPoint = Math.sqrt(Math.pow(rightContX - plotX, 2) + Math.pow(rightContY - plotY, 2));
-                        leftContAngle = Math.atan2(leftContY - plotY, leftContX - plotX);
-                        rightContAngle = Math.atan2(rightContY - plotY, rightContX - plotX);
-                        jointAngle = (Math.PI / 2) + ((leftContAngle + rightContAngle) / 2);
-
-
-                        // Ensure the right direction, jointAngle should be in the same quadrant as leftContAngle
-                        if (Math.abs(leftContAngle - jointAngle) > Math.PI / 2) {
-                            jointAngle -= Math.PI;
-                        }
-
-                        // Find the corrected control points for a spline straight through the point
-                        leftContX = plotX + Math.cos(jointAngle) * distanceLeftControlPoint;
-                        leftContY = plotY + Math.sin(jointAngle) * distanceLeftControlPoint;
-                        rightContX = plotX + Math.cos(Math.PI + jointAngle) * distanceRightControlPoint;
-                        rightContY = plotY + Math.sin(Math.PI + jointAngle) * distanceRightControlPoint;
-
-                        // Record for drawing in next point
-                        point.rightContX = rightContX;
-                        point.rightContY = rightContY;
-
-                    }
-
-
                     // moveTo or lineTo
                     if (!i) {
-                        ret = ['M', plotX, plotY];
+                        ret = ['M', point.plotX, point.plotY];
                     } else { // curve from last point to this
+                        connectors = this.getConnectors(segment, i, true, this.connectEnds);
                         ret = [
                             'C',
-                            lastPoint.rightContX || lastPoint.plotX,
-                            lastPoint.rightContY || lastPoint.plotY,
-                            leftContX || plotX,
-                            leftContY || plotY,
-                            plotX,
-                            plotY
+                            connectors.prevPointCont.rightContX,
+                            connectors.prevPointCont.rightContY,
+                            connectors.leftContX,
+                            connectors.leftContY,
+                            connectors.plotX,
+                            connectors.plotY
                         ];
-                        lastPoint.rightContX = lastPoint.rightContY = null; // reset for updating series later
                     }
-
-
                 } else {
                     ret = proceed.call(this, segment, point, i);
                 }
                 return ret;
             });
+
+            // #6430 Areasplinerange series use unwrapped getPointSpline method, so we need to set this method again.
+            if (seriesTypes.areasplinerange) {
+                seriesTypes.areasplinerange.prototype.getPointSpline = seriesTypes.spline.prototype.getPointSpline;
+            }
         }
 
         /**
@@ -2741,7 +3755,8 @@
         wrap(seriesProto, 'getGraphPath', function(proceed, points) {
             var series = this,
                 i,
-                firstValid;
+                firstValid,
+                popLastPoint;
 
             // Connect the path
             if (this.chart.polar) {
@@ -2754,9 +3769,23 @@
                         break;
                     }
                 }
+
+
+                /**
+                 * Polar charts only. Whether to connect the ends of a line series plot
+                 * across the extremes.
+                 * 
+                 * @type {Boolean}
+                 * @sample {highcharts} highcharts/plotoptions/line-connectends-false/
+                 *         Do not connect
+                 * @since 2.3.0
+                 * @product highcharts
+                 * @apioption plotOptions.series.connectEnds
+                 */
                 if (this.options.connectEnds !== false && firstValid !== undefined) {
                     this.connectEnds = true; // re-used in splines
                     points.splice(points.length, 0, points[firstValid]);
+                    popLastPoint = true;
                 }
 
                 // For area charts, pseudo points are added to the graph, now we need to translate these
@@ -2768,8 +3797,15 @@
             }
 
             // Run uber method
-            return proceed.apply(this, [].slice.call(arguments, 1));
+            var ret = proceed.apply(this, [].slice.call(arguments, 1));
 
+            /** #6212 points.splice method is adding points to an array. In case of areaspline getGraphPath method is used two times
+             * and in both times points are added to an array. That is why points.pop is used, to get unmodified points.
+             */
+            if (popLastPoint) {
+                points.pop();
+            }
+            return ret;
         });
 
 
@@ -2976,6 +4012,39 @@
             }
 
             return ret;
+        });
+
+        wrap(H.Chart.prototype, 'getAxes', function(proceed) {
+
+            if (!this.pane) {
+                this.pane = [];
+            }
+            each(H.splat(this.options.pane), function(paneOptions) {
+                new H.Pane( // eslint-disable-line no-new
+                    paneOptions,
+                    this
+                );
+            }, this);
+
+            proceed.call(this);
+        });
+
+        wrap(H.Chart.prototype, 'drawChartBox', function(proceed) {
+            proceed.call(this);
+
+            each(this.pane, function(pane) {
+                pane.render();
+            });
+        });
+
+        /**
+         * Extend chart.get to also search in panes. Used internally in responsiveness
+         * and chart.update.
+         */
+        wrap(H.Chart.prototype, 'get', function(proceed, id) {
+            return H.find(this.pane, function(pane) {
+                return pane.options.id === id;
+            }) || proceed.call(this, id);
         });
 
     }(Highcharts));

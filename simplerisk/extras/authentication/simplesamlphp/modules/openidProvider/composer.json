@@ -1,0 +1,26 @@
+{
+    "name": "simplesamlphp/simplesamlphp-module-openidprovider",
+    "description": "A SimpleSAMLphp module adding support for the OpenID protocol as an Identity Provider.",
+    "type": "simplesamlphp-module",
+    "keywords": [ "openid", "provider" ],
+    "homepage": "http://simplesamlphp.org",
+    "license": "LGPL-2.1",
+    "authors": [
+        {
+            "name": "Olav Morken",
+            "email": "olav.morken@uninett.no"
+        },
+        {
+            "name": "Andreas Åkre Solberg",
+            "email": "andreas.solberg@uninett.no"
+        }
+    ],
+    "extra": {
+        "ssp-mixedcase-module-name": "openidProvider"
+    },
+    "require": {
+        "simplesamlphp/composer-module-installer": "~1.0",
+        "openid/php-openid": "dev-master#ee669c6a9d4d95b58ecd9b6945627276807694fb as 2.2.2"
+    }
+}
+

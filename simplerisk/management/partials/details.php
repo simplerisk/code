@@ -4,6 +4,7 @@ require_once(realpath(__DIR__ . '/../../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../../includes/display.php'));
 require_once(realpath(__DIR__ . '/../../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../../includes/permissions.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/../../includes/Component_ZendEscaper/Escaper.php'));
@@ -50,6 +51,9 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../../index.php");
   exit(0);
 }
+
+// Enforce that the user has access to risk management
+enforce_permission_riskmanagement();
 
 ?>
         
@@ -103,12 +107,12 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
                 // If the user has selected to edit the mitigation
                 if (isset($_POST['edit_mitigation']) || (isset($action) && $action == 'editmitigation'))
                 {
-                  edit_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent);
+                  edit_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
                 }
                 // Otherwise we are just viewing the mitigation
                 else
                 {
-                  view_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent);
+                  view_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
                 }
                 ?>
               </form>
@@ -168,7 +172,7 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
             <div class="collapsible">
               <div class="row-fluid">
                 <div class="span12 audit-trail">
-                  <?php get_audit_trail($id,36500); ?>
+                  <?php get_audit_trail($id,36500,'risk'); ?>
                 </div>
               </div>
             </div>
@@ -181,3 +185,4 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
     <input type="hidden" id="_token_value" value="<?php echo csrf_get_tokens(); ?>">
     <input type="hidden" id="_lang_reopen_risk" value="<?php echo $lang['ReopenRisk']; ?>">
     <input type="hidden" id="_lang_close_risk" value="<?php echo $lang['CloseRisk']; ?>">
+    

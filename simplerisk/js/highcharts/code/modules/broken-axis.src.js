@@ -1,10 +1,11 @@
 /**
- * @license Highcharts JS v5.0.6 (2016-12-07)
+ * @license Highcharts JS v5.0.13 (2017-07-27)
  *
- * (c) 2009-2016 Torstein Honsi
+ * (c) 2009-2017 Torstein Honsi
  *
  * License: www.highcharts.com/license
  */
+'use strict';
 (function(factory) {
     if (typeof module === 'object' && module.exports) {
         module.exports = factory;
@@ -14,16 +15,16 @@
 }(function(Highcharts) {
     (function(H) {
         /**
-         * (c) 2009-2016 Torstein Honsi
+         * (c) 2009-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
-        'use strict';
 
         var pick = H.pick,
             wrap = H.wrap,
             each = H.each,
             extend = H.extend,
+            isArray = H.isArray,
             fireEvent = H.fireEvent,
             Axis = H.Axis,
             Series = H.Series;
@@ -100,20 +101,17 @@
         });
 
         wrap(Axis.prototype, 'init', function(proceed, chart, userOptions) {
+            var axis = this,
+                breaks;
             // Force Axis to be not-ordinal when breaks are defined
             if (userOptions.breaks && userOptions.breaks.length) {
                 userOptions.ordinal = false;
             }
-
             proceed.call(this, chart, userOptions);
-
-            if (this.options.breaks) {
-
-                var axis = this;
-
-                axis.isBroken = true;
-
-                this.val2lin = function(val) {
+            breaks = this.options.breaks;
+            axis.isBroken = (isArray(breaks) && !!breaks.length);
+            if (axis.isBroken) {
+                axis.val2lin = function(val) {
                     var nval = val,
                         brk,
                         i;
@@ -133,7 +131,7 @@
                     return nval;
                 };
 
-                this.lin2val = function(val) {
+                axis.lin2val = function(val) {
                     var nval = val,
                         brk,
                         i;
@@ -151,7 +149,7 @@
                     return nval;
                 };
 
-                this.setExtremes = function(newMin, newMax, redraw, animation, eventArguments) {
+                axis.setExtremes = function(newMin, newMax, redraw, animation, eventArguments) {
                     // If trying to set extremes inside a break, extend it to before and after the break ( #3857 )
                     while (this.isInAnyBreak(newMin)) {
                         newMin -= this.closestPointRange;
@@ -162,7 +160,7 @@
                     Axis.prototype.setExtremes.call(this, newMin, newMax, redraw, animation, eventArguments);
                 };
 
-                this.setAxisTranslation = function(saveOld) {
+                axis.setAxisTranslation = function(saveOld) {
                     Axis.prototype.setAxisTranslation.call(this, saveOld);
 
                     var breaks = axis.options.breaks,
@@ -171,16 +169,14 @@
                         length = 0,
                         inBrk,
                         repeat,
-                        brk,
                         min = axis.userMin || axis.min,
                         max = axis.userMax || axis.max,
+                        pointRangePadding = pick(axis.pointRangePadding, 0),
                         start,
-                        i,
-                        j;
+                        i;
 
                     // Min & max check (#4247)
-                    for (i in breaks) {
-                        brk = breaks[i];
+                    each(breaks, function(brk) {
                         repeat = brk.repeat || Infinity;
                         if (axis.isInBreak(brk, min)) {
                             min += (brk.to % repeat) - (min % repeat);
@@ -188,11 +184,10 @@
                         if (axis.isInBreak(brk, max)) {
                             max -= (max % repeat) - (brk.from % repeat);
                         }
-                    }
+                    });
 
                     // Construct an array holding all breaks in the axis
-                    for (i in breaks) {
-                        brk = breaks[i];
+                    each(breaks, function(brk) {
                         start = brk.from;
                         repeat = brk.repeat || Infinity;
 
@@ -203,18 +198,18 @@
                             start += repeat;
                         }
 
-                        for (j = start; j < max; j += repeat) {
+                        for (i = start; i < max; i += repeat) {
                             breakArrayT.push({
-                                value: j,
+                                value: i,
                                 move: 'in'
                             });
                             breakArrayT.push({
-                                value: j + (brk.to - brk.from),
+                                value: i + (brk.to - brk.from),
                                 move: 'out',
                                 size: brk.breakSize
                             });
                         }
-                    }
+                    });
 
                     breakArrayT.sort(function(a, b) {
                         var ret;
@@ -230,8 +225,7 @@
                     inBrk = 0;
                     start = min;
 
-                    for (i in breakArrayT) {
-                        brk = breakArrayT[i];
+                    each(breakArrayT, function(brk) {
                         inBrk += (brk.move === 'in' ? 1 : -1);
 
                         if (inBrk === 1 && brk.move === 'in') {
@@ -245,13 +239,26 @@
                             });
                             length += brk.value - start - (brk.size || 0);
                         }
-                    }
+                    });
 
                     axis.breakArray = breakArray;
 
+                    // Used with staticScale, and below, the actual axis length when
+                    // breaks are substracted.
+                    axis.unitLength = max - min - length + pointRangePadding;
+
                     fireEvent(axis, 'afterBreaks');
 
-                    axis.transA *= ((max - axis.min) / (max - min - length));
+                    if (axis.options.staticScale) {
+                        axis.transA = axis.options.staticScale;
+                    } else if (axis.unitLength) {
+                        axis.transA *= (max - axis.min + pointRangePadding) /
+                            axis.unitLength;
+                    }
+
+                    if (pointRangePadding) {
+                        axis.minPixelPadding = axis.transA * axis.minPointOffset;
+                    }
 
                     axis.min = min;
                     axis.max = max;
@@ -329,6 +336,97 @@
                     });
                 });
             });
+        };
+
+
+        /**
+         * Extend getGraphPath by identifying gaps in the data so that we can draw a gap
+         * in the line or area. This was moved from ordinal axis module to broken axis
+         * module as of #5045.
+         */
+        H.Series.prototype.gappedPath = function() {
+            var gapSize = this.options.gapSize,
+                points = this.points.slice(),
+                i = points.length - 1,
+                yAxis = this.yAxis,
+                xRange,
+                stack;
+
+            /**
+             * Defines when to display a gap in the graph, together with the `gapUnit`
+             * option.
+             * 
+             * When the `gapUnit` is `relative` (default), a gap size of 5 means
+             * that if the distance between two points is greater than five times
+             * that of the two closest points, the graph will be broken.
+             *
+             * When the `gapUnit` is `value`, the gap is based on absolute axis values,
+             * which on a datetime axis is milliseconds.
+             * 
+             * In practice, this option is most often used to visualize gaps in
+             * time series. In a stock chart, intraday data is available for daytime
+             * hours, while gaps will appear in nights and weekends.
+             * 
+             * @type {Number}
+             * @see [xAxis.breaks](#xAxis.breaks)
+             * @sample {highstock} stock/plotoptions/series-gapsize/
+             *         Setting the gap size to 2 introduces gaps for weekends in daily
+             *         datasets.
+             * @default 0
+             * @product highstock
+             * @apioption plotOptions.series.gapSize
+             */
+
+            /**
+             * Together with `gapSize`, this option defines where to draw gaps in the 
+             * graph.
+             *
+             * @type {String}
+             * @see [gapSize](plotOptions.series.gapSize)
+             * @default relative
+             * @validvalues ["relative", "value"]
+             * @since 5.0.13
+             * @product highstock
+             * @apioption plotOptions.series.gapUnit
+             */
+
+            if (gapSize && i > 0) { // #5008
+
+                // Gap unit is relative
+                if (this.options.gapUnit !== 'value') {
+                    gapSize *= this.closestPointRange;
+                }
+
+                // extension for ordinal breaks
+                while (i--) {
+                    if (points[i + 1].x - points[i].x > gapSize) {
+                        xRange = (points[i].x + points[i + 1].x) / 2;
+
+                        points.splice( // insert after this one
+                            i + 1,
+                            0, {
+                                isNull: true,
+                                x: xRange
+                            }
+                        );
+
+                        // For stacked chart generate empty stack items, #6546
+                        if (this.options.stacking) {
+                            stack = yAxis.stacks[this.stackKey][xRange] = new H.StackItem(
+                                yAxis,
+                                yAxis.options.stackLabels,
+                                false,
+                                xRange,
+                                this.stack
+                            );
+                            stack.total = 0;
+                        }
+                    }
+                }
+            }
+
+            // Call base method
+            return this.getGraphPath(points);
         };
 
         wrap(H.seriesTypes.column.prototype, 'drawPoints', drawPointsWrapped);

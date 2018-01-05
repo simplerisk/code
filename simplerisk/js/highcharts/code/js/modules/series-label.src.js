@@ -1,10 +1,11 @@
 /**
- * @license Highcharts JS v5.0.6 (2016-12-07)
+ * @license Highcharts JS v5.0.13 (2017-07-27)
  *
- * (c) 2009-2016 Torstein Honsi
+ * (c) 2009-2017 Torstein Honsi
  *
  * License: www.highcharts.com/license
  */
+'use strict';
 (function(factory) {
     if (typeof module === 'object' && module.exports) {
         module.exports = factory;
@@ -14,7 +15,7 @@
 }(function(Highcharts) {
     (function(H) {
         /**
-         * (c) 2009-2016 Torstein Honsi
+         * (c) 2009-2017 Torstein Honsi
          *
          * License: www.highcharts.com/license
          */
@@ -33,7 +34,6 @@
          * http://jsfiddle.net/highcharts/y5A37/
          */
 
-        'use strict';
 
         var labelDistance = 3,
             wrap = H.wrap,
@@ -47,13 +47,31 @@
         H.setOptions({
             plotOptions: {
                 series: {
+
+                    /**
+                     */
                     label: {
+
+                        /**
+                         */
                         enabled: true,
                         // Allow labels to be placed distant to the graph if necessary, and
                         // draw a connector line to the graph
+
+                        /**
+                         */
                         connectorAllowed: true,
+
+                        /**
+                         */
                         connectorNeighbourDistance: 24, // If the label is closer than this to a neighbour graph, draw a connector
+
+                        /**
+                         */
                         styles: {
+
+                            /**
+                             */
                             fontWeight: 'bold'
                         }
                         // boxesToAvoid: []

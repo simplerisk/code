@@ -370,7 +370,7 @@ div.reviewername{
     font-weight: 600;
 }
 
-.current-projects-tab span{
+.current-projects-tab .frameworks-tab .controls-tab span{
   width: 200px !important;
 }
 

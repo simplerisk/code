@@ -72,6 +72,7 @@
 		$replyto_email = $_POST['replyto_email'];
 		$replyto_name = $_POST['replyto_name'];
 		$host = $_POST['host'];
+		$smtpautotls = (isset($_POST['smtpautotls'])) ? "true" : "false";
 		$smtpauth = (isset($_POST['smtpauth'])) ? "true" : "false";
 		$username = $_POST['username'];
 		$password = $_POST['password'];
@@ -79,7 +80,7 @@
 		$port = $_POST['port'];
 
 		// Update the mail settings
-		update_mail_settings($transport, $from_email, $from_name, $replyto_email, $replyto_name, $host, $smtpauth, $username, $password, $encryption, $port);
+		update_mail_settings($transport, $from_email, $from_name, $replyto_email, $replyto_name, $host, $smtpautotls, $smtpauth, $username, $password, $encryption, $port);
 
 		// Display an alert
 		set_alert(true, "good", "Mail settings were updated successfully.");
@@ -93,6 +94,7 @@
 	$replyto_email = $mail['phpmailer_replyto_email'];
 	$replyto_name = $mail['phpmailer_replyto_name'];
 	$host = $mail['phpmailer_host'];
+	$smtpautotls = $mail['phpmailer_smtpautotls'];
 	$smtpauth = $mail['phpmailer_smtpauth'];
 	$username = $mail['phpmailer_username'];
 	$password = $mail['phpmailer_password'];
@@ -230,8 +232,10 @@
                       <td><input type="number" name="port" value="<?php echo $escaper->escapeHTML($port); ?>" /></td>
                     </tr>
                     <tr class="smtp"<?php echo ($transport=="sendmail") ? " style=\"display: none;\"" : "" ?>>
-                      <td><?php echo $escaper->escapeHTML($lang['SMTPAuthentication']); ?>:&nbsp;&nbsp;</td>
-                      <td><input type="checkbox" name="smtpauth" id="smtpauth" onchange="javascript: checkbox_smtpauth()" <?php echo ($smtpauth == "true") ? "checked=\"yes\" " : ""?>/></td>
+                      <td colspan="2"><input type="checkbox" name="smtpautotls" id="smtpautotls" <?php echo ($smtpautotls == "true") ? "checked=\"yes\" " : ""?>/>&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['EnableTLSEncryptionAutomaticallyIfAServerSupportsIt']); ?></td>
+                    </tr>
+                    <tr class="smtp"<?php echo ($transport=="sendmail") ? " style=\"display: none;\"" : "" ?>>
+                      <td colspan="2"><input type="checkbox" name="smtpauth" id="smtpauth" onchange="javascript: checkbox_smtpauth()" <?php echo ($smtpauth == "true") ? "checked=\"yes\" " : ""?>/>&nbsp;&nbsp;<?php echo $escaper->escapeHTML($lang['SMTPAuthentication']); ?></td>
                     </tr>
                     <tr class="smtpauth"<?php echo ($transport=="sendmail" || $smtpauth=="false") ? " style=\"display: none;\"" : "" ?>>
                       <td><?php echo $escaper->escapeHTML($lang['Username']); ?>:&nbsp;&nbsp;</td>

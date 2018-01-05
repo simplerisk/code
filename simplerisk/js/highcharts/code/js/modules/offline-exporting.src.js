@@ -1,11 +1,12 @@
 /**
- * @license Highcharts JS v5.0.6 (2016-12-07)
+ * @license Highcharts JS v5.0.13 (2017-07-27)
  * Client side exporting module
  *
  * (c) 2015 Torstein Honsi / Oystein Moseng
  *
  * License: www.highcharts.com/license
  */
+'use strict';
 (function(factory) {
     if (typeof module === 'object' && module.exports) {
         module.exports = factory;
@@ -22,7 +23,6 @@
          * License: www.highcharts.com/license
          */
 
-        'use strict';
         /*global MSBlobBuilder */
 
         var merge = Highcharts.merge,
@@ -32,6 +32,7 @@
             each = Highcharts.each,
             domurl = win.URL || win.webkitURL || win,
             isMSBrowser = /Edge\/|Trident\/|MSIE /.test(nav.userAgent),
+            isEdgeBrowser = /Edge\/\d+/.test(nav.userAgent),
             loadEventDeferDelay = isMSBrowser ? 150 : 0; // Milliseconds to defer image load event handlers to offset IE bug
 
         // Dummy object so we can reuse our canvas-tools.js without errors
@@ -57,22 +58,62 @@
             head.appendChild(script);
         }
 
+        // Convert dataURL to Blob if supported, otherwise returns undefined
+        Highcharts.dataURLtoBlob = function(dataURL) {
+            if (
+                win.atob &&
+                win.ArrayBuffer &&
+                win.Uint8Array &&
+                win.Blob &&
+                domurl.createObjectURL
+            ) {
+                // Try to convert data URL to Blob
+                var parts = dataURL.match(/data:([^;]*)(;base64)?,([0-9A-Za-z+/]+)/),
+                    binStr = win.atob(parts[3]), // Assume base64 encoding
+                    buf = new win.ArrayBuffer(binStr.length),
+                    binary = new win.Uint8Array(buf),
+                    blob;
+
+                for (var i = 0; i < binary.length; ++i) {
+                    binary[i] = binStr.charCodeAt(i);
+                }
+
+                blob = new win.Blob([binary], {
+                    'type': parts[1]
+                });
+                return domurl.createObjectURL(blob);
+            }
+        };
+
         // Download contents by dataURL/blob
         Highcharts.downloadURL = function(dataURL, filename) {
             var a = doc.createElement('a'),
                 windowRef;
 
             // IE specific blob implementation
-            if (nav.msSaveOrOpenBlob) {
+            // Don't use for normal dataURLs
+            if (
+                typeof dataURL !== 'string' &&
+                !(dataURL instanceof String) &&
+                nav.msSaveOrOpenBlob
+            ) {
                 nav.msSaveOrOpenBlob(dataURL, filename);
                 return;
+            }
+
+            // Some browsers have limitations for data URL lengths. Try to convert to
+            // Blob or fall back. Edge always needs that blob.
+            if (isEdgeBrowser || dataURL.length > 2000000) {
+                dataURL = Highcharts.dataURLtoBlob(dataURL);
+                if (!dataURL) {
+                    throw 'Data URL length limit reached';
+                }
             }
 
             // Try HTML5 download attr if supported
             if (a.download !== undefined) {
                 a.href = dataURL;
                 a.download = filename; // HTML5 download attribute
-                a.target = '_blank';
                 doc.body.appendChild(a);
                 a.click();
                 doc.body.removeChild(a);
@@ -191,7 +232,8 @@
                 var width = svgElement.width.baseVal.value + 2 * margin,
                     height = svgElement.height.baseVal.value + 2 * margin,
                     pdf = new win.jsPDF('l', 'pt', [width, height]); // eslint-disable-line new-cap
-                win.svgElementToPdf(svgElement, pdf, {
+
+                win.svg2pdf(svgElement, pdf, {
                     removeInvalid: true
                 });
                 return pdf.output('datauristring');
@@ -201,6 +243,7 @@
                 dummySVGContainer.innerHTML = svg;
                 var textElements = dummySVGContainer.getElementsByTagName('text'),
                     titleElements,
+                    svgData,
                     svgElementStyle = dummySVGContainer.getElementsByTagName('svg')[0].style;
                 // Workaround for the text styling. Making sure it does pick up the root element
                 each(textElements, function(el) {
@@ -217,10 +260,14 @@
                         el.removeChild(titleElement);
                     });
                 });
-                var svgData = svgToPdf(dummySVGContainer.firstChild, 0);
-                Highcharts.downloadURL(svgData, filename);
-                if (successCallback) {
-                    successCallback();
+                svgData = svgToPdf(dummySVGContainer.firstChild, 0);
+                try {
+                    Highcharts.downloadURL(svgData, filename);
+                    if (successCallback) {
+                        successCallback();
+                    }
+                } catch (e) {
+                    failCallback();
                 }
             }
 
@@ -243,16 +290,14 @@
                     failCallback();
                 }
             } else if (imageType === 'application/pdf') {
-                if (win.jsPDF && win.svgElementToPdf) {
+                if (win.jsPDF && win.svg2pdf) {
                     downloadPDF();
                 } else {
                     // Must load pdf libraries first
                     objectURLRevoke = true; // Don't destroy the object URL yet since we are doing things asynchronously. A cleaner solution would be nice, but this will do for now.
                     getScript(libURL + 'jspdf.js', function() {
-                        getScript(libURL + 'rgbcolor.js', function() {
-                            getScript(libURL + 'svg2pdf.js', function() {
-                                downloadPDF();
-                            });
+                        getScript(libURL + 'svg2pdf.js', function() {
+                            downloadPDF();
                         });
                     });
                 }
@@ -402,7 +447,16 @@
         };
 
         /**
-         * Add a new method to the Chart object to perform a local download
+         * Exporting and offline-exporting modules required. Export a chart to an image
+         * locally in the user's browser.
+         *
+         * @param  {Object} exportingOptions
+         *         Exporting options, the same as in {@link
+         *         Highcharts.Chart#exportChart}.
+         * @param  {Options} chartOptions
+         *         Additional chart options for the exported chart. For example a
+         *         different background color can be added here, or `dataLabels`
+         *         for export only.
          */
         Highcharts.Chart.prototype.exportChartLocal = function(exportingOptions, chartOptions) {
             var chart = this,
@@ -410,7 +464,7 @@
                 fallbackToExportServer = function() {
                     if (options.fallbackToExportServer === false) {
                         if (options.error) {
-                            options.error();
+                            options.error(options);
                         } else {
                             throw 'Fallback to export server disabled';
                         }
@@ -431,12 +485,59 @@
                     }
                 };
 
-            // If we have embedded images and are exporting to JPEG/PNG, Microsoft 
-            // browsers won't handle it, so fall back.
+            // If we are on IE and in styled mode, add a whitelist to the renderer
+            // for inline styles that we want to pass through. There are so many
+            // styles by default in IE that we don't want to blacklist them all.
+
+            if (isMSBrowser) {
+                Highcharts.SVGRenderer.prototype.inlineWhitelist = [
+                    /^blockSize/,
+                    /^border/,
+                    /^caretColor/,
+                    /^color/,
+                    /^columnRule/,
+                    /^columnRuleColor/,
+                    /^cssFloat/,
+                    /^cursor/,
+                    /^fill$/,
+                    /^fillOpacity/,
+                    /^font/,
+                    /^inlineSize/,
+                    /^length/,
+                    /^lineHeight/,
+                    /^opacity/,
+                    /^outline/,
+                    /^parentRule/,
+                    /^rx$/,
+                    /^ry$/,
+                    /^stroke/,
+                    /^textAlign/,
+                    /^textAnchor/,
+                    /^textDecoration/,
+                    /^transform/,
+                    /^vectorEffect/,
+                    /^visibility/,
+                    /^x$/,
+                    /^y$/
+                ];
+            }
+
+
+            // Always fall back on:
+            // - MS browsers: Embedded images JPEG/PNG, or any PDF
+            // - Embedded images and PDF
             if (
-                (isMSBrowser && options.type !== 'image/svg+xml' ||
-                    options.type === 'application/pdf') &&
-                chart.container.getElementsByTagName('image').length
+                (
+                    isMSBrowser &&
+                    (
+                        options.type === 'application/pdf' ||
+                        chart.container.getElementsByTagName('image').length &&
+                        options.type !== 'image/svg+xml'
+                    )
+                ) || (
+                    options.type === 'application/pdf' &&
+                    chart.container.getElementsByTagName('image').length
+                )
             ) {
                 fallbackToExportServer();
                 return;
@@ -447,44 +548,42 @@
 
         // Extend the default options to use the local exporter logic
         merge(true, Highcharts.getOptions().exporting, {
-            libURL: 'https://code.highcharts.com/5.0.6/lib/',
-            buttons: {
-                contextButton: {
-                    menuItems: [{
-                        textKey: 'printChart',
-                        onclick: function() {
-                            this.print();
-                        }
-                    }, {
-                        separator: true
-                    }, {
-                        textKey: 'downloadPNG',
-                        onclick: function() {
-                            this.exportChartLocal();
-                        }
-                    }, {
-                        textKey: 'downloadJPEG',
-                        onclick: function() {
-                            this.exportChartLocal({
-                                type: 'image/jpeg'
-                            });
-                        }
-                    }, {
-                        textKey: 'downloadSVG',
-                        onclick: function() {
-                            this.exportChartLocal({
-                                type: 'image/svg+xml'
-                            });
-                        }
-                    }, {
-                        textKey: 'downloadPDF',
-                        onclick: function() {
-                            this.exportChartLocal({
-                                type: 'application/pdf'
-                            });
-                        }
-                    }]
+            libURL: 'https://code.highcharts.com/5.0.13/lib/',
+
+            // When offline-exporting is loaded, redefine the menu item definitions
+            // related to download.
+            menuItemDefinitions: {
+                downloadPNG: {
+                    textKey: 'downloadPNG',
+                    onclick: function() {
+                        this.exportChartLocal();
+                    }
+                },
+                downloadJPEG: {
+                    textKey: 'downloadJPEG',
+                    onclick: function() {
+                        this.exportChartLocal({
+                            type: 'image/jpeg'
+                        });
+                    }
+                },
+                downloadSVG: {
+                    textKey: 'downloadSVG',
+                    onclick: function() {
+                        this.exportChartLocal({
+                            type: 'image/svg+xml'
+                        });
+                    }
+                },
+                downloadPDF: {
+                    textKey: 'downloadPDF',
+                    onclick: function() {
+                        this.exportChartLocal({
+                            type: 'application/pdf'
+                        });
+                    }
                 }
+
             }
         });
 

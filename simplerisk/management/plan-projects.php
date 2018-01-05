@@ -8,6 +8,7 @@ require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -55,6 +56,9 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../index.php");
   exit(0);
 }
+
+// Enforce that the user has access to risk management
+enforce_permission_riskmanagement();
 
 // If the risks were saved to projects
 if (isset($_POST['update_projects']))
@@ -370,10 +374,7 @@ if (isset($_POST['delete_project']))
               </div> <!-- status-tabs -->
 
               <div id="active-projects" class="sortable">
-
-
                     <?php get_project_tabs(1) ?>
-
               </div>
               <div id="on-hold-projects" class="sortable">
                     <?php get_project_tabs(2) ?>

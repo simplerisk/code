@@ -563,6 +563,191 @@
 			set_alert(true, "good", "An existing source was removed successfully.");
         }
     }
+    
+    // Check if a new control class was submitted
+    if (isset($_POST['add_control_class']))
+    {
+        $name = $_POST['new_control_class'];
+
+        // Insert a new control class up to 20hars
+        add_name("control_class", $name, 20);
+
+        // Display an alert
+        set_alert(true, "good", "A new control class was added successfully.");
+    }
+    
+    // Check if the control class update was submitted
+    if (isset($_POST['update_control_class']))
+    {
+        $new_name = $_POST['new_name'];
+        $value = (int)$_POST['update_value'];
+
+        // Verify value is an integer
+        if ($value)
+        {
+            update_table("control_class", $new_name, $value);
+
+            // Display an alert
+            set_alert(true, "good", "The control class name was updated successfully.");
+        }else{
+            // Display an alert
+            set_alert(true, "bad", "You must should select a valid control class.");
+        }
+    }
+
+    // Check if a control class was deleted
+    if (isset($_POST['delete_control_class']))
+    {
+        $value = (int)$_POST['control_class'];
+
+        // Verify value is an integer
+        if (is_int($value))
+        {
+            delete_value("control_class", $value);
+
+            // Display an alert
+            set_alert(true, "good", "An existing control class was removed successfully.");
+        }
+    }
+    
+    // Check if a new control phase was submitted
+    if (isset($_POST['add_control_phase']))
+    {
+        $name = $_POST['new_control_phase'];
+
+        // Insert a new control phase up to 20hars
+        add_name("control_phase", $name, 20);
+
+        // Display an alert
+        set_alert(true, "good", "A new control phase was added successfully.");
+    }
+    
+    // Check if the control phase update was submitted
+    if (isset($_POST['update_control_phase']))
+    {
+        $new_name = $_POST['new_name'];
+        $value = (int)$_POST['update_value'];
+
+        // Verify value is an integer
+        if ($value)
+        {
+            update_table("control_phase", $new_name, $value);
+
+            // Display an alert
+            set_alert(true, "good", "The control phase name was updated successfully.");
+        }else{
+            // Display an alert
+            set_alert(true, "bad", "You must should select a valid control phase.");
+        }
+    }
+
+    // Check if a control phase was deleted
+    if (isset($_POST['delete_control_phase']))
+    {
+        $value = (int)$_POST['control_phase'];
+
+        // Verify value is an integer
+        if (is_int($value))
+        {
+            delete_value("control_phase", $value);
+
+            // Display an alert
+            set_alert(true, "good", "An existing control phase was removed successfully.");
+        }
+    }
+    
+    // Check if a new control priority was submitted
+    if (isset($_POST['add_control_priority']))
+    {
+        $name = $_POST['new_control_priority'];
+
+        // Insert a new control priority up to 20hars
+        add_name("control_priority", $name, 20);
+
+        // Display an alert
+        set_alert(true, "good", "A new control priority was added successfully.");
+    }
+    
+    // Check if the control priority update was submitted
+    if (isset($_POST['update_control_priority']))
+    {
+        $new_name = $_POST['new_name'];
+        $value = (int)$_POST['update_value'];
+
+        // Verify value is an integer
+        if ($value)
+        {
+            update_table("control_priority", $new_name, $value);
+
+            // Display an alert
+            set_alert(true, "good", "The control prirority name was updated successfully.");
+        }else{
+            // Display an alert
+            set_alert(true, "bad", "You must should select a valid control priority.");
+        }
+    }
+
+    // Check if a control priority was deleted
+    if (isset($_POST['delete_control_priority']))
+    {
+        $value = (int)$_POST['control_priority'];
+
+        // Verify value is an integer
+        if (is_int($value))
+        {
+            delete_value("control_priority", $value);
+
+            // Display an alert
+            set_alert(true, "good", "An existing control priority was removed successfully.");
+        }
+    }
+    
+    // Check if a new family was submitted
+    if (isset($_POST['add_family']))
+    {
+        $short_name = $_POST['new_family'];
+
+        // Insert a new family
+        add_family($short_name);
+
+        // Display an alert
+        set_alert(true, "good", "A new control family was added successfully.");
+    }
+    
+    // Check if the family update was submitted
+    if (isset($_POST['update_family']))
+    {
+        $new_name = $_POST['new_name'];
+        $value = (int)$_POST['update_value'];
+
+        // Verify value is an integer
+        if ($value)
+        {
+            update_family($value, $new_name);
+
+            // Display an alert
+            set_alert(true, "good", "The control family name was updated successfully.");
+        }else{
+            // Display an alert
+            set_alert(true, "bad", "You must should select a valid control family.");
+        }
+    }
+
+    // Check if a control family was deleted
+    if (isset($_POST['delete_family']))
+    {
+        $value = (int)$_POST['family'];
+
+        // Verify value is an integer
+        if (is_int($value))
+        {
+            delete_family($value);
+
+            // Display an alert
+            set_alert(true, "good", "An existing control family was removed successfully.");
+        }
+    }
+    
 ?>
 
 <!doctype html>
@@ -711,6 +896,47 @@
                                     </p>
                                 </form>
                             </div>
+                            <div class="hero-unit">
+                                <form name="control_class_form" method="post" action="">
+                                    <p>
+                                        <h4><?php echo $escaper->escapeHtml($lang['ControlClass']); ?>:</h4>
+                                        <?php echo $escaper->escapeHtml($lang['AddNewControlClassNamed']); ?>: <input name="new_control_class" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_control_class" /><br />
+                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("control_class", NULL, "update_value"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_control_class" /><br />
+                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentControlClassNamed']); ?> <?php create_dropdown("control_class"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_control_class" />
+                                    </p>
+                                </form>
+                            </div>
+                            <div class="hero-unit">
+                                <form name="control_phase_form" method="post" action="">
+                                    <p>
+                                        <h4><?php echo $escaper->escapeHtml($lang['ControlPhase']); ?>:</h4>
+                                        <?php echo $escaper->escapeHtml($lang['AddNewControlPhaseNamed']); ?>: <input name="new_control_phase" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_control_phase" /><br />
+                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("control_phase", NULL, "update_value"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_control_phase" /><br />
+                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentControlPhaseNamed']); ?> <?php create_dropdown("control_phase"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_control_phase" />
+                                    </p>
+                                </form>
+                            </div>
+                            <div class="hero-unit">
+                                <form name="control_priority" method="post" action="">
+                                    <p>
+                                        <h4><?php echo $escaper->escapeHtml($lang['ControlPriority']); ?>:</h4>
+                                        <?php echo $escaper->escapeHtml($lang['AddNewControlPriorityNamed']); ?>: <input name="new_control_priority" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_control_priority" /><br />
+                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("control_priority", NULL, "update_value"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_control_priority" /><br />
+                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentControlPriorityNamed']); ?> <?php create_dropdown("control_priority"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_control_priority" />
+                                    </p>
+                                </form>
+                            </div>
+                            <div class="hero-unit">
+                                <form name="family" method="post" action="">
+                                    <p>
+                                        <h4><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?>:</h4>
+                                        <?php echo $escaper->escapeHtml($lang['AddNewControlFamilyNamed']); ?>: <input name="new_family" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_family" /><br />
+                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("family", NULL, "update_value"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_family" /><br />
+                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentControlFamilyNamed']); ?> <?php create_dropdown("family"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_family" />
+                                    </p>
+                                </form>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>

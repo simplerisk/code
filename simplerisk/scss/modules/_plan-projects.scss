@@ -1,4 +1,5 @@
-#project--add{
+
+#framework--add, #project--add, #control--add{
     &.modal{
         z-index: 9999;
     }
@@ -7,25 +8,24 @@
 .status-tabs{
   position: relative;
 
-  .project--add{
+   .framework--add, .project--add, .control--add{
+        @extend .reset;
 
-    @extend .reset;
+        width: 40px;
+        height: 40px;
+        background-color: $color-1;
+        text-align: center;
+        color: #fff;
+        display: block;
+        line-height: 40px;
+        border-top-left-radius: 2px;
+        border-top-right-radius: 2px;
+        position: absolute;
+        top: 3px;
+        left: 71px;
 
-    width: 40px;
-    height: 40px;
-    background-color: $color-1;
-    text-align: center;
-    color: #fff;
-    display: block;
-    line-height: 40px;
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
-    position: absolute;
-    top: 3px;
-    left: 71px;
-
-  }
-
+    }
+      
   .tabs-nav{
 
     margin-left: 110px;
@@ -33,7 +33,7 @@
     li{
       float: left;
 /*      margin-left: 10px;*/
-margin-left: 5px; 
+        margin-left: 5px; 
       a{
 
         @extend .animation;
@@ -68,11 +68,12 @@ margin-left: 5px;
 
   }
 
-  .project-headers{
+  .project-headers, .framework-headers, .control-headers{
     background-color: $color-2;
   }
 
 }
+
 
 
 .white-labels{
@@ -120,8 +121,6 @@ margin-left: 5px;
   &--name{ width: 72%; }
   &--risks{ width: 20%; }
 }
-
-
 .risks{
   margin: 10px 0px 10px 8%;
   display: none;
@@ -144,8 +143,10 @@ margin-left: 5px;
   line-height: 40px;
 }
 
-.project-block-unassined .risks{
-  display: block;
+.project-block-unassined, .framework-block-unassined{
+    .risks{
+      display: block;
+    }
 }
 
 .delete_project{
@@ -163,6 +164,22 @@ margin-left: 5px;
                 white-space: nowrap;
 
             }
+        }
+    }
+}
+
+.frameworks{
+    .plan-projects{
+        .risks{
+        .risk{
+            .risk--title{
+            width: calc(100% - 140px);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+
+            }
+        }
         }
     }
 }

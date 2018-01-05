@@ -1,0 +1,6 @@
+#! /usr/bin/make -f
+
+# $Id: rules 29224 2009-11-10 12:33:18Z wsl $
+# $URL: https://svn.uvt.nl/its-id/trunk/sources/simplesamlphp-aselect/debian/rules $
+  
+include /usr/share/cdbs/1/rules/debhelper.mk

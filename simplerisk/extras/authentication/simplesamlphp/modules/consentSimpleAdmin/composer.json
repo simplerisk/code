@@ -1,0 +1,24 @@
+{
+    "name": "simplesamlphp/simplesamlphp-module-consentsimpleadmin",
+    "description": "A SimpleSAMLphp module implementing a very simple user interface for managing consent.",
+    "type": "simplesamlphp-module",
+    "homepage": "http://simplesamlphp.org",
+    "license": "LGPL-2.1",
+    "authors": [
+        {
+            "name": "Olav Morken",
+            "email": "olav.morken@uninett.no"
+        },
+        {
+            "name": "Andreas Åkre Solberg",
+            "email": "andreas.solberg@uninett.no"
+        }
+    ],
+    "extra": {
+        "ssp-mixedcase-module-name": "consentSimpleAdmin"
+    },
+    "require": {
+        "simplesamlphp/composer-module-installer": "~1.0"
+    }
+}
+

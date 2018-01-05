@@ -146,12 +146,22 @@
 		// Otherwise, CONTINUE was pressed
 		else
 		{
+			echo "<div class=\"container-fluid\">\n";
+			echo "<div class=\"row-fluid\">\n";
+			echo "<div class=\"span9\">\n";
+			echo "<div class=\"well\">\n";
+
                         // Upgrade the database
                         upgrade_database();
 			// Convert tables to InnoDB
 			convert_tables_to_innodb();
 			// Convert tables to utf8_general_ci
 			convert_tables_to_utf8();
+
+			echo "</div>\n";
+			echo "</div>\n";
+			echo "</div>\n";
+			echo "</div>\n";
 		}
 	}
 ?>

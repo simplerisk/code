@@ -8,6 +8,7 @@
     require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../../includes/display.php'));
     require_once(realpath(__DIR__ . '/../../includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/../../includes/permissions.php'));
 
     // Include Zend Escaper for HTML Output Encoding
     require_once(realpath(__DIR__ . '/../../includes/Component_ZendEscaper/Escaper.php'));
@@ -55,6 +56,8 @@
         exit(0);
     }
     
+    // Enforce that the user has access to risk management
+    enforce_permission_riskmanagement();
 
 ?>
 
