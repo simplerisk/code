@@ -1980,6 +1980,11 @@ function upgrade_from_20170724001($db){
     $stmt = $db->prepare("ALTER TABLE `audit_log` ADD `log_type` VARCHAR(100) NOT NULL ;");
     $stmt->execute();
 
+    // Set the timestamp not to update on update
+    echo "Setting the timestamp for the audit_log not to update on update.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `audit_log` CHANGE `timestamp` `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;");
+    $stmt->execute();
+
     // Add values to log_type filed of current logs
     echo "Updating values to log_type filed of current logs.<br />\n";
     $stmt = $db->prepare("UPDATE `audit_log` SET `log_type`='risk';");
