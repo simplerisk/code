@@ -15,7 +15,7 @@ header("X-Frame-Options: DENY");
 header("X-XSS-Protection: 1; mode=block");
 
 // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (CSP_ENABLED == "true")
+if (csp_enabled())
 {
   // Add the Content-Security-Policy header
   header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -57,6 +57,14 @@ enforce_permission_riskmanagement();
 
 ?>
 
+<script>
+	Highcharts.setOptions({
+		global: {
+			timezone: '<?php echo get_setting("default_timezone"); ?>'
+		}
+	});
+</script>
+
 <div class="row-fluid details risk-test">
     <a href="#" class='show-score-overtime' > <i class="fa fa-caret-right"></i>&nbsp; <?php echo $escaper->escapeHtml($lang['ShowRiskScoreOverTime']); ?></a>
     <a href="#" class='hide-score-overtime' style="display: none;"> <i class="fa fa-caret-down"></i> &nbsp; <?php echo $escaper->escapeHtml($lang['HideRiskScoreOverTime']); ?> </a>
@@ -64,7 +72,7 @@ enforce_permission_riskmanagement();
 
 <div class="row-fluid score-overtime-container" style="display: none;">
     <div class="well">
-        <div class="socre-overtime-chart"></div>
+        <div class="score-overtime-chart"></div>
     </div>
 </div>
 

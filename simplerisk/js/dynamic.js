@@ -339,6 +339,27 @@ function check_calculated_risk()
 //  }
 }
 
+function check_residual_risk()
+{
+//  elements = document.getElementsByClassName("residual_risk");
+//  checkbox = document.getElementById("checkbox_residual_risk");
+
+//  if(checkbox.checked)
+//  {
+//    for(i=0; i<elements.length; i++)
+//    {
+//      elements[i].style.display = "";
+//    }
+//  }
+//  else
+//  {
+//    for(i=0; i<elements.length; i++)
+//    {
+//      elements[i].style.display = "none";
+//    }
+//  }
+}
+
 function check_submission_date()
 {
 //  elements = document.getElementsByClassName("submission_date");
@@ -760,7 +781,7 @@ $(document).ready(function(){
                 pagingType: "full_numbers",
                 dom : "flrti<'#view-all-"+ index +".view-all'>p",
                 ajax: {
-                    url: '/api/reports/dynamic',
+                    url: BASE_URL + '/api/reports/dynamic',
                     type: "post",
                     data: function(d){
                         d.status            = $("#status").val();
@@ -777,6 +798,10 @@ $(document).ready(function(){
                     },
                     {
                         "targets" : 15,
+                        "className" : "risk-cell",
+                    },
+                    {
+                        "targets" : 16,
                         "className" : "risk-cell",
                     }
                 ]

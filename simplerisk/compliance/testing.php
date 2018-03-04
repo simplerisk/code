@@ -21,7 +21,7 @@ header("X-Frame-Options: DENY");
 header("X-XSS-Protection: 1; mode=block");
 
 // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (CSP_ENABLED == "true")
+if (csp_enabled())
 {
   // Add the Content-Security-Policy header
   header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -54,6 +54,7 @@ session_check();
 // Check if access is authorized
 if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 {
+    set_unauthenticated_redirect();
     header("Location: ../index.php");
     exit(0);
 }
@@ -66,7 +67,8 @@ if (isset($_POST['submit_test_result']))
 {
     // Process submitting test result
     if(submit_test_result()){
-        if($_POST['status'] == TEST_AUDIT_STATUS_CLOSED)
+        $closed_audit_status = get_setting("closed_audit_status");
+        if($_POST['status'] == $closed_audit_status)
         {
             refresh($_SESSION['base_url']."/compliance/active_audits.php");
         }
@@ -82,7 +84,7 @@ if (isset($_POST['submit_test_result']))
 <html>
 
 <head>
-    <script src="../js/jquery-1.11.3.min.js"></script>
+    <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery.easyui.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>

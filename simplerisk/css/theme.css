@@ -43,7 +43,7 @@ input[type="submit"], .add-comments, .aside--nav li a, .status-tabs .tabs-nav li
 }
 
 #load {
-  position: absolute;
+  position: fixed;
   z-index: 1;
   border: none;
   background: #eee;
@@ -342,7 +342,8 @@ ul.ui-autocomplete .ui-state-focus {
 ul.ui-autocomplete.popup-ui-complete {
   width: 50% !important;
   color: #fff;
-  background: transparent;
+  background: #1a1b1a;
+  border: 1px solid #1a1b1a;
 }
 
 .bottom-offset-10 {
@@ -362,6 +363,10 @@ ul.ui-autocomplete.popup-ui-complete {
   padding: 0;
   position: absolute;
   width: 1px;
+}
+
+ul.multiselect-container li label {
+  white-space: initial;
 }
 
 /*--------------------------------------------------------------
@@ -1005,6 +1010,11 @@ button.multiselect {
   padding-right: 5px;
 }
 
+#questionnaire-answers-container .answers-table td {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
 .table.assessment-datatable {
   /*    margin-top: 13px;*/
 }
@@ -1031,6 +1041,10 @@ button.multiselect {
 }
 .questionnaire-response form.disabled * {
   pointer-events: none;
+}
+
+table a.edit-btn, table a.copy-btn, table a.delete-btn {
+  display: inline !important;
 }
 
 /*--------------------------------------------------------------
@@ -1240,19 +1254,33 @@ form#comment {
   vertical-align: top;
 }
 
+.white-background {
+  background-color: #fff !important;
+}
+
+.grey-background {
+  background-color: #ebe7e7 !important;
+}
+
 .red-background {
-  background: pink;
+  background-color: pink !important;
 }
 
 .green-background {
-  background: lightgreen;
+  background-color: lightgreen !important;
 }
 
-#active-audits.table.table-bordered td {
-  /*        padding: 0px;*/
+#active-audits .white-background, #past-audits .white-background {
+  background-color: #fff !important;
 }
-#active-audits.table.table-bordered td > div {
-  /*            padding: 10px*/
+#active-audits .grey-background, #past-audits .grey-background {
+  background-color: #ebe7e7 !important;
+}
+#active-audits .red-background, #past-audits .red-background {
+  background-color: pink !important;
+}
+#active-audits .green-background, #past-audits .green-background {
+  background-color: lightgreen !important;
 }
 
 .caret {
@@ -1432,6 +1460,22 @@ form#comment {
   cursor: pointer;
   padding: 5px 10px;
   border: 1px solid #ccc;
+}
+
+#dsp_frameworks_tree.ui-widget-content {
+  border: 0px;
+  background: none;
+}
+#dsp_frameworks_tree.ui-widget-content .ui-state-active, #dsp_frameworks_tree.ui-widget-content .ui-widget-content .ui-state-active {
+  background: none;
+  border: 0px;
+}
+#dsp_frameworks_tree.ui-widget-content .daredevel-tree-anchor {
+  cursor: pointer;
+  margin-top: 7px;
+}
+#dsp_frameworks_tree.ui-widget-content input[type=checkbox] {
+  margin-top: -1px;
 }
 
 #controls-tab-content {
@@ -2022,6 +2066,10 @@ select#languages {
   margin-left: 30px;
 }
 
+.questionnaire-pending-risk-form {
+  border: 1px dotted;
+}
+
 .new-tabs {
   padding-top: 5px;
   position: relative;
@@ -2327,7 +2375,7 @@ div.doc-link.edit-mode {
   border-bottom: 1px solid #dddddd;
 }
 .risk-datatable.table.dataTable thead .sorting_asc, .risk-datatable.table.dataTable thead .sorting_desc {
-  background-image: none;
+  /*            background-image: none;*/
 }
 
 #risk-table-container {

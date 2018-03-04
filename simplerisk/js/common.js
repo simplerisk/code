@@ -22,16 +22,21 @@ function refreshFilelist($parent, currentButtonId){
         </li>";
         filesLength++;
     });
-    $($parent).find('.file-list').html(filesHtml);
+    $parent.find('.file-list').html(filesHtml);
     var totalFilesLength = $('.exist-files > li', $parent).length + filesLength;
     if(totalFilesLength > 1){
         $msg = "<span class='file-count'>" + totalFilesLength + "</span> Files Added"; 
     }else{ 
         $msg = "<span class='file-count'>" + totalFilesLength + "</span> File Added"; 
     }
-    $($parent).find('.file-count-html').html($msg);
+    $parent.find('.file-count-html').html($msg);
+
+    var name = $parent.find('.file_name').data('file');
+    if(!name)
+        name = "file";
+
     if(currentButtonId){
-        $parent.prepend($('<input id="'+currentButtonId+'" name="file[]" class="hidden-file-upload active" type="file">'))
+        $parent.prepend($('<input id="'+currentButtonId+'" name="'+name+'[]" class="hidden-file-upload active" type="file">'))
     }
     
 }
@@ -137,14 +142,16 @@ function riskScoringChart(renderTo, risk_id, risk_levels){
         })
         to = Number(risk_level.value);
     }
+    // For all plots, change Date axis to local timezone
+    Highcharts.setOptions({                                            
+        global : {
+            useUTC : false
+        }
+    });
     var chartObj = new Highcharts.Chart( {
         chart: {
             renderTo: renderTo,
             type: 'spline',
-//            backgroundColor: {
-//                linearGradient: [0, 0, 0, 400],
-//               stops: stops,
-//            },
         },
         title: {
             text: $('#_RiskScoringHistory').length ? $("#_RiskScoringHistory").val() : 'Risk Scoring History'
@@ -198,13 +205,17 @@ function riskScoringChart(renderTo, risk_id, risk_levels){
     chartObj.showLoading('<img src="../images/progress.gif">');
     $.ajax({
         type: "GET",
-        url: "../api/management/risk/scoring_history?id=" + risk_id,
+        url: BASE_URL + "/api/management/risk/scoring_history?id=" + risk_id,
         dataType: 'json',
         success: function(data){
             var histories = data.data;
             var chartData = [];
             for(var i=0; i<histories.length; i++){
-                var date = new Date(histories[i].last_update.replace(/\s/, 'T'));
+                // var date = new Date(histories[i].last_update.replace(/\s/, 'T'));
+                // Added the three lines below to make the timestamp work properly with Safari
+                var parts = histories[i].last_update.split(/[ \/:-]/g);
+                var dateFormatted = parts[1] + "/" + parts[2] + "/" + parts[0] + " " + parts[3] + ":" + parts[4] + ":" + parts[5];
+                var date = new Date(dateFormatted);
                 chartData.push([date.getTime(), Number(histories[i].calculated_risk)]);
             }
             
@@ -246,7 +257,6 @@ $(document).ready(function(){
     
     $(document).on('change', '.hidden-file-upload.active', function(event) {
 //        event.preventDefault();
-
         var $parent = $(this).parents('.file-uploader');
         $(this).removeClass("active")
         var currentButtonId = $(this).attr('id');
@@ -261,7 +271,7 @@ $(document).ready(function(){
             
         $.ajax({
             type: "GET",
-            url: "../api/risk_levels",
+            url: BASE_URL + "/api/risk_levels",
             dataType: 'json',
             success: function(result){
                 var risk_id = $('.large-text', tabContainer).html();
@@ -269,7 +279,7 @@ $(document).ready(function(){
 
                 var risk_levels = result.data.risk_levels;
                 
-                riskScoringChart($('.socre-overtime-chart', tabContainer)[0], risk_id, risk_levels);
+                riskScoringChart($('.score-overtime-chart', tabContainer)[0], risk_id, risk_levels);
 
                 $('.hide-score-overtime', tabContainer).show();
                 $('.show-score-overtime', tabContainer).hide();

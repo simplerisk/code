@@ -19,7 +19,7 @@ header("X-Frame-Options: DENY");
 header("X-XSS-Protection: 1; mode=block");
 
 // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (CSP_ENABLED == "true")
+if (csp_enabled())
 {
     // Add the Content-Security-Policy header
     header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -51,6 +51,7 @@ session_check();
 // Check if access is authorized
 if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 {
+    set_unauthenticated_redirect();
     header("Location: ../index.php");
     exit(0);
 }
@@ -129,6 +130,7 @@ if(process_assessment_contact()){
                     </div>
                 <?php }else{ ?>
                     <div class="row-fluid text-right content-navbar-container">
+                        <input type="text" class="pull-left" placeholder="Filter by text" id="filter_by_text">
                         <a class="btn" href="contacts.php?action=add"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
                     </div>
                     <div class="row-fluid">

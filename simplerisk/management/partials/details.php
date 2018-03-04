@@ -15,7 +15,7 @@ header("X-Frame-Options: DENY");
 header("X-XSS-Protection: 1; mode=block");
 
 // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (CSP_ENABLED == "true")
+if (csp_enabled())
 {
   // Add the Content-Security-Policy header
   header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -56,7 +56,7 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 enforce_permission_riskmanagement();
 
 ?>
-        
+
     <div id="tabs" class="risk-details">
       <div class="row-fluid tab-wrapper">
         <ul class="tabs-nav clearfix">

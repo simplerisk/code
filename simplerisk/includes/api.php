@@ -1,5 +1,4 @@
 <?php
-
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -9,7 +8,6 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
 require_once(realpath(__DIR__ . '/assets.php'));
-require_once(realpath(__DIR__ . '/fields.php'));
 require_once(realpath(__DIR__ . '/governance.php'));
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
@@ -335,7 +333,9 @@ function dynamicrisk()
                 "submitted_by"          => $escaper->escapeHtml($risk['submitted_by']),
                 "scoring_method"        => $escaper->escapeHtml($risk['scoring_method']),
                 "calculated_risk"       => $escaper->escapeHtml($risk['calculated_risk']),
+		        "residual_risk"		=> $escaper->escapeHtml($risk['residual_risk']),
                 "color"                 => get_risk_color($risk['calculated_risk']),
+		        "residual_color"	=> get_risk_color($risk['residual_risk']),
                 "submission_date"       => $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($risk['submission_date']))),
                 "review_date"           => $escaper->escapeHtml($risk['review_date']),
                 "project"               => $escaper->escapeHtml($risk['project']),
@@ -671,6 +671,10 @@ function dynamicriskForm()
                             $aValue = trim($a['calculated_risk']);
                             $bValue = trim($b['calculated_risk']);
                         break;
+                        case "residual_risk":
+                            $aValue = trim($a['residual_risk']);
+                            $bValue = trim($b['residual_risk']);
+                        break;
                         default:
                             return 0;
                     }
@@ -689,6 +693,7 @@ function dynamicriskForm()
             $row['id'] = $row['id'] + 1000;
 //            $color = get_risk_color($row['calculated_risk']);
             $color = get_risk_color($row['calculated_risk']);
+            $residual_color = get_risk_color($row['residual_risk']);
             $rows[] = array(
                 "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($row['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($row['id'])."</a>",
                 $escaper->escapeHtml($row['status']),
@@ -706,6 +711,7 @@ function dynamicriskForm()
                 $escaper->escapeHtml($row['submitted_by']),
                 $escaper->escapeHtml($row['scoring_method']),
                 "<div class='".$escaper->escapeHtml($row['color'])."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($row['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>",
+                "<div class='".$escaper->escapeHtml($row['residual_color'])."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($row['residual_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($residual_color) . "\"></span></div></div>",
                 $escaper->escapeHtml(date(DATETIMESIMPLE, strtotime($row['submission_date']))),
                 $escaper->escapeHtml($row['review_date']),
                 $escaper->escapeHtml($row['project']),
@@ -984,7 +990,7 @@ function getTabHtml($id, $template){
         $security_requirements      = $mitigation[0]['security_requirements'];
         $security_recommendations   = $mitigation[0]['security_recommendations'];
         $planning_date      = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
-        $mitigation_percent = isset($mitigation[0]['mitigation_percent']) ? $mitigation[0]['mitigation_percent'] : 0;
+        $mitigation_percent = (isset($mitigation[0]['mitigation_percent']) && $mitigation[0]['mitigation_percent'] >= 0 && $mitigation[0]['mitigation_percent'] <= 100) ? $mitigation[0]['mitigation_percent'] : 0;
         $mitigation_controls = isset($mitigation[0]['mitigation_controls']) ? $mitigation[0]['mitigation_controls'] : "";
     }
     // Otherwise
@@ -1423,10 +1429,19 @@ function saveMitigationForm()
             $mitigation_date = update_mitigation($id, $_POST);
         }
         
-        
         $html = getTabHtml($id, 'details');
 
-        json_response(200, get_alert(true), $html);        
+        $mitigation_percent = (int)$_POST['mitigation_percent'];
+
+        ob_start();
+        view_score_html($id, $risk[0]['calculated_risk'], $mitigation_percent);
+        $score_wrapper_html = ob_get_contents();
+        ob_end_clean();
+
+        // Calculate residual risk score
+        $data = ['score_wrapper_html' => $score_wrapper_html, 'html' => $html];
+
+        json_response(200, get_alert(true), $data);        
     }else{
         set_alert(true, "bad", "You do not have permission to modify risks.  Any risks that you attempt to modify will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
         
@@ -2427,86 +2442,6 @@ function updateAssessment(){
     return json_response($status, $status_message, NULL);
 }
  
-/******************************
- * FUNCTION: ADD CUSTOM FIELD *
- ******************************/
-function addCustomField()
-{
-    global $escaper;
-
-    // If the user is an administrator
-    if (is_admin())
-    {
-        // If the name and type aren't set or the name is empty
-        if (!(isset($_POST['name']) && isset($_POST['type'])) || ($_POST['name'] == ""))
-        {
-            $status = "400";
-            $status_message = $escaper->escapeHtml($lang['CustomFieldNameNotEmpty']);
-            $data = array();
-        }
-        else
-        {
-            $name = get_param("POST", 'name');
-            $type = get_param("POST", 'type');
-
-            // Try creating the field
-            if (create_field($name, $type))
-            {
-                $status = 200;
-                $status_message = "Custom field named \"" . $escaper->escapeHtml($name) . " created successfully!";
-                $data = array();
-            }
-
-            // Return a JSON response
-            json_response($status, $status_message, $data);
-        }
-    }
-}
-
-/********************************
- * FUNCTION: DELTE CUSTOM FIELD *
- ********************************/
-function deleteCustomField()
-{
-    global $escaper;
-    global $lang;
-    
-    // If the user is an administrator
-    if (is_admin())
-    {
-        // If the field id is not set or is not an integer value
-        if (!(isset($_POST['field_id']) && intval($_POST['field_id'])))
-        {
-            $status = "400";
-            $status_message = $escaper->escapeHtml($lang['CustomFieldNameNotEmpty']);
-            $data = array();
-        }
-        else
-        {
-            $field_id = get_param("POST", 'field_id');
-
-            // Try deleting the field
-            if (delete_field($field_id))
-            {
-                $status = 200;
-                $status_message = "Custom field has been deleted successfully.";
-                $data = array();
-            }else{
-                $status = 400;
-                $status_message = "Failed to delete custom field.";
-                $data = array();
-            }
-
-        }
-    }else{
-        $status = 400;
-        $status_message = "Failed to delete custom field.";
-        $data = array();
-    }
-    // Return a JSON response
-    json_response($status, $status_message, $data);
-}
- 
 /****************************
  * FUNCTION: GET TABLE DATA *
  ****************************/
@@ -2560,12 +2495,12 @@ function getFrameworkControlsDatatable(){
     global $escaper;
 
     $draw = $escaper->escapeHtml($_GET['draw']);
-    $control_class = $_GET['control_class'];
-    $control_phase = $_GET['control_phase'];
-    $control_family = $_GET['control_family'];
-    $control_owner = $_GET['control_owner'];
-    $control_framework = $_GET['control_framework'];
-    $control_priority = $_GET['control_priority'];
+    $control_class = isset($_GET['control_class']) ? $_GET['control_class'] : [];
+    $control_phase = isset($_GET['control_phase']) ? $_GET['control_phase'] : [];
+    $control_family = isset($_GET['control_family']) ? $_GET['control_family'] : [];
+    $control_owner = isset($_GET['control_owner']) ? $_GET['control_owner'] : [];
+    $control_framework = isset($_GET['control_framework']) ? $_GET['control_framework'] : [];
+    $control_priority = isset($_GET['control_priority']) ? $_GET['control_priority'] : [];
     $control_text = $_GET['control_text'];
     
     $controls = get_framework_controls_by_filter($control_class, $control_phase, $control_owner, $control_family, $control_framework, $control_priority, $control_text);
@@ -2619,7 +2554,8 @@ function getFrameworkControlsDatatable(){
                             $html .= "<td>".$escaper->escapeHtml($control['control_priority_name'])."</td>\n";
                             $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </td>\n";
                             $html .= "<td>".$escaper->escapeHtml($control['family_short_name'])."</td>\n";
-                            $html .= "<td colspan='2'>&nbsp;</td>\n";
+                            $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['MitigationPercent'])."</strong>: </td>\n";
+                            $html .= "<td>".$escaper->escapeHtml($control['mitigation_percent'])."%</td>\n";
                         $html .= "</tr>\n";
                         $html .= "<tr>\n";
                             $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </td>\n";
@@ -2648,7 +2584,7 @@ function getFrameworkControlsDatatable(){
 /********************************************************
  * FUNCTION: GET DATA FOR Mitigation CONTROLS DATATABLE *
  ********************************************************/
-function getMitigationControls(){
+function getMitigationControlsDatatable(){
     global $lang;
     global $escaper;
 
@@ -2711,7 +2647,8 @@ function getMitigationControls(){
                             $html .= "<td>".$escaper->escapeHtml($control['control_priority_name'])."</td>\n";
                             $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </td>\n";
                             $html .= "<td>".$escaper->escapeHtml($control['family_short_name'])."</td>\n";
-                            $html .= "<td colspan='2'>&nbsp;</td>\n";
+                            $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['MitigationPercent'])."</strong>: </td>\n";
+                            $html .= "<td>".$escaper->escapeHtml($control['mitigation_percent'])."%</td>\n";
                         $html .= "</tr>\n";
                         $html .= "<tr>\n";
                             $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </td>\n";
@@ -2851,13 +2788,12 @@ function getDefineTestsResponse()
     global $escaper;
 
     $draw = $escaper->escapeHtml($_GET['draw']);
-    $control_framework = $_GET['control_framework']=="all" ? "all" : array($_GET['control_framework']);
+    $control_framework = empty($_GET['control_framework']) ? [] : $_GET['control_framework'];
     
     $controls = get_framework_controls_by_filter("all", "all", "all", "all", $control_framework);
     $recordsTotal = count($controls);
     
     $data = array();
-    
     foreach ($controls as $key=>$control)
     {
         // If it is not requested to view all
@@ -2870,7 +2806,6 @@ function getDefineTestsResponse()
             }
         }
 
-        
         $tests = get_framework_control_tests_by_control_id($control['id']);
         
         $html = "<div class='control-block item-block clearfix'>\n";
@@ -2971,152 +2906,72 @@ function getInitiateTestAuditsResponse()
     global $lang;
     global $escaper;
 
-    $framework_rows = array();
-
-    // Get active frameworks
-    $frameworks = get_frameworks(1);
-    $framework_controls = get_framework_controls();
+    $filter_by_text         = $_GET["filter_by_text"];
+    $filter_by_status       = empty($_GET["filter_by_status"]) ? [] : $_GET["filter_by_status"];
+    $filter_by_frequency    = $_GET["filter_by_frequency"];
+    $filter_by_framework    = empty($_GET["filter_by_framework"]) ? [] : $_GET["filter_by_framework"];
+    $filter_by_control      = $_GET["filter_by_control"];
     
-    foreach($framework_controls as &$framework_control){
-        $framework_control['tests'] = get_framework_control_tests_by_control_id($framework_control['id']);
+    $results = array();
+    
+    // If framework was loaded
+    if(empty($_GET['id'])){
+        // Get active frameworks
+        $frameworks = get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control);
+//        exit;
+        foreach($frameworks as $framework){
+            $results[] = array(
+                'id' => 'framework_'.$framework['value'],
+                'state' => 'closed',
+                'name' => "<a class='framework-name' data-id='{$framework['value']}' href='' title='".$escaper->escapeHtml($lang['Framework'])."'>".$escaper->escapeHtml($framework['name'])."</a>",
+                'last_audit_date' => $escaper->escapeHtml($framework['last_audit_date']),
+                'desired_frequency' => $escaper->escapeHtml($framework['desired_frequency']),
+                'next_audit_date' => $escaper->escapeHtml($framework['next_audit_date']),
+                'status' => $escaper->escapeHtml($framework['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
+                'action' => "<div class='text-center'><button data-id='{$framework['value']}' class='initiate-framework-audit-btn' >".$escaper->escapeHtml($lang['InitiateFrameworkAudit'])."</button></div>"
+            );
+        }
     }
-    unset($framework_control);
-    
-    foreach($frameworks as $framework){
-        $control_rows = [];
+    // If a framework node was clicked
+    elseif(stripos($_GET['id'], "framework_") !== false){
+        $framework_value = (int)str_replace("framework_", "", $_GET['id']);
+        $framework_controls = get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_value);
         foreach($framework_controls as $framework_control){
-            $test_rows = [];
-            foreach($framework_control['tests'] as $framework_control_test){
-                $test_rows[] = array(
-                    'id' => $framework['value']."-".$framework_control['id']."-".$framework_control_test['id'],
-                    'name' => "<a class='test-name' data-id='{$framework_control_test['id']}' href='".$_SESSION['base_url']."/' title='".$escaper->escapeHtml($lang['Test'])."'>".$escaper->escapeHtml($framework_control_test['name'])."</a>",
-                    'desired_frequency' => $framework_control_test['desired_frequency'],
-                    'last_audit_date' => $framework_control_test['last_date'],
-                    'next_audit_date' => $framework_control_test['next_date'],
-                    'status' => $framework_control_test['status'] == 1 ? $lang['Active'] : $lang['Inactive'],
-                    'action' => "<div class='text-center'><button data-id='{$framework_control_test['id']}' class='initiate-test-btn' >".$escaper->escapeHtml($lang['InitiateTest'])."</button></div>",
-                );
-            }
-            
-            $framework_ids = explode(",", $framework_control['framework_ids']);
-            
-            // Check if this control belong to this framework
-            if(in_array($framework['value'], $framework_ids)){
-                $control_rows[] = array(
-                    'id' => $framework['value']."-".$framework_control['id'],
-                    'name' => "<a class='control-name' data-id='{$framework_control['id']}' href='' title='".$escaper->escapeHtml($lang['Control'])."'>".$escaper->escapeHtml($framework_control['short_name'])."</a>",
-                    'last_audit_date' => $framework_control['last_audit_date'],
-                    'desired_frequency' => $framework_control['desired_frequency'],
-                    'next_audit_date' => $framework_control['next_audit_date'],
-                    'status' => $framework_control['status'] == 1 ? $lang['Active'] : $lang['Inactive'],
-                    'action' => "<div class='text-center'><button data-id='{$framework_control['id']}' class='initiate-control-audit-btn' >".$escaper->escapeHtml($lang['InitiateControlAudit'])."</button></div>",
-                    'children' => $test_rows
-                );
-            }
+            $results[] = array(
+                'id' => "control_".$framework_value."_".$framework_control['id'],
+                'state' => 'closed',
+                'name' => "<a class='control-name' data-id='{$framework_control['id']}' href='' title='".$escaper->escapeHtml($lang['Control'])."'>".$escaper->escapeHtml($framework_control['short_name'])."</a>",
+                'last_audit_date' => $escaper->escapeHtml($framework_control['last_audit_date']),
+                'desired_frequency' => $escaper->escapeHtml($framework_control['desired_frequency']),
+                'next_audit_date' => $escaper->escapeHtml($framework_control['next_audit_date']),
+                'status' => $escaper->escapeHtml($framework_control['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
+                'action' => "<div class='text-center'><button data-id='{$framework_control['id']}' class='initiate-control-audit-btn' >".$escaper->escapeHtml($lang['InitiateControlAudit'])."</button></div>",
+            );
         }
-        $framework_rows[] = array(
-            'id' => $framework['value'],
-            'name' => "<a class='framework-name' data-id='{$framework['value']}' href='' title='".$escaper->escapeHtml($lang['Framework'])."'>".$escaper->escapeHtml($framework['name'])."</a>",
-            'last_audit_date' => $framework['last_audit_date'],
-            'desired_frequency' => $framework['desired_frequency'],
-            'next_audit_date' => $framework['next_audit_date'],
-            'status' => $framework['status'] == 1 ? $lang['Active'] : $lang['Inactive'],
-            'action' => "<div class='text-center'><button data-id='{$framework['value']}' class='initiate-framework-audit-btn' >".$escaper->escapeHtml($lang['InitiateFrameworkAudit'])."</button></div>",
-            'children' => $control_rows
-        );
     }
-    echo json_encode($framework_rows);
-    exit;
-}
-
-/************************************************************************
- * FUNCTION: RETURN JSON DATA FOR ACTIVE AUDITS DATATABLE IN COMPLIANCE *
- ************************************************************************/
-function getActiveTestAuditsResponse()
-{
-    global $lang;
-    global $escaper;
-
-    $draw = $escaper->escapeHtml($_GET['draw']);
-
-    $orderColumn = (int)$_GET['order'][0]['column'];
-    $orderDir = $escaper->escapeHtml($_GET['order'][0]['dir']);
-    
-    $columnNames = array(
-        "test_name",
-        "test_frequency",
-        "tester",
-        "objective",
-        "control_name",
-        "framework_name",
-        "status",
-        "last_date",
-        "next_date",
-    );
-    
-    // Get active tests
-    $active_tests = get_framework_control_test_audits(true, $columnNames[$orderColumn], $orderDir);
-    
-    $recordsTotal = count($active_tests);
-    
-    $data = array();
-    
-    foreach ($active_tests as $key=>$test)
+    elseif(stripos($_GET['id'], "control_") !== false)
     {
-        // If it is not requested to view all
-        if($_GET['length'] != -1){
-            if($key < $_GET['start']){
-                continue;
-            }
-            if($key >= ($_GET['start'] + $_GET['length'])){
-                break;
-            }
-        }
+        $framework_and_control = str_replace("control_", "", $_GET['id']);
+        $framework_id = (int)explode("_", $framework_and_control)[0];
+        $control_id = (int)explode("_", $framework_and_control)[1];
         
-        if(date("Y-m-d") <= $test['next_date']){
-            $next_date_background_class = "green-background";
-        }else{
-            $next_date_background_class = "red-background";
+        $framework_control_tests = get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id, $control_id);
+        foreach($framework_control_tests as $framework_control_test){
+            $results[] = array(
+                'id' => "test_".$framework_and_control."_".$framework_control_test['id'],
+                'state' => 'open',
+                'name' => "<a class='test-name' data-id='{$framework_control_test['id']}' href='".$_SESSION['base_url']."/' title='".$escaper->escapeHtml($lang['Test'])."'>".$escaper->escapeHtml($framework_control_test['name'])."</a>",
+                'desired_frequency' => $escaper->escapeHtml($framework_control_test['desired_frequency']),
+                'last_audit_date' => $escaper->escapeHtml($framework_control_test['last_date']),
+                'next_audit_date' => $escaper->escapeHtml($framework_control_test['next_date']),
+                'status' => $escaper->escapeHtml($framework_control_test['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
+                'action' => "<div class='text-center'><button data-id='{$framework_control_test['id']}' class='initiate-test-btn' >".$escaper->escapeHtml($lang['InitiateTest'])."</button></div>",
+            );
         }
-        
-        $data[] = [
-            "<div><a href='".$_SESSION['base_url']."/compliance/testing.php?id=".$test['id']."' class='text-left'>".$escaper->escapeHtml($test['name'])."</a></div>",
-            "<div>".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])."</div>",
-            "<div>".$escaper->escapeHtml($test['tester_name'])."</div>",
-            "<div>".$escaper->escapeHtml($test['objective'])."</div>",
-            "<div>".$escaper->escapeHtml($test['control_name'])."</div>",
-            "<div>".$escaper->escapeHtml($test['framework_name'])."</div>",
-            "<div>".$escaper->escapeHtml( get_testing_status($test['status']) )."</div>",
-            "<div>".$escaper->escapeHtml($test['last_date'])."</div>",
-            "<div class='text-center {$next_date_background_class}'>".$escaper->escapeHtml($test['next_date'])."</div>",
-        ];
     }
-    $result = array(
-        'draw' => $draw,
-        'data' => $data,
-        'recordsTotal' => $recordsTotal,
-        'recordsFiltered' => $recordsTotal,
-    );
-    echo json_encode($result);
+    
+    echo json_encode($results);
     exit;
-}
-
-/********************************
- * FUNCTION: SAVE AUDIT COMMENT *
- ********************************/
-function saveTestAuditCommentResponse()
-{
-    global $lang, $escaper;
-    
-    $test_audit_id =  (int)$_POST['id'];
-    $comment =  $escaper->escapeHtml($_POST['comment']);
-    
-    // Save comment
-    save_test_comment($test_audit_id, $comment);
-    
-    $commentList = get_testing_comment_list($test_audit_id);
-    
-    json_response(200, "Comment List", $commentList);
 }
 
 /**********************************************************************
@@ -3135,6 +2990,11 @@ function getPastTestAuditsResponse()
     // Filter params
     $filters = array(
         "filter_text"   => $escaper->escapeHtml($_GET['filter_text']),
+        "filter_control"        => $escaper->escapeHtml($_GET['filter_control']),
+        "filter_test_result"    => $escaper->escapeHtml($_GET['filter_test_result']),
+        "filter_framework"      => empty($_GET['filter_framework']) ? [] : $_GET['filter_framework'],
+        "filter_start_audit_date"   => $escaper->escapeHtml($_GET['filter_start_audit_date']),
+        "filter_end_audit_date"     => $escaper->escapeHtml($_GET['filter_end_audit_date']),
     );
     
     $columnNames = array(
@@ -3164,14 +3024,29 @@ function getPastTestAuditsResponse()
                 break;
             }
         }
+        
+        switch($test_audit['test_result']){
+            case "Pass":
+                $background_class = "green-background";
+            break;
+            case "Inconclusive":
+                $background_class = "";
+            break;
+            case "Fail":
+                $background_class = "red-background";
+            break;
+            case "":
+                $background_class = "white-background";
+            break;
+        }
 
         $data[] = [
-            "<a href='".$_SESSION['base_url']."/compliance/view_test.php?id=".$test_audit['id']."' class='text-left'>".$escaper->escapeHtml($test_audit['name'])."</a>",
-            $escaper->escapeHtml($test_audit['last_date']),
-            $escaper->escapeHtml($test_audit['control_name']),
-            $escaper->escapeHtml($test_audit['framework_name']),
-            $escaper->escapeHtml( get_testing_status($test_audit['status']) ),
-            $escaper->escapeHtml($test_audit['test_result'] ? $test_audit['test_result'] : "--"),
+            "<div ><a href='".$_SESSION['base_url']."/compliance/view_test.php?id=".$test_audit['id']."' class='text-left'>".$escaper->escapeHtml($test_audit['name'])."</a><input type='hidden' class='background-class' data-background='{$background_class}'></div>",
+            "<div class=\"{}\">".$escaper->escapeHtml($test_audit['last_date'])."</div>",
+            "<div >".$escaper->escapeHtml($test_audit['control_name'])."</div>",
+            "<div >".$escaper->escapeHtml($test_audit['framework_name'])."</div>",
+            "<div >".$escaper->escapeHtml($test_audit['audit_status_name'])."</div>",
+            "<div >".$escaper->escapeHtml($test_audit['test_result'] ? $test_audit['test_result'] : "--")."</div>",
             "<div class='text-center'><button class='reopen' data-id='{$test_audit['id']}'>".$escaper->escapeHtml($lang['Reopen'])."</button></div>",
         ];
     }
@@ -3183,6 +3058,103 @@ function getPastTestAuditsResponse()
     );
     echo json_encode($result);
     exit;
+}
+
+/************************************************************************
+ * FUNCTION: RETURN JSON DATA FOR ACTIVE AUDITS DATATABLE IN COMPLIANCE *
+ ************************************************************************/
+function getActiveTestAuditsResponse()
+{
+    global $lang;
+    global $escaper;
+
+    $draw = $escaper->escapeHtml($_GET['draw']);
+
+    $orderColumn = (int)$_GET['order'][0]['column'];
+    $orderDir = $escaper->escapeHtml($_GET['order'][0]['dir']);
+    
+    // Filter params
+    $filters = array(
+        "filter_text"       => $escaper->escapeHtml($_GET['filter_text']),
+        "filter_framework"  => empty($_GET['filter_framework']) ? [] : $_GET['filter_framework'],
+        "filter_status"     => empty($_GET['filter_status']) ? [] : $_GET['filter_status'],
+    );
+    
+    $columnNames = array(
+        "test_name",
+        "test_frequency",
+        "tester",
+        "objective",
+        "control_name",
+        "framework_name",
+        "status",
+        "last_date",
+        "next_date",
+    );
+    
+    // Get active tests
+    $active_tests = get_framework_control_test_audits(true, $columnNames[$orderColumn], $orderDir, $filters);
+    
+    $recordsTotal = count($active_tests);
+    
+    $data = array();
+    
+    foreach ($active_tests as $key=>$test)
+    {
+        // If it is not requested to view all
+        if($_GET['length'] != -1){
+            if($key < $_GET['start']){
+                continue;
+            }
+            if($key >= ($_GET['start'] + $_GET['length'])){
+                break;
+            }
+        }
+        
+       if(date("Y-m-d") <= $test['next_date']){
+            $next_date_background_class = "green-background";
+        }else{
+            $next_date_background_class = "red-background";
+        }
+        
+        $data[] = [
+            "<div ><a href='".$_SESSION['base_url']."/compliance/testing.php?id=".$test['id']."' class='text-left'>".$escaper->escapeHtml($test['name'])."</a><input type='hidden' class='background-class' data-background='{$next_date_background_class}'></div>",
+            "<div >".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])."</div>",
+            "<div >".$escaper->escapeHtml($test['tester_name'])."</div>",
+            "<div >".$escaper->escapeHtml($test['objective'])."</div>",
+            "<div >".$escaper->escapeHtml($test['control_name'])."</div>",
+            "<div >".$escaper->escapeHtml($test['framework_name'])."</div>",
+            "<div >".$escaper->escapeHtml($test['audit_status_name'])."</div>",
+            "<div >".$escaper->escapeHtml($test['last_date'])."</div>",
+            "<div class='text-center '>".$escaper->escapeHtml($test['next_date'])."</div>",
+        ];
+    }
+    $result = array(
+        'draw' => $draw,
+        'data' => $data,
+        'recordsTotal' => $recordsTotal,
+        'recordsFiltered' => $recordsTotal,
+    );
+    echo json_encode($result);
+    exit;
+}
+
+/********************************
+ * FUNCTION: SAVE AUDIT COMMENT *
+ ********************************/
+function saveTestAuditCommentResponse()
+{
+    global $lang, $escaper;
+    
+    $test_audit_id =  (int)$_POST['id'];
+    $comment =  $escaper->escapeHtml($_POST['comment']);
+    
+    // Save comment
+    save_test_comment($test_audit_id, $comment);
+    
+    $commentList = get_testing_comment_list($test_audit_id);
+    
+    json_response(200, "Comment List", $commentList);
 }
 
 /*******************************
@@ -3315,5 +3287,122 @@ function assessment_extra_saveQuestionnaireResultCommentAPI(){
     }
 }
 
+/*******************************************
+ * FUNCTION: COPY ASSESSMENT QUESTIONNAIRE *
+ *******************************************/
+function assessment_extra_copyQuestionnaireAPI()
+{
+    // Check assessment extra is enabled
+    if (assessments_extra())
+    {
+        // If the assessment extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+            // Call the copyQuestionnaireAPI function
+            copyQuestionnaireAPI();
+        }
+    }
+}
+
+/********************************************
+ * FUNCTION: CUSTOMIZATION ADD CUSTOM FIELD *
+ ********************************************/
+function customization_addCustomField()
+{
+    // Check customization extra is enabled
+    if (customization_extra())
+    {
+        // If the customization extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/customization/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+            // Call the addCustomField function
+            addCustomField();
+        }
+    }
+}
+
+/***********************************************
+ * FUNCTION: CUSTOMIZATION DELETE CUSTOM FIELD *
+ ***********************************************/
+function customization_deleteCustomField()
+{
+    // Check customization extra is enabled
+    if (customization_extra())
+    {
+        // If the customization extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/customization/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+            // Call the deleteCustomField function
+            deleteCustomField();
+        }
+    }
+}
+
+/********************************************
+ * FUNCTION: CUSTOMIZATION GET CUSTOM FIELD *
+ ********************************************/
+function customization_getCustomField()
+{
+    // Check customization extra is enabled
+    if (customization_extra())
+    {
+        // If the customization extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/customization/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+            // Call the getCustomField function
+            getCustomField();
+        }
+    }
+}
+
+/**********************************************************
+ * FUNCTION: CREATE RISKS FROM QUESTIONNARE PENDING RISKS *
+ **********************************************************/
+function assessment_extra_createRisksFromQuestionnairePendingRisksAPI(){
+    // Check assessment extra is enabled
+    if (assessments_extra())
+    {
+        // If the assessment extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+            // Call the saveRiskFromQuestionnairePendingRisksAPI function
+            createRisksFromQuestionnairePendingRisksAPI();
+        }
+    }
+}
+
+/**************************************************
+ * FUNCTION: GET QUESTIONNAIRE TEMPALTE QUESTIONS *
+ **************************************************/
+function assessment_extra_questionnaireTemplateQuestionsDynamicAPI(){
+    // Check assessment extra is enabled
+    if (assessments_extra())
+    {
+        // If the assessment extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+            // Call the questionnaireTemplateQuestionsDynamicAPI function
+            questionnaireTemplateQuestionsDynamicAPI();
+        }
+    }
+}
 
 ?>

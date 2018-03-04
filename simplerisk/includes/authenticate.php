@@ -232,6 +232,14 @@ function set_user_permissions($user, $pass, $upgrade = false)
     $base_url = htmlspecialchars( $base_url, ENT_QUOTES, 'UTF-8' );
     $base_url = pathinfo($base_url)['dirname'];
 
+    // Filter out authentication extra from the base url
+    $base_url = str_replace("/extras/authentication", "", $base_url);
+
+    // Set the timezone
+    $default_timezone = get_setting("default_timezone");
+    if (!$default_timezone) $default_timezone = "America/Chicago";
+    date_default_timezone_set($default_timezone);
+
     // Set the minimal session values
     $_SESSION['base_url'] = $base_url;
     $_SESSION['uid'] = $array[0]['value'];
@@ -239,6 +247,7 @@ function set_user_permissions($user, $pass, $upgrade = false)
     $_SESSION['name'] = $array[0]['name'];
     $_SESSION['admin'] = $array[0]['admin'];
     $_SESSION['user_type'] = $array[0]['type'];
+
     // If we are not doing an upgrade
     if (!$upgrade)
     {
@@ -277,7 +286,15 @@ function set_user_permissions($user, $pass, $upgrade = false)
         $_SESSION['lang'] = $array[0]['lang'];
     }
     // Otherwise, the session should use the default language
-    else $_SESSION['lang'] = LANG_DEFAULT;
+    else
+    {
+        $default_language = get_setting("default_language");
+        if (!$default_language)
+        {
+            $_SESSION['lang'] = "en";
+        }
+        else $_SESSION['lang'] = get_setting("default_language");
+    }
 }
 
 /**************************
@@ -747,10 +764,15 @@ function expire_reset_token($token)
  ***************************/
 function session_check()
 {
-    // Perform session garbage collection
-    sess_gc(1440);
+	// Perform session garbage collection
+	sess_gc(1440);
+
+        // Get the session activity timeout
+        $session_activity_timeout = get_setting("session_activity_timeout");
+        if (!$session_activity_timeout) $session_activity_timeout = "3600";
+
         // Last request was more $last_activity
-        if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > LAST_ACTIVITY_TIMEOUT))
+        if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $session_activity_timeout))
         {
                 // unset $_SESSION variable for the run-time
                 session_unset();
@@ -771,17 +793,23 @@ function session_check()
                 $_SESSION['CREATED'] = time();
         }
         // Otherwise check if it was created more than $created
-        else if (time() - $_SESSION['CREATED'] > SESSION_RENEG_TIMEOUT)
+        else
         {
-                // change session ID for the current session an invalidate old session ID
-                session_regenerate_id(true);
+                $session_renegotiation_period = get_setting("session_renegotiation_period");
+                if (!$session_renegotiation_period) $session_renegotiation_period = "600";
 
-                // update creation time
-                $_SESSION['CREATED'] = time();
+                if (time() - $_SESSION['CREATED'] > $session_renegotiation_period)
+                {
+                        // change session ID for the current session an invalidate old session ID
+                        session_regenerate_id(true);
+
+                        // update creation time
+                        $_SESSION['CREATED'] = time();
+                }
         }
 
-    // Return true
-    return true;
+	// Return true
+	return true;
 }
 
 /**************************
@@ -905,7 +933,7 @@ function sess_destroy($sess_id)
  ****************************************/
 function sess_gc($sess_maxlifetime)
 {
-    $sess_maxlifetime = LAST_ACTIVITY_TIMEOUT;
+    $sess_maxlifetime = get_setting("session_activity_timeout");
     $old = time() - $sess_maxlifetime;
 
         // Open the database connection
@@ -1200,9 +1228,9 @@ function reset_password($user_id, $password, $confirm_pass=false)
     }
 }
 
-/********************
- * FUNCTION:  LOGIN *
- ********************/
+/*******************
+ * FUNCTION: LOGIN *
+ *******************/
 function login($user, $pass){
     // If the custom authentication extra is installed
     if (custom_authentication_extra())

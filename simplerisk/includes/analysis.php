@@ -41,7 +41,7 @@ function risk_distribution_analysis()
     if (!team_separation_extra())
     {
 	// Query the database
-        $stmt = $db->prepare("select a.calculated_risk, COUNT(*) AS num, CASE WHEN a.calculated_risk >= :veryhigh THEN 'Very High' WHEN a.calculated_risk < :veryhigh AND a.calculated_risk >= :high THEN 'High' WHEN a.calculated_risk < :high AND a.calculated_risk >= :medium THEN 'Medium' WHEN a.calculated_risk < :medium AND a.calculated_risk >= :low THEN 'Low' WHEN a.calculated_risk < :low AND a.calculated_risk >= 0 THEN 'Insignificant' END AS level from `risk_scoring` a JOIN `risks` b ON a.id = b.id WHERE b.status != \"Closed\" GROUP BY level ORDER BY a.calculated_risk DESC");
+	$stmt = $db->prepare("select a.residual_risk, COUNT(*) AS num, CASE WHEN residual_risk >= :veryhigh THEN 'Very High' WHEN residual_risk < :veryhigh AND residual_risk >= :high THEN 'High' WHEN residual_risk < :high AND residual_risk >= :medium THEN 'Medium' WHEN residual_risk < :medium AND residual_risk >= :low THEN 'Low' WHEN residual_risk < :low AND residual_risk >= 0 THEN 'Insignificant' END AS level from (select (a.calculated_risk - (a.calculated_risk * IFNULL(c.mitigation_percent,0) / 100)) as residual_risk FROM `risk_scoring` a JOIN `risks` b ON a.id = b.id LEFT JOIN mitigations c ON b.id = c.risk_id WHERE b.status != \"Closed\") as a GROUP BY level ORDER BY a.residual_risk DESC");
         $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
         $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
         $stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
@@ -122,7 +122,7 @@ function risk_distribution_analysis()
 	}
 
         // Query the database
-	$stmt = $db->prepare("select a.id, a.subject, c.calculated_risk, b.mitigation_effort FROM risks a JOIN mitigations b ON a.id = b.risk_id LEFT JOIN risk_scoring c ON a.id = c.id WHERE b.mitigation_effort != 0 AND a.status != \"Closed\" ORDER BY b.mitigation_effort ASC, c.calculated_risk DESC LIMIT 10");
+	$stmt = $db->prepare("select a.id, a.subject, c.calculated_risk, b.mitigation_effort, b.mitigation_percent, (c.calculated_risk - (c.calculated_risk * IFNULL(b.mitigation_percent,0) / 100)) as residual_risk FROM risks a JOIN mitigations b ON a.id = b.risk_id LEFT JOIN risk_scoring c ON a.id = c.id WHERE b.mitigation_effort != 0 AND a.status != \"Closed\" ORDER BY b.mitigation_effort ASC, residual_risk DESC");
 	$stmt->execute();
 
     // Store the list in the array
@@ -141,23 +141,45 @@ function risk_distribution_analysis()
 		// For each result
 		foreach ($array as $risk)
 		{
-			// Get the values
-			$id = (int)$risk['id'];
-			$subject = $escaper->escapeHtml(try_decrypt($risk['subject']));
-			$calculated_risk = $risk['calculated_risk'];
-			$mitigation_effort = $risk['mitigation_effort'];
-            $color = $escaper->escapeHtml(get_risk_color($calculated_risk));
-            
-			// If team separation is enabled
-			if (team_separation_extra())
+			// If the counter is less than or equal to 10
+			if ($counter <= 10)
 			{
-				//Include the team separation extra
-				require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-				// If the user should have access to the risk
-				if (extra_grant_access($_SESSION['uid'], $id))
+				// Get the values
+				$id = (int)$risk['id'];
+				$subject = $escaper->escapeHtml(try_decrypt($risk['subject']));
+				$calculated_risk = $risk['residual_risk'];
+				$mitigation_effort = $risk['mitigation_effort'];
+            			$color = $escaper->escapeHtml(get_risk_color($calculated_risk));
+				$risk_id = convert_id($id);
+            
+				// If team separation is enabled
+				if (team_separation_extra())
 				{
-					$risk_id = $id + 1000;
+					//Include the team separation extra
+					require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+					// If the user should have access to the risk
+					if (extra_grant_access($_SESSION['uid'], $risk_id))
+					{
+						echo "<tr>\n";
+						echo "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>\n";
+						echo "<td align=\"right\">" . $counter . ")</td>\n";
+						echo "<td><a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "\">" . $subject . "</a></td>\n";
+						echo "<td>\n";
+						echo "<table width=\"100%\" height=\"100%\" border=\"2\" style=\"background-color:white\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</font></center></td></tr></table>\n";
+						echo "</td>\n";
+						echo "<td>\n";
+						echo "<table width=\"25px\" height=\"25px\" border=\"2\" style=\"border: 1px solid {$color}; background-color: {$color};\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml($calculated_risk) . "</font></center></td></tr></table>\n";
+						echo "</td>\n";
+						echo "</tr>\n";
+
+                        			// Increment the counter
+                        			$counter = $counter + 1;
+					}
+				}
+				// Otherwise, team separation is not enabled
+				else
+				{
 					echo "<tr>\n";
 					echo "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>\n";
 					echo "<td align=\"right\">" . $counter . ")</td>\n";
@@ -166,30 +188,14 @@ function risk_distribution_analysis()
 					echo "<table width=\"100%\" height=\"100%\" border=\"2\" style=\"background-color:white\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</font></center></td></tr></table>\n";
 					echo "</td>\n";
 					echo "<td>\n";
-					echo "<table width=\"25px\" height=\"25px\" border=\"2\" style=\"border: 1px solid {$color}; background-color: {$color};\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml($calculated_risk) . "</font></center></td></tr></table>\n";
+					echo "<table width=\"25px\" height=\"25px\" border=\"2\" style=\"border: 1px solid {$color}; background-color: {$color}\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml($calculated_risk) . "</font></center></td></tr></table>\n";
 					echo "</td>\n";
 					echo "</tr>\n";
+
+					// Increment the counter
+					$counter = $counter + 1;
 				}
 			}
-			// Otherwise, team separation is not enabled
-			else
-			{
-				$risk_id = $id + 1000;
-				echo "<tr>\n";
-				echo "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>\n";
-				echo "<td align=\"right\">" . $counter . ")</td>\n";
-				echo "<td><a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "\">" . $subject . "</a></td>\n";
-				echo "<td>\n";
-				echo "<table width=\"100%\" height=\"100%\" border=\"2\" style=\"background-color:white\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</font></center></td></tr></table>\n";
-				echo "</td>\n";
-				echo "<td>\n";
-				echo "<table width=\"25px\" height=\"25px\" border=\"2\" style=\"border: 1px solid {$color}; background-color: {$color}\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml($calculated_risk) . "</font></center></td></tr></table>\n";
-				echo "</td>\n";
-				echo "</tr>\n";
-			}
-
-			// Increment the counter
-			$counter = $counter + 1;
 		}
 		echo "</table>\n";
 	}

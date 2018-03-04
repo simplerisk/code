@@ -22,7 +22,7 @@ header("X-Frame-Options: DENY");
 header("X-XSS-Protection: 1; mode=block");
 
 // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (CSP_ENABLED == "true")
+if (csp_enabled())
 {
   // Add the Content-Security-Policy header
   header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -55,6 +55,7 @@ session_check();
 // Check if access is authorized
 if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 {
+  set_unauthenticated_redirect();
   header("Location: ../index.php");
   exit(0);
 }
@@ -128,6 +129,7 @@ if(isset($_POST['delete_test'])){
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/jquery.dataTables.js"></script>
     <script src="../js/pages/compliance.js"></script>
+    <script src="../js/bootstrap-multiselect.js"></script>
 
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -158,14 +160,13 @@ if(isset($_POST['delete_test'])){
                 <div class="row-fluid">
                     <div class="span12">
                         <span><?php echo $escaper->escapeHtml($lang['ControlFramework']); ?>: &nbsp;</span>
-                        <select id="filter_by_control_framework" class="form-field form-control" >
+                        <select id="filter_by_control_framework" class="form-field form-control" multiple="multiple">
                             <?php 
-                                echo "<option selected value=\"all\">".$escaper->escapeHtml($lang['ALL'])."</option>\n";
-                                echo "<option value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
+                                echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
                                 $options = getAvailableControlFrameworkList();
                                 is_array($options) || $options = array();
                                 foreach($options as $option){
-                                    echo "<option value=\"".$option['value']."\">".$option['name']."</option>\n";
+                                    echo "<option selected value=\"".(int)$option['value']."\">".$escaper->escapeHtml($option['name'])."</option>\n";
                                 }
                             ?>
                         </select>
@@ -186,7 +187,7 @@ if(isset($_POST['delete_test'])){
         <form class="" id="test-new-form" method="post" autocomplete="off">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['TestName']); ?></label>
-            <input type="text" name="name" value="" class="form-control">
+            <input type="text" name="name" required="" value="" class="form-control">
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
             <?php create_dropdown("user", NULL, "tester", false, false, false); ?>
@@ -225,7 +226,7 @@ if(isset($_POST['delete_test'])){
         <form class="" id="test-edit-form" method="post" autocomplete="off">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['TestName']); ?></label>
-            <input type="text" name="name" value="" class="form-control">
+            <input type="text" name="name" required="" value="" class="form-control">
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
             <?php create_dropdown("user", NULL, "tester", false, false, false); ?>

@@ -1974,7 +1974,7 @@ function upgrade_from_20170724001($db){
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
     ");
     $stmt->execute();
-    
+
     // Add a log_type field
     echo "Adding a log_type field.<br />\n";
     $stmt = $db->prepare("ALTER TABLE `audit_log` ADD `log_type` VARCHAR(100) NOT NULL ;");
@@ -2037,7 +2037,7 @@ function upgrade_from_20170724001($db){
           `Custom` float DEFAULT '10',
           PRIMARY KEY (`id`),
           UNIQUE KEY `id` (`id`)
-        ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
     ");
     $stmt->execute();
 
@@ -2069,6 +2069,120 @@ function upgrade_from_20170724001($db){
         $stmt->bindParam(":id", $row['id'], PDO::PARAM_INT);
         $stmt->execute();
     }
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20180104-001 *
+ ***************************************/
+function upgrade_from_20180104001($db){
+    // Database version to upgrade
+    $version_to_upgrade = '20180104-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20180301-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Set the timestamp not to update on update
+    echo "Setting the timestamp for the audit_log not to update on update.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `audit_log` CHANGE `timestamp` `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;");
+    $stmt->execute();
+
+    // Increase the control family to 50 characters
+    echo "Increasing the control family from 20 to 100 characters and renaming field from short_name to name.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `family` CHANGE short_name name varchar(100) NOT NULL;");
+    $stmt->execute();
+
+    // Add a mitigation_percent field to framework_controls table
+    echo "Adding a mitigation_percent field to framework_controls table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `mitigation_percent` INT NOT NULL DEFAULT '0' AFTER `desired_frequency`;");
+    $stmt->execute();
+
+    // Created a table, test_status.
+    echo "Creating a table, test_status.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `test_status` (
+          `value` int(11) NOT NULL AUTO_INCREMENT,
+          `name` varchar(100) NOT NULL, 
+          PRIMARY KEY(value)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+
+    // Add audit statuses to the test status table
+    echo "Adding audit statuses to the test status table.<br />\n";
+    $stmt = $db->prepare("INSERT INTO `test_status` (`value`, `name`) VALUES (1, \"Pending Evidence from Control Owner\"), (2, \"Evidence Submitted / Pending Review\"), (3, \"Passed Internal QA\"), (4, \"Remediation Required\"), (5, \"Closed\")");
+    $stmt->execute();
+
+    // Set a closed audit status to settings table
+    echo "Setting the default closed audit status in the settings table.<br />\n";
+    update_setting("closed_audit_status", 5);
+
+    // Set the session last activity timeout
+    echo "Creating a database setting for the session last activity timeout.<br />\n";
+    set_session_last_activity_timeout();
+
+    // Set the session renegotiation period 
+    echo "Creating a database setting for the session renegotiation period.<br />\n";
+    set_session_renegotiation_period();
+
+    // Set the content security policy
+    echo "Creating a database setting for the content security policy.<br />\n";
+    set_content_security_policy();
+
+    // Set the debug logging
+    echo "Creating a database setting for debug logging.<br />\n";
+    set_debug_logging();
+
+    // Set the debug log file
+    echo "Creating a database setting for the debug log file.<br />\n";
+    set_debug_log_file();
+
+    // Set the default language
+    echo "Creating a database setting for the default language.<br />\n";
+    set_default_language();
+
+    // Set the default timezone
+    echo "Creating a database setting for the default timezone.<br />\n";
+    set_default_timezone();
+
+    // Add support for the Bulgarian language
+    echo "Add support for the Bulgarian language.<br />\n";
+    $stmt = $db->prepare("INSERT INTO languages (`name`, `full`) VALUES ('bg', 'Bulgarian');");
+    $stmt->execute();
+
+    // Add support for the Slovak language
+    echo "Add support for the Slovak language.<br />\n";
+    $stmt = $db->prepare("INSERT INTO languages (`name`, `full`) VALUES ('sk', 'Slovak');");
+    $stmt->execute();
+
+    // Add questionnaire pending risks table
+    echo "Adding questionnaire pending risks table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `questionnaire_pending_risks` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `questionnaire_tracking_id` int(11) NOT NULL,
+          `questionnaire_scoring_id` int(11) NOT NULL,
+          `subject` blob NOT NULL,
+          `owner` int(11) DEFAULT NULL,
+          `asset` varchar(200) DEFAULT NULL,
+          `comment` varchar(500) DEFAULT NULL,
+          `submission_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (`id`)
+        ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
+    ");
+    $stmt->execute();
+
+    // Add a new setting to show all risks in plan projects
+    echo "Adding a new setting to show all risks in Plan Projects.<br />\n";
+    add_setting("plan_projects_show_all", "0");
+
+    // Convert all MyISAM tables to InnoDB
+    convert_tables_to_innodb();
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
@@ -2196,6 +2310,10 @@ function upgrade_database()
                 upgrade_from_20170724001($db);
                 upgrade_database();
                 break;
+            case "20180104-001":
+		upgrade_from_20180104001($db);
+		upgrade_database();
+		break;
             default:
                 echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
         }

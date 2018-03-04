@@ -18,7 +18,7 @@
     header("X-XSS-Protection: 1; mode=block");
 
     // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-    if (CSP_ENABLED == "true")
+    if (csp_enabled())
     {
         // Add the Content-Security-Policy header
         header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -50,6 +50,7 @@
     // Check if access is authorized
     if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
     {
+        set_unauthenticated_redirect();
         header("Location: ../index.php");
         exit(0);
     }
@@ -110,6 +111,19 @@
             $subject = "N/A";
             $calculated_risk = "0.0";
         }
+        // Get the mitigation for the risk
+        $mitigation = get_mitigation_by_id($id);
+        // If no mitigation exists for this risk
+        if ($mitigation == false)
+        {
+            $mitigation_percent = 0;
+        }
+        else
+        {
+            $mitigation_percent = isset($mitigation[0]['mitigation_percent']) ? $mitigation[0]['mitigation_percent'] : 0;
+            
+        }
+        
     }
 
     // Check if the status was updated and the user has the ability to modify the risk

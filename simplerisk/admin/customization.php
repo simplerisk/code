@@ -18,7 +18,7 @@
         header("X-XSS-Protection: 1; mode=block");
 
         // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-        if (CSP_ENABLED == "true")
+        if (csp_enabled())
         {
                 // Add the Content-Security-Policy header
 		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -50,6 +50,7 @@
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
+		set_unauthenticated_redirect();
                 header("Location: ../index.php");
                 exit(0);
         }
@@ -61,59 +62,60 @@
                 exit(0);
         }
 
-	// If the extra directory exists
-	if (is_dir(realpath(__DIR__ . '/../extras/governance')))
-	{
-		// Include the Assessment Extra
-		require_once(realpath(__DIR__ . '/../extras/governance/index.php'));
+        // If the extra directory exists
+        if (is_dir(realpath(__DIR__ . '/../extras/customization')))
+        {
+                // Include the Customization Extra
+                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
                 // If the user wants to activate the extra
                 if (isset($_POST['activate']))
                 {
-                        // Enable the Assessments Extra
-                        enable_governance_extra();
+                        // Enable the Customization Extra
+                        enable_customization_extra();
                 }
 
                 // If the user wants to deactivate the extra
                 if (isset($_POST['deactivate']))
                 {
-                        // Disable the Assessments Extra
-                        disable_governance_extra();
+                        // Disable the Customization Extra
+                        disable_customization_extra();
                 }
+
 	}
 
 /*********************
  * FUNCTION: DISPLAY *
  *********************/
-function display()
+function display($display = "")
 {
         global $lang;
         global $escaper;
 
         // If the extra directory exists
-        if (is_dir(realpath(__DIR__ . '/../extras/governance')))
+        if (is_dir(realpath(__DIR__ . '/../extras/customization')))
         {
-                // But the extra is not activated
-                if (!governance_extra())
+                // If the extra is not activated
+                if (!customization_extra())
                 {
-                        echo "<form name=\"activate\" method=\"post\" action=\"\">\n";
-                        echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
+			echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
+                        echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
                         echo "</form>\n";
+                        echo "</div>\n";
                 }
                 // Once it has been activated
                 else
                 {
-                        // Include the Assessments Extra
-                        require_once(realpath(__DIR__ . '/../extras/governance/index.php'));
-
-                        display_governance();
+                        // Include the Customizaton Extra
+                        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                        display_customization();
                 }
         }
-        // Otherwise, the Extra does not exist
-        else
-        {
-                echo "<a href=\"https://www.simplerisk.com/extras\" target=\"_blank\">Purchase the Extra</a>\n";
-        }
+	// Otherwise, the Extra does not exist
+	else
+	{
+		echo "<a href=\"https://www.simplerisk.com/extras\" target=\"_blank\">Purchase the Extra</a>\n";
+	}
 }
 
 ?>
@@ -155,7 +157,7 @@ function display()
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <h4>Advanced Controls Extra</h4>
+                <h4>Customization Extra</h4>
                 <?php display(); ?>
               </div>
             </div>
@@ -164,5 +166,4 @@ function display()
       </div>
     </div>
   </body>
-
 </html>

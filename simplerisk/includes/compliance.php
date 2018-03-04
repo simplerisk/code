@@ -1,11 +1,9 @@
-    <?php
+<?php
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-define('TEST_AUDIT_STATUS_CLOSED', 5);
- 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/cvss.php'));
@@ -99,6 +97,11 @@ function display_framework_controls_in_compliance()
             $(\"#filter_by_control_framework\").change(function(){
                 \$(\"#{$tableID}\").DataTable().draw();
             })
+
+            $('#filter_by_control_framework').multiselect({
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                includeSelectAllOption: true
+            });
             
             $(\"body\").on(\"click\", \".add-test\", function(){
                 $(\"#test-new-form\")[0].reset();
@@ -165,7 +168,7 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
 
     $test_id = $db->lastInsertId();
 
-    $message = "A new test was submitted for ID \"{$test_id}\" by username \"" . $_SESSION['user'] . "\".";
+    $message = "A new test named \"{$name}\" was created by username \"" . $_SESSION['user'] . "\".";
     write_log($test_id + 1000, $_SESSION['uid'], $message, "test");
 
     // Close the database connection
@@ -332,6 +335,100 @@ function display_initiate_audits()
 {
     global $lang, $escaper;
     
+    echo "
+        <div id='filter-container'>
+            <div class='row-fluid'>
+                <div class='span2' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['FilterByText']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span2'>
+                <input type='text' id='filter_by_text' class='form-control'>
+                </div>
+                <div class='span2' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['DesiredFrequency']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span2'>
+                    <input type='text' id='filter_by_frequency' class='form-control'>
+                </div>
+                <div class='span2 hide' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['Status']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span2 hide'>";
+                    create_multiple_dropdown("test_status", "all", "filter_by_status", NULL, false);
+                echo "</div>
+            </div>
+            <div class='row-fluid'>
+                <div class='span2' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['Framework']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span2'>
+                    <select id='filter_by_framework' class='' multiple=''>\n";
+                        $options = getAvailableControlFrameworkList();
+                        is_array($options) || $options = array();
+                        foreach($options as $option){
+                            echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                        }
+                    echo "</select>
+                </div>
+                <div class='span2' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['Control']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span2'>
+                    <input type='text' id='filter_by_control' class='form-control'>
+                </div>
+                
+            </div>
+        </div>
+    ";
+    
+    echo "
+        <script>
+            // Redraw Past Audit table
+            function redraw(){
+                $('#initiate_audit_treegrid').treegrid('reload');
+            } 
+            
+            // timer identifier
+            var typingTimer;                
+            // time in ms (1 second)
+            var doneTypingInterval = 1000;  
+
+            $('#filter_by_framework').multiselect({
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                includeSelectAllOption: true,
+                onDropdownHide: function(){
+                    redraw();
+                }
+            });
+            
+            $('#filter_by_status').multiselect({
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                includeSelectAllOption: true,
+                onDropdownHide: function(){
+                    redraw();
+                }
+            });
+            
+            // Search filter event
+            $('#filter_by_text').keyup(function(){
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(redraw, doneTypingInterval);
+            });
+
+            // Search filter event
+            $('#filter_by_control').keyup(function(){
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(redraw, doneTypingInterval);
+            });
+
+            // Search filter event
+            $('#filter_by_frequency').keyup(function(){
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(redraw, doneTypingInterval);
+            });
+
+        </script>
+    ";
     echo "<table id=\"initiate_audit_treegrid\" class='easyui-treegrid' 
             data-options=\"
                 iconCls: 'icon-ok',
@@ -339,13 +436,17 @@ function display_initiate_audits()
                 collapsible: false,
                 fitColumns: true,
                 url: '".$_SESSION['base_url']."/api/compliance/initiate_audits',
+                onBeforeLoad: function(row, param){
+                    param.filter_by_text = $('#filter_by_text').val();
+                    param.filter_by_status = $('#filter_by_status').val();
+                    param.filter_by_frequency = $('#filter_by_frequency').val();
+                    param.filter_by_framework = $('#filter_by_framework').val();
+                    param.filter_by_control = $('#filter_by_control').val();
+                },
                 method: 'get',
                 idField: 'id',
                 treeField: 'name',
-                scrollbarSize: 0,
-                onLoadSuccess: function(){
-                    $(this).treegrid('collapseAll');
-                }
+                scrollbarSize: 0
             \">";
     echo "<thead>";
     echo "<th data-options=\"field:'name'\" style='width: 220px'>".$escaper->escapeHtml($lang['Name'])."</th>";
@@ -368,6 +469,36 @@ function display_active_audits(){
     $tableID = "active-audits";
     
     echo "
+        <div id='filter-container'>
+            <div class='row-fluid'>
+                <div class='span1' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['Framework']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span3'>
+                    <select id='filter_by_framework' multiple=''>
+                        <option selected value='-1'>".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
+                        $options = getAvailableControlFrameworkList();
+                        is_array($options) || $options = array();
+                        foreach($options as $option){
+                            echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                        }
+                    echo "</select>
+                </div>
+                <div class='span1' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['Status']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span3'>";
+                    create_multiple_dropdown("test_status", "all", "filter_by_status", NULL, true, $escaper->escapeHtml($lang['Unassigned']), "0");
+                echo "</div>
+                <div class='span2' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['FilterByText']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span2'>
+                    <input type='text' id='filter_by_text' class='form-control'>
+                </div>
+            </div>
+        </div>
+
         <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
             <thead >
                 <tr >
@@ -399,9 +530,16 @@ function display_active_audits(){
                 dom : \"flrtip\",
                 pageLength: pageLength,
                 dom : \"flrti<'#view-all.view-all'>p\",
+                createdRow: function(row, data, index){
+                    var background = $('.background-class', $(row)).data('background');
+                    $(row).find('td').addClass(background)
+                },
                 ajax: {
                     url: BASE_URL + '/api/compliance/active_audits',
                     data: function(d){
+                        d.filter_text = \$(\"#filter_by_text\").val();
+                        d.filter_framework  = \$(\"#filter_by_framework\").val();
+                        d.filter_status  = \$(\"#filter_by_status\").val();
                     },
                     complete: function(response){
                     }
@@ -440,6 +578,40 @@ function display_active_audits(){
                 }
             })
             
+            // Redraw Past Audit table
+            function redrawActiveAudits(){
+                $(\"#{$tableID}\").DataTable().draw();
+            } 
+            
+            // timer identifier
+            var typingTimer;                
+            // time in ms (1 second)
+            var doneTypingInterval = 1000;  
+
+            $('#filter_by_framework').multiselect({
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                includeSelectAllOption: true
+            });
+            
+            $('#filter_by_status').multiselect({
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                includeSelectAllOption: true
+            });
+            
+            // Search filter event
+            $('#filter_by_text').keyup(function(){
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(redrawActiveAudits, doneTypingInterval);
+            });
+
+            $('#filter_by_framework').change(function(){
+                redrawActiveAudits();
+            });
+            
+            $('#filter_by_status').change(function(){
+                redrawActiveAudits();
+            });
+            
         </script>
     ";
     
@@ -475,13 +647,13 @@ function initiate_framework_control_tests($type, $id){
             $stmt = $db->prepare($sql);
             $stmt->execute();
 
-            $message = "A framework was initiated for framework ID \"{$id}\" by username \"" . $_SESSION['user'] . "\".";
-            write_log($id + 1000, $_SESSION['uid'], $message, "framework");
+//            $message = "A framework was initiated for framework ID \"{$id}\" by username \"" . $_SESSION['user'] . "\".";
+//            write_log($id + 1000, $_SESSION['uid'], $message, "framework");
             
             // Get child test ID list of a framework
             $sql = "
                 SELECT 
-                    t1.id as test_id
+                    t1.id as test_id, t1.name
                 FROM framework_control_tests t1
                     INNER JOIN framework_controls t2 ON t1.framework_control_id=t2.id
                 WHERE
@@ -493,10 +665,9 @@ function initiate_framework_control_tests($type, $id){
             // Store tests in the array
             $tests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             foreach($tests as $test){
-                $message = "A test was initiated for test ID \"{$test['test_id']}\" by username \"" . $_SESSION['user'] . "\".";
+                $message = "An active audit for \"{$test["name"]}\" was initiated by username \"" . $_SESSION['user'] . "\".";
                 write_log($test['test_id'] + 1000, $_SESSION['uid'], $message, "test");
             }
-            
         break;
         case "control":
             $control = get_framework_control($id);
@@ -517,13 +688,13 @@ function initiate_framework_control_tests($type, $id){
             $stmt->bindParam(":control_id", $id, PDO::PARAM_INT);
             $stmt->execute();
 
-            $message = "A control was initiated for control ID \"{$id}\" by username \"" . $_SESSION['user'] . "\".";
-            write_log($id + 1000, $_SESSION['uid'], $message, "control");
+//            $message = "A control was initiated for control ID \"{$id}\" by username \"" . $_SESSION['user'] . "\".";
+//            write_log($id + 1000, $_SESSION['uid'], $message, "control");
 
             // Get child test ID list of a control
             $sql = "
                 SELECT 
-                    t1.id as test_id
+                    t1.id as test_id, t1.name
                 FROM framework_control_tests t1
                     INNER JOIN framework_controls t2 ON t1.framework_control_id=t2.id
                 WHERE
@@ -536,7 +707,7 @@ function initiate_framework_control_tests($type, $id){
             // Store tests in the array
             $tests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             foreach($tests as $test){
-                $message = "A test was initiated for test ID \"{$test['test_id']}\" by username \"" . $_SESSION['user'] . "\".";
+                $message = "An active audit for \"{$test["name"]}\" was initiated by username \"" . $_SESSION['user'] . "\".";
                 write_log($test['test_id'] + 1000, $_SESSION['uid'], $message, "test");
             }
         break;
@@ -559,7 +730,7 @@ function initiate_framework_control_tests($type, $id){
             
             $stmt->execute();
 
-            $message = "A test was initiated for test ID \"{$id}\" by username \"" . $_SESSION['user'] . "\".";
+            $message = "An active audit for \"{$test["name"]}\" was initiated by username \"" . $_SESSION['user'] . "\".";
             write_log($id + 1000, $_SESSION['uid'], $message, "test");
         break;
     }
@@ -579,49 +750,95 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
     // Open the database connection
     $db = db_open();
     
-    // Test result status array
-    $testStatusArr = get_testing_status_list();
-    
-    // Status sql
-    $statusSqlArr = [];
-    foreach($testStatusArr as $value => $name)
-    {
-        $value = (int)$value;
-        $name = $escaper->escapeHtml($name);
-        
-        $statusSqlArr[] = "SELECT {$value} as value, '{$name}' as name ";
-    }
-    $statusSql = implode(" UNION ALL ", $statusSqlArr);
-
     $sql = "
-        SELECT t1.*, t2.name tester_name, t3.short_name control_name, GROUP_CONCAT(DISTINCT t4.name) framework_name, t5.test_result, t5.summary, t5.submitted_by, t5.submission_date
+        SELECT t1.id, t1.test_id, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, t1.status, t1.created_at, 
+        t2.name tester_name, t3.short_name control_name, GROUP_CONCAT(DISTINCT t4.name) framework_name, t5.test_result, t5.summary, t5.submitted_by, t5.submission_date, ifnull(t6.name, '--') audit_status_name
         FROM `framework_control_test_audits` t1
             LEFT JOIN `user` t2 ON t1.tester = t2.value
             LEFT JOIN `framework_controls` t3 ON t1.framework_control_id = t3.id
-            LEFT JOIN `frameworks` t4 ON t3.framework_ids=t4.value OR t3.framework_ids like concat('%,', t4.value) OR t3.framework_ids like concat(t4.value, ',%') OR t3.framework_ids like concat('%,', t4.value, ',%')
+            LEFT JOIN `frameworks` t4 ON (t3.framework_ids=t4.value OR t3.framework_ids like concat('%,', t4.value) OR t3.framework_ids like concat(t4.value, ',%') OR t3.framework_ids like concat('%,', t4.value, ',%')) AND t4.status=1
             LEFT JOIN `framework_control_test_results` t5 ON t1.id=t5.test_audit_id
-            LEFT JOIN ({$statusSql}) t6 ON t1.status=t6.value
+            LEFT JOIN `test_status` t6 ON t1.status=t6.value
     ";
 
     $wheres = array();
 
-    // Active audits
+    $closed_audit_status = get_setting("closed_audit_status");
+
+	// Active audits
     if($active)
     {
-        $wheres[] = " t1.status<>".TEST_AUDIT_STATUS_CLOSED." ";
+        $wheres[] = " t1.status<>'".$closed_audit_status."' ";
     }
     // Past audits
     else
     {
-        $wheres[] = " t1.status=".TEST_AUDIT_STATUS_CLOSED." ";
+        $wheres[] = " t1.status='".$closed_audit_status."' ";
+    }
+    if($filters !== false){
+        if(!empty($filters['filter_control'])){
+            $wheres[] = " t3.short_name like :filter_control ";
+            $filters['filter_control'] = "%{$filters['filter_control']}%";
+        }
+        if(!empty($filters['filter_test_result'])){
+            $wheres[] = " t5.test_result like :filter_test_result ";
+            $filters['filter_test_result'] = "%{$filters['filter_test_result']}%";
+        }
+        if(isset($filters['filter_framework'])){
+            if($filters['filter_framework']){
+                $framework_wheres = [];
+
+                foreach($filters['filter_framework'] as $val){
+                    if(!$val)
+                        continue;
+                    $val = (int)$val;
+                    // If unassigned option.
+                    if($val == -1)
+                    {
+                        $framework_wheres[] = "(t3.framework_ids is NULL OR t3.framework_ids='')";
+                    }
+                    else
+                    {
+                        $framework_filter_pattern1 = $val;
+                        $framework_filter_pattern2 = "%,".$val;
+                        $framework_filter_pattern3 = $val.",%";
+                        $framework_filter_pattern4 = "%,".$val.",%";
+
+                        $framework_wheres[] = "(t3.framework_ids like '{$framework_filter_pattern1}' or t3.framework_ids like '{$framework_filter_pattern2}' or t3.framework_ids like '{$framework_filter_pattern3}' or t3.framework_ids like '{$framework_filter_pattern4}')";
+                    }
+                }
+                
+                $wheres[] = "(". implode(" OR ", $framework_wheres) . ")";
+            }
+            else
+            {
+                $wheres[] = " 0 ";
+            }
+        
+        }
+        if(isset($filters['filter_status'])){
+            if($filters['filter_status'])
+            {
+                foreach($filters['filter_status'] as &$val){
+                    $val = (int)$val;
+                }
+                unset($val);
+                
+                $wheres[] = " t1.status IN (".implode(",", $filters['filter_status']).") ";
+            }
+            else
+            {
+                $wheres[] = " 0 ";
+            }
+        }
+        if(!empty($filters['filter_start_audit_date'])){
+            $wheres[] = " t1.last_date>=:filter_start_audit_date ";
+        }
+        if(!empty($filters['filter_end_audit_date'])){
+            $wheres[] = " t1.last_date<=:filter_end_audit_date ";
+        }
     }
 
-//    if($filters !== false && is_array($filters)){
-//        if($filters['filter_text']){
-//            $wheres[] = "t3.company like :company";
-//        }
-//    }
-    
     $sql .= " WHERE ".implode(" AND ", $wheres);
 
     $sql .= " GROUP BY t1.id ";
@@ -661,6 +878,21 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
     }
 
     $stmt = $db->prepare($sql);
+    if($filters !== false){
+        if(!empty($filters['filter_control'])){
+            $stmt->bindParam(":filter_control", $filters['filter_control'], PDO::PARAM_STR, 200);
+        }
+        if(!empty($filters['filter_test_result'])){
+            $stmt->bindParam(":filter_test_result", $filters['filter_test_result'], PDO::PARAM_STR, 200);
+        }
+        if(!empty($filters['filter_start_audit_date'])){
+            $stmt->bindParam(":filter_start_audit_date", $filters['filter_start_audit_date'], PDO::PARAM_STR, 10);
+        }
+        if(!empty($filters['filter_end_audit_date'])){
+            $stmt->bindParam(":filter_end_audit_date", $filters['filter_end_audit_date'], PDO::PARAM_STR, 10);
+        }
+    }
+
     $stmt->execute();
 
     // Store tests in the array
@@ -688,8 +920,9 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
             || (stripos($test_audit['last_date'], $filters['filter_text']) !== false) 
             || (stripos($test_audit['control_name'], $filters['filter_text']) !== false) 
             || (stripos($test_audit['framework_name'], $filters['filter_text']) !== false) 
-            || (stripos(get_testing_status($test_audit['status']), $filters['filter_text']) !== false) 
+            || (stripos($test_audit['audit_status_name'], $filters['filter_text']) !== false) 
             || (stripos($test_audit['test_result'], $filters['filter_text']) !== false) 
+            || (stripos($test_audit['objective'], $filters['filter_text']) !== false) 
         )
         {
             $filtered_test_audits[] = $test_audit;
@@ -724,44 +957,6 @@ function save_test_comment($test_audit_id, $comment){
     db_close($db);
 }
 
-/*************************************
- * FUNCTION: GET TESTING STATUS LIST *
- *************************************/
-function get_testing_status_list()
-{
-    global $lang, $escaper;
-
-    // Active audit statuses
-    $array = array(
-        "1" => "PendingEvidenceFromControlOwner",
-        "2" => "EvidenceSubmittedPendingReview",
-        "3" => "PassedInternalQA",
-        "4" => "RemediationRequired",
-    );
-    
-    // Inactive audit status
-    $array[TEST_AUDIT_STATUS_CLOSED] = "Closed";
-
-    foreach($array as &$val){
-        $val = $escaper->escapeHtml($lang[$val]);
-    }
-
-    return $array;
-}
-
-/********************************
- * FUNCTION: GET TESTING STATUS *
- ********************************/
-function get_testing_status($key)
-{
-    $statusArr = get_testing_status_list();
-    if(isset($statusArr[$key])){
-        return $statusArr[$key];
-    }else{
-        return "--";
-    }
-}
-
 /**********************************
  * FUNCTION: GET COMPLIANCE FILES *
  **********************************/
@@ -792,7 +987,6 @@ function display_testing()
     $test_audit_id = (int)$_GET['id'];
     
     $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
-    $testStatusArr = get_testing_status_list();
     
     // If test date is not set, set today as default
     if(!$test_audit['test_date'] || $test_audit['test_date']=="0000-00-00")
@@ -808,21 +1002,11 @@ function display_testing()
                     <td width='50%' valign='top'>
                         <table width='100%'>
                             <tr>
-                                <td valign='top'>".$escaper->escapeHtml($lang['Status']).":&nbsp;&nbsp;</td>
-                                <td>
-                                    <select name='status' >
-                                        <option value=''>--</option>
-                                    ";
-                                    foreach($testStatusArr as $val => $testStatus){
-                                        if($test_audit['status'] == $val){
-                                            echo "<option selected value='" . $escaper->escapeHtml($val) . "'>" . $escaper->escapeHtml($testStatus) . "</option>";
-                                        }
-                                        else{
-                                            echo "<option value='" . $escaper->escapeHtml($val) . "'>" . $escaper->escapeHtml($testStatus) . "</option>";
-                                        }
-                                    }
-                            echo "
-                                    </select>
+                                <td valign='top'>".$escaper->escapeHtml($lang['AuditStatus']).":&nbsp;&nbsp;</td>
+                                <td>";
+                                    create_dropdown("test_status", $test_audit['status'], "status", true, false, false, "", "--");
+                                    
+                                echo "
                                 </td>
                             </tr>
                             <tr>
@@ -1134,8 +1318,10 @@ function save_test_result($test_audit_id, $status, $test_result, $tester, $test_
     // Update status in test_audit table
     update_test_audit_status($test_audit_id, $status);
     
-    // Check audit was closed
-    if($status == TEST_AUDIT_STATUS_CLOSED)
+    $closed_audit_status = get_setting("closed_audit_status");
+    
+	// Check audit was closed
+    if($status == $closed_audit_status)
     {
         // update last audit date and next audti date in test_audit table
         update_last_and_next_auditdate($test_audit_id, $test_date);
@@ -1260,16 +1446,21 @@ function submit_test_result()
             // Save a test result
             save_test_result($test_audit_id, $status, $test_result, $tester, $test_date, $summary);
             
+            $closed_audit_status = get_setting("closed_audit_status");
+            
+            $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
+            $test_audit_name = empty($test_audit["name"]) ? "" : $test_audit["name"];
+
             // The audit was closed
-            if($status == TEST_AUDIT_STATUS_CLOSED)
+            if($status == $closed_audit_status)
             {
-                $message = "A test audit result for audit ID \"{$test_audit_id}\" was submitted and closed by username \"" . $_SESSION['user'] . "\".";
+                $message = "An audit named \"{$test_audit_name}\" was modified and closed by username \"" . $_SESSION['user'] . "\".";
                 write_log($test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
             }
             // The audit status is not close
             else
             {
-                $message = "A test audit result was submitted for audit ID \"{$test_audit_id}\" by username \"" . $_SESSION['user'] . "\".";
+                $message = "An audit named \"{$test_audit_name}\" was modified by username \"" . $_SESSION['user'] . "\".";
                 write_log($test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
             }
             
@@ -1442,12 +1633,55 @@ function display_past_audits(){
     $tableID = "past-audits";
     
     echo "
-        <div>
-            <label>
-                ".$escaper->escapeHtml($lang['FilterByText']).":&nbsp;&nbsp;&nbsp;
+        <div id='filter-container'>
+            <div class='row-fluid'>
+                <div class='span2' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['FilterByText']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span2'>
                 <input type='text' id='filter_by_text' class='form-control'>
-            </label>
+                </div>
+                <div class='span2' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['Control']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span2'>
+                    <input type='text' id='filter_by_control' class='form-control'>
+                </div>
+                <div class='span2' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['TestResult']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span2'>
+                    <input type='text' id='filter_by_test_result' class='form-control'>
+                </div>
+            </div>
+            <div class='row-fluid'>
+                <div class='span2' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['Framework']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span2'>
+                    <select id='filter_by_framework' class='' multiple=''>
+                        <option selected value='-1'>".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
+                        $options = getAvailableControlFrameworkList();
+                        is_array($options) || $options = array();
+                        foreach($options as $option){
+                            echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                        }
+                    echo "</select>
+                </div>
+                
+            </div>
+            <div class='row-fluid'>
+                <div class='span2' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['AuditDate']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span10'>
+                    <input type='text' id='start_audit_date' class='form-control' placeholder='".$escaper->escapeHtml($lang['StartDate'])."'>
+                    &nbsp;&nbsp;~&nbsp;&nbsp;
+                    <input type='text' id='end_audit_date' class='form-control' placeholder='".$escaper->escapeHtml($lang['EndDate'])."'>
+                </div>
+            </div>
         </div>
+
         <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
             <thead >
                 <tr >
@@ -1477,10 +1711,19 @@ function display_past_audits(){
                 dom : \"flrtip\",
                 pageLength: pageLength,
                 dom : \"flrti<'#view-all.view-all'>p\",
+                createdRow: function(row, data, index){
+                    var background = $('.background-class', $(row)).data('background');
+                    $(row).find('td').addClass(background)
+                },
                 ajax: {
                     url: BASE_URL + '/api/compliance/past_audits',
                     data: function(d){
                         d.filter_text = \$(\"#filter_by_text\").val();
+                        d.filter_control    = \$(\"#filter_by_control\").val();
+                        d.filter_test_result = \$(\"#filter_by_test_result\").val();
+                        d.filter_framework  = \$(\"#filter_by_framework\").val();
+                        d.filter_start_audit_date   = \$(\"#start_audit_date\").val();
+                        d.filter_end_audit_date     = \$(\"#end_audit_date\").val();
                     },
                     complete: function(response){
                     }
@@ -1543,12 +1786,38 @@ function display_past_audits(){
             // time in ms (1 second)
             var doneTypingInterval = 1000;  
 
+            $('#filter_by_framework').multiselect({
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                includeSelectAllOption: true
+            });
+            
+            $('#start_audit_date, #end_audit_date').datepicker({dateFormat: 'yy-mm-dd'})
+
             // Search filter event
             $('#filter_by_text').keyup(function(){
                 clearTimeout(typingTimer);
                 typingTimer = setTimeout(redrawPastAudits, doneTypingInterval);
             });
-
+            $('#filter_by_control').keyup(function(){
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(redrawPastAudits, doneTypingInterval);
+            });
+            $('#filter_by_test_result').keyup(function(){
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(redrawPastAudits, doneTypingInterval);
+            });
+            $('#filter_by_framework').change(function(){
+                redrawPastAudits();
+            });
+            $('#start_audit_date').change(function(){
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(redrawPastAudits, doneTypingInterval);
+            });
+            $('#end_audit_date').change(function(){
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(redrawPastAudits, doneTypingInterval);
+            });
+            
         </script>
     ";
 }
@@ -1564,9 +1833,6 @@ function display_detail_test()
     
     // Get test audit information
     $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
-    
-    // Test result status array
-    $testStatusArr = get_testing_status_list();
     
     // Get attachement files
     $files = get_compliance_files($test_audit_id, "test_audit");
@@ -1726,6 +1992,278 @@ function reopen_test_audit($test_audit_id)
     write_log($test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
 
     return true;
+}
+
+/******************************************************
+ * FUNCTION: GET FRAMEWORKS FROM INITIATE AUDITS PAGE *
+ ******************************************************/
+function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control)
+{
+    $controls = get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control);
+
+    $filtered_framework_ids = [];
+//    $filtered_control_ids = [];
+    foreach($controls as $control){
+        $filtered_framework_ids = array_merge($filtered_framework_ids, explode(",", $control['framework_ids']));
+//        $filtered_control_ids[] = $control['id'];
+    }
+    $filtered_framework_id_set = implode(",", array_unique($filtered_framework_ids));
+//    $filtered_control_ids = implode(",", $filtered_control_ids);
+
+    // Open the database connection
+    $db = db_open();
+
+    $sql = "
+        SELECT t1.*
+        FROM 
+            `frameworks` t1 
+            INNER JOIN `framework_controls` t2 on FIND_IN_SET(t1.value, t2.framework_ids)
+        WHERE
+            FIND_IN_SET(t1.value, :filtered_framework_id_set) 
+    ";
+    
+    $where = ["t1.status=1"];
+    
+    if($filter_by_frequency){
+        $where[] = "t1.desired_frequency like :filter_by_frequency";
+    }
+
+    if($filter_by_framework){
+        $where[] = "FIND_IN_SET(t1.value, :filter_by_framework)";
+    }else{
+        $where[] = "0";
+    }
+
+    if($filter_by_control){
+        $where[] = "t2.short_name like :filter_by_control";
+    }
+
+    if($where){
+        $sql .= " OR ". "(". implode(" AND ", $where). ")";
+    }
+    
+    $sql .= " GROUP BY t1.value ";
+
+    // Get the risk levels
+    $stmt = $db->prepare($sql);
+
+    $stmt->bindParam(":filtered_framework_id_set", $filtered_framework_id_set, PDO::PARAM_STR);
+    
+    if($filter_by_frequency){
+        $filter_by_frequency = "%{$filter_by_frequency}%";
+        $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
+    }
+
+    if($filter_by_framework){
+        $framework_ids = implode(",", $filter_by_framework);
+        $stmt->bindParam(":filter_by_framework", $framework_ids, PDO::PARAM_STR);
+    }
+
+    if($filter_by_control){
+        $filter_by_control = "%{$filter_by_control}%";
+        $stmt->bindParam(":filter_by_control", $filter_by_control, PDO::PARAM_STR);
+    }
+
+    $stmt->execute();
+    
+    // Store the list in the array
+    $frameworks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $filtered_frameworks = [];
+    foreach($frameworks as $framework){
+        $framework['name'] = try_decrypt($framework['name']);
+        if(!$filter_by_text || stripos($framework['name'], $filter_by_text) !== false || in_array($framework['value'], $filtered_framework_ids)){
+            $filtered_frameworks[] = $framework;
+        }
+    }
+    
+    // Close the database connection
+    db_close($db);
+
+    return $filtered_frameworks;
+}
+
+/****************************************************
+ * FUNCTION: GET CONTROLS FROM INITIATE AUDITS PAGE *
+ ****************************************************/
+function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id=null)
+{
+    $tests = get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id);
+    $filtered_control_ids = [];
+//    $filtered_test_ids = [];
+    foreach($tests as $test){
+        $filtered_control_ids[$test['framework_control_id']] = $test['framework_control_id'];
+//        $filtered_test_ids[] = $test['id'];
+    }
+    $filtered_control_ids = implode(",", $filtered_control_ids);
+//    $filtered_test_ids = implode(",", $filtered_test_ids);
+    
+    // Open the database connection
+    $db = db_open();
+    
+    $sql = "
+        SELECT t1.*, GROUP_CONCAT(DISTINCT t2.value SEPARATOR ',') framework_ids
+        FROM 
+            `framework_controls` t1 
+            INNER JOIN `frameworks` t2 on FIND_IN_SET(t2.value, t1.framework_ids) and t2.status=1
+            /*INNER JOIN `framework_control_tests` t3 on t1.id=t3.framework_control_id and FIND_IN_SET(t3.id, '{\$filtered_test_ids}')*/
+        WHERE
+            FIND_IN_SET(t1.id, :filtered_control_ids) 
+    ";
+    if($filter_by_framework){
+        $sql .= " AND FIND_IN_SET(t2.value, :filter_by_framework) ";
+    }else{
+        $sql .= " AND 0 ";
+    }
+    
+    $where = ["t2.status=1"];
+    if($filter_by_text){
+        $where[] = "(t1.short_name like :filter_by_text)";
+    }
+    if($filter_by_frequency){
+        $where[] = "(t1.desired_frequency like :filter_by_frequency)";
+    }
+    if($filter_by_framework){
+        $where[] = "FIND_IN_SET(t2.value, :filter_by_framework)";
+    }else{
+        $where[] = "0";
+    }
+    if($filter_by_control){
+        $where[] = "t1.short_name like :filter_by_control";
+    }
+    if($framework_id){
+        $where[] = "t2.value = :framework_id";
+    }
+
+    if($where){
+        $sql .= " OR ". "(". implode(" AND ", $where). ")";
+    }
+    
+    $sql .= " GROUP BY t1.id ";
+    $sql .= " ORDER BY t1.short_name ";
+
+    // Get the risk levels
+    $stmt = $db->prepare($sql);
+
+    $stmt->bindParam(":filtered_control_ids", $filtered_control_ids, PDO::PARAM_STR);
+    
+    if($filter_by_text){
+        $filter_by_text = "%{$filter_by_text}%";
+        $stmt->bindParam(":filter_by_text", $filter_by_text, PDO::PARAM_STR);
+    }
+    if($filter_by_frequency){
+        $filter_by_frequency = "%{$filter_by_frequency}%";
+        $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
+    }
+    if($filter_by_framework){
+        $framework_ids = implode(",", $filter_by_framework);
+        $stmt->bindParam(":filter_by_framework", $framework_ids, PDO::PARAM_STR);
+    }
+    if($filter_by_control){
+        $filter_by_control = "%{$filter_by_control}%";
+        $stmt->bindParam(":filter_by_control", $filter_by_control, PDO::PARAM_STR);
+    }
+    if($framework_id){
+        $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+    }
+
+    $stmt->execute();
+    
+    // Store the list in the array
+    $controls = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+    
+    return $controls;
+}
+
+/*************************************************
+ * FUNCTION: GET TESTS FROM INITIATE AUDITS PAGE *
+ *************************************************/
+function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id=null, $control_id=null)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $sql = "
+        SELECT t1.*
+        FROM `framework_control_tests` t1
+            INNER JOIN `framework_controls` t2 on t1.framework_control_id=t2.id
+            INNER JOIN `frameworks` t3 on FIND_IN_SET(t3.value, t2.framework_ids) AND t3.status=1
+        WHERE
+            t3.status=1
+    ";
+    
+    $where = [];
+    
+    if($filter_by_text){
+        $where[] = "(t1.name like :filter_by_text OR t1.desired_frequency like :filter_by_text OR t1.last_date like :filter_by_text OR t1.next_date like :filter_by_text)";
+    }
+    if($filter_by_frequency){
+        $where[] = "t1.desired_frequency like :filter_by_frequency";
+    }
+    if($filter_by_status){
+        
+    }
+    if($filter_by_framework){
+        $where[] = "FIND_IN_SET(t3.value, :filter_by_framework)";
+    }else{
+        $where[] = "0";
+    }
+    if($filter_by_control){
+        $where[] = "t2.short_name like :filter_by_control";
+    }
+    if($framework_id){
+        $where[] = "t3.value = :framework_id";
+    }
+    if($control_id){
+        $where[] = "t2.id = :control_id";
+    }
+
+    if($where){
+        $sql .= " AND ". implode(" AND ", $where);
+    }
+    
+    $sql .= " GROUP BY t1.id ";
+    $sql .= " ORDER BY t1.name ";
+
+    $stmt = $db->prepare($sql);
+    
+    if($filter_by_text){
+        $filter_by_text = "%{$filter_by_text}%";
+        $stmt->bindParam(":filter_by_text", $filter_by_text, PDO::PARAM_STR);
+    }
+    if($filter_by_frequency){
+        $filter_by_frequency = "%{$filter_by_frequency}%";
+        $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
+    }
+    if($filter_by_status){
+        
+    }
+    if($filter_by_framework){
+        $framework_ids = implode(",", $filter_by_framework);
+        $stmt->bindParam(":filter_by_framework", $framework_ids, PDO::PARAM_STR);
+    }
+    if($filter_by_control){
+        $filter_by_control = "%{$filter_by_control}%";
+        $stmt->bindParam(":filter_by_control", $filter_by_control, PDO::PARAM_STR);
+    }
+    if($framework_id){
+        $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+    }
+    if($control_id){
+        $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    }
+
+    $stmt->execute();
+    // Store the list in the array
+    $tests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+    
+    return $tests;
 }
 
 ?>

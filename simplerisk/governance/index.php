@@ -20,7 +20,7 @@ header("X-Frame-Options: DENY");
 header("X-XSS-Protection: 1; mode=block");
 
 // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (CSP_ENABLED == "true")
+if (csp_enabled())
 {
   // Add the Content-Security-Policy header
   header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -54,6 +54,7 @@ session_check();
 // Check if access is authorized
 if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 {
+    set_unauthenticated_redirect();
     header("Location: ../index.php");
     exit(0);
 }
@@ -181,7 +182,8 @@ if (isset($_POST['add_control']))
     'control_phase' => isset($_POST['control_phase']) ? (int)$_POST['control_phase'] : 0,
     'control_number' => isset($_POST['control_number']) ? $_POST['control_number'] : "",
     'control_priority' => isset($_POST['control_priority']) ? (int)$_POST['control_priority'] : 0,
-    'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0
+    'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0,
+    'mitigation_percent' => (isset($_POST['mitigation_percent']) && $_POST['mitigation_percent'] >= 0 && $_POST['mitigation_percent'] <= 100) ? (int)$_POST['mitigation_percent'] : 0
   );
 
   // Check if the control name is null
@@ -251,7 +253,8 @@ if (isset($_POST['update_control']))
         'control_phase' => isset($_POST['control_phase']) ? (int)$_POST['control_phase'] : 0,
         'control_number' => isset($_POST['control_number']) ? $_POST['control_number'] : "",
         'control_priority' => isset($_POST['control_priority']) ? (int)$_POST['control_priority'] : 0,
-        'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0
+        'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0,
+        'mitigation_percent' => (isset($_POST['mitigation_percent']) && $_POST['mitigation_percent'] >= 0 && $_POST['mitigation_percent'] <= 100) ? (int)$_POST['mitigation_percent'] : 0
       );
       // Update the control
       update_framework_control($control_id, $control);
@@ -276,7 +279,7 @@ if (isset($_POST['update_control']))
 <html>
 
 <head>
-  <script src="../js/jquery-1.11.3.min.js"></script>
+  <script src="../js/jquery.min.js"></script>
   <script src="../js/jquery.easyui.min.js"></script>
   <script src="../js/jquery-ui.min.js"></script>
   <script src="../js/jquery.draggable.js"></script>
@@ -368,7 +371,7 @@ if (isset($_POST['update_control']))
             tabContentId += "-content";
             $(".tab-show").removeClass("selected");
             
-            $(".tab-show[data-content="+ tabContentId +"]").addClass("selected");
+            $(".tab-show[data-content='"+ tabContentId +"']").addClass("selected");
             $(".tab-data").addClass("hide");
             $(tabContentId).removeClass("hide");
             $(".framework-table").treegrid('resize');
@@ -423,7 +426,7 @@ if (isset($_POST['update_control']))
 
 <body>
 
-
+       
   <?php
       view_top_menu("Governance");
 
@@ -468,8 +471,8 @@ if (isset($_POST['update_control']))
                 <a href="#framework--add" id="framework-add-btn" role="button" data-toggle="modal" class="project--add"><i class="fa fa-plus"></i></a>
 
                 <ul class="clearfix tabs-nav">
-                  <li><a href="#active-frameworks" class="status" data-status="1"><?php echo $escaper->escapeHtml($lang['ActiveFrameworks']); ?> (<?php get_frameworks_count(1) ?>)</a></li>
-                  <li><a href="#inactive-frameworks" class="status" data-status="2"><?php echo $escaper->escapeHtml($lang['InactiveFrameworks']); ?> (<?php get_frameworks_count(2) ?>)</a></li>
+                  <li><a href="#active-frameworks" class="status" data-status="1"><?php echo $escaper->escapeHtml($lang['ActiveFrameworks']); ?> (<span id="active-frameworks-count"><?php get_frameworks_count(1) ?></span>)</a></li>
+                  <li><a href="#inactive-frameworks" class="status" data-status="2"><?php echo $escaper->escapeHtml($lang['InactiveFrameworks']); ?> (<span id="inactive-frameworks-count"><?php get_frameworks_count(2) ?></span>)</a></li>
                 </ul>
 
                   <div id="active-frameworks" class="custom-treegrid-container">
@@ -525,7 +528,7 @@ if (isset($_POST['update_control']))
                                     $options = getAvailableControlFamilyList();  
                                     is_array($options) || $options = array();
                                     foreach($options as $option){
-                                        echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['short_name'])."</option>\n";
+                                        echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
                                     } 
                                 ?>
                             </select>
@@ -543,7 +546,7 @@ if (isset($_POST['update_control']))
                                     is_array($options) || $options = array();
                                     foreach($options as $option){
                                         echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
-                                    } 
+                                    }
                                 ?>
                             </select>
                         </div>
@@ -613,7 +616,7 @@ if (isset($_POST['update_control']))
       </div>
     </div>
   </div>
-
+          
 <!-- MODEL WINDOW FOR ADDING FRAMEWORK -->
 <div id="framework--add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="framework--add" aria-hidden="true">
   <div class="modal-body">
@@ -722,6 +725,9 @@ if (isset($_POST['update_control']))
 
         <label for=""><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?></label>
         <?php create_dropdown("family", NULL, "family", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
+
+        <label for=""><?php echo $escaper->escapeHtml($lang['MitigationPercent']); ?></label>
+        <input type="number" min="0" max="100" name="mitigation_percent" value="" class="form-control">
       </div>
       
       <div class="form-group text-right">
@@ -771,6 +777,9 @@ if (isset($_POST['update_control']))
 
         <label for=""><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?></label>
         <?php create_dropdown("family", NULL, "family", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
+
+        <label for=""><?php echo $escaper->escapeHtml($lang['MitigationPercent']); ?></label>
+        <input type="number" min="0" max="100" name="mitigation_percent" value="" class="form-control">
       </div>
       
       <div class="form-group text-right">

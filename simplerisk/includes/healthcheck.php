@@ -48,6 +48,11 @@ function simplerisk_health_check()
 	// Check the necessary PHP extensions are installed
 	check_php_extensions();
 
+	echo "<br /><b><u>MySQL</u></b><br />";
+
+	// Check if MySQL STRICT SQL mode is enabled
+	check_strict_sql_mode();
+
 	echo "<br /><b><u>File and Directory Permissions</u></b><br />";
 
 	// Check the simplerisk directory permissions
@@ -242,6 +247,34 @@ function check_api_connectivity()
 	else
 	{
 		health_check_bad("Unable to communicate with the SimpleRisk API.");
+	}
+}
+
+/***********************************
+ * FUNCTION: CHECK STRICT SQL MODE *
+ ***********************************/
+function check_strict_sql_mode()
+{
+        // Open a database connection
+        $db = db_open();
+
+	// Query for the current SQL mode
+	$stmt = $db->prepare("SELECT @@sql_mode;");
+	$stmt->execute();
+	$array = $stmt->fetch();
+	$sql_mode = $array['@@sql_mode'];
+
+	// Close the database connection
+	db_close($db);
+
+	// If the row contains STRICT_TRANS_TABLES
+	if (preg_match("/.*STRICT_TRANS_TABLES.*/", $sql_mode))
+	{
+		health_check_bad("SimpleRisk will not work properly with STRICT_TRANS_TABLES enabled.");
+	}
+	else
+	{
+		health_check_good("Verified that STRICT_TRANS_TABLES is not enabled for MySQL.");
 	}
 }
 

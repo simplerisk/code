@@ -41,10 +41,10 @@ function get_frameworks($status = false)
     foreach ($array as $key => &$framework)
     {
         // Try to decrypt the framework name
-        $framework['name'] = $escaper->escapeHtml(try_decrypt($framework['name']));
+        $framework['name'] = try_decrypt($framework['name']);
         
         // Try to decrypt the framework description
-        $framework['description'] = $escaper->escapeHtml(try_decrypt($framework['description']));
+        $framework['description'] = try_decrypt($framework['description']);
     }
     
     // Close the database connection
@@ -56,12 +56,13 @@ function get_frameworks($status = false)
 /*********************************
  * FUNCTION: MAKE TREE STRUCTURE *
  *********************************/
-function makeTree($olds, $parent, &$news){
+function makeTree($olds, $parent, &$news, &$count=0){
     foreach($olds as $old){
         if($old['parent'] == $parent){
-            makeTree($olds, $old['value'], $old);
+            makeTree($olds, $old['value'], $old, $count);
             if(!isset($news['children']))
                 $news['children'] = array();
+            $count++;
             array_push($news['children'], $old);
         }
     }
@@ -71,13 +72,28 @@ function makeTree($olds, $parent, &$news){
  * FUNCTION: GET FRAMEWORK DATA IN TREE FORMAT *
  ***********************************************/
 function get_frameworks_as_treegrid($status){
+    global $lang;
+    global $escaper;
+    
     $frameworks = get_frameworks($status);
     foreach($frameworks as &$framework){
+        $framework['name'] = $escaper->escapeHtml($framework['name']);
         $framework['actions'] = "<div class=\"text-center\"><a class=\"framework-block--edit\" data-id=\"".((int)$framework['value'])."\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;<a class=\"framework-block--delete\" data-id=\"".((int)$framework['value'])."\"><i class=\"fa fa-trash\"></i></a></div>";
     }
     $results = array();
-    makeTree($frameworks, 0, $results);
-    return isset($results['children']) ? $results['children'] : [];
+    $count = 0;
+    if($status == 1){
+        makeTree($frameworks, 0, $results, $count);
+        if(isset($results['children'][0])){
+            $results['children'][0]['totalCount'] = $count;
+        }
+        return isset($results['children']) ? $results['children'] : [];
+    }else{
+        if(isset($frameworks[0])){
+            $frameworks[0]['totalCount'] = count($frameworks);
+        }
+        return $frameworks;
+    }
 }
 
 /************************************************
@@ -119,14 +135,35 @@ function get_framework($framework_id){
 
     // Close the database connection
     db_close($db);
+    
+    if($framework){
+        // Try to decrypt the framework name
+        $framework['name'] = try_decrypt($framework['name']);
+        
+        // Try to decrypt the framework description
+        $framework['description'] = try_decrypt($framework['description']);
+        return $framework;
+    }
+    else{
+        return false;
+    }
+}
 
-    // Try to decrypt the framework name
-    $framework['name'] = $escaper->escapeHtml(try_decrypt($framework['name']));
-    
-    // Try to decrypt the framework description
-    $framework['description'] = $escaper->escapeHtml(try_decrypt($framework['description']));
-    
-    return $framework;
+
+/***************************************************
+ * FUNCTION: GET PARENT FRAMEWORKS BY FRAMEWORK ID *
+ ***************************************************/
+function get_parent_frameworks($frameworks, $parent, &$news){
+    if($parent == 0){
+        return;
+    }
+    foreach($frameworks as $framework){
+        if($framework['value'] == $parent){
+            array_unshift($news, $framework);
+            get_parent_frameworks($frameworks, $framework['parent'], $news);
+            break;
+        }
+    }
 }
 
 /*************************************
@@ -135,44 +172,92 @@ function get_framework($framework_id){
 function update_framework_status($status, $framework_id)
 {
     $frameworks = get_frameworks();
-    $results = array();
-    makeTree($frameworks, $framework_id, $results);
     
     // Open the database connection
     $db = db_open();
-
-    array_walk_recursive($results,  function($value, $key) use($status, $db){
-        if($key == "value"){
-
-            // Query the database
-            $stmt = $db->prepare("UPDATE `frameworks` SET `status` = :status WHERE `value` = :framework_id");
-            $stmt->bindParam(":framework_id", $value, PDO::PARAM_INT);
-            $stmt->bindParam(":status", $status, PDO::PARAM_INT);
-            
-            // Update status
-            $stmt->execute();
-        }
-    });
     
-    // Query the database
-    $stmt = $db->prepare("UPDATE `frameworks` SET `parent` = 0, `status` = :status WHERE `value` = :framework_id");
-    $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
-    $stmt->bindParam(":status", $status, PDO::PARAM_INT);
+    $result_ids = [];
+    
+    $framework = get_framework($framework_id);
 
-    $stmt->execute();
+    // If framework is inactive
+    if($status == 2){
+        $results = array();
+        makeTree($frameworks, $framework_id, $results);
+        array_walk_recursive($results,  function($value, $key) use($status, $db, &$result_ids){
+            if($key == "value"){
+                
+                // Query the database
+                $stmt = $db->prepare("UPDATE `frameworks` SET `status` = :status WHERE `value` = :framework_id");
+                $stmt->bindParam(":framework_id", $value, PDO::PARAM_INT);
+                $stmt->bindParam(":status", $status, PDO::PARAM_INT);
+                
+                // Update status
+                $stmt->execute();
+                
+                $result_ids[] = $value;
+            }
+        });
+        // Query the database
+        $stmt = $db->prepare("UPDATE `frameworks` SET `status` = :status WHERE `value` = :framework_id");
+        $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+        $stmt->bindParam(":status", $status, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $result_ids[] = $framework_id;
+    }
+    // If framework is active
+    elseif($status == 1){
+        $results = array();
+        
+        get_parent_frameworks($frameworks, $framework['parent'], $results);
+        
+        if($results){
+            array_push($results, $framework);
+            array_walk_recursive($results,  function($value, $key) use($status, $db, &$result_ids){
+                if($key == "value"){
+
+                    // Query the database
+                    $stmt = $db->prepare("UPDATE `frameworks` SET `status` = :status WHERE `value` = :framework_id");
+                    $stmt->bindParam(":framework_id", $value, PDO::PARAM_INT);
+                    $stmt->bindParam(":status", $status, PDO::PARAM_INT);
+                    
+                    // Update status
+                    $stmt->execute();
+                    
+                    $result_ids[] = $value;
+                }
+            });
+            if($results[0]['parent'] != 0){
+                // Query the database
+                $stmt = $db->prepare("UPDATE `frameworks` SET `parent`=0 WHERE `value` = :framework_id");
+                $stmt->bindParam(":framework_id", $results[0]['value'], PDO::PARAM_INT);
+                $stmt->execute();
+            }
+        }else{
+            // Query the database
+            $stmt = $db->prepare("UPDATE `frameworks` SET `parent`=0, `status` = :status WHERE `value` = :framework_id");
+            $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+            $stmt->bindParam(":status", $status, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $result_ids[] = $framework_id;
+        }
+
+    }
 
     // Close the database connection
     db_close($db);
 
     if($status == 1){
-        $message = "A framework was activated for framework ID \"{$framework_id}\" by the \"" . $_SESSION['user'] . "\" user.";
+        $message = "A framework named \"{$framework['name']}\" was activated by the \"" . $_SESSION['user'] . "\" user.";
     }
     elseif($status == 2){
-        $message = "A framework was inactivated for framework ID \"{$framework_id}\" by the \"" . $_SESSION['user'] . "\" user.";
+        $message = "A framework named \"{$framework['name']}\" was deactivated by the \"" . $_SESSION['user'] . "\" user.";
     }
     write_log($framework_id+1000, $_SESSION['uid'], $message, 'framework');
 
-    return true;
+    return $result_ids;
 }
 
 /*************************************
@@ -220,7 +305,6 @@ function get_framework_tabs($status)
     global $lang;
     global $escaper;
     
-    $frameworks = get_frameworks($status);
     echo "<table  class='easyui-treegrid framework-table'
             data-options=\"
                 iconCls: 'icon-ok',
@@ -232,12 +316,20 @@ function get_framework_tabs($status)
                 idField: 'value',
                 treeField: 'name',
                 scrollbarSize: 0,
-                onLoadSuccess: function(row){
+                onLoadSuccess: function(row, data){
                     \$(this).treegrid('enableDnd', row?row.value:null);
+                    console.log(data)
+                    if(data.length){
+                        var totalCount = data[0].totalCount;
+                    }else{
+                        var totalCount = 0;
+                    }
+                    ".
+                    (($status==1) ? "$('#active-frameworks-count').html(totalCount);" : "$('#inactive-frameworks-count').html(totalCount);")
+                    ."
                 },
                 onStopDrag: function(row){
-                    var tag = document.elementFromPoint(mouseX,mouseY);
-                                   
+                    var tag = document.elementFromPoint(mouseX - window.pageXOffset, mouseY - window.pageYOffset);
                     if($(tag).hasClass('status')){
                         var framework_id = row.value;
                         var status = $(tag).data('status');
@@ -288,7 +380,7 @@ function get_framework_controls()
     $db = db_open();
 
     $stmt = $db->prepare("
-        SELECT t1.*, t2.name control_class_name, t3.name control_priority_name, t4.short_name family_short_name, t5.name control_phase_name, t6.name control_owner_name
+        SELECT t1.*, t2.name control_class_name, t3.name control_priority_name, t4.name family_short_name, t5.name control_phase_name, t6.name control_owner_name
         FROM `framework_controls` t1 
             LEFT JOIN `control_class` t2 on t1.control_class=t2.value
             LEFT JOIN `control_priority` t3 on t1.control_priority=t3.value
@@ -333,7 +425,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
     // Open the database connection
     $db = db_open();
     $sql = "
-        SELECT t1.*, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.short_name family_short_name, t6.name control_owner_name
+        SELECT t1.*, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.name family_short_name, t6.name control_owner_name
         FROM `framework_controls` t1 
             LEFT JOIN `control_class` t2 on t1.control_class=t2.value
             LEFT JOIN `control_phase` t3 on t1.control_phase=t3.value
@@ -602,9 +694,12 @@ function add_framework($name, $description, $parent=0, $status=1){
     
     $framework_id = $db->lastInsertId();
 
-    $message = "A new framework ID \"{$framework_id}\" was submitted by username \"" . $_SESSION['user'] . "\".";
+    $message = "A new framework named \"{$name}\" was created by username \"" . $_SESSION['user'] . "\".";
     write_log($framework_id + 1000, $_SESSION['uid'], $message, "framework");
     
+    // Close the database connection
+    db_close($db);
+
     return $framework_id;
 }
 
@@ -639,15 +734,79 @@ function update_framework($framework_id, $name, $description=false, $parent=fals
     $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
     $stmt->execute();
     
-    $message = "A framework was updated for framework ID \"{$framework_id}\" by username \"" . $_SESSION['user'] . "\".";
+    $message = "A framework named \"{$name}\" was updated by username \"" . $_SESSION['user'] . "\".";
     write_log($framework_id + 1000, $_SESSION['uid'], $message, "framework");
     
+    // Close the database connection
+    db_close($db);
+
     return true;
+}
+
+/***********************************************
+ * FUNCTION: GET CHILD FRAMEWORKS BY PARENT ID *
+ ***********************************************/
+function get_child_frameworks($parent_id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $sql = "SELECT t1.* FROM `frameworks` t1 WHERE t1.parent=:parent_id;";
+    
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":parent_id", $parent_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $results = $stmt->fetchAll();
+    
+    // Close the database connection
+    db_close($db);
+    
+    return $results;
 }
 
 /********************************************
  * FUNCTION: DELETE FRAMEWORKS BY PARENT ID *
  ********************************************/
+function delete_frameworks($framework_id){
+    $framework = get_framework($framework_id);
+    // Check framework ID is valid
+    if($framework)
+    {
+        $parent = $framework['parent'];
+        
+        // Open the database connection
+        $db = db_open();
+
+        // Delete framework by ID
+        $stmt = $db->prepare("DELETE FROM `frameworks` WHERE value=:value");
+        $stmt->bindParam(":value", $framework_id, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        // Update parents for child frameworks
+        $frameworks = get_child_frameworks($framework_id);
+        foreach($frameworks as $framework){
+            $stmt = $db->prepare("UPDATE `frameworks` SET `parent`=:parent WHERE `value` = :framework_id ");
+            
+            $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
+            $stmt->bindParam(":framework_id", $framework['value'], PDO::PARAM_INT);
+            
+            // Execute the database query
+            $stmt->execute();
+        }
+
+        // Close the database connection
+        db_close($db);
+        return true;
+    }
+    // Check framework ID doesn't exist
+    else
+    {
+        return false;
+    }
+
+}
+/*
 function delete_frameworks($framework_id){
 
     $frameworks = get_frameworks();
@@ -663,7 +822,7 @@ function delete_frameworks($framework_id){
         'value' => $framework_id
     );
 
-    array_walk_recursive($results,  function($value, $key) use($status, $db){
+    array_walk_recursive($results,  function($value, $key) use($db){
         if($key == "value"){
             // Table name
             $table = "frameworks";
@@ -674,7 +833,7 @@ function delete_frameworks($framework_id){
             $stmt->execute();
             
             // Update status
-            $stmt->execute();
+            //$stmt->execute();
 
             $message = "A framework was deleted for framework ID \"{$value}\" by username \"" . $_SESSION['user'] . "\".";
             write_log($value + 1000, $_SESSION['uid'], $message, "framework");
@@ -682,9 +841,12 @@ function delete_frameworks($framework_id){
         }
     });
 
+    // Close the database connection
+    db_close($db);
+
     return true;
 }
-
+*/
 /************************************
  * FUNCTION: UPDATE FRAMEWORK ORDER *
  ************************************/
@@ -723,12 +885,13 @@ function add_framework_control($control){
     $control_number = isset($control['control_number']) ? $control['control_number'] : "";
     $control_priority = isset($control['control_priority']) ? (int)$control['control_priority'] : 0;
     $family = isset($control['family']) ? (int)$control['family'] : 0;
+    $mitigation_percent = isset($control['mitigation_percent']) ? (int)$control['mitigation_percent'] : 0;
     
     // Open the database connection
     $db = db_open();
 
     // Create a framework
-    $stmt = $db->prepare("INSERT INTO `framework_controls` (`short_name`, `long_name`, `description`, `supplemental_guidance`, `framework_ids`, `control_owner`, `control_class`, `control_phase`, `control_number`, `control_priority`, `family`) VALUES (:short_name, :long_name, :description, :supplemental_guidance, :framework_ids, :control_owner, :control_class, :control_phase, :control_number, :control_priority, :family)");
+    $stmt = $db->prepare("INSERT INTO `framework_controls` (`short_name`, `long_name`, `description`, `supplemental_guidance`, `framework_ids`, `control_owner`, `control_class`, `control_phase`, `control_number`, `control_priority`, `family`, `mitigation_percent`) VALUES (:short_name, :long_name, :description, :supplemental_guidance, :framework_ids, :control_owner, :control_class, :control_phase, :control_number, :control_priority, :family, :mitigation_percent)");
     $stmt->bindParam(":short_name", $short_name, PDO::PARAM_STR, 100);
     $stmt->bindParam(":long_name", $long_name, PDO::PARAM_STR);
     $stmt->bindParam(":description", $description, PDO::PARAM_STR);
@@ -740,6 +903,7 @@ function add_framework_control($control){
     $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR);
     $stmt->bindParam(":control_priority", $control_priority, PDO::PARAM_INT);
     $stmt->bindParam(":family", $family, PDO::PARAM_INT);
+    $stmt->bindParam(":mitigation_percent", $mitigation_percent, PDO::PARAM_INT);
     $stmt->execute();
     
     $control_id = $db->lastInsertId();
@@ -747,7 +911,7 @@ function add_framework_control($control){
     // Close the database connection
     db_close($db);
 
-    $message = "A new control ID \"{$control_id}\" was submitted by username \"" . $_SESSION['user'] . "\".";
+    $message = "A new control named \"{$short_name}\" was created by username \"" . $_SESSION['user'] . "\".";
     write_log($control_id + 1000, $_SESSION['uid'], $message, "control");
     
     return $control_id;
@@ -768,11 +932,12 @@ function update_framework_control($control_id, $control){
     $control_number = isset($control['control_number']) ? $control['control_number'] : "";
     $control_priority = isset($control['control_priority']) ? (int)$control['control_priority'] : 0;
     $family = isset($control['family']) ? (int)$control['family'] : 0;
+    $mitigation_percent = isset($control['mitigation_percent']) ? (int)$control['mitigation_percent'] : 0;
 
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("UPDATE `framework_controls` SET `short_name`=:short_name, `long_name`=:long_name, `description`=:description, `supplemental_guidance`=:supplemental_guidance, `framework_ids`=:framework_ids, `control_owner`=:control_owner, `control_class`=:control_class, `control_phase`=:control_phase, `control_number`=:control_number, `control_priority`=:control_priority, `family`=:family WHERE id=:id;");
+    $stmt = $db->prepare("UPDATE `framework_controls` SET `short_name`=:short_name, `long_name`=:long_name, `description`=:description, `supplemental_guidance`=:supplemental_guidance, `framework_ids`=:framework_ids, `control_owner`=:control_owner, `control_class`=:control_class, `control_phase`=:control_phase, `control_number`=:control_number, `control_priority`=:control_priority, `family`=:family, `mitigation_percent`=:mitigation_percent WHERE id=:id;");
     $stmt->bindParam(":short_name", $short_name, PDO::PARAM_STR, 100);
     $stmt->bindParam(":long_name", $long_name, PDO::PARAM_STR);
     $stmt->bindParam(":description", $description, PDO::PARAM_STR);
@@ -784,13 +949,14 @@ function update_framework_control($control_id, $control){
     $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR);
     $stmt->bindParam(":control_priority", $control_priority, PDO::PARAM_INT);
     $stmt->bindParam(":family", $family, PDO::PARAM_INT);
+    $stmt->bindParam(":mitigation_percent", $mitigation_percent, PDO::PARAM_INT);
     $stmt->bindParam(":id", $control_id, PDO::PARAM_INT);
     $stmt->execute();
     
     // Close the database connection
     db_close($db);
 
-    $message = "A control was updated for control ID \"{$control_id}\" by username \"" . $_SESSION['user'] . "\".";
+    $message = "A control named \"{$short_name}\" was updated by username \"" . $_SESSION['user'] . "\".";
     write_log($control_id + 1000, $_SESSION['uid'], $message, "control");
     
     return true;
@@ -810,8 +976,10 @@ function delete_framework_control($control_id){
     
     // Close the database connection
     db_close($db);
+    
+    $control = get_framework_control($control_id);
 
-    $message = "A control was deleted for control ID \"{$control_id}\" by username \"" . $_SESSION['user'] . "\".";
+    $message = "A control named \"{$control['short_name']}\" was deleted by username \"" . $_SESSION['user'] . "\".";
     write_log($control_id + 1000, $_SESSION['uid'], $message, "control");
 }
 
@@ -823,7 +991,7 @@ function get_framework_control($id){
     $db = db_open();
 
     $stmt = $db->prepare("
-        SELECT t1.*, t2.name control_class_name, t3.name control_priority_name, t4.short_name family_short_name
+        SELECT t1.*, t2.name control_class_name, t3.name control_priority_name, t4.name family_short_name
         FROM `framework_controls` t1 
             LEFT JOIN `control_class` t2 on t1.control_class=t2.value
             LEFT JOIN `control_priority` t3 on t1.control_priority=t3.value
@@ -863,6 +1031,9 @@ function getAvailableControlClassList(){
 
     $results = $stmt->fetchAll();
     
+    // Close the database connection
+    db_close($db);
+
     return $results;
 }
 
@@ -888,6 +1059,9 @@ function getAvailableControlPhaseList(){
 
     $results = $stmt->fetchAll();
     
+    // Close the database connection
+    db_close($db);
+
     return $results;
 }
 
@@ -913,6 +1087,9 @@ function getAvailableControlOwnerList(){
 
     $results = $stmt->fetchAll();
     
+    // Close the database connection
+    db_close($db);
+
     return $results;
 }
 
@@ -938,6 +1115,9 @@ function getAvailableControlFamilyList(){
 
     $results = $stmt->fetchAll();
     
+    // Close the database connection
+    db_close($db);
+
     return $results;
 }
 
@@ -973,7 +1153,7 @@ function getAvailableControlFrameworkList(){
         $sql = "
             SELECT *
             FROM `frameworks` 
-            WHERE value in (". implode(",", $framework_ids) .");
+            WHERE value in (". implode(",", $framework_ids) .") AND `status`=1 ;
         ";
 
         // Get available framework list
@@ -992,6 +1172,9 @@ function getAvailableControlFrameworkList(){
         $result['description'] = try_decrypt($result['description']);
     }
     
+    // Close the database connection
+    db_close($db);
+
     return $results;
 }
 
@@ -1017,6 +1200,9 @@ function getAvailableControlPriorityList(){
 
     $results = $stmt->fetchAll();
     
+    // Close the database connection
+    db_close($db);
+
     return $results;
 }
 

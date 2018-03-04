@@ -19,7 +19,7 @@ header("X-Frame-Options: DENY");
 header("X-XSS-Protection: 1; mode=block");
 
 // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (CSP_ENABLED == "true")
+if (csp_enabled())
 {
     // Add the Content-Security-Policy header
     header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -51,6 +51,7 @@ session_check();
 // Check if access is authorized
 if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 {
+    set_unauthenticated_redirect();
     header("Location: ../index.php");
     exit(0);
 }
@@ -74,6 +75,12 @@ else
     exit(0);
 }
 
+// Process actions on questionnaire pages
+if(process_questionnaire_pending_risks()){
+    refresh();
+}
+
+
 ?>
 
 <!doctype html>
@@ -85,6 +92,8 @@ else
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/jquery.dataTables.js"></script>
     <script src="../js/pages/assessment.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/cve_lookup.js"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -109,6 +118,8 @@ else
         // Get any alerts
         get_alert();
     ?>
+    <!--<div id="load" style="display:none;"><img src="<?php echo $_SESSION['base_url']; ?>/images/loading.gif"></div>-->
+    <div id="load" style="display:none;"><?php echo $escaper->escapeHtml($lang['SendingPleaseWait']); ?></div>
     <div class="container-fluid">
         <div class="row-fluid">
             <div class="span3">

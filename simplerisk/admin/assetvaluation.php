@@ -18,7 +18,7 @@
         header("X-XSS-Protection: 1; mode=block");
 
         // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-        if (CSP_ENABLED == "true")
+        if (csp_enabled())
         {
                 // Add the Content-Security-Policy header
 		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -50,6 +50,7 @@
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
+		set_unauthenticated_redirect();
                 header("Location: ../index.php");
                 exit(0);
         }
@@ -211,32 +212,6 @@
         <div class="span9">
           <div class="row-fluid">
             <div class="span12">
-              <div class="hero-unit">
-                <form name="default" method="post" action="">
-                <h4><?php echo $escaper->escapeHtml($lang['DefaultValues']); ?>:</h4>
-                <table border="0" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td><?php echo $escaper->escapeHtml($lang['DefaultCurrencySymbol']); ?>:&nbsp;</td>
-                  <td><input type="text" name="currency" maxlength="3" value="<?php echo get_setting("currency"); ?>" /></td>
-                </tr>
-                <tr>
-                  <td><?php echo $escaper->escapeHtml($lang['DefaultAssetValuation']); ?>:&nbsp;</td>
-                  <td>
-                    <?php
-			// Get the default asset valuation
-			$default = get_default_asset_valuation();
-
-			// Create the asset valuation dropdown
-			create_asset_valuation_dropdown("value", $default);
-                    ?>
-                  </td>
-                </tr>
-                <tr>
-                  <td colspan="2"><input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_default_value" /></td>
-                </tr>
-                </table>
-                </form>
-              </div>
               <div class="hero-unit">
                 <form name="automatic" method="post" action="">
                 <h4><?php echo $escaper->escapeHtml($lang['AutomaticAssetValuation']); ?>:</h4>

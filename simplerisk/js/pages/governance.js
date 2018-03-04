@@ -58,6 +58,7 @@ jQuery(document).ready(function($){
                     $('[name=control_number]', modal).val(control.control_number);
                     $('[name=control_priority]', modal).val(Number(control.control_priority) ? control.control_priority : "");
                     $('[name=family]', modal).val(Number(control.family) ? control.family : "");
+                    $('[name=mitigation_percent]', modal).val(Number(control.mitigation_percent) ? control.mitigation_percent : "");
 
                     $(modal).modal('show');
                 }
@@ -65,7 +66,7 @@ jQuery(document).ready(function($){
           });
         }
     };
-
+       
 
     controlObject.init();
   
@@ -83,7 +84,7 @@ jQuery(document).ready(function($){
         pageLength: pageLength,
         dom : "flrti<'#view-all.view-all'>p",
         ajax: {
-            url: '/api/datatable/framework-controls',
+            url: BASE_URL + '/api/datatable/framework_controls',
             data: function(d){
                 d.control_class = $("#filter_by_control_class").val();
                 d.control_phase = $("#filter_by_control_phase").val();

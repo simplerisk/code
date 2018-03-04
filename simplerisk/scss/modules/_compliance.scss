@@ -34,20 +34,37 @@
     }
 }
 
+.white-background{
+    background-color: #fff !important;
+}
+
+.grey-background{
+    background-color: #ebe7e7 !important;
+}
+
 .red-background{
-    background: pink;
+    background-color: pink !important;
 }
 
 .green-background{
-    background: lightgreen;
+    background-color: lightgreen !important;
 }
 
-#active-audits.table.table-bordered{
-    td{
-/*        padding: 0px;*/
-        > div{
-/*            padding: 10px*/
+#active-audits, #past-audits{
+    .white-background{
+        background-color: #fff !important;
+    }
+
+    .grey-background{
+        background-color: #ebe7e7 !important;
         }
+
+    .red-background{
+        background-color: pink !important;
+    }
+
+    .green-background{
+        background-color: lightgreen !important;
     }
 }
 

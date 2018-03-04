@@ -18,7 +18,7 @@
     header("X-XSS-Protection: 1; mode=block");
 
     // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-    if (CSP_ENABLED == "true")
+    if (csp_enabled())
     {
         // Add the Content-Security-Policy header
 	    header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -50,6 +50,7 @@
     // Check if access is authorized
     if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
     {
+	set_unauthenticated_redirect();
         header("Location: ../index.php");
         exit(0);
     }
@@ -748,6 +749,62 @@
         }
     }
     
+    // Check if a new test status was submitted
+    if (isset($_POST['add_test_status']))
+    {
+        $name = $_POST['new_status'];
+
+        // Insert a new test status up to 50hars
+        add_name("test_status", $name, 50);
+
+        // Display an alert
+        set_alert(true, "good", "A new test status was added successfully.");
+    }
+    
+    // Check if the test status update was submitted
+    if (isset($_POST['update_test_status']))
+    {
+        $new_name = $_POST['new_name'];
+        $value = (int)$_POST['update_value'];
+
+        // Verify value is an integer
+        if ($value)
+        {
+            update_table("test_status", $new_name, $value);
+
+            // Display an alert
+            set_alert(true, "good", "The test status was updated successfully.");
+        }else{
+            // Display an alert
+            set_alert(true, "bad", "You must should select a valid test status.");
+        }
+    }
+
+    // Check if a control priority was deleted
+    if (isset($_POST['delete_test_status']))
+    {
+        $value = (int)$_POST['test_status'];
+
+        // Verify value is an integer
+        if (is_int($value))
+        {
+            $closed_audit_status = get_setting("closed_audit_status");
+            // If Closed status
+            if($value == $closed_audit_status)
+            {
+                // Display an alert
+                set_alert(true, "bad", $escaper->escapeHtml($lang['TheClosedStatusCantBeDeleted']));
+            }
+            // If status is not Closed
+            else
+            {
+                delete_value("test_status", $value);
+
+                // Display an alert
+                set_alert(true, "good", $escaper->escapeHtml($lang['AuditStatusDeleted']));
+            }
+        }
+    }
 ?>
 
 <!doctype html>
@@ -933,6 +990,16 @@
                                         <?php echo $escaper->escapeHtml($lang['AddNewControlFamilyNamed']); ?>: <input name="new_family" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_family" /><br />
                                         <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("family", NULL, "update_value"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_family" /><br />
                                         <?php echo $escaper->escapeHtml($lang['DeleteCurrentControlFamilyNamed']); ?> <?php create_dropdown("family"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_family" />
+                                    </p>
+                                </form>
+                            </div>
+                            <div class="hero-unit">
+                                <form name="test_status_form" method="post" action="">
+                                    <p>
+                                        <h4><?php echo $escaper->escapeHtml($lang['AuditStatus']); ?>:</h4>
+                                        <?php echo $escaper->escapeHtml($lang['AddNewStatusNamed']); ?>: <input name="new_status" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_test_status" /><br />
+                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("test_status", NULL, "update_value"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_test_status" /><br />
+                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentStatusNamed']); ?> <?php create_dropdown("test_status"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_test_status" />
                                     </p>
                                 </form>
                             </div>

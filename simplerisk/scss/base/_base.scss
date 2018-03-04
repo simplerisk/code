@@ -83,7 +83,8 @@ ul.ui-autocomplete {
     &.popup-ui-complete{
         width: 50% !important;
         color: #fff;
-        background: transparent;
+        background: #1a1b1a;
+        border: 1px solid #1a1b1a;
     }
 }
 
@@ -106,4 +107,11 @@ ul.ui-autocomplete {
     width: 1px;
 }
 
+ul.multiselect-container{
+    li{
+        label{
+            white-space: initial;
+        }
+    }
+}
 

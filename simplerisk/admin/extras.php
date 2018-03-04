@@ -18,7 +18,7 @@
         header("X-XSS-Protection: 1; mode=block");
 
         // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-        if (CSP_ENABLED == "true")
+        if (csp_enabled())
         {
                 // Add the Content-Security-Policy header
 		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -50,6 +50,7 @@
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
+		set_unauthenticated_redirect();
                 header("Location: ../index.php");
                 exit(0);
         }
@@ -116,20 +117,32 @@
                   <td width="60px"><?php echo (api_extra() ? '<a href="api.php">Yes</a>' : '<a href="api.php">No</a>'); ?></td>
                 </tr>
                 <tr>
+                  <td width="155px"><b>ComplianceForge DSP</b></td>
+                  <td>Adds the controls from the <a href="https://www.complianceforge.com/digital-security-program-dsp/" target="_blank">ComplianceForge Digital Security Program (DSP)</a> into SimpleRisk for use with our Governance functionality.</td>
+                  <td width="60px"><?php echo (complianceforge_extra() ? '<a href="complianceforge.php">Yes</a>' : '<a href="complianceforge.php">No</a>'); ?></td>
+                </tr>
+                <tr>
                   <td width="155px"><b>Custom Authentication</b></td>
                   <td>Provides support for Active Directory Authentication, SAML/Single Sign-On and Duo Security multi-factor authentication.</td>
                   <td width="60px"><?php echo (custom_authentication_extra() ? '<a href="authentication.php">Yes</a>' : '<a href="authentication.php">No</a>'); ?></td>
+                </tr>
+                <tr>
+                  <td width="155px"><b>Customization</b></td>
+                  <td>Enables the ability to add and remove different types of fields and dynamically create page templates.</td>
+                  <td width="60px"><?php echo (customization_extra() ? '<a href="customization.php">Yes</a>' : '<a href="customization.php">No</a>'); ?></td>
                 </tr>
                 <tr>
                   <td width="155px"><b>Encrypted Database</b></td>
                   <td>Encryption of sensitive text fields in the database.</td>
                   <td width="60px"><?php echo (encryption_extra() ? '<a href="encryption.php">Yes</a>' : '<a href="encryption.php">No</a>'); ?></td>
                 </tr>
+		<!--
                 <tr>
                   <td width="155px"><b>Governance</b></td>
                   <td>TBD</td>
                   <td width="60px"><?php echo (governance_extra() ? '<a href="governance.php">Yes</a>' : '<a href="governance.php">No</a>'); ?></td>
                 </tr>
+		-->
                 <tr>
                   <td width="155px"><b>Import / Export</b></td>
                   <td>Enables the import and export of CSV files containing risk information.</td>

@@ -103,7 +103,7 @@ $(document).ready(function(){
     /**
     * Change Event of Risk Scoring Method
     */
-    $("body").on("change", "[name='scoring_method[]']", function(){
+    $("body").on("change", ".risk-scoring-container .scoring-method, [name='scoring_method[]']", function(){
         var parents = $(this).parents(".risk-scoring-container");
         handleSelection($(this).val(), parents);
     })

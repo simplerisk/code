@@ -16,7 +16,7 @@
     header("X-XSS-Protection: 1; mode=block");
 
     // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-    if (CSP_ENABLED == "true")
+    if (csp_enabled())
     {
         // Add the Content-Security-Policy header
         header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
@@ -69,8 +69,9 @@
         getRoute()->get('/admin/users/all', 'allusers');
         getRoute()->get('/admin/users/enabled', 'enabledusers');
         getRoute()->get('/admin/users/disabled', 'disabledusers');
-        getRoute()->post('/admin/fields/add', 'addCustomField');
-        getRoute()->post('/admin/fields/delete', 'deleteCustomField');
+        getRoute()->post('/admin/fields/add', 'customization_addCustomField');
+        getRoute()->post('/admin/fields/delete', 'customization_deleteCustomField');
+        getRoute()->get('/admin/fields/get', 'customization_getCustomField');
         getRoute()->get('/reports', 'show_reports');
         getRoute()->get('/reports/dynamic', 'dynamicrisk');
         getRoute()->get('/risk_levels', 'risk_levels');
@@ -104,8 +105,8 @@
         getRoute()->post('/management/impportexport/deleteMapping', 'deleteMapping');
         getRoute()->post('/assessment/update', 'updateAssessment');
 
-        getRoute()->get('/datatable/framework-controls', 'getFrameworkControlsDatatable');
-        getRoute()->get('/mitigation_controls', 'getMitigationControls');
+        getRoute()->get('/datatable/framework_controls', 'getFrameworkControlsDatatable');
+        getRoute()->get('/datatable/mitigation_controls', 'getMitigationControlsDatatable');
         
         /******************** Governance and Compliance API **********************/
         getRoute()->get('/governance/frameworks', 'getFrameworksResponse');
@@ -126,11 +127,14 @@
     
         /***************************** Assessment API *********************************/
         getRoute()->get('/assessment/contacts', 'assessment_extra_getAssessmentContacts');
+        getRoute()->post('/assessment/questionnaire/copy', 'assessment_extra_copyQuestionnaireAPI');
         getRoute()->get('/assessment/questionnaire_questions', 'assessment_extra_getAssessmentQuestionnaireQuestions');
         getRoute()->get('/assessment/questionnaire/template/dynamic', 'assessment_extra_questionnaireTemplateDynamicAPI');
         getRoute()->get('/assessment/questionnaire/dynamic', 'assessment_extra_questionnaireDynamicAPI');
         getRoute()->get('/assessment/questionnaire/results/dynamic', 'assessment_extra_questionnaireResultsDynamicAPI');
         getRoute()->post('/assessment/questionnaire/save_result_comment', 'assessment_extra_saveQuestionnaireResultCommentAPI');
+        getRoute()->post('/assessment/questionnaire/pending_risks', 'assessment_extra_createRisksFromQuestionnairePendingRisksAPI');
+        getRoute()->get('/assessment/questionnaire/template_questions/dynamic', 'assessment_extra_questionnaireTemplateQuestionsDynamicAPI');
         /******************************************************************************/
         
         // Return scoring histories

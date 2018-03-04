@@ -217,7 +217,7 @@ function get_custom_table($type)
     // If we want a family table
     else if ($type == "family")
     {
-        $stmt = $db->prepare("SELECT value, short_name as name FROM family ORDER BY short_name");
+        $stmt = $db->prepare("SELECT value, name as name FROM family ORDER BY name");
     }
     // If we want a frameworks table
     else if ($type == "frameworks")
@@ -490,7 +490,7 @@ function create_stakeholder_dropdown($selected = "", $name="additional_stakehold
 /*****************************
  * FUNCTION: CREATE DROPDOWN *
  *****************************/
-function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false, $customHtml="", $blankText="--")
+function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false, $customHtml="", $blankText="--", $blankValue="")
 {
 
     global $escaper;
@@ -508,14 +508,8 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
     }
     else $str .= "<select {$customHtml} id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
 
-    // If the blank is true
-    if ($blank == true)
-    {
-        $str .= "    <option value=\"\">". $blankText ."</option>\n";
-    }
-
     // If we want a table that should be ordered by name instead of value
-    if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation" || $name == "projects" || $name == "file_types" || $name == "planning_strategy" || $name == "close_reason" || $name == "status" || $name == "source" || $name == "import_export_mappings")
+    if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation" || $name == "projects" || $name == "file_types" || $name == "planning_strategy" || $name == "close_reason" || $name == "status" || $name == "source" || $name == "import_export_mappings" || $name == "test_status")
     {
 
         $options = get_table_ordered_by_name($name);
@@ -551,6 +545,12 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
         $options = get_table($name);
     }
 
+    // If the blank is true
+    if ($blank == true)
+    {
+        array_unshift($options, ["value"=>$blankValue, "name"=>$blankText]);
+    }
+
     // Sort options array
     if($name == "parent_frameworks"){
         uasort($options, function($a, $b){
@@ -562,7 +562,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
     foreach ($options as &$option)
     {
         // If the option is selected
-        if ($selected == $option['value'] || (!$selected && !$option['value']))
+        if ($selected == $option['value'] || (!$selected && !$option['value'] && $option['value'] != 0) || $selected=='all')
         {
             $text = " selected";
         }
@@ -584,7 +584,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 /**************************************
  * FUNCTION: CREATE MULTIPLE DROPDOWN *
  **************************************/
-function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $options = NULL)
+function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $options = NULL, $blank = false, $blankText="--", $blankValue="")
 {
     global $lang;
     global $escaper;
@@ -597,10 +597,6 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $opti
         echo "<select multiple=\"multiple\" id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";   
     }
 
-// Create all or none options
-//echo "    <option value=\"all\">" . $escaper->escapeHtml($lang['ALL']) . "</option>\n";
-//echo "    <option value=\"none\">" . $escaper->escapeHtml($lang['NONE']) . "</option>\n";
-
     // Get the list of options
     if($options === NULL){
         if($name == "frameworks"){
@@ -612,6 +608,12 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $opti
         else{
             $options = get_table($name);
         }
+    }
+    
+    // If the blank is true
+    if ($blank == true)
+    {
+        array_unshift($options, ["value"=>$blankValue, "name"=>$blankText]);
     }
 
     // For each option
@@ -1116,11 +1118,14 @@ function update_setting($name, $value)
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         default:
+            $risk_id = 1000;
+            $message = "A setting value named \"".$name."\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
             break;
     }
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 }
 
 /****************************
@@ -2619,8 +2624,9 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     
     $planning_date              = isset($post['planning_date']) ? $post['planning_date'] : "";
     $mitigation_date            = isset($post['mitigation_date']) ? $post['mitigation_date'] : date('Y-m-d H:i:s');
-    $mitigation_percent         = isset($post['mitigation_percent']) ? $post['mitigation_percent'] : "";
-    $mitigation_controls        = isset($post['mitigation_controls']) ? $post['mitigation_controls'] : "";
+    $mitigation_percent         = (isset($post['mitigation_percent']) && $post['mitigation_percent'] >= 0 && $post['mitigation_percent'] <= 100) ? $post['mitigation_percent'] : "";
+    $mitigation_controls        = empty($post['mitigation_controls']) ? [] : $post['mitigation_controls'];
+    $mitigation_controls        = is_array($mitigation_controls) ? implode(",", $mitigation_controls) : $mitigation_controls;
 
     if (!validate_date($planning_date, 'm/d/Y'))
     {
@@ -2965,9 +2971,6 @@ function update_risk($risk_id, $is_api = false)
         delete_db_file($file);
       }
     }
-//    if(!empty($_POST['unique_names'])){
-//        refresh_files_for_risk($_POST['unique_names'], $id, 1);
-//    }
     $unique_names = empty($_POST['unique_names']) ? "" : $_POST['unique_names'];
     refresh_files_for_risk($unique_names, $id, 1);
         
@@ -3015,6 +3018,50 @@ function update_risk($risk_id, $is_api = false)
     return $success;
 }
 
+/*************************************
+ * FUNCTION: GET RESIDUAL RISK SCORE *
+ *************************************/
+function get_residual_risk_score($risk_id, $calculated_risk, $risk_mitigation_percent)
+{
+    // Get mitigation by Risk ID
+    $mitigation = get_mitigation_by_id($risk_id);
+    
+    if(!empty($mitigation[0]['mitigation_controls']))
+    {
+        $control_ids = $mitigation[0]['mitigation_controls'];
+    }
+    else
+    {
+        $control_ids = '-1';
+    }
+    
+    // Open the database connection
+    $db = db_open();
+
+    // Subtract 1000 from the id
+    $risk_id = $risk_id - 1000;
+
+    // Query the database
+    $stmt = $db->prepare("SELECT MAX(mitigation_percent) mitigation_percent FROM `framework_controls` WHERE FIND_IN_SET(id, '{$control_ids}')");
+    
+    $stmt->execute();
+
+    // Get framework controls
+    $array = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+    
+    // Max mitigation percent of controls
+    $control_mitigation_percent = (int)$array['mitigation_percent'];
+    
+    $mitigation_percent = max($risk_mitigation_percent, $control_mitigation_percent);
+    
+    $residual_risk = round($calculated_risk * (100-$mitigation_percent) / 100, 2);
+    
+    return $residual_risk;
+}
+
 /*********************************
  * FUNCTION: UPDATE RISK SUBJECT *
  *********************************/
@@ -3040,7 +3087,7 @@ function update_risk_subject($risk_id, $subject)
     $message = "Risk subject was updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
     write_log($risk_id, $_SESSION['uid'], $message);
 
-// Close the database connection
+    // Close the database connection
     db_close($db);
 
     // If notification is enabled
@@ -3089,6 +3136,32 @@ function check_risk_by_id($id){
     }else{
         return false;
     }
+}
+
+/************************************
+ * FUNCTION: CHECK RISK ID IS VALID *
+ ************************************/
+function check_risk_id($id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Subtract 1000 from the id
+    $id = $id - 1000;
+
+    // Query the database
+    $stmt = $db->prepare("SELECT a.* FROM risks a WHERE a.id=:id;");
+
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll();
+
+    // Close the database connection
+    db_close($db);
+    
+    return $array ? true : false;
 }
 
 /****************************
@@ -3994,7 +4067,17 @@ function get_risks_count($sort_order)
 function get_risk_for_project($project_id)
 {
         $db = db_open();
-        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" AND b.project_id = $project_id ORDER BY calculated_risk DESC");
+
+        // If we want to get all risks
+        if (get_setting('plan_projects_show_all') == 1)
+        {
+		$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != 'Closed' AND b.project_id = 0 ORDER BY calculated_risk DESC;");
+        }
+	// If we only want to get risks reviewed as consider for project
+        else
+        {
+		$stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" AND b.project_id = $project_id ORDER BY calculated_risk DESC");
+        }
         $stmt->execute();
 
         // Store the list in the array
@@ -4021,7 +4104,16 @@ function get_risk_for_project($project_id)
 function get_risk_count ($project_id)
 {
         $db = db_open();
-        $stmt = $db->prepare("SELECT count(b.id) as count FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" AND b.project_id = $project_id ORDER BY calculated_risk DESC");
+        // If we want to get all risks
+        if (get_setting('plan_projects_show_all') == 1)
+        {
+		$stmt = $db->prepare("SELECT count(b.id) as count FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != \"Closed\" AND b.project_id = $project_id ORDER BY calculated_risk DESC");
+        }
+        // If we only want to get risks reviewed as consider for project
+        else
+        {
+		$stmt = $db->prepare("SELECT count(b.id) as count FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" AND b.project_id = $project_id ORDER BY calculated_risk DESC");
+        }
         $stmt->execute();
 
         // Store the list in the array
@@ -6637,7 +6729,7 @@ function get_next_review_default($risk_id){
 /**********************************
  * FUNCTION: GET NEXT REVIEW DATE *
  **********************************/
-function next_review($risk_level, $risk_id, $next_review, $html = true, $review_levels = array(), $submission_date = false)
+function next_review($risk_level, $id, $next_review, $html = true, $review_levels = array(), $submission_date = false)
 {
     global $lang;
     global $escaper;
@@ -6655,7 +6747,7 @@ function next_review($risk_level, $risk_id, $next_review, $html = true, $review_
         {
             // Get the last review for this risk
             if($submission_date === false){
-                $last_review = get_last_review($risk_id);
+                $last_review = get_last_review($id);
             }else{
                 $last_review = $submission_date;
             }
@@ -6719,6 +6811,9 @@ function next_review($risk_level, $risk_id, $next_review, $html = true, $review_
     // If we want to include the HTML code
     if ($html == true)
     {
+	// Convert the database ID to a risk ID
+	$risk_id = convert_id($id);
+
         // Add the href tag to make it HTML
         $html = "<a href=\"../management/mgmt_review.php?id=" . $escaper->escapeHtml($risk_id) . "\">" . $escaper->escapeHtml($text) . "</a>";
 
@@ -7095,8 +7190,9 @@ function update_mitigation($risk_id, $post)
     $security_requirements      = try_encrypt($post['security_requirements']);
     $security_recommendations   = try_encrypt($post['security_recommendations']);
     $planning_date      = $post['planning_date'];
-    $mitigation_percent = $post['mitigation_percent'];
-    $mitigation_controls = $post['mitigation_controls'];
+    $mitigation_percent = (isset($post['mitigation_percent']) && $post['mitigation_percent'] >= 0 && $post['mitigation_percent'] <= 100) ? $post['mitigation_percent'] : 0;
+    $mitigation_controls = empty($post['mitigation_controls']) ? [] : $post['mitigation_controls'];
+    $mitigation_controls = is_array($mitigation_controls) ? implode(",", $mitigation_controls) : $mitigation_controls;
     
     if (!validate_date($planning_date, 'm/d/Y'))
     {
@@ -7466,20 +7562,44 @@ function get_announcements()
  ***************************/
 function language_file()
 {
-    // If the language is set for the user
-    if (isset($_SESSION['lang']))
-    {
-        // Use the users language
-        return realpath(__DIR__ . '/../languages/' . $_SESSION['lang'] . '/lang.' . $_SESSION['lang'] . '.php');
+	// If the language is set for the user
+	if (isset($_SESSION['lang']))
+	{
+		// Use the users language
+		return realpath(__DIR__ . '/../languages/' . $_SESSION['lang'] . '/lang.' . $_SESSION['lang'] . '.php');
+	}
+	else
+	{
+                // Set the default language to null
+                $default_language = null;
+
+                // Try connecting to the database
+                try
+                {
+                        $db = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+                }
+                catch (PDOException $e)
+                {
+                        $default_language = "en";
+                }
+
+                // If we can connect to the database
+                if (is_null($default_language))
+                {
+                        // Get the default language
+                        $default_language = get_setting("default_language");
+                        if (!$default_language) $default_language = "en";
+                }
+
+		// If the default language is set
+		if ($default_language != false)
+		{
+			// Use the default language
+			return realpath(__DIR__ . '/../languages/' . $default_language . '/lang.' . $default_language . '.php');
+		}
+		// Otherwise, use english
+		else return realpath(__DIR__ . '/../languages/en/lang.en.php');
     }
-    // If the default language is defined in the config file
-    else if (defined('LANG_DEFAULT'))
-    {
-        // Use the default language
-        return realpath(__DIR__ . '/../languages/' . LANG_DEFAULT . '/lang.' . LANG_DEFAULT . '.php');
-    }
-    // Otherwise, use english
-    else return realpath(__DIR__ . '/../languages/en/lang.en.php');
 }
 
 /*****************************************
@@ -7492,6 +7612,37 @@ function custom_authentication_extra()
 
     // See if the custom authentication extra is available
         $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'custom_auth'");
+        $stmt->execute();
+
+        // Get the results array
+        $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        // If no value was found
+        if (empty($array))
+        {
+                return false;
+        }
+        // If the value is true
+        else if ($array[0]['value'] == "true")
+        {
+                return true;
+        }
+        else return false;
+}
+
+/*********************************
+ * FUNCTION: CUSTOMIZATION EXTRA *
+ *********************************/
+function customization_extra()
+{
+        // Open the database connection
+        $db = db_open();
+
+	// See if the customization extra is available
+        $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'customization'");
         $stmt->execute();
 
         // Get the results array
@@ -7533,8 +7684,8 @@ function get_settting_by_name($name){
     // If the array is empty
     if (empty($array))
     {
-            // Return false
-            return false;
+        // Return false
+        return false;
     }
     else return $array[0]['value'];
 }
@@ -7672,6 +7823,37 @@ function assessments_extra()
 
     // See if the assessments extra is available
     $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'assessments'");
+    $stmt->execute();
+
+    // Get the results array
+    $array = $stmt->fetchAll();
+
+    // Close the database connection
+    db_close($db);
+
+    // If no value was found
+    if (empty($array))
+    {
+        return false;
+    }
+    // If the value is true
+    else if ($array[0]['value'] == "true")
+    {
+        return true;
+    }
+    else return false;
+}
+
+/***********************************
+ * FUNCTION: COMPLIANCEFORGE EXTRA *
+ ***********************************/
+function complianceforge_extra()
+{
+    // Open the database connection
+    $db = db_open();
+
+    // See if the complianceforge extra is available
+    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'complianceforge'");
     $stmt->execute();
 
     // Get the results array
@@ -8069,7 +8251,7 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
             // For each entry in the array
             foreach ($array as $file)
             {
-                echo "<div class =\"doc-link edit-mode\"><a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" target=\"_blank\" >" . $escaper->escapeHtml($file['name']) . "</a></div>\n";
+                echo "<div class =\"doc-link edit-mode\"><a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" >" . $escaper->escapeHtml($file['name']) . "</a></div>\n";
             }
         }
 
@@ -8324,11 +8506,14 @@ function incomplete_project($project_id)
  *****************************/
 function write_debug_log($value)
 {
+    // Get the current debug setting
+    $debug_logging = get_setting("debug_logging");
+
     // If DEBUG is enabled
-    if (DEBUG == "true")
+    if ($debug_logging == 1)
     {
         // Log file to write to
-        $log_file = DEBUG_FILE;
+        $log_file = get_setting("debug_log_file");
 
         // Write to the error log
         $return = error_log(date('c')." ".$value."\n", 3, $log_file);
@@ -8618,9 +8803,66 @@ function registration_redirect()
             // Otherwise
             else
             {
+                // If a specific url was requested before authentication
+                if (isset($_SESSION['requested_url']))
+                {
+                    // Set the requested URL
+                    $requested_url = $_SESSION['requested_url'];
+
+                    // Clear the session variable
+                    unset($_SESSION['requested_url']);
+
+                    // Redirect to the requested location
+                    header("Location: " . $requested_url);
+                    exit(0);
+                }
+                // Otherwise
+                else
+                {
+                    // Redirect to the reports index
+                    header("Location: reports");
+                }
+            }
+        }
+        // Otherwise
+        else
+        {
+            // If a specific url was requested before authentication
+            if (isset($_SESSION['requested_url']))
+            {
+                // Set the requested URL
+                $requested_url = $_SESSION['requested_url'];
+
+                // Clear the session variable
+                unset($_SESSION['requested_url']);
+
+                // Redirect to the requested location
+                header("Location: " . $requested_url);
+                exit(0);
+            }
+            // Otherwise
+            else
+            {
                 // Redirect to the reports index
                 header("Location: reports");
             }
+        }
+    }
+    // Otherwise
+    else
+    {
+        // If a specific url was requested before authentication
+        if (isset($_SESSION['requested_url']))
+        {
+            // Set the requested URL
+            $requested_url = $_SESSION['requested_url'];
+
+            // Clear the session variable
+            unset($_SESSION['requested_url']);
+
+            // Redirect to the requested location
+            header("Location: " . $requested_url);
+            exit(0);
         }
         // Otherwise
         else
@@ -8628,12 +8870,6 @@ function registration_redirect()
             // Redirect to the reports index
             header("Location: reports");
         }
-    }
-    // Otherwise
-    else
-    {
-        // Redirect to the reports index
-        header("Location: reports");
     }
 }
 
@@ -9481,7 +9717,7 @@ function add_family($short_name){
     $db = db_open();
 
     // Get the risk levels
-    $stmt = $db->prepare("INSERT INTO `family` (`short_name`) VALUES (:short_name)");
+    $stmt = $db->prepare("INSERT INTO `family` (`name`) VALUES (:short_name)");
     $stmt->bindParam(":short_name", $short_name, PDO::PARAM_STR, 20);
     $stmt->execute();
     $insertedId = $db->lastInsertId();
@@ -9508,7 +9744,7 @@ function update_family($value, $short_name){
     $db = db_open();
 
     // Get the risk levels
-    $stmt = $db->prepare("UPDATE `family` SET `short_name`=:short_name WHERE value=:value;");
+    $stmt = $db->prepare("UPDATE `family` SET `name`=:short_name WHERE value=:value;");
     $stmt->bindParam(":short_name", $short_name, PDO::PARAM_STR, 20);
     $stmt->bindParam(":value", $value, PDO::PARAM_INT);
     $stmt->execute();
@@ -9648,6 +9884,290 @@ function windows_delete_file($file)
 
 	// Return the results
 	return $success;
+}
+
+/***************************
+ * FUNCTION: TIMEZONE LIST *
+ ***************************/
+function timezone_list()
+{
+    static $timezones = null;
+
+    if ($timezones === null) {
+        $timezones = [];
+        $offsets = [];
+        $now = new DateTime('now', new DateTimeZone('UTC'));
+
+        foreach (DateTimeZone::listIdentifiers() as $timezone) {
+            $now->setTimezone(new DateTimeZone($timezone));
+            $offsets[] = $offset = $now->getOffset();
+            $timezones[$timezone] = '(' . format_UTC_offset($offset) . ') ' . format_timezone_name($timezone);
+        }
+
+        array_multisort($offsets, $timezones);
+    }
+
+    return $timezones;
+}
+
+/*******************************
+ * FUNCTION: FORMAT UTC OFFSET *
+ *******************************/
+function format_UTC_offset($offset)
+{
+    $hours = intval($offset / 3600);
+    $minutes = abs(intval($offset % 3600 / 60));
+    return 'UTC' . ($offset ? sprintf('%+03d:%02d', $hours, $minutes) : '');
+}
+
+/**********************************
+ * FUNCTION: FORMAT TIMEZONE NAME *
+ **********************************/
+function format_timezone_name($name)
+{
+    //$name = str_replace('/', ', ', $name);
+    $name = str_replace('_', ' ', $name);
+    $name = str_replace('St ', 'St. ', $name);
+    return $name;
+}
+
+/***********************************************
+ * FUNCTION: SET SESSION LAST ACTIVITY TIMEOUT *
+ ***********************************************/
+function set_session_last_activity_timeout()
+{
+        // Get the setting for the session activity timeout
+        $session_activity_timeout = get_setting("session_activity_timeout");
+
+        // If the setting doesn't exist
+        if (!$session_activity_timeout)
+        {
+                // Set the session activity timeout to the value in the config file
+                $session_activity_timeout = LAST_ACTIVITY_TIMEOUT;
+
+                // If the session activity timeout isn't null
+                if ($session_activity_timeout != null)
+                {
+                        // Add the value to the settings table
+                        add_setting("session_activity_timeout", $session_activity_timeout);
+                }
+                // Otherwise
+                else
+                {
+                        // Set the session activity timeout to a default of 3600 (1 hour)
+                        add_setting("session_activity_timeout", "3600");
+                }
+        }
+}
+
+/**********************************************
+ * FUNCTION: SET SESSION RENEGOTIATION PERIOD *
+ **********************************************/
+function set_session_renegotiation_period()
+{
+        // Get the setting for the session renegotiation period
+        $session_renegotiation_period = get_setting("session_renegotiation_period");
+
+        // If the setting doesn't exist
+        if (!$session_renegotiation_period)
+        {
+                // Set the session renegotiation period to the value in the config file
+                $session_renegotiation_period = SESSION_RENEG_TIMEOUT;
+
+                // If the session renegotiation period isn't null
+                if ($session_renegotiation_period != null)
+                {
+                        // Add the value to the settings table
+                        add_setting("session_renegotiation_period", $session_renegotiation_period);
+                }
+                // Otherwise
+                else
+                {
+                        // Set the session renegotiation period to a default of 600 (10 minutes)
+                        add_setting("session_renegotiation_period", "600");
+                }
+        }
+}
+
+/*************************
+ * FUNCTION: CSP ENABLED *
+ *************************/
+function csp_enabled()
+{
+	// Get the setting for the content security policy
+	$content_security_policy = get_setting("content_security_policy");
+
+	// If the content security policy is enabled
+	if ($content_security_policy == 1)
+	{
+		// Return true
+		return true;
+	}
+	// Otherwise, return false
+	else return false;
+}
+
+/*****************************************
+ * FUNCTION: SET CONTENT SECURITY POLICY *
+ *****************************************/
+function set_content_security_policy()
+{
+        // Get the setting for the content security policy
+        $content_security_policy = get_setting("content_security_policy");
+
+        // If the setting doesn't exist
+        if (!$content_security_policy)
+        {
+                // Set the content security policy to the value in the config file
+                $content_security_policy = CSP_ENABLED;
+
+                // If the content security policy isn't null
+                if ($content_security_policy != null)
+                {
+                        // Set the content security policy to 1 if true and 0 if not
+                        $content_security_policy = ($content_security_policy == "true") ? 1 : 0;
+
+                        // Add the value to the settings table
+                        add_setting("content_security_policy", $content_security_policy);
+                }
+                // Otherwise
+                else
+                {
+                        // Set the content security policy to false
+                        add_setting("content_security_policy", "0");
+                }
+        }
+}
+
+/*******************************
+ * FUNCTION: SET DEBUG LOGGING *
+ *******************************/
+function set_debug_logging()
+{
+        // Get the setting for the debug logging
+        $debug_logging = get_setting("debug_logging");
+
+        // If the setting doesn't exist
+        if (!$debug_logging)
+        {
+                // Set the debug logging to the value in the config file
+                $debug_logging = DEBUG;
+
+                // If the debug logging isn't null
+                if ($debug_logging != null)
+                {
+                        // Set the debug logging to 1 if true and 0 if not
+                        $debug_logging = ($debug_logging == "true") ? 1 : 0;
+
+                        // Add the value to the settings table
+                        add_setting("debug_logging", $debug_logging);
+                }
+                // Otherwise
+                else
+                {
+                        // Set the debug logging to false
+                        add_setting("debug_logging", "0");
+                }
+        }
+}
+
+/********************************
+ * FUNCTION: SET DEBUG LOG FILE *
+ ********************************/
+function set_debug_log_file()
+{
+        // Get the setting for the debug log file
+        $debug_log_file = get_setting("debug_log_file");
+
+        // If the setting doesn't exist
+        if (!$debug_log_file)
+        {
+                // Set the debug log file to the value in the config file
+                $debug_log_file = DEBUG_FILE;
+
+                // If the debug log file isn't null
+                if ($debug_log_file != null)
+                {
+                        // Add the value to the settings table
+                        add_setting("debug_log_file", $debug_log_file);
+                }
+                // Otherwise
+                else
+                {
+                        // Set the debug log file to /tmp/debug_log
+                        add_setting("debug_log_file", "/tmp/debug_log");
+                }
+        }
+}
+
+/**********************************
+ * FUNCTION: SET DEFAULT LANGUAGE *
+ **********************************/
+function set_default_language()
+{
+        // Get the setting for the default language
+        $default_language = get_setting("default_language");
+
+        // If the setting doesn't exist
+        if (!$default_language)
+        {
+                // Set the default language to the value in the config file
+                $default_language = LANG_DEFAULT;
+
+                // If the default language isn't null
+                if ($default_language != null)
+                {
+                        // Add the value to the settings table
+                        add_setting("default_language", $default_language);
+                }
+                // Otherwise
+                else
+                {
+                        // Set the default language to english
+                        add_setting("default_language", "en");
+                }
+        }
+}
+
+/*********************************
+ * FUNCTION: SET DEFAULT TIMEONE *
+ *********************************/
+function set_default_timezone()
+{
+        // Get the setting for the default timezone
+        $default_timezone = get_setting("default_timezone");
+
+        // If the setting doesn't exist
+        if (!$default_timezone)
+        {
+                // Set the default timezone to the value currently set
+                $default_timezone = date_default_timezone_get();
+
+                // If the default timezone isn't null
+                if ($default_timezone != null)
+                {
+                        // Add the value to the settings table
+                        add_setting("default_timezone", $default_timezone);
+                }
+                // Otherwise
+                else
+                {
+                        // Set the default timezone to America/Chicago
+                        add_setting("default_timezone", "America/Chicago");
+                }
+        }
+}
+
+/******************************************
+ * FUNCTION: SET UNAUTHENTICATED REDIRECT *
+ ******************************************/
+function set_unauthenticated_redirect()
+{
+	// Get the requested URL
+	$requested_url = get_current_url();
+
+	// Store it in the session
+	$_SESSION['requested_url'] = $requested_url;
 }
 
 ?>
