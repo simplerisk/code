@@ -880,6 +880,7 @@ $lang = array(
     'AuditsDueSoon' => 'Audits Due Soon',
     'DateDue' => 'Date Due',
     'ShowAllRisksForPlanProjects' => 'Show all risks for planned projects instead of only those reviewed as "Consider for Project"',
+    'WarnUploadSize' => 'Warning: the current file size limit is larger than PHP allows to be uploaded. Check the upload_max_filesize and post_max_size configuration variables in your php.ini',
     '' => '',
 );
 
