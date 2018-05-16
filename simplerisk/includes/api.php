@@ -657,7 +657,7 @@ function dynamicriskForm()
         $orderDir = $_POST['order'][0]['dir'];
         $orderColumnName = $_POST['columns'][$orderColumnIndex]['name'];
         $sorted = false;
-        if($orderColumnName == "calculated_risk" || $orderColumnName == "id"){
+        if($orderColumnName == "calculated_risk" || $orderColumnName == "residual_risk" || $orderColumnName == "id"){
             $sorted = true;
             // Reset order for specific columns
             usort($risks, function($a, $b) use ($orderDir, $orderColumnName)
@@ -678,10 +678,13 @@ function dynamicriskForm()
                         default:
                             return 0;
                     }
+                    if(abs($aValue - $bValue) < 0.0001){
+                        return 0;
+                    }
                     if($orderDir == 'asc'){
-                        return strcasecmp($aValue, $bValue);
+                        return $aValue - $bValue > 0 ? 1 : -1;
                     }else{
-                        return strcasecmp($bValue, $aValue);
+                        return $aValue - $bValue < 0 ? 1 : -1;
                     }
                 }
             );
