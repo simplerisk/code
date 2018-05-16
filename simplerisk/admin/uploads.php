@@ -106,6 +106,8 @@
 			set_alert(true, "bad", "The maximum upload file size needs to be an integer value.");
 		}
 	}
+    $simplerisk_max_upload_size = get_setting('max_upload_size');
+    $php_max_upload_size = min(convert_file_size_into_bytes(ini_get('upload_max_filesize')), convert_file_size_into_bytes(ini_get('post_max_size')));
 
 ?>
 
@@ -159,6 +161,9 @@
                 <p>
                 <h4><?php echo $escaper->escapeHtml($lang['MaximumUploadFileSize']); ?>:</h4>
                 <input name="size" type="number" maxlength="50" size="20" value="<?php echo get_setting('max_upload_size'); ?>" />&nbsp;<?php echo $escaper->escapeHtml($lang['Bytes']); ?><br />
+                <?php if($simplerisk_max_upload_size > $php_max_upload_size) {
+                    echo $escaper->escapeHtml($lang['WarnUploadSize']) . '<br />';
+                } ?>
                 <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_max_upload_size" />
                 </form>
               </div>

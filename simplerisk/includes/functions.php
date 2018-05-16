@@ -10170,4 +10170,28 @@ function set_unauthenticated_redirect()
 	$_SESSION['requested_url'] = $requested_url;
 }
 
+/******************************************
+ * FUNCTION: CONVERT FILE SIZE INTO BYTES *
+ ******************************************/
+function convert_file_size_into_bytes($file_size)
+{
+    // Take a file size in the format ^\s*\d+\s*[kmg].* and extract the number and suffix
+    if(preg_match("/^\s*(\d+)\s*([kmg])/i", $file_size, $matches))
+    {
+        $value = (int) $matches[1];
+        $suffix = strtolower($matches[2]);
+        switch($suffix) {
+        case "g":
+            $value *= 1024;
+        case "m":
+            $value *= 1024;
+        case "k":
+            $value *= 1024;
+        }
+        return $value;
+    }
+    // return false to indicate parsing failed
+    return false;
+}
+
 ?>
