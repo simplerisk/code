@@ -3972,7 +3972,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_as
     echo "<div class=\"well\">\n";
     echo "<h4>" . $escaper->escapeHtml($lang['SortBy']) . ":</h4>\n";
     echo "<select id=\"sort\" name=\"sort\" onchange=\"javascript: submit()\">\n";
-    echo "<option value=\"0\"" . ($sort == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['CalculatedRisk']) . "</option>\n";
+    echo "<option value=\"0\"" . ($sort == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['InherentRisk']) . "</option>\n";
     echo "<option value=\"1\"" . ($sort == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ID']) . "</option>\n";
     echo "<option value=\"2\"" . ($sort == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Subject']) . "</option>\n";
     echo "</select>\n";
