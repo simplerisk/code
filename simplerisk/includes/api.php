@@ -655,7 +655,6 @@ function dynamicriskForm()
         $orderDir = isset($_POST['order'][0]['dir']) ? $_POST['order'][0]['dir'] : "asc";
         $rowCount = 0;
         // Query the risks
-<<<<<<< HEAD
         $risks = risks_query($status, $sort, $group, $affected_asset, $rowCount, $start, $length, $group_value_from_db, "", [], $orderColumnName, $orderDir);
         
 //        $orderColumnIndex = $_POST['order'][0]['column'];
@@ -691,46 +690,6 @@ function dynamicriskForm()
 //                }
 //            );
 //        }
-=======
-        $risks = risks_query($status, $sort, $group, $affected_asset, $rowCount, $start, $length, $group_value_from_db);
-        
-        $orderColumnIndex = $_POST['order'][0]['column'];
-        $orderDir = $_POST['order'][0]['dir'];
-        $orderColumnName = $_POST['columns'][$orderColumnIndex]['name'];
-        $sorted = false;
-        if($orderColumnName == "calculated_risk" || $orderColumnName == "residual_risk" || $orderColumnName == "id"){
-            $sorted = true;
-            // Reset order for specific columns
-            usort($risks, function($a, $b) use ($orderDir, $orderColumnName)
-                {
-                    switch($orderColumnName){
-                        case "id":
-                            $aValue = trim($a['id']);
-                            $bValue = trim($b['id']);
-                        break;
-                        case "calculated_risk":
-                            $aValue = trim($a['calculated_risk']);
-                            $bValue = trim($b['calculated_risk']);
-                        break;
-                        case "residual_risk":
-                            $aValue = trim($a['residual_risk']);
-                            $bValue = trim($b['residual_risk']);
-                        break;
-                        default:
-                            return 0;
-                    }
-                    if(abs($aValue - $bValue) < 0.0001){
-                        return 0;
-                    }
-                    if($orderDir == 'asc'){
-                        return $aValue - $bValue > 0 ? 1 : -1;
-                    }else{
-                        return $aValue - $bValue < 0 ? 1 : -1;
-                    }
-                }
-            );
-        }
->>>>>>> origin/master
 
         $rows = array();
         foreach($risks as $row){

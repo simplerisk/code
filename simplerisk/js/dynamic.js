@@ -22,7 +22,7 @@ function check_id()
 //      elements[i].style.display = "none";
 //    }
 //  }
-}
+} 
 
 function check_status()
 {
@@ -739,7 +739,7 @@ function check_mitigation_team()
 //  checkbox = document.getElementById("checkbox_mitigation_team");
 
 //  if(checkbox.checked)
-//  {
+//  { 
 //    for(i=0; i<elements.length; i++)
 //    {
 //      elements[i].style.display = "";
@@ -755,15 +755,7 @@ function check_mitigation_team()
 }
 $(document).ready(function(){
     if($(".risk-datatable").length){
-<<<<<<< Updated upstream
-        var sortColumns = [["calculated_risk", "desc"], ["id", "asc"], ["subject", "asc"]];
-=======
-<<<<<<< HEAD
         var sortColumns = [["calculated_risk", "desc"], ["id", "asc"], ["subject", "asc"], ["residual_risk", "desc"]];
-=======
-        var sortColumns = [["calculated_risk", "desc"], ["id", "asc"], ["subject", "asc"]];
->>>>>>> origin/master
->>>>>>> Stashed changes
         var defaultSortColumnIndex = 0;
         var defaultSortColumn = sortColumns[$("#sort").val()];
         var columnOptions = [];
@@ -781,7 +773,7 @@ $(document).ready(function(){
                 defaultSortColumnIndex = index;
             }
         })
-
+        
         var riskDataTables = [];
         $(".risk-datatable").each(function(index){
             var $this = $(this);
@@ -819,24 +811,12 @@ $(document).ready(function(){
                     {
                         "targets" : 16,
                         "className" : "risk-cell",
-<<<<<<< Updated upstream
-                    }
-                ],
-                order: [[defaultSortColumnIndex, defaultSortColumn[1]]]
-=======
-<<<<<<< HEAD
                     },
                     {
                         "targets" : [21, 22, 23, 26, 27, 28, 29, 30],
                         "orderable" : false,
                     },
                 ]
-=======
-                    }
-                ],
-                order: [[defaultSortColumnIndex, defaultSortColumn[1]]]
->>>>>>> origin/master
->>>>>>> Stashed changes
             });
             riskDatatable.on('draw', function(e, settings){
                 if(settings._iDisplayLength == -1){
@@ -851,9 +831,9 @@ $(document).ready(function(){
             riskDataTables.push(riskDatatable);
         })
         $('.view-all').html("All");
-
+        
         $("form[name='get_risks_by'] .hidden-checkbox").click(function(e){
-
+            
             for(var key in riskDataTables){
                 var column = riskDataTables[key].column("th[data-name='"+ $(this).attr('name') +"']");
                 if($(this).is(':checked')){
@@ -862,7 +842,7 @@ $(document).ready(function(){
                     column.visible(false);
                 }
             }
-
+            
             var checkBoxes = $("form[name='get_risks_by'] .hidden-checkbox");
             var viewColumns = [];
             checkBoxes.each(function(){
@@ -880,13 +860,13 @@ $(document).ready(function(){
                 }
             });
         })
-
+        
         $(".expand-all").click(function(e){
             e.preventDefault();
             $(".view-all").click();
 
         })
-
+        
         $(".view-all").click(function(){
             var $this = $(this);
             var index = $(this).attr('id').replace("view-all-", "");
@@ -895,7 +875,7 @@ $(document).ready(function(){
             riskDataTables[index].draw()
             $this.addClass("current");
         })
-
+        
         $("body").on("click", "span > .paginate_button", function(){
             var index = $(this).attr('aria-controls').replace("DataTables_Table_", "");
 
@@ -905,10 +885,10 @@ $(document).ready(function(){
                 oSettings[0]._iDisplayLength = 10;
                 riskDataTables[index].draw()
             }
-
+            
         })
     }
-
+    
     $("#export-dynamic-risk-report").click(function(e){
         document.get_risks_by.action += "?option=download";
         document.get_risks_by.submit();
