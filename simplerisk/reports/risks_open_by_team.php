@@ -14,15 +14,7 @@ require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (csp_enabled())
-{
-  // Add the Content-Security-Policy header
-  header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-}
+add_security_headers();
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -98,6 +90,7 @@ array_unshift($ownersManagerOptions, array(
 (isset($_GET['submitted_by']) ? $submitted_by = true : $submitted_by = false);
 (isset($_GET['scoring_method']) ? $scoring_method = true : $scoring_method = false);
 (isset($_GET['calculated_risk']) ? $calculated_risk = true : $calculated_risk = false);
+(isset($_GET['residual_risk']) ? $residual_risk = true : $residual_risk = false);
 (isset($_GET['submission_date']) ? $submission_date = true : $submission_date = false);
 (isset($_GET['review_date']) ? $review_date = true : $review_date = false);
 (isset($_GET['project']) ? $project = true : $project = false);
@@ -108,10 +101,12 @@ array_unshift($ownersManagerOptions, array(
 (isset($_GET['next_step']) ? $next_step = true : $next_step = false);
 (isset($_GET['affected_assets']) ? $affected_assets = true : $affected_assets = false);
 (isset($_GET['planning_strategy']) ? $planning_strategy = true : $planning_strategy = false);
+(isset($_GET['planning_date']) ? $planning_date = true : $planning_date = false);
 (isset($_GET['mitigation_effort']) ? $mitigation_effort = true : $mitigation_effort = false);
 (isset($_GET['mitigation_cost']) ? $mitigation_cost = true : $mitigation_cost = false);
 (isset($_GET['mitigation_owner']) ? $mitigation_owner = true : $mitigation_owner = false);
 (isset($_GET['mitigation_team']) ? $mitigation_team = true : $mitigation_team = false);
+(isset($_GET['mitigation_date']) ? $mitigation_date = true : $mitigation_date = false);
 (isset($_GET['risk_assessment']) ? $risk_assessment = true : $risk_assessment = false);
 (isset($_GET['additional_notes']) ? $additional_notes = true : $additional_notes = false);
 (isset($_GET['current_solution']) ? $current_solution = true : $current_solution = false);
@@ -125,6 +120,7 @@ array_unshift($ownersManagerOptions, array(
 //    $submission_date = true;
 //    $mitigation_planned = true;
 //    $management_review = true;
+
 ?>
 
 <!doctype html>
@@ -148,6 +144,14 @@ array_unshift($ownersManagerOptions, array(
     <link rel="stylesheet" href="../css/theme.css">
     <script type="text/javascript">
         $(function(){
+            // timer identifier
+            var typingTimer;                
+            // time in ms (1 second)
+            var doneInterval = 2000;  
+            function submit_form(){
+                $("#risks_by_teams_form").submit();
+            }
+
             // Team dropdown
             $("#teams").multiselect({
                 allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllTeams']); ?>',
@@ -160,7 +164,9 @@ array_unshift($ownersManagerOptions, array(
                     });
                     
                     $("#team_options").val(selected.join(","));
-                    $("#risks_by_teams_form").submit();
+
+                    clearTimeout(typingTimer);
+                    typingTimer = setTimeout(submit_form, doneInterval);
                 }
             });
             
@@ -176,7 +182,9 @@ array_unshift($ownersManagerOptions, array(
                     });
                     
                     $("#owner_options").val(selected.join(","));
-                    $("#risks_by_teams_form").submit();
+
+                    clearTimeout(typingTimer);
+                    typingTimer = setTimeout(submit_form, doneInterval);
                 }
             });
             
@@ -192,18 +200,23 @@ array_unshift($ownersManagerOptions, array(
                     });
                     
                     $("#ownersmanager_options").val(selected.join(","));
-                    $("#risks_by_teams_form").submit();
+
+                    clearTimeout(typingTimer);
+                    typingTimer = setTimeout(submit_form, doneInterval);
                 }
             });
             
             $(".pagination ul > li > a").click(function(e){
                 e.preventDefault();
                 $("#currentpage").val($(this).text().trim().toLowerCase());
-                $("#risks_by_teams_form").submit();
+
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(submit_form, doneInterval);
             })
             
             $(".colums-select-container input[type=checkbox]").click(function(){
-                $("#risks_by_teams_form").submit();
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(submit_form, doneInterval);
             })
         });
     </script>
@@ -243,7 +256,7 @@ array_unshift($ownersManagerOptions, array(
                             <input type="hidden" value="<?php echo $owners; ?>" name="owners" id="owner_options">
                             <input type="hidden" value="<?php echo $ownersmanagers; ?>" name="ownersmanagers" id="ownersmanager_options">
                             <div class="colums-select-container">
-                                <?php echo display_risk_columns($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements) ?>
+                                <?php echo display_risk_columns($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements) ?>
                             </div>
                         </form>
 
@@ -255,11 +268,12 @@ array_unshift($ownersManagerOptions, array(
                 </div>-->
 
                 <div class="row-fluid" id="risks-open-by-team-container">
-                    <?php risk_table_open_by_team($teams, $owners, $ownersmanagers, $currentpage, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements); ?>
+                    <?php risk_table_open_by_team($teams, $owners, $ownersmanagers, $currentpage, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements); ?>
                 </div>
             </div>
         </div>
     </div>
+    <?php display_set_default_date_format_script(); ?>
 </body>
 
 </html>

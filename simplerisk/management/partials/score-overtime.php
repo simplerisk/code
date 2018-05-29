@@ -77,6 +77,7 @@ enforce_permission_riskmanagement();
 </div>
 
 <input type="hidden" id="_RiskScoringHistory" value="<?php echo $lang['RiskScoringHistory']; ?>">
-<input type="hidden" id="_RiskScore" value="<?php echo $lang['RiskScore']; ?>">
+<input type="hidden" id="_RiskScore" value="<?php echo $lang['InherentRisk']; ?>">
+<input type="hidden" id="_ResidualRiskScore" value="<?php echo $lang['ResidualRisk']; ?>">
 <input type="hidden" id="_DateAndTime" value="<?php echo $lang['DateAndTime']; ?>">
 

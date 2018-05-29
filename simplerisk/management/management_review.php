@@ -15,15 +15,7 @@ require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (csp_enabled())
-{
-  // Add the Content-Security-Policy header
-  header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-}
+add_security_headers();
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -93,10 +85,10 @@ if (isset($_GET['mitigated']))
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/jquery.dataTables.js"></script>
-    <script src="../js/cve_lookup.js"></script>
-    <script src="../js/sorttable.js"></script>
-    <script src="../js/common.js"></script>
-    <script src="../js/pages/risk.js"></script>
+    <script src="../js/cve_lookup.js?<?php echo time() ?>"></script>
+    <script src="../js/sorttable.js?<?php echo time() ?>"></script>
+    <script src="../js/common.js?<?php echo time() ?>"></script>
+    <script src="../js/pages/risk.js?<?php echo time() ?>"></script>
     <script src="../js/highcharts/code/highcharts.js"></script>
     <script src="../js/bootstrap-multiselect.js"></script>
 
@@ -175,6 +167,7 @@ if (isset($_GET['mitigated']))
     <input type="hidden" id="_delete_tab_alert" value="<?php echo $escaper->escapeHtml($lang['Are you sure you want to close the risk? All changes will be lost!']); ?>">
     <input type="hidden" id="enable_popup" value="<?php echo get_setting('enable_popup'); ?>">
 
+    <?php display_set_default_date_format_script(); ?>
 </body>
 
 </html>

@@ -16,15 +16,7 @@ require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (csp_enabled())
-{
-  // Add the Content-Security-Policy header
-  header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-}
+add_security_headers();
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -92,7 +84,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   $source = (int)$_POST['source'];
   $category = (int)$_POST['category'];
   $team = (int)$_POST['team'];
-  $technology = (int)$_POST['technology'];
+  $technology = (empty($_POST['technology'])) ? "" : implode(",", $_POST['technology']);
   $owner = (int)$_POST['owner'];
   $manager = (int)$_POST['manager'];
   $assessment = $_POST['assessment'];
@@ -174,6 +166,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   // Tag assets to risk
   tag_assets_to_risk($last_insert_id, $assets);
 
+  $error = 1;
   // If a file was submitted
   if (!empty($_FILES))
   {
@@ -189,27 +182,49 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
             'error'     => $_FILES['file']['error'][$i],
         );
         // Upload any file that is submitted
-        upload_file($last_insert_id, $file, 1);
+        $error = upload_file($last_insert_id, $file, 1);
+        if($error != 1){
+            /**
+            * If error, stop uploading files;
+            */
+            break;
+        }
+        
     }
   }
-
-  // If the notification extra is enabled
-  if (notification_extra())
+  // Otherwise, success
+  else $error = 1;
+  
+  // If there was an error in submitting.
+  if($error != 1)
   {
-    // Include the team separation extra
-    require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+      // Delete risk
+      delete_risk($last_insert_id);
 
-    // Send the notification
-    notify_new_risk($last_insert_id, $subject);
+      // Display an alert
+      set_alert(true, "bad", $error);
+  }
+  else 
+  {
+      // If the notification extra is enabled
+      if (notification_extra())
+      {
+        // Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+        // Send the notification
+        notify_new_risk($last_insert_id, $subject);
+      }
+
+      // There is an alert message
+      $risk_id = $last_insert_id + 1000;
+
+      echo "<script> var global_risk_id = " . $risk_id . ";</script>";
+      
+      // Display an alert   
+      set_alert(true, "good", $escaper->escapeHtml(_lang('RiskSubmitSuccess', ['subject' => $subject])));
   }
 
-  // There is an alert message
-  $risk_id = $last_insert_id + 1000;
-
-  // Display an alert
-  set_alert(true, "good", "Risk ID " . $risk_id . " submitted successfully!");
-
-  echo "<script> var global_risk_id = " . $risk_id . ";</script>";
 }
 
 
@@ -223,10 +238,10 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <script src="../js/jquery-ui.min.js"></script>
         <script src="../js/bootstrap.min.js"></script>
         <script src="../js/jquery.dataTables.js"></script>
-        <script src="../js/cve_lookup.js"></script>
+        <script src="../js/cve_lookup.js?<?php echo time() ?>"></script>
         <script src="../js/basescript.js"></script>
-        <script src="../js/common.js"></script>
-        <script src="../js/pages/risk.js"></script>
+        <script src="../js/common.js?<?php echo time() ?>"></script>
+        <script src="../js/pages/risk.js?<?php echo time() ?>"></script>
         <script src="../js/highcharts/code/highcharts.js"></script>
         <script src="../js/bootstrap-multiselect.js"></script>
 
@@ -417,5 +432,6 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
             });
 
         </script>
+        <?php display_set_default_date_format_script(); ?>
     </body>
 </html>

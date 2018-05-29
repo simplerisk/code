@@ -14,15 +14,7 @@ require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (csp_enabled())
-{
-    // Add the Content-Security-Policy header
-    header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-}
+add_security_headers();
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -131,10 +123,12 @@ $columns = array(
     'next_step',
     'affected_assets',
     'planning_strategy',
+    'planning_date',
     'mitigation_effort',
     'mitigation_cost',
     'mitigation_owner',
     'mitigation_team',
+    'mitigation_date',
     'risk_assessment',
     'additional_notes',
     'current_solution',
@@ -182,7 +176,7 @@ if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "dow
             // Include the Import-Export Extra
             require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
 
-            download_risks_by_table($status, $group, $sort, $affected_asset, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements);
+            download_risks_by_table($status, $group, $sort, $affected_asset, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements);
         }
     }
 }
@@ -226,7 +220,7 @@ if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "dow
         <div class="row-fluid">
           <div id="selections" class="span12">
             <div class="well">
-              <?php view_get_risks_by_selections($status, $group, $sort, $affected_asset, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements); ?>
+              <?php view_get_risks_by_selections($status, $group, $sort, $affected_asset, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements); ?>
             </div>
           </div>
         </div>
@@ -253,7 +247,7 @@ if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "dow
         <div class="row-fluid">
           <div class="span12">
             <div id="risk-table-container">
-                <?php get_risks_by_table($status, $group, $sort, $affected_asset, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements); ?>
+                <?php get_risks_by_table($status, $group, $sort, $affected_asset, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements); ?>
             </div>
           </div>
         </div>

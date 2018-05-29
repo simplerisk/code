@@ -15,15 +15,7 @@ require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (csp_enabled())
-{
-  // Add the Content-Security-Policy header
-  header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-}
+add_security_headers();
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -241,7 +233,7 @@ if (isset($_POST['delete_project']))
       }
     }
 
-    echo ", #statussortable-1, #statussortable-2, #statussortable-3, #statussortable-4";
+    echo "#statussortable-1, #statussortable-2, #statussortable-3, #statussortable-4";
     echo "\" ).sortable().disableSelection();\n";
     ?>
     var $tabs = $( "#tabs" ).tabs();
@@ -393,10 +385,7 @@ if (isset($_POST['delete_project']))
               </div> <!-- status-tabs -->
 
               <div id="active-projects" class="sortable">
-
-
                     <?php get_project_tabs(1) ?>
-
               </div>
               <div id="on-hold-projects" class="sortable">
                     <?php get_project_tabs(2) ?>
@@ -477,6 +466,7 @@ if (isset($_POST['delete_project']))
 
 </script>
 
+<?php display_set_default_date_format_script(); ?>
 </body>
 
 </html>

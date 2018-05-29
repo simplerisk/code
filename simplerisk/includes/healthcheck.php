@@ -43,7 +43,10 @@ function simplerisk_health_check()
         // Check that SimpleRisk can connect to the services platform
         check_web_connectivity();
 
-	echo "<br /><b><u>PHP Extensions</u></b><br />";
+	echo "<br /><b><u>PHP</u></b><br />";
+
+	// Check that this is PHP 5
+	check_php_version();
 	
 	// Check the necessary PHP extensions are installed
 	check_php_extensions();
@@ -275,6 +278,30 @@ function check_strict_sql_mode()
 	else
 	{
 		health_check_good("Verified that STRICT_TRANS_TABLES is not enabled for MySQL.");
+	}
+}
+
+/*******************************
+ * FUNCTION: CHECK PHP VERSION *
+ *******************************/
+function check_php_version()
+{
+	// Get the version of PHP
+	if (!defined('PHP_VERSION_ID'))
+	{
+		$version = explode('.', PHP_VERSION);
+
+		define('PHP_VERSION_ID', ($version[0] * 10000 + $version[1] * 100 + $version[2]));
+	}
+
+	// If PHP is at least 5 and less than 6
+	if (PHP_VERSION_ID >= 50000 && PHP_VERSION_ID < 60000)
+	{
+		health_check_good("SimpleRisk is running under PHP 5.x.");
+	}
+	else
+	{
+		health_check_bad("SimpleRisk will not run properly under any version of PHP other than 5.x.");
 	}
 }
 

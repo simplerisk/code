@@ -14,15 +14,7 @@
     $escaper = new Zend\Escaper\Escaper('utf-8');
 
     // Add various security headers
-    header("X-Frame-Options: DENY");
-    header("X-XSS-Protection: 1; mode=block");
-
-    // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-    if (csp_enabled())
-    {
-        // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-    }
+    add_security_headers();
 
     // Session handler is database
     if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -63,7 +55,7 @@
     }
 
 	// If the extra directory exists
-	if (is_dir(realpath(__DIR__ . '/../extras/authentication')))
+	if (is_dir(realpath(__DIR__ . '/../extras/separation')))
 	{
 		// Include the Separation Extra
 		require_once(realpath(__DIR__ . '/../extras/separation/index.php'));

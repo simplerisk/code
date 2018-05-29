@@ -13,15 +13,6 @@
     }
 }
 
-#questionnaire-answers-container{
-    .answers-table{
-        td{
-            padding-left: 5px;
-            padding-right: 5px;
-        }
-    }
-}
-
 .table.assessment-datatable{
 /*    margin-top: 13px;*/
 }
@@ -36,24 +27,8 @@
     width: 100%;
 }
 
-.questionnaire-response{
-    .questionnaire-answers{
-        margin-left: 30px;
-        .answer-text{
-            top: 4px;
-            position: relative;
-        }
-    }
-    .button-container{
-        text-align: center;
-    }
-    form.disabled *{
-        pointer-events: none;
-    }
-}
 table{
     a.edit-btn, a.copy-btn, a.delete-btn{
         display: inline !important;
     }
 }
-

@@ -14,15 +14,7 @@
         $escaper = new Zend\Escaper\Escaper('utf-8');
 
         // Add various security headers
-        header("X-Frame-Options: DENY");
-        header("X-XSS-Protection: 1; mode=block");
-
-        // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-        if (csp_enabled())
-        {
-                // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-        }
+	add_security_headers();
 
         // Session handler is database
         if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -97,8 +89,26 @@
 		{
 			update_setting('max_upload_size', $_POST['size']);
 
-			// Display an alert
-			set_alert(true, "good", "The maximum upload file size was updated successfully.");
+			// Get the currently set max upload size for SimpleRisk
+			$simplerisk_max_upload_size = get_setting('max_upload_size');
+
+			// If the max upload size for SimpleRisk is bigger than the PHP max upload size
+                        if ($simplerisk_max_upload_size > php_max_allowed_values())
+                        {
+				// Display an alert
+				set_alert(true, "bad", $escaper->escapeHtml($lang['WarnPHPUploadSize']));
+			}
+			// If the max upload size for SimpleRisk is bigger than the MySQL max_allowed_packet
+			else if ($simplerisk_max_upload_size > mysql_max_allowed_values())
+			{
+				// Display an alert
+				set_alert(true, "bad", $escaper->escapeHtml($lang['WarnMySQLUploadSize']));
+			}
+			else
+			{
+				// Display an alert
+				set_alert(true, "good", "The maximum upload file size was updated successfully.");
+			}
 		}
 		else
 		{
@@ -106,6 +116,9 @@
 			set_alert(true, "bad", "The maximum upload file size needs to be an integer value.");
 		}
 	}
+
+	// Get the currently set max upload size for SimpleRisk
+	$simplerisk_max_upload_size = get_setting('max_upload_size');
 
 ?>
 
@@ -159,6 +172,19 @@
                 <p>
                 <h4><?php echo $escaper->escapeHtml($lang['MaximumUploadFileSize']); ?>:</h4>
                 <input name="size" type="number" maxlength="50" size="20" value="<?php echo get_setting('max_upload_size'); ?>" />&nbsp;<?php echo $escaper->escapeHtml($lang['Bytes']); ?><br />
+		<?php
+			// If the max upload size for SimpleRisk is bigger than the PHP max upload size
+			if($simplerisk_max_upload_size > php_max_allowed_values())
+			{
+				echo "<font style=\"color: red;\">" . $escaper->escapeHtml($lang['WarnPHPUploadSize']) . '<br />';
+			}
+
+			// If the max upload size for SimpleRisk is bigger than the MySQL max upload size
+			if ($simplerisk_max_upload_size > mysql_max_allowed_values())
+			{
+				echo "<font style=\"color: red;\">" . $escaper->escapeHtml($lang['WarnMySQLUploadSize']) . '<br />';
+			}
+		?>
                 <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_max_upload_size" />
                 </form>
               </div>

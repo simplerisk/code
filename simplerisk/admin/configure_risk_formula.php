@@ -14,15 +14,7 @@
         $escaper = new Zend\Escaper\Escaper('utf-8');
 
         // Add various security headers
-        header("X-Frame-Options: DENY");
-        header("X-XSS-Protection: 1; mode=block");
-
-        // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-        if (csp_enabled())
-        {
-                // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-        }
+	add_security_headers();
 
         // Session handler is database
         if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -50,7 +42,7 @@
         // Check if access is authorized
         if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
         {
-		set_unauthenticated_redirect();
+		        set_unauthenticated_redirect();
                 header("Location: ../index.php");
                 exit(0);
         }
@@ -169,8 +161,8 @@
                         <div class="colorSelector">
                             <div style="background-color: <?php echo $escaper->escapeHtml($risk_levels[3]['color']); ?>;"></div>
                         </div>
+                        <input type="text" required name="level[Very High][display_name]" size="2" value="<?php echo $escaper->escapeHtml($risk_levels[3]['display_name']); ?>" /> 
                     </div>
-                
                 
                     <div>
                         <?php echo $escaper->escapeHtml($lang['IConsiderHighRiskToBeLessThanAboveButGreaterThan']); ?>: 
@@ -179,6 +171,7 @@
                         <div class="colorSelector">
                             <div style="background-color: <?php echo $escaper->escapeHtml($risk_levels[2]['color']); ?>;"></div>
                         </div>
+                        <input type="text" required name="level[High][display_name]" size="2" value="<?php echo $escaper->escapeHtml($risk_levels[2]['display_name']); ?>" />
                     </div>
                     <div>
                         <?php echo $escaper->escapeHtml($lang['IConsiderMediumRiskToBeLessThanAboveButGreaterThan']); ?>: 
@@ -187,6 +180,7 @@
                         <div class="colorSelector">
                             <div style="background-color: <?php echo $escaper->escapeHtml($risk_levels[1]['color']); ?>;"></div>
                         </div>
+                        <input type="text" required name="level[Medium][display_name]" size="2" value="<?php echo $escaper->escapeHtml($risk_levels[1]['display_name']); ?>" />
                     </div>
                     <div>
                         <?php echo $escaper->escapeHtml($lang['IConsiderlowRiskToBeLessThanAboveButGreaterThan']); ?>: 
@@ -195,6 +189,7 @@
                         <div class="colorSelector">
                             <div style="background-color: <?php echo $escaper->escapeHtml($risk_levels[0]['color']); ?>;"></div>
                         </div>
+                        <input type="text" required name="level[Low][display_name]" size="2" value="<?php echo $escaper->escapeHtml($risk_levels[0]['display_name']); ?>" />
                     </div>
 
                     <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_risk_levels" />

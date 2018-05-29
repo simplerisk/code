@@ -1,132 +1,124 @@
 <?php
-        /* This Source Code Form is subject to the terms of the Mozilla Public
-         * License, v. 2.0. If a copy of the MPL was not distributed with this
-         * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+    /* This Source Code Form is subject to the terms of the Mozilla Public
+     * License, v. 2.0. If a copy of the MPL was not distributed with this
+     * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-        // Include required functions file
-        require_once(realpath(__DIR__ . '/../includes/functions.php'));
-        require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-	require_once(realpath(__DIR__ . '/../includes/display.php'));
-	require_once(realpath(__DIR__ . '/../includes/permissions.php'));
+    // Include required functions file
+    require_once(realpath(__DIR__ . '/../includes/functions.php'));
+    require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+    require_once(realpath(__DIR__ . '/../includes/display.php'));
+    require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 
-        // Include Zend Escaper for HTML Output Encoding
-        require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-        $escaper = new Zend\Escaper\Escaper('utf-8');
+    // Include Zend Escaper for HTML Output Encoding
+    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
+    $escaper = new Zend\Escaper\Escaper('utf-8');
 
-        // Add various security headers
-        header("X-Frame-Options: DENY");
-        header("X-XSS-Protection: 1; mode=block");
+    // Add various security headers
+    add_security_headers();
 
-        // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-        if (csp_enabled())
+    // Session handler is database
+    if (USE_DATABASE_FOR_SESSIONS == "true")
+    {
+    session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+    }
+
+    // Start the session
+    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
+    if (!isset($_SESSION))
+    {
+        session_name('SimpleRisk');
+        session_start();
+    }
+
+    // Include the language file
+    require_once(language_file());
+
+    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
+    // Check for session timeout or renegotiation
+    session_check();
+
+    // Check if access is authorized
+    if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
+    {
+    set_unauthenticated_redirect();
+        header("Location: ../index.php");
+        exit(0);
+    }
+
+    // Enforce that the user has access to risk management
+    enforce_permission_riskmanagement();
+
+    // Check if a risk ID was sent
+    if (isset($_GET['id']))
+    {
+        // Test that the ID is a numeric value
+        $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
+
+        // Get the details of the risk
+        $risk = get_risk_by_id($id);
+
+        $status = $risk[0]['status'];
+        $subject = $risk[0]['subject'];
+        $calculated_risk = $risk[0]['calculated_risk'];
+        $mgmt_review = $risk[0]['mgmt_review'];
+
+        $scoring_method = $risk[0]['scoring_method'];
+        $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
+        $CLASSIC_impact = $risk[0]['CLASSIC_impact'];
+        $AccessVector = $risk[0]['CVSS_AccessVector'];
+        $AccessComplexity = $risk[0]['CVSS_AccessComplexity'];
+        $Authentication = $risk[0]['CVSS_Authentication'];
+        $ConfImpact = $risk[0]['CVSS_ConfImpact'];
+        $IntegImpact = $risk[0]['CVSS_IntegImpact'];
+        $AvailImpact = $risk[0]['CVSS_AvailImpact'];
+        $Exploitability = $risk[0]['CVSS_Exploitability'];
+        $RemediationLevel = $risk[0]['CVSS_RemediationLevel'];
+        $ReportConfidence = $risk[0]['CVSS_ReportConfidence'];
+        $CollateralDamagePotential = $risk[0]['CVSS_CollateralDamagePotential'];
+        $TargetDistribution = $risk[0]['CVSS_TargetDistribution'];
+        $ConfidentialityRequirement = $risk[0]['CVSS_ConfidentialityRequirement'];
+        $IntegrityRequirement = $risk[0]['CVSS_IntegrityRequirement'];
+        $AvailabilityRequirement = $risk[0]['CVSS_AvailabilityRequirement'];
+        $DREADDamagePotential = $risk[0]['DREAD_DamagePotential'];
+        $DREADReproducibility = $risk[0]['DREAD_Reproducibility'];
+        $DREADExploitability = $risk[0]['DREAD_Exploitability'];
+        $DREADAffectedUsers = $risk[0]['DREAD_AffectedUsers'];
+        $DREADDiscoverability = $risk[0]['DREAD_Discoverability'];
+        $OWASPSkillLevel = $risk[0]['OWASP_SkillLevel'];
+        $OWASPMotive = $risk[0]['OWASP_Motive'];
+        $OWASPOpportunity = $risk[0]['OWASP_Opportunity'];
+        $OWASPSize = $risk[0]['OWASP_Size'];
+        $OWASPEaseOfDiscovery = $risk[0]['OWASP_EaseOfDiscovery'];
+        $OWASPEaseOfExploit = $risk[0]['OWASP_EaseOfExploit'];
+        $OWASPAwareness = $risk[0]['OWASP_Awareness'];
+        $OWASPIntrusionDetection = $risk[0]['OWASP_IntrusionDetection'];
+        $OWASPLossOfConfidentiality = $risk[0]['OWASP_LossOfConfidentiality'];
+        $OWASPLossOfIntegrity = $risk[0]['OWASP_LossOfIntegrity'];
+        $OWASPLossOfAvailability = $risk[0]['OWASP_LossOfAvailability'];
+        $OWASPLossOfAccountability = $risk[0]['OWASP_LossOfAccountability'];
+        $OWASPFinancialDamage = $risk[0]['OWASP_FinancialDamage'];
+        $OWASPReputationDamage = $risk[0]['OWASP_ReputationDamage'];
+        $OWASPNonCompliance = $risk[0]['OWASP_NonCompliance'];
+        $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
+        $custom = $risk[0]['Custom'];
+
+        // Get the management reviews for the risk
+        $mgmt_reviews = get_review_by_id($id);
+
+        $review_date = $mgmt_reviews[0]['submission_date'];
+        $review = $mgmt_reviews[0]['review'];
+        $reviewer = $mgmt_reviews[0]['reviewer'];
+        $next_step = $mgmt_reviews[0]['next_step'];
+        $comments = $mgmt_reviews[0]['comments'];
+
+        if ($review_date == "")
         {
-                // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+            $review_date = "N/A";
         }
-
-        // Session handler is database
-        if (USE_DATABASE_FOR_SESSIONS == "true")
-        {
-		session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-        }
-
-        // Start the session
-	    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-        if (!isset($_SESSION))
-        {
-        	session_name('SimpleRisk');
-        	session_start();
-        }
-
-        // Include the language file
-        require_once(language_file());
-
-        require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-        // Check for session timeout or renegotiation
-        session_check();
-
-        // Check if access is authorized
-        if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-        {
-		set_unauthenticated_redirect();
-                header("Location: ../index.php");
-                exit(0);
-        }
-
-        // Enforce that the user has access to risk management
-        enforce_permission_riskmanagement();
-
-        // Check if a risk ID was sent
-        if (isset($_GET['id']))
-        {
-                // Test that the ID is a numeric value
-                $id = (is_numeric($_GET['id']) ? (int)$_GET['id'] : 0);
-
-                // Get the details of the risk
-                $risk = get_risk_by_id($id);
-
-                $status = $risk[0]['status'];
-                $subject = $risk[0]['subject'];
-                $calculated_risk = $risk[0]['calculated_risk'];
-		$mgmt_review = $risk[0]['mgmt_review'];
-
-                $scoring_method = $risk[0]['scoring_method'];
-                $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
-                $CLASSIC_impact = $risk[0]['CLASSIC_impact'];
-                $AccessVector = $risk[0]['CVSS_AccessVector'];
-                $AccessComplexity = $risk[0]['CVSS_AccessComplexity'];
-                $Authentication = $risk[0]['CVSS_Authentication'];
-                $ConfImpact = $risk[0]['CVSS_ConfImpact'];
-                $IntegImpact = $risk[0]['CVSS_IntegImpact'];
-                $AvailImpact = $risk[0]['CVSS_AvailImpact'];
-                $Exploitability = $risk[0]['CVSS_Exploitability'];
-                $RemediationLevel = $risk[0]['CVSS_RemediationLevel'];
-                $ReportConfidence = $risk[0]['CVSS_ReportConfidence'];
-                $CollateralDamagePotential = $risk[0]['CVSS_CollateralDamagePotential'];
-                $TargetDistribution = $risk[0]['CVSS_TargetDistribution'];
-                $ConfidentialityRequirement = $risk[0]['CVSS_ConfidentialityRequirement'];
-                $IntegrityRequirement = $risk[0]['CVSS_IntegrityRequirement'];
-                $AvailabilityRequirement = $risk[0]['CVSS_AvailabilityRequirement'];
-                $DREADDamagePotential = $risk[0]['DREAD_DamagePotential'];
-                $DREADReproducibility = $risk[0]['DREAD_Reproducibility'];
-                $DREADExploitability = $risk[0]['DREAD_Exploitability'];
-                $DREADAffectedUsers = $risk[0]['DREAD_AffectedUsers'];
-                $DREADDiscoverability = $risk[0]['DREAD_Discoverability'];
-                $OWASPSkillLevel = $risk[0]['OWASP_SkillLevel'];
-                $OWASPMotive = $risk[0]['OWASP_Motive'];
-                $OWASPOpportunity = $risk[0]['OWASP_Opportunity'];
-                $OWASPSize = $risk[0]['OWASP_Size'];
-                $OWASPEaseOfDiscovery = $risk[0]['OWASP_EaseOfDiscovery'];
-                $OWASPEaseOfExploit = $risk[0]['OWASP_EaseOfExploit'];
-                $OWASPAwareness = $risk[0]['OWASP_Awareness'];
-                $OWASPIntrusionDetection = $risk[0]['OWASP_IntrusionDetection'];
-                $OWASPLossOfConfidentiality = $risk[0]['OWASP_LossOfConfidentiality'];
-                $OWASPLossOfIntegrity = $risk[0]['OWASP_LossOfIntegrity'];
-                $OWASPLossOfAvailability = $risk[0]['OWASP_LossOfAvailability'];
-                $OWASPLossOfAccountability = $risk[0]['OWASP_LossOfAccountability'];
-                $OWASPFinancialDamage = $risk[0]['OWASP_FinancialDamage'];
-                $OWASPReputationDamage = $risk[0]['OWASP_ReputationDamage'];
-                $OWASPNonCompliance = $risk[0]['OWASP_NonCompliance'];
-                $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
-                $custom = $risk[0]['Custom'];
-
-		// Get the management reviews for the risk
-		$mgmt_reviews = get_review_by_id($id);
-
-		$review_date = $mgmt_reviews[0]['submission_date'];
-		$review = $mgmt_reviews[0]['review'];
-		$reviewer = $mgmt_reviews[0]['reviewer'];
-		$next_step = $mgmt_reviews[0]['next_step'];
-		$comments = $mgmt_reviews[0]['comments'];
-
-                if ($review_date == "")
-                {
-                        $review_date = "N/A";
-                }
-                else $review_date = date(DATETIME, strtotime($review_date));
-        }
+        else $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
+    }
 ?>
 
 <!doctype html>

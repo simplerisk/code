@@ -15,15 +15,7 @@
         $escaper = new Zend\Escaper\Escaper('utf-8');
 
         // Add various security headers
-        header("X-Frame-Options: DENY");
-        header("X-XSS-Protection: 1; mode=block");
-
-        // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-        if (csp_enabled())
-        {
-                // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-        }
+	add_security_headers();
 
         // Session handler is database
         if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -85,6 +77,22 @@
 
 		// Display an alert
 		set_alert(true, "good", "Mail settings were updated successfully.");
+	}
+
+	// Check if the mail test was submitted
+	if (isset($_POST['test_mail_configuration']))
+	{
+		// Set up the test email
+		$name = "SimpleRisk Test";
+		$email = $_POST['email'];
+		$subject = "SimpleRisk Test Email";
+		$full_message = "This is a test email from SimpleRisk.";
+
+		// Send the e-mail
+		send_email($name, $email, $subject, $full_message);
+
+                // Display an alert
+                set_alert(true, "good", "A test email has been sent using the current settings.");
 	}
 
 	// Get the mail settings
@@ -198,66 +206,104 @@
             <div class="span12">
               <div class="hero-unit">
                 <form name="mail_settings" method="post" action="">
-                  <table name="mail" id="mail" border="0">
-                    <tr>
-                      <td><?php echo $escaper->escapeHTML($lang['TransportAgent']); ?>:&nbsp;&nbsp;</td>
-                      <td>
-                        <select name="transport" id="transport" onchange="javascript: dropdown_transport()">
-                          <option value="sendmail"<?php echo ($transport=="sendmail") ? " selected" : ""; ?>>sendmail</option>
-                          <option value="smtp"<?php echo ($transport=="smtp") ? " selected" : ""; ?>>smtp</option>
-                        </select>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td><?php echo $escaper->escapeHTML($lang['FromName']); ?>:&nbsp;&nbsp;</td>
-                      <td><input type="text" name="from_name" value="<?php echo $escaper->escapeHTML($from_name); ?>" /></td>
-                    </tr>
-                    <tr>
-                      <td><?php echo $escaper->escapeHTML($lang['FromEmail']); ?>:&nbsp;&nbsp;</td>
-                      <td><input type="email" name="from_email" value="<?php echo $escaper->escapeHTML($from_email); ?>" /></td>
-                    </tr>
-                    <tr>
-                      <td><?php echo $escaper->escapeHTML($lang['ReplyToName']); ?>:&nbsp;&nbsp;</td>
-                      <td><input type="text" name="replyto_name" value="<?php echo $escaper->escapeHTML($replyto_name); ?>" /></td>
-                    </tr>
-                    <tr>
-                      <td><?php echo $escaper->escapeHTML($lang['ReplyToEmail']); ?>:&nbsp;&nbsp;</td>
-                      <td><input type="email" name="replyto_email" value="<?php echo $escaper->escapeHTML($replyto_email); ?>" /></td>
-                    </tr>
-                    <tr class="smtp"<?php echo ($transport=="sendmail") ? " style=\"display: none;\"" : "" ?>>
-                      <td><?php echo $escaper->escapeHTML($lang['Host']); ?>:&nbsp;&nbsp;</td>
-                      <td><input type="text" name="host" value="<?php echo $escaper->escapeHTML($host); ?>" /></td>
-                    </tr>
-                    <tr class="smtp"<?php echo ($transport=="sendmail") ? " style=\"display: none;\"" : "" ?>>
-                      <td><?php echo $escaper->escapeHTML($lang['Port']); ?>:&nbsp;&nbsp;</td>
-                      <td><input type="number" name="port" value="<?php echo $escaper->escapeHTML($port); ?>" /></td>
-                    </tr>
-                    <tr class="smtp"<?php echo ($transport=="sendmail") ? " style=\"display: none;\"" : "" ?>>
-                      <td colspan="2"><input type="checkbox" name="smtpautotls" id="smtpautotls" <?php echo ($smtpautotls == "true") ? "checked=\"yes\" " : ""?>/>&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['EnableTLSEncryptionAutomaticallyIfAServerSupportsIt']); ?></td>
-                    </tr>
-                    <tr class="smtp"<?php echo ($transport=="sendmail") ? " style=\"display: none;\"" : "" ?>>
-                      <td colspan="2"><input type="checkbox" name="smtpauth" id="smtpauth" onchange="javascript: checkbox_smtpauth()" <?php echo ($smtpauth == "true") ? "checked=\"yes\" " : ""?>/>&nbsp;&nbsp;<?php echo $escaper->escapeHTML($lang['SMTPAuthentication']); ?></td>
-                    </tr>
-                    <tr class="smtpauth"<?php echo ($transport=="sendmail" || $smtpauth=="false") ? " style=\"display: none;\"" : "" ?>>
-                      <td><?php echo $escaper->escapeHTML($lang['Username']); ?>:&nbsp;&nbsp;</td>
-                      <td><input type="text" name="username" value="<?php echo $escaper->escapeHTML($username); ?>" /></td>
-                    </tr>
-                    <tr class="smtpauth"<?php echo ($transport=="sendmail" || $smtpauth=="false") ? " style=\"display: none;\"" : "" ?>>
-                      <td><?php echo $escaper->escapeHTML($lang['Password']); ?>:&nbsp;&nbsp;</td>
-                      <td><input type="password" name="password" value="" placeholder="Change Current Value" /></td>
-                    </tr>
-                    <tr class="smtpauth"<?php echo ($transport=="sendmail" || $smtpauth=="false") ? " style=\"display: none;\"" : "" ?>>
-                      <td><?php echo $escaper->escapeHTML($lang['Encryption']); ?>:&nbsp;&nbsp;</td>
-                      <td>
-                        <select name="encryption" id="encryption">
-                          <option value="none"<?php echo ($encryption=="none") ? " selected" : ""; ?>>None</option>
-                          <option value="tls"<?php echo ($encryption=="tls") ? " selected" : ""; ?>>TLS</option>
-                          <option value="ssl"<?php echo ($encryption=="ssl") ? " selected" : ""; ?>>SSL</option>
-                        </select>
-                      </td>
-                    </tr>
-                  </table>
-                <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Submit']); ?>" name="submit_mail" />
+                  <h3><?php echo $escaper->escapeHtml($lang['MailSettings']); ?></h3>
+                  <table border="1" width="600" cellpadding="10px">
+                  <tbody>
+                  <tr>
+                    <td>
+                      <table name="mail" id="mail" border="0">
+                        <tr>
+                          <td><?php echo $escaper->escapeHTML($lang['TransportAgent']); ?>:&nbsp;&nbsp;</td>
+                          <td>
+                            <select name="transport" id="transport" onchange="javascript: dropdown_transport()">
+                              <option value="sendmail"<?php echo ($transport=="sendmail") ? " selected" : ""; ?>>sendmail</option>
+                              <option value="smtp"<?php echo ($transport=="smtp") ? " selected" : ""; ?>>smtp</option>
+                            </select>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td><?php echo $escaper->escapeHTML($lang['FromName']); ?>:&nbsp;&nbsp;</td>
+                          <td><input type="text" name="from_name" value="<?php echo $escaper->escapeHTML($from_name); ?>" /></td>
+                        </tr>
+                        <tr>
+                          <td><?php echo $escaper->escapeHTML($lang['FromEmail']); ?>:&nbsp;&nbsp;</td>
+                          <td><input type="email" name="from_email" value="<?php echo $escaper->escapeHTML($from_email); ?>" /></td>
+                        </tr>
+                        <tr>
+                          <td><?php echo $escaper->escapeHTML($lang['ReplyToName']); ?>:&nbsp;&nbsp;</td>
+                          <td><input type="text" name="replyto_name" value="<?php echo $escaper->escapeHTML($replyto_name); ?>" /></td>
+                        </tr>
+                        <tr>
+                          <td><?php echo $escaper->escapeHTML($lang['ReplyToEmail']); ?>:&nbsp;&nbsp;</td>
+                          <td><input type="email" name="replyto_email" value="<?php echo $escaper->escapeHTML($replyto_email); ?>" /></td>
+                        </tr>
+                        <tr class="smtp"<?php echo ($transport=="sendmail") ? " style=\"display: none;\"" : "" ?>>
+                          <td><?php echo $escaper->escapeHTML($lang['Host']); ?>:&nbsp;&nbsp;</td>
+                          <td><input type="text" name="host" value="<?php echo $escaper->escapeHTML($host); ?>" /></td>
+                        </tr>
+                        <tr class="smtp"<?php echo ($transport=="sendmail") ? " style=\"display: none;\"" : "" ?>>
+                          <td><?php echo $escaper->escapeHTML($lang['Port']); ?>:&nbsp;&nbsp;</td>
+                          <td><input type="number" name="port" value="<?php echo $escaper->escapeHTML($port); ?>" /></td>
+                        </tr>
+                        <tr class="smtp"<?php echo ($transport=="sendmail") ? " style=\"display: none;\"" : "" ?>>
+                          <td colspan="2"><input type="checkbox" name="smtpautotls" id="smtpautotls" <?php echo ($smtpautotls == "true") ? "checked=\"yes\" " : ""?>/>&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['EnableTLSEncryptionAutomaticallyIfAServerSupportsIt']); ?></td>
+                        </tr>
+                        <tr class="smtp"<?php echo ($transport=="sendmail") ? " style=\"display: none;\"" : "" ?>>
+                          <td colspan="2"><input type="checkbox" name="smtpauth" id="smtpauth" onchange="javascript: checkbox_smtpauth()" <?php echo ($smtpauth == "true") ? "checked=\"yes\" " : ""?>/>&nbsp;&nbsp;<?php echo $escaper->escapeHTML($lang['SMTPAuthentication']); ?></td>
+                        </tr>
+                        <tr class="smtpauth"<?php echo ($transport=="sendmail" || $smtpauth=="false") ? " style=\"display: none;\"" : "" ?>>
+                          <td><?php echo $escaper->escapeHTML($lang['Username']); ?>:&nbsp;&nbsp;</td>
+                          <td><input type="text" name="username" value="<?php echo $escaper->escapeHTML($username); ?>" /></td>
+                        </tr>
+                        <tr class="smtpauth"<?php echo ($transport=="sendmail" || $smtpauth=="false") ? " style=\"display: none;\"" : "" ?>>
+                          <td><?php echo $escaper->escapeHTML($lang['Password']); ?>:&nbsp;&nbsp;</td>
+                          <td><input type="password" name="password" value="" placeholder="Change Current Value" /></td>
+                        </tr>
+                        <tr class="smtpauth"<?php echo ($transport=="sendmail" || $smtpauth=="false") ? " style=\"display: none;\"" : "" ?>>
+                          <td><?php echo $escaper->escapeHTML($lang['Encryption']); ?>:&nbsp;&nbsp;</td>
+                          <td>
+                            <select name="encryption" id="encryption">
+                              <option value="none"<?php echo ($encryption=="none") ? " selected" : ""; ?>>None</option>
+                              <option value="tls"<?php echo ($encryption=="tls") ? " selected" : ""; ?>>TLS</option>
+                              <option value="ssl"<?php echo ($encryption=="ssl") ? " selected" : ""; ?>>SSL</option>
+                            </select>
+                          </td>
+                        </tr>
+                      </table>
+                    <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Submit']); ?>" name="submit_mail" />
+                  </td>
+                </tr>
+                </tbody>
+                </table>
+
+		<br />
+
+                <table border="1" width="600" cellpadding="10px">
+                <tbody>
+                  <tr>
+                    <td>
+                      <table name="mail" id="mail" border="0">
+                        <tr>
+                          <td>
+                            <u><strong><?php echo $escaper->escapeHtml($lang['TestMailSettings']); ?></strong></u></td>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <input type="text" name="email" size="50" placeholder="<?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>"/>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <button type="submit" name="test_mail_configuration" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Send']); ?></button>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+                </table>
+
                 </form>
               </div>
             </div>

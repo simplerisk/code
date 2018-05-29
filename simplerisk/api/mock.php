@@ -10,15 +10,7 @@
     require_once(realpath(__DIR__ . '/../includes/api.php'));
 
     // Add various security headers
-    header("X-Frame-Options: DENY");
-    header("X-XSS-Protection: 1; mode=block");
-
-    // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-    if (csp_enabled())
-    {
-        // Add the Content-Security-Policy header
-        header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-    }
+    add_security_headers();
 
     // Session handler is database
     if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -236,11 +228,11 @@
         $results['response'] = '{
             "status": 200,
             "status_message": "scoring_history",
-            "data": {
+            "data": [{
                 "risk_id": "1001",
-		"calculated_risk": "10",
-		"last_update": "2017-03-05 17:55:57"
-            }
+		        "calculated_risk": "10",
+		        "last_update": "2017-03-05 17:55:57"
+            }]
         }';
 
         return;

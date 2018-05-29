@@ -18,15 +18,7 @@ require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (csp_enabled())
-{
-  // Add the Content-Security-Policy header
-  header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-}
+add_security_headers();
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -80,11 +72,19 @@ if (isset($_POST['update_framework']))
   // Otherwise
   else
   {
-    // Insert a new framework up to 100 chars
-    if(update_framework($framework_id, $name, $descripiton, $parent)){
+    // Check if user has a permission to modify framework
+    if(empty($_SESSION['modify_frameworks']))
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyFrameworkPermission']));
+    }
+    // Update framework
+    elseif(update_framework($framework_id, $name, $descripiton, $parent))
+    {
         // Display an alert
         set_alert(true, "good", $escaper->escapeHtml($lang['FrameworkUpdated']));
-    }else{
+    }
+    else
+    {
         // Display an alert
         set_alert(true, "bad", $escaper->escapeHtml($lang['FrameworkNameExist']));
     }
@@ -98,8 +98,14 @@ if (isset($_POST['update_control']))
 {
   $control_id = (int)$_POST['control_id'];
 
+  // If user has no permission to modify controls
+  if(empty($_SESSION['modify_controls']))
+  {
+      // Display an alert
+      set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyControlPermission']));
+  }
   // Verify value is an integer
-  if (is_int($control_id))
+  elseif (is_int($control_id))
   {
       $control = array(
         'short_name' => isset($_POST['short_name']) ? $_POST['short_name'] : "",
@@ -133,11 +139,11 @@ if (isset($_POST['update_control']))
 
 // Check if editing test
 if(isset($_POST['update_test'])){
-    $test_id         = (int)$_POST['test_id'];
+    $test_id        = (int)$_POST['test_id'];
     $tester         = (int)$_POST['tester'];
     $test_frequency = (int)$_POST['test_frequency'];
-    $last_date      = $_POST['last_date'];
-    $next_date      = $_POST['next_date'];
+    $last_date      = get_standard_date_from_default_format($_POST['last_date']);
+    $next_date      = get_standard_date_from_default_format($_POST['next_date']);
     $name           = $escaper->escapeHtml($_POST['name']);
     $objective      = $escaper->escapeHtml($_POST['objective']);
     $test_steps     = $escaper->escapeHtml($_POST['test_steps']);
@@ -315,7 +321,7 @@ if(isset($_GET['initiate']) ){
                         $('[name=test_steps]', modal).val(data['test_steps']);
                         $('[name=approximate_time]', modal).val(data['approximate_time']);
                         $('[name=expected_results]', modal).val(data['expected_results']);
-                        $(".datepicker" , modal).datepicker({dateFormat: "yy-mm-dd"});
+                        $(".datepicker" , modal).datepicker();
                         
                         modal.modal();
                     }
@@ -458,6 +464,6 @@ if(isset($_GET['initiate']) ){
 
       </div>
     </div>
-
+    <?php display_set_default_date_format_script(); ?>
 </body>
 </html>

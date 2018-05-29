@@ -15,15 +15,7 @@ require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (csp_enabled())
-{
-  // Add the Content-Security-Policy header
-  header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-}
+add_security_headers();
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -54,20 +46,18 @@ if (assessments_extra())
     // Include the assessments extra
     require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
 
+    if(isset($_GET['action']) && $_GET['action']=="get_sub_questions_by_answer")
+    {
+        getAssessmentQuestionnaireQuestionsByAnswer();
+        exit;
+    }
+
     // If a token was sent
     if (isset($_GET['token']))
     {
         // If the token is valid
         if (is_valid_questionnaire_token($_GET['token']))
         {
-            // Check encrypted_pass is valid
-            if(!check_valid_encrypted_pass_in_contact())
-            {
-                logout_contact();
-                // If encrypted_pass is empty, logout contact
-                header("Location:".$_SESSION['base_url']."/assessments/questionnaire.index.php?token=".$_GET['token']);
-            }
-
             // Process action
             if(process_questionnaire_index()){
                 refresh();
@@ -142,7 +132,7 @@ else
     ?>
     <div class="container">
         <div class="row-fluid">
-            <div class="span12 questionnaire-response">
+            <div class="span12 questionnaire-response questionnaire-result-container">
                 <?php if ($display) display_questionnaire_index(); ?>
             </div>
         </div>
@@ -158,6 +148,7 @@ else
             });
         });
     </script>
+    <?php display_set_default_date_format_script(); ?>
 </body>
 
 </html>

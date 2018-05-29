@@ -20,10 +20,13 @@ function addRisk($this){
         processData: false,
         success: function(data){
             var message = $(data).filter('#alert');
+            var is_red_alert = $(".redalert", message).length;
             var risk_id = $(data).filter('#risk_hid_id');
+            var messate_html = "<div id=\"alert\" class=\"container-fluid\">"+message.html()+"</div>";
 
-            $('#show-alert').html(message);
-            if (message[0].innerText != 'The subject of a risk cannot be empty.'){
+            $('#show-alert').html(messate_html);
+            // If error was returned
+            if (!is_red_alert){
                 if (isNaN(index)){
                     var subject = $('input[name="subject"]', getForm).val();
                     var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -614,7 +617,6 @@ $(document).ready(function(){
         })
     })
     
-
     $('body').on('click', '.cancel-edit-mitigation', function(e){
         e.preventDefault();
         var tabContainer = $(this).parents('.tab-data');
@@ -760,6 +762,7 @@ $(document).ready(function(){
                 if(data.status_message){
                     $('#show-alert').html(data.status_message);
                 }
+                $('.save-review').prop('disabled', false)
             }
         })
         .fail(function(xhr, textStatus){
@@ -773,11 +776,13 @@ $(document).ready(function(){
                     $('#show-alert').html(xhr.responseJSON.status_message);
                 }
             }
+            $('.save-review').prop('disabled', false)
         });
     }
     
     $('body').on('click', '.save-review', function(e){
         e.preventDefault();
+        $('.save-review').prop('disabled', true)
         updateReview($(this));
     });
 

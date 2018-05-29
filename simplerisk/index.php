@@ -14,15 +14,7 @@ require_once(realpath(__DIR__ . '/includes/Component_ZendEscaper/Escaper.php'));
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (csp_enabled())
-{
-	// Add the Content-Security-Policy header
-	header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-}
+add_security_headers();
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -35,6 +27,7 @@ session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 
 if (!isset($_SESSION))
 {
+	sess_gc(1440);
 	session_name('SimpleRisk');
 	session_start();
 }
@@ -152,10 +145,9 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
   	}
 }
 ?>
-
 <html ng-app="SimpleRisk">
 <head>
-  <title>Simple Risk</title>
+  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <!-- build:css vendor/vendor.min.css -->
   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" media="screen" />
   <!-- endbuild -->
@@ -169,6 +161,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
   <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="css/theme.css">
 
+  <script src="js/jquery.min.js"></script>
 </head>
 <body ng-controller="MainCtrl" class="login--page">
   <?php view_top_menu("Home"); ?>
@@ -215,8 +208,12 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
     // If the custom authentication extra is enabled
     if (custom_authentication_extra())
     {
-        // Display the SSO login link
-        echo "<tr><td colspan=\"2\"><label><a href=\"extras/authentication/login.php\">" . $escaper->escapeHtml($lang['GoToSSOLoginPage']) . "</a></label></td></tr>\n";
+        // If SSO Login is enabled
+        if(get_settting_by_name("GO_TO_SSO_LOGIN"))
+        {
+            // Display the SSO login link
+            echo "<tr><td colspan=\"2\"><label><a href=\"extras/authentication/login.php\">" . $escaper->escapeHtml($lang['GoToSSOLoginPage']) . "</a></label></td></tr>\n";
+        }
     }
 
     echo "<a href=\"reset.php\">" . $escaper->escapeHtml($lang['ForgotYourPassword']) . "</a>";
@@ -232,11 +229,6 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
     echo "</div>\n";
   }
   ?>
+  <script src="js/bootstrap.min.js"></script>
 </body>
-<script src="js/jquery.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
-
-
-
-
 </html>

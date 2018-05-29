@@ -1,0 +1,24 @@
+#template-container{
+  .left-panel, .right-panel, .bottom-panel{
+      min-height: 50px;
+      border: 1px dotted;
+      width: 100%;
+      margin-left: 0px;
+      margin-right: 0px;
+      padding: 10px 15px;
+  }
+  .field-holder{
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      margin-bottom: 5px;
+      padding: 3px;
+      border: 1px solid;
+      position: relative;
+      .delete{
+          cursor: pointer;
+          position: absolute;
+          right: 8px;
+      }
+  }
+}

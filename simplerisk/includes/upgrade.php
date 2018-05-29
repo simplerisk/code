@@ -21,26 +21,26 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
  *************************/
 function get_api_key()
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Query the database
-        $stmt = $db->prepare("SELECT value FROM `settings` WHERE `name`='api_key'");
-        $stmt->execute();
+    // Query the database
+    $stmt = $db->prepare("SELECT value FROM `settings` WHERE `name`='api_key'");
+    $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // If the array is empty
-        if (empty($array))
-        {
-                // Return false
-                return false;
-        }
-        else return $array[0]['value'];
+    // If the array is empty
+    if (empty($array))
+    {
+            // Return false
+            return false;
+    }
+    else return $array[0]['value'];
 }
 
 /*****************************
@@ -48,12 +48,12 @@ function get_api_key()
  *****************************/
 function check_valid_key($key)
 {
-        //If the key is correct
-        if ($key == get_api_key())
-        {
-                return true;
-        }
-        else return false;
+    //If the key is correct
+    if ($key == get_api_key())
+    {
+        return true;
+    }
+    else return false;
 }
 
 /****************************
@@ -61,25 +61,25 @@ function check_valid_key($key)
  ****************************/
 function upgrade_logout()
 {
-        // Deny access
-        $_SESSION["access"] = "denied";
+    // Deny access
+    $_SESSION["access"] = "denied";
 
-        // Reset the session data
-        $_SESSION = array();
+    // Reset the session data
+    $_SESSION = array();
 
 
-        // Send a Set-Cookie to invalidate the session cookie
-        if (ini_get("session.use_cookies"))
-        {
-                $params = session_get_cookie_params();
-                setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], isset($params['httponly']));
-        }
+    // Send a Set-Cookie to invalidate the session cookie
+    if (ini_get("session.use_cookies"))
+    {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], isset($params['httponly']));
+    }
 
-        // Destroy the session
-        session_destroy();
+    // Destroy the session
+    session_destroy();
 
-        // Redirect to the upgrade login form
-        header( 'Location: upgrade.php' );
+    // Redirect to the upgrade login form
+    header( 'Location: upgrade.php' );
 }
 
 /********************************
@@ -141,8 +141,8 @@ function display_upgrade_info()
  **************************************/
 function convert_tables_to_innodb()
 {
-        // Connect to the database
-        $db = db_open();
+    // Connect to the database
+    $db = db_open();
 
     // Find tables that are not InnoDB
     $stmt = $db->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema='" . DB_DATABASE . "' AND ENGINE!='InnoDB';");
@@ -166,8 +166,8 @@ function convert_tables_to_innodb()
         }
     }
 
-        // Disconnect from the database
-        db_close($db);
+    // Disconnect from the database
+    db_close($db);
 }
 
 /************************************
@@ -175,29 +175,29 @@ function convert_tables_to_innodb()
  ************************************/
 function convert_tables_to_utf8()
 {
-        // Connect to the database
-        $db = db_open();
+    // Connect to the database
+    $db = db_open();
 
-        // Find tables that are not InnoDB
-        $stmt = $db->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema='" . DB_DATABASE . "' AND TABLE_COLLATION!='utf8_general_ci';");
+    // Find tables that are not InnoDB
+    $stmt = $db->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema='" . DB_DATABASE . "' AND TABLE_COLLATION!='utf8_general_ci';");
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll();
+
+    // For each table that is not InnoDB
+    foreach ($array as $value)
+    {
+        // Get the table name
+        $table_name = $value['table_name'];
+
+        // Change the table to InnoDB
+        $stmt = $db->prepare("ALTER TABLE " . $table_name . " CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;");
         $stmt->execute();
+    }
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
-
-        // For each table that is not InnoDB
-        foreach ($array as $value)
-        {
-                // Get the table name
-                $table_name = $value['table_name'];
-
-                // Change the table to InnoDB
-                $stmt = $db->prepare("ALTER TABLE " . $table_name . " CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;");
-                $stmt->execute();
-        }
-
-        // Disconnect from the database
-        db_close($db);
+    // Disconnect from the database
+    db_close($db);
 }
 
 /**************************
@@ -231,47 +231,47 @@ function check_grants($db)
             $select = true;
         }
 
-                // Match INSERT statement
-                $regex_pattern = "/INSERT/";
-                if (preg_match($regex_pattern, $string))
-                {
-                        $insert = true;
-                }
+        // Match INSERT statement
+        $regex_pattern = "/INSERT/";
+        if (preg_match($regex_pattern, $string))
+        {
+                $insert = true;
+        }
 
-                // Match UPDATE statement
-                $regex_pattern = "/UPDATE/";
-                if (preg_match($regex_pattern, $string))
-                {
-                        $update = true;
-                }
+        // Match UPDATE statement
+        $regex_pattern = "/UPDATE/";
+        if (preg_match($regex_pattern, $string))
+        {
+                $update = true;
+        }
 
-                // Match DELETE statement
-                $regex_pattern = "/DELETE/";
-                if (preg_match($regex_pattern, $string))
-                {
-                        $delete = true;
-                }
+        // Match DELETE statement
+        $regex_pattern = "/DELETE/";
+        if (preg_match($regex_pattern, $string))
+        {
+                $delete = true;
+        }
 
-                // Match CREATE statement
-                $regex_pattern = "/CREATE/";
-                if (preg_match($regex_pattern, $string))
-                {
-                        $create = true;
-                }
+        // Match CREATE statement
+        $regex_pattern = "/CREATE/";
+        if (preg_match($regex_pattern, $string))
+        {
+                $create = true;
+        }
 
-                // Match DROP statement
-                $regex_pattern = "/DROP/";
-                if (preg_match($regex_pattern, $string))
-                {
-                        $drop = true;
-                }
+        // Match DROP statement
+        $regex_pattern = "/DROP/";
+        if (preg_match($regex_pattern, $string))
+        {
+                $drop = true;
+        }
 
-                // Match ALTER statement
-                $regex_pattern = "/ALTER/";
-                if (preg_match($regex_pattern, $string))
-                {
-                        $alter = true;
-                }
+        // Match ALTER statement
+        $regex_pattern = "/ALTER/";
+        if (preg_match($regex_pattern, $string))
+        {
+                $alter = true;
+        }
 
         // Match ALL statement
         $regex_pattern = "/ALL/";
@@ -565,11 +565,11 @@ function upgrade_from_20141214001($db)
  **************************************/
 function upgrade_from_20150202001($db)
 {
-        // Database version to upgrade
-        $version_to_upgrade = '20150202-001';
+    // Database version to upgrade
+    $version_to_upgrade = '20150202-001';
 
-        // Database version upgrading to
-        $version_upgrading_to = '20150321-001';
+    // Database version upgrading to
+    $version_upgrading_to = '20150321-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
@@ -669,10 +669,10 @@ function upgrade_from_20150321001($db)
     $stmt = $db->prepare("ALTER TABLE `user` ADD review_veryhigh tinyint(1) NOT NULL DEFAULT '0' AFTER `admin`;");
     $stmt->execute();
 
-        // Give admin users ability to review Very High risks
-        echo "Giving admin users the ability to review Very High risks.<br />\n";
-        $stmt = $db->prepare("UPDATE `user` SET review_veryhigh='1' WHERE admin='1';");
-        $stmt->execute();
+    // Give admin users ability to review Very High risks
+    echo "Giving admin users the ability to review Very High risks.<br />\n";
+    $stmt = $db->prepare("UPDATE `user` SET review_veryhigh='1' WHERE admin='1';");
+    $stmt->execute();
 
     // Add a new Insignificant user responsibility
     echo "Adding a new Insignificant user responsibility.<br />\n";
@@ -702,11 +702,11 @@ function upgrade_from_20150321001($db)
  **************************************/
 function upgrade_from_20150531001($db)
 {
-        // Database version to upgrade
-        $version_to_upgrade = '20150531-001';
+    // Database version to upgrade
+    $version_to_upgrade = '20150531-001';
 
-        // Database version upgrading to
-        $version_upgrading_to = '20150729-001';
+    // Database version upgrading to
+    $version_upgrading_to = '20150729-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
@@ -756,10 +756,10 @@ function upgrade_from_20150531001($db)
     // Add a setting to show not registered
     echo "Adding a setting to show SimpleRisk is not registered.<br />\n";
     $stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('registration_registered', 0)");
-        $stmt->execute();
+    $stmt->execute();
 
-        // Update the database version
-        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
 
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
@@ -769,13 +769,13 @@ function upgrade_from_20150531001($db)
  **************************************/
 function upgrade_from_20150729001($db)
 {
-        // Database version to upgrade
-        $version_to_upgrade = '20150729-001';
+    // Database version to upgrade
+    $version_to_upgrade = '20150729-001';
 
-        // Database version upgrading to
-        $version_upgrading_to = '20150920-001';
+    // Database version upgrading to
+    $version_upgrading_to = '20150920-001';
 
-        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
     // Create a setting for password policy
     echo "Enabling the new password policy.<br />\n";
@@ -822,8 +822,8 @@ function upgrade_from_20150729001($db)
     $stmt = $db->prepare("ALTER TABLE `risks` MODIFY `close_id` int(11) DEFAULT NULL;");
     $stmt->execute();
 
-        // Update the database version
-        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
 
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
@@ -881,18 +881,18 @@ function upgrade_from_20150928001($db)
  **************************************/
 function upgrade_from_20150930001($db)
 {
-        // Database version to upgrade
-        $version_to_upgrade = '20150930-001';
+    // Database version to upgrade
+    $version_to_upgrade = '20150930-001';
 
-        // Database version upgrading to
-        $version_upgrading_to = '20151108-001';
+    // Database version upgrading to
+    $version_upgrading_to = '20151108-001';
 
-        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
-        // Set the user_id field default value to 0
-        echo "Setting the user_id field's default value to null.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `audit_log` MODIFY `user_id` int(11) DEFAULT 0 NOT NULL;");
-        $stmt->execute();
+    // Set the user_id field default value to 0
+    echo "Setting the user_id field's default value to null.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `audit_log` MODIFY `user_id` int(11) DEFAULT 0 NOT NULL;");
+    $stmt->execute();
 
     // Increase the size of the subject field to 300
     echo "Increasing the size of the subject field to 300 characters.<br />\n";
@@ -1246,18 +1246,18 @@ function upgrade_from_20160331001($db)
  **************************************/
 function upgrade_from_20160612001($db)
 {
-        // Database version to upgrade
-        $version_to_upgrade = '20160612-001';
+    // Database version to upgrade
+    $version_to_upgrade = '20160612-001';
 
-        // Database version upgrading to
-        $version_upgrading_to = '20161023-001';
+    // Database version upgrading to
+    $version_upgrading_to = '20161023-001';
 
-        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
-        // Find all risks with a status of Closed and no closures entry
-        echo "Searching for risks with a status of Closed and no closures entry.<br />\n";
-        $stmt = $db->prepare("SELECT * FROM `risks` WHERE status=\"Closed\" AND close_id = 0;");
-        $stmt->execute();
+    // Find all risks with a status of Closed and no closures entry
+    echo "Searching for risks with a status of Closed and no closures entry.<br />\n";
+    $stmt = $db->prepare("SELECT * FROM `risks` WHERE status=\"Closed\" AND close_id = 0;");
+    $stmt->execute();
     $array = $stmt->fetchAll();
 
     // For each risk
@@ -1274,10 +1274,10 @@ function upgrade_from_20160612001($db)
         echo "Created a closures entry for risk ID " . $risk_id . ".<br />\n";
     }
 
-        // Update the database version
-        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
 
-        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /**************************************
@@ -1285,18 +1285,18 @@ function upgrade_from_20160612001($db)
  **************************************/
 function upgrade_from_20161023001($db)
 {
-        // Database version to upgrade
-        $version_to_upgrade = '20161023-001';
+    // Database version to upgrade
+    $version_to_upgrade = '20161023-001';
 
-        // Database version upgrading to
-        $version_upgrading_to = '20161030-001';
+    // Database version upgrading to
+    $version_upgrading_to = '20161030-001';
 
-        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
-        // Update the database version
-        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
 
-        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /**************************************
@@ -1304,28 +1304,28 @@ function upgrade_from_20161023001($db)
  **************************************/
 function upgrade_from_20161030001($db)
 {
-        // Database version to upgrade
-        $version_to_upgrade = '20161030-001';
+    // Database version to upgrade
+    $version_to_upgrade = '20161030-001';
 
-        // Database version upgrading to
-        $version_upgrading_to = '20161122-001';
+    // Database version upgrading to
+    $version_upgrading_to = '20161122-001';
 
-        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
-        // Create a setting for strict user validation
-        echo "Enabling the new strict user validation policy.<br />\n";
-        $stmt = $db->prepare("INSERT IGNORE INTO `settings` (name, value) VALUES ('strict_user_validation', 1)");
-        $stmt->execute();
+    // Create a setting for strict user validation
+    echo "Enabling the new strict user validation policy.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `settings` (name, value) VALUES ('strict_user_validation', 1)");
+    $stmt->execute();
 
-        // Update the user table to allow for a 5 character lang value
-        echo "Updating the user table to use a 5 character lang value.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `user` MODIFY `lang` VARCHAR(5) DEFAULT null;");
-        $stmt->execute();
+    // Update the user table to allow for a 5 character lang value
+    echo "Updating the user table to use a 5 character lang value.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `user` MODIFY `lang` VARCHAR(5) DEFAULT null;");
+    $stmt->execute();
 
-        // Update the database version
-        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
 
-        echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
 /***************************************
@@ -2189,6 +2189,168 @@ function upgrade_from_20180104001($db){
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20180301-001 *
+ ***************************************/
+function upgrade_from_20180301001($db){
+    // Database version to upgrade
+    $version_to_upgrade = '20180301-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20180527-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Updating file types from 100 characters to 1000
+    echo "Updating file types from 100 characters to 1000.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `file_types` MODIFY `name` varchar(1000) NOT NULL;");
+    $stmt->execute();
+
+    // Creating a table to store residual risk score history
+    echo "Creating a table to store residual risk score history.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `residual_risk_scoring_history` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `risk_id` int(11) NOT NULL,
+          `residual_risk` float NOT NULL,
+          `last_update` datetime NOT NULL, 
+          PRIMARY KEY(id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+    );
+    $stmt->execute();
+
+    // Add deleted field to framework_controls table
+    echo "Adding deleted field to framework_controls table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `deleted` TINYINT NOT NULL DEFAULT '0';");
+    $stmt->execute();
+
+    // Add display_name field to risk_levels table
+    echo "Adding display_name field to risk_levels table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `risk_levels` ADD `display_name` VARCHAR(20) NOT NULL; ");
+    $stmt->execute();
+
+    // Set display_name values
+    echo "Setting display_name values.<br />\n";
+    $stmt = $db->prepare("Update `risk_levels` set display_name = name; ");
+    $stmt->execute();
+
+    // Creating date_formats table
+    echo "Creating date_formats table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `date_formats` (
+          `value` varchar(20) NOT NULL PRIMARY KEY
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+    
+    // Add values to date_formats table
+    echo "Adding values to date_formats table.<br />\n";
+    $stmt = $db->prepare("
+        INSERT INTO `date_formats` (`value`) VALUES
+        ('DD MM YYYY'),
+        ('DD-MM-YYYY'),
+        ('DD.MM.YYYY'),
+        ('DD/MM/YYYY'),
+        ('MM DD YYYY'),
+        ('MM-DD-YYYY'),
+        ('MM.DD.YYYY'),
+        ('MM/DD/YYYY'),
+        ('YYYY DD MM'),
+        ('YYYY MM DD'),
+        ('YYYY-DD-MM'),
+        ('YYYY-MM-DD'),
+        ('YYYY.DD.MM'),
+        ('YYYY.MM.DD'),
+        ('YYYY/DD/MM'),
+        ('YYYY/MM/DD');
+    ");
+    $stmt->execute();
+
+    // Add a new default date format setting
+    echo "Adding a new default date format setting.<br />\n";
+    add_setting("default_date_format", "MM/DD/YYYY");
+
+    // Create role table
+    echo "Creating role table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `role` (
+          `value` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+          `name` varchar(100) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+    
+    // Create role_responsibilities table
+    echo "Creating role_responsibilities table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `role_responsibilities` (
+          `role_id` int(11) NOT NULL,
+          `responsibility_name` varchar(100) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+    
+    // Add Administrator role
+    echo "Adding Administrator role.<br />\n";
+    $stmt = $db->prepare("INSERT INTO `role` (`value`, `name`) VALUES ('1', 'Administrator'); ");
+    $stmt->execute();
+    
+    // Add a field, role_id to `user` table
+    echo "Adding a field, role_id to `user` table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `user` ADD `role_id` INT NOT NULL AFTER `teams` ;");
+    $stmt->execute();
+
+    // Add a field, accept_mitigation to `user` table
+    echo "Adding a field, accept_mitigation to `user` table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `user` ADD `accept_mitigation` TINYINT(1) NOT NULL DEFAULT '0' AFTER `review_high`; ");
+    $stmt->execute();
+    
+    // Get all teams
+    $stmt = $db->prepare("SELECT value FROM `team` ");
+    $stmt->execute();
+    $teamIds = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+    $teams = ":".implode("::", $teamIds).":";
+    
+    // Assign administrator role to all users with access to configure menu.
+    $stmt = $db->prepare("UPDATE `user` SET governance=1, riskmanagement=1, compliance=1, assessments=1, asset=1, review_veryhigh=1, accept_mitigation=1, review_high=1, review_medium=1, review_low=1, review_insignificant=1, submit_risks=1, modify_risks=1, plan_mitigations=1, close_risks=1, role_id=1, teams='{$teams}' WHERE admin=1; ");
+    $stmt->execute();
+    
+    // Create a mitigation_accept_users table
+    echo "Creating a mitigation_accept_users table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `mitigation_accept_users` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `risk_id` int(11) NOT NULL,
+          `user_id` int(11) NOT NULL,
+          `created_at` datetime NOT NULL,
+          PRIMARY KEY(id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+    
+    // Add new fields to user table 
+    echo "Adding new fields, `add_new_frameworks`, `modify_frameworks`, `delete_frameworks`, `add_new_controls`, `modify_controls`, `delete_controls` to `user` table.<br />\n";
+    $stmt = $db->prepare("
+        ALTER TABLE `user` ADD `add_new_frameworks` TINYINT NOT NULL DEFAULT '0' , ADD `modify_frameworks` TINYINT NOT NULL DEFAULT '0' , ADD `delete_frameworks` TINYINT NOT NULL DEFAULT '0' , ADD `add_new_controls` TINYINT NOT NULL DEFAULT '0' , ADD `modify_controls` TINYINT NOT NULL DEFAULT '0' , ADD `delete_controls` TINYINT NOT NULL DEFAULT '0' ; 
+    ");
+    $stmt->execute();
+    
+    // Assign new governance roles to the users who currently have the Allow access to Governance  menu field checked.
+    $stmt = $db->prepare("UPDATE `user` SET add_new_frameworks=1, modify_frameworks=1, delete_frameworks=1, add_new_controls=1, modify_controls=1, delete_controls=1 WHERE governance=1; ");
+    $stmt->execute();
+    
+    // Update technology field from Int type to String
+    echo "Updating technology field from Int type to String.<br />\n";
+    $stmt = $db->prepare("
+        ALTER TABLE `risks` CHANGE `technology` `technology` VARCHAR(500) NOT NULL; 
+    ");
+    $stmt->execute();
+    
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -2311,9 +2473,13 @@ function upgrade_database()
                 upgrade_database();
                 break;
             case "20180104-001":
-		upgrade_from_20180104001($db);
-		upgrade_database();
-		break;
+                upgrade_from_20180104001($db);
+                upgrade_database();
+            break;
+            case "20180301-001":
+                upgrade_from_20180301001($db);
+                upgrade_database();
+                break;
             default:
                 echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
         }

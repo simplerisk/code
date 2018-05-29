@@ -12,15 +12,7 @@
     require_once(realpath(__DIR__ . '/../includes/api.php'));
 
     // Add various security headers
-    header("X-Frame-Options: DENY");
-    header("X-XSS-Protection: 1; mode=block");
-
-    // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-    if (csp_enabled())
-    {
-        // Add the Content-Security-Policy header
-        header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-    }
+    add_security_headers();
 
     // Session handler is database
     if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -71,7 +63,7 @@
         getRoute()->get('/admin/users/disabled', 'disabledusers');
         getRoute()->post('/admin/fields/add', 'customization_addCustomField');
         getRoute()->post('/admin/fields/delete', 'customization_deleteCustomField');
-        getRoute()->get('/admin/fields/get', 'customization_getCustomField');
+	      getRoute()->get('/admin/fields/get', 'customization_getCustomField');
         getRoute()->get('/reports', 'show_reports');
         getRoute()->get('/reports/dynamic', 'dynamicrisk');
         getRoute()->get('/risk_levels', 'risk_levels');
@@ -101,12 +93,14 @@
         getRoute()->post('/management/risk/saveSubject', 'saveSubjectForm');
 
         getRoute()->post('/management/risk/saveComment', 'saveCommentForm');
+        getRoute()->get('/management/risk/accept_mitigation', 'acceptMitigationForm');
 
         getRoute()->post('/management/impportexport/deleteMapping', 'deleteMapping');
         getRoute()->post('/assessment/update', 'updateAssessment');
 
         getRoute()->get('/datatable/framework_controls', 'getFrameworkControlsDatatable');
         getRoute()->get('/datatable/mitigation_controls', 'getMitigationControlsDatatable');
+        getRoute()->get('/role_responsibilities/get_responsibilities', 'getResponsibilitiesByRoleIdForm');
         
         /******************** Governance and Compliance API **********************/
         getRoute()->get('/governance/frameworks', 'getFrameworksResponse');
@@ -137,8 +131,15 @@
         getRoute()->get('/assessment/questionnaire/template_questions/dynamic', 'assessment_extra_questionnaireTemplateQuestionsDynamicAPI');
         /******************************************************************************/
         
+        /********************* Customization API **************************/
+        getRoute()->post('/customization/addOption', 'customization_extra_addOption');
+        getRoute()->post('/customization/deleteOption', 'customization_extra_deleteOption');
+        getRoute()->post('/customization/saveTemplate', 'customization_extra_saveTemplate');
+        /******************************************************************/
+        
         // Return scoring histories
         getRoute()->get('/management/risk/scoring_history', 'scoringHistory');
+        getRoute()->get('/management/risk/residual_scoring_history', 'residualScoringHistory');
 
         // Interal api for ajax
         getRoute()->post('/set_custom_display', 'setCustomDisplay');

@@ -16,15 +16,7 @@ require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (csp_enabled())
-{
-  // Add the Content-Security-Policy header
-  header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-}
+add_security_headers();
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -78,8 +70,13 @@ if (isset($_POST['add_framework']))
   // Otherwise
   else
   {
+    if(empty($_SESSION['add_new_frameworks']))
+    {
+        // Display an alert
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddFrameworkPermission']));
+    }
     // Insert a new framework up to 100 chars
-    if(add_framework($name, $descripiton, $parent)){
+    elseif(add_framework($name, $descripiton, $parent)){
         // Display an alert
         set_alert(true, "good", $escaper->escapeHtml($lang['FrameworkAdded']));
     }else{
@@ -108,11 +105,17 @@ if (isset($_POST['update_framework']))
   // Otherwise
   else
   {
+    // Check if user has a permission to modify framework
+    if(empty($_SESSION['modify_frameworks'])){
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyFrameworkPermission']));
+    }
     // Insert a new framework up to 100 chars
-    if(update_framework($framework_id, $name, $descripiton, $parent)){
+    elseif(update_framework($framework_id, $name, $descripiton, $parent))
+    {
         // Display an alert
         set_alert(true, "good", $escaper->escapeHtml($lang['FrameworkUpdated']));
-    }else{
+    }
+    else{
         // Display an alert
         set_alert(true, "bad", $escaper->escapeHtml($lang['FrameworkNameExist']));
     }
@@ -129,8 +132,13 @@ if (isset($_POST['delete_framework']))
   // Verify value is an integer
   if (is_int($value))
   {
+    // If user has no permission for modify frameworks
+    if(empty($_SESSION['delete_frameworks']))
+    {
+      set_alert(true, "bad", $escaper->escapeHtml($lang['NoDeleteFrameworkPermission']));
+    }
     // If the framework ID is 0 (ie. Unassigned Risks)
-    if ($value == 0)
+    elseif ($value == 0)
     {
       // Display an alert
       set_alert(true, "bad", "You cannot delete the Unassigned framework.  Sorry.");
@@ -152,20 +160,6 @@ if (isset($_POST['delete_framework']))
   }
   
   refresh();
-}
-
-// Delete if a new framework was submitted
-if (isset($_POST['update_framework_status']))
-{
-  // For each framework
-    // Update its framework status
-    $status_id  = $_POST['status'];
-    $framework_id = $_POST['framework_id'];
-    update_framework_status($status_id, $framework_id);
-
-    // Display an alert
-    set_alert(true, "good", "The framework statuses were successfully updated.");
-    exit;
 }
 
 // Check if a new control was submitted
@@ -195,11 +189,20 @@ if (isset($_POST['add_control']))
   // Otherwise
   else
   {
+    // If user has no permission for add new controls
+    if(empty($_SESSION['add_new_controls']))
+    {
+        // Display an alert
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddControlPermission']));
+    }
     // Insert a new control up to 100 chars
-    if(add_framework_control($control)){
+    elseif(add_framework_control($control))
+    {
         // Display an alert
         set_alert(true, "good", "A new control was added successfully.");
-    }else{
+    }
+    else
+    {
         // Display an alert
         set_alert(true, "bad", "The control already exists.");
     }
@@ -214,8 +217,14 @@ if (isset($_POST['delete_control']))
 {
   $value = (int)$_POST['control_id'];
 
+  // If user has no permission for delete controls
+  if(empty($_SESSION['delete_controls']))
+  {
+      // Display an alert
+      set_alert(true, "bad", $escaper->escapeHtml($lang['NoDeleteControlPermission']));
+  }
   // Verify value is an integer
-  if (is_int($value))
+  elseif (is_int($value))
   {
       // Delete the control
       delete_framework_control($value);
@@ -239,8 +248,14 @@ if (isset($_POST['update_control']))
 {
   $control_id = (int)$_POST['control_id'];
 
+  // If user has no permission to modify controls
+  if(empty($_SESSION['modify_controls']))
+  {
+      // Display an alert
+      set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyControlPermission']));
+  }
   // Verify value is an integer
-  if (is_int($control_id))
+  elseif (is_int($control_id))
   {
       $control = array(
         'short_name' => isset($_POST['short_name']) ? $_POST['short_name'] : "",
@@ -810,6 +825,7 @@ if (isset($_POST['update_control']))
   </div>
 </div>
 
+    <?php display_set_default_date_format_script(); ?>
 </body>
 
 </html>

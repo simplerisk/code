@@ -2,23 +2,20 @@
         /* This Source Code Form is subject to the terms of the Mozilla Public
          * License, v. 2.0. If a copy of the MPL was not distributed with this
          * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
         require_once(realpath(__DIR__ . '/../includes/functions.php'));
         require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/config.php'));
 	require_once(realpath(__DIR__ . '/../includes/upgrade.php'));
 	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+
         // Include Zend Escaper for HTML Output Encoding
         require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
         $escaper = new Zend\Escaper\Escaper('utf-8');
+
         // Add various security headers
-        header("X-Frame-Options: DENY");
-        header("X-XSS-Protection: 1; mode=block");
-        // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-        if (csp_enabled())
-        {
-                // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-        }
+	add_security_headers();
+
         // Start the session
 	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
         if (!isset($_SESSION))
@@ -26,17 +23,21 @@
         	session_name('SimpleRiskDBUpgrade');
         	session_start();
         }
+
         // Include the language file
         require_once(language_file());
         require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
         // Check for session timeout or renegotiation
         session_check();
+
         // If the user requested a logout
         if (isset($_GET['logout']) && $_GET['logout'] == "true")
         {
 		// Log the user out
 		upgrade_logout();
 	}
+
         // If the login form was posted
         if (isset($_POST['submit']))
         {

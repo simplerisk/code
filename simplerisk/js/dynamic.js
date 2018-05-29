@@ -755,7 +755,15 @@ function check_mitigation_team()
 }
 $(document).ready(function(){
     if($(".risk-datatable").length){
+<<<<<<< Updated upstream
         var sortColumns = [["calculated_risk", "desc"], ["id", "asc"], ["subject", "asc"]];
+=======
+<<<<<<< HEAD
+        var sortColumns = [["calculated_risk", "desc"], ["id", "asc"], ["subject", "asc"], ["residual_risk", "desc"]];
+=======
+        var sortColumns = [["calculated_risk", "desc"], ["id", "asc"], ["subject", "asc"]];
+>>>>>>> origin/master
+>>>>>>> Stashed changes
         var defaultSortColumnIndex = 0;
         var defaultSortColumn = sortColumns[$("#sort").val()];
         var columnOptions = [];
@@ -765,7 +773,7 @@ $(document).ready(function(){
             if(columnNames.indexOf(name) > -1){
                 return;
             }
-            columnNames.push(name)
+            columnNames.push(name);
             if(!$("form[name='get_risks_by'] input.hidden-checkbox[name='"+ name +"']").is(':checked')){
                 columnOptions.push(index);
             }
@@ -784,6 +792,7 @@ $(document).ready(function(){
                 processing: true,
                 serverSide: true,
                 bSort: true,
+//                ordering: false,
                 pagingType: "full_numbers",
                 dom : "flrti<'#view-all-"+ index +".view-all'>p",
                 ajax: {
@@ -797,6 +806,7 @@ $(document).ready(function(){
                         d.group_value       = $this.data('group');
                     }
                 },
+                order: [[defaultSortColumnIndex, defaultSortColumn[1]]],
                 columnDefs : [
                     {
                         "targets" : columnOptions,
@@ -809,9 +819,24 @@ $(document).ready(function(){
                     {
                         "targets" : 16,
                         "className" : "risk-cell",
+<<<<<<< Updated upstream
                     }
                 ],
                 order: [[defaultSortColumnIndex, defaultSortColumn[1]]]
+=======
+<<<<<<< HEAD
+                    },
+                    {
+                        "targets" : [21, 22, 23, 26, 27, 28, 29, 30],
+                        "orderable" : false,
+                    },
+                ]
+=======
+                    }
+                ],
+                order: [[defaultSortColumnIndex, defaultSortColumn[1]]]
+>>>>>>> origin/master
+>>>>>>> Stashed changes
             });
             riskDatatable.on('draw', function(e, settings){
                 if(settings._iDisplayLength == -1){

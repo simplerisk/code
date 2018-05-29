@@ -14,15 +14,7 @@
     $escaper = new Zend\Escaper\Escaper('utf-8');
 
     // Add various security headers
-    header("X-Frame-Options: DENY");
-    header("X-XSS-Protection: 1; mode=block");
-
-    // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-    if (csp_enabled())
-    {
-            // Add the Content-Security-Policy header
-	header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-    }
+    add_security_headers();
 
     // Session handler is database
     if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -140,12 +132,12 @@
 		// If the user has updated their registration information
 		if (isset($_POST['register']))
 		{
-            // Get the posted values
-            $name = $_POST['name'];
-            $company = $_POST['company'];
-            $title = $_POST['title'];
-            $phone = $_POST['phone'];
-            $email = $_POST['email'];
+			// Get the posted values
+			$name = $_POST['name'];
+			$company = $_POST['company'];
+			$title = $_POST['title'];
+			$phone = $_POST['phone'];
+			$email = $_POST['email'];
 
 			// Update the registration
 			$result = update_registration($name, $company, $title, $phone, $email);
@@ -165,66 +157,84 @@
 		// Otherwise get the registration values from the database
 		else
 		{
-        	$name = get_setting("registration_name");
-	        $company = get_setting("registration_company");
-        	$title = get_setting("registration_title");
-        	$phone = get_setting("registration_phone");
-        	$email = get_setting("registration_email");
+        		$name = get_setting("registration_name");
+	        	$company = get_setting("registration_company");
+        		$title = get_setting("registration_title");
+        		$phone = get_setting("registration_phone");
+        		$email = get_setting("registration_email");
 		}
 
 		// If the user wants to install the Upgrade Extra
 		if (isset($_POST['get_upgrade_extra']))
 		{
-	        // Download the extra
-        	$result = download_extra("upgrade");
+	        	// Download the extra
+        		$result = download_extra("upgrade");
 		}
 		// If the user wants to install the Authentication Extra
 		else if (isset($_POST['get_authentication_extra']))
 		{
-            // Download the extra
-            $result = download_extra("authentication");
+			// Download the extra
+			$result = download_extra("authentication");
 		}
 		// If the user wants to install the Encryption Extra
 		else if (isset($_POST['get_encryption_extra']))
 		{
-	        // Download the extra
-        	$result = download_extra("encryption");
+	        	// Download the extra
+        		$result = download_extra("encryption");
 		}
 		// If the user wants to install the Import-Export Extra
 		else if (isset($_POST['get_importexport_extra']))
 		{
-	        // Download the extra
-        	$result = download_extra("import-export");
+	        	// Download the extra
+        		$result = download_extra("import-export");
 		}
 		// If the user wants to install the Notification Extra
 		else if (isset($_POST['get_notification_extra']))
 		{
-	        // Download the extra
-        	$result = download_extra("notification");
+	        	// Download the extra
+        		$result = download_extra("notification");
 		}
 		// If the user wants to install the Separation Extra
 		else if (isset($_POST['get_separation_extra']))
 		{
-	        // Download the extra
-        	$result = download_extra("separation");
+	        	// Download the extra
+        		$result = download_extra("separation");
 		}
 		else if (isset($_POST['get_governance_extra']))
 		{
 			// Download the extra
 			$result = download_extra("governance");
 		}
-        // If the user wants to install the Risk Assessments Extra
-        else if (isset($_POST['get_assessments_extra']))
-        {
-            // Download the extra
-            $result = download_extra("assessments");
-        }
-        // If the user wants to install the API Extra
-        else if (isset($_POST['get_api_extra']))
-        {
-            // Download the extra
-            $result = download_extra("api");
-        }
+        	// If the user wants to install the Risk Assessments Extra
+        	else if (isset($_POST['get_assessments_extra']))
+        	{
+            		// Download the extra
+            		$result = download_extra("assessments");
+        	}
+        	// If the user wants to install the API Extra
+        	else if (isset($_POST['get_api_extra']))
+        	{
+            		// Download the extra
+            		$result = download_extra("api");
+        	}
+                // If the user wants to install the ComplianceForge Extra
+                else if (isset($_POST['get_complianceforge_extra']))
+                {
+                        // Download the extra
+                        $result = download_extra("complianceforge");
+                }
+                // If the user wants to install the ComplianceForge SCF Extra
+                else if (isset($_POST['get_complianceforge_scf_extra']))
+                {
+                        // Download the extra
+                        $result = download_extra("complianceforgescf");
+                }
+                // If the user wants to install the Customization Extra
+                else if (isset($_POST['get_customization_extra']))
+                {
+                        // Download the extra
+                        $result = download_extra("customization");
+                }
 	}
 ?>
 

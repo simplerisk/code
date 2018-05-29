@@ -123,9 +123,18 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "")
     $stmt->bindParam(":details", $details, PDO::PARAM_STR);
     $return = $stmt->execute();
 
+    // If failed to insert, update the record
+    if(!$stmt->rowCount())
+    {
+        $return = false;
+    }
+    else{
+        $return = true;
+    }
+
     // Update the asset_id column in risks_to_assets
     $stmt = $db->prepare("UPDATE `risks_to_assets` INNER JOIN `assets` ON `assets`.name = `risks_to_assets`.asset SET `risks_to_assets`.asset_id = `assets`.id;");
-$return = $stmt->execute();
+    $stmt->execute();
 
     // Close the database connection
     db_close($db);
@@ -142,17 +151,17 @@ function delete_assets($assets)
     // Return true by default
     $return = true;
 
-        // For each asset
-        foreach ($assets as $asset)
-        {
-                $asset_id = (int) $asset;
+    // For each asset
+    foreach ($assets as $asset)
+    {
+        $asset_id = (int) $asset;
 
-                // Delete the asset
-                $success = delete_asset($asset_id);
+        // Delete the asset
+        $success = delete_asset($asset_id);
 
         // If it was not a success return false
         if (!$success) $return = false;
-        }
+    }
 
     // Return success or failure
     return $return;
@@ -163,24 +172,24 @@ function delete_assets($assets)
  **************************/
 function delete_asset($asset_id)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
     // Delete the assets entry
-        $stmt = $db->prepare("DELETE FROM `assets` WHERE `id`=:id;");
-        $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
-        $return = $stmt->execute();
+    $stmt = $db->prepare("DELETE FROM `assets` WHERE `id`=:id;");
+    $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
+    $return = $stmt->execute();
 
     // Delete the risks_to_assets entry
     $stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE `asset_id`=:id;");
     $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
     $return = $stmt->execute();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // Return success or failure
-        return $return;
+    // Return success or failure
+    return $return;
 }
 
 /*********************************
@@ -728,7 +737,7 @@ function display_asset_valuation_table()
  *********************************************/
 function create_asset_valuation_dropdown($name, $selected = NULL)
 {
-    global $escaper;
+	global $escaper;
 
         // Open the database connection
         $db = db_open();
@@ -738,22 +747,33 @@ function create_asset_valuation_dropdown($name, $selected = NULL)
         $stmt->execute();
         $values = $stmt->fetchAll();
 
-    echo "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\" >\n";
+	echo "<select id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\" >\n";
 
         // For each asset value
         foreach ($values as $value)
         {
-        // If the option is selected
-        if ($selected == $value['id'])
-        {
-            $text = " selected";
-        }
-        else $text = "";
+	        // If the option is selected
+	        if ($selected == $value['id'])
+	        {
+	            $text = " selected";
+	        }
+	        else $text = "";
 
-        echo "  <option value=\"" . $escaper->escapeHtml($value['id']) . "\"" . $text . ">" . $escaper->escapeHtml(get_setting("currency")) . $escaper->escapeHtml(number_format($value['min_value'])) . " to " . $escaper->escapeHtml(get_setting("currency")) . $escaper->escapeHtml(number_format($value['max_value'])) . "</option>\n";
-    }
+		echo "  <option value=\"" . $escaper->escapeHtml($value['id']) . "\"" . $text . ">";
 
-    echo "</select>\n";
+		if ($value['min_value'] === $value['max_value'])
+		{
+			echo $escaper->escapeHtml(get_setting("currency")) . $escaper->escapeHtml(number_format($value['min_value']));
+		}
+		else
+		{
+			echo $escaper->escapeHtml(get_setting("currency")) . $escaper->escapeHtml(number_format($value['min_value'])) . " to " . $escaper->escapeHtml(get_setting("currency")) . $escaper->escapeHtml(number_format($value['max_value']));
+		}
+
+		echo "</option>\n";
+	}
+
+	echo "</select>\n";
 
         // Close the database connection
         db_close($db);
@@ -894,7 +914,11 @@ function get_asset_value_by_id($id="")
     }
     
     if(!empty($value)){
-        $asset_value = get_setting("currency") . number_format($value['min_value']) . " to " . get_setting("currency") . number_format($value['max_value']);
+        if($value['min_value'] === $value['max_value']){
+            $asset_value = get_setting("currency") . number_format($value['min_value']);
+        }else{
+            $asset_value = get_setting("currency") . number_format($value['min_value']) . " to " . get_setting("currency") . number_format($value['max_value']);
+        }
     }else{
         $asset_value = "Undefined";
     }

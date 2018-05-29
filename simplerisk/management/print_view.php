@@ -14,15 +14,7 @@
 	$escaper = new Zend\Escaper\Escaper('utf-8');
 
     // Add various security headers
-    header("X-Frame-Options: DENY");
-    header("X-XSS-Protection: 1; mode=block");
-
-    // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-    if (csp_enabled())
-    {
-        // Add the Content-Security-Policy header
-	    header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-    }
+    add_security_headers();
 
     // Session handler is database
     if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -199,7 +191,7 @@
         {
             $submission_date = "N/A";
         }
-        else $submission_date = date(DATETIME, strtotime($submission_date));
+        else $submission_date = date(get_default_datetime_format("g:i A T"), strtotime($submission_date));
 
 		// Get the mitigation for the risk
 		$mitigation = get_mitigation_by_id($id);
@@ -221,7 +213,7 @@
 		{
 			// Set the mitigation values
 			$mitigation_date = $mitigation[0]['submission_date'];
-			$mitigation_date = date(DATETIME, strtotime($mitigation_date));
+			$mitigation_date = date(get_default_datetime_format("g:i A T"), strtotime($mitigation_date));
 			$planning_strategy = $mitigation[0]['planning_strategy'];
 			$mitigation_effort = $mitigation[0]['mitigation_effort'];
 			$current_solution = $mitigation[0]['current_solution'];
@@ -247,7 +239,7 @@
 		{
 			// Set the mitigation values
 			$review_date = $mgmt_reviews[0]['submission_date'];
-			$review_date = date(DATETIME, strtotime($review_date));
+			$review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
 			$review = $mgmt_reviews[0]['review'];
 			$next_step = $mgmt_reviews[0]['next_step'];
 			$next_review = next_review($risk_level, $id-1000, $next_review, false);
@@ -295,6 +287,11 @@
           <div class="row-fluid">
             <div class="well">
               <?php view_print_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations); ?>
+            </div>
+          </div>
+          <div class="row-fluid">
+            <div class="well">
+              <?php view_print_mitigation_controls($mitigation); ?>
             </div>
           </div>
           <div class="row-fluid">

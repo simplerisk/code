@@ -72,7 +72,12 @@ ul.ui-autocomplete {
     overflow: auto;
     
     > li.ui-menu-item{
-	    padding-left: 10px;
+        > .ui-menu-item-wrapper{
+            padding-left: 10px;
+            &.ui-state-active{
+                background: #eee;
+            }
+        }
     }
 
     .ui-state-focus{
@@ -85,6 +90,14 @@ ul.ui-autocomplete {
         color: #fff;
         background: #1a1b1a;
         border: 1px solid #1a1b1a;
+        > li.ui-menu-item{
+            > .ui-menu-item-wrapper{
+                &.ui-state-active{
+                    background: #eee;
+                    color: #000;
+                }
+            }
+        }
     }
 }
 
@@ -115,3 +128,11 @@ ul.multiselect-container{
     }
 }
 
+.collapsible--toggle{
+    > span{
+        cursor: pointer;
+        > i{
+            margin-right: 10px;
+        }
+    }
+}

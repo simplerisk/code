@@ -14,15 +14,7 @@
         $escaper = new Zend\Escaper\Escaper('utf-8');
 
         // Add various security headers
-        header("X-Frame-Options: DENY");
-        header("X-XSS-Protection: 1; mode=block");
-
-        // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-        if (csp_enabled())
-        {
-                // Add the Content-Security-Policy header
-		header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-        }
+	add_security_headers();
 
         // Session handler is database
         if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -116,10 +108,17 @@
                   <td>Enables an API for integration of SimpleRisk with other tools and automation tasks.</td>
                   <td width="60px"><?php echo (api_extra() ? '<a href="api.php">Yes</a>' : '<a href="api.php">No</a>'); ?></td>
                 </tr>
+		<!--
                 <tr>
                   <td width="155px"><b>ComplianceForge DSP</b></td>
                   <td>Adds the controls from the <a href="https://www.complianceforge.com/digital-security-program-dsp/" target="_blank">ComplianceForge Digital Security Program (DSP)</a> into SimpleRisk for use with our Governance functionality.</td>
                   <td width="60px"><?php echo (complianceforge_extra() ? '<a href="complianceforge.php">Yes</a>' : '<a href="complianceforge.php">No</a>'); ?></td>
+                </tr>
+		-->
+                <tr>
+                  <td width="155px"><b>ComplianceForge SCF</b></td>
+                  <td>Adds the controls from the <a href="https://www.securecontrolsframework.com/" target="_blank">ComplianceForge Secure Controls Framework (SCF)</a> into SimpleRisk for use with our Governance functionality.</td>
+                  <td width="60px"><?php echo (complianceforge_scf_extra() ? '<a href="complianceforge_scf.php">Yes</a>' : '<a href="complianceforge_scf.php">No</a>'); ?></td>
                 </tr>
                 <tr>
                   <td width="155px"><b>Custom Authentication</b></td>

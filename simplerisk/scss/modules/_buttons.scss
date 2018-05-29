@@ -6,47 +6,47 @@ button,
 input[type="button"],
 input[type="submit"]{
 
-	@extend .animation;
+  @extend .animation;
 
-	border-radius: 2px;
-	padding: 7px 20px;
-	border: none;
-	font-weight: 600;
-	color: #fff !important;
-	text-shadow: none;
-	background-image: none;
-	background-color: $color-1;
-	outline: none !important;
-	box-shadow: none;
-	font-family: $font-1 !important;
+  border-radius: 2px;
+  padding: 7px 20px;
+  border: none;
+  font-weight: 600;
+  color: #fff !important;
+  text-shadow: none;
+  background-image: none;
+  background-color: $color-1;
+  outline: none !important;
+  box-shadow: none;
+  font-family: $font-1 !important;
 
-	&:hover,&:active{
-		background-color: $color-3;
-	}
+  &:hover,&:active{
+    background-color: $color-3;
+  }
 
-	&:visited{
-		background-color: $color-1;
-	}
+  &:visited{
+    background-color: $color-1;
+  }
 }
 
 .btn.btn-danger{
-	background-color: $color-3;
+  background-color: $color-3;
 
-	&:hover,&:active,&:visited{
-		background-color: darken($color-3,5%);
-	}
+  &:hover,&:active,&:visited{
+    background-color: darken($color-3,5%);
+  }
 }
 
 .btn.btn-default{
-	background-color: $color-2;
+  background-color: $color-2;
 
-	&:hover,&:active{
-		background-color: darken($color-2,5%);
-	}
+  &:hover,&:active{
+    background-color: darken($color-2,5%);
+  }
 
-	&:visited{
-		background-color: $color-2;
-	}
+  &:visited{
+    background-color: $color-2;
+  }
 }
 
 
@@ -57,13 +57,14 @@ input[type="submit"]{
     min-width: 250px;
     text-align: left;
     background-color: #fff !important;
-		color: $text-color !important;
-		border: 1px solid $border-color;
+    color: $text-color !important;
+    border: 1px solid $border-color;
 
-		.caret {
-    margin-top: 8px;
-    margin-left: 0;
-    position: absolute;
-    right: 10px;
-	}
+    .caret {
+        margin-top: 8px;
+        margin-left: 0;
+        position: absolute;
+        right: 10px;
+    }
 }
+

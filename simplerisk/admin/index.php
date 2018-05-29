@@ -14,15 +14,7 @@
     $escaper = new Zend\Escaper\Escaper('utf-8');
 
     // Add various security headers
-    header("X-Frame-Options: DENY");
-    header("X-XSS-Protection: 1; mode=block");
-
-    // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-    if (csp_enabled())
-    {
-        // Add the Content-Security-Policy header
-        header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-    }
+    add_security_headers();
 
     // Session handler is database
     if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -66,146 +58,171 @@
     {
         $error = false;
         
-	// Update the setting to enable pop-up windows for text boxes
-        $enable_popup = (isset($_POST['enable_popup'])) ? 1 : 0;
-	$current_enable_popup = get_setting("enable_popup");
-	if ($enable_popup != $current_enable_popup)
-	{
-        	update_setting("enable_popup", $enable_popup);
-	}
+    // Update the setting to enable pop-up windows for text boxes
+    $enable_popup = (isset($_POST['enable_popup'])) ? 1 : 0;
+    $current_enable_popup = get_setting("enable_popup");
+    if ($enable_popup != $current_enable_popup)
+    {
+        update_setting("enable_popup", $enable_popup);
+    }
 
-        // Update the setting to show all risks for plan projects
-        $plan_projects_show_all = (isset($_POST['plan_projects_show_all'])) ? 1 : 0;
-        $current_plan_projects_show_all = get_setting("plan_projects_show_all");
-        if ($plan_projects_show_all != $current_plan_projects_show_all)
+    // Update the setting to show all risks for plan projects
+    $plan_projects_show_all = (isset($_POST['plan_projects_show_all'])) ? 1 : 0;
+    $current_plan_projects_show_all = get_setting("plan_projects_show_all");
+    if ($plan_projects_show_all != $current_plan_projects_show_all)
+    {
+        update_setting("plan_projects_show_all", $plan_projects_show_all);
+    }
+
+    // Update the default language setting
+    $default_language = get_name_by_value("languages", (int)$_POST['languages']);
+    $current_default_language = get_setting("default_language");
+    if ($default_language != $current_default_language)
+    {
+        update_setting("default_language", $default_language);
+    }
+
+    // Update the default timezone setting
+    $default_timezone = $_POST['default_timezone'];
+    $current_default_timezone = get_setting("default_timezone");
+    if ($default_timezone != $current_default_timezone)
+    {
+        update_setting("default_timezone", $default_timezone);
+    }
+
+    // Update the default date format setting
+    $default_date_format = $_POST['default_date_format'];
+    $current_default_date_format = get_setting("default_date_format");
+    if ($default_date_format != $current_default_date_format)
+    {
+        update_setting("default_date_format", $default_date_format);
+    }
+
+    // Update the default risk score setting
+    $default_risk_score = $_POST['default_risk_score'];
+    $current_default_risk_score = get_setting("default_risk_score");
+    if ($default_risk_score != $current_default_risk_score)
+    {
+        // If the default risk score is between 0 and 10
+        if (($default_risk_score >= 0) && ($default_risk_score <= 10))
         {
-                update_setting("plan_projects_show_all", $plan_projects_show_all);
+        update_setting("default_risk_score", $default_risk_score);
         }
-
-	// Update the default language setting
-	$default_language = get_name_by_value("languages", (int)$_POST['languages']);
-	$current_default_language = get_setting("default_language");
-	if ($default_language != $current_default_language)
-	{
-		update_setting("default_language", $default_language);
-	}
-
-	// Update the default timezone setting
-	$default_timezone = $_POST['default_timezone'];
-	$current_default_timezone = get_setting("default_timezone");
-	if ($default_timezone != $current_default_timezone)
-	{
-		update_setting("default_timezone", $default_timezone);
-	}
-
-	// Update the default risk score setting
-        $default_risk_score = $_POST['default_risk_score'];
-	$current_default_risk_score = get_setting("default_risk_score");
-	if ($default_risk_score != $current_default_risk_score)
-	{
-		// If the default risk score is between 0 and 10
-        	if (($default_risk_score >= 0) && ($default_risk_score <= 10))
-        	{
-			update_setting("default_risk_score", $default_risk_score);
-        	}
-	}
+    }
         
-	// Update the default closed audit status setting
-	$default_closed_audit_status = (int)$_POST['closed_audit_status'];
-	$current_default_closed_audit_status = get_setting("closed_audit_status");
-	if ($default_closed_audit_status != $current_default_closed_audit_status)
-	{
-		// If the default closed audit status is empty
-		if (empty($default_closed_audit_status))
-		{
-			set_alert(true, "bad", $escaper->escapeHtml($lang['ClosedAuditStatusIsRequired']));
-			$error = true;
-		}
-		else
-		{
-            		update_setting("closed_audit_status", $default_closed_audit_status);
-		}
+    // Update the default closed audit status setting
+    $default_closed_audit_status = (int)$_POST['closed_audit_status'];
+    $current_default_closed_audit_status = get_setting("closed_audit_status");
+    if ($default_closed_audit_status != $current_default_closed_audit_status)
+    {
+        // If the default closed audit status is empty
+        if (empty($default_closed_audit_status))
+        {
+            set_alert(true, "bad", $escaper->escapeHtml($lang['ClosedAuditStatusIsRequired']));
+            $error = true;
         }
+        else
+        {
+            update_setting("closed_audit_status", $default_closed_audit_status);
+        }
+    }
 
-	// Update the default currency setting
-	$default_currency = $_POST['default_currency'];
-	$current_default_currency = get_setting("currency");
-	if ($default_currency != $current_default_currency)
-	{
-		// If the default currency is not empty
-        	if ($default_currency != "")
-        	{
-        		// If the default currency value is less than or equal to six characters long
-                	if (strlen($default_currency) <= 6)
-                	{
-                		// Update the currency
-                        	update_setting("currency", $default_currency);
-                	}
-		}
-        }
+    // Update the default closed audit status setting
+    $default_initiated_audit_status = (int)$_POST['initiated_audit_status'];
+    $current_default_initiated_audit_status = get_setting("initiated_audit_status");
+    if ($default_initiated_audit_status != $current_default_initiated_audit_status)
+    {
+        update_setting("initiated_audit_status", $default_initiated_audit_status);
+    }
 
-	// Update the default asset valuation setting
-	$default_asset_valuation = (int)$_POST['default_asset_valuation'];
-	$current_default_asset_valuation = get_setting("default_asset_valuation");
-	if ($default_asset_valuation != $current_default_asset_valuation)
-	{
-        	// If the default asset valuation is numeric
-        	if (is_numeric($default_asset_valuation))
-        	{
-                	// If the default asset valuation is between 1 and 10
-                	if ($default_asset_valuation >= 1 && $default_asset_valuation <= 10)
-                	{
-                		// Update the default asset valuation
-				update_setting("default_asset_valuation", $default_asset_valuation);
-                	}
-		}
+    // Update the default currency setting
+    $default_currency = $_POST['default_currency'];
+    $current_default_currency = get_setting("currency");
+    if ($default_currency != $current_default_currency)
+    {
+        // If the default currency is not empty
+        if ($default_currency != "")
+        {
+            // If the default currency value is less than or equal to six characters long
+            if (strlen($default_currency) <= 6)
+            {
+                // Update the currency
+                update_setting("currency", $default_currency);
+            }
         }
+    }
+
+    // Update the default asset valuation setting
+    $default_asset_valuation = (int)$_POST['default_asset_valuation'];
+    $current_default_asset_valuation = get_setting("default_asset_valuation");
+    if ($default_asset_valuation != $current_default_asset_valuation)
+    {
+        // If the default asset valuation is numeric
+        if (is_numeric($default_asset_valuation))
+        {
+            // If the default asset valuation is between 1 and 10
+            if ($default_asset_valuation >= 1 && $default_asset_valuation <= 10)
+            {
+                // Update the default asset valuation
+                update_setting("default_asset_valuation", $default_asset_valuation);
+            }
+        }
+    }
+
+    // Update the default user role setting
+    $default_user_role = (int)$_POST['default_user_role'];
+    $current_default_user_role = get_setting("default_user_role");
+    if ($default_user_role != $current_default_user_role)
+    {
+        // Update the default user role
+        update_setting("default_user_role", $default_user_role);
+    }
         
-	// Update the session activity timeout setting
-	$session_activity_timeout = (int)$_POST['session_activity_timeout'];
-	$current_session_activity_timeout = get_setting("session_activity_timeout");
-	if ($session_activity_timeout != $current_session_activity_timeout)
-	{
-		update_setting("session_activity_timeout", $session_activity_timeout);
-	}
+    // Update the session activity timeout setting
+    $session_activity_timeout = (int)$_POST['session_activity_timeout'];
+    $current_session_activity_timeout = get_setting("session_activity_timeout");
+    if ($session_activity_timeout != $current_session_activity_timeout)
+    {
+        update_setting("session_activity_timeout", $session_activity_timeout);
+    }
 
-	// Update the session renegotiation period setting
-	$session_renegotiation_period = (int)$_POST['session_renegotiation_period'];
-	$current_session_renegotiation_period = get_setting("session_renegotiation_period");
-	if ($session_renegotiation_period != $current_session_renegotiation_period)
-	{
-		update_setting("session_renegotiation_period", $session_renegotiation_period);
-	}
+    // Update the session renegotiation period setting
+    $session_renegotiation_period = (int)$_POST['session_renegotiation_period'];
+    $current_session_renegotiation_period = get_setting("session_renegotiation_period");
+    if ($session_renegotiation_period != $current_session_renegotiation_period)
+    {
+        update_setting("session_renegotiation_period", $session_renegotiation_period);
+    }
 
-	// Update the content security policy
-	$content_security_policy = isset($_POST['content_security_policy']) ? 1 : 0;
-	$current_content_security_policy = get_setting("content_security_policy");
-	if ($content_security_policy != $current_content_security_policy)
-	{
-		update_setting("content_security_policy", $content_security_policy);
-	}
+    // Update the content security policy
+    $content_security_policy = isset($_POST['content_security_policy']) ? 1 : 0;
+    $current_content_security_policy = get_setting("content_security_policy");
+    if ($content_security_policy != $current_content_security_policy)
+    {
+        update_setting("content_security_policy", $content_security_policy);
+    }
 
-	// Update the debug logging
-	$debug_logging = isset($_POST['debug_logging']) ? 1 : 0;
-	$current_debug_logging = get_setting("debug_logging");
-	if ($debug_logging != $current_debug_logging)
-	{
-		update_setting("debug_logging", $debug_logging);
-	}
+    // Update the debug logging
+    $debug_logging = isset($_POST['debug_logging']) ? 1 : 0;
+    $current_debug_logging = get_setting("debug_logging");
+    if ($debug_logging != $current_debug_logging)
+    {
+        update_setting("debug_logging", $debug_logging);
+    }
 
-	// Update the debug log file
-	$debug_log_file = $_POST['debug_log_file'];
-	$current_debug_log_file = get_setting("debug_log_file");
-	if ($debug_log_file != $current_debug_log_file)
-	{
-		update_setting("debug_log_file", $debug_log_file);
-	}
+    // Update the debug log file
+    $debug_log_file = $_POST['debug_log_file'];
+    $current_debug_log_file = get_setting("debug_log_file");
+    if ($debug_log_file != $current_debug_log_file)
+    {
+        update_setting("debug_log_file", $debug_log_file);
+    }
 
         // If all setting values were saved successfully
         if (!$error)
-	{
-        	// Display an alert
-        	set_alert(true, "good", "The settings were updated successfully.");
+    {
+            // Display an alert
+            set_alert(true, "good", "The settings were updated successfully.");
         }
     }
 ?>
@@ -248,7 +265,7 @@
             <div class="span12">
               <div class="hero-unit">
                 <form name="settings" method="post" action="">
-		    <h3><?php echo $escaper->escapeHtml($lang['Settings']); ?></h3>
+                    <h3><?php echo $escaper->escapeHtml($lang['Settings']); ?></h3>
                     <table border="1" width="600" cellpadding="10px">
                     <tbody>
                     <tr>
@@ -270,7 +287,7 @@
                     </tr>
                     </tbody>
                     </table>
-		    <br />
+                    <br />
                     <table border="1" width="600" cellpadding="10px">
                     <tbody>
                     <tr>
@@ -282,33 +299,50 @@
                             </tr>
                             <tr>
                               <td width="300px"><?php echo $escaper->escapeHtml($lang['DefaultLanguage']); ?>:</td>
-			      <td><?php create_dropdown("languages", get_value_by_name("languages", get_setting("default_language")), null, false); ?></td>
+                              <td><?php create_dropdown("languages", get_value_by_name("languages", get_setting("default_language")), null, false); ?></td>
                             </tr>
                             <tr>
                               <td width="300px"><?php echo $escaper->escapeHtml($lang['DefaultTimezone']); ?>:</td>
                               <td>
-					<?php
-						echo "<select id=\"default_timezone\" name=\"default_timezone\" class=\"form-field\" style=\"width:auto;\">\n";
+                                <?php
+                                    echo "<select id=\"default_timezone\" name=\"default_timezone\" class=\"form-field\" style=\"width:auto;\">\n";
 
-						// Get the list of timezones
-						$timezones = timezone_list();
+                                    // Get the list of timezones
+                                    $timezones = timezone_list();
 
-						// Get the defeault timezone
-						$default_timezone = get_setting("default_timezone");
+                                    // Get the defeault timezone
+                                    $default_timezone = get_setting("default_timezone");
 
-						// For each timezone
-						foreach($timezones as $key => $value)
-						{
-							echo "<option value=\"" . $key . "\"" . ($key == $default_timezone ? " selected" : "") . ">" . $value . "</option>\n";
-						}
+                                    // For each timezone
+                                    foreach($timezones as $key => $value)
+                                    {
+                                        echo "<option value=\"" . $key . "\"" . ($key == $default_timezone ? " selected" : "") . ">" . $value . "</option>\n";
+                                    }
 
-						echo "</select>\n";
-					?>
-			      </td>
+                                    echo "</select>\n";
+                                ?>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td width="300px"><?php echo $escaper->escapeHtml($lang['DefaultDateFormat']); ?>:</td>
+                              <td>
+                                <?php
+                                    // Get the defeault date format
+                                    $default_date_format = get_setting("default_date_format");
+
+                                    create_dropdown("date_formats", $default_date_format, "default_date_format", false);
+
+                                    echo "</select>\n";
+                                ?>
+                              </td>
                             </tr>
                             <tr>
                               <td width="300px"><?php echo $escaper->escapeHtml($lang['DefaultRiskScore']); ?>:</td>
                               <td><input value="<?php echo (get_setting('default_risk_score') ? get_setting('default_risk_score') : 10); ?>" name="default_risk_score" id="default_risk_score" type="number" min="0" step="0.1" max="10" /></td>
+                            </tr>
+                            <tr>
+                              <td><?php echo $escaper->escapeHtml($lang['DefaultInitiatedAuditStatus']) ?>:</td>
+                              <td><?php create_dropdown("test_status", get_setting("initiated_audit_status"), "initiated_audit_status", true, false, false, "", "--", 0); ?></td>
                             </tr>
                             <tr>
                               <td><?php echo $escaper->escapeHtml($lang['DefaultClosedAuditStatus']) ?>:</td>
@@ -330,36 +364,45 @@
                                 ?>
                               </td>
                             </tr>
+                            <tr>
+                              <td><?php echo $escaper->escapeHtml($lang['DefaultUserRole']) ?>:</td>
+                              <td>
+                                <?php
+                                  // Create role dropdown
+                                  create_dropdown("role", get_setting("default_user_role"), "default_user_role");
+                                ?>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </td>
                     </tr>
                     </tbody>
                     </table>
-		    <br />
-		    <table border="1" width="600" cellpadding="10px">
-		    <tbody>
-		    <tr>
-		      <td>
-		        <table border="0" width="100%">
-		          <tbody>
-			    <tr>
-			      <td colspan="2"><u><strong><?php echo $escaper->escapeHtml($lang['UserSessions']); ?></strong></u></td>
-			    </tr>
-			    <tr>
-			      <td width="300px"><?php echo $escaper->escapeHtml($lang['SessionActivityTimeout']) . " (" . $escaper->escapeHtml($lang["seconds"]) . ")"; ?>:</td>
-			      <td><input name="session_activity_timeout" id="session_activity_timeout" type="number" min="0" size="20px" value="<?php echo $escaper->escapeHtml(get_setting("session_activity_timeout")); ?>" /></td>
-			    </tr>
-                            <tr>
-                              <td width="300px"><?php echo $escaper->escapeHtml($lang['SessionRenegotiationPeriod']) . " (" . $escaper->escapeHtml($lang["seconds"]) . ")"; ?>:</td>
-                              <td><input name="session_renegotiation_period" id="session_renegotiation_period" type="number" min="0" size="20px" value="<?php echo $escaper->escapeHtml(get_setting("session_renegotiation_period")); ?>" /></td>
-                            </tr>
-			  </tbody>
-			</table>
-		      </td>
-		    </tr>
-		    </tbody>
-		    </table>
+                    <br />
+                    <table border="1" width="600" cellpadding="10px">
+                    <tbody>
+                    <tr>
+                      <td>
+                        <table border="0" width="100%">
+                          <tbody>
+                        <tr>
+                          <td colspan="2"><u><strong><?php echo $escaper->escapeHtml($lang['UserSessions']); ?></strong></u></td>
+                        </tr>
+                        <tr>
+                          <td width="300px"><?php echo $escaper->escapeHtml($lang['SessionActivityTimeout']) . " (" . $escaper->escapeHtml($lang["seconds"]) . ")"; ?>:</td>
+                          <td><input name="session_activity_timeout" id="session_activity_timeout" type="number" min="0" size="20px" value="<?php echo $escaper->escapeHtml(get_setting("session_activity_timeout")); ?>" /></td>
+                        </tr>
+                                    <tr>
+                                      <td width="300px"><?php echo $escaper->escapeHtml($lang['SessionRenegotiationPeriod']) . " (" . $escaper->escapeHtml($lang["seconds"]) . ")"; ?>:</td>
+                                      <td><input name="session_renegotiation_period" id="session_renegotiation_period" type="number" min="0" size="20px" value="<?php echo $escaper->escapeHtml(get_setting("session_renegotiation_period")); ?>" /></td>
+                                    </tr>
+                      </tbody>
+                    </table>
+                      </td>
+                    </tr>
+                    </tbody>
+                    </table>
                     <br>
                     <table border="1" width="600" cellpadding="10px">
                     <tbody>
@@ -404,7 +447,6 @@
                     </table>
                     <br>
                     <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_settings" />
-
                 </form>
               </div>
             </div>
@@ -413,5 +455,4 @@
       </div>
     </div>
   </body>
-
 </html>

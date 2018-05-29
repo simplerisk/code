@@ -30,5 +30,16 @@ button.multiselect {
     }
 }
 
+.multiselect-content-container{
+    .btn-group, .multiselect-container{
+        width: 100%;
+        min-width: none;
+        .multiselect.dropdown-toggle{
+            max-width: none !important;
+            min-width: unset !important;
+            width: 100%;
+        }
+    }
+}
 
 

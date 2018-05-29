@@ -15,15 +15,7 @@ require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (csp_enabled())
-{
-    // Add the Content-Security-Policy header
-    header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-}
+add_security_headers();
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -92,6 +84,7 @@ if(process_assessment_questionnaire_questions()){
     <script src="../js/jquery.dataTables.js"></script>
     <script src="../js/pages/assessment.js"></script>
     <script src="../js/common.js"></script>
+    <script src="../js/bootstrap-multiselect.js"></script>
     <script src="../js/cve_lookup.js"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -100,6 +93,7 @@ if(process_assessment_questionnaire_questions()){
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
     <link rel="stylesheet" href="../css/jquery.dataTables.css">
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
 
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
@@ -142,6 +136,7 @@ if(process_assessment_questionnaire_questions()){
             </div>
         </div>
     </div>
+    <?php display_set_default_date_format_script(); ?>
 </body>
 
 </html>

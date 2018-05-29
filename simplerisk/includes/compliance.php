@@ -131,7 +131,7 @@ function display_framework_controls_in_compliance()
                         \$('[name=test_steps]', form).val(data['test_steps']);
                         \$('[name=approximate_time]', form).val(data['approximate_time']);
                         \$('[name=expected_results]', form).val(data['expected_results']);
-                        \$(\".datepicker\" , form).datepicker({dateFormat: \"yy-mm-dd\"});
+                        \$(\".datepicker\" , form).datepicker();
                     }
                 })
                 
@@ -297,12 +297,11 @@ function get_framework_control_test_audit_by_id($test_audit_id){
     // Open the database connection
     $db = db_open();
 
-
     $stmt = $db->prepare("
         SELECT t1.*, t2.name tester_name, t3.short_name control_name, GROUP_CONCAT(DISTINCT t4.name) framework_name, t5.id result_id, t5.test_result, t5.summary, t5.test_date, t5.submitted_by, t5.submission_date
         FROM `framework_control_test_audits` t1
             LEFT JOIN `user` t2 ON t1.tester = t2.value
-            LEFT JOIN `framework_controls` t3 ON t1.framework_control_id = t3.id
+            LEFT JOIN `framework_controls` t3 ON t1.framework_control_id = t3.id AND t3.deleted=0
             LEFT JOIN `frameworks` t4 ON t3.framework_ids=t4.value OR t3.framework_ids like concat('%,', t4.value) OR t3.framework_ids like concat(t4.value, ',%') OR t3.framework_ids like concat('%,', t4.value, ',%')
             LEFT JOIN `framework_control_test_results` t5 ON t1.id=t5.test_audit_id
         WHERE t1.id=:test_audit_id
@@ -353,22 +352,26 @@ function display_initiate_audits()
                 <div class='span2 hide' align='right'>
                     <strong>".$escaper->escapeHtml($lang['Status']).":&nbsp;&nbsp;&nbsp;</strong>
                 </div>
-                <div class='span2 hide'>";
+                <div class='span2 hide'>
+                    <div class='multiselect-content-container'>";
                     create_multiple_dropdown("test_status", "all", "filter_by_status", NULL, false);
                 echo "</div>
+                </div>
             </div>
             <div class='row-fluid'>
                 <div class='span2' align='right'>
                     <strong>".$escaper->escapeHtml($lang['Framework']).":&nbsp;&nbsp;&nbsp;</strong>
                 </div>
                 <div class='span2'>
-                    <select id='filter_by_framework' class='' multiple=''>\n";
-                        $options = getAvailableControlFrameworkList();
-                        is_array($options) || $options = array();
-                        foreach($options as $option){
-                            echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
-                        }
-                    echo "</select>
+                    <div class='multiselect-content-container'>
+                        <select id='filter_by_framework' class='' multiple=''>\n";
+                            $options = getAvailableControlFrameworkList();
+                            is_array($options) || $options = array();
+                            foreach($options as $option){
+                                echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                            }
+                        echo "</select>
+                    </div>
                 </div>
                 <div class='span2' align='right'>
                     <strong>".$escaper->escapeHtml($lang['Control']).":&nbsp;&nbsp;&nbsp;</strong>
@@ -475,21 +478,25 @@ function display_active_audits(){
                     <strong>".$escaper->escapeHtml($lang['Framework']).":&nbsp;&nbsp;&nbsp;</strong>
                 </div>
                 <div class='span3'>
-                    <select id='filter_by_framework' multiple=''>
-                        <option selected value='-1'>".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
-                        $options = getAvailableControlFrameworkList();
-                        is_array($options) || $options = array();
-                        foreach($options as $option){
-                            echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
-                        }
-                    echo "</select>
+                    <div class='multiselect-content-container'>
+                        <select id='filter_by_framework' multiple=''>
+                            <option selected value='-1'>".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
+                            $options = getAvailableControlFrameworkList();
+                            is_array($options) || $options = array();
+                            foreach($options as $option){
+                                echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                            }
+                        echo "</select>
+                    </div>
                 </div>
                 <div class='span1' align='right'>
                     <strong>".$escaper->escapeHtml($lang['Status']).":&nbsp;&nbsp;&nbsp;</strong>
                 </div>
-                <div class='span3'>";
+                <div class='span3'>
+                    <div class='multiselect-content-container'>";
                     create_multiple_dropdown("test_status", "all", "filter_by_status", NULL, true, $escaper->escapeHtml($lang['Unassigned']), "0");
                 echo "</div>
+                </div>
                 <div class='span2' align='right'>
                     <strong>".$escaper->escapeHtml($lang['FilterByText']).":&nbsp;&nbsp;&nbsp;</strong>
                 </div>
@@ -621,6 +628,8 @@ function display_active_audits(){
  * INITIATE FRAMEWORK CONTROL TESTS *
  ************************************/
 function initiate_framework_control_tests($type, $id){
+    $initiated_audit_status = get_setting("initiated_audit_status") ? get_setting("initiated_audit_status") : 0;
+
     // Open the database connection
     $db = db_open();
 
@@ -637,9 +646,9 @@ function initiate_framework_control_tests($type, $id){
             $sql = "
                 INSERT INTO `framework_control_test_audits`(test_id, tester, test_frequency, last_date, next_date, name, objective, test_steps, approximate_time, expected_results, framework_control_id, desired_frequency, status, created_at)
                 SELECT 
-                    t1.id as test_id, t1.tester, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, 0 as status, '".date("Y-m-d H:i:s")."' as created_at
+                    t1.id as test_id, t1.tester, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, {$initiated_audit_status} as status, '".date("Y-m-d H:i:s")."' as created_at
                 FROM framework_control_tests t1
-                    INNER JOIN framework_controls t2 ON t1.framework_control_id=t2.id
+                    INNER JOIN framework_controls t2 ON t1.framework_control_id=t2.id AND t2.deleted=0
                 WHERE
                     t2.framework_ids LIKE '{$framework_filter_pattern1}' OR t2.framewORk_ids LIKE '{$framework_filter_pattern2}' OR t2.framework_ids LIKE '{$framework_filter_pattern3}' OR t2.framework_ids LIKE '{$framework_filter_pattern4}';
             ";
@@ -655,7 +664,7 @@ function initiate_framework_control_tests($type, $id){
                 SELECT 
                     t1.id as test_id, t1.name
                 FROM framework_control_tests t1
-                    INNER JOIN framework_controls t2 ON t1.framework_control_id=t2.id
+                    INNER JOIN framework_controls t2 ON t1.framework_control_id=t2.id AND t2.deleted=0
                 WHERE
                     t2.framework_ids LIKE '{$framework_filter_pattern1}' OR t2.framewORk_ids LIKE '{$framework_filter_pattern2}' OR t2.framework_ids LIKE '{$framework_filter_pattern3}' OR t2.framework_ids LIKE '{$framework_filter_pattern4}';
             ";
@@ -676,9 +685,9 @@ function initiate_framework_control_tests($type, $id){
             $sql = "
                 INSERT INTO `framework_control_test_audits`(test_id, tester, test_frequency, last_date, next_date, name, objective, test_steps, approximate_time, expected_results, framework_control_id, desired_frequency, status, created_at)
                 SELECT 
-                    t1.id as test_id, t1.tester, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, 0 as status, '".date("Y-m-d H:i:s")."' as created_at
+                    t1.id as test_id, t1.tester, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, {$initiated_audit_status} as status, '".date("Y-m-d H:i:s")."' as created_at
                 FROM framework_control_tests t1
-                    INNER JOIN framework_controls t2 ON t1.framework_control_id=t2.id
+                    INNER JOIN framework_controls t2 ON t1.framework_control_id=t2.id AND t2.deleted=0
                 WHERE
                     t2.id=:control_id;
             ";
@@ -696,7 +705,7 @@ function initiate_framework_control_tests($type, $id){
                 SELECT 
                     t1.id as test_id, t1.name
                 FROM framework_control_tests t1
-                    INNER JOIN framework_controls t2 ON t1.framework_control_id=t2.id
+                    INNER JOIN framework_controls t2 ON t1.framework_control_id=t2.id AND t2.deleted=0
                 WHERE
                     t2.id=:control_id;
             ";
@@ -718,7 +727,7 @@ function initiate_framework_control_tests($type, $id){
             $sql = "
                 INSERT INTO `framework_control_test_audits`(test_id, tester, test_frequency, last_date, next_date, name, objective, test_steps, approximate_time, expected_results, framework_control_id, desired_frequency, status, created_at)
                 SELECT 
-                    t1.id as test_id, t1.tester, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, 0 as status, '".date("Y-m-d H:i:s")."' as created_at
+                    t1.id as test_id, t1.tester, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, {$initiated_audit_status} as status, '".date("Y-m-d H:i:s")."' as created_at
                 FROM framework_control_tests t1
                 WHERE
                     t1.id=:test_id;
@@ -755,7 +764,7 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
         t2.name tester_name, t3.short_name control_name, GROUP_CONCAT(DISTINCT t4.name) framework_name, t5.test_result, t5.summary, t5.submitted_by, t5.submission_date, ifnull(t6.name, '--') audit_status_name
         FROM `framework_control_test_audits` t1
             LEFT JOIN `user` t2 ON t1.tester = t2.value
-            LEFT JOIN `framework_controls` t3 ON t1.framework_control_id = t3.id
+            LEFT JOIN `framework_controls` t3 ON t1.framework_control_id = t3.id AND t3.deleted=0
             LEFT JOIN `frameworks` t4 ON (t3.framework_ids=t4.value OR t3.framework_ids like concat('%,', t4.value) OR t3.framework_ids like concat(t4.value, ',%') OR t3.framework_ids like concat('%,', t4.value, ',%')) AND t4.status=1
             LEFT JOIN `framework_control_test_results` t5 ON t1.id=t5.test_audit_id
             LEFT JOIN `test_status` t6 ON t1.status=t6.value
@@ -991,7 +1000,11 @@ function display_testing()
     // If test date is not set, set today as default
     if(!$test_audit['test_date'] || $test_audit['test_date']=="0000-00-00")
     {
-        $test_audit['test_date'] = date("Y-m-d");
+        $test_audit['test_date'] = date(get_default_date_format());
+    }
+    else
+    {
+        $test_audit['test_date'] = date(get_default_date_format(), strtotime($test_audit['test_date']));
     }
     
     echo "
@@ -1076,7 +1089,7 @@ function display_testing()
     display_test_audit_comment($test_audit_id);
     echo "
         <script>
-            $(\".datepicker\").datepicker({dateFormat: \"yy-mm-dd\"});
+            $(\".datepicker\").datepicker();
         </script>
     ";
 }
@@ -1261,7 +1274,7 @@ function get_testing_comment_list($test_audit_id)
     {
 //        $text = try_decrypt($comment['comment']);
         $text = $comment['comment'];
-        $date = date(DATETIME, strtotime($comment['date']));
+        $date = date(get_default_datetime_format("g:i A T"), strtotime($comment['date']));
         $user = $comment['name'];
         
         if($text != null){
@@ -1414,6 +1427,9 @@ function submit_test_result()
     }
     else
     {
+        // Convert test_date to standard format 
+        $test_date = get_standard_date_from_default_format($test_date);
+        
         // Check if user already attached files 
         $unique_names = isset($_POST['unique_names']) ? $_POST['unique_names'] : [];
         
@@ -1659,14 +1675,16 @@ function display_past_audits(){
                     <strong>".$escaper->escapeHtml($lang['Framework']).":&nbsp;&nbsp;&nbsp;</strong>
                 </div>
                 <div class='span2'>
-                    <select id='filter_by_framework' class='' multiple=''>
-                        <option selected value='-1'>".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
-                        $options = getAvailableControlFrameworkList();
-                        is_array($options) || $options = array();
-                        foreach($options as $option){
-                            echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
-                        }
-                    echo "</select>
+                    <div class='multiselect-content-container'>
+                        <select id='filter_by_framework' class='' multiple=''>
+                            <option selected value='-1'>".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
+                            $options = getAvailableControlFrameworkList();
+                            is_array($options) || $options = array();
+                            foreach($options as $option){
+                                echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                            }
+                        echo "</select>
+                    </div>
                 </div>
                 
             </div>
@@ -1791,7 +1809,7 @@ function display_past_audits(){
                 includeSelectAllOption: true
             });
             
-            $('#start_audit_date, #end_audit_date').datepicker({dateFormat: 'yy-mm-dd'})
+            $('#start_audit_date, #end_audit_date').datepicker()
 
             // Search filter event
             $('#filter_by_text').keyup(function(){
@@ -1999,88 +2017,97 @@ function reopen_test_audit($test_audit_id)
  ******************************************************/
 function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control)
 {
-    $controls = get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control);
-
-    $filtered_framework_ids = [];
-//    $filtered_control_ids = [];
-    foreach($controls as $control){
-        $filtered_framework_ids = array_merge($filtered_framework_ids, explode(",", $control['framework_ids']));
-//        $filtered_control_ids[] = $control['id'];
-    }
-    $filtered_framework_id_set = implode(",", array_unique($filtered_framework_ids));
-//    $filtered_control_ids = implode(",", $filtered_control_ids);
-
     // Open the database connection
     $db = db_open();
 
     $sql = "
-        SELECT t1.*
-        FROM 
-            `frameworks` t1 
-            INNER JOIN `framework_controls` t2 on FIND_IN_SET(t1.value, t2.framework_ids)
+        SELECT t1.*, 
+            GROUP_CONCAT(DISTINCT t2.short_name SEPARATOR ',') control_names,
+            GROUP_CONCAT(DISTINCT t2.desired_frequency SEPARATOR ',') control_desired_frequencies,
+            GROUP_CONCAT(DISTINCT t2.last_audit_date SEPARATOR ',') control_last_audit_dates,
+            GROUP_CONCAT(DISTINCT t2.next_audit_date SEPARATOR ',') control_next_audit_dates,
+            GROUP_CONCAT(DISTINCT t3.name SEPARATOR ',') test_names,
+            GROUP_CONCAT(DISTINCT t3.desired_frequency SEPARATOR ',') test_desired_frequencies,
+            GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
+            GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
+        FROM `frameworks` t1 
+            LEFT JOIN `framework_controls` t2 on FIND_IN_SET(t1.value, t2.framework_ids) AND t2.deleted=0
+            LEFT JOIN `framework_control_tests` t3 on t3.framework_control_id=t2.id
         WHERE
-            FIND_IN_SET(t1.value, :filtered_framework_id_set) 
+            t1.status=1 AND t3.id IS NOT NULL
     ";
     
-    $where = ["t1.status=1"];
+    $where = [];
     
     if($filter_by_frequency){
-        $where[] = "t1.desired_frequency like :filter_by_frequency";
+        $where[] = "t1.desired_frequency like :filter_by_frequency OR t2.desired_frequency like :filter_by_frequency OR t3.desired_frequency like :filter_by_frequency";
     }
-
+    if($filter_by_status){
+        
+    }
     if($filter_by_framework){
         $where[] = "FIND_IN_SET(t1.value, :filter_by_framework)";
     }else{
         $where[] = "0";
     }
-
     if($filter_by_control){
         $where[] = "t2.short_name like :filter_by_control";
     }
 
     if($where){
-        $sql .= " OR ". "(". implode(" AND ", $where). ")";
+        $sql .= " AND ". implode(" AND ", $where);
     }
     
     $sql .= " GROUP BY t1.value ";
 
-    // Get the risk levels
     $stmt = $db->prepare($sql);
-
-    $stmt->bindParam(":filtered_framework_id_set", $filtered_framework_id_set, PDO::PARAM_STR);
     
     if($filter_by_frequency){
         $filter_by_frequency = "%{$filter_by_frequency}%";
         $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
     }
-
+    if($filter_by_status){
+        
+    }
     if($filter_by_framework){
         $framework_ids = implode(",", $filter_by_framework);
         $stmt->bindParam(":filter_by_framework", $framework_ids, PDO::PARAM_STR);
     }
-
     if($filter_by_control){
         $filter_by_control = "%{$filter_by_control}%";
         $stmt->bindParam(":filter_by_control", $filter_by_control, PDO::PARAM_STR);
     }
 
     $stmt->execute();
-    
     // Store the list in the array
     $frameworks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
+    // Close the database connection
+    db_close($db);
     $filtered_frameworks = [];
     foreach($frameworks as $framework){
         $framework['name'] = try_decrypt($framework['name']);
-        if(!$filter_by_text || stripos($framework['name'], $filter_by_text) !== false || in_array($framework['value'], $filtered_framework_ids)){
+        if(!$filter_by_text || stripos($framework['name'], $filter_by_text) !== false 
+            || stripos($framework['desired_frequency'], $filter_by_text) !== false 
+            || stripos($framework['last_audit_date'], $filter_by_text) !== false 
+            || stripos($framework['next_audit_date'], $filter_by_text) !== false 
+            
+            || stripos($framework['control_names'], $filter_by_text) !== false 
+            || stripos($framework['control_desired_frequencies'], $filter_by_text) !== false 
+            || stripos($framework['control_last_audit_dates'], $filter_by_text) !== false 
+            || stripos($framework['control_next_audit_dates'], $filter_by_text) !== false 
+            
+            || stripos($framework['test_names'], $filter_by_text) !== false 
+            || stripos($framework['test_desired_frequencies'], $filter_by_text) !== false 
+            || stripos($framework['test_last_audit_dates'], $filter_by_text) !== false 
+            || stripos($framework['test_next_audit_dates'], $filter_by_text) !== false 
+        ){
             $filtered_frameworks[] = $framework;
         }
     }
     
-    // Close the database connection
-    db_close($db);
-
     return $filtered_frameworks;
+
 }
 
 /****************************************************
@@ -2088,72 +2115,69 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
  ****************************************************/
 function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id=null)
 {
-    $tests = get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id);
-    $filtered_control_ids = [];
-//    $filtered_test_ids = [];
-    foreach($tests as $test){
-        $filtered_control_ids[$test['framework_control_id']] = $test['framework_control_id'];
-//        $filtered_test_ids[] = $test['id'];
-    }
-    $filtered_control_ids = implode(",", $filtered_control_ids);
-//    $filtered_test_ids = implode(",", $filtered_test_ids);
-    
     // Open the database connection
     $db = db_open();
-    
+
     $sql = "
-        SELECT t1.*, GROUP_CONCAT(DISTINCT t2.value SEPARATOR ',') framework_ids
-        FROM 
-            `framework_controls` t1 
-            INNER JOIN `frameworks` t2 on FIND_IN_SET(t2.value, t1.framework_ids) and t2.status=1
-            /*INNER JOIN `framework_control_tests` t3 on t1.id=t3.framework_control_id and FIND_IN_SET(t3.id, '{\$filtered_test_ids}')*/
+        SELECT t2.*,
+            t1.name framework_name,
+            t1.desired_frequency framework_desired_frequency,
+            t1.last_audit_date framework_last_audit_date,
+            t1.next_audit_date framework_next_audit_date,
+            GROUP_CONCAT(DISTINCT t2.short_name SEPARATOR ',') control_names,
+            GROUP_CONCAT(DISTINCT t2.desired_frequency SEPARATOR ',') control_desired_frequencies,
+            GROUP_CONCAT(DISTINCT t2.last_audit_date SEPARATOR ',') control_last_audit_dates,
+            GROUP_CONCAT(DISTINCT t2.next_audit_date SEPARATOR ',') control_next_audit_dates,
+            GROUP_CONCAT(DISTINCT t3.name SEPARATOR ',') test_names,
+            GROUP_CONCAT(DISTINCT t3.desired_frequency SEPARATOR ',') test_desired_frequencies,
+            GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
+            GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
+        FROM `frameworks` t1 
+            INNER JOIN `framework_controls` t2 on FIND_IN_SET(t1.value, t2.framework_ids) AND t2.deleted=0
+            LEFT JOIN `framework_control_tests` t3 on t3.framework_control_id=t2.id
         WHERE
-            FIND_IN_SET(t1.id, :filtered_control_ids) 
+            t1.status=1 AND t3.id IS NOT NULL
     ";
-    if($filter_by_framework){
-        $sql .= " AND FIND_IN_SET(t2.value, :filter_by_framework) ";
-    }else{
-        $sql .= " AND 0 ";
-    }
     
-    $where = ["t2.status=1"];
-    if($filter_by_text){
-        $where[] = "(t1.short_name like :filter_by_text)";
-    }
+    $where = [];
+    
     if($filter_by_frequency){
-        $where[] = "(t1.desired_frequency like :filter_by_frequency)";
+        $where[] = "t1.desired_frequency like :filter_by_frequency OR t2.desired_frequency like :filter_by_frequency OR t3.desired_frequency like :filter_by_frequency";
+    }
+    if($filter_by_status){
+        
     }
     if($filter_by_framework){
-        $where[] = "FIND_IN_SET(t2.value, :filter_by_framework)";
+        $where[] = "FIND_IN_SET(t1.value, :filter_by_framework)";
     }else{
         $where[] = "0";
     }
     if($filter_by_control){
-        $where[] = "t1.short_name like :filter_by_control";
+        $where[] = "t2.short_name like :filter_by_control";
     }
+    
     if($framework_id){
-        $where[] = "t2.value = :framework_id";
+        $where[] = "t1.value = :framework_id";
     }
 
     if($where){
-        $sql .= " OR ". "(". implode(" AND ", $where). ")";
+        $sql .= " AND ". implode(" AND ", $where);
     }
     
-    $sql .= " GROUP BY t1.id ";
-    $sql .= " ORDER BY t1.short_name ";
+    $sql .= " GROUP BY t2.id ";
 
-    // Get the risk levels
     $stmt = $db->prepare($sql);
-
-    $stmt->bindParam(":filtered_control_ids", $filtered_control_ids, PDO::PARAM_STR);
     
-    if($filter_by_text){
-        $filter_by_text = "%{$filter_by_text}%";
-        $stmt->bindParam(":filter_by_text", $filter_by_text, PDO::PARAM_STR);
-    }
+//    if($filter_by_text){
+//        $filter_by_text = "%{$filter_by_text}%";
+//        $stmt->bindParam(":filter_by_text", $filter_by_text, PDO::PARAM_STR);
+//    }
     if($filter_by_frequency){
         $filter_by_frequency = "%{$filter_by_frequency}%";
         $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
+    }
+    if($filter_by_status){
+        
     }
     if($filter_by_framework){
         $framework_ids = implode(",", $filter_by_framework);
@@ -2168,72 +2192,93 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
     }
 
     $stmt->execute();
-    
     // Store the list in the array
     $controls = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     // Close the database connection
     db_close($db);
     
-    return $controls;
+    $filtered_controls = [];
+    foreach($controls as $control){
+        $control['framework_name'] = try_decrypt($control['framework_name']);
+        if(!$filter_by_text || stripos($control['framework_name'], $filter_by_text) !== false 
+            || stripos($control['framework_desired_frequency'], $filter_by_text) !== false 
+            || stripos($control['framework_last_audit_date'], $filter_by_text) !== false 
+            || stripos($control['framework_next_audit_date'], $filter_by_text) !== false 
+            
+            || stripos($control['control_names'], $filter_by_text) !== false 
+            || stripos($control['control_desired_frequencies'], $filter_by_text) !== false 
+            || stripos($control['control_last_audit_dates'], $filter_by_text) !== false 
+            || stripos($control['control_next_audit_dates'], $filter_by_text) !== false 
+            
+            || stripos($control['test_names'], $filter_by_text) !== false 
+            || stripos($control['test_desired_frequencies'], $filter_by_text) !== false 
+            || stripos($control['test_last_audit_dates'], $filter_by_text) !== false 
+            || stripos($control['test_next_audit_dates'], $filter_by_text) !== false 
+        ){
+            $filtered_controls[] = $control;
+        }
+    }
+    
+    return $filtered_controls;
 }
 
 /*************************************************
  * FUNCTION: GET TESTS FROM INITIATE AUDITS PAGE *
  *************************************************/
-function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id=null, $control_id=null)
+function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id, $control_id)
 {
     // Open the database connection
     $db = db_open();
 
     $sql = "
-        SELECT t1.*
-        FROM `framework_control_tests` t1
-            INNER JOIN `framework_controls` t2 on t1.framework_control_id=t2.id
-            INNER JOIN `frameworks` t3 on FIND_IN_SET(t3.value, t2.framework_ids) AND t3.status=1
+        SELECT t3.*,
+            t1.name framework_name,
+            t1.desired_frequency framework_desired_frequency,
+            t1.last_audit_date framework_last_audit_date,
+            t1.next_audit_date framework_next_audit_date,
+            GROUP_CONCAT(DISTINCT t2.short_name SEPARATOR ',') control_names,
+            GROUP_CONCAT(DISTINCT t2.desired_frequency SEPARATOR ',') control_desired_frequencies,
+            GROUP_CONCAT(DISTINCT t2.last_audit_date SEPARATOR ',') control_last_audit_dates,
+            GROUP_CONCAT(DISTINCT t2.next_audit_date SEPARATOR ',') control_next_audit_dates,
+            GROUP_CONCAT(DISTINCT t3.name SEPARATOR ',') test_names,
+            GROUP_CONCAT(DISTINCT t3.desired_frequency SEPARATOR ',') test_desired_frequencies,
+            GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
+            GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
+        FROM `frameworks` t1 
+            INNER JOIN `framework_controls` t2 on FIND_IN_SET(t1.value, t2.framework_ids) AND t2.deleted=0
+            INNER JOIN `framework_control_tests` t3 on t3.framework_control_id=t2.id
         WHERE
-            t3.status=1
+            t1.status=1 AND t1.value=:framework_id AND t2.id=:control_id
     ";
     
     $where = [];
     
-    if($filter_by_text){
-        $where[] = "(t1.name like :filter_by_text OR t1.desired_frequency like :filter_by_text OR t1.last_date like :filter_by_text OR t1.next_date like :filter_by_text)";
-    }
     if($filter_by_frequency){
-        $where[] = "t1.desired_frequency like :filter_by_frequency";
+        $where[] = "t1.desired_frequency like :filter_by_frequency OR t2.desired_frequency like :filter_by_frequency OR t3.desired_frequency like :filter_by_frequency";
     }
     if($filter_by_status){
         
     }
     if($filter_by_framework){
-        $where[] = "FIND_IN_SET(t3.value, :filter_by_framework)";
+        $where[] = "FIND_IN_SET(t1.value, :filter_by_framework)";
     }else{
         $where[] = "0";
     }
     if($filter_by_control){
         $where[] = "t2.short_name like :filter_by_control";
     }
-    if($framework_id){
-        $where[] = "t3.value = :framework_id";
-    }
-    if($control_id){
-        $where[] = "t2.id = :control_id";
-    }
-
+    
     if($where){
         $sql .= " AND ". implode(" AND ", $where);
     }
     
-    $sql .= " GROUP BY t1.id ";
-    $sql .= " ORDER BY t1.name ";
+    $sql .= " GROUP BY t3.id ";
 
     $stmt = $db->prepare($sql);
     
-    if($filter_by_text){
-        $filter_by_text = "%{$filter_by_text}%";
-        $stmt->bindParam(":filter_by_text", $filter_by_text, PDO::PARAM_STR);
-    }
+    $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     if($filter_by_frequency){
         $filter_by_frequency = "%{$filter_by_frequency}%";
         $stmt->bindParam(":filter_by_frequency", $filter_by_frequency, PDO::PARAM_STR);
@@ -2248,12 +2293,6 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
     if($filter_by_control){
         $filter_by_control = "%{$filter_by_control}%";
         $stmt->bindParam(":filter_by_control", $filter_by_control, PDO::PARAM_STR);
-    }
-    if($framework_id){
-        $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
-    }
-    if($control_id){
-        $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     }
 
     $stmt->execute();
@@ -2263,7 +2302,29 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
     // Close the database connection
     db_close($db);
     
-    return $tests;
+    $filtered_tests = [];
+    foreach($tests as $test){
+        $test['framework_name'] = try_decrypt($test['framework_name']);
+        if(!$filter_by_text || stripos($test['framework_name'], $filter_by_text) !== false 
+            || stripos($test['framework_desired_frequency'], $filter_by_text) !== false 
+            || stripos($test['framework_last_audit_date'], $filter_by_text) !== false 
+            || stripos($test['framework_next_audit_date'], $filter_by_text) !== false 
+            
+            || stripos($test['control_names'], $filter_by_text) !== false 
+            || stripos($test['control_desired_frequencies'], $filter_by_text) !== false 
+            || stripos($test['control_last_audit_dates'], $filter_by_text) !== false 
+            || stripos($test['control_next_audit_dates'], $filter_by_text) !== false 
+            
+            || stripos($test['test_names'], $filter_by_text) !== false 
+            || stripos($test['test_desired_frequencies'], $filter_by_text) !== false 
+            || stripos($test['test_last_audit_dates'], $filter_by_text) !== false 
+            || stripos($test['test_next_audit_dates'], $filter_by_text) !== false 
+        ){
+            $filtered_tests[] = $test;
+        }
+    }
+    
+    return $filtered_tests;
 }
 
 ?>

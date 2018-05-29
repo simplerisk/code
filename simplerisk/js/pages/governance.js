@@ -64,6 +64,42 @@ jQuery(document).ready(function($){
                 }
             });
           });
+          
+          $(document).on('click', '.control-block--clone', function(event) {
+            event.preventDefault();
+            var control_id  = $(this).attr('data-id');
+            $.ajax({
+                url: BASE_URL + '/api/governance/control?control_id=' + control_id,
+                type: 'GET',
+                dataType: 'json',
+                success : function (res){
+                    var data = res.data;
+                    var control = data.control;
+                    
+                    var modal = $('#control--add');
+                    $('[name=short_name]', modal).val(control.short_name);
+                    $('[name=long_name]', modal).val(control.long_name);
+                    $('[name=description]', modal).val(control.description);
+                    $('[name=supplemental_guidance]', modal).val(control.supplemental_guidance);
+                    
+                    $("#add_framework_ids").multiselect('deselectAll', false);
+                    $.each(control.framework_ids.split(","), function(i,e){
+                        $("#add_framework_ids option[value='" + e + "']").prop("selected", true);
+                    });
+                    $("#add_framework_ids").multiselect('refresh');
+                    
+                    $('[name=control_class]', modal).val(Number(control.control_class) ? control.control_class : "");
+                    $('[name=control_phase]', modal).val(Number(control.control_phase) ? control.control_phase : "");
+                    $('[name=control_owner]', modal).val(Number(control.control_owner) ? control.control_owner : "");
+                    $('[name=control_number]', modal).val(control.control_number);
+                    $('[name=control_priority]', modal).val(Number(control.control_priority) ? control.control_priority : "");
+                    $('[name=family]', modal).val(Number(control.family) ? control.family : "");
+                    $('[name=mitigation_percent]', modal).val(Number(control.mitigation_percent) ? control.mitigation_percent : "");
+
+                    $(modal).modal('show');
+                }
+            });
+          });
         }
     };
        

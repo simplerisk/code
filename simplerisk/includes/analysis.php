@@ -32,20 +32,31 @@ function risk_distribution_analysis()
     $stmt = $db->prepare("SELECT * from `risk_levels` ORDER BY value DESC");
     $stmt->execute();
     $array = $stmt->fetchAll();
-    $veryhigh = $array[0][0];
-    $high = $array[1][0];
-    $medium = $array[2][0];
-    $low = $array[3][0];
+    $veryhigh = $array[0]["value"];
+    $high = $array[1]["value"];
+    $medium = $array[2]["value"];
+    $low = $array[3]["value"];
+
+    $very_high_display_name = get_risk_level_display_name('Very High');
+    $high_display_name      = get_risk_level_display_name('High');
+    $medium_display_name    = get_risk_level_display_name('Medium');
+    $low_display_name       = get_risk_level_display_name('Low');
+    $insignificant_display_name = get_risk_level_display_name('Insignificant');
 
     // If the team separation extra is not enabled
     if (!team_separation_extra())
     {
-	// Query the database
-	$stmt = $db->prepare("select a.residual_risk, COUNT(*) AS num, CASE WHEN residual_risk >= :veryhigh THEN 'Very High' WHEN residual_risk < :veryhigh AND residual_risk >= :high THEN 'High' WHEN residual_risk < :high AND residual_risk >= :medium THEN 'Medium' WHEN residual_risk < :medium AND residual_risk >= :low THEN 'Low' WHEN residual_risk < :low AND residual_risk >= 0 THEN 'Insignificant' END AS level from (select (a.calculated_risk - (a.calculated_risk * IFNULL(c.mitigation_percent,0) / 100)) as residual_risk FROM `risk_scoring` a JOIN `risks` b ON a.id = b.id LEFT JOIN mitigations c ON b.id = c.risk_id WHERE b.status != \"Closed\") as a GROUP BY level ORDER BY a.residual_risk DESC");
+	    // Query the database
+	    $stmt = $db->prepare("select a.residual_risk, COUNT(*) AS num, CASE WHEN residual_risk >= :veryhigh THEN :very_high_display_name WHEN residual_risk < :veryhigh AND residual_risk >= :high THEN :high_display_name WHEN residual_risk < :high AND residual_risk >= :medium THEN :medium_display_name WHEN residual_risk < :medium AND residual_risk >= :low THEN :low_display_name WHEN residual_risk < :low AND residual_risk >= 0 THEN :insignificant_display_name END AS level from (select (a.calculated_risk - (a.calculated_risk * IFNULL(c.mitigation_percent,0) / 100)) as residual_risk FROM `risk_scoring` a JOIN `risks` b ON a.id = b.id LEFT JOIN mitigations c ON b.id = c.risk_id WHERE b.status != \"Closed\") as a GROUP BY level ORDER BY a.residual_risk DESC");
         $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
         $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
         $stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
         $stmt->bindParam(":low", $low, PDO::PARAM_STR, 4);
+        $stmt->bindParam(":very_high_display_name", $very_high_display_name, PDO::PARAM_STR);
+        $stmt->bindParam(":high_display_name", $high_display_name, PDO::PARAM_STR);
+        $stmt->bindParam(":medium_display_name", $medium_display_name, PDO::PARAM_STR);
+        $stmt->bindParam(":low_display_name", $low_display_name, PDO::PARAM_STR);
+        $stmt->bindParam(":insignificant_display_name", $insignificant_display_name, PDO::PARAM_STR);
         $stmt->execute();
 
         // Store the list in the array
@@ -78,26 +89,26 @@ function risk_distribution_analysis()
 		echo "</li>\n";
 
 		// If veryhigh
-		if ($row['level'] == "Very High")
+		if ($row['level'] == $very_high_display_name)
 		{
 			$veryhigh = (int)$row['num'];
 		}
-		else if ($row['level'] == "High")
+		else if ($row['level'] == $high_display_name)
 		{
 			$high = (int)$row['num'];
 		}
-                else if ($row['level'] == "Medium")
-                {
-                        $medium = (int)$row['num'];
-                }
-                else if ($row['level'] == "Low")
-                {
-                        $low = (int)$row['num'];
-                }
-                else if ($row['level'] == "Insignificant")
-                {
-                        $insignificant = (int)$row['num'];
-                }
+        else if ($row['level'] == $medium_display_name)
+        {
+            $medium = (int)$row['num'];
+        }
+        else if ($row['level'] == $low_display_name)
+        {
+            $low = (int)$row['num'];
+        }
+        else if ($row['level'] == $insignificant_display_name)
+        {
+            $insignificant = (int)$row['num'];
+        }
 	}
 
 	echo "</ul>\n";
@@ -147,7 +158,7 @@ function risk_distribution_analysis()
 				// Get the values
 				$id = (int)$risk['id'];
 				$subject = $escaper->escapeHtml(try_decrypt($risk['subject']));
-				$calculated_risk = $risk['residual_risk'];
+				$calculated_risk = round($risk['residual_risk'], 2);
 				$mitigation_effort = $risk['mitigation_effort'];
             			$color = $escaper->escapeHtml(get_risk_color($calculated_risk));
 				$risk_id = convert_id($id);

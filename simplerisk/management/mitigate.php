@@ -15,15 +15,7 @@ require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (csp_enabled())
-{
-  // Add the Content-Security-Policy header
-  header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-}
+add_security_headers();
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -195,7 +187,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $assessment = $risk[0]['assessment'];
     $notes = $risk[0]['notes'];
     $sub_date = $risk[0]['submission_date'];
-    $submission_date = date( "m/d/Y", strtotime( $sub_date ) );
+    $submission_date = date( get_default_date_format(), strtotime( $sub_date ) );
     $mitigation_id = $risk[0]['mitigation_id'];
     $mgmt_review = $risk[0]['mgmt_review'];
     $calculated_risk = $risk[0]['calculated_risk'];
@@ -297,7 +289,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
   {
     $submission_date = "N/A";
   }
-  else $submission_date = date("m/d/Y", strtotime($submission_date));
+  else $submission_date = date(get_default_date_format(), strtotime($submission_date));
 
   // Get the mitigation for the risk
   $mitigation = get_mitigation_by_id($id);
@@ -325,7 +317,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
   {
     // Set the mitigation values
     $mitigation_date    = $mitigation[0]['submission_date'];
-    $mitigation_date    = date(DATETIME, strtotime($mitigation_date));
+    $mitigation_date    = date(get_default_datetime_format("g:i A T"), strtotime($mitigation_date));
     $planning_strategy  = $mitigation[0]['planning_strategy'];
     $mitigation_effort  = $mitigation[0]['mitigation_effort'];
     $mitigation_cost    = $mitigation[0]['mitigation_cost'];
@@ -334,7 +326,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $current_solution   = $mitigation[0]['current_solution'];
     $security_requirements      = $mitigation[0]['security_requirements'];
     $security_recommendations   = $mitigation[0]['security_recommendations'];
-    $planning_date      = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
+    $planning_date      = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date(get_default_date_format(), strtotime($mitigation[0]['planning_date'])) : "";
     $mitigation_percent = (isset($mitigation[0]['mitigation_percent']) && $mitigation[0]['mitigation_percent'] >= 0 && $mitigation[0]['mitigation_percent'] <= 100) ? $mitigation[0]['mitigation_percent'] : 0;
     $mitigation_controls = isset($mitigation[0]['mitigation_controls']) ? $mitigation[0]['mitigation_controls'] : "";
   }
@@ -358,7 +350,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
   {
     // Set the management review values
     $review_date = $mgmt_reviews[0]['submission_date'];
-    $review_date = date(DATETIME, strtotime($review_date));
+    $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
     $review = $mgmt_reviews[0]['review'];
     $next_step = $mgmt_reviews[0]['next_step'];
     $next_review = next_review($risk_level, ($id-1000), $next_review, false);
@@ -382,14 +374,15 @@ if ((isset($_POST['update_mitigation'])) && $plan_mitigations)
 
   $planning_date = $_POST['planning_date'];
 
-  if (!validate_date($planning_date, 'm/d/Y'))
+  if (!validate_date($planning_date, get_default_date_format()))
   {
     $planning_date = "0000-00-00";
   }
   // Otherwise, set the proper format for submitting to the database
   else
   {
-    $planning_date = date("Y-m-d", strtotime($planning_date));
+//    $planning_date = date("Y-m-d", strtotime($planning_date));
+    $planning_date = get_standard_date_from_default_format($planning_date);
   }
 
   // If a mitigation does not exist
@@ -669,12 +662,13 @@ if ((isset($_POST['update_mitigation'])) && $plan_mitigations)
             $(id_of_text_head).removeClass("affected-assets-title");
             $('.ui-autocomplete').removeClass("popup-ui-complete")
         });
-  }
-  $(document).ready(function() {
-      focus_add_css_class("#SecurityRequirementsTitle", "#security_requirements");
-      focus_add_css_class("#CurrentSolutionTitle", "#current_solution");
-      focus_add_css_class("#SecurityRecommendationsTitle", "#security_recommendations");
-      $( ".datepicker" ).datepicker();
-  });
-</script>
-  </html>
+      }
+      $(document).ready(function() {
+          focus_add_css_class("#SecurityRequirementsTitle", "#security_requirements");
+          focus_add_css_class("#CurrentSolutionTitle", "#current_solution");
+          focus_add_css_class("#SecurityRecommendationsTitle", "#security_recommendations");
+          $( ".datepicker" ).datepicker();
+      });
+  </script>
+  <?php display_set_default_date_format_script(); ?>
+</html>

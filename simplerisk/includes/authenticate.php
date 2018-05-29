@@ -197,12 +197,12 @@ function set_user_permissions($user, $pass, $upgrade = false)
         if (get_setting('strict_user_validation') == 0)
         {
             // Query the DB for the users complete information
-            $stmt = $db->prepare("SELECT value, type, name, lang, governance, riskmanagement, compliance, assessments, asset, admin, custom_display_settings, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
+            $stmt = $db->prepare("SELECT value, type, name, lang, governance, riskmanagement, compliance, assessments, asset, admin, custom_display_settings, review_veryhigh, accept_mitigation, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks, add_new_frameworks, modify_frameworks, delete_frameworks, add_new_controls, modify_controls, delete_controls FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
         }
         else
         {
             // Query the DB for the users complete information
-            $stmt = $db->prepare("SELECT value, type, name, lang, governance, riskmanagement, compliance, assessments, asset, admin, custom_display_settings, review_veryhigh, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks FROM user WHERE username = :user");
+            $stmt = $db->prepare("SELECT value, type, name, lang, governance, riskmanagement, compliance, assessments, asset, admin, custom_display_settings, review_veryhigh, accept_mitigation, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks, add_new_frameworks, modify_frameworks, delete_frameworks, add_new_controls, modify_controls, delete_controls FROM user WHERE username = :user");
         }
     }
     // If we are doing an upgrade
@@ -235,10 +235,8 @@ function set_user_permissions($user, $pass, $upgrade = false)
     // Filter out authentication extra from the base url
     $base_url = str_replace("/extras/authentication", "", $base_url);
 
-    // Set the timezone
-    $default_timezone = get_setting("default_timezone");
-    if (!$default_timezone) $default_timezone = "America/Chicago";
-    date_default_timezone_set($default_timezone);
+    // Set the simplerisk timezone for any datetime functions
+    set_simplerisk_timezone();
 
     // Set the minimal session values
     $_SESSION['base_url'] = $base_url;
@@ -252,12 +250,13 @@ function set_user_permissions($user, $pass, $upgrade = false)
     if (!$upgrade)
     {
         // Set additional session values
-	$_SESSION['governance'] = $array[0]['governance'];
-	$_SESSION['riskmanagement'] = $array[0]['riskmanagement'];
-	$_SESSION['compliance'] = $array[0]['compliance'];
+        $_SESSION['governance'] = $array[0]['governance'];
+        $_SESSION['riskmanagement'] = $array[0]['riskmanagement'];
+        $_SESSION['compliance'] = $array[0]['compliance'];
         $_SESSION['assessments'] = $array[0]['assessments'];
         $_SESSION['asset'] = $array[0]['asset'];
         $_SESSION['review_veryhigh'] = $array[0]['review_veryhigh'];
+        $_SESSION['accept_mitigation'] = $array[0]['accept_mitigation'];
         $_SESSION['review_high'] = $array[0]['review_high'];
         $_SESSION['review_medium'] = $array[0]['review_medium'];
         $_SESSION['review_low'] = $array[0]['review_low'];
@@ -267,6 +266,13 @@ function set_user_permissions($user, $pass, $upgrade = false)
         $_SESSION['close_risks'] = $array[0]['close_risks'];
         $_SESSION['plan_mitigations'] = $array[0]['plan_mitigations'];
         $_SESSION['custom_display_settings'] = empty($array[0]['custom_display_settings']) ? array() : json_decode($array[0]['custom_display_settings'], true);
+        
+        $_SESSION['add_new_frameworks'] = $array[0]['add_new_frameworks'];
+        $_SESSION['modify_frameworks']  = $array[0]['modify_frameworks'];
+        $_SESSION['delete_frameworks']  = $array[0]['delete_frameworks'];
+        $_SESSION['add_new_controls']   = $array[0]['add_new_controls'];
+        $_SESSION['modify_controls']    = $array[0]['modify_controls'];
+        $_SESSION['delete_controls']    = $array[0]['delete_controls'];
 
         // If the encryption extra is enabled
         if (encryption_extra())

@@ -48,7 +48,7 @@ class Escaper
      *
      * @var string
      */
-    protected $htmlSpecialCharsFlags = ENT_QUOTES;
+    protected $htmlSpecialCharsFlags = ENT_NOQUOTES;
 
     /**
      * Static Matcher which escapes characters for HTML Attribute contexts

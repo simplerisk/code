@@ -15,15 +15,7 @@ require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
 // Add various security headers
-header("X-Frame-Options: DENY");
-header("X-XSS-Protection: 1; mode=block");
-
-// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-if (csp_enabled())
-{
-  // Add the Content-Security-Policy header
-  header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-}
+add_security_headers();
 
 // Session handler is database
 if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -286,7 +278,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
   {
     $submission_date = "N/A";
   }
-  else $submission_date = date("m/d/Y", strtotime($submission_date));
+  else $submission_date = date(get_default_date_format(), strtotime($submission_date));
 
   // Get the mitigation for the risk
   $mitigation = get_mitigation_by_id($id);
@@ -313,7 +305,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
   {
     // Set the mitigation values
     $mitigation_date = $mitigation[0]['submission_date'];
-    $mitigation_date = date(DATETIME, strtotime($mitigation_date));
+    $mitigation_date = date(get_default_datetime_format("g:i A T"), strtotime($mitigation_date));
     $planning_strategy = $mitigation[0]['planning_strategy'];
     $mitigation_effort = $mitigation[0]['mitigation_effort'];
     $mitigation_cost = $mitigation[0]['mitigation_cost'];
@@ -322,7 +314,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $current_solution = $mitigation[0]['current_solution'];
     $security_requirements = $mitigation[0]['security_requirements'];
     $security_recommendations = $mitigation[0]['security_recommendations'];
-    $planning_date = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date('m/d/Y', strtotime($mitigation[0]['planning_date'])) : "";
+    $planning_date = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date(get_default_date_format(), strtotime($mitigation[0]['planning_date'])) : "";
     $mitigation_percent = (isset($mitigation[0]['mitigation_percent']) && $mitigation[0]['mitigation_percent'] >= 0 && $mitigation[0]['mitigation_percent'] <= 100) ? $mitigation[0]['mitigation_percent'] : 0;
     $mitigation_controls = isset($mitigation[0]['mitigation_controls']) ? $mitigation[0]['mitigation_controls'] : "";
   }
@@ -345,7 +337,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
   {
     // Set the management review values
     $review_date = $mgmt_reviews[0]['submission_date'];
-    $review_date = date(DATETIME, strtotime($review_date));
+    $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
     $review = $mgmt_reviews[0]['review'];
     $next_step = $mgmt_reviews[0]['next_step'];
     $reviewer = $mgmt_reviews[0]['reviewer'];
@@ -382,14 +374,15 @@ if (isset($_POST['submit']))
       $custom_review = $_POST['next_review'];
 
       // Check the date format
-      if (!validate_date($custom_review, 'm/d/Y'))
+      if (!validate_date($custom_review, get_default_date_format()))
       {
         $custom_review = "0000-00-00";
       }
       // Otherwise, set the proper format for submitting to the database
       else
       {
-        $custom_review = date("Y-m-d", strtotime($custom_review));
+//        $custom_review = date("Y-m-d", strtotime($custom_review));
+        $custom_review = get_standard_date_from_default_format($custom_review);
       }
     }
     else{

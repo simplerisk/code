@@ -156,8 +156,7 @@ function riskScoringChart(renderTo, risk_id, risk_levels){
         title: {
             text: $('#_RiskScoringHistory').length ? $("#_RiskScoringHistory").val() : 'Risk Scoring History'
         },
-
-        yAxis: {
+        yAxis: [{
             title: {
                 text: $('#_RiskScore').length ? $('#_RiskScore').val() : "Risk Score"
             },
@@ -165,8 +164,8 @@ function riskScoringChart(renderTo, risk_id, risk_levels){
             max: 10,
             gridLineWidth: 0, 
             plotBands: plotBands,
-        },
-         xAxis: {
+        }],
+        xAxis: [{
             type: 'datetime',
             dateTimeLabelFormats: { // don't display the dummy year
                 millisecond: '%Y-%m-%d<br/>%H:%M:%S',
@@ -180,13 +179,12 @@ function riskScoringChart(renderTo, risk_id, risk_levels){
             title: {
                 text: $("#_DateAndTime").val() ? $("#_DateAndTime").val() : "Date and time"
             }
-        },
+        }],
         legend: {
             layout: 'vertical',
             align: 'right',
             verticalAlign: 'middle'
         },
-
         plotOptions: {
             spline: {
                 marker: {
@@ -194,15 +192,41 @@ function riskScoringChart(renderTo, risk_id, risk_levels){
                 }
             }                    
         },
-
         series: [
-            {name: $('#_RiskScore').length ? $('#_RiskScore').val() : "Risk Score" }
+            {name: $('#_RiskScore').length ? $('#_RiskScore').val() : "Inherent Risk" },
+            {name: $('#_ResidualRiskScore').length ? $('#_ResidualRiskScore').val() : "ResidualRisk Score" },
         ]
 
     });
     
 
     chartObj.showLoading('<img src="../images/progress.gif">');
+    $.ajax({
+        type: "GET",
+        url: BASE_URL + "/api/management/risk/residual_scoring_history?id=" + risk_id,
+        dataType: 'json',
+        success: function(data){
+            var residual_histories = data.data;
+            var residualChartData = [];
+            for(var i=0; i<residual_histories.length; i++){
+                // var date = new Date(histories[i].last_update.replace(/\s/, 'T'));
+                // Added the three lines below to make the timestamp work properly with Safari
+                var parts = residual_histories[i].last_update.split(/[ \/:-]/g);
+                var dateFormatted = parts[1] + "/" + parts[2] + "/" + parts[0] + " " + parts[3] + ":" + parts[4] + ":" + parts[5];
+                var date = new Date(dateFormatted);
+                residualChartData.push([date.getTime(), Number(residual_histories[i].residual_risk)]);
+            }
+            
+            chartObj.series[1].setData(residualChartData)
+            chartObj.hideLoading();
+            
+        },
+        error: function(xhr,status,error){
+            if(xhr.responseJSON && xhr.responseJSON.status_message){
+                $('#show-alert').html(xhr.responseJSON.status_message);
+            }
+        }
+    })
     $.ajax({
         type: "GET",
         url: BASE_URL + "/api/management/risk/scoring_history?id=" + risk_id,
@@ -218,8 +242,13 @@ function riskScoringChart(renderTo, risk_id, risk_levels){
                 var date = new Date(dateFormatted);
                 chartData.push([date.getTime(), Number(histories[i].calculated_risk)]);
             }
+            if(chartData.length == 1){
+                var newChartData = [chartData[0][0]-3000, chartData[0][1]];
+                chartData.push(newChartData);
+            }
             
             chartObj.series[0].setData(chartData)
+
             chartObj.hideLoading();
             
         },
@@ -278,7 +307,6 @@ $(document).ready(function(){
                 $('.score-overtime-container', tabContainer).show();
 
                 var risk_levels = result.data.risk_levels;
-                
                 riskScoringChart($('.score-overtime-chart', tabContainer)[0], risk_id, risk_levels);
 
                 $('.hide-score-overtime', tabContainer).show();

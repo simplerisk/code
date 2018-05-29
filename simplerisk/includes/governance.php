@@ -78,6 +78,7 @@ function get_frameworks_as_treegrid($status){
     $frameworks = get_frameworks($status);
     foreach($frameworks as &$framework){
         $framework['name'] = $escaper->escapeHtml($framework['name']);
+        $framework['description'] = nl2br($escaper->escapeHtml($framework['description']));
         $framework['actions'] = "<div class=\"text-center\"><a class=\"framework-block--edit\" data-id=\"".((int)$framework['value'])."\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;<a class=\"framework-block--delete\" data-id=\"".((int)$framework['value'])."\"><i class=\"fa fa-trash\"></i></a></div>";
     }
     $results = array();
@@ -316,10 +317,13 @@ function get_framework_tabs($status)
                 idField: 'value',
                 treeField: 'name',
                 scrollbarSize: 0,
-                onLoadSuccess: function(row, data){
-                    \$(this).treegrid('enableDnd', row?row.value:null);
-                    console.log(data)
-                    if(data.length){
+                onLoadSuccess: function(row, data){\n";
+                    if(!empty($_SESSION['modify_frameworks']))
+                    {
+                        echo "\$(this).treegrid('enableDnd', row?row.value:null);";
+                    }
+                    
+                    echo "if(data.length){
                         var totalCount = data[0].totalCount;
                     }else{
                         var totalCount = 0;
@@ -374,12 +378,11 @@ function get_framework_tabs($status)
 /************************************
  * FUNCTION: GET FRAMEWORK CONTROLS *
  ************************************/
-function get_framework_controls()
+function get_framework_controls($control_ids=false)
 {
     // Open the database connection
     $db = db_open();
-
-    $stmt = $db->prepare("
+    $sql = "
         SELECT t1.*, t2.name control_class_name, t3.name control_priority_name, t4.name family_short_name, t5.name control_phase_name, t6.name control_owner_name
         FROM `framework_controls` t1 
             LEFT JOIN `control_class` t2 on t1.control_class=t2.value
@@ -387,10 +390,16 @@ function get_framework_controls()
             LEFT JOIN `family` t4 on t1.family=t4.value
             LEFT JOIN `control_phase` t5 on t1.control_phase=t5.value
             LEFT JOIN `user` t6 on t1.control_owner=t6.value
-        "
-    );
+        WHERE
+            t1.deleted=0
+    ";
+    if($control_ids !== false)
+    {
+        $sql .= " AND FIND_IN_SET(t1.id, '{$control_ids}') ";
+    }
+    $stmt = $db->prepare($sql);
     $stmt->execute();
-
+    
     // Get the list in the array
     $controls = $stmt->fetchAll();
 
@@ -432,7 +441,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
             LEFT JOIN `control_priority` t4 on t1.control_priority=t4.value
             LEFT JOIN `family` t5 on t1.family=t5.value
             LEFT JOIN `user` t6 on t1.control_owner=t6.value
-        WHERE 1
+        WHERE t1.deleted=0
     ";
     
     // If control class ID is requested.
@@ -806,47 +815,7 @@ function delete_frameworks($framework_id){
     }
 
 }
-/*
-function delete_frameworks($framework_id){
 
-    $frameworks = get_frameworks();
-    $results = array();
-    makeTree($frameworks, $framework_id, $results);
-
-    // Open the database connection
-    $db = db_open();
-
-    $table = "frameworks";
-    
-    $results[] = array(
-        'value' => $framework_id
-    );
-
-    array_walk_recursive($results,  function($value, $key) use($db){
-        if($key == "value"){
-            // Table name
-            $table = "frameworks";
-            
-            // Delete the table value
-            $stmt = $db->prepare("DELETE FROM `{$table}` WHERE value=:value");
-            $stmt->bindParam(":value", $value, PDO::PARAM_INT);
-            $stmt->execute();
-            
-            // Update status
-            //$stmt->execute();
-
-            $message = "A framework was deleted for framework ID \"{$value}\" by username \"" . $_SESSION['user'] . "\".";
-            write_log($value + 1000, $_SESSION['uid'], $message, "framework");
-
-        }
-    });
-
-    // Close the database connection
-    db_close($db);
-
-    return true;
-}
-*/
 /************************************
  * FUNCTION: UPDATE FRAMEWORK ORDER *
  ************************************/
@@ -955,11 +924,36 @@ function update_framework_control($control_id, $control){
     
     // Close the database connection
     db_close($db);
-
+    
     $message = "A control named \"{$short_name}\" was updated by username \"" . $_SESSION['user'] . "\".";
     write_log($control_id + 1000, $_SESSION['uid'], $message, "control");
     
+    // Add residual risk scoring history
+    add_residual_risk_scoring_histories_for_control($control_id);
+    
     return true;
+}
+
+/***************************************************************
+ * FUNCTION: ADD RESIDUAL RISK SCORING HISTORIES FOR A CONTROL *
+ ***************************************************************/
+function add_residual_risk_scoring_histories_for_control($control_id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT DISTINCT(risk_id) FROM `mitigations` WHERE FIND_IN_SET(:control_id, mitigation_controls)");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $risk_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+    foreach($risk_ids as $risk_id){
+        // Add residual risk score
+        $residual_risk = get_residual_risk($risk_id + 1000);
+        add_residual_risk_scoring_history($risk_id, $residual_risk);
+    }
+
+    // Close the database connection
+    db_close($db);
 }
 
 /***************************************
@@ -969,10 +963,25 @@ function delete_framework_control($control_id){
     // Open the database connection
     $db = db_open();
 
-    // Delete the table value
-    $stmt = $db->prepare("DELETE FROM `framework_controls` WHERE id=:id");
-    $stmt->bindParam(":id", $control_id, PDO::PARAM_INT);
+    // Check if test used this control
+    $stmt = $db->prepare("SELECT count(*) cnt FROM `framework_control_tests` WHERE framework_control_id=:control_id");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     $stmt->execute();
+    $test = $stmt->fetch(PDO::FETCH_ASSOC);
+    if($test["cnt"] > 0)
+    {
+        // Delete the table value
+        $stmt = $db->prepare("UPDATE `framework_controls` SET deleted=1 WHERE id=:id");
+        $stmt->bindParam(":id", $control_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    else
+    {
+        // Delete the table value
+        $stmt = $db->prepare("DELETE FROM `framework_controls` WHERE id=:id");
+        $stmt->bindParam(":id", $control_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
     
     // Close the database connection
     db_close($db);
@@ -981,6 +990,9 @@ function delete_framework_control($control_id){
 
     $message = "A control named \"{$control['short_name']}\" was deleted by username \"" . $_SESSION['user'] . "\".";
     write_log($control_id + 1000, $_SESSION['uid'], $message, "control");
+
+    // Add residual risk scoring history
+    add_residual_risk_scoring_histories_for_control($control_id);
 }
 
 /*****************************************
@@ -1192,6 +1204,8 @@ function getAvailableControlPriorityList(){
         WHERE t2.value is not null
         GROUP BY
             t2.value
+	ORDER BY
+	    CAST(t2.name AS UNSIGNED), t2.name ASC
     ";
     
     $stmt = $db->prepare($sql);

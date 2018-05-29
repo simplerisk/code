@@ -32,8 +32,8 @@ session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 
 if (!isset($_SESSION))
 {
-        session_name('SimpleRisk');
-        session_start();
+    session_name('SimpleRisk');
+    session_start();
 }
 
 // Include the language file
@@ -183,6 +183,10 @@ enforce_permission_riskmanagement();
     </div>
 
     <input type="hidden" id="_token_value" value="<?php echo csrf_get_tokens(); ?>">
-    <input type="hidden" id="_lang_reopen_risk" value="<?php echo $lang['ReopenRisk']; ?>">
-    <input type="hidden" id="_lang_close_risk" value="<?php echo $lang['CloseRisk']; ?>">
+    <input type="hidden" id="_lang_reopen_risk" value="<?php echo $escaper->escapeHtml($lang['ReopenRisk']); ?>">
+    <input type="hidden" id="_lang_close_risk" value="<?php echo $escaper->escapeHtml($lang['CloseRisk']); ?>">
+    <input type="hidden" id="_lang_accepting" value="<?php echo $escaper->escapeHtml($lang['Accepting']); ?>">
+    <input type="hidden" id="_lang_accept_mitigation" value="<?php echo $escaper->escapeHtml($lang['AcceptMitigation']); ?>">
+    <input type="hidden" id="_lang_rejecting" value="<?php echo $escaper->escapeHtml($lang['Rejecting']); ?>">
+    <input type="hidden" id="_lang_reject_mitigation" value="<?php echo $escaper->escapeHtml($lang['RejectMitigation']); ?>">
     
