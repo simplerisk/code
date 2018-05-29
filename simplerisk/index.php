@@ -209,7 +209,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
     if (custom_authentication_extra())
     {
         // If SSO Login is enabled
-        if(get_settting_by_name("GO_TO_SSO_LOGIN"))
+	if(get_settting_by_name("GO_TO_SSO_LOGIN") === false || get_settting_by_name("GO_TO_SSO_LOGIN") === '1')
         {
             // Display the SSO login link
             echo "<tr><td colspan=\"2\"><label><a href=\"extras/authentication/login.php\">" . $escaper->escapeHtml($lang['GoToSSOLoginPage']) . "</a></label></td></tr>\n";
