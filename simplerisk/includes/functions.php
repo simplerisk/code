@@ -9183,8 +9183,8 @@ function try_decrypt($value)
     // Otherwise return the value
     else $decrypted_value=$value;
     
-    // UTF8 Encode and return STR.
-    return utf8_encode($decrypted_value);
+    // Return the decrypted value
+    return $decrypted_value;
 }
 
 /*************************
