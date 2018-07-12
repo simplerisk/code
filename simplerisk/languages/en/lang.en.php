@@ -950,7 +950,6 @@ $lang = array(
     'WarnPHPUploadSize' => 'Warning: the current file size limit is larger than PHP allows to be uploaded. Check the upload_max_filesize, post_max_size, and memory_limit values in your php.ini file.',
     'WarnMySQLUploadSize' => 'Warning: the current file size limit is larger than MySQL is configured for uploads.  Check the max_allowed_packet and innodb_log_file_size values in your my.ncf file.',
     'Restore' => 'Restore',
-    'WarnUploadSize' => 'Warning: the current file size limit is larger than PHP allows to be uploaded. Check the upload_max_filesize and post_max_size configuration variables in your php.ini',
     'Display' => 'Display',
     'DynamicChart' => 'Dynamic risks chart',
     'StaticCounts' => 'Static risks counts',
