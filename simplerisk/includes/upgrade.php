@@ -2351,6 +2351,23 @@ function upgrade_from_20180301001($db){
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20180527-001 *
+ ***************************************/
+function upgrade_from_20180527001($db){
+    // Database version to upgrade
+    $version_to_upgrade = '20180527-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20180627-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -2475,11 +2492,15 @@ function upgrade_database()
             case "20180104-001":
                 upgrade_from_20180104001($db);
                 upgrade_database();
-            break;
+            	break;
             case "20180301-001":
                 upgrade_from_20180301001($db);
                 upgrade_database();
                 break;
+            case "20180527-001":
+		upgrade_from_20180527001($db);
+		upgrade_database();
+		break;
             default:
                 echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
         }
