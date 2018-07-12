@@ -50,6 +50,12 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 // Record the page the workflow started from as a session variable
 $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 
+// If the select_display form was posted
+if (isset($_POST['display']))
+{
+  $display = (int)$_POST['display'];
+}
+else $display = 0;
 
 ?>
 
@@ -71,6 +77,7 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
     <link rel="stylesheet" href="../css/jquery.dataTables.css">
     <link rel="stylesheet" href="../css/daterangepicker.css">
+    <link rel="stylesheet" href="../css/display.css">
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
@@ -86,8 +93,17 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
                 <?php view_reporting_menu("LikelihoodImpact"); ?>
             </div>
             <div class="span9">
-                <div style="margin-top: 14px;">
-                    <?php report_likelihood_impact(); ?>
+                <div class="row-fluid">
+                  <div id="selections" class="span12">
+                    <div class="well">
+                      <?php view_likelihood_and_impact_selections($display); ?>
+                    </div>
+                  </div>
+                </div>
+                <div class="row-fluid">
+                  <div class="span12">
+                    <?php report_likelihood_impact($display); ?>
+                  </div>
                 </div>
             </div>
         </div>

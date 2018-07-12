@@ -5316,6 +5316,33 @@ function get_risks($sort_order=0)
         $array = $stmt->fetchAll();
     }
 
+    // 23 = Show open risks scored by Classic Scoring and their Residual Risk
+    else if ($sort_order == 23)
+    {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+            // Query the database
+            $stmt = $db->prepare("SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.*, (a.calculated_risk * (1 - (IFNULL(c.mitigation_percent, 0) / 100))) AS residual_risk FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN (SELECT id, mitigation_percent FROM mitigations) c ON b.mitigation_id = c.id WHERE b.status != \"Closed\" AND a.scoring_method = 1 ORDER BY calculated_risk DESC");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+            // Get the separation query string
+            $separation_query = get_user_teams_query("b", false, true);
+
+            // Query the database
+            $stmt = $db->prepare("SELECT a.calculated_risk, a.CLASSIC_likelihood, a.CLASSIC_impact, b.*, (a.calculated_risk * (1 - (IFNULL(c.mitigation_percent, 0) / 100))) AS residual_risk FROM risk_scoring a JOIN risks b ON a.id = b.id LEFT JOIN (SELECT id, mitigation_percent FROM mitigations) c ON b.mitigation_id = c.id WHERE b.status != \"Closed\" AND a.scoring_method = 1 " . $separation_query . " ORDER BY calculated_risk DESC");
+        }
+
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Close the database connection
     db_close($db);
     

@@ -3761,6 +3761,38 @@ function view_configure_menu($active)
     echo "</ul>\n";
 }
 
+/**************************************************
+* FUNCTION: VIEW LIKELIHOOD AND IMPACT SELECTIONS *
+***************************************************/
+function view_likelihood_and_impact_selections($display)
+{
+    global $lang;
+    global $escaper;
+
+    echo "<form name=\"select_display\" method=\"post\" action=\"\">\n";
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span12\">\n";
+    echo "<a href=\"javascript:;\" onclick=\"javascript: closeSearchBox()\"><img src=\"../images/X-100.png\" width=\"10\" height=\"10\" align=\"right\" /></a>\n";
+
+    // Display Selection
+    echo "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
+    echo "<tr>\n";
+    echo "<td>" . $escaper->escapeHtml($lang['Display']) . ":&nbsp;</td>\n";
+    echo "<td>\n";
+    echo "<select id=\"display\" name=\"display\" onchange=\"javascript: submit()\">\n";
+    echo "<option value=\"0\"" . ($display == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['DynamicChart']) . "</option>\n";
+    echo "<option value=\"1\"" . ($display == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['StaticCounts']) . "</option>\n";
+    echo "</select>\n";
+    echo "</td>\n";
+    echo "</tr>\n";
+    echo "</table>\n";
+
+    echo "</div>\n";
+    echo "</div>\n";
+    echo "</form>\n";
+
+}
+
 /**********************************************
 * FUNCTION: VIEW RISKS AND ASSETS SELECTIONS *
 **********************************************/
@@ -4762,92 +4794,229 @@ function risk_average_baseline_metric($time = "day", $title = ""){
 /******************************************
  * FUNCTION: RISK FOR LIKELIHOOD AND IMPACT *
  *****************************************/
-function report_likelihood_impact(){
+function report_likelihood_impact($display){
     global $lang;
     global $escaper;
 
-    $chart = new Highchart();
-    $chart->includeExtraScripts();
-    $chart->title->text = "";
-    $chart->chart->renderTo = "likelihood_impact_chart";
-    $chart->chart->type = "scatter";
-    $chart->chart->zoomType = "none";
-    $chart->credits->enabled = false;
-
-    $chart->xAxis->title = array(
-        "text" => "Likelihood"
-    );
-    $chart->xAxis->tickInterval = 1;
-    $chart->xAxis->min = 0;
-    $chart->xAxis->max = 5;
-    $chart->xAxis->gridLineWidth = 1;
-
-    $chart->yAxis->title = array(
-        "text" => "Impact"
-    );
-    $chart->yAxis->tickInterval = 1;
-    $chart->yAxis->min = 0;
-    $chart->yAxis->max = 5;
-    $chart->legend->enabled = false;
-    $chart->plotOptions = array(
-        "scatter" => array(
-            "marker" => array(
-                "radius" => 5,
-                "states" => array(
-                    "hover" => array(
-                        'enabled'=> true,
-                        'lineColor'=> 'rgb(100, 100, 100)',
-                    )
-                ),
-            ),
-        )
-    );
-    
     // Get classic risks
-    $risks = get_risks(10);
-    
-    $data = array();
-    foreach($risks as $risk){
-        $data[] = [
-            'x'         => intval($risk['CLASSIC_likelihood']), 
-            'y'         => intval($risk['CLASSIC_impact']), 
-            'marker'    => array(
-                'fillColor' => 'rgba(223, 83, 83)'
-            ), 
-            'risk_id'   => $escaper->escapeHtml(convert_id($risk['id'])),
-            'subject'   => $escaper->escapeHtml(strtoupper($risk['subject']))
-        ];
+    $risks = get_risks(23);
+
+    if($display == 0){
+    	$chart = new Highchart();
+    	$chart->includeExtraScripts();
+    	$chart->title->text = "";
+    	$chart->chart->renderTo = "likelihood_impact_chart";
+    	$chart->chart->type = "scatter";
+    	$chart->chart->zoomType = "none";
+    	$chart->credits->enabled = false;
+
+    	$chart->xAxis->title = array(
+    	    "text" => "Likelihood"
+    	);
+    	$chart->xAxis->tickInterval = 1;
+    	$chart->xAxis->min = 0;
+    	$chart->xAxis->max = 5;
+    	$chart->xAxis->gridLineWidth = 1;
+
+    	$chart->yAxis->title = array(
+    	    "text" => "Impact"
+    	);
+    	$chart->yAxis->tickInterval = 1;
+    	$chart->yAxis->min = 0;
+    	$chart->yAxis->max = 5;
+    	$chart->legend->enabled = false;
+    	$chart->plotOptions = array(
+    	    "scatter" => array(
+    	        "marker" => array(
+    	            "radius" => 5,
+    	            "states" => array(
+    	                "hover" => array(
+    	                    'enabled'=> true,
+    	                    'lineColor'=> 'rgb(100, 100, 100)',
+    	                )
+    	            ),
+    	        ),
+    	    )
+    	);
+    	
+    	$data = array();
+    	foreach($risks as $risk){
+    	    $data[] = [
+    	        'x'         => intval($risk['CLASSIC_likelihood']), 
+    	        'y'         => intval($risk['CLASSIC_impact']), 
+    	        'marker'    => array(
+    	            'fillColor' => 'rgba(223, 83, 83)'
+    	        ), 
+    	        'risk_id'   => $escaper->escapeHtml(convert_id($risk['id'])),
+    	        'subject'   => $escaper->escapeHtml(strtoupper($risk['subject']))
+    	    ];
+    	}
+
+    	$chart->series = array(
+    	    array(
+//  	          'name' => "",
+    	        'color' => "rgba(223, 83, 83)",
+    	        'data' => $data,
+    	    )
+    	);
+
+    	$chart->printScripts();
+    	echo "<div id=\"likelihood_impact_chart\" style=\"margin:auto;width:700px;height:700px \"></div>\n";
+    	echo "<script type=\"text/javascript\">";
+    	echo $chart->render("likelihood_impact_chart");
+
+    	echo "
+    	    likelihood_impact_chart.update({
+    	        tooltip: {
+    	            headerFormat: '',
+    	            useHTML: true,
+    	            style: {pointerEvents: 'auto'},
+    	            formatter: function(){
+    	                var point = this.point;
+    	                return '<a href=\"". $_SESSION['base_url']."/management/view.php?id=' + point.risk_id + '\" ><b>'+point.subject+'</b></a><br> Impact: '+ point.y +', Likelihood: '+ point.x;
+    	            }
+    	        }
+    	    })
+    	";
+
+    	echo "</script>\n";
     }
+    if($display == 1){
+        $impacts = get_table("impact");
+        $likelihoods = get_table("likelihood");
+        
+        $risk_levels = get_risk_levels();
+        $risk_levels_by_color = array();
+        foreach($risk_levels as $risk_level){
+            $risk_levels_by_color[$risk_level['name']] = $risk_level;
+        }
 
-    $chart->series = array(
-        array(
-//            'name' => "",
-            'color' => "rgba(223, 83, 83)",
-            'data' => $data,
-        )
-    );
-
-    $chart->printScripts();
-    echo "<div id=\"likelihood_impact_chart\" style=\"margin:auto;width:700px;height:700px \"></div>\n";
-    echo "<script type=\"text/javascript\">";
-    echo $chart->render("likelihood_impact_chart");
-
-    echo "
-        likelihood_impact_chart.update({
-            tooltip: {
-                headerFormat: '',
-                useHTML: true,
-                style: {pointerEvents: 'auto'},
-                formatter: function(){
-                    var point = this.point;
-                    return '<a href=\"". $_SESSION['base_url']."/management/view.php?id=' + point.risk_id + '\" ><b>'+point.subject+'</b></a><br> Impact: '+ point.y +', Likelihood: '+ point.x;
-                }
-            }
-        })
-    ";
-
-    echo "</script>\n";
+        $count_by_impact_likelihood = array_fill(0, count($impacts), array_fill(0, count($likelihoods), 0));
+        // Plus one to include insignificant (which doesn't have a DB entry)
+        $count_by_residual = array_fill(0, count($risk_levels) + 1, 0);
     
+        foreach($risks as $risk){
+            $impact = intval($risk['CLASSIC_impact']);
+            $likelihood = intval($risk['CLASSIC_likelihood']);
+            $count_by_impact_likelihood[$impact-1][$likelihood-1]++;
+            // Assumes risk levels are sorted by value ascending
+            $residual = 0;
+            foreach($risk_levels as $risk_level) {
+                if($risk_level['value'] > $risk['residual_risk']){
+                    break;
+                }
+                $residual++;
+            }
+            $count_by_residual[$residual]++;
+        }
+
+        // TODO: properly reuse code in admin/configure_risk_formula.php
+        // Create legend table
+        echo "<table>\n";
+        echo "<tr height=\"20px\">\n";
+        echo "<td><div class=\"risk-table-veryhigh\" style=\"background-color: {$risk_levels_by_color['Very High']['color']}\" /></td>\n";
+        echo "<td>". $escaper->escapeHtml($lang['VeryHighRisk']) ."</td>\n";
+        echo "<td>&nbsp;</td>\n";
+        echo "<td><div class=\"risk-table-high\" style=\"background-color: {$risk_levels_by_color['High']['color']}\" /></td>\n";
+        echo "<td>". $escaper->escapeHtml($lang['HighRisk']) ."</td>\n";
+        echo "<td>&nbsp;</td>\n";
+        echo "<td><div class=\"risk-table-medium\" style=\"background-color: {$risk_levels_by_color['Medium']['color']}\" /></td>\n";
+        echo "<td>". $escaper->escapeHtml($lang['MediumRisk']) ."</td>\n";
+        echo "<td>&nbsp;</td>\n";
+        echo "<td><div class=\"risk-table-low\" style=\"background-color: {$risk_levels_by_color['Low']['color']}\" /></td>\n";
+        echo "<td>". $escaper->escapeHtml($lang['LowRisk']) ."</td>\n";
+        echo "<td>&nbsp;</td>\n";
+        echo "<td><div class=\"risk-table-insignificant\" style=\"background-color: white\" /></td>\n";
+        echo "<td>". $escaper->escapeHtml($lang['Insignificant']) ."</td>\n";
+        echo "</tr>\n";
+        echo "</table>\n";
+
+        echo "<br />\n";
+        echo "<h4>" . $escaper->escapeHtml($lang['InherentRisk']) . "</h4>";
+
+        echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"10\">\n";
+    
+        // For each impact level
+        for ($i=4; $i>=0; $i--)
+        {
+            echo "<tr>\n";
+    
+            // If this is the first row add the y-axis label
+            if ($i == 4)
+            {
+                echo "<td rowspan=\"5\"><div class=\"text-rotation\"><b>". $escaper->escapeHtml($lang['Impact']) ."</b></div></td>\n";
+            }
+    
+            // Add the y-axis values
+                echo "<td bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($impacts[$i]['name']) . "</td>\n";
+    
+            // For each likelihood level
+            for ($j=0; $j<=4; $j++)
+            {
+                // Calculate risk
+                $risk = calculate_risk($impacts[$i]['value'], $likelihoods[$j]['value']);
+
+                $color = "white";
+                $name = "Insignificant";
+                // Assumes risk levels are sorted by value ascending
+                foreach($risk_levels as $risk_level) {
+                    if($risk_level['value'] > $risk){
+                        break;
+                    }
+                    // Get the risk color and value
+                    $color = $risk_level['color'];
+                    $name = $risk_level['name'];
+                }
+    
+                echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" height=\"50px\" width=\"100px\">";
+                if($count_by_impact_likelihood[$i][$j] > 0) {
+                    echo "<a href=\"dynamic_risk_report.php?group=1#group_" . $escaper->escapeHtml($name) . "\" target=\"_blank\">" . $escaper->escapeHtml($count_by_impact_likelihood[$i][$j]) . "</a>";
+                }
+                echo "</td>\n";
+            }
+    
+            echo "</tr>\n";
+        }
+    
+            echo "<tr>\n";
+        echo "<td>&nbsp;</td>\n";
+        echo "<td>&nbsp;</td>\n";
+    
+        // Add the x-axis values
+        for ($x=0; $x<=4; $x++)
+        {
+            echo "<td align=\"center\" bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($likelihoods[$x]['name']) . "</td>\n";
+        }
+    
+        echo "</tr>\n";
+        echo "<tr>\n";
+        echo "<td>&nbsp;</td>\n";
+            echo "<td>&nbsp;</td>\n";
+        echo "<td colspan=\"5\" align=\"center\"><b>". $escaper->escapeHtml($lang['Likelihood']) ."</b></td>\n";
+        echo "</tr>\n";
+        echo "</table>\n";
+
+        echo "<h4>" . $escaper->escapeHtml($lang['ResidualRisk']) . "</h4>";
+        echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"10\">\n";
+        echo "<tr>\n";
+        echo "<td><b>". $escaper->escapeHtml($lang['RiskLevel']) . "</b></td>\n";
+        echo "<td align=\"center\" bgcolor=\"silver\">". $escaper->escapeHtml($lang['Insignificant']) ."</td>\n";
+        echo "<td align=\"center\" bgcolor=\"silver\">". $escaper->escapeHtml($lang['LowRisk']) ."</td>\n";
+        echo "<td align=\"center\" bgcolor=\"silver\">". $escaper->escapeHtml($lang['MediumRisk']) ."</td>\n";
+        echo "<td align=\"center\" bgcolor=\"silver\">". $escaper->escapeHtml($lang['HighRisk']) ."</td>\n";
+        echo "<td align=\"center\" bgcolor=\"silver\">". $escaper->escapeHtml($lang['VeryHighRisk']) ."</td>\n";
+        echo "</tr>\n";
+        echo "<tr>\n";
+        echo "<td><b>". $escaper->escapeHtml($lang['RiskCount']) . "</b></td>\n";
+        for($i = 0; $i < count($count_by_residual); $i++) {
+            echo "<td align=\"center\" bgcolor=\"" . ($i-1 < 0 ? 'white' : $risk_levels[$i-1]['color']) . "\">". $escaper->escapeHtml($count_by_residual[$i]) . "</td>\n";
+        }
+        echo "</tr>\n";
+        echo "</tr>\n";
+        echo "</table>\n";
+
+    
+    }
 }
 
 /********************************************************
