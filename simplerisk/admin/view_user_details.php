@@ -158,6 +158,7 @@
       // Get the users information
       $user_info = get_user_by_id($user_id);
       
+      $enabled = $user_info['enabled'];
       $lockout = $user_info['lockout'];
       $type = $user_info['type'];
       $username = $user_info['username'];
@@ -200,6 +201,7 @@
   else
   {
       $user_id = "";
+      $enabled = 0;
       $lockout = false;
       $type       = "N/A";
       $username   = "N/A";
@@ -443,6 +445,10 @@
                                         <td colspan="2">                                
                                             <input name="change_password" id="change_password" <?php if(isset($change_password) && $change_password == 1) echo "checked"; ?> class="hidden-checkbox" type="checkbox" value="1" />  <label for="change_password">  &nbsp;&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['RequirePasswordChangeOnLogin']); ?> </label>
                                         </td>
+                                    </tr>
+                                    <tr>
+                                        <td><?php echo $escaper->escapeHtml($lang['Status']); ?>:&nbsp;</td>
+                                        <td><?php echo ($enabled == 1 ? $escaper->escapeHtml($lang['Enabled']) : '<b>' . $escaper->escapeHtml($lang['Disabled']) . '</b>'); ?></td>
                                     </tr>
                                     <tr>
                                         <td><?php echo $escaper->escapeHtml($lang['Type']); ?>:&nbsp;</td>
