@@ -100,10 +100,16 @@
             // If the extra is not activated
             if (!custom_authentication_extra())
             {
-                echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
-                        echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
-                        echo "</form>\n";
-                        echo "</div>\n";
+                // If the extra is not restricted based on the install type
+                if (!restricted_extra("customauth"))
+                {
+                    echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
+                    echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
+                    echo "</form>\n";
+                    echo "</div>\n";
+                }
+                // The extra is restricted
+                else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
             }
             // Once it has been activated
             else

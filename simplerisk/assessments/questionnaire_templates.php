@@ -83,6 +83,8 @@ if(process_assessment_questionnaire_templates()){
     <script src="../js/bootstrap-multiselect.js"></script>
     <script src="../js/jquery.dataTables.js"></script>
     <script src="../js/pages/assessment.js"></script>
+    <script src="../js/dataTables.rowReorder.min.js"></script>
+
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -91,6 +93,7 @@ if(process_assessment_questionnaire_templates()){
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
     <link rel="stylesheet" href="../css/jquery.dataTables.css">
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
+    <link rel="stylesheet" href="../css/rowReorder.dataTables.min.css">
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
@@ -130,7 +133,6 @@ if(process_assessment_questionnaire_templates()){
             </div>
         </div>
     </div>
-    <?php display_set_default_date_format_script(); ?>
 </body>
 
 </html>

@@ -131,12 +131,18 @@
             // But the extra is not activated
             if (!import_export_extra())
             {
-                echo "<div class=\"hero-unit\">\n";
-                echo "<h4>" . $escaper->escapeHtml($lang['ImportExportExtra']) . "</h4>\n";
-                echo "<form name=\"activate\" method=\"post\" action=\"\">\n";
-                echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
-                echo "</form>\n";
-                echo "</div>\n";
+                // If the extra is not restricted based on the install type
+                if (!restricted_extra("importexport"))
+                {
+                    echo "<div class=\"hero-unit\">\n";
+                    echo "<h4>" . $escaper->escapeHtml($lang['ImportExportExtra']) . "</h4>\n";
+                    echo "<form name=\"activate\" method=\"post\" action=\"\">\n";
+                    echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
+                    echo "</form>\n";
+                    echo "</div>\n";
+                }
+                // The extra is restricted
+                else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
             }
             // Once it has been activated
             else

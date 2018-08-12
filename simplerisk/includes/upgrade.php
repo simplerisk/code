@@ -8,6 +8,7 @@
 require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/assessments.php'));
+require_once(realpath(__DIR__ . '/reporting.php'));
 
 // Include the language file
 require_once(language_file());
@@ -516,11 +517,11 @@ function upgrade_from_20141129001($db)
  **************************************/
 function upgrade_from_20141214001($db)
 {
-        // Database version to upgrade
-        $version_to_upgrade = '20141214-001';
-        
-        // Database version upgrading to
-        $version_upgrading_to = '20150202-001';
+    // Database version to upgrade
+    $version_to_upgrade = '20141214-001';
+    
+    // Database version upgrading to
+    $version_upgrading_to = '20150202-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
@@ -2335,14 +2336,14 @@ function upgrade_from_20180301001($db){
     ");
     $stmt->execute();
     
-    // Assign new governance roles to the users who currently have the Allow access to Governance  menu field checked.
+    // Assign new governance roles to the users who currently have the Allow access to Governance  menu field checked
     $stmt = $db->prepare("UPDATE `user` SET add_new_frameworks=1, modify_frameworks=1, delete_frameworks=1, add_new_controls=1, modify_controls=1, delete_controls=1 WHERE governance=1; ");
     $stmt->execute();
     
     // Update technology field from Int type to String
     echo "Updating technology field from Int type to String.<br />\n";
     $stmt = $db->prepare("
-        ALTER TABLE `risks` CHANGE `technology` `technology` VARCHAR(500) NOT NULL; 
+        ALTER TABLE `risks` CHANGE `technology` `technology` VARCHAR(500) NOT NULL ; 
     ");
     $stmt->execute();
     
@@ -2366,6 +2367,154 @@ function upgrade_from_20180527001($db){
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20180627-001 *
+ ***************************************/
+function upgrade_from_20180627001($db){
+    // Database version to upgrade
+    $version_to_upgrade = '20180627-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20180812-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Update team field from Int type to String
+    echo "Updating team field from Int type to String.<br />\n";
+    $stmt = $db->prepare("
+        ALTER TABLE `risks` CHANGE `team` `team` VARCHAR(500) NOT NULL DEFAULT '0';
+    ");
+    $stmt->execute();
+    
+    // Add new fields, `add_documentation`, `modify_documentation`, `delete_documentation` to user table
+    echo "Adding a new `add_documentation` permission to the user table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `user` ADD `add_documentation` TINYINT NOT NULL DEFAULT '0', ADD `modify_documentation` TINYINT NOT NULL DEFAULT '0' AFTER `add_documentation`, ADD `delete_documentation` TINYINT NOT NULL DEFAULT '0' AFTER `modify_documentation`; ");
+    $stmt->execute();
+
+    // Set add/modify/delete documentation responsibilities to users who currently have the Allow access to Governance menu field 
+    echo "Setting add/modify/delete documentation responsibilities to users who currently have the Allow access to Governance menu field.<br />\n";
+    $stmt = $db->prepare("UPDATE `user` SET add_documentation=1, modify_documentation=1, delete_documentation=1 WHERE governance=1; ");
+    $stmt->execute();
+
+    // If the file upload settings file exists
+    if (file_exists(realpath(__DIR__ . '/../admin/uploads.php')))
+    {
+        // Delete the file
+        echo "Deleting the /admin/uploads.php file as the configuration has been moved to the Settings page.<br />\n";
+        unlink(realpath(__DIR__ . '/../admin/uploads.php'));
+    }
+
+    // If the mail settings file exists
+    if (file_exists(realpath(__DIR__ . '/../admin/mail_settings.php')))
+    {
+        // Delete the file
+        echo "Deleting the /admin/mail_settings.php file as the configuration has been moved to the Settings page.<br />\n";
+        unlink(realpath(__DIR__ . '/../admin/mail_settings.php'));
+    }
+
+    // Update name field size of settings table
+    echo "Updating name field size of settings table.<br />\n";
+    $stmt = $db->prepare("
+        ALTER TABLE `settings` CHANGE `name` `name` VARCHAR( 100 );
+    ");
+    $stmt->execute();
+
+    // Create documents table
+    echo "Creating documents table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `documents` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `document_type` varchar(50) COLLATE utf8_bin NOT NULL,
+          `document_name` text COLLATE utf8_bin NOT NULL,
+          `parent` int(11) NOT NULL,
+          `status` enum('Draft','InReview','Approved','') COLLATE utf8_bin NOT NULL,
+          `file_id` int(11) NOT NULL,
+          `creation_date` date NOT NULL,
+          PRIMARY KEY(id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+
+    // Add version filed to compliance_files table
+    echo "Adding version field to compliance_files table.<br />\n";
+    $stmt = $db->prepare("
+        ALTER TABLE `compliance_files` ADD `version` INT NULL DEFAULT NULL;
+    ");
+    $stmt->execute();
+    
+    // Set default impact value for invalid impacts
+    echo "Setting default impact value for invalid impacts.<br />\n";
+    $impact_count = get_impacts_count();
+    
+    $stmt = $db->prepare("UPDATE `risk_scoring` SET `CLASSIC_impact` = :impact_count WHERE `CLASSIC_impact` > :impact_count ;");
+    $stmt->bindParam(":impact_count", $impact_count, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Set default likelihood value for invalid likelihoods
+    echo "Setting default likelihood value for invalid likelihood.<br />\n";
+    $likelihood_count = get_likelihoods_count();
+    
+    $stmt = $db->prepare("UPDATE `risk_scoring` SET `CLASSIC_likelihood` = :likelihood_count WHERE `CLASSIC_likelihood` > :likelihood_count ;");
+    $stmt->bindParam(":likelihood_count", $likelihood_count, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Update question 144 (disallow unauthorized outbound traffic) to have both Yes and No answers
+    echo "Updating question 144 (disallow unauthorized outbound traffic) to have both Yes and No answers.<br />\n";
+    $stmt = $db->prepare("SELECT id FROM assessment_questions WHERE question='(1.3.4) Do you disallow unauthorized outbound traffic from the cardholder data environment to the internet?';");
+    $stmt->execute();
+    
+    // Store the ID for the question
+    $array = $stmt->fetchAll();
+
+    // Update the question answer to No
+    $stmt = $db->prepare("UPDATE assessment_answers SET answer='No' WHERE question_id=:question_id AND submit_risk=1;");
+    $stmt->bindParam(":question_id", $array[0]['id'], PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Update question 433 (Does the covered entity use or disclose PHI...) to have both Yes and No answers
+    echo "Updating question 433 (Does the covered entity use or disclose PHI for the purpose of research, conducts research, provides psychotherapy services, and uses compound authorizations?)<br />\n";
+    $stmt = $db->prepare("SELECT id FROM assessment_questions WHERE question='§164.508(b) (3) Does the covered entity use or disclose PHI for the purpose of research, conducts research, provides psychotherapy services, and uses compound authorizations?';");
+    $stmt->execute();
+
+    // Store the ID for the question
+    $array = $stmt->fetchAll();
+
+    // Update the question answer to No
+    $stmt = $db->prepare("UPDATE assessment_answers SET answer='No' WHERE question_id=:question_id AND submit_risk=1;");
+    $stmt->bindParam(":question_id", $array[0]['id'], PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Remove risks from scoring history that have been deleted
+    echo "Removing risks from the risk scoring history that have been deleted.<br />\n";
+    $stmt = $db->prepare("DELETE FROM `risk_scoring_history` WHERE risk_id NOT IN (SELECT id FROM `risks` WHERE id is NOT NULL);");
+    $stmt->execute();
+    echo "Removing risks from the residual risk scoring history that have been deleted.<br />\n";
+    $stmt = $db->prepare("DELETE FROM `residual_risk_scoring_history` WHERE risk_id NOT IN (SELECT id FROM `risks` WHERE id is NOT NULL);");
+    
+    // Update `ASSESSMENT_ASSET_SHOW_AVAILABLE` setting value to 1
+    echo "Update `ASSESSMENT_ASSET_SHOW_AVAILABLE` setting value to 1";
+    $stmt = $db->prepare("UPDATE `settings` SET `value` = '1' WHERE `name` = 'ASSESSMENT_ASSET_SHOW_AVAILABLE';");
+    $stmt->execute();
+    
+    // Adding comment permissions to user table
+    echo "Adding new fields, `comment_risk_management`, `comment_compliance` to `user` table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `user` ADD `comment_risk_management` TINYINT( 1 ) NOT NULL DEFAULT '0' , ADD `comment_compliance` TINYINT( 1 ) NOT NULL DEFAULT '0';");
+    $stmt->execute();
+
+    // Set existing user permissions to allow comments
+    echo "Setting permissions for existing users with risk management access to comment.<br />\n";
+    $stmt = $db->prepare("UPDATE `user` SET comment_risk_management=1 WHERE riskmanagement=1;");
+    $stmt->execute();
+    echo "Setting permissions for existing users with compliance access to comment.<br />\n";
+    $stmt = $db->prepare("UPDATE `user` SET comment_compliance=1 WHERE compliance=1;");
+    $stmt->execute();
+    
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    
 }
 
 /******************************
@@ -2498,9 +2647,13 @@ function upgrade_database()
                 upgrade_database();
                 break;
             case "20180527-001":
-		upgrade_from_20180527001($db);
-		upgrade_database();
-		break;
+                upgrade_from_20180527001($db);
+                upgrade_database();
+                break;
+            case "20180627-001":
+                upgrade_from_20180627001($db);
+                upgrade_database();
+                break;
             default:
                 echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
         }

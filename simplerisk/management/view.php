@@ -175,10 +175,12 @@ if (isset($_GET['id']))
     $mitigation_id = $risk[0]['mitigation_id'];
     $mgmt_review = $risk[0]['mgmt_review'];
     $calculated_risk = $risk[0]['calculated_risk'];
+    $residual_risk = $risk[0]['residual_risk'];
     $next_review = $risk[0]['next_review'];
     $color = get_risk_color($calculated_risk);
+    $residual_color = get_risk_color($residual_risk);
     $risk_level = get_risk_level_name($calculated_risk);
-
+    $residual_risk_level = get_risk_level_name($residual_risk);
     $scoring_method = $risk[0]['scoring_method'];
     $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
     $CLASSIC_impact = $risk[0]['CLASSIC_impact'];
@@ -231,6 +233,7 @@ if (isset($_GET['id']))
     else{
         $status = $lang["RiskIdDoesNotExist"];
     }
+
     $subject = "N/A";
     $reference_id = "N/A";
     $regulation = "";
@@ -246,16 +249,25 @@ if (isset($_GET['id']))
     $assessment = "";
     $notes = "";
     $submission_date = "";
+
     $mitigation_id = "";
     $mgmt_review = "";
     $calculated_risk = "0.0";
 
+    $residual_risk = "";
+    $next_review = "";
+    $color = "";
+    $residual_color = "";
+
+    $risk_level = "";
+    $residual_risk_level = "";
     $scoring_method = "";
     $CLASSIC_likelihood = "";
     $CLASSIC_impact = "";
     $AccessVector = "";
     $AccessComplexity = "";
     $Authentication = "";
+
     $ConfImpact = "";
     $IntegImpact = "";
     $AvailImpact = "";
@@ -267,6 +279,28 @@ if (isset($_GET['id']))
     $ConfidentialityRequirement = "";
     $IntegrityRequirement = "";
     $AvailabilityRequirement = "";
+    $DREADDamagePotential = "";
+    $DREADReproducibility = "";
+    $DREADExploitability = "";
+    $DREADAffectedUsers = "";
+    $DREADDiscoverability = "";
+    $OWASPSkillLevel = "";
+    $OWASPMotive = "";
+    $OWASPOpportunity = "";
+    $OWASPSize = "";
+    $OWASPEaseOfDiscovery = "";
+    $OWASPEaseOfExploit = "";
+    $OWASPAwareness = "";
+    $OWASPIntrusionDetection = "";
+    $OWASPLossOfConfidentiality = "";
+    $OWASPLossOfIntegrity = "";
+    $OWASPLossOfAvailability = "";
+    $OWASPLossOfAccountability = "";
+    $OWASPFinancialDamage = "";
+    $OWASPReputationDamage = "";
+    $OWASPNonCompliance = "";
+    $OWASPPrivacyViolation = "";
+    $custom = "";
   }
 
   // If the current scoring method was changed to Classic
@@ -386,8 +420,20 @@ if (isset($_GET['id']))
     $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
 
     $review = $mgmt_reviews[0]['review'];
+    $review_id = $mgmt_reviews[0]['id'];
     $next_step = $mgmt_reviews[0]['next_step'];
-    $next_review = next_review($risk_level, $id-1000, $next_review, false);
+    
+    // If next_review_date_uses setting is Residual Risk.
+    if(get_setting('next_review_date_uses') == "ResidualRisk")
+    {
+        $next_review = next_review($residual_risk_level, $id-1000, $next_review, false);
+    }
+    // If next_review_date_uses setting is Inherent Risk.
+    else
+    {
+        $next_review = next_review($risk_level, $id-1000, $next_review, false);
+    }
+    
     $reviewer = $mgmt_reviews[0]['reviewer'];
     $comments = $mgmt_reviews[0]['comments'];
   }else
@@ -396,6 +442,7 @@ if (isset($_GET['id']))
     // Set the values to empty
     $review_date = "N/A";
     $review = "";
+    $review_id = "";
     $next_step = "";
     $next_review = "";
     $reviewer = "";

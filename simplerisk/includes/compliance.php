@@ -947,23 +947,32 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
 function save_test_comment($test_audit_id, $comment){
     $user    =  $_SESSION['uid'];
     
-    // Open the database connection
-    $db = db_open();
+    // Make sure the user has permission to comment
+    if($_SESSION["comment_compliance"] == 1) {
+
+        // Open the database connection
+        $db = db_open();
     
-    $sql = "
-        INSERT INTO `framework_control_test_comments`(`test_audit_id`, `user`, `comment`) VALUES(:test_audit_id, :user, :comment);
-    ";
+        $sql = "
+            INSERT INTO `framework_control_test_comments`(`test_audit_id`, `user`, `comment`) VALUES(:test_audit_id, :user, :comment);
+        ";
     
-    $stmt = $db->prepare($sql);
-    $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_STR);
-    $stmt->bindParam(":comment", $comment, PDO::PARAM_INT);
-    $stmt->bindParam(":user", $user, PDO::PARAM_INT);
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_STR);
+        $stmt->bindParam(":comment", $comment, PDO::PARAM_INT);
+        $stmt->bindParam(":user", $user, PDO::PARAM_INT);
     
-    // Insert a test result
-    $stmt->execute();
+        // Insert a test result
+        $stmt->execute();
     
-    // Close the database connection
-    db_close($db);
+        // Close the database connection
+        db_close($db);
+
+        set_alert(true, "good",  "Your comment has been successfully added to the audit.");
+    }
+    else {
+        set_alert(true, "bad", "You do not have permission to add comments to audits.");
+    }
 }
 
 /**********************************
@@ -1238,6 +1247,7 @@ function display_test_audit_comment($test_audit_id)
                         $('.comment-text', container).focus()
                     }
                 })
+                location.reload(true);
             })
         
         </script>
@@ -1333,7 +1343,7 @@ function save_test_result($test_audit_id, $status, $test_result, $tester, $test_
     
     $closed_audit_status = get_setting("closed_audit_status");
     
-	// Check audit was closed
+    // Check audit was closed
     if($status == $closed_audit_status)
     {
         // update last audit date and next audti date in test_audit table
@@ -1358,10 +1368,26 @@ function update_test_audit_status($test_audit_id, $status)
     $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
     $stmt->execute();
     
-    //  Update Framework and Control status....
-    
     // Close the database connection
     db_close($db);
+
+    $closed_audit_status = get_setting("closed_audit_status");
+    $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
+    $test_audit_name = empty($test_audit["name"]) ? "" : $test_audit["name"];
+
+    // Check audit was closed
+    if($status == $closed_audit_status)
+    {
+        $message = "An audit named \"{$test_audit_name}\" was modified and closed by username \"" . $_SESSION['user'] . "\".";
+        write_log($test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
+    }
+    // The audit status is not closed
+    else
+    {
+        $message = "An audit named \"{$test_audit_name}\" was modified by username \"" . $_SESSION['user'] . "\".";
+        write_log($test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
+    }
+    
 }
 
 /***********************************************************
@@ -1382,6 +1408,15 @@ function update_last_and_next_auditdate($test_audit_id, $last_date)
     $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
     $stmt->bindParam(":last_date", $last_date, PDO::PARAM_INT);
     $stmt->bindParam(":next_date", $next_date, PDO::PARAM_INT);
+    
+    // Update test status
+    $stmt->execute();
+    
+    $sql = "UPDATE `framework_control_tests` t1 JOIN `framework_control_test_audits` t2 ON t1.id=t2.test_id SET t1.`last_date`=:last_date WHERE t2.id=:test_audit_id;";
+    
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
+    $stmt->bindParam(":last_date", $last_date, PDO::PARAM_INT);
     
     // Update test status
     $stmt->execute();
@@ -1414,7 +1449,7 @@ function submit_test_result()
     global $escaper, $lang;
     
     $test_audit_id  = (int)$_GET['id'];
-    $status         = (int)$_POST['status'];
+    $test_audit_status  = (int)$_POST['status'];
     $test_result    = $_POST['test_result'];
     $tester         = (int)$_POST['tester'];
     $test_date      = $_POST['test_date'];
@@ -1447,10 +1482,7 @@ function submit_test_result()
         // If submitted files are existing, save files
         if(!empty($_FILES['file'])){
             $files = $_FILES['file'];
-            $result = upload_compliance_files($test_audit_id, "test_audit", $files);
-            if($result !== true){
-                $errors = $result;
-            }
+            list($status, $file_ids, $errors) = upload_compliance_files($test_audit_id, "test_audit", $files);
         }
         
         // Check if error was happen in uploading files
@@ -1460,25 +1492,7 @@ function submit_test_result()
             return false;
         }else{
             // Save a test result
-            save_test_result($test_audit_id, $status, $test_result, $tester, $test_date, $summary);
-            
-            $closed_audit_status = get_setting("closed_audit_status");
-            
-            $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
-            $test_audit_name = empty($test_audit["name"]) ? "" : $test_audit["name"];
-
-            // The audit was closed
-            if($status == $closed_audit_status)
-            {
-                $message = "An audit named \"{$test_audit_name}\" was modified and closed by username \"" . $_SESSION['user'] . "\".";
-                write_log($test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
-            }
-            // The audit status is not close
-            else
-            {
-                $message = "An audit named \"{$test_audit_name}\" was modified by username \"" . $_SESSION['user'] . "\".";
-                write_log($test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
-            }
+            save_test_result($test_audit_id, $test_audit_status, $test_result, $tester, $test_date, $summary);
             
             set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
             return true;
@@ -1486,122 +1500,6 @@ function submit_test_result()
     }
     
 }
-
-/*************************************
- * FUNCTION: UPLOAD COMPLIANCE FILES *
- *************************************/
-function upload_compliance_files($test_audit_id, $ref_type, $files)
-{
-
-    $user = $_SESSION['uid'];
-    
-    // Open the database connection
-    $db = db_open();
-    
-    // Get the list of allowed file types
-    $stmt = $db->prepare("SELECT `name` FROM `file_types`");
-    $stmt->execute();
-
-    // Get the result
-    $result = $stmt->fetchAll();
-
-    // Create an array of allowed types
-    foreach ($result as $key => $row)
-    {
-        $allowed_types[] = $row['name'];
-    }
-    
-    $errors = array();
-
-    foreach($files['name'] as $key => $name){
-        if(!$name)
-            continue;
-            
-        $file = array(
-            'name' => $files['name'][$key],
-            'type' => $files['type'][$key],
-            'tmp_name' => $files['tmp_name'][$key],
-            'size' => $files['size'][$key],
-            'error' => $files['error'][$key],
-        );
-        
-        // If the file type is appropriate
-        if (in_array($file['type'], $allowed_types))
-        {
-            // Get the maximum upload file size
-            $max_upload_size = get_setting("max_upload_size");
-
-            // If the file size is less than max size
-            if ($file['size'] < $max_upload_size)
-            {
-                // If there was no error with the upload
-                if ($file['error'] == 0)
-                {
-                    // Read the file
-                    $content = fopen($file['tmp_name'], 'rb');
-
-                    // Create a unique file name
-                    $unique_name = generate_token(30);
-
-                    // Store the file in the database
-                    $stmt = $db->prepare("INSERT compliance_files (ref_id, ref_type, name, unique_name, type, size, user, content) VALUES (:ref_id, :ref_type, :name, :unique_name, :type, :size, :user, :content)");
-                    $stmt->bindParam(":ref_id", $test_audit_id, PDO::PARAM_INT);
-                    $stmt->bindParam(":ref_type", $ref_type, PDO::PARAM_STR);
-                    $stmt->bindParam(":name", $file['name'], PDO::PARAM_STR, 30);
-                    $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
-                    $stmt->bindParam(":type", $file['type'], PDO::PARAM_STR, 30);
-                    $stmt->bindParam(":size", $file['size'], PDO::PARAM_INT);
-                    $stmt->bindParam(":user", $user, PDO::PARAM_INT);
-                    $stmt->bindParam(":content", $content, PDO::PARAM_LOB);
-                    $stmt->execute();
-                    
-                }
-                // Otherwise
-                else
-                {
-                    switch ($file['error'])
-                    {
-                        case 1:
-                            $errors[] = "The uploaded file exceeds the upload_max_filesize directive in php.ini.";
-                            break;
-                        case 2:
-                            $errors[] = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.";
-                            break;
-                        case 3:
-                            $errors[] = "The uploaded file was only partially uploaded.";
-                            break;
-                        case 4:
-//                            $errors[] = "No file was uploaded.";
-                            break;
-                        case 6:
-                            $errors[] = "Missing a temporary folder.";
-                            break;
-                        case 7:
-                            $errors[] = "Failed to write file to disk.";
-                            break;
-                        case 8:
-                            $errors[] = "A PHP extension stopped the file upload.";
-                            break;
-                        default:
-                            $errors[] = "There was an error with the file upload.";
-                    }
-                }
-            }
-            else $errors[] = "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
-        }
-        else $errors[] = "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
-    }
-
-    // Close the database connection
-    db_close($db);
-    
-    if($errors){
-        return $errors;
-    }else{
-        return true;
-    }
-}
-
 
 /**************************************
  * FUNCTION: DOWNLOAD COMPLIANCE FILE *
@@ -1634,7 +1532,7 @@ function download_compliance_file($unique_name)
     {
         header("Content-length: " . $array['size']);
         header("Content-type: " . $array['type']);
-        header("Content-Disposition: attachment; filename=" . $escaper->escapeUrl($array['name']));
+        header("Content-Disposition: attachment; filename=\"" . $array['name'] ."\"");
         echo $array['content'];
         exit;
     }

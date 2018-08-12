@@ -198,7 +198,6 @@ function push_pending_risk()
     // Get the posted risk values
     $submission_date = $_POST['submission_date'];
     $subject = $_POST['subject'];
-//    $custom = (float)$_POST['risk_score'];
     $owner = (int)$_POST['owner'];
     $notes = $_POST['note'];
     $assets = $_POST['asset'];

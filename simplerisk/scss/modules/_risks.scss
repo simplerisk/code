@@ -359,6 +359,9 @@ div.doc-link {
         thead th, table.dataTable thead td{
             border-bottom: 0px;
         }
+        td.reorder{
+            text-align: left;
+        }
     }
     &.dataTable.no-footer{
         border-bottom: 1px solid #dddddd;
@@ -368,6 +371,7 @@ div.doc-link {
 /*            background-image: none;*/
         }
     } 
+    
 }
 
 #risk-table-container{

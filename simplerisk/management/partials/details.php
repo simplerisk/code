@@ -121,10 +121,11 @@ enforce_permission_riskmanagement();
 <!--                      <form name="review" method="post" action="">-->
                 <?php
                     if (isset($action) && $action == 'editreview'){
-                        edit_review_submission($id, $review, $next_step, $next_review, $comments, $default_next_review);
+                        $default_next_review = get_next_review_default($id-1000);
+                        edit_review_submission($id, $review_id, $review, $next_step, $next_review, $comments, $default_next_review);
                     }
 		else{
-                        view_review_details($id, $review_date, $reviewer, $review, $next_step, $next_review, $comments);
+                        view_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments);
                     }
                 ?>
 <!--                      </form>-->

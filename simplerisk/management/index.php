@@ -83,7 +83,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   $location = (int)$_POST['location'];
   $source = (int)$_POST['source'];
   $category = (int)$_POST['category'];
-  $team = (int)$_POST['team'];
+  $team = (empty($_POST['team'])) ? "" : implode(",", $_POST['team']);
   $technology = (empty($_POST['technology'])) ? "" : implode(",", $_POST['technology']);
   $owner = (int)$_POST['owner'];
   $manager = (int)$_POST['manager'];

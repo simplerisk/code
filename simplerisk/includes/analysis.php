@@ -47,7 +47,16 @@ function risk_distribution_analysis()
     if (!team_separation_extra())
     {
 	    // Query the database
-	    $stmt = $db->prepare("select a.residual_risk, COUNT(*) AS num, CASE WHEN residual_risk >= :veryhigh THEN :very_high_display_name WHEN residual_risk < :veryhigh AND residual_risk >= :high THEN :high_display_name WHEN residual_risk < :high AND residual_risk >= :medium THEN :medium_display_name WHEN residual_risk < :medium AND residual_risk >= :low THEN :low_display_name WHEN residual_risk < :low AND residual_risk >= 0 THEN :insignificant_display_name END AS level from (select (a.calculated_risk - (a.calculated_risk * IFNULL(c.mitigation_percent,0) / 100)) as residual_risk FROM `risk_scoring` a JOIN `risks` b ON a.id = b.id LEFT JOIN mitigations c ON b.id = c.risk_id WHERE b.status != \"Closed\") as a GROUP BY level ORDER BY a.residual_risk DESC");
+	    $stmt = $db->prepare("select COUNT(*) AS num, CASE WHEN residual_risk >= :veryhigh THEN :very_high_display_name WHEN residual_risk < :veryhigh AND residual_risk >= :high THEN :high_display_name WHEN residual_risk < :high AND residual_risk >= :medium THEN :medium_display_name WHEN residual_risk < :medium AND residual_risk >= :low THEN :low_display_name WHEN residual_risk < :low AND residual_risk >= 0 THEN :insignificant_display_name END AS level from (
+            SELECT a.calculated_risk, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(c.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk 
+            FROM `risk_scoring` a 
+                JOIN `risks` b ON a.id = b.id 
+                LEFT JOIN mitigations c ON b.id = c.risk_id 
+                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, c.mitigation_controls)
+            WHERE b.status != \"Closed\"
+            GROUP BY
+                b.id
+        ) as a GROUP BY level ORDER BY a.residual_risk DESC");
         $stmt->bindParam(":veryhigh", $veryhigh, PDO::PARAM_STR, 4);
         $stmt->bindParam(":high", $high, PDO::PARAM_STR, 4);
         $stmt->bindParam(":medium", $medium, PDO::PARAM_STR, 4);
@@ -133,7 +142,14 @@ function risk_distribution_analysis()
 	}
 
         // Query the database
-	$stmt = $db->prepare("select a.id, a.subject, c.calculated_risk, b.mitigation_effort, b.mitigation_percent, (c.calculated_risk - (c.calculated_risk * IFNULL(b.mitigation_percent,0) / 100)) as residual_risk FROM risks a JOIN mitigations b ON a.id = b.risk_id LEFT JOIN risk_scoring c ON a.id = c.id WHERE b.mitigation_effort != 0 AND a.status != \"Closed\" ORDER BY b.mitigation_effort ASC, residual_risk DESC");
+	$stmt = $db->prepare("
+        SELECT a.id, a.subject, c.calculated_risk, b.mitigation_effort, b.mitigation_percent, (c.calculated_risk - (c.calculated_risk * GREATEST(IFNULL(b.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0) ) / 100)) as residual_risk 
+        FROM risks a 
+            JOIN mitigations b ON a.id = b.risk_id 
+            LEFT JOIN risk_scoring c ON a.id = c.id 
+            LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, b.mitigation_controls)
+        WHERE b.mitigation_effort != 0 AND a.status != \"Closed\" GROUP BY a.id ORDER BY b.mitigation_effort ASC, residual_risk DESC;
+    ");
 	$stmt->execute();
 
     // Store the list in the array

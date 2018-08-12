@@ -121,7 +121,11 @@
           "OWASPPrivacyViolation": "10",
           "Custom": "",
           "assessment": "Assessment",
-          "notes": "Additional notes"
+          "notes": "Additional notes",
+          "custom_field": {
+              "21":"Custom first",
+              "41":"Custom value"
+          }
         }';
         $results['response'] = '{
               "status": 200,
@@ -150,7 +154,11 @@
           "current_solution": "Current solution",
           "security_requirements": "Requirements",
           "security_recommendations": "Recommends",
-          "mitigation_percent": "33"
+          "mitigation_percent": "33",
+          "custom_field": {
+              "21": "Custom first",
+              "41": "Custom value"
+          }
         }';
         
         $results['response'] = '{
@@ -175,7 +183,10 @@
           "next_step": "1",
           "comments": "This is a comment",
           "custom_date": "no",
-          "next_review": "06/11/2017"
+          "next_review": "06/11/2017",
+          "custom_field": {
+            "43": "3"
+          }
         }';
         
         $results['response'] = '{
@@ -230,8 +241,8 @@
             "status_message": "scoring_history",
             "data": [{
                 "risk_id": "1001",
-		        "calculated_risk": "10",
-		        "last_update": "2017-03-05 17:55:57"
+		            "calculated_risk": "10",
+		            "last_update": "2017-03-05 17:55:57"
             }]
         }';
 
@@ -245,73 +256,83 @@
         $results['params'] = '';
         
         $results['response'] = '{
-          "status": 200,
-          "status_message": "viewrisk",
-          "data": [
-            {
-              "id": 2281,
-              "status": "Untreated",
-              "subject": "",
-              "reference_id": "01",
-              "regulation": "Sarbanes-Oxley (SOX)",
-              "control_number": "007",
-              "location": "Austin, TX",
-              "source": "People",
-              "category": "Technical Vulnerability Management",
-              "team": "Information Security",
-              "technology": "Windows",
-              "owner": "Admin",
-              "manager": "Demo Director",
-              "assessment": "",
-              "notes": "",
-              "assets": "host002",
-              "submission_date": "2016-04-28 20:25:26",
-              "mitigation_id": "0",
-              "mgmt_review": "0",
-              "calculated_risk": "10",
-              "next_review": null,
-              "color": "#ff0000",
-              "scoring_method": "Custom",
-              "CLASSIC_likelihood": "Almost Certain",
-              "CLASSIC_impact": "Extreme/Catastrophic",
-              "CVSS_AccessVector": "N",
-              "CVSS_AccessComplexity": "L",
-              "CVSS_Authentication": "N",
-              "CVSS_ConfImpact": "C",
-              "CVSS_IntegImpact": "C",
-              "CVSS_AvailImpact": "C",
-              "CVSS_Exploitability": "ND",
-              "CVSS_RemediationLevel": "ND",
-              "CVSS_ReportConfidence": "ND",
-              "CVSS_CollateralDamagePotential": "ND",
-              "CVSS_TargetDistribution": "ND",
-              "CVSS_ConfidentialityRequirement": "ND",
-              "CVSS_IntegrityRequirement": "ND",
-              "CVSS_AvailabilityRequirement": "ND",
-              "DREAD_DamagePotential": "10",
-              "DREAD_Reproducibility": "10",
-              "DREAD_Exploitability": "10",
-              "DREAD_AffectedUsers": "10",
-              "DREAD_Discoverability": "10",
-              "OWASP_SkillLevel": "10",
-              "OWASP_Motive": "10",
-              "OWASP_Opportunity": "10",
-              "OWASP_Size": "10",
-              "OWASP_EaseOfDiscovery": "10",
-              "OWASP_EaseOfExploit": "10",
-              "OWASP_Awareness": "10",
-              "OWASP_IntrusionDetection": "10",
-              "OWASP_LossOfConfidentiality": "10",
-              "OWASP_LossOfIntegrity": "10",
-              "OWASP_LossOfAvailability": "10",
-              "OWASP_LossOfAccountability": "10",
-              "OWASP_FinancialDamage": "10",
-              "OWASP_ReputationDamage": "10",
-              "OWASP_NonCompliance": "10",
-              "OWASP_PrivacyViolation": "10",
-              "Custom": "10"
-            }
-          ]
+            "status": 200,
+            "status_message": "viewrisk",
+            "data": [
+                {
+                    "id": 1031,
+                    "status": "New",
+                    "subject": "test",
+                    "reference_id": "",
+                    "regulation": "",
+                    "control_number": "",
+                    "location": "",
+                    "source": "",
+                    "category": "",
+                    "team": "Branch Management",
+                    "technology": "",
+                    "owner": "",
+                    "manager": "",
+                    "assessment": "",
+                    "notes": "",
+                    "assets": "",
+                    "submission_date": "2018-06-06 11:01:20",
+                    "mitigation_id": "0",
+                    "mgmt_review": "0",
+                    "calculated_risk": "10",
+                    "next_review": null,
+                    "color": "#ff0505",
+                    "scoring_method": "Custom",
+                    "CLASSIC_likelihood": "Almost Certain",
+                    "CLASSIC_impact": "Extreme/Catastrophic",
+                    "CVSS_AccessVector": "N",
+                    "CVSS_AccessComplexity": "L",
+                    "CVSS_Authentication": "N",
+                    "CVSS_ConfImpact": "C",
+                    "CVSS_IntegImpact": "C",
+                    "CVSS_AvailImpact": "C",
+                    "CVSS_Exploitability": "ND",
+                    "CVSS_RemediationLevel": "ND",
+                    "CVSS_ReportConfidence": "ND",
+                    "CVSS_CollateralDamagePotential": "ND",
+                    "CVSS_TargetDistribution": "ND",
+                    "CVSS_ConfidentialityRequirement": "ND",
+                    "CVSS_IntegrityRequirement": "ND",
+                    "CVSS_AvailabilityRequirement": "ND",
+                    "DREAD_DamagePotential": "10",
+                    "DREAD_Reproducibility": "10",
+                    "DREAD_Exploitability": "10",
+                    "DREAD_AffectedUsers": "10",
+                    "DREAD_Discoverability": "10",
+                    "OWASP_SkillLevel": "10",
+                    "OWASP_Motive": "10",
+                    "OWASP_Opportunity": "10",
+                    "OWASP_Size": "10",
+                    "OWASP_EaseOfDiscovery": "10",
+                    "OWASP_EaseOfExploit": "10",
+                    "OWASP_Awareness": "10",
+                    "OWASP_IntrusionDetection": "10",
+                    "OWASP_LossOfConfidentiality": "10",
+                    "OWASP_LossOfIntegrity": "10",
+                    "OWASP_LossOfAvailability": "10",
+                    "OWASP_LossOfAccountability": "10",
+                    "OWASP_FinancialDamage": "10",
+                    "OWASP_ReputationDamage": "10",
+                    "OWASP_NonCompliance": "10",
+                    "OWASP_PrivacyViolation": "10",
+                    "Custom": "10",
+                    "closure_date": "2015-09-15 06:26:47",
+                    "custom_values": [
+                        {
+                            "field_id": "41",
+                            "value": "1",
+                            "review_id": "0",
+                            "field_name": "test",
+                            "field_type": "longtext"
+                        }
+                    ]
+                }
+            ]
         }';
         
         return;
@@ -348,6 +369,24 @@
             "supporting_files": [
               "http://demo.simplerisk.com/management/download.php?id=w7rtvQ1nmtOsPf0pGLSby5pqQ9ouAZ",
               "http://demo.simplerisk.com/management/download.php?id=IcyuIqRRoaG3ukaSk8IuVwc1HUGrgn"
+            ],
+            "custom_values": [
+                {
+                    "field_id": "21",
+                    "value": "Custom first",
+                    "review_id": "0",
+                    "field_name": "PlanningStrategy",
+                    "field_type": "",
+                    "tab_index": "2"
+                },
+                {
+                    "field_id": "41",
+                    "value": "Custom value",
+                    "review_id": "0",
+                    "field_name": "test",
+                    "field_type": "longtext",
+                    "tab_index": "2"
+                }
             ]
           }
         }';
@@ -370,7 +409,17 @@
             "review": "1",
             "next_step": "1",
             "next_review": "2017-06-30",
-            "comments": "This is a comment."
+            "comments": "This is a comment.",
+            "custom_values": [
+                {
+                    "field_id": "43",
+                    "value": "3",
+                    "review_id": "30",
+                    "field_name": "Review_test",
+                    "field_type": "dropdown",
+                    "tab_index": "3"
+                }
+            ]
           }
         }';
         
@@ -474,7 +523,11 @@
           "OWASPPrivacyViolation": "10",
           "Custom": "",
           "assessment": "Assessment",
-          "notes": "Additional notes"
+          "notes": "Additional notes",
+          "custom_field": {
+              "21":"Custom first",
+              "41":"Custom value"
+          }
         }';
 
         $results['response'] = '{

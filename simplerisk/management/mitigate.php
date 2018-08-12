@@ -167,7 +167,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
   // Get the details of the risk
   $risk = get_risk_by_id($id);
 
-  // If the risk was found use the values for the risk
+// If the risk was found use the values for the risk
   if (count($risk) != 0)
   {
     $submitted_by = $risk[0]['submitted_by'];
@@ -186,15 +186,17 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $manager = $risk[0]['manager'];
     $assessment = $risk[0]['assessment'];
     $notes = $risk[0]['notes'];
-    $sub_date = $risk[0]['submission_date'];
-    $submission_date = date( get_default_date_format(), strtotime( $sub_date ) );
+    $submission_date = $risk[0]['submission_date'];
+    //$submission_date = date( "m/d/Y", strtotime( $sub_date ) );
     $mitigation_id = $risk[0]['mitigation_id'];
     $mgmt_review = $risk[0]['mgmt_review'];
     $calculated_risk = $risk[0]['calculated_risk'];
-    $risk_level = get_risk_level_name($calculated_risk);
+    $residual_risk = $risk[0]['residual_risk'];
     $next_review = $risk[0]['next_review'];
     $color = get_risk_color($calculated_risk);
-
+    $residual_color = get_risk_color($residual_risk);
+    $risk_level = get_risk_level_name($calculated_risk);
+    $residual_risk_level = get_risk_level_name($residual_risk);
     $scoring_method = $risk[0]['scoring_method'];
     $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
     $CLASSIC_impact = $risk[0]['CLASSIC_impact'];
@@ -238,7 +240,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
   // If the risk was not found use null values
   else
   {
-    $submitted_by = "";
+     $submitted_by = "";
     // If Risk ID exists.
     if(check_risk_by_id($id)){
         $status = $lang["RiskDisplayPermission"];
@@ -247,6 +249,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     else{
         $status = $lang["RiskIdDoesNotExist"];
     }
+
     $subject = "N/A";
     $reference_id = "N/A";
     $regulation = "";
@@ -262,16 +265,25 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $assessment = "";
     $notes = "";
     $submission_date = "";
+
     $mitigation_id = "";
     $mgmt_review = "";
     $calculated_risk = "0.0";
 
+    $residual_risk = "";
+    $next_review = "";
+    $color = "";
+    $residual_color = "";
+
+    $risk_level = "";
+    $residual_risk_level = "";
     $scoring_method = "";
     $CLASSIC_likelihood = "";
     $CLASSIC_impact = "";
     $AccessVector = "";
     $AccessComplexity = "";
     $Authentication = "";
+
     $ConfImpact = "";
     $IntegImpact = "";
     $AvailImpact = "";
@@ -283,6 +295,28 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $ConfidentialityRequirement = "";
     $IntegrityRequirement = "";
     $AvailabilityRequirement = "";
+    $DREADDamagePotential = "";
+    $DREADReproducibility = "";
+    $DREADExploitability = "";
+    $DREADAffectedUsers = "";
+    $DREADDiscoverability = "";
+    $OWASPSkillLevel = "";
+    $OWASPMotive = "";
+    $OWASPOpportunity = "";
+    $OWASPSize = "";
+    $OWASPEaseOfDiscovery = "";
+    $OWASPEaseOfExploit = "";
+    $OWASPAwareness = "";
+    $OWASPIntrusionDetection = "";
+    $OWASPLossOfConfidentiality = "";
+    $OWASPLossOfIntegrity = "";
+    $OWASPLossOfAvailability = "";
+    $OWASPLossOfAccountability = "";
+    $OWASPFinancialDamage = "";
+    $OWASPReputationDamage = "";
+    $OWASPNonCompliance = "";
+    $OWASPPrivacyViolation = "";
+    $custom = "";
   }
 
   if ($submission_date == "")
@@ -340,6 +374,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     // Set the values to empty
     $review_date = "N/A";
     $review = "";
+    $review_id = 0;
     $next_step = "";
     $next_review = "";
     $reviewer = "";
@@ -352,8 +387,20 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $review_date = $mgmt_reviews[0]['submission_date'];
     $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
     $review = $mgmt_reviews[0]['review'];
+    $review_id = $mgmt_reviews[0]['id'];
     $next_step = $mgmt_reviews[0]['next_step'];
-    $next_review = next_review($risk_level, ($id-1000), $next_review, false);
+    
+    // If next_review_date_uses setting is Residual Risk.
+    if(get_setting('next_review_date_uses') == "ResidualRisk")
+    {
+        $next_review = next_review($residual_risk_level, $id-1000, $next_review, false);
+    }
+    // If next_review_date_uses setting is Inherent Risk.
+    else
+    {
+        $next_review = next_review($risk_level, $id-1000, $next_review, false);
+    }
+    
     $reviewer = $mgmt_reviews[0]['reviewer'];
     $comments = $mgmt_reviews[0]['comments'];
   }

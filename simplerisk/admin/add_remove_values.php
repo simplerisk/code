@@ -611,8 +611,8 @@
     {
         $name = $_POST['new_control_phase'];
 
-        // Insert a new control phase up to 20hars
-        add_name("control_phase", $name, 20);
+        // Insert a new control phase up to 20 chars
+        add_name("control_phase", $name, 200);
 
         // Display an alert
         set_alert(true, "good", "A new control phase was added successfully.");
@@ -962,7 +962,7 @@
                                 <form name="control_phase_form" method="post" action="">
                                     <p>
                                         <h4><?php echo $escaper->escapeHtml($lang['ControlPhase']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewControlPhaseNamed']); ?>: <input name="new_control_phase" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_control_phase" /><br />
+                                        <?php echo $escaper->escapeHtml($lang['AddNewControlPhaseNamed']); ?>: <input name="new_control_phase" type="text" maxlength="200" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_control_phase" /><br />
                                         <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("control_phase", NULL, "update_value"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_control_phase" /><br />
                                         <?php echo $escaper->escapeHtml($lang['DeleteCurrentControlPhaseNamed']); ?> <?php create_dropdown("control_phase"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_control_phase" />
                                     </p>

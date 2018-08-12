@@ -97,26 +97,6 @@ function get_frameworks_as_treegrid($status){
     }
 }
 
-/************************************************
- * FUNCTION: MAKE PARENT FRAMEWORK OPTIONS HTML *
- ************************************************/
-function make_parent_framework_options_html($frameworks, $parent, &$html, $indent="", $selected=0){
-    global $lang;
-    global $escaper;
-
-    foreach($frameworks as $framework){
-        if($framework['parent'] == $parent){
-            if($selected == $framework['value']){
-                $html .= "<option selected value='{$framework['value']}'>".$indent.$escaper->escapeHtml($framework['name'])."</option>\n";
-            }
-            else{
-                $html .= "<option value='{$framework['value']}'>".$indent.$escaper->escapeHtml($framework['name'])."</option>\n";
-            }
-            make_parent_framework_options_html($frameworks, $framework['value'], $html, $indent."&nbsp;&nbsp;", $selected);
-        }
-    }
-}
-
 /*********************************
  * FUNCTION: GET FRAMEWORK BY ID *
  *********************************/
@@ -306,7 +286,7 @@ function get_framework_tabs($status)
     global $lang;
     global $escaper;
     
-    echo "<table  class='easyui-treegrid framework-table'
+    echo "<table class='easyui-treegrid framework-table'
             data-options=\"
                 iconCls: 'icon-ok',
                 animate: true,
@@ -1220,5 +1200,423 @@ function getAvailableControlPriorityList(){
     return $results;
 }
 
+/**************************************************
+ * FUNCTION: GET DOCUMENT VERSIONS BY DOCUMENT ID *
+ **************************************************/
+function get_document_versions_by_id($id)
+{
+    // Open the database connection
+    $db = db_open();
 
+    $sql = "
+        SELECT t1.*, t2.version file_version, t2.unique_name
+        FROM `documents` t1 
+            INNER JOIN `compliance_files` t2 ON t1.id=t2.ref_id AND t2.ref_type='documents'
+        WHERE t1.id=:id
+        ORDER BY t2.version
+        ;
+    ";
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+
+    return $results;
+}
+
+/*****************************************
+ * FUNCTION: GET DOCUMENT BY DOCUMENT ID *
+ *****************************************/
+function get_document_by_id($id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $sql = "
+        SELECT t1.*, t2.version file_version, t2.unique_name
+        FROM `documents` t1 
+            LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
+        WHERE t1.id=:id
+        ;
+    ";
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+    
+    return $result;
+}
+
+/********************************************
+ * FUNCTION: GET DOCUMENTS BY DOCUMENT TYPE *
+ ********************************************/
+function get_documents($type="")
+{
+    // Open the database connection
+    $db = db_open();
+
+    if($type)
+    {
+        $sql = "
+            SELECT t1.*, t2.version file_version, t2.unique_name
+            FROM `documents` t1 
+                LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
+            WHERE t1.document_type=:type
+            ORDER BY t1.document_type, t1.document_name
+            ;
+        ";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    }
+    // Get all documents
+    else
+    {
+        $sql = "
+            SELECT t1.*, t2.version file_version, t2.unique_name
+            FROM `documents` t1 
+                LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
+            ORDER BY t1.document_type, t1.document_name
+            ;
+        ";
+        $stmt = $db->prepare($sql);
+    }
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+
+    return $results;
+}
+
+/************************************
+ * FUNCTION: MAKE TREE OPTIONS HTML *
+ ************************************/
+function make_tree_options_html($options, $parent, &$html, $indent="", $selected=0){
+    global $lang;
+    global $escaper;
+
+    foreach($options as $option){
+        if($option['parent'] == $parent){
+            if($selected == $option['value']){
+                $html .= "<option selected value='{$option['value']}'>".$indent.$escaper->escapeHtml($option['name'])."</option>\n";
+            }
+            else{
+                $html .= "<option value='{$option['value']}'>".$indent.$escaper->escapeHtml($option['name'])."</option>\n";
+            }
+            make_tree_options_html($options, $option['value'], $html, $indent."&nbsp;&nbsp;", $selected);
+        }
+    }
+}
+
+/******************************
+ * FUNCTION: ADD NEW DOCUMENT *
+ ******************************/
+function add_document($document_type, $document_name, $parent, $status, $creation_date){
+    global $lang, $escaper;
+    
+    // Open the database connection
+    $db = db_open();
+    
+    // Check if the framework exists
+    $stmt = $db->prepare("SELECT * FROM `documents` where document_name=:document_name AND document_type=:document_type ; ");
+    $stmt->bindParam(":document_name", $document_name);
+    $stmt->bindParam(":document_type", $document_type);
+    $stmt->execute();
+    $row = $stmt->fetch();
+    if(isset($row[0])){
+        set_alert(true, "bad", $escaper->escapeHtml($lang['DocumentNameExist']));
+        return false;
+    }
+
+    // Create a document
+    $stmt = $db->prepare("INSERT INTO `documents` (`document_type`, `document_name`, `parent`, `status`, `creation_date`) VALUES (:document_type, :document_name, :parent, :status, :creation_date)");
+    $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
+    $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
+    $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
+    $stmt->bindParam(":status", $status, PDO::PARAM_STR);
+    $stmt->bindParam(":creation_date", $creation_date, PDO::PARAM_STR);
+    $stmt->execute();
+    
+    $document_id = $db->lastInsertId();
+
+    // Close the database connection
+    db_close($db);
+
+    // If submitted files are existing, save files
+    if(!empty($_FILES['file'])){
+        $files = $_FILES['file'];
+        list($status, $file_ids, $errors) = upload_compliance_files($document_id, "documents", $files);
+        if($file_ids){
+            $file_id = $file_ids[0];
+        }
+    }
+
+    // Check if error was happen in uploading files
+    if(!empty($errors)){
+        $errors = array_unique($errors);
+        set_alert(true, "bad", implode(", ", $errors));
+        return false;
+    }elseif(!empty($file_id)){
+        $stmt = $db->prepare("UPDATE `documents` SET file_id=:file_id WHERE id=:document_id ");
+        $stmt->bindParam(":file_id", $file_id, PDO::PARAM_INT);
+        $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    return $document_id;
+}
+
+/*****************************
+ * FUNCTION: UPDATE DOCUMENT *
+ *****************************/
+function update_document($document_id, $document_type, $document_name, $parent, $status, $creation_date){
+    global $lang, $escaper;
+    
+    // Open the database connection
+    $db = db_open();
+    
+    // Check if the framework exists
+    $stmt = $db->prepare("SELECT * FROM `documents` where document_name=:document_name AND document_type=:document_type AND id<>:id; ");
+    $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
+    $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
+    $stmt->bindParam(":id", $document_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $row = $stmt->fetch();
+    if(isset($row[0])){
+        set_alert(true, "bad", $escaper->escapeHtml($lang['DocumentNameExist']));
+        return false;
+    }
+
+    // Update a document
+    $stmt = $db->prepare("UPDATE `documents` SET `document_type`=:document_type, `document_name`=:document_name, `parent`=:parent, `status`=:status, `creation_date`=:creation_date WHERE id=:document_id; ");
+    $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+    $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
+    $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
+    $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
+    $stmt->bindParam(":status", $status, PDO::PARAM_STR);
+    $stmt->bindParam(":creation_date", $creation_date, PDO::PARAM_STR);
+    $stmt->execute();
+    
+    // Close the database connection
+    db_close($db);
+
+    // If submitted files are existing, save files
+    if(!empty($_FILES['file'])){
+        $document = get_document_by_id($document_id);
+        $version = $document['file_version'] + 1;
+        
+        $files = $_FILES['file'];
+        list($status, $file_ids, $errors) = upload_compliance_files($document_id, "documents", $files, $version);
+        if($file_ids){
+            $file_id = $file_ids[0];
+        }
+    }
+
+    // Check if error was happen in uploading files
+    if(!empty($errors)){
+        $errors = array_unique($errors);
+        set_alert(true, "bad", implode(", ", $errors));
+        return false;
+    }elseif(!empty($file_id)){
+        $stmt = $db->prepare("UPDATE `documents` SET file_id=:file_id WHERE id=:document_id ");
+        $stmt->bindParam(":file_id", $file_id, PDO::PARAM_INT);
+        $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    return $document_id;
+}
+
+/*****************************
+ * FUNCTION: DELETE DOCUMENT *
+ *****************************/
+function delete_document($document_id, $version=null)
+{
+    global $lang, $escaper;
+    
+    // Open the database connection
+    $db = db_open();
+//    echo $document_id."<br>";
+//    echo $version."<br>";
+//    exit;
+    // Deletes documents only to have this version number
+    if($version)
+    {
+        $stmt = $db->prepare("DELETE FROM compliance_files WHERE ref_id=:document_id AND ref_type='documents' AND version=:version; ");
+        $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+        $stmt->bindParam(":version", $version, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    // Deletes all documents by document ID
+    else
+    {
+        $stmt = $db->prepare("DELETE FROM compliance_files WHERE ref_id=:document_id AND ref_type='documents'; ");
+        $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $stmt = $db->prepare("DELETE FROM documents WHERE id=:document_id; ");
+        $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    
+    // Close the database connection
+    db_close($db);
+    
+    return true;
+}
+
+/*****************************************
+ * FUNCTION: GET DOCUMENT HIERARCHY TABS *
+ *****************************************/
+function get_document_hierarchy_tabs($type="")
+{
+    global $lang;
+    global $escaper;
+    
+    echo "<table  class='easyui-treegrid document-table'
+            data-options=\"
+                iconCls: 'icon-ok',
+                animate: true,
+                collapsible: false,
+                fitColumns: true,
+                url: '".$_SESSION['base_url']."/api/governance/documents?type={$type}',
+                method: 'get',
+                idField: 'id',
+                treeField: 'document_name',
+                scrollbarSize: 0,
+                onLoadSuccess: function(row, data){
+
+                }
+            \">";
+    echo "<thead >";
+    echo "<th data-options=\"field:'document_name'\" width='40%'>".$escaper->escapeHtml($lang['DocumentName'])."</th>";
+    echo "<th data-options=\"field:'document_type'\" width='20%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
+    echo "<th data-options=\"field:'creation_date'\" width='20%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
+    echo "<th data-options=\"field:'status'\" width='20%'>".$escaper->escapeHtml($lang['Status'])."</th>";
+//    echo "<th data-options=\"field:'actions'\" width='10%'>&nbsp;</th>";
+    echo "</thead>\n";
+
+    echo "</table>";
+    echo "
+        <style>
+            body .tree-dnd-no{
+                display: none;
+            }
+        </style>
+    ";
+} 
+
+/***************************************
+ * FUNCTION: GET DOCUMENT TABULAR TABS *
+ ***************************************/
+function get_document_tabular_tabs($type, $document_id=0)
+{
+    global $lang;
+    global $escaper;
+    
+    echo "<table  class='easyui-treegrid document-table'
+            data-options=\"
+                iconCls: 'icon-ok',
+                animate: true,
+                collapsible: false,
+                fitColumns: true,
+                url: '".$_SESSION['base_url']."/api/governance/tabular_documents?type={$type}',
+                method: 'get',
+                idField: 'id',
+                treeField: 'document_name',
+                scrollbarSize: 0,
+                onLoadSuccess: function(row, data){
+
+                }
+            \">";
+    echo "<thead >";
+    echo "<th data-options=\"field:'document_name'\" width='40%'>".$escaper->escapeHtml($lang['DocumentName'])."</th>";
+    echo "<th data-options=\"field:'document_type'\" width='20%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
+    echo "<th data-options=\"field:'creation_date'\" width='20%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
+    echo "<th data-options=\"field:'status'\" width='10%'>".$escaper->escapeHtml($lang['Status'])."</th>";
+    echo "<th data-options=\"field:'actions'\" width='10%'>&nbsp;</th>";
+    echo "</thead>\n";
+
+    echo "</table>";
+    echo "
+        <style>
+            body .tree-dnd-no{
+                display: none;
+            }
+        </style>
+    ";
+} 
+ 
+/***********************************************
+ * FUNCTION: GET DOCUMENTS DATA IN TREE FORMAT *
+ ***********************************************/
+function get_documents_as_treegrid($type){
+    global $lang;
+    global $escaper;
+    
+    $documents = get_documents($type);
+    foreach($documents as &$document){
+        $document['value'] = $document['id'];
+        $document['document_type'] = $escaper->escapeHtml($document['document_type']);
+        $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name'])."</a>";
+        $document['status'] = $escaper->escapeHtml($document['status']);
+        $document['creation_date'] = $document['creation_date'];
+        $document['actions'] = "<div class=\"text-center\"><a class=\"framework-block--edit\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;<a class=\"framework-block--delete\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a></div>";
+    }
+    $results = array();
+    $count = 0;
+    
+    makeTree($documents, 0, $results, $count);
+    if(isset($results['children'][0])){
+        $results['children'][0]['totalCount'] = $count;
+    }
+    return isset($results['children']) ? $results['children'] : [];
+}
+
+/************************************
+ * FUNCTION: GET FRAMEWORK CONTROLS *
+ ************************************/
+function get_framework_controls_long_name($control_ids=false)
+{
+    // Open the database connection
+    $db = db_open();
+    $sql = "
+        SELECT t1.long_name
+        FROM `framework_controls` t1 
+            LEFT JOIN `control_class` t2 on t1.control_class=t2.value
+            LEFT JOIN `control_priority` t3 on t1.control_priority=t3.value
+            LEFT JOIN `family` t4 on t1.family=t4.value
+            LEFT JOIN `control_phase` t5 on t1.control_phase=t5.value
+            LEFT JOIN `user` t6 on t1.control_owner=t6.value
+        WHERE
+            t1.deleted=0
+    ";
+    if($control_ids !== false)
+    {
+        $sql .= " AND FIND_IN_SET(t1.id, '{$control_ids}') ";
+    }
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+    
+    // Get the list in the array
+    $controls = $stmt->fetchAll();
+
+    // For each $control
+    foreach ($controls as $key => $control)
+    {
+        $long_name = $control;
+    }
+
+    // Close the database connection
+    db_close($db);
+
+    return $long_name;
+}
 ?>

@@ -135,8 +135,36 @@ function is_valid_user($user, $pass, $upgrade = false)
     // If the user does not exist
     if ($type == "DNE")
     {
-        // Return that the user is not valid
-        return false;
+        // Write the debug log
+        write_debug_log("Not a valid user in SimpleRisk.");
+
+        // If we should automatically add new users with a default role
+        if (get_setting('AUTHENTICATION_ADD_NEW_USERS') == 1)
+        {
+            // If custom authentication is enabled
+            if (custom_authentication_extra())
+            {
+                // Include the custom authentication extra
+                require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
+
+                // Set the type to LDAP
+                $type = 2;
+
+                // Check for a valid Active Directory user
+                $valid_ad = is_valid_ad_user($user, $pass);
+
+                // If the user is a valid AD user
+                if ($valid_ad)
+                {
+                    // Add the new user
+                    authentication_add_new_user($type, $user);
+                }
+            }
+            // Otherwise, return that the user is not valid
+            else return false;
+        }
+        // Otherwise, return that the user is not valid
+        else return false;
     }
     // If the type is simplerisk
     else if ($type == "simplerisk")
@@ -197,12 +225,12 @@ function set_user_permissions($user, $pass, $upgrade = false)
         if (get_setting('strict_user_validation') == 0)
         {
             // Query the DB for the users complete information
-            $stmt = $db->prepare("SELECT value, type, name, lang, governance, riskmanagement, compliance, assessments, asset, admin, custom_display_settings, review_veryhigh, accept_mitigation, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks, add_new_frameworks, modify_frameworks, delete_frameworks, add_new_controls, modify_controls, delete_controls FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
+            $stmt = $db->prepare("SELECT value, type, name, lang, governance, riskmanagement, compliance, assessments, asset, admin, custom_display_settings, review_veryhigh, accept_mitigation, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks, add_new_frameworks, modify_frameworks, delete_frameworks, add_new_controls, modify_controls, delete_controls, add_documentation, modify_documentation, delete_documentation, comment_risk_management, comment_compliance FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user); ");
         }
         else
         {
             // Query the DB for the users complete information
-            $stmt = $db->prepare("SELECT value, type, name, lang, governance, riskmanagement, compliance, assessments, asset, admin, custom_display_settings, review_veryhigh, accept_mitigation, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks, add_new_frameworks, modify_frameworks, delete_frameworks, add_new_controls, modify_controls, delete_controls FROM user WHERE username = :user");
+            $stmt = $db->prepare("SELECT value, type, name, lang, governance, riskmanagement, compliance, assessments, asset, admin, custom_display_settings, review_veryhigh, accept_mitigation, review_high, review_medium, review_low, review_insignificant, submit_risks, modify_risks, plan_mitigations, close_risks, add_new_frameworks, modify_frameworks, delete_frameworks, add_new_controls, modify_controls, delete_controls, add_documentation, modify_documentation, delete_documentation, comment_risk_management, comment_compliance FROM user WHERE username = :user; ");
         }
     }
     // If we are doing an upgrade
@@ -273,6 +301,11 @@ function set_user_permissions($user, $pass, $upgrade = false)
         $_SESSION['add_new_controls']   = $array[0]['add_new_controls'];
         $_SESSION['modify_controls']    = $array[0]['modify_controls'];
         $_SESSION['delete_controls']    = $array[0]['delete_controls'];
+        $_SESSION['add_documentation']    = $array[0]['add_documentation'];
+        $_SESSION['modify_documentation'] = $array[0]['modify_documentation'];
+        $_SESSION['delete_documentation'] = $array[0]['delete_documentation'];
+        $_SESSION['comment_risk_management'] = $array[0]['comment_risk_management'];
+        $_SESSION['comment_compliance'] = $array[0]['comment_compliance'];
 
         // If the encryption extra is enabled
         if (encryption_extra())

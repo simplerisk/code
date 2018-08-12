@@ -242,10 +242,6 @@ function riskScoringChart(renderTo, risk_id, risk_levels){
                 var date = new Date(dateFormatted);
                 chartData.push([date.getTime(), Number(histories[i].calculated_risk)]);
             }
-            if(chartData.length == 1){
-                var newChartData = [chartData[0][0]-3000, chartData[0][1]];
-                chartData.push(newChartData);
-            }
             
             chartObj.series[0].setData(chartData)
 

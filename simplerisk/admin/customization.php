@@ -99,10 +99,16 @@ function display($display = "")
         // If the extra is not activated
         if (!customization_extra())
         {
-            echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
-            echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
-            echo "</form>\n";
-            echo "</div>\n";
+            // If the extra is not restricted based on the install type
+            if (!restricted_extra("customization"))
+            {
+                echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
+                echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
+                echo "</form>\n";
+                echo "</div>\n";
+            }
+            // The extra is restricted
+            else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
         }
         // Once it has been activated
         else
@@ -161,6 +167,8 @@ function display($display = "")
         <div class="span9">
           <div class="row-fluid">
             <div class="span12">
+              <div class="hero-unit">
+                <h4>Customization Extra</h4>
                 <?php display(); ?>
               </div>
             </div>

@@ -208,7 +208,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
     // If the custom authentication extra is enabled
     if (custom_authentication_extra())
     {
-        // If SSO Login is enabled
+        // If SSO Login is enabled or not set yet
 	if(get_settting_by_name("GO_TO_SSO_LOGIN") === false || get_settting_by_name("GO_TO_SSO_LOGIN") === '1')
         {
             // Display the SSO login link

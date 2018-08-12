@@ -112,7 +112,6 @@ function display_control_number_view($control_number)
     echo "</div>\n";
 }
 
-    
 /*****************************************
 * FUNCTION: DISPLAY AFFECTED ASSETS VIEW *
 ******************************************/
@@ -159,7 +158,7 @@ function display_team_view($team)
     echo $escaper->escapeHtml($lang['Team']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<input style=\"cursor: default;\" type=\"text\" name=\"team\" id=\"team\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("team", $team)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("team", $team)) . "\" disabled=\"disabled\" />\n";
+    echo "<span> " . $escaper->escapeHtml(get_names_by_multi_values("team", $team)) . " </span>\n";
     echo "</div>\n";
     echo "</div>\n";
 }    
@@ -461,10 +460,9 @@ function display_sumission_date_edit($submission_date)
     echo "</div>\n";
 }
 
-
-/*****************************************
+/**********************************
 * FUNCTION: DISPLAY CATEGORY EDIT *
-******************************************/
+***********************************/
 function display_category_edit($category)
 {
     global $lang, $escaper;
@@ -513,9 +511,9 @@ function display_external_reference_id_edit($reference_id)
     echo "</div>\n";
 }
     
-/************************************
+/********************************************
 * FUNCTION: DISPLAY CONTROL REGULATION EDIT *
-*************************************/
+*********************************************/
 function display_control_regulation_edit($regulation)
 {
     global $lang, $escaper;
@@ -530,9 +528,9 @@ function display_control_regulation_edit($regulation)
     echo "</div>\n";
 }
 
-/********************************
+/****************************************
 * FUNCTION: DISPLAY CONTROL NUMBER EDIT *
-*********************************/
+*****************************************/
 function display_control_number_edit($control_number)
 {
     global $lang, $escaper;
@@ -564,9 +562,9 @@ function display_affected_assets_edit($risk_id)
     echo "</div>\n";
 }
 
-/*****************************************
+/************************************
 * FUNCTION: DISPLAY TECHNOLOGY EDIT *
-******************************************/
+*************************************/
 function display_technology_edit($technology)
 {
     global $lang, $escaper;
@@ -594,14 +592,16 @@ function display_team_edit($team)
     echo $escaper->escapeHtml($lang['Team']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    create_dropdown("team", $team);
+    $team = ":".implode(":", explode(",", $team)).":";
+    create_multiple_dropdown("team", $team, NULL, NULL, false, "", "", true, " class='multiselect' ");
+//    create_dropdown("team", $team);
     echo "</div>\n";
     echo "</div>\n";
 }
 
-/******************************
+/*************************************************
 * FUNCTION: DISPLAY ADDITIONAL STAKEHOLDERS EDIT *
-*******************************/
+**************************************************/
 function display_additional_stakeholders_edit($additional_stakeholders)
 {
     global $lang, $escaper;
@@ -616,9 +616,9 @@ function display_additional_stakeholders_edit($additional_stakeholders)
     echo "</div>\n";
 }
 
-/******************************
+/*******************************
 * FUNCTION: DISPLAY OWNER EDIT *
-*******************************/
+********************************/
 function display_owner_edit($owner)
 {
     global $lang, $escaper;
@@ -633,9 +633,9 @@ function display_owner_edit($owner)
     echo "</div>\n";
 }
 
-/******************************
+/****************************************
 * FUNCTION: DISPLAY OWNERS MANAGER EDIT *
-*******************************/
+*****************************************/
 function display_owners_manager_edit($manager)
 {
     global $lang, $escaper;
@@ -650,9 +650,9 @@ function display_owners_manager_edit($manager)
     echo "</div>\n";
 }
 
-/******************************
+/*************************************
 * FUNCTION: DISPLAY RISK SOURCE EDIT *
-*******************************/
+**************************************/
 function display_risk_source_edit($source)
 {
     global $lang, $escaper;
@@ -667,9 +667,9 @@ function display_risk_source_edit($source)
     echo "</div>\n";
 }
 
-/******************************
+/***********************************************
 * FUNCTION: DISPLAY RISK ASSESSMENT TITLE EDIT *
-*******************************/
+************************************************/
 function display_risk_assessment_title_edit($assessment)
 {
     global $lang, $escaper;
@@ -684,9 +684,9 @@ function display_risk_assessment_title_edit($assessment)
     echo "</div>\n";
 }
 
-/******************************
+/******************************************
 * FUNCTION: DISPLAY ADDITIONAL NOTES EDIT *
-*******************************/
+*******************************************/
 function display_additional_notes_edit($notes)
 {
     global $lang, $escaper;
@@ -701,9 +701,9 @@ function display_additional_notes_edit($notes)
     echo "</div>\n";
 }
 
-/******************************
+/**************************************************
 * FUNCTION: DISPLAY SUPPORTING DOCUMENTATION EDIT *
-*******************************/
+***************************************************/
 function display_supporting_documentation_edit($risk_id, $view_type)
 {
     global $lang, $escaper;
@@ -737,7 +737,7 @@ function display_custom_field_edit($field, $custom_values)
     }
     
     echo "<div class=\"row-fluid\">\n";
-        echo "<div class=\"span5 text-right\" id=\"t_a_title\">\n";
+        echo "<div class=\"span5 text-right\" >\n";
             echo $escaper->escapeHtml($field['name']) .": \n";
         echo "</div>\n";
         echo "<div class=\"span7\">\n";
@@ -866,9 +866,9 @@ function display_main_detail_feilds_by_panel_edit($panel_name, $fields, $risk_id
     }
 }
 
-/******************************
+/****************************************************
 * FUNCTION: DISPLAY MITIGATION SUBMISSION DATE VIEW *
-*******************************/
+*****************************************************/
 function display_mitigation_submission_date_view($mitigation_date)
 {
     global $lang, $escaper;
@@ -883,9 +883,9 @@ function display_mitigation_submission_date_view($mitigation_date)
     echo "</div>\n";
 }
 
-/******************************
+/**************************************************
 * FUNCTION: DISPLAY MITIGATION PLANNING DATE VIEW *
-*******************************/
+***************************************************/
 function display_mitigation_planning_date_view($planning_date)
 {
     global $lang, $escaper;
@@ -900,9 +900,9 @@ function display_mitigation_planning_date_view($planning_date)
     echo "</div>\n";
 }
 
-/******************************
+/******************************************************
 * FUNCTION: DISPLAY MITIGATION PLANNING STRATAGE VIEW *
-*******************************/
+*******************************************************/
 function display_mitigation_planning_strategy_view($planning_strategy)
 {
     global $lang, $escaper;
@@ -917,9 +917,9 @@ function display_mitigation_planning_strategy_view($planning_strategy)
     echo "</div>\n";
 }
 
-/******************************
+/*******************************************
 * FUNCTION: DISPLAY MITIGATION EFFORT VIEW *
-*******************************/
+********************************************/
 function display_mitigation_effort_view($mitigation_effort)
 {
     global $lang, $escaper;
@@ -951,9 +951,9 @@ function display_mitigation_cost_view($mitigation_cost)
     echo "</div>\n";
 }
 
-/*****************************************
+/******************************************
 * FUNCTION: DISPLAY MITIGATION OWNER VIEW *
-******************************************/
+*******************************************/
 function display_mitigation_owner_view($mitigation_owner)
 {
     global $lang, $escaper;
@@ -985,9 +985,9 @@ function display_mitigation_team_view($mitigation_team)
     echo "</div>\n";
 }
 
-/*****************************************
+/********************************************
 * FUNCTION: DISPLAY MITIGATION PERCENT VIEW *
-******************************************/
+*********************************************/
 function display_mitigation_percent_view($mitigation_percent)
 {
     global $lang, $escaper;
@@ -1002,17 +1002,17 @@ function display_mitigation_percent_view($mitigation_percent)
     echo "</div>\n";
 }
 
-/*****************************************
+/*******************************************
 * FUNCTION: DISPLAY ACCEPT MITIGATION VIEW *
-******************************************/
+********************************************/
 function display_accept_mitigation_view($risk_id)
 {
     global $lang, $escaper;
 
     $message = view_accepted_mitigations($risk_id);
 
-    echo "<div class=\"row-fluid accept_mitigation_text\" >\n";
-        echo "<div class=\"span12 \">\n";
+    echo "<div class=\"row-fluid ".(!$message ? "hide" : "")."\" >\n";
+        echo "<div class=\"span12 accept_mitigation_text\">\n";
             echo $message;
         echo "</div>\n";
     echo "</div>\n";
@@ -1023,12 +1023,12 @@ function display_accept_mitigation_view($risk_id)
         // Get accepted mitigation by login user
         $accepted_mitigation = get_accpeted_mitigation($risk_id);
 
-        echo "<div class=\"row-fluid accept-mitigation-container\" style=\"".($accepted_mitigation ? "display:none":"")."\">\n";
+        echo "<div class=\"row-fluid accept-mitigation-container\" style=\"margin-bottom: 12px; ".($accepted_mitigation ? "display:none":"")."\">\n";
             echo "<div class=\"span5 text-right \">\n";
                 echo "<button class='accept_mitigation'>".$escaper->escapeHtml($lang['AcceptMitigation'])."</button> \n";
             echo "</div>\n";
         echo "</div>\n";
-        echo "<div class=\"reject-mitigation-container\" style=\"".($accepted_mitigation ? "":"display:none")."\">";
+        echo "<div class=\"reject-mitigation-container\" style=\"margin-bottom: 12px; ".($accepted_mitigation ? "":"display:none")."\">";
             
             echo "<div class=\"row-fluid\">\n";
                 echo "<div class=\"span5 text-right \">\n";
@@ -1060,7 +1060,14 @@ function display_accept_mitigation_view($risk_id)
                         success: function(data){
                             $(\".accept-mitigation-container\", tabContainer).hide();
                             $(\".reject-mitigation-container\", tabContainer).show();
-                            $(\".accept_mitigation_text\", tabContainer).html(data.data.accept_mitigation_text);
+                            if(data.data.accept_mitigation_text){
+                                $(\".accept_mitigation_text\", tabContainer).parent().show();
+                                $(\".accept_mitigation_text\", tabContainer).html(data.data.accept_mitigation_text);
+                            }
+                            else{
+                                $(\".accept_mitigation_text\", tabContainer).parent().hide();
+                            }
+
                             self.prop(\"disabled\", false);
                             self.html($(\"#_lang_accept_mitigation\").val());
                         },
@@ -1092,7 +1099,13 @@ function display_accept_mitigation_view($risk_id)
                         success: function(data){
                             $(\".accept-mitigation-container\", tabContainer).show();
                             $(\".reject-mitigation-container\", tabContainer).hide();
-                            $(\".accept_mitigation_text\", tabContainer).html(data.data.accept_mitigation_text);
+                            if(data.data.accept_mitigation_text){
+                                $(\".accept_mitigation_text\", tabContainer).parent().show();
+                                $(\".accept_mitigation_text\", tabContainer).html(data.data.accept_mitigation_text);
+                            }
+                            else{
+                                $(\".accept_mitigation_text\", tabContainer).parent().hide();
+                            }
                             self.prop(\"disabled\", false);
                             self.html($(\"#_lang_reject_mitigation\").val());
                         },
@@ -1111,9 +1124,9 @@ function display_accept_mitigation_view($risk_id)
     ";
 }
 
-/*****************************************
+/******************************************
 * FUNCTION: DISPLAY CURRENT SOLUTION VIEW *
-******************************************/
+*******************************************/
 function display_current_solution_view($current_solution)
 {
     global $lang, $escaper;
@@ -1128,15 +1141,15 @@ function display_current_solution_view($current_solution)
     echo "</div>\n";
 }
 
-/**************************************************
+/***********************************************
 * FUNCTION: DISPLAY SECURITY REQUIREMENTS VIEW *
-***************************************************/
+************************************************/
 function display_security_requirements_view($security_requirements)
 {
     global $lang, $escaper;
 
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\" id=\"t_a_title\">\n";
+    echo "<div class=\"span5 text-right\" >\n";
     echo $escaper->escapeHtml($lang['SecurityRequirements']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
@@ -1153,7 +1166,7 @@ function display_security_recommendations_view($security_recommendations)
     global $lang, $escaper;
 
     echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\" id=\"t_a_title\">\n";
+    echo "<div class=\"span5 text-right\" >\n";
     echo $escaper->escapeHtml($lang['SecurityRecommendations']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
@@ -1258,7 +1271,7 @@ function display_main_mitigation_feilds_by_panel_view($panel_name, $fields, $ris
 /**************************************
 * FUNCTION: DISPLAY CUSTOM FIELD VIEW *
 ***************************************/
-function display_custom_field_view($field, $custom_values)
+function display_custom_field_view($field, $custom_values, $review_id=0)
 {
     global $lang, $escaper;
 
@@ -1267,17 +1280,17 @@ function display_custom_field_view($field, $custom_values)
     // Get value of custom filed
     foreach($custom_values as $custom_value)
     {
-        if($custom_value['field_id'] == $field['id']){
+        if($custom_value['field_id'] == $field['id'] && $custom_value['review_id'] == $review_id){
             $value = $custom_value['value'];
             break;
         }
     }
     
     echo "<div class=\"row-fluid\">\n";
-        echo "<div class=\"span5 text-right\" id=\"t_a_title\">\n";
+        echo "<div class=\"span5 text-right\" >\n";
             echo $escaper->escapeHtml($field['name']) .": \n";
         echo "</div>\n";
-        echo "<div class=\"span7\">\n";
+        echo "<div class=\"span7\" style=\"margin-bottom: 15px; padding-top: 4px;\">\n";
             if($field['type'] == "dropdown")
             {
                 echo $escaper->escapeHtml(get_name_by_value("custom_field_".$field['id'], $value));
@@ -1294,9 +1307,9 @@ function display_custom_field_view($field, $custom_values)
     echo "</div>\n";
 }
 
-/**************************************************
+/****************************************************
 * FUNCTION: DISPLAY MITIGATION SUBMISSION DATE EDIT *
-***************************************************/
+*****************************************************/
 function display_mitigation_submission_date_edit($mitigation_date)
 {
     global $lang, $escaper;
@@ -1332,9 +1345,9 @@ function display_mitigation_planning_date_edit($planning_date)
     ";
 }
 
-/**************************************************
+/******************************************************
 * FUNCTION: DISPLAY MITIGATION PLANNING STRATEGY EDIT *
-***************************************************/
+*******************************************************/
 function display_mitigation_planning_strategy_edit($planning_strategy)
 {
     global $lang, $escaper;
@@ -1370,9 +1383,9 @@ function display_mitigation_effort_edit($mitigation_effort)
     ";
 }
 
-/*******************************************
+/*****************************************
 * FUNCTION: DISPLAY MITIGATION COST EDIT *
-********************************************/
+******************************************/
 function display_mitigation_cost_edit($mitigation_cost)
 {
     global $lang, $escaper;
@@ -1389,9 +1402,9 @@ function display_mitigation_cost_edit($mitigation_cost)
     ";
 }
 
-/*******************************************
+/******************************************
 * FUNCTION: DISPLAY MITIGATION OWNER EDIT *
-********************************************/
+*******************************************/
 function display_mitigation_owner_edit($mitigation_owner)
 {
     global $lang, $escaper;
@@ -1408,9 +1421,9 @@ function display_mitigation_owner_edit($mitigation_owner)
     ";
 }
 
-/*******************************************
+/*****************************************
 * FUNCTION: DISPLAY MITIGATION TEAM EDIT *
-********************************************/
+******************************************/
 function display_mitigation_team_edit($mitigation_team)
 {
     global $lang, $escaper;
@@ -1446,9 +1459,9 @@ function display_mitigation_percent_edit($mitigation_percent)
     ";
 }
 
-/********************************************
+/*********************************************
 * FUNCTION: DISPLAY MITIGATION CONTROLS EDIT *
-*********************************************/
+**********************************************/
 function display_mitigation_controls_edit($mitigation_controls)
 {
     global $lang, $escaper;
@@ -1465,9 +1478,9 @@ function display_mitigation_controls_edit($mitigation_controls)
     ";
 }
 
-/********************************************
+/******************************************
 * FUNCTION: DISPLAY CURRENT SOLUTION EDIT *
-*********************************************/
+*******************************************/
 function display_current_solution_edit($current_solution)
 {
     global $lang, $escaper;
@@ -1484,9 +1497,9 @@ function display_current_solution_edit($current_solution)
     ";
 }
 
-/********************************************
+/***********************************************
 * FUNCTION: DISPLAY SECURITY REQUIREMENTS EDIT *
-*********************************************/
+************************************************/
 function display_security_requirements_edit($security_requirements)
 {
     global $lang, $escaper;
@@ -1527,88 +1540,99 @@ function display_security_recommendations_edit($security_recommendations)
 *************************************************************/
 function display_main_mitigation_feilds_by_panel_edit($panel_name, $fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls)
 {
+    $custom_values = getCustomFieldValuesByRiskId($risk_id);
+
     foreach($fields as $field)
     {
         // Check if this field is main field and details in left panel
-        if($field['panel_name'] == $panel_name && $field['is_basic'] == 1 && $field['tab_index'] == 2)
+        if($field['panel_name'] == $panel_name && $field['tab_index'] == 2)
         {
-            if($field['active'] == 0){
-                echo "<div style='display: none'>";
-                echo $field['name'];
-            }
-            
-            switch($field['name']){
-                case 'MitigationDate':
-                    display_mitigation_submission_date_edit($mitigation_date);
-                break;
+            if($field['is_basic'] == 1)
+            {
+                if($field['active'] == 0){
+                    echo "<div style='display: none'>";
+                    echo $field['name'];
+                }
                 
-                case 'MitigationPlanning':
-                    display_mitigation_planning_date_edit($planning_date);    
-                break;
+                switch($field['name']){
+                    case 'MitigationDate':
+                        display_mitigation_submission_date_edit($mitigation_date);
+                    break;
                     
-                case 'PlanningStrategy':
-                    display_mitigation_planning_strategy_edit($planning_strategy);
-                break;
-                    
-                case 'MitigationEffort':
-                    display_mitigation_effort_edit($mitigation_effort);
-                break;
-                    
-                case 'MitigationCost':
-                    display_mitigation_cost_edit($mitigation_cost);
-                break;
-                    
-                case 'MitigationOwner':
-                    display_mitigation_owner_edit($mitigation_owner);
-                break;
-                    
-                case 'MitigationTeam':
-                    display_mitigation_team_edit($mitigation_team);
-                break;
-                    
-                case 'MitigationPercent':
-                    display_mitigation_percent_edit($mitigation_percent);
-                break;
-                    
-                case 'CurrentSolution':
-                    display_current_solution_edit($current_solution);
-                break;
-                    
-                case 'SecurityRequirements':
-                    display_security_requirements_edit($security_requirements);
-                break;
-                    
-                case 'SecurityRecommendations':
-                    display_security_recommendations_edit($security_recommendations);
-                break;
-                    
-                case 'MitigationSupportingDocumentation':
-                    display_supporting_documentation_edit($risk_id, 2);
-                break;
+                    case 'MitigationPlanning':
+                        display_mitigation_planning_date_edit($planning_date);    
+                    break;
+                        
+                    case 'PlanningStrategy':
+                        display_mitigation_planning_strategy_edit($planning_strategy);
+                    break;
+                        
+                    case 'MitigationEffort':
+                        display_mitigation_effort_edit($mitigation_effort);
+                    break;
+                        
+                    case 'MitigationCost':
+                        display_mitigation_cost_edit($mitigation_cost);
+                    break;
+                        
+                    case 'MitigationOwner':
+                        display_mitigation_owner_edit($mitigation_owner);
+                    break;
+                        
+                    case 'MitigationTeam':
+                        display_mitigation_team_edit($mitigation_team);
+                    break;
+                        
+                    case 'MitigationPercent':
+                        display_mitigation_percent_edit($mitigation_percent);
+                    break;
+                        
+                    case 'CurrentSolution':
+                        display_current_solution_edit($current_solution);
+                    break;
+                        
+                    case 'SecurityRequirements':
+                        display_security_requirements_edit($security_requirements);
+                    break;
+                        
+                    case 'SecurityRecommendations':
+                        display_security_recommendations_edit($security_recommendations);
+                    break;
+                        
+                    case 'MitigationSupportingDocumentation':
+                        display_supporting_documentation_edit($risk_id, 2);
+                    break;
 
-                case 'MitigationControls':
-                    display_mitigation_controls_edit($mitigation_controls);
-                break;
+                    case 'MitigationControls':
+                        display_mitigation_controls_edit($mitigation_controls);
+                    break;
 
-                case 'MitigationControlsList':
-                    // Add controls table html
-                    print_mitigation_controls_table($mitigation_controls);
+                    case 'MitigationControlsList':
+                        // Add controls table html
+                        print_mitigation_controls_table($mitigation_controls);
 
-                    // Add javascript code for mitigation controls
-                    display_mitigation_controls_script();
-                break;
+                        // Add javascript code for mitigation controls
+                        display_mitigation_controls_script();
+                    break;
+                }
+
+                if($field['active'] == 0){
+                    echo "</div>";
+                }
+            }
+            else
+            {
+                display_custom_field_edit($field, $custom_values);
             }
 
-            if($field['active'] == 0){
-                echo "</div>";
-            }
+
         }
     }
 }
 
-/**************************************************
+/*************************************
 * FUNCTION: DISPLAY REVIEW DATE VIEW *
-***************************************************/
+**************************************/
 function display_review_date_view($review_date)
 {
     global $lang, $escaper;
@@ -1659,9 +1683,9 @@ function display_review_view($review)
     echo "</div>\n";
 }
 
-/********************************
+/***********************************
 * FUNCTION: DISPLAY NEXT STEP VIEW *
-*********************************/
+************************************/
 function display_next_step_view($next_step)
 {
     global $lang, $escaper;
@@ -1677,13 +1701,18 @@ function display_next_step_view($next_step)
     echo "</div>\n";
 }
 
-/********************************
+/******************************************
 * FUNCTION: DISPLAY NEXT REVIEW DATE VIEW *
-*********************************/
+*******************************************/
 function display_next_review_date_view($next_review)
 {
     global $lang, $escaper;
 
+    // If next review date wasn't due, convert next review date to default date format
+    if($next_review != $lang['PASTDUE']){
+        $next_review = date(get_default_date_format(), strtotime($next_review));
+    }
+    
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span5 text-right\">\n";
     echo $escaper->escapeHtml($lang['NextReviewDate']) .": \n";
@@ -1694,9 +1723,9 @@ function display_next_review_date_view($next_review)
     echo "</div>\n";
 }
 
-/********************************
+/**********************************
 * FUNCTION: DISPLAY COMMENTS VIEW *
-*********************************/
+***********************************/
 function display_comments_view($comment)
 {
     global $lang, $escaper;
@@ -1711,12 +1740,12 @@ function display_comments_view($comment)
     echo "</div>\n";
 }
 
-/*********************************************************
+/********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN REVIEW VIEW *
-**********************************************************/
-function display_main_review_feilds_by_panel_view($panel_name, $fields, $risk_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment)
+*********************************************************/
+function display_main_review_feilds_by_panel_view($panel_name, $fields, $risk_id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment)
 {
-    $custom_values = getCustomFieldValuesByRiskId($risk_id);
+    $custom_values = getCustomFieldValuesByRiskId($risk_id, false, $review_id);
 
     foreach($fields as $field)
     {
@@ -1765,16 +1794,16 @@ function display_main_review_feilds_by_panel_view($panel_name, $fields, $risk_id
             // If custom field
             else
             {
-                display_custom_field_view($field, $custom_values);
+                display_custom_field_view($field, $custom_values, $review_id);
             }
         
         }
     }
 }
 
-/********************************
+/*************************************
 * FUNCTION: DISPLAY REVIEW DATE EDIT *
-*********************************/
+**************************************/
 function display_review_date_edit()
 {
     global $lang, $escaper;
@@ -1787,9 +1816,9 @@ function display_review_date_edit()
     echo "</div></div>\n";
 }
 
-/********************************
+/*************************************
 * FUNCTION: DISPLAY REVIEW NAME EDIT *
-*********************************/
+**************************************/
 function display_reviewer_name_edit()
 {
     global $lang, $escaper;
@@ -1882,59 +1911,69 @@ function display_set_next_review_date_edit($default_next_review)
 
 }
 
-
-/*********************************************************
+/********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN REVIEW EDIT *
-**********************************************************/
-function display_main_review_feilds_by_panel_edit($panel_name, $fields, $risk_id, $review, $next_step, $next_review, $comment, $default_next_review)
+*********************************************************/
+function display_main_review_feilds_by_panel_edit($panel_name, $fields, $risk_id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review)
 {
+    $custom_values = getCustomFieldValuesByRiskId($risk_id, false, $review_id);
+
     foreach($fields as $field)
     {
         // Check if this field is main field and details in left panel
-        if($field['panel_name'] == $panel_name && $field['is_basic'] == 1 && $field['tab_index'] == 3)
+        if($field['panel_name'] == $panel_name && $field['tab_index'] == 3)
         {
-            if($field['active'] == 0){
-                echo "<div style='display: none'>";
-                echo $field['name'];
-            }
-            
-            switch($field['name']){
-                case 'ReviewDate':
-                    display_review_date_edit();
-                break;
-                
-                case 'Reviewer':
-                    display_reviewer_name_edit();
-                break;
+            if($field['is_basic'] == 1)
+            {
 
-                case 'Review':
-                    display_review_edit($review);
-                break;
-                    
-                case 'NextStep':
-                    display_next_step_edit($next_step);
-                break;
-                    
-                case 'Comment':
-                    display_comments_edit($comment);
-                break;
+                if($field['active'] == 0){
+                    echo "<div style='display: none'>";
+                    echo $field['name'];
+                }
                 
-                case 'SetNextReviewDate':
-                    display_set_next_review_date_edit($default_next_review);
-                break;
+                switch($field['name']){
+                    case 'ReviewDate':
+                        display_review_date_edit();
+                    break;
+                    
+                    case 'Reviewer':
+                        display_reviewer_name_edit();
+                    break;
+
+                    case 'Review':
+                        display_review_edit($review);
+                    break;
+                        
+                    case 'NextStep':
+                        display_next_step_edit($next_step);
+                    break;
+                        
+                    case 'Comment':
+                        display_comments_edit($comment);
+                    break;
+                    
+                    case 'SetNextReviewDate':
+                        display_set_next_review_date_edit($default_next_review);
+                    break;
+                    
+                }
+
+                if($field['active'] == 0){
+                    echo "</div>";
+                }
                 
             }
-
-            if($field['active'] == 0){
-                echo "</div>";
+            else
+            {
+                display_custom_field_edit($field, $custom_values);
             }
         }
     }
 }
 
-/******************************
+/*************************************************
 * FUNCTION: DISPLAY SUPPORTING DOCUMENTATION ADD *
-*******************************/
+**************************************************/
 function display_supporting_documentation_add()
 {
     global $lang, $escaper;
@@ -1957,90 +1996,97 @@ function display_supporting_documentation_add()
     echo "</div>";
 }
 
-/*********************************************************
+/********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS ADD *
-**********************************************************/
+*********************************************************/
 function display_main_detail_feilds_by_panel_add($panel_name, $fields)
 {
     foreach($fields as $field)
     {
         // Check if this field is main field and details in left panel
-        if($field['panel_name'] == $panel_name && $field['is_basic'] == 1 && $field['tab_index'] == 1)
+        if($field['panel_name'] == $panel_name && $field['tab_index'] == 1)
         {
-            if($field['active'] == 0){
-                echo "<div style='display: none'>";
-                echo $field['name'];
+            if($field['is_basic'] == 1)
+            {
+                if($field['active'] == 0){
+                    echo "<div style='display: none'>";
+                    echo $field['name'];
+                }
+                
+                switch($field['name']){
+                    case 'Category':
+                        display_category_edit('');
+                    break;
+                    
+                    case 'SiteLocation':
+                        display_location_edit('');
+                    break;
+
+                    case 'ExternalReferenceId':
+                        display_external_reference_id_edit('');
+                    break;
+                    
+                    case 'ControlRegulation':
+                        display_control_regulation_edit('');
+                    break;
+                        
+                    case 'ControlNumber':
+                        display_control_number_edit('');
+                    break;
+                        
+                    case 'AffectedAssets':
+                        display_affected_assets_edit('');
+                    break;
+                    
+                    case 'Technology':
+                        display_technology_edit('');
+                    break;
+                        
+                    case 'Team':
+                        display_team_edit('');
+                    break;
+                        
+                    case 'AdditionalStakeholders':
+                        display_additional_stakeholders_edit('');
+                    break;
+                    
+                    case 'Owner':
+                        display_owner_edit('');
+                    break;
+                        
+                    case 'OwnersManager':
+                        display_owners_manager_edit('');
+                    break;
+                    
+                    case 'RiskSource':
+                        display_risk_source_edit('');
+                    break;
+                
+                    case 'RiskScoringMethod':
+                        risk_score_method_html();
+                    break;
+
+                    case 'RiskAssessment':
+                        display_risk_assessment_title_edit('');
+                    break;
+                        
+                    case 'AdditionalNotes':
+                        display_additional_notes_edit('');
+                    break;
+                        
+                    case 'SupportingDocumentation':
+                        display_supporting_documentation_add();  
+                    break;
+                        
+                }
+
+                if($field['active'] == 0){
+                    echo "</div>";
+                }
             }
-            
-            switch($field['name']){
-                case 'Category':
-                    display_category_edit('');
-                break;
-                
-                case 'SiteLocation':
-                    display_location_edit('');
-                break;
-
-                case 'ExternalReferenceId':
-                    display_external_reference_id_edit('');
-                break;
-                
-                case 'ControlRegulation':
-                    display_control_regulation_edit('');
-                break;
-                    
-                case 'ControlNumber':
-                    display_control_number_edit('');
-                break;
-                    
-                case 'AffectedAssets':
-                    display_affected_assets_edit('');
-                break;
-                
-                case 'Technology':
-                    display_technology_edit('');
-                break;
-                    
-                case 'Team':
-                    display_team_edit('');
-                break;
-                    
-                case 'AdditionalStakeholders':
-                    display_additional_stakeholders_edit('');
-                break;
-                
-                case 'Owner':
-                    display_owner_edit('');
-                break;
-                    
-                case 'OwnersManager':
-                    display_owners_manager_edit('');
-                break;
-                
-                case 'RiskSource':
-                    display_risk_source_edit('');
-                break;
-            
-                case 'RiskScoringMethod':
-                    risk_score_method_html();
-                break;
-
-                case 'RiskAssessment':
-                    display_risk_assessment_title_edit('');
-                break;
-                    
-                case 'AdditionalNotes':
-                    display_additional_notes_edit('');
-                break;
-                    
-                case 'SupportingDocumentation':
-                    display_supporting_documentation_add();  
-                break;
-                    
-            }
-
-            if($field['active'] == 0){
-                echo "</div>";
+            else
+            {
+                display_custom_field_edit($field, []);
             }
         }
     }
@@ -2048,12 +2094,4 @@ function display_main_detail_feilds_by_panel_add($panel_name, $fields)
 
 
 
-
-
-
-
-
-
-
-    
 ?>

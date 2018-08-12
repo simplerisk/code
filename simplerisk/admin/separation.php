@@ -102,9 +102,15 @@
             // But the extra is not activated
             if (!team_separation_extra())
             {
-                echo "<form name=\"activate_extra\" method=\"post\" action=\"\">\n";
-                echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
-                echo "</form>\n";
+                // If the extra is not restricted based on the install type
+                if (!restricted_extra("separation"))
+                {
+                    echo "<form name=\"activate_extra\" method=\"post\" action=\"\">\n";
+                    echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
+                    echo "</form>\n";
+                 }
+                 // The extra is restricted
+                 else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
             }
             // Once it has been activated
             else

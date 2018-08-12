@@ -119,27 +119,32 @@
         // Check if a new comment was submitted
         if (isset($_POST['submit']))
         {
-                $comment = $_POST['comment'];
-               if($comment == null){
-                    set_alert(true, "bad", "Your comment not added to the risk.Please fill the comment field");
-                }
-               if($comment != null){
-                // Add the comment
-                add_comment($id, $_SESSION['uid'], $comment);
+               // Make sure the user has permission to comment
+               if($_SESSION["comment_risk_management"] == 1) {
+                   $comment = $_POST['comment'];
+                   if($comment == null){
+                        set_alert(true, "bad", "Your comment not added to the risk.Please fill the comment field");
+                    }
+                   if($comment != null){
+                        // Add the comment
+                        add_comment($id, $_SESSION['uid'], $comment);
 
-		// Display an alert
-		set_alert(true, "good", "Your comment has been successfully added to the risk.");
+       	                // Display an alert
+                        set_alert(true, "good", "Your comment has been successfully added to the risk.");
+                    }
                }
-		// Check that the id is a numeric value
-		if (is_numeric($id))
-		{
-                	// Create the redirection location
-                	$url = "view.php?id=" . $id;
+        }
+        else {
+           set_alert(true, "bad", "You do not have permission to add comments to risks");
+        }
+        // Check that the id is a numeric value
+        if (is_numeric($id))
+        {
+            // Create the redirection location
+            $url = "view.php?id=" . $id;
 
-	                // Redirect to risk view page
-        	        header("Location: " . $url);
-		}
-                
+            // Redirect to risk view page
+            header("Location: " . $url);
         }
 ?>
 

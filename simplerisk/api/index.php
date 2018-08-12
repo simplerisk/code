@@ -53,17 +53,17 @@
         getRoute()->get('/management/risk/view', 'viewrisk');
         getRoute()->post('/management/risk/add', 'addRisk');
         getRoute()->post('/management/risk/update', 'updateRisk');
-        getRoute()->get('/management/mitigation/view', 'viewmitigation');
         getRoute()->post('/management/mitigation/add', 'saveMitigation');
-        getRoute()->get('/management/review/view', 'viewreview');
+        getRoute()->get('/management/mitigation/view', 'viewmitigation');
         getRoute()->post('/management/review/add', 'saveReview');
+        getRoute()->get('/management/review/view', 'viewreview');
         getRoute()->get('/admin', 'show_admin');
         getRoute()->get('/admin/users/all', 'allusers');
         getRoute()->get('/admin/users/enabled', 'enabledusers');
         getRoute()->get('/admin/users/disabled', 'disabledusers');
         getRoute()->post('/admin/fields/add', 'customization_addCustomField');
         getRoute()->post('/admin/fields/delete', 'customization_deleteCustomField');
-	      getRoute()->get('/admin/fields/get', 'customization_getCustomField');
+        getRoute()->get('/admin/fields/get', 'customization_getCustomField');
         getRoute()->get('/reports', 'show_reports');
         getRoute()->get('/reports/dynamic', 'dynamicrisk');
         getRoute()->get('/risk_levels', 'risk_levels');
@@ -77,19 +77,19 @@
 
         getRoute()->get('/management/risk/closerisk', 'closeriskHtmlForm');
         getRoute()->post('/management/risk/closerisk', 'closeriskForm');
-    
+
         getRoute()->get('/management/risk/view_all_reviews', 'viewAllReviewsForm');
         getRoute()->get('/management/risk/editdetails', 'editdetailsForm');
         getRoute()->post('/management/risk/saveDetails', 'saveDetailsForm');
         getRoute()->post('/management/risk/saveMitigation', 'saveMitigationForm');
         getRoute()->post('/management/risk/saveReview', 'saveReviewForm');
-    
+
         getRoute()->get('/management/risk/changestatus', 'changestatusForm');
         getRoute()->post('/management/risk/updateStatus', 'updateStatusForm');
-    
+
         getRoute()->get('/management/risk/scoreaction', 'scoreactionForm');
         getRoute()->post('/management/risk/saveScore', 'saveScoreForm');
-    
+
         getRoute()->post('/management/risk/saveSubject', 'saveSubjectForm');
 
         getRoute()->post('/management/risk/saveComment', 'saveCommentForm');
@@ -101,7 +101,7 @@
         getRoute()->get('/datatable/framework_controls', 'getFrameworkControlsDatatable');
         getRoute()->get('/datatable/mitigation_controls', 'getMitigationControlsDatatable');
         getRoute()->get('/role_responsibilities/get_responsibilities', 'getResponsibilitiesByRoleIdForm');
-        
+
         /******************** Governance and Compliance API **********************/
         getRoute()->get('/governance/frameworks', 'getFrameworksResponse');
         getRoute()->post('/governance/update_framework_status', 'updateFrameworkStatusResponse');
@@ -117,8 +117,13 @@
         getRoute()->post('/compliance/save_audit_comment', 'saveTestAuditCommentResponse');
         getRoute()->get('/compliance/past_audits', 'getPastTestAuditsResponse');
         getRoute()->post('/compliance/reopen_audit', 'reopenTestAuditResponse');
+        getRoute()->get('/governance/parent_documents_dropdown', 'getParentDocumentsDropdownResponse');
+        getRoute()->get('/governance/documents', 'getDocumentsResponse');
+        getRoute()->get('/governance/document', 'getDocumentResponse');
+        getRoute()->get('/governance/tabular_documents', 'getTabularDocumentsResponse');
+        getRoute()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
         /*************************************************************************/
-    
+
         /***************************** Assessment API *********************************/
         getRoute()->get('/assessment/contacts', 'assessment_extra_getAssessmentContacts');
         getRoute()->post('/assessment/questionnaire/copy', 'assessment_extra_copyQuestionnaireAPI');
@@ -130,26 +135,41 @@
         getRoute()->post('/assessment/questionnaire/pending_risks', 'assessment_extra_createRisksFromQuestionnairePendingRisksAPI');
         getRoute()->get('/assessment/questionnaire/template_questions/dynamic', 'assessment_extra_questionnaireTemplateQuestionsDynamicAPI');
         /******************************************************************************/
-        
+
         /********************* Customization API **************************/
         getRoute()->post('/customization/addOption', 'customization_extra_addOption');
         getRoute()->post('/customization/deleteOption', 'customization_extra_deleteOption');
         getRoute()->post('/customization/saveTemplate', 'customization_extra_saveTemplate');
         /******************************************************************/
-        
+
+        /********************* RISK FORMULA API ***************************/
+        getRoute()->post('/riskformula/add_impact', 'add_impact_api');
+        getRoute()->post('/riskformula/delete_impact', 'delete_impact_api');
+        getRoute()->post('/riskformula/add_likelihood', 'add_likelihood_api');
+        getRoute()->post('/riskformula/delete_likelihood', 'delete_likelihood_api');
+        getRoute()->post('/riskformula/update_impact_name', 'update_impact_name_api');
+        getRoute()->post('/riskformula/update_likelihood_name', 'update_likelihood_name_api');
+        /******************************************************************/
+
         // Return scoring histories
         getRoute()->get('/management/risk/scoring_history', 'scoringHistory');
         getRoute()->get('/management/risk/residual_scoring_history', 'residualScoringHistory');
 
         // Interal api for ajax
         getRoute()->post('/set_custom_display', 'setCustomDisplay');
-        
+
         // Define the API routes
         getApi()->get('/version.json', 'api_version', EpiApi::external);
 
         // Get unfiltered table data
         getRoute()->get('/admin/tables/fullData', 'getTableData');
+        
+        // Get Mitigation Control Info
+        getRoute()->get('/mitigation_controls/get_mitigation_control_info', 'get_mitigation_control_info');
 
+        // Get Tooltip Info
+        getRoute()->post('/likelihood_impact_chart/tooltip', 'get_tooltip');
+       
         // Run epiphany
         getRoute()->run();
     }

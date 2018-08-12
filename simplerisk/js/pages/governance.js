@@ -11,6 +11,16 @@ jQuery(document).ready(function($){
 
           var self = this;
 
+          $(document).on('click', '.document--delete', function(event) {
+            event.preventDefault();
+            var document_id = $(this).data('id');
+            var version = $(this).data('version');
+            var modal = $('#document-delete-modal');
+            $('.document_id', modal).val(document_id);
+            $('.version', modal).val(version);
+            $(modal).modal('show');
+          });
+
           $(document).on('click', '.framework-block--delete', function(event) {
             event.preventDefault();
             //$(this).parents('.framework-block').fadeOut('400').delay('500').remove();

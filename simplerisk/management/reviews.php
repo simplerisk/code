@@ -107,17 +107,34 @@
         // Get the management reviews for the risk
         $mgmt_reviews = get_review_by_id($id);
 
-        $review_date = $mgmt_reviews[0]['submission_date'];
-        $review = $mgmt_reviews[0]['review'];
-        $reviewer = $mgmt_reviews[0]['reviewer'];
-        $next_step = $mgmt_reviews[0]['next_step'];
-        $comments = $mgmt_reviews[0]['comments'];
-
-        if ($review_date == "")
+        // If no management review exists for this risk
+        if ($mgmt_reviews == false)
         {
+            // Set the values to empty
             $review_date = "N/A";
+            $review = "";
+            $review_id = 0;
+            $next_step = "";
+            $next_review = "";
+            $reviewer = "";
+            $comments = "";
         }
-        else $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
+        // If a management review exists
+        else
+        {
+            $review_date = $mgmt_reviews[0]['submission_date'];
+            $review = $mgmt_reviews[0]['review'];
+            $review_id = $mgmt_reviews[0]['id'];
+            $reviewer = $mgmt_reviews[0]['reviewer'];
+            $next_step = $mgmt_reviews[0]['next_step'];
+            $comments = $mgmt_reviews[0]['comments'];
+
+            if ($review_date == "")
+            {
+                $review_date = "N/A";
+            }
+            else $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
+        }
     }
 ?>
 

@@ -1812,6 +1812,13 @@ form#comment {
   transform: translateY(-50%);
 }
 
+.modal .file-uploader {
+  color: #fff;
+}
+.modal .file-uploader .btn {
+  background: #ed3139;
+}
+
 .navbar {
   padding: 0px;
 }
@@ -2507,6 +2514,9 @@ div.doc-link.edit-mode {
 }
 .risk-datatable.dataTable thead th, .risk-datatable.dataTable table.dataTable thead td {
   border-bottom: 0px;
+}
+.risk-datatable.dataTable td.reorder {
+  text-align: left;
 }
 .risk-datatable.dataTable.no-footer {
   border-bottom: 1px solid #dddddd;

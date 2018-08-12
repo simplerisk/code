@@ -85,13 +85,18 @@ if (isset($_POST['add_user']))
     $multi_factor = (int)$_POST['multi_factor'];
     $change_password = (int)(isset($_POST['change_password']) ? $_POST['change_password'] : 0);
     
-    $add_new_frameworks = (int)(isset($_POST['add_new_frameworks']) ? $_POST['add_new_frameworks'] : 0);
-    $modify_frameworks = (int)(isset($_POST['modify_frameworks']) ? $_POST['modify_frameworks'] : 0);
-    $delete_frameworks = (int)(isset($_POST['delete_frameworks']) ? $_POST['delete_frameworks'] : 0);
-    $add_new_controls = (int)(isset($_POST['add_new_controls']) ? $_POST['add_new_controls'] : 0);
-    $modify_controls = (int)(isset($_POST['modify_controls']) ? $_POST['modify_controls'] : 0);
-    $delete_controls = (int)(isset($_POST['delete_controls']) ? $_POST['delete_controls'] : 0);
-
+    $add_new_frameworks = (int)(isset($_POST['add_new_frameworks']) ? 1 : 0);
+    $modify_frameworks = (int)(isset($_POST['modify_frameworks']) ? 1 : 0);
+    $delete_frameworks = (int)(isset($_POST['delete_frameworks']) ? 1 : 0);
+    $add_new_controls = (int)(isset($_POST['add_new_controls']) ? 1 : 0);
+    $modify_controls = (int)(isset($_POST['modify_controls']) ? 1 : 0);
+    $delete_controls = (int)(isset($_POST['delete_controls']) ? 1 : 0);
+    $add_documentation = (int)(isset($_POST['add_documentation']) ? 1 : 0);
+    $modify_documentation = (int)(isset($_POST['modify_documentation']) ? 1 : 0);
+    $delete_documentation = (int)(isset($_POST['delete_documentation']) ? 1 : 0);
+    $comment_risk_management = (int)(isset($_POST['comment_risk_management']) ? 1 : 0);
+    $comment_compliance = (int)(isset($_POST['comment_compliance']) ? 1 : 0);
+    
     // If the type is 1
     if ($type == "1")
     {
@@ -177,9 +182,17 @@ if (isset($_POST['add_user']))
 
                 // If none was selected then assign no teams
                 if ($none) $team = "none";
+                
+                $other_options = [
+                    "add_documentation" => $add_documentation,
+                    "modify_documentation" => $modify_documentation,
+                    "delete_documentation" => $delete_documentation,
+                    "comment_risk_management" => $comment_risk_management,
+                    "comment_compliance" => $comment_compliance,
+                ];
 
                 // Insert a new user
-                add_user($type, $user, $email, $name, $salt, $hash, $team, $role_id, $governance, $riskmanagement, $compliance, $assessments, $asset, $admin, $review_veryhigh, $accept_mitigation, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor, $change_password, $add_new_frameworks, $modify_frameworks, $delete_frameworks, $add_new_controls, $modify_controls, $delete_controls);
+                add_user($type, $user, $email, $name, $salt, $hash, $team, $role_id, $governance, $riskmanagement, $compliance, $assessments, $asset, $admin, $review_veryhigh, $accept_mitigation, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor, $change_password, $add_new_frameworks, $modify_frameworks, $delete_frameworks, $add_new_controls, $modify_controls, $delete_controls, $other_options);
 
                 // If the encryption extra is enabled
                 if (encryption_extra())
@@ -446,6 +459,9 @@ if (isset($_POST['password_policy_update']))
             document.getElementsByName("add_new_controls")[0].checked = true;
             document.getElementsByName("modify_controls")[0].checked = true;
             document.getElementsByName("delete_controls")[0].checked = true;
+            document.getElementsByName("add_documentation")[0].checked = true;
+            document.getElementsByName("modify_documentation")[0].checked = true;
+            document.getElementsByName("delete_documentation")[0].checked = true;
         }
         else {
             document.getElementsByName("governance")[0].checked = false;
@@ -455,6 +471,9 @@ if (isset($_POST['password_policy_update']))
             document.getElementsByName("add_new_controls")[0].checked = false;
             document.getElementsByName("modify_controls")[0].checked = false;
             document.getElementsByName("delete_controls")[0].checked = false;
+            document.getElementsByName("add_documentation")[0].checked = false;
+            document.getElementsByName("modify_documentation")[0].checked = false;
+            document.getElementsByName("delete_documentation")[0].checked = false;
         }
     }
 
@@ -471,6 +490,7 @@ if (isset($_POST['password_policy_update']))
             document.getElementsByName("review_high")[0].checked = true;
             document.getElementsByName("review_veryhigh")[0].checked = true;
             document.getElementsByName("accept_mitigation")[0].checked = true;
+            document.getElementsByName("comment_risk_management")[0].checked = true;
         }
         else {
             document.getElementsByName("riskmanagement")[0].checked = false;
@@ -484,15 +504,18 @@ if (isset($_POST['password_policy_update']))
             document.getElementsByName("review_high")[0].checked = false;
             document.getElementsByName("review_veryhigh")[0].checked = false;
             document.getElementsByName("accept_mitigation")[0].checked = false;
+            document.getElementsByName("comment_risk_management")[0].checked = false;
         }
     }
 
     function checkAllCompliance(bx) {
         if (document.getElementsByName("check_compliance")[0].checked == true) {
             document.getElementsByName("compliance")[0].checked = true;
+            document.getElementsByName("comment_compliance")[0].checked = true;
         }
         else {
             document.getElementsByName("compliance")[0].checked = false;
+            document.getElementsByName("comment_compliance")[0].checked = false;
         }
     }
 
@@ -596,6 +619,9 @@ if (isset($_POST['password_policy_update']))
                                                     <li><input class="hidden-checkbox" id="add_new_controls" name="add_new_controls" type="checkbox" /> <label for="add_new_controls"><?php echo $escaper->escapeHtml($lang['AbleToAddNewControls']); ?></label></li>
                                                     <li><input class="hidden-checkbox" id="modify_controls" name="modify_controls" type="checkbox" /> <label for="modify_controls"><?php echo $escaper->escapeHtml($lang['AbleToModifyExistingControls']); ?></label></li>
                                                     <li><input class="hidden-checkbox" id="delete_controls" name="delete_controls" type="checkbox" /> <label for="delete_controls"><?php echo $escaper->escapeHtml($lang['AbleToDeleteExistingControls']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="add_documentation" name="add_documentation" type="checkbox" /> <label for="add_documentation"><?php echo $escaper->escapeHtml($lang['AbleToAddDocumentation']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="modify_documentation" name="modify_documentation" type="checkbox" /> <label for="modify_documentation"><?php echo $escaper->escapeHtml($lang['AbleToModifyDocumentation']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="delete_documentation" name="delete_documentation" type="checkbox" /> <label for="delete_documentation"><?php echo $escaper->escapeHtml($lang['AbleToDeleteDocumentation']); ?></label></li>
                                                 </ul>
                                             </li>
                                         </ul>
@@ -614,6 +640,7 @@ if (isset($_POST['password_policy_update']))
                                                 <li><input class="hidden-checkbox" id="review_medium" name="review_medium" type="checkbox" />  <label for="review_medium"><?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></label></li>
                                                 <li><input class="hidden-checkbox" id="review_high" name="review_high" type="checkbox" />  <label for="review_high"><?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></label></li>
                                                 <li><input class="hidden-checkbox" id="review_veryhigh" name="review_veryhigh" type="checkbox" />  <label for="review_veryhigh"><?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></label></li>
+                                                <li><input class="hidden-checkbox" id="comment_risk_management" name="comment_risk_management" type="checkbox" /> <label for="comment_risk_management"><?php echo $escaper->escapeHtml($lang['AbleToCommentRiskManagement']); ?></label></li>
                                               </ul>
                                             </li>
                                         </ul>
@@ -622,7 +649,8 @@ if (isset($_POST['password_policy_update']))
                                             <li>
                                                 <ul>
                                                 <li><input class="hidden-checkbox" id="compliance" name="compliance" type="checkbox" /> <label for="compliance"><?php echo $escaper->escapeHtml($lang['AllowAccessToComplianceMenu']); ?></label></li>
-                                              </ul>
+                                                <li><input class="hidden-checkbox" id="comment_compliance" name="comment_compliance" type="checkbox" /> <label for="comment_compliance"><?php echo $escaper->escapeHtml($lang['AbleToCommentCompliance']); ?></label></li>
+                                                </ul>
                                             </li>
                                         </ul>
                                       </li>

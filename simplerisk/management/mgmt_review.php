@@ -180,8 +180,11 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $mitigation_id = $risk[0]['mitigation_id'];
     $mgmt_review = $risk[0]['mgmt_review'];
     $calculated_risk = $risk[0]['calculated_risk'];
+    $residual_risk = $risk[0]['residual_risk'];
+    $next_review = $risk[0]['next_review'];
+    $color = get_risk_color($calculated_risk);
     $risk_level = get_risk_level_name($calculated_risk);
-    $next_review = next_review_by_score($calculated_risk);
+    $residual_risk_level = get_risk_level_name($residual_risk);
     $scoring_method = $risk[0]['scoring_method'];
     $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
     $CLASSIC_impact = $risk[0]['CLASSIC_impact'];
@@ -328,6 +331,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     // Set the values to empty
     $review_date = "N/A";
     $review = "";
+    $review_id = 0;
     $next_step = "";
     $reviewer = "";
     $comments = "";
@@ -339,6 +343,7 @@ if (isset($_GET['id']) || isset($_POST['id']))
     $review_date = $mgmt_reviews[0]['submission_date'];
     $review_date = date(get_default_datetime_format("g:i A T"), strtotime($review_date));
     $review = $mgmt_reviews[0]['review'];
+    $review_id = $mgmt_reviews[0]['id'];
     $next_step = $mgmt_reviews[0]['next_step'];
     $reviewer = $mgmt_reviews[0]['reviewer'];
     $comments = $mgmt_reviews[0]['comments'];
@@ -386,11 +391,18 @@ if (isset($_POST['submit']))
       }
     }
     else{
-        //$custom_review = "0000-00-00";
-        //$color = get_risk_color($risk[0]['calculated_risk']);
-        //$risk_id = (int)$risk[0]['id'];
-		$custom_review = next_review_by_score($calculated_risk);
-        //$custom_review = next_review($color, $risk_id, $custom_review, false);
+
+        // If next_review_date_uses setting is Residual Risk.
+        if(get_setting('next_review_date_uses') == "ResidualRisk")
+        {
+            $custom_review = next_review_by_score($residual_risk);
+        }
+        // If next_review_date_uses setting is Inherent Risk.
+        else
+        {
+            $custom_review = next_review_by_score($calculated_risk);
+        }
+
     }
 
     // Submit review
@@ -422,7 +434,7 @@ if (isset($_POST['submit']))
 }
 
     $risk_id = (int)$risk[0]['id'];
-    $default_next_review = get_next_review_default($risk_id);
+//    $default_next_review = get_next_review_default($risk_id);
 ?>
 
 <!doctype html>

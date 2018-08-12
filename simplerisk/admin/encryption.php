@@ -87,13 +87,19 @@ function display()
         // But the extra is not activated
         if (!encryption_extra())
         {
-            echo "<form name=\"activate_extra\" method=\"post\" action=\"\">\n";
-            if(installed_mcrypt()){
-                echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
-            }else{
-                echo "<p>". $escaper->escapeHtml($lang['mCryptWarning']) ."</p>\n";
+            // If the extra is not restricted based on the install type
+            if (!restricted_extra("encryption"))
+            {
+                echo "<form name=\"activate_extra\" method=\"post\" action=\"\">\n";
+                if(installed_mcrypt()){
+                    echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
+                }else{
+                    echo "<p>". $escaper->escapeHtml($lang['mCryptWarning']) ."</p>\n";
+                }
+                echo "</form>\n";
             }
-            echo "</form>\n";
+            // The extra is restricted
+            else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
         }
         // Once it has been activated
         else

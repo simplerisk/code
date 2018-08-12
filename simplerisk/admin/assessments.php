@@ -98,9 +98,15 @@ function display()
         // But the extra is not activated
         if (!assessments_extra())
         {
-            echo "<form name=\"activate\" method=\"post\" action=\"\">\n";
-            echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
-            echo "</form>\n";
+            // If the extra is not restricted based on the install type
+            if (!restricted_extra("riskassessment"))
+            {
+                echo "<form name=\"activate\" method=\"post\" action=\"\">\n";
+                echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
+                echo "</form>\n";
+            }
+            // The extra is restricted
+            else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
         }
         // Once it has been activated
         else

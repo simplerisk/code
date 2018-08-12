@@ -110,16 +110,10 @@ if(process_assessment_import()){
             </div>
             <div class="span9">
                 <div class="hero-unit">
-                    <?php  display_assessment_contacts_import(); ?>
+                    <?php display_import_of_assessment(); ?>
                 </div>
                 <div class="hero-unit">
-                    <?php  display_questionnaire_import(); ?>
-                </div>
-                <div class="hero-unit">
-                    <?php  display_questionnaire_template_import(); ?>
-                </div>
-                <div class="hero-unit">
-                    <?php  display_questionnaire_export(); ?>
+                    <?php display_export_of_assessment(); ?>
                 </div>
             </div>
         </div>

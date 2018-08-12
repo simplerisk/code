@@ -21,6 +21,9 @@ function check_cve_id(fieldName, parent)
 
 		// Get the CVSS info
 		get_cvss_info(cve, parent);
+
+		// Get the Nessus info
+		get_nessus_info(cve, parent);
 	}
 }
 
@@ -280,4 +283,37 @@ function handleSelection(choice, parent) {
         $(".owasp-holder", parent).hide();
         $(".custom-holder", parent).show();
     }
+}
+
+/*****************************
+ * FUNCTION: GET NESSUS INFO *
+ *****************************/
+function get_nessus_info(cve, parent)
+{
+        $.ajax({
+            type:'GET',
+            url:'https://vfeed.simplerisk.com/?method=get_nessus&id='+cve,
+            processData: true,
+            cache: true,
+            data: {},
+            dataType: 'json',
+            success: function (data) {
+                    process_nessus_info(data, parent);
+            }
+        });
+}
+
+/*********************************
+ * FUNCTION: PROCESS NESSUS INFO *
+ *********************************/
+function process_nessus_info(cve_info_json, parent)
+{
+    // Parse out the JSON values and process them
+    var name = cve_info_json[0]['name'];
+//      document.getElementById('notes').value=url;
+    $("[name=subject]").val(name)
+
+    var family = cve_info_json[0]['family'];
+    var file = cve_info_json[0]['file'];
+    var id = cve_info_json[0]['id'];
 }

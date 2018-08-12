@@ -1111,6 +1111,7 @@ $(document).ready(function(){
     });
 
     function saveComment($this){
+        location.reload();
         var tabContainer = $this.parents('.tab-data');
         if(!$(".comment-text", tabContainer).val()){
             $(".comment-text", tabContainer).focus();

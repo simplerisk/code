@@ -71,7 +71,7 @@ if(isset($_POST['save_role_responsibilities']))
     {
         set_alert(true, "bad", "Role is required.");
     }
-    refresh();
+//    refresh();
 }
 //Check if adding role was submitted 
 elseif(isset($_POST['add_role']))
@@ -174,8 +174,18 @@ elseif(isset($_POST['delete_role']))
                                 <tr>
                                     <td>
                                         <?php
-                                            create_dropdown("role", "", "role", true, false, false, "required");
+//                                            create_dropdown("role", isset($_POST['role']) ? $_POST['role'] : "", "role", true, false, false, "required");
+                                            create_dropdown("role", (isset($_POST['role']) ? $_POST['role'] : ""), "role", true, false, false, "required");
+                                            if(isset($_POST['role']))
+                                            {
+                                                echo "<script>\n";
+                                                    echo "$(document).ready(function(){\n";
+                                                        echo "$(\"#role\").change();\n";
+                                                    echo "})\n";
+                                                echo "</script>\n";
+                                            }
                                         ?>
+                                        
                                     </td>
                                     <td valign="top">
                                         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -200,6 +210,9 @@ elseif(isset($_POST['delete_role']))
                                                         <li><input class="hidden-checkbox" id="add_new_controls" name="responsibilities[add_new_controls]" type="checkbox" /> <label for="add_new_controls"><?php echo $escaper->escapeHtml($lang['AbleToAddNewControls']); ?></label></li>
                                                         <li><input class="hidden-checkbox" id="modify_controls" name="responsibilities[modify_controls]" type="checkbox" /> <label for="modify_controls"><?php echo $escaper->escapeHtml($lang['AbleToModifyExistingControls']); ?></label></li>
                                                         <li><input class="hidden-checkbox" id="delete_controls" name="responsibilities[delete_controls]" type="checkbox" /> <label for="delete_controls"><?php echo $escaper->escapeHtml($lang['AbleToDeleteExistingControls']); ?></label></li>
+                                                        <li><input class="hidden-checkbox" id="add_documentation" name="responsibilities[add_documentation]" type="checkbox" /> <label for="add_documentation"><?php echo $escaper->escapeHtml($lang['AbleToAddDocumentation']); ?></label></li>
+                                                        <li><input class="hidden-checkbox" id="modify_documentation" name="responsibilities[modify_documentation]" type="checkbox" /> <label for="modify_documentation"><?php echo $escaper->escapeHtml($lang['AbleToModifyDocumentation']); ?></label></li>
+                                                        <li><input class="hidden-checkbox" id="delete_documentation" name="responsibilities[delete_documentation]" type="checkbox" /> <label for="delete_documentation"><?php echo $escaper->escapeHtml($lang['AbleToDeleteDocumentation']); ?></label></li>
                                                     </ul>
                                                 </li>
                                             </ul>
@@ -218,6 +231,7 @@ elseif(isset($_POST['delete_role']))
                                                         <li><input class="hidden-checkbox" id="review_medium" name="responsibilities[review_medium]" type="checkbox" />  <label for="review_medium"><?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></label></li>
                                                         <li><input class="hidden-checkbox" id="review_high" name="responsibilities[review_high]" type="checkbox" />  <label for="review_high"><?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></label></li>
                                                         <li><input class="hidden-checkbox" id="review_veryhigh" name="responsibilities[review_veryhigh]" type="checkbox" />  <label for="review_veryhigh"><?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></label></li>
+                                                        <li><input class="hidden-checkbox" id="comment_risk_management" name="responsibilities[comment_risk_management]" type="checkbox" /> <label for="comment_risk_management"><?php echo $escaper->escapeHtml($lang['AbleToCommentRiskManagement']); ?></label></li>
                                                     </ul>
                                                 </li>
                                             </ul>
@@ -226,6 +240,7 @@ elseif(isset($_POST['delete_role']))
                                                 <li>
                                                     <ul>
                                                     <li><input class="hidden-checkbox" id="compliance" name="responsibilities[compliance]" type="checkbox" /> <label for="compliance"><?php echo $escaper->escapeHtml($lang['AllowAccessToComplianceMenu']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="comment_compliance" name="responsibilities[comment_compliance]" type="checkbox" /> <label for="comment_compliance"><?php echo $escaper->escapeHtml($lang['AbleToCommentCompliance']); ?></label></li>
                                                   </ul>
                                                 </li>
                                             </ul>
