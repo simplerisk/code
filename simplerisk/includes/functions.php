@@ -2051,8 +2051,7 @@ function get_mapping_value($prefix, $type, $mappings, $csv_line)
 /*****************************
  * FUNCTION: GET OR ADD USER *
  *****************************/
-if (!function_exists('get_or_add_user')){
-function get_or_add_user($type, $mappings, $csv_line)
+function core_get_or_add_user($type, $mappings, $csv_line)
 {
     // Get the mapping value
     $value = get_mapping_value("risks_", $type, $mappings, $csv_line);
@@ -2070,7 +2069,6 @@ function get_or_add_user($type, $mappings, $csv_line)
 
     // Return the value_id
     return $value_id;
-}
 }
 
 /*******************************
