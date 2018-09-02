@@ -4,19 +4,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // MySQL Database Host Name
-define('DB_HOSTNAME', '___DB_HOSTNAME__');
+define('DB_HOSTNAME', '__DB_HOST__');
 
 // MySQL Database Port Number
 define('DB_PORT', '__DB_PORT__');
 
 // MySQL Database User Name
-define('DB_USERNAME', '__DB_USERNAME__');
+define('DB_USERNAME', '__MYSQL_USER__');
 
 // MySQL Database Password
-define('DB_PASSWORD', '__DB_PASSWORD__');
+define('DB_PASSWORD', '__MYSQL_PASSWORD__');
 
 // MySQL Database Name
-define('DB_DATABASE', '__DB_DATABASE__');
+define('DB_DATABASE', '__MYSQL_DATABASE__');
 
 // Use database for sessions
 define('USE_DATABASE_FOR_SESSIONS', '__USE_DATABASE_FOR_SESSIONS__');

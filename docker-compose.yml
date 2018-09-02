@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  import:
+    build:
+      context: ./installer
+    environment:
+      - DB_HOST=db
+      - MYSQL_DATABASE=simplerisk
+      - MYSQL_USER=simplerisk
+      - MYSQL_PASSWORD=simplerisk
+      - MYSQL_ROOT_PASSWORD=simplerisk
+    links:
+      - db
+  simplerisk:
+    build:
+      context: ./
+    ports:
+      - "80:80"
+    environment:
+      - DB_HOST=db
+      - MYSQL_DATABASE=simplerisk
+      - MYSQL_USER=simplerisk
+      - MYSQL_PASSWORD=simplerisk
+    links:
+      - db
+  db:
+    image: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=simplerisk
