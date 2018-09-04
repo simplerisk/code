@@ -1021,6 +1021,11 @@ $lang = array(
     'Disabled' => '비활성화',
     'AbleToCommentRiskManagement' => '위험 관리에 댓글을 달 수 있음',
     'AbleToCommentCompliance' => '컴플라이언스에 대 한 논평 가능',
+    'LanguageUpdated' => 'Your language was updated successfully.',
+    'SelectValidLanguage' => 'You need to select a valid language',
+    'PasswordUpdated' => 'Your password has been updated successfully!',
+    'PasswordIncorrect' => 'You have entered your current password incorrectly. Please try again.',
+    'RiskFormRemark' => 'Complete the form above to document a risk for consideration in Risk Management Process',
     '' => '',
 );
 

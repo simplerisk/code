@@ -1021,6 +1021,11 @@ $lang = array(
     'Disabled' => 'अक्षम',
     'AbleToCommentRiskManagement' => 'जोखिम प्रबंधन टिप्पणी करने में सक्षम',
     'AbleToCommentCompliance' => 'अनुपालन टिप्पणी करने में सक्षम',
+    'LanguageUpdated' => 'Your language was updated successfully.',
+    'SelectValidLanguage' => 'You need to select a valid language',
+    'PasswordUpdated' => 'Your password has been updated successfully!',
+    'PasswordIncorrect' => 'You have entered your current password incorrectly. Please try again.',
+    'RiskFormRemark' => 'Complete the form above to document a risk for consideration in Risk Management Process',
     '' => '',
 );
 

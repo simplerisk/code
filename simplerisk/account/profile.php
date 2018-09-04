@@ -60,12 +60,12 @@
             require_once(language_file());
 
             // Display an alert
-            set_alert(true, "good", "Your language was updated successfully.");
+	    set_alert(true, "good", $lang['LanguageUpdated']);
         }
         else
         {
             // Display an alert
-            set_alert(true, "bad", "You need to select a valid language");
+            set_alert(true, "bad", $lang['SelectValidLanguage']);
         }
     }
 
@@ -157,7 +157,7 @@
                     }
 
                     // Display an alert
-                    set_alert(true, "good", "Your password has been updated successfully!");
+                    set_alert(true, "good", $lang['PasswordUpdated']);
                 }else{
                     set_alert(true, "bad", $lang['PasswordNoLongerUse']);
                 }
@@ -171,7 +171,7 @@
         else
         {
             // Display an alert
-            set_alert(true, "bad", "You have entered your current password incorrectly.  Please try again.");
+            set_alert(true, "bad", $lang['PasswordIncorrect']);
         }
     }
     

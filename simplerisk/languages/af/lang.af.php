@@ -1023,6 +1023,11 @@ $lang = array(
     'Disabled' => 'Gestremde',
     'AbleToCommentRiskManagement' => 'In staat om kommentaar risiko bestuur',
     'AbleToCommentCompliance' => 'In staat om kommentaar nakoming',
+    'LanguageUpdated' => 'Your language was updated successfully.',
+    'SelectValidLanguage' => 'You need to select a valid language',
+    'PasswordUpdated' => 'Your password has been updated successfully!',
+    'PasswordIncorrect' => 'You have entered your current password incorrectly. Please try again.',
+    'RiskFormRemark' => 'Complete the form above to document a risk for consideration in Risk Management Process',
     '' => '',
 );
 
