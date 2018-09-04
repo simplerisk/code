@@ -6,7 +6,8 @@ ENV MYSQL_USERNAME simplerisk
 ENV MYSQL_PASSWORD simplerisk
 ENV MYSQL_DATABASE simplerisk
 ENV MYSQL_ROOT_PASSWORD simplerisk
-
+ENV WAIT_LOOPS 25
+ENV WAIT_SLEEP 3
 RUN apk add --no-cache mysql-client
 RUN apk add --no-cache wget
 RUN apk add --no-cache tar

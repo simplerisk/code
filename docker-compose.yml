@@ -1,9 +1,11 @@
 version: '3'
 
 services:
-  import:
+  installer:
     build:
       context: ./installer
+    depends_on:
+      - db
     environment:
       - DB_HOST=db
       - MYSQL_DATABASE=simplerisk
@@ -15,6 +17,9 @@ services:
   simplerisk:
     build:
       context: ./
+    depends_on:
+      - db
+      - installer
     ports:
       - "80:80"
     environment:
@@ -24,6 +29,8 @@ services:
       - MYSQL_PASSWORD=simplerisk
     links:
       - db
+    volumes:
+    - ./simplerisk:/var/www/html
   db:
     image: mariadb
     environment:
