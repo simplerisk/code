@@ -1,7 +1,7 @@
 #!/bin/sh
 
 file="simplerisk-en.sql"
-if [ -d "$file" ]
+if [ -f "$file" ]
 then
 	echo "$file found, exit"
 else

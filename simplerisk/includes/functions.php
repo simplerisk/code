@@ -34,7 +34,6 @@ function db_open()
         $GLOBALS['db'] = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
         $GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
         $GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET CHARACTER SET utf8");
-
         // Set the simplerisk timezone for any datetime functions
         set_simplerisk_timezone();
         
@@ -8948,7 +8947,7 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
         {
             // echo "<input type=\"file\" name=\"file\" />\n";
             echo '<div class="file-uploader">';
-            echo '<label for="file-upload" class="btn active-textfield">Choose File</label> <span class="file-count-html"><span class="file-count">0</span> File Added</span>';
+            echo '<label for="file-upload" class="btn active-textfield">'.$escaper->escapeHtml($lang['ChooseFile']).'</label> <span class="file-count-html"><span class="file-count">0</span> '.$escaper->escapeHtml($lang['FileAdded']).'</span>';
             echo "<p><font size=\"2\"><strong>Max ". round(get_setting('max_upload_size')/1024/1024) ." Mb</strong></font></p>";
             echo '<ul class="file-list">';
 

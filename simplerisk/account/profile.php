@@ -363,7 +363,7 @@
         $html = "<tr><td colspan=\"2\">";
         $resetRequestMessages = getPasswordReqeustMessages();
         if(count($resetRequestMessages)){
-            $html .= "<p><b>Password should have the following requirements.</b></p>\n";
+            $html .= "<p><b>" . $escaper->escapeHtml($lang['PasswordRequirements']) . "</b></p>\n";
             $html .= "<ul>\n";
             foreach($resetRequestMessages as $resetRequestMessage){
                 $html .= "<li>{$resetRequestMessage}</li>\n";

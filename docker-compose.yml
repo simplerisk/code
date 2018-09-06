@@ -35,3 +35,5 @@ services:
     image: mariadb
     environment:
       - MYSQL_ROOT_PASSWORD=simplerisk
+    ports:
+      - "3307:3306"

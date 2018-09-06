@@ -1069,8 +1069,8 @@ function display_testing()
                                 <td valign='top'>".$escaper->escapeHtml($lang['Attachment']).":&nbsp;&nbsp;</td>
                                 <td>
                                      <div class=\"file-uploader\">
-                                        <label for=\"file-upload\" class=\"btn\">Choose File</label>
-                                        <span class=\"file-count-html\"> <span class=\"file-count\">".count(get_compliance_files($test_audit_id, "test_audit"))."</span> File Added</span>
+                                        <label for=\"file-upload\" class=\"btn\">".$escaper->escapeHtml($lang['ChooseFile'])."</label>
+                                        <span class=\"file-count-html\"> <span class=\"file-count\">".count(get_compliance_files($test_audit_id, "test_audit"))."</span> ".$escaper->escapeHtml($lang['FileAdded'])."</span>
                                         <p><font size=\"2\"><strong>Max ". round(get_setting('max_upload_size')/1024/1024) ." Mb</strong></font></p>
                                         <ul class=\"exist-files\">
                                             ";
