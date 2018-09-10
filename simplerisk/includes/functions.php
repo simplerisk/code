@@ -2025,7 +2025,7 @@ function get_id_by_user($user)
 /*******************************
  * FUNCTION: GET MAPPING VALUE *
  *******************************/
-function get_mapping_value($prefix, $type, $mappings, $csv_line)
+function core_get_mapping_value($prefix, $type, $mappings, $csv_line)
 {
     // Create the search term
     $search_term = $prefix . $type;
@@ -2054,7 +2054,7 @@ function get_mapping_value($prefix, $type, $mappings, $csv_line)
 function core_get_or_add_user($type, $mappings, $csv_line)
 {
     // Get the mapping value
-    $value = get_mapping_value("risks_", $type, $mappings, $csv_line);
+    $value = core_get_mapping_value("risks_", $type, $mappings, $csv_line);
 
     // Search the corresponding table for the value
     $value_id = get_value_by_name("user", $value);
@@ -8948,7 +8948,7 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
         {
             // echo "<input type=\"file\" name=\"file\" />\n";
             echo '<div class="file-uploader">';
-            echo '<label for="file-upload" class="btn active-textfield">Choose File</label> <span class="file-count-html"><span class="file-count">0</span> File Added</span>';
+            echo '<label for="file-upload" class="btn active-textfield">'.$escaper->escapeHtml($lang['ChooseFile']).'</label> <span class="file-count-html"><span class="file-count">0</span> '.$escaper->escapeHtml($lang['FileAdded']).'</span>';
             echo "<p><font size=\"2\"><strong>Max ". round(get_setting('max_upload_size')/1024/1024) ." Mb</strong></font></p>";
             echo '<ul class="file-list">';
 

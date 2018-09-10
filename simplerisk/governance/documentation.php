@@ -278,7 +278,7 @@ if (isset($_POST['delete_document']))
                 <option value="Approved"><?php echo $escaper->escapeHtml($lang['Approved']) ?></option>
             </select>
             <div class="file-uploader">
-                <label for="file-upload" class="btn">Choose File</label>
+                <label for="file-upload" class="btn"><?php echo $escaper->escapeHtml($lang['ChooseFile']) ?></label>
                 <font size="2"><strong>Max <?php echo round(get_setting('max_upload_size')/1024/1024); ?> Mb</strong></font>
                 <input required="" type="file" id="file-upload" name="file[]" class="hidden-file-upload active" />
             </div>
@@ -324,7 +324,7 @@ if (isset($_POST['delete_document']))
             </select>
             <input type="hidden" name="document_id" value="">
             <div class="file-uploader">
-                <label for="file-upload-update" class="btn">Choose File</label>
+                <label for="file-upload-update" class="btn"><? echo $escaper->escapeHtml($lang['ChooseFile']) ?></label>
                 <font size="2"><strong>Max <?php echo round(get_setting('max_upload_size')/1024/1024); ?> Mb</strong></font>
                 <input type="file" id="file-upload-update" name="file[]" class="hidden-file-upload active" />
             </div>

@@ -263,7 +263,7 @@ function add_risk_details(){
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"span10\">\n";
                 echo "<div class=\"actions risk-form-actions\">\n";
-                    echo "<span>Complete the form above to document a risk for consideration in Risk Management Process</span>\n";
+                    echo "<span>" . $escaper->escapHtml($lang['NewRiskInstruction']). "</span>\n";
                     echo "<button type=\"button\" name=\"submit\" class=\"btn btn-primary pull-right save-risk-form\">".$escaper->escapeHtml($lang['SubmitRisk'])."</button>\n";
                     echo "<input class=\"btn pull-right\" value=\"".$escaper->escapeHtml($lang['ClearForm'])."\" type=\"reset\">\n";
                 echo "</div>\n";
@@ -4700,7 +4700,7 @@ function risk_average_baseline_metric($time = "day", $title = ""){
         // If the opened risks array is empty
         if (empty($risk_scores))
         {
-            $data[] = array("No Data Available", 0);
+            $data[] = array($lang['NoDataAvailable'], 0);
         }
         // Otherwise
         else
