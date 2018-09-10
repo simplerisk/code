@@ -1035,7 +1035,8 @@ $lang = array(
     'Mitigated' => 'Mitigated',
     'Unmitigated' => 'Unmitigated',
     'Reviewed' => 'Reviewed',
-    'Unreviewed' => 'Unreviewed',
+    'Unreviewed' => 'Unreviewed', 
+    'NewRiskInstruction' => 'Vul zoveel mogelijk gegevens in zodat het risico kan worden opgenomen in het risicobeheerproces',
     '' => '',
 );
 

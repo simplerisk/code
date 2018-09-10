@@ -263,10 +263,9 @@ function add_risk_details(){
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"span10\">\n";
                 echo "<div class=\"actions risk-form-actions\">\n";
-                    echo "<span>&nbsp;</span>\n";
-                    echo "<button type=\"button\" name=\"submit\" class=\"btn btn-primary pull-right save-risk-form\">".$escaper->escapeHtml($lang['Submit'])."</button>\n";
-                    echo "<input class=\"btn pull-right\" value=\"".$escaper->escapeHtml($lang['Reset'])."\" type=\"reset\">\n";
-                    
+                    echo "<span>" . $escaper->escapHtml($lang['NewRiskInstruction']). "</span>\n";
+                    echo "<button type=\"button\" name=\"submit\" class=\"btn btn-primary pull-right save-risk-form\">".$escaper->escapeHtml($lang['SubmitRisk'])."</button>\n";
+                    echo "<input class=\"btn pull-right\" value=\"".$escaper->escapeHtml($lang['ClearForm'])."\" type=\"reset\">\n";
                 echo "</div>\n";
             echo "</div>\n";
         echo "</div>\n";

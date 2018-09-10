@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // MySQL Database Host Name
-define('DB_HOSTNAME', 'db');
+define('DB_HOSTNAME', 'localhost');
 
 // MySQL Database Port Number
 define('DB_PORT', '3306');

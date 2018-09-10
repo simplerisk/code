@@ -1035,7 +1035,7 @@ $lang = array(
     'Mitigated' => 'Mitigated',
     'Unmitigated' => 'Unmitigated',
     'Reviewed' => 'Reviewed',
-    'Unreviewed' => 'Unreviewed',
+    'Unreviewed' => 'Unreviewed',     'NewRiskInstruction' => 'Complete the form above to document a risk for consideration in Risk Management Process',
     '' => '',
 );
 
