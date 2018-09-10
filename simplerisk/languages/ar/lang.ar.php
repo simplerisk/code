@@ -1037,6 +1037,14 @@ $lang = array(
     'Reviewed' => 'Reviewed',
     'Unreviewed' => 'Unreviewed',
     'NewRiskInstruction' => 'Complete the form above to document a risk for consideration in Risk Management Process',
+    'New' => 'New',
+    'ManagementReviewed' => 'Mgmt Reviewed',
+    'Reopened' => 'Reopened',
+    'Treated' => 'Treated',
+    'Untreated' => 'Untreated',
+    'passwords' => [
+        'user' => 'Unknown User'
+    ],
     '' => '',
 );
 
