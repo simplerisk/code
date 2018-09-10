@@ -234,6 +234,11 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 <html>
 
     <head>
+        <script>
+        var simplerisk = {
+            risk: "<? echo $lang['Risk']; ?>"
+        }
+        </script>
         <script src="../js/jquery.min.js"></script>
         <script src="../js/jquery-ui.min.js"></script>
         <script src="../js/bootstrap.min.js"></script>
@@ -285,7 +290,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                 <span>+</span>
               </div>
               <div class="tab-append">
-                <div class="tab selected form-tab tab-show new" id="tab"><div><span>New Risk (1)</span></div>
+                <div class="tab selected form-tab tab-show new" id="tab"><div><span><? echo $lang['Risk']; ?></span></div>
                   <button class="close tab-close" aria-label="Close" data-id=""><i class="fa fa-close"></i></button>
                 </div>
               </div>
