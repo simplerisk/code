@@ -94,7 +94,7 @@ function risk_distribution_analysis()
         foreach ($array as $row)
         {
 		echo "<li>";
-		echo $row['level'] . ":&nbsp;&nbsp;" . (int)$row['num'];
+		echo $escaper->escapeHtml($row['level']) . ":&nbsp;&nbsp;" . (int)$row['num'];
 		echo "</li>\n";
 
 		// If veryhigh

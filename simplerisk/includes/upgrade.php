@@ -2555,7 +2555,7 @@ function upgrade_from_20180814001($db){
  ***************************************/
 function upgrade_from_20180830001($db){
     // Database version to upgrade
-    $version_to_upgrade = '20180814-001';
+    $version_to_upgrade = '20180830-001';
 
     // Database version upgrading to
     $version_upgrading_to = '20180916-001';
