@@ -1567,7 +1567,7 @@ function get_documents_as_treegrid($type){
         $document['document_type'] = $escaper->escapeHtml($document['document_type']);
         $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name'])."</a>";
         $document['status'] = $escaper->escapeHtml($document['status']);
-        $document['creation_date'] = $document['creation_date'];
+        $document['creation_date'] = ($document['creation_date'] != "0000-00-00" && $document['creation_date']) ? date(get_default_date_format(), strtotime($document['creation_date'])) : "";
         $document['actions'] = "<div class=\"text-center\"><a class=\"framework-block--edit\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;<a class=\"framework-block--delete\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a></div>";
     }
     $results = array();

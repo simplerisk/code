@@ -222,7 +222,8 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
       echo "<script> var global_risk_id = " . $risk_id . ";</script>";
       
       // Display an alert   
-      set_alert(true, "good", $escaper->escapeHtml(_lang('RiskSubmitSuccess', ['subject' => $subject])));
+      $RiskSubmitSuccess = _lang("RiskSubmitSuccess", ["subject" => $escaper->escapeHtml($subject)]);
+      set_alert(true, "good", $RiskSubmitSuccess);
   }
 
 }
@@ -234,6 +235,12 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 <html>
 
     <head>
+        <script>
+        var simplerisk = {
+            risk: "<?php echo $lang['Risk']; ?>",
+	    newrisk: "<?php echo $lang['NewRisk']; ?>"
+        }
+        </script>
         <script src="../js/jquery.min.js"></script>
         <script src="../js/jquery-ui.min.js"></script>
         <script src="../js/bootstrap.min.js"></script>
@@ -285,7 +292,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                 <span>+</span>
               </div>
               <div class="tab-append">
-                <div class="tab selected form-tab tab-show new" id="tab"><div><span>New Risk (1)</span></div>
+                <div class="tab selected form-tab tab-show new" id="tab"><div><span><?php echo $escaper->escapeHtml($lang['NewRisk']); ?> (1)</span></div>
                   <button class="close tab-close" aria-label="Close" data-id=""><i class="fa fa-close"></i></button>
                 </div>
               </div>
@@ -350,7 +357,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
                     $('.tab-show').removeClass('selected');
                     $("div.tab-append").prepend(
-                        "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span>New Risk ("+num_tabs+")</span></div>"
+                        "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span><?php echo $escaper->escapeHtml($lang['NewRisk']); ?> ("+num_tabs+")</span></div>"
                         +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
                         +"<i class='fa fa-close'></i>"
                         +"</button>"

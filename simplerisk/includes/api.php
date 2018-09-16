@@ -735,14 +735,14 @@ function dynamicriskForm()
 //            );
 //        }
 
-        $rows = array();
+        $datas = array();
         foreach($risks as $row){
 //            $row = $risks[$i];
             $row['id'] = $row['id'] + 1000;
 //            $color = get_risk_color($row['calculated_risk']);
             $color = get_risk_color($row['calculated_risk']);
             $residual_color = get_risk_color($row['residual_risk']);
-            $rows[] = array(
+            $data = array(
                 "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($row['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($row['id'])."</a>",
                 $escaper->escapeHtml($row['status']),
                 $escaper->escapeHtml($row['subject']),
@@ -782,6 +782,58 @@ function dynamicriskForm()
                 $escaper->escapeHtml($row['mitigation_team']),
                 $escaper->escapeHtml($row['mitigation_date']),
             );
+
+            // If customization extra is enabled, add custom fields
+            if(customization_extra())
+            {
+                // Include the extra
+                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                $custom_values = getCustomFieldValuesByRiskId($row['id']);
+
+                $active_fields = get_active_fields();
+                foreach($active_fields as $active_field)
+                {
+                    // If main field, ignore.
+                    if($active_field['is_basic'] == 1){
+                        continue;
+                    }
+                    
+                    $text = "";
+                    
+                    // Get value of custom filed
+                    foreach($custom_values as $custom_value)
+                    {
+                        // Check if this custom value is for the active field
+                        if($custom_value['field_id'] == $active_field['id']){
+                            $value = $custom_value['value'];
+                            if($custom_value['field_type'] == "dropdown")
+                            {
+                                $text = $escaper->escapeHtml(get_name_by_value("custom_field_".$active_field['id'], $value));
+                            }
+                            elseif($custom_value['field_type'] == "multidropdown")
+                            {
+                                $text = $escaper->escapeHtml(get_names_by_multi_values("custom_field_".$active_field['id'], $value));
+                            }
+                            elseif($custom_value['field_type'] == "longtext")
+                            {
+                                $text = nl2br($escaper->escapeHtml($value));
+                            }
+                            else
+                            {
+                                $text = $escaper->escapeHtml($value);
+                            }
+                            break;
+                        }
+                    }
+
+                    // Set custom values to dynamic risk reporting page
+                    $data[] = $text;
+                    
+                }
+
+            }
+            
+            $datas[] = $data;
         }
 
 //        if(!$sorted){
@@ -801,7 +853,7 @@ function dynamicriskForm()
             "draw" => $draw,
             "recordsTotal" => $rowCount,
             "recordsFiltered" => $rowCount,
-            "data" => $rows
+            "data" => $datas
         );
 
         // Return a JSON response
@@ -1295,7 +1347,7 @@ function closeriskForm(){
         // Close the risk
         close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
 
-    // Display an alert
+        // Display an alert
         set_alert(true, "good", "Your risk has now been marked as closed.");
 
         $viewhtml = getTabHtml($id, 'viewhtml');
@@ -1796,20 +1848,20 @@ function saveCommentForm()
     }
     
     if($_SESSION["comment_risk_management"] == 1) {
-        $comment = $_POST['comment'];
+    $comment = $_POST['comment'];
 
-        if($comment == null){
-            set_alert(true, "Your comment not added to the risk. Please fill the comment field.");
+    if($comment == null){
+        set_alert(true, "Your comment not added to the risk. Please fill the comment field.");
 
-            // Return a JSON response
-            json_response(400, get_alert(true), NULL);
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
 
-        }
+    }
 
-        if($comment != null){
-            // Add the comment
-            add_comment($id, $_SESSION['uid'], $comment);
-        }
+    if($comment != null){
+        // Add the comment
+        add_comment($id, $_SESSION['uid'], $comment);
+    }
     }
     else {
         set_alert(true, "bad", "You do not have permission to add comments to risks");
@@ -4037,7 +4089,9 @@ function getDocumentResponse()
 {
     $id = (int)$_GET['id'];
     $document = get_document_by_id($id);
-    $document['creation_date'] = date(get_default_date_format(), strtotime($document['creation_date']));
+
+    $document['creation_date'] = ($document['creation_date'] != "0000-00-00" && $document['creation_date']) ? date(get_default_date_format(), strtotime($document['creation_date'])) : "";
+
     json_response(200, "Success", $document);
 }
 
@@ -4067,7 +4121,8 @@ function getTabularDocumentsResponse()
             $document['document_type'] = $escaper->escapeHtml($document['document_type']);
             $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name']). " (".$document['file_version'].")" ."</a>";
             $document['status'] = $escaper->escapeHtml($document['status']);
-            $document['creation_date'] = $document['creation_date'];
+            
+            $document['creation_date'] = ($document['creation_date'] != "0000-00-00" && $document['creation_date']) ? date(get_default_date_format(), strtotime($document['creation_date'])) : "";
             $document['actions'] = "<div class=\"text-center\">&nbsp;&nbsp;&nbsp;";
             if(!empty($_SESSION['delete_documentation']) && $version != $document['file_version'])
             {
@@ -4085,7 +4140,7 @@ function getTabularDocumentsResponse()
             $document['document_type'] = $escaper->escapeHtml($document['document_type']);
             $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name'])."</a>";
             $document['status'] = $escaper->escapeHtml($document['status']);
-            $document['creation_date'] = $document['creation_date'];
+            $document['creation_date'] = ($document['creation_date'] != "0000-00-00" && $document['creation_date']) ? date(get_default_date_format(), strtotime($document['creation_date'])) : "";
 
             $document['actions'] = "<div class=\"text-center\">&nbsp;&nbsp;&nbsp;";
             if(!empty($_SESSION['modify_documentation']))
@@ -4174,37 +4229,37 @@ function get_mitigation_control_info(){
     exit;
 }
 
-/************************************
- * GET TOOLTIP INFO OF THE HIGHCHART*
- ************************************/
-
-function get_tooltip()
+/*************************************
+ * GET TOOLTIP INFO OF THE HIGHCHART *
+ *************************************/
+function get_tooltip_api()
 {
     global $lang;
     global $escaper;
     
-    $x = $_POST['X'];
-    $y = $_POST['Y'];
-    $result ="";
+    // Get risk ids by comma
+    $risk_ids = $_POST['risk_ids'];
+    
+    // Get risk ids in array
+    $risk_ids = explode(",", $risk_ids);
 
-    // Get classic risks
-    $risks = get_risks(10);
+    $tooltip_html ="";
 
-    $data = array();
+    foreach($risk_ids as $risk_id){
+        $risk = get_risk_by_id($risk_id);
+        // If risk by risk ID no exist, go to next risk ID
+        if(empty($risk[0])){
+            continue;
+        }
+        $risk = $risk[0];
 
-    foreach($risks as $risk){
         $calculated_risk = $risk['calculated_risk'];
         $color = get_risk_color($calculated_risk);
-        $temp = '<div style="background-color: '. $escaper->escapeHtml($color) . '; width: 100%; height:20px; border: solid 1px;border-color: #3f3f3f;"></div>';
-
-        if( $x == intval($risk['CLASSIC_likelihood']) && $y == intval($risk['CLASSIC_impact']))
-        {
-            $result .=  '<a href="'. $_SESSION['base_url'].'/management/view.php?id=' . $escaper->escapeHtml(convert_id($risk['id'])) . '" ><b>' . $escaper->escapeHtml(strtoupper($risk['subject'])) . '</b></a><hr>';
-        }
         
+        $tooltip_html .=  '<a href="'. $_SESSION['base_url'].'/management/view.php?id=' . $escaper->escapeHtml(convert_id($risk['id'])) . '" style="" ><b>' . $escaper->escapeHtml(try_decrypt($risk['subject'])) . '</b></a><hr>';
     }
 
-    json_response(200, "result", $result);
+    json_response(200, "result", $tooltip_html);
     exit();
 }
 ?>

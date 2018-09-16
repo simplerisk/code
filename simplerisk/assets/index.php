@@ -65,7 +65,7 @@ if ((isset($_POST['search'])) && $manage_assets)
   if ($AvailableIPs === false)
   {
     // Display an alert
-    set_alert(true, "bad", "IP was not in a recognizable format.");
+    set_alert(true, "bad", $escaper->escapeHtml($lang['IPFormatNotRecognized']));
   }
 }
 

@@ -1297,7 +1297,7 @@ function display_custom_field_view($field, $custom_values, $review_id=0)
             }
             elseif($field['type'] == "multidropdown")
             {
-                echo get_names_by_multi_values("custom_field_".$field['id'], $value);
+                echo $escaper->escapeHtml(get_names_by_multi_values("custom_field_".$field['id'], $value));
             }
             elseif($field['type'] == "shorttext" || $field['type'] == "longtext")
             {
@@ -1709,7 +1709,9 @@ function display_next_review_date_view($next_review)
     global $lang, $escaper;
 
     // If next review date wasn't due, convert next review date to default date format
-    if($next_review != $lang['PASTDUE']){
+    if(!$next_review){
+        $next_review = "";
+    }elseif($next_review != $lang['PASTDUE']){
         $next_review = date(get_default_date_format(), strtotime($next_review));
     }
     
@@ -1983,8 +1985,8 @@ function display_supporting_documentation_add()
         echo "<div class=\"span7\">";
 
             echo "<div class=\"file-uploader\">";
-                echo "<label for=\"file-upload\" class=\"btn\">Choose File</label>";
-                echo "<span class=\"file-count-html\"> <span class=\"file-count\">0</span> File Added</span>";
+                echo "<label for=\"file-upload\" class=\"btn\">".$escaper->escapeHtml($lang['ChooseFile'])."</label>";
+                echo "<span class=\"file-count-html\"> <span class=\"file-count\">0</span> ".$escaper->escapeHtml($lang['FileAdded'])."</span>";
                 echo "<p><font size=\"2\"><strong>Max ".round(get_setting('max_upload_size')/1024/1024)." Mb</strong></font></p>";
                 echo "<ul class=\"file-list\">";
 

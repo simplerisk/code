@@ -331,6 +331,172 @@ function get_review_levels()
     return $array;
 }
 
+/****************************************
+ * FUNCTION: CONVERT COLOR NAME TO CODE *
+ ****************************************/
+function convert_color_code($color_name)
+{
+    // standard 147 HTML color names
+    $colors  =  array(
+        'aliceblue'=>'F0F8FF',
+        'antiquewhite'=>'FAEBD7',
+        'aqua'=>'00FFFF',
+        'aquamarine'=>'7FFFD4',
+        'azure'=>'F0FFFF',
+        'beige'=>'F5F5DC',
+        'bisque'=>'FFE4C4',
+        'black'=>'000000',
+        'blanchedalmond '=>'FFEBCD',
+        'blue'=>'0000FF',
+        'blueviolet'=>'8A2BE2',
+        'brown'=>'A52A2A',
+        'burlywood'=>'DEB887',
+        'cadetblue'=>'5F9EA0',
+        'chartreuse'=>'7FFF00',
+        'chocolate'=>'D2691E',
+        'coral'=>'FF7F50',
+        'cornflowerblue'=>'6495ED',
+        'cornsilk'=>'FFF8DC',
+        'crimson'=>'DC143C',
+        'cyan'=>'00FFFF',
+        'darkblue'=>'00008B',
+        'darkcyan'=>'008B8B',
+        'darkgoldenrod'=>'B8860B',
+        'darkgray'=>'A9A9A9',
+        'darkgreen'=>'006400',
+        'darkgrey'=>'A9A9A9',
+        'darkkhaki'=>'BDB76B',
+        'darkmagenta'=>'8B008B',
+        'darkolivegreen'=>'556B2F',
+        'darkorange'=>'FF8C00',
+        'darkorchid'=>'9932CC',
+        'darkred'=>'8B0000',
+        'darksalmon'=>'E9967A',
+        'darkseagreen'=>'8FBC8F',
+        'darkslateblue'=>'483D8B',
+        'darkslategray'=>'2F4F4F',
+        'darkslategrey'=>'2F4F4F',
+        'darkturquoise'=>'00CED1',
+        'darkviolet'=>'9400D3',
+        'deeppink'=>'FF1493',
+        'deepskyblue'=>'00BFFF',
+        'dimgray'=>'696969',
+        'dimgrey'=>'696969',
+        'dodgerblue'=>'1E90FF',
+        'firebrick'=>'B22222',
+        'floralwhite'=>'FFFAF0',
+        'forestgreen'=>'228B22',
+        'fuchsia'=>'FF00FF',
+        'gainsboro'=>'DCDCDC',
+        'ghostwhite'=>'F8F8FF',
+        'gold'=>'FFD700',
+        'goldenrod'=>'DAA520',
+        'gray'=>'808080',
+        'green'=>'008000',
+        'greenyellow'=>'ADFF2F',
+        'grey'=>'808080',
+        'honeydew'=>'F0FFF0',
+        'hotpink'=>'FF69B4',
+        'indianred'=>'CD5C5C',
+        'indigo'=>'4B0082',
+        'ivory'=>'FFFFF0',
+        'khaki'=>'F0E68C',
+        'lavender'=>'E6E6FA',
+        'lavenderblush'=>'FFF0F5',
+        'lawngreen'=>'7CFC00',
+        'lemonchiffon'=>'FFFACD',
+        'lightblue'=>'ADD8E6',
+        'lightcoral'=>'F08080',
+        'lightcyan'=>'E0FFFF',
+        'lightgoldenrodyellow'=>'FAFAD2',
+        'lightgray'=>'D3D3D3',
+        'lightgreen'=>'90EE90',
+        'lightgrey'=>'D3D3D3',
+        'lightpink'=>'FFB6C1',
+        'lightsalmon'=>'FFA07A',
+        'lightseagreen'=>'20B2AA',
+        'lightskyblue'=>'87CEFA',
+        'lightslategray'=>'778899',
+        'lightslategrey'=>'778899',
+        'lightsteelblue'=>'B0C4DE',
+        'lightyellow'=>'FFFFE0',
+        'lime'=>'00FF00',
+        'limegreen'=>'32CD32',
+        'linen'=>'FAF0E6',
+        'magenta'=>'FF00FF',
+        'maroon'=>'800000',
+        'mediumaquamarine'=>'66CDAA',
+        'mediumblue'=>'0000CD',
+        'mediumorchid'=>'BA55D3',
+        'mediumpurple'=>'9370D0',
+        'mediumseagreen'=>'3CB371',
+        'mediumslateblue'=>'7B68EE',
+        'mediumspringgreen'=>'00FA9A',
+        'mediumturquoise'=>'48D1CC',
+        'mediumvioletred'=>'C71585',
+        'midnightblue'=>'191970',
+        'mintcream'=>'F5FFFA',
+        'mistyrose'=>'FFE4E1',
+        'moccasin'=>'FFE4B5',
+        'navajowhite'=>'FFDEAD',
+        'navy'=>'000080',
+        'oldlace'=>'FDF5E6',
+        'olive'=>'808000',
+        'olivedrab'=>'6B8E23',
+        'orange'=>'FFA500',
+        'orangered'=>'FF4500',
+        'orchid'=>'DA70D6',
+        'palegoldenrod'=>'EEE8AA',
+        'palegreen'=>'98FB98',
+        'paleturquoise'=>'AFEEEE',
+        'palevioletred'=>'DB7093',
+        'papayawhip'=>'FFEFD5',
+        'peachpuff'=>'FFDAB9',
+        'peru'=>'CD853F',
+        'pink'=>'FFC0CB',
+        'plum'=>'DDA0DD',
+        'powderblue'=>'B0E0E6',
+        'purple'=>'800080',
+        'red'=>'FF0000',
+        'rosybrown'=>'BC8F8F',
+        'royalblue'=>'4169E1',
+        'saddlebrown'=>'8B4513',
+        'salmon'=>'FA8072',
+        'sandybrown'=>'F4A460',
+        'seagreen'=>'2E8B57',
+        'seashell'=>'FFF5EE',
+        'sienna'=>'A0522D',
+        'silver'=>'C0C0C0',
+        'skyblue'=>'87CEEB',
+        'slateblue'=>'6A5ACD',
+        'slategray'=>'708090',
+        'slategrey'=>'708090',
+        'snow'=>'FFFAFA',
+        'springgreen'=>'00FF7F',
+        'steelblue'=>'4682B4',
+        'tan'=>'D2B48C',
+        'teal'=>'008080',
+        'thistle'=>'D8BFD8',
+        'tomato'=>'FF6347',
+        'turquoise'=>'40E0D0',
+        'violet'=>'EE82EE',
+        'wheat'=>'F5DEB3',
+        'white'=>'FFFFFF',
+        'whitesmoke'=>'F5F5F5',
+        'yellow'=>'FFFF00',
+        'yellowgreen'=>'9ACD32');
+
+    $color_name = strtolower($color_name);
+    if (isset($colors[$color_name]))
+    {
+        return ('#' . $colors[$color_name]);
+    }
+    else
+    {
+        return ($color_name);
+    }
+}
+
 /********************************
  * FUNCTION: UPDATE RISK LEVELS *
  ********************************/
@@ -340,10 +506,13 @@ function update_risk_levels($veryhigh, $high, $medium, $low)
     {
         return false;
     }
+    
+    $risk_levels = get_risk_Levels();
 
     // Open the database connection
     $db = db_open();
 
+    $status = check_changed_risk_levels( $veryhigh['value'] , "Very High", $risk_levels);
     // Update the very high risk level
     $stmt = $db->prepare("UPDATE `risk_levels` SET value=:value, color=:color, display_name=:display_name WHERE name='Very High'");
     $stmt->bindParam(":value", $veryhigh['value'], PDO::PARAM_STR);
@@ -351,6 +520,12 @@ function update_risk_levels($veryhigh, $high, $medium, $low)
     $stmt->bindParam(":display_name", $veryhigh['display_name'], PDO::PARAM_STR);
     $stmt->execute();
 
+    $high_status = check_changed_risk_levels( $high['value'] , "High", $risk_levels);
+    if ($status && $high_status) {
+        $status .= " and " . $high_status;
+    } else if ( !$status && $high_status ){
+        $status = $high_status;
+    }
     // Update the high risk level
     $stmt = $db->prepare("UPDATE `risk_levels` SET value=:value, color=:color, display_name=:display_name WHERE name='High'");
     $stmt->bindParam(":value", $high['value'], PDO::PARAM_STR);
@@ -358,6 +533,12 @@ function update_risk_levels($veryhigh, $high, $medium, $low)
     $stmt->bindParam(":display_name", $high['display_name'], PDO::PARAM_STR);
     $stmt->execute();
 
+    $mediumn_status = check_changed_risk_levels( $medium['value'] , "Medium", $risk_levels);
+    if ($status && $mediumn_status) {
+        $status .= " and " . $mediumn_status;
+    } else if ( !$status && $mediumn_status ){
+        $status = $mediumn_status;
+    }
     // Update the medium risk level
     $stmt = $db->prepare("UPDATE `risk_levels` SET value=:value, color=:color, display_name=:display_name WHERE name='Medium'");
     $stmt->bindParam(":value", $medium['value'], PDO::PARAM_STR);
@@ -365,6 +546,12 @@ function update_risk_levels($veryhigh, $high, $medium, $low)
     $stmt->bindParam(":display_name", $medium['display_name'], PDO::PARAM_STR);
     $stmt->execute();
 
+    $low_status = check_changed_risk_levels( $low['value'] , "Low", $risk_levels);
+    if ($status && $low_status) {
+        $status .= " and " . $low_status;
+    } else if ( !$status && $low_status ){
+        $status = $low_status;
+    }
     // Update the low risk level
     $stmt = $db->prepare("UPDATE `risk_levels` SET value=:value, color=:color, display_name=:display_name WHERE name='Low'");
     $stmt->bindParam(":value", $low['value'], PDO::PARAM_STR);
@@ -374,13 +561,36 @@ function update_risk_levels($veryhigh, $high, $medium, $low)
 
     // Audit log
     $risk_id = 1000;
-    $message = "Risk level scoring was modified by the \"" . $_SESSION['user'] . "\" user.";
+    $status = $status ? "(". $status . ")" : "";
+
+    if ($status) {
+        $message = "Risk level scoring " . $status . " was modified by the \"" . $_SESSION['user'] . "\" user.";
     write_log($risk_id, $_SESSION['uid'], $message);
+    }
 
     // Close the database connection
     db_close($db);
 
     return true;
+}
+
+/***************************************
+ * FUNCTION: CHECK CHANGED RISK LEVELS *
+ **************************************/
+function check_changed_risk_levels( $value , $name, $risk_levels )
+{
+    $status = "";
+    foreach($risk_levels as $risk_level)
+    {
+        if($risk_level['name'] == $name){
+            if($risk_level['value'] != $value){
+                $status = $name;
+            }
+            break;
+        }
+    }
+
+    return $status;    
 }
 
 /************************************
@@ -755,31 +965,31 @@ function calculate_risk($impact, $likelihood)
         // Pick the risk formula
         if ($risk_model == 1)
         {
-//            $max_risk = 35;
+            // $max_risk = 35;
             $max_risk = ($GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts']) + (2 * $GLOBALS['count_of_impacts']);
             $risk = ($likelihood * $impact) + (2 * $impact);
         }
         else if ($risk_model == 2)
         {
-//            $max_risk = 30;
+            // $max_risk = 30;
             $max_risk = ($GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts']) + $GLOBALS['count_of_impacts'];
             $risk = ($likelihood * $impact) + $impact;
         }
         else if ($risk_model == 3)
         {
-//            $max_risk = 25;
+            // $max_risk = 25;
             $max_risk = $GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts'];
             $risk = $likelihood * $impact;
         }
         else if ($risk_model == 4)
         {
-//            $max_risk = 30;
+            // $max_risk = 30;
             $max_risk = $GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts'] + $GLOBALS['count_of_likelihoods'];
             $risk = ($likelihood * $impact) + $likelihood;
         }
         else if ($risk_model == 5)
         {
-//            $max_risk = 35;
+            // $max_risk = 35;
             $max_risk = ($GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts']) + (2 * $GLOBALS['count_of_likelihoods']);
             $risk = ($likelihood * $impact) + (2 * $likelihood);
         }
@@ -928,6 +1138,7 @@ function get_risk_level_name_from_levels($risk, $levels)
     // Return a null value
     return "";
 }
+
 /*******************************
  * FUNCTION: UPDATE RISK MODEL *
  *******************************/
@@ -935,6 +1146,13 @@ function update_risk_model($risk_model)
 {
     // Open the database connection
     $db = db_open();
+
+    //Get current risk mdel
+    $stmt = $db->prepare("SELECT value from settings WHERE name='risk_model'");
+    $stmt->bindParam(":risk_model", $risk_model, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $current_risk_model = $stmt->fetchAll();
 
     // Get the risk levels
     $stmt = $db->prepare("UPDATE settings SET value=:risk_model WHERE name='risk_model'");
@@ -975,10 +1193,20 @@ function update_risk_model($risk_model)
         }
     }
 
+    $status = [
+        '1' => 'as Likelihood x Impact + 2(Impact)',
+        '2' => 'as Likelihood x Impact + Impact',
+        '3' => 'as Likelihood x Impact',
+        '4' => 'as Likelihood x Impact + Likelihood',
+        '5' => 'as Likelihood x Impact + 2(Likelihood)'
+    ];
+
     // Audit log
     $risk_id = 1000;
-    $message = "The risk formula was modified by the \"" . $_SESSION['user'] . "\" user.";
+    if ($current_risk_model[0]['value'] != $risk_model) {
+        $message = "The risk formula was modified " . $status[$risk_model] . "by the \"" . $_SESSION['user'] . "\" user.";
     write_log($risk_id, $_SESSION['uid'], $message);
+    }
 
     // Close the database connection
     db_close($db);
@@ -1433,6 +1661,21 @@ function delete_value($table, $value)
                 $message = "The existing framework \"" . try_decrypt($name) . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
+            case "test_status":
+                $test_status_ids = get_test_status_ids();
+                $query = "UPDATE `framework_control_test_audits` SET `framework_control_test_audits`.`status` = '0' WHERE ";
+                for ($i=0; $i < sizeof($test_status_ids) ; $i++) {
+                    $query .= "`framework_control_test_audits`.`status` !='" . $test_status_ids[$i]['value'] . "' AND ";
+                }
+                $query .= " 1 ;" ;
+                $stmt = $db->prepare($query);
+                $stmt->execute();
+
+                $risk_id = 1000;
+                $message = "The existing test status \"" . try_decrypt($name) . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+
+                break;
             default:
                 break;
         }
@@ -1441,6 +1684,23 @@ function delete_value($table, $value)
         db_close($db);
 
         return true;
+}
+
+/******************************************************
+ * FUNCTION: GET TEST IDS FROM FRAMEWORK CONTROL TEST *
+ ******************************************************/
+function get_test_status_ids(){
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT `value` FROM `test_status`");
+    $stmt->execute();
+
+    $array = $stmt->fetchAll();
+
+    // closed the database connection
+    db_close($db);
+    return $array;
 }
 
 /*************************
@@ -3054,7 +3314,7 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     // Otherwise, set the proper format for submitting to the database
     else
     {
-//        $planning_date = date(get_default_date_format(), strtotime($planning_date));
+        // $planning_date = date(get_default_date_format(), strtotime($planning_date));
         $planning_date = get_standard_date_from_default_format($planning_date);
     }
 
@@ -5552,7 +5812,7 @@ function get_risk_table($sort_order=0, $activecol="")
     global $escaper;
 
     // Get risks
-//    $count = get_risks_count($sort_order);
+    // $count = get_risks_count($sort_order);
 
     // Get the list of mitigations
     $risks = get_risks($sort_order);
@@ -7215,7 +7475,11 @@ function get_mitigation_id($risk_id)
         // Close the database connection
         db_close($db);
 
+        if ($array) {
         return $array[0]['id'];
+        } else {
+            return false;
+        }
 }
 
 /********************************
@@ -7332,6 +7596,7 @@ function next_review($risk_level, $id, $next_review, $html = true, $review_level
 {
     global $lang;
     global $escaper;
+
     // If the next_review is null
     if ($next_review == null)
     {
@@ -7820,7 +8085,7 @@ function update_mitigation($risk_id, $post)
     // Otherwise, set the proper format for submitting to the database
     else
     {
-//        $planning_date = date("Y-m-d", strtotime($planning_date));
+        // $planning_date = date("Y-m-d", strtotime($planning_date));
         $planning_date = get_standard_date_from_default_format($planning_date);
     }
 
@@ -7877,9 +8142,9 @@ function update_mitigation($risk_id, $post)
             delete_db_file($file);
         }
     }
-//        if(!empty($post['unique_names'])){
-//            refresh_files_for_risk($post['unique_names'], $id, 2);
-//        }
+    // if(!empty($post['unique_names'])){
+    //     refresh_files_for_risk($post['unique_names'], $id, 2);
+    // }
     $unique_names = empty($post['unique_names']) ? "" : $post['unique_names'];
     refresh_files_for_risk($unique_names, $id, 2);
 
@@ -8948,7 +9213,7 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
         {
             // echo "<input type=\"file\" name=\"file\" />\n";
             echo '<div class="file-uploader">';
-            echo '<label for="file-upload" class="btn active-textfield">Choose File</label> <span class="file-count-html"><span class="file-count">0</span> File Added</span>';
+            echo '<label for="file-upload" class="btn active-textfield">'.$escaper->escapeHtml($lang['ChooseFile']).'</label> <span class="file-count-html"><span class="file-count">0</span> '.$escaper->escapeHtml($lang['FileAdded']).'</span>';
             echo "<p><font size=\"2\"><strong>Max ". round(get_setting('max_upload_size')/1024/1024) ." Mb</strong></font></p>";
             echo '<ul class="file-list">';
 

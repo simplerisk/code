@@ -136,9 +136,21 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "")
     $stmt = $db->prepare("UPDATE `risks_to_assets` INNER JOIN `assets` ON `assets`.name = `risks_to_assets`.asset SET `risks_to_assets`.asset_id = `assets`.id;");
     $stmt->execute();
 
+    // Get Latest asset recorded
+    $stmt = $db->prepare("SELECT MAX(Id) FROM assets;");
+    $stmt->execute();
+
+    $dd = $stmt->fetchAll();
+    foreach ($dd as $key => $value) {
+        $asset_id = $value["MAX(Id)"];
+    }
+    
     // Close the database connection
     db_close($db);
-
+    
+    $message = "An asset named \"{$name}\" was added by username \"" . $_SESSION['user'] . "\".";
+    write_log($asset_id , $_SESSION['uid'], $message, "asset");
+    
     // Return success or failure
     return $return;
 }
@@ -174,6 +186,8 @@ function delete_asset($asset_id)
 {
     // Open the database connection
     $db = db_open();
+    
+    $name = get_asset_name($asset_id);
 
     // Delete the assets entry
     $stmt = $db->prepare("DELETE FROM `assets` WHERE `id`=:id;");
@@ -184,6 +198,9 @@ function delete_asset($asset_id)
     $stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE `asset_id`=:id;");
     $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
     $return = $stmt->execute();
+
+    $message = "An asset named \"" . $name . "\" was deleted by username \"" . $_SESSION['user'] . "\".";
+    write_log($asset_id , $_SESSION['uid'], $message, "asset");
 
     // Close the database connection
     db_close($db);
@@ -574,8 +591,36 @@ function edit_asset($id, $value, $location, $team, $details)
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
 
+    $name = get_asset_name($id);
+
+    $message = "An asset named \"" . $name . "\" was modified by username \"" . $_SESSION['user'] . "\".";
+    write_log($id, $_SESSION['uid'], $message, "asset");
+    
         // Close the database connection
         db_close($db);
+}
+
+/*****************************
+ * FUNCTION: GET ASSET NAME  *
+ *****************************/
+function get_asset_name( $asset_id )
+{
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT name from assets where id = :id");
+    $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $dd = $stmt->fetchAll();
+
+    foreach ($dd as $key => $value) {
+        $name = $value['name'];
+    }
+
+    db_close($db);
+
+    return $name;
+
 }
 
 /*****************************

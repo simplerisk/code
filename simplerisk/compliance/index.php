@@ -62,7 +62,7 @@ if(isset($_POST['add_test'])){
     $name = $_POST['name'];
     $objective = $_POST['objective'];
     $test_steps = $_POST['test_steps'];
-    $approximate_time = $_POST['approximate_time'];
+    $approximate_time = is_int($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
     $expected_results = $_POST['expected_results'];
     $framework_control_id = (int)$_POST['framework_control_id'];
     
@@ -85,7 +85,7 @@ if(isset($_POST['update_test'])){
     $name           = $escaper->escapeHtml($_POST['name']);
     $objective      = $escaper->escapeHtml($_POST['objective']);
     $test_steps     = $escaper->escapeHtml($_POST['test_steps']);
-    $approximate_time = (int)$_POST['approximate_time'];
+    $approximate_time = is_int($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
     $expected_results = $escaper->escapeHtml($_POST['expected_results']);
     
     // Update a framework control test

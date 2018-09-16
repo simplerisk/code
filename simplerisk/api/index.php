@@ -168,7 +168,7 @@
         getRoute()->get('/mitigation_controls/get_mitigation_control_info', 'get_mitigation_control_info');
 
         // Get Tooltip Info
-        getRoute()->post('/likelihood_impact_chart/tooltip', 'get_tooltip');
+        getRoute()->post('/likelihood_impact_chart/tooltip', 'get_tooltip_api');
        
         // Run epiphany
         getRoute()->run();

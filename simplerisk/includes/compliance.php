@@ -228,9 +228,10 @@ function update_framework_control_test($test_id, $tester=false, $test_frequency=
  * FUNCTION: DELETE FRAMEWORK CONTROL TEST BY TEST ID *
  ******************************************************/
 function delete_framework_control_test($test_id){
+    
     // Open the database connection
     $db = db_open();
-
+    
     $stmt = $db->prepare("DELETE FROM `framework_control_tests` WHERE id=:id; ");
     $stmt->bindParam(":id", $test_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -241,6 +242,23 @@ function delete_framework_control_test($test_id){
     $message = "A test was deleted for test ID \"{$test_id}\" by username \"" . $_SESSION['user'] . "\".";
     write_log($test_id + 1000, $_SESSION['uid'], $message, "test");
     
+    return $array;
+}
+
+/******************************************************
+ * FUNCTION: GET TEST IDS FROM FRAMEWORK CONTROL TEST *
+ ******************************************************/
+function get_framework_control_test_ids(){
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT `id` FROM `framework_control_tests`");
+    $stmt->execute();
+
+    $array = $stmt->fetchAll();
+
+    // closed the database connection
+    db_close($db);
     return $array;
 }
 
@@ -758,7 +776,7 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
 
     // Open the database connection
     $db = db_open();
-    
+
     $sql = "
         SELECT t1.id, t1.test_id, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, t1.status, t1.created_at, 
         t2.name tester_name, t3.short_name control_name, GROUP_CONCAT(DISTINCT t4.name) framework_name, t5.test_result, t5.summary, t5.submitted_by, t5.submission_date, ifnull(t6.name, '--') audit_status_name
@@ -1069,8 +1087,8 @@ function display_testing()
                                 <td valign='top'>".$escaper->escapeHtml($lang['Attachment']).":&nbsp;&nbsp;</td>
                                 <td>
                                      <div class=\"file-uploader\">
-                                        <label for=\"file-upload\" class=\"btn\">Choose File</label>
-                                        <span class=\"file-count-html\"> <span class=\"file-count\">".count(get_compliance_files($test_audit_id, "test_audit"))."</span> File Added</span>
+                                        <label for=\"file-upload\" class=\"btn\">".$escaper->escapeHtml($lang['ChooseFile'])."</label>
+                                        <span class=\"file-count-html\"> <span class=\"file-count\">".count(get_compliance_files($test_audit_id, "test_audit"))."</span> ".$escaper->escapeHtml($lang['FileAdded'])."</span>
                                         <p><font size=\"2\"><strong>Max ". round(get_setting('max_upload_size')/1024/1024) ." Mb</strong></font></p>
                                         <ul class=\"exist-files\">
                                             ";
@@ -1482,7 +1500,7 @@ function submit_test_result()
         // If submitted files are existing, save files
         if(!empty($_FILES['file'])){
             $files = $_FILES['file'];
-            list($status, $file_ids, $errors) = upload_compliance_files($test_audit_id, "test_audit", $files);
+            list($test_audit_status, $file_ids, $errors) = upload_compliance_files($test_audit_id, "test_audit", $files);
         }
         
         // Check if error was happen in uploading files

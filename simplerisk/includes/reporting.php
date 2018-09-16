@@ -1805,15 +1805,15 @@ function risks_and_assets_table($report)
                 echo "<thead>\n";
                 echo "<tr>\n";
                             echo "<th style=\"background-color: " .$escaper->escapeHtml($color). "\" colspan=\"7\"><center>" . $escaper->escapeHtml($lang['AssetName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_name) . "<br />" . $escaper->escapeHtml($lang['AssetValue']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml(get_asset_value_by_id($asset_value)) . " <br> ". $escaper->escapeHtml($lang['AssetRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($calculated_risk) ."</center></th>\n";
-                        echo "</tr>\n";
+echo "</tr>\n";
                 echo "<tr>\n";
-                            echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
                 echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
                 echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
                             echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SiteLocation']) ."</th>\n";
                             echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Team']) ."</th>\n";
                             echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['InherentRisk']) ."</th>\n";
-                            echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
+echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
                 echo "</tr>\n";
                 echo "</thead>\n";
                 echo "<tbody>\n";
@@ -2225,7 +2225,7 @@ function get_risks_by_table($status, $group, $sort, $affected_asset, $column_id=
                 echo "<table data-group='".$escaper->escapeHtml($group_value_from_db)."' class=\"table risk-datatable table-bordered table-striped table-condensed  table-margin-top\" style='width: 100%'>\n";
                 echo "<thead>\n";
                 echo "<tr>\n";
-                echo "<th bgcolor=\"#0088CC\" colspan=\"37\"><center>". $escaper->escapeHtml($current_group) ."</center></th>\n";
+                echo "<th bgcolor=\"#0088CC\" colspan=\"38\"><center>". $escaper->escapeHtml($current_group) ."</center></th>\n";
                 echo "</tr>\n";
                 echo "<tr class='main'>\n";
 
@@ -2272,44 +2272,63 @@ function get_header_columns($hide, $id, $risk_status, $subject, $reference_id, $
         $display = "display: table-cell;";
     }
     
-    echo "<th class=\"id\" data-name='id' " . ($id == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"25px\">". $escaper->escapeHtml($lang['ID']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"status\" data-name='risk_status' " . ($risk_status == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Status']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"subject\" data-name='subject' " . ($subject == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Subject']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"reference_id\" data-name='reference_id' " . ($reference_id == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ExternalReferenceId']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"regulation\" data-name='regulation' " . ($regulation == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ControlRegulation']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"control_number\" data-name='control_number' " . ($control_number == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ControlNumber']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"location\" data-name='location' " . ($location == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SiteLocation']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"source\" data-name='source' " . ($source == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskSource']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"category\" data-name='category' " . ($category == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Category']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"team\" data-name='team' " . ($team == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Team']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"technology\" data-name='technology' " . ($technology == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Technology']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"owner\" data-name='owner' " . ($owner == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Owner']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"manager\" data-name='manager' " . ($manager == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['OwnersManager']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"submitted_by\" data-name='submitted_by' " . ($submitted_by == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SubmittedBy']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"scoring_method\" data-name='scoring_method' " . ($scoring_method == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskScoringMethod']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"calculated_risk\" data-name='calculated_risk' " . ($calculated_risk == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"25px\">". $escaper->escapeHtml($lang['InherentRisk']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"residual_risk\" data-name='residual_risk' " . ($residual_risk == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"25px\">". $escaper->escapeHtml($lang['ResidualRisk']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"submission_date\" data-name='submission_date' " . ($submission_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"review_date\" data-name='review_date' " . ($review_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ReviewDate']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"project\" data-name='project' " . ($project == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Project']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"mitigation_planned\" data-name='mitigation_planned' " . ($mitigation_planned == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"management_review\" data-name='management_review' " . ($management_review == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ManagementReview']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"days_open\" data-name='days_open' " . ($days_open == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['DaysOpen']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"next_review_date\" data-name='next_review_date' " . ($next_review_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"next_step\" data-name='next_step' " . ($next_step == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextStep']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"affected_assets\" data-name='affected_assets' " . ($affected_assets == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AffectedAssets']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"risk_assessment\" data-name='risk_assessment' " . ($risk_assessment == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskAssessment']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"additional_notes\" data-name='additional_notes' " . ($additional_notes == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AdditionalNotes']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"current_solution\" data-name='current_solution' " . ($current_solution == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['CurrentSolution']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"security_recommendations\" data-name='security_recommendations' " . ($security_recommendations == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SecurityRecommendations']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"security_requirements\" data-name='security_requirements' " . ($security_requirements == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SecurityRequirements']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"planning_strategy\" data-name='planning_strategy' " . ($planning_strategy == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"planning_date\" data-name='planning_date' " . ($planning_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationPlanning']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"mitigation_effort\" data-name='mitigation_effort' " . ($mitigation_effort == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationEffort']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"mitigation_cost\" data-name='mitigation_cost' " . ($mitigation_cost== true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationCost']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"mitigation_owner\" data-name='mitigation_owner' " . ($mitigation_owner== true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationOwner']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"mitigation_team\" data-name='mitigation_team' " . ($mitigation_team == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationTeam']) ."<!-- span class='fa'></span --></th>\n";
-    echo "<th class=\"mitigation_date\" data-name='mitigation_date' " . ($mitigation_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationDate']) ."<!-- span class='fa'></span --></th>\n";
+    echo "<th class=\"id\" data-name='id' " . ($id == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"25px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+    echo "<th class=\"status\" data-name='risk_status' " . ($risk_status == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+    echo "<th class=\"subject\" data-name='subject' " . ($subject == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+    echo "<th class=\"reference_id\" data-name='reference_id' " . ($reference_id == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ExternalReferenceId']) ."</th>\n";
+    echo "<th class=\"regulation\" data-name='regulation' " . ($regulation == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ControlRegulation']) ."</th>\n";
+    echo "<th class=\"control_number\" data-name='control_number' " . ($control_number == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ControlNumber']) ."</th>\n";
+    echo "<th class=\"location\" data-name='location' " . ($location == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SiteLocation']) ."</th>\n";
+    echo "<th class=\"source\" data-name='source' " . ($source == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskSource']) ."</th>\n";
+    echo "<th class=\"category\" data-name='category' " . ($category == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Category']) ."</th>\n";
+    echo "<th class=\"team\" data-name='team' " . ($team == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Team']) ."</th>\n";
+    echo "<th class=\"technology\" data-name='technology' " . ($technology == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Technology']) ."</th>\n";
+    echo "<th class=\"owner\" data-name='owner' " . ($owner == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Owner']) ."</th>\n";
+    echo "<th class=\"manager\" data-name='manager' " . ($manager == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['OwnersManager']) ."</th>\n";
+    echo "<th class=\"submitted_by\" data-name='submitted_by' " . ($submitted_by == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</th>\n";
+    echo "<th class=\"scoring_method\" data-name='scoring_method' " . ($scoring_method == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskScoringMethod']) ."</th>\n";
+    echo "<th class=\"calculated_risk\" data-name='calculated_risk' " . ($calculated_risk == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"25px\">". $escaper->escapeHtml($lang['InherentRisk']) ."</th>\n";
+    echo "<th class=\"residual_risk\" data-name='residual_risk' " . ($residual_risk == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"25px\">". $escaper->escapeHtml($lang['ResidualRisk']) ."</th>\n";
+    echo "<th class=\"submission_date\" data-name='submission_date' " . ($submission_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
+    echo "<th class=\"review_date\" data-name='review_date' " . ($review_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ReviewDate']) ."</th>\n";
+    echo "<th class=\"project\" data-name='project' " . ($project == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Project']) ."</th>\n";
+    echo "<th class=\"mitigation_planned\" data-name='mitigation_planned' " . ($mitigation_planned == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</th>\n";
+    echo "<th class=\"management_review\" data-name='management_review' " . ($management_review == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ManagementReview']) ."</th>\n";
+    echo "<th class=\"days_open\" data-name='days_open' " . ($days_open == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
+    echo "<th class=\"next_review_date\" data-name='next_review_date' " . ($next_review_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
+    echo "<th class=\"next_step\" data-name='next_step' " . ($next_step == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['NextStep']) ."</th>\n";
+    echo "<th class=\"affected_assets\" data-name='affected_assets' " . ($affected_assets == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AffectedAssets']) ."</th>\n";
+    echo "<th class=\"risk_assessment\" data-name='risk_assessment' " . ($risk_assessment == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['RiskAssessment']) ."</th>\n";
+    echo "<th class=\"additional_notes\" data-name='additional_notes' " . ($additional_notes == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['AdditionalNotes']) ."</th>\n";
+    echo "<th class=\"current_solution\" data-name='current_solution' " . ($current_solution == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['CurrentSolution']) ."</th>\n";
+    echo "<th class=\"security_recommendations\" data-name='security_recommendations' " . ($security_recommendations == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SecurityRecommendations']) ."</th>\n";
+    echo "<th class=\"security_requirements\" data-name='security_requirements' " . ($security_requirements == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SecurityRequirements']) ."</th>\n";
+    echo "<th class=\"planning_strategy\" data-name='planning_strategy' " . ($planning_strategy == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."</th>\n";
+    echo "<th class=\"planning_date\" data-name='planning_date' " . ($planning_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationPlanning']) ."</th>\n";
+    echo "<th class=\"mitigation_effort\" data-name='mitigation_effort' " . ($mitigation_effort == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationEffort']) ."</th>\n";
+    echo "<th class=\"mitigation_cost\" data-name='mitigation_cost' " . ($mitigation_cost== true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationCost']) ."</th>\n";
+    echo "<th class=\"mitigation_owner\" data-name='mitigation_owner' " . ($mitigation_owner== true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationOwner']) ."</th>\n";
+    echo "<th class=\"mitigation_team\" data-name='mitigation_team' " . ($mitigation_team == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</th>\n";
+    echo "<th class=\"mitigation_date\" data-name='mitigation_date' " . ($mitigation_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationDate']) ."</th>\n";
+    
+    // If customization extra is enabled, add custom fields
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        
+        $active_fields = get_active_fields();
+        $custom_fields = [];
+        foreach($active_fields as $active_field)
+        {
+            if($active_field['is_basic'] == 0)
+            {
+                $custom_fields[] = $active_field;
+                echo "<th class=\"custom_field_{$active_field['id']}\" data-name='custom_field_{$active_field['id']}' align=\"left\" width=\"50px\">". $escaper->escapeHtml( $active_field['name'] ) ."</th>\n";
+            }
+        }
+        
+    }
 }
 
 /******************************
@@ -3204,99 +3223,98 @@ function risks_query($status, $sort, $group, $affected_asset, &$rowCount, $start
 //    for( $i = $start; $i < $start + $length && $i<$rowCount && $risks[$i]; $i++ ){
     foreach($risks as $risk){
 //            $risk = $risks[$i];
-            $risk_id = (int)$risk['id'];
-            $status = $risk['status'];
-            $subject = try_decrypt($risk['subject']);
-            $reference_id = $risk['reference_id'];
-            $control_number = $risk['control_number'];
-            $submission_date = $risk['submission_date'];
-            $last_update = $risk['last_update'];
-            $review_date = $risk['review_date'];
-            // If the risk hasn't been reviewed yet
-            if ($review_date == "0000-00-00 00:00:00")
-            {
-                // Set the review date to empty
-                $review_date = "";
-            }
-            // Otherwise set the review date to the proper format
-            else $review_date = date(get_default_datetime_format("H:i"), strtotime($review_date));
-            
-            $scoring_method = get_scoring_method_name($risk['scoring_method']);
-            $calculated_risk = (float)$risk['calculated_risk'];
-            
-            $residual_risk = (float)$risk['residual_risk'];
-            $color = get_risk_color_from_levels($risk['calculated_risk'], $risk_levels);
-            $residual_color = get_risk_color_from_levels($risk['residual_risk'], $risk_levels);
-            $risk_level = get_risk_level_name_from_levels($risk['calculated_risk'], $risk_levels);
-            $residual_risk_level = get_risk_level_name_from_levels($risk['residual_risk'], $risk_levels);
-            $location = $risk['location'];
-            $source = $risk['source'];
-            $category = $risk['category'];
-            $team = $risk['team'];
-            $technology = $risk['technology'];
-            $owner = $risk['owner'];
-            $manager = $risk['manager'];
-            $submitted_by = $risk['submitted_by'];
-            $regulation = $risk['regulation'];
-            $project = try_decrypt($risk['project']);
-            $mitigation_id = $risk['mitigation_id'];
-            $mgmt_review = $risk['mgmt_review'];
-            $days_open = dayssince($risk['submission_date']);
-            // If next_review_date_uses setting is Residual Risk.
-            if(get_setting('next_review_date_uses') == "ResidualRisk")
-            {
-                $next_review_date = next_review($residual_risk_level, $risk_id, $risk['next_review'], false, $review_levels);
-                $next_review_date_html = next_review($residual_risk_level, $risk_id, $risk['next_review'], true, $review_levels);
-            }
-            // If next_review_date_uses setting is Inherent Risk.
-            else
-            {
-                $next_review_date = next_review($risk_level, $risk_id, $risk['next_review'], false, $review_levels);
-                $next_review_date_html = next_review($risk_level, $risk_id, $risk['next_review'], true, $review_levels);
-            }
-            $next_step = $risk['next_step'];
-            $affected_assets = $risk['affected_assets'];
-            $risk_assessment = try_decrypt($risk['risk_assessment']);
-            $additional_notes = try_decrypt($risk['additional_notes']);
-            $current_solution = try_decrypt($risk['current_solution']);
-            $security_recommendations = try_decrypt($risk['security_recommendations']);
-            $security_requirements = try_decrypt($risk['security_requirements']);
-            $month_submitted = date('Y F', strtotime($risk['submission_date']));
-            $planning_strategy = $risk['planning_strategy'];
-            $planning_date  =  ($risk['planning_date'] && $risk['planning_date'] != "0000-00-00") ? date(get_default_date_format(), strtotime($risk['planning_date'])) : "";
-            $mitigation_effort = $risk['mitigation_effort'];
-            $mitigation_min_cost = $risk['mitigation_min_cost'];
-            $mitigation_max_cost = $risk['mitigation_max_cost'];
-            $mitigation_owner = $risk['mitigation_owner'];
-            $mitigation_team = $risk['mitigation_team'];
-            $mitigation_date = date(get_default_date_format(), strtotime($risk['mitigation_date'])) ;
-            $closure_date = $risk['closure_date'];
+        $risk_id = (int)$risk['id'];
+        $status = $risk['status'];
+        $subject = try_decrypt($risk['subject']);
+        $reference_id = $risk['reference_id'];
+        $control_number = $risk['control_number'];
+        $submission_date = $risk['submission_date'];
+        $last_update = $risk['last_update'];
+        $review_date = $risk['review_date'];
+        // If the risk hasn't been reviewed yet
+        if ($review_date == "0000-00-00 00:00:00")
+        {
+            // Set the review date to empty
+            $review_date = "";
+        }
+        // Otherwise set the review date to the proper format
+        else $review_date = date(get_default_datetime_format("H:i"), strtotime($review_date));
+        
+        $scoring_method = get_scoring_method_name($risk['scoring_method']);
+        $calculated_risk = (float)$risk['calculated_risk'];
+        
+        $residual_risk = (float)$risk['residual_risk'];
+        $color = get_risk_color_from_levels($risk['calculated_risk'], $risk_levels);
+        $residual_color = get_risk_color_from_levels($risk['residual_risk'], $risk_levels);
+        $risk_level = get_risk_level_name_from_levels($risk['calculated_risk'], $risk_levels);
+        $residual_risk_level = get_risk_level_name_from_levels($risk['residual_risk'], $risk_levels);
+        $location = $risk['location'];
+        $source = $risk['source'];
+        $category = $risk['category'];
+        $team = $risk['team'];
+        $technology = $risk['technology'];
+        $owner = $risk['owner'];
+        $manager = $risk['manager'];
+        $submitted_by = $risk['submitted_by'];
+        $regulation = $risk['regulation'];
+        $project = try_decrypt($risk['project']);
+        $mitigation_id = $risk['mitigation_id'];
+        $mgmt_review = $risk['mgmt_review'];
+        $days_open = dayssince($risk['submission_date']);
+        // If next_review_date_uses setting is Residual Risk.
+        if(get_setting('next_review_date_uses') == "ResidualRisk")
+        {
+            $next_review_date = next_review($residual_risk_level, $risk_id, $risk['next_review'], false, $review_levels);
+            $next_review_date_html = next_review($residual_risk_level, $risk_id, $risk['next_review'], true, $review_levels);
+        }
+        // If next_review_date_uses setting is Inherent Risk.
+        else
+        {
+            $next_review_date = next_review($risk_level, $risk_id, $risk['next_review'], false, $review_levels);
+            $next_review_date_html = next_review($risk_level, $risk_id, $risk['next_review'], true, $review_levels);
+        }
+        $next_step = $risk['next_step'];
+        $affected_assets = $risk['affected_assets'];
+        $risk_assessment = try_decrypt($risk['risk_assessment']);
+        $additional_notes = try_decrypt($risk['additional_notes']);
+        $current_solution = try_decrypt($risk['current_solution']);
+        $security_recommendations = try_decrypt($risk['security_recommendations']);
+        $security_requirements = try_decrypt($risk['security_requirements']);
+        $month_submitted = date('Y F', strtotime($risk['submission_date']));
+        $planning_strategy = $risk['planning_strategy'];
+        $planning_date  =  ($risk['planning_date'] && $risk['planning_date'] != "0000-00-00") ? date(get_default_date_format(), strtotime($risk['planning_date'])) : "";
+        $mitigation_effort = $risk['mitigation_effort'];
+        $mitigation_min_cost = $risk['mitigation_min_cost'];
+        $mitigation_max_cost = $risk['mitigation_max_cost'];
+        $mitigation_owner = $risk['mitigation_owner'];
+        $mitigation_team = $risk['mitigation_team'];
+        $mitigation_date = $risk['mitigation_date'] ? date(get_default_date_format(), strtotime($risk['mitigation_date'])) : "";
+        $closure_date = $risk['closure_date'];
 
+        // If the mitigation costs are empty
+        if (empty($mitigation_min_cost) && empty($mitigation_max_cost))
+        {
+                // Return no value
+                $mitigation_cost = "";
+        }
+        else $mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;
 
-            // If the mitigation costs are empty
-            if (empty($mitigation_min_cost) && empty($mitigation_max_cost))
-            {
-                    // Return no value
-                    $mitigation_cost = "";
-            }
-            else $mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;
+        // If the group name is not none
+        if ($group_name != "none")
+        {
+                $group_value = ${$group_name};
 
-            // If the group name is not none
-            if ($group_name != "none")
-            {
-                    $group_value = ${$group_name};
+                // If the selected group value is empty
+                if ($group_value == "")
+                {
+                        // Current group is Unassigned
+                        $group_vaue = $lang['Unassigned'];
+                }
+        }
+        else $group_value = $group_name;
 
-                    // If the selected group value is empty
-                    if ($group_value == "")
-                    {
-                            // Current group is Unassigned
-                            $group_vaue = $lang['Unassigned'];
-                    }
-            }
-            else $group_value = $group_name;
-
-            // Create the new data array
-            $data[] = array("id" => $risk_id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "control_number" => $control_number, "submission_date" => $submission_date, "last_update" => $last_update, "review_date" => $review_date, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "residual_risk" => $residual_risk, "color" => $color, "residual_color" => $residual_color, "risk_level" => $risk_level, "residual_risk_level" => $residual_risk_level, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "technology" => $technology, "owner" => $owner, "manager" => $manager, "submitted_by" => $submitted_by, "regulation" => $regulation, "project" => $project, "mgmt_review" => $mgmt_review, "days_open" => $days_open, "next_review_date" => $next_review_date, "next_review_date_html" => $next_review_date_html, "next_step" => $next_step, "affected_assets" => $affected_assets, "risk_assessment" => $risk_assessment, "additional_notes" => $additional_notes, "current_solution" => $current_solution, "security_recommendations" => $security_recommendations, "security_requirements" => $security_requirements, "month_submitted" => $month_submitted, "planning_strategy" => $planning_strategy, "mitigation_id" => $mitigation_id, "planning_date" => $planning_date, "mitigation_effort" => $mitigation_effort, "mitigation_min_cost" => $mitigation_min_cost, "mitigation_max_cost" => $mitigation_max_cost, "mitigation_cost" => $mitigation_cost, "mitigation_owner" => $mitigation_owner, "mitigation_team" => $mitigation_team, "mitigation_date" => $mitigation_date, "group_name" => $group_name, "group_value" => $group_value, 'closure_date' => $closure_date);
+        // Create the new data array
+        $data[] = array("id" => $risk_id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "control_number" => $control_number, "submission_date" => $submission_date, "last_update" => $last_update, "review_date" => $review_date, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "residual_risk" => $residual_risk, "color" => $color, "residual_color" => $residual_color, "risk_level" => $risk_level, "residual_risk_level" => $residual_risk_level, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "technology" => $technology, "owner" => $owner, "manager" => $manager, "submitted_by" => $submitted_by, "regulation" => $regulation, "project" => $project, "mgmt_review" => $mgmt_review, "days_open" => $days_open, "next_review_date" => $next_review_date, "next_review_date_html" => $next_review_date_html, "next_step" => $next_step, "affected_assets" => $affected_assets, "risk_assessment" => $risk_assessment, "additional_notes" => $additional_notes, "current_solution" => $current_solution, "security_recommendations" => $security_recommendations, "security_requirements" => $security_requirements, "month_submitted" => $month_submitted, "planning_strategy" => $planning_strategy, "mitigation_id" => $mitigation_id, "planning_date" => $planning_date, "mitigation_effort" => $mitigation_effort, "mitigation_min_cost" => $mitigation_min_cost, "mitigation_max_cost" => $mitigation_max_cost, "mitigation_cost" => $mitigation_cost, "mitigation_owner" => $mitigation_owner, "mitigation_team" => $mitigation_team, "mitigation_date" => $mitigation_date, "group_name" => $group_name, "group_value" => $group_value, 'closure_date' => $closure_date);
     }
 
     // Return the data array

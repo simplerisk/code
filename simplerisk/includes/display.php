@@ -263,7 +263,7 @@ function add_risk_details(){
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"span10\">\n";
                 echo "<div class=\"actions risk-form-actions\">\n";
-                    echo "<span>Complete the form above to document a risk for consideration in Risk Management Process</span>\n";
+                    echo "<span>" . $escaper->escapeHtml($lang['NewRiskInstruction']). "</span>\n";
                     echo "<button type=\"button\" name=\"submit\" class=\"btn btn-primary pull-right save-risk-form\">".$escaper->escapeHtml($lang['SubmitRisk'])."</button>\n";
                     echo "<input class=\"btn pull-right\" value=\"".$escaper->escapeHtml($lang['ClearForm'])."\" type=\"reset\">\n";
                 echo "</div>\n";
@@ -1323,13 +1323,11 @@ function view_review_details($id, $review_id, $review_date, $reviewer, $review, 
             // Include the extra
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
             $active_fields = get_active_fields();
-            $inactive_fields = get_inactive_fields();
 
             echo "<div class=\"row-fluid\">\n";
                 // Left Panel
                 echo "<div class=\"span5 left-panel\">\n";
                     display_main_review_feilds_by_panel_view('left', $active_fields, $id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment);
-                    display_main_review_feilds_by_panel_view('left', $inactive_fields, $id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment);
                     echo "&nbsp;";
                 echo "</div>";
 
@@ -4165,20 +4163,9 @@ function display_simple_autocomplete_script($assets)
         $asset_array[] = remove_line_breaks($escaper->escapeHtml($asset['name']));
     }
 
-//                                    echo "<input id='risks_to_assets' value='". json_encode($asset_array) ."' >\n";
     echo "<script>\n";
     echo "  $(function() {\n";
         echo "    var availableAssets = ". json_encode($asset_array) .";\n";
-//                                        echo "    var availableAssets = [\n";
-
-        // For each asset
-//                                        foreach ($assets as $asset)
-//                                        {
-            // Display the asset name as an available asset
-//                                            echo "      \"" . $escaper->escapeHtml($asset['name']) . "\",\n";
-//                                        }
-
-//                                        echo "    ];\n";
         echo "    function split( val ) {\n";
         echo "      return val.split( /,\s*/ );\n";
         echo "    }\n";
@@ -4200,15 +4187,6 @@ function display_simple_autocomplete_script($assets)
                             echo "        availableAssets, extractLast( request.term ) ) );\n";
                             echo "      },\n";
                             echo "      select: function( event, ui ) {\n";
-//                                                            echo "        var terms = split( this.value );\n";
-//                                                            echo "        // remove the current input\n";
-//                                                            echo "        terms.pop();\n";
-//                                                            echo "        // add the selected item\n";
-//                                                            echo "        terms.push( ui.item.value );\n";
-//                                                            echo "        // add placeholder to get the comma-and-space at the end\n";
-//                                                            echo "        terms.push( \"\" );\n";
-//                                                            echo "        this.value = terms.join( \", \" );\n";
-//                                                            echo "        return false;\n";
                             echo "      }\n";
                             echo "    })\n";
 
@@ -4417,7 +4395,7 @@ function display_assessment_links()
 
         // Display the assessment
         echo "<li style=\"text-align:center\"><a href=\"index.php?action=view&assessment_id=" . $escaper->escapeHtml($assessment_id) . "\">" . $escaper->escapeHTML($assessment_name) . "</a></li>\n";
-    }
+                    }
 
     // End the list
     echo "</ul>\n";
@@ -4700,7 +4678,7 @@ function risk_average_baseline_metric($time = "day", $title = ""){
         // If the opened risks array is empty
         if (empty($risk_scores))
         {
-            $data[] = array("No Data Available", 0);
+            $data[] = array($lang['NoDataAvailable'], 0);
         }
         // Otherwise
         else
@@ -4728,7 +4706,7 @@ function risk_average_baseline_metric($time = "day", $title = ""){
                 'type' => "line",
                 'name' => "Risk Score Average",
                 'color' => "black",
-//                'lineWidth' => "2",
+                // 'lineWidth' => "2",
                 'data' => $data
             );
 
@@ -4774,8 +4752,9 @@ function report_likelihood_impact(){
           .highcharts-tooltip>span {
             max-height:100px;
             overflow-y: auto;
+            min-width: 100px;
+            padding-right: 20px;
           }
-
         </style>
     ';
     
@@ -4820,24 +4799,138 @@ function report_likelihood_impact(){
     $risks = get_risks(10);
 
     $data = array();
+    $point_groups = [];
+    
+    // Make group for each points
     foreach($risks as $risk){
+        $calculate_risk = $risk['calculated_risk'];
         
-        $data[] = [
-            'x'         => intval($risk['CLASSIC_likelihood']),
-            'y'         => intval($risk['CLASSIC_impact']),
+        if($calculate_risk == 10)
+        {
+            $x = get_likelihoods_count();
+            $y = get_impacts_count();
+        }
+        else
+        {
+            $x = $risk['CLASSIC_likelihood'];
+            $y = $risk['CLASSIC_impact'];
+        }
+        $risk_id = (int)$risk["id"] + 1000;
+        if(isset($point_groups[$x."_".$y]))
+        {
+            $point_groups[$x."_".$y]["risk_ids"][] = $risk_id;
+        }
+        else
+        {
+            $point_groups[$x."_".$y] = array(
+                "x" => $x,
+                "y" => $y,
+                "risk_ids" => array($risk_id)
+            );
+        }
+    }
+    
+    // Make chart data from point groups
+    foreach($point_groups as $point_group)
+    {
+        $data[] = array(
+            'x'             => intval($point_group['x']),
+            'y'             => intval($point_group['y']),
+            'risk_ids'      => implode(",", $point_group['risk_ids']),
             'marker'    => array(
                 'fillColor' => 'rgba(223, 83, 83)'
             ),
             'color'     => '<div style="width:100%; height:20px; border: solid 1px;border-color: #3f3f3f;"></div>'
-        ];
+        );
     }
+    
 
+    $risk_levels = get_risk_levels();
+
+    $data_very_low = get_data_risk_level( $risk_levels[0]['value'], get_impacts_count(), get_likelihoods_count(), 1);
+    $data_low  = get_data_risk_level( $risk_levels[1]['value'], get_impacts_count(), get_likelihoods_count(), 1);
+    $data_medium = get_data_risk_level( $risk_levels[2]['value'], get_impacts_count(), get_likelihoods_count(), 1);
+    $data_high   = get_data_risk_level( $risk_levels[3]['value'], get_impacts_count(), get_likelihoods_count(), 1);
+    $data_very_high  = get_data_risk_level( 10, get_impacts_count(), get_likelihoods_count(), 0);
+    
     $chart->series = array(
+        // Very high chart area
         array(
-//            'name' => "",
+            'type'=> 'area',
+            'color' => convert_color_code($risk_levels[3]['color']) . "ff",
+            'data' => $data_very_high,
+            'enableMouseTracking' => false,
+            'states' => [
+                'hover' => [
+                    'enabled' => false
+                ]
+            ],
+            'stickyTracking' => false,
+        ),
+        // High chart area
+        array(
+            'type'=> 'area',
+            'color' => convert_color_code($risk_levels[2]['color']) . "ff",
+            'data' => $data_high,
+            'enableMouseTracking' => false,
+            'states' => [
+                'hover' => [
+                    'enabled' => false
+                ]
+            ],
+            'stickyTracking' => false,
+        ),
+        // Mediumn chart area
+        array(
+            'type'=> 'area',
+            'color' => convert_color_code($risk_levels[1]['color']) . "ff",
+            'data' => $data_medium,
+            'enableMouseTracking' => false,
+            'states' => [
+                'hover' => [
+                    'enabled' => false
+                ]
+            ],
+            'stickyTracking' => false,
+        ),
+        // Low chart area
+        array(
+            'type'=> 'area',
+            'color' => convert_color_code($risk_levels[0]['color']) . "ff",
+            'data' => $data_low,
+            'enableMouseTracking' => false,
+            'states' => [
+                'hover' => [
+                    'enabled' => false
+                ]
+            ],
+            'stickyTracking' => false,
+        ),
+        // Very low chart area
+        array(
+            'type'=> 'area',
+            'color' => "rgba(255, 255, 255)",
+            'data' => $data_very_low,
+            'enableMouseTracking' => false,
+            'states' => [
+                'hover' => [
+                    'enabled' => false
+                ]
+            ],
+            'stickyTracking' => false,
+        ),
+        array(
+            'type' => "scatter",
             'color' => "rgba(223, 83, 83)",
             'data' => $data,
-        )
+            'enableMouseTracking' => true,
+            'states' => [
+                'hover' => [
+                    'enabled' => false
+                ]
+            ],
+            'stickyTracking' => false,
+        ),
     );
 
     $chart->printScripts();
@@ -4848,15 +4941,16 @@ function report_likelihood_impact(){
     echo "
         likelihood_impact_chart.update({
             title: {
-                text: 'Likelihood and Impact'
+                text: '".$escaper->escapeHtml($lang['LikelihoodImpact'])."'
             },
             tooltip: {
                 headerFormat: '',
                 useHTML: true,
                 style: {pointerEvents: 'auto'},
+                hideDelay : 2500,
                 formatter: function(){
                     var point = this.point;
-                    var test = get_tooltip__(point);
+                    var test = get_tooltip_html(point);
                     return test;
                 }
             }
@@ -4864,18 +4958,14 @@ function report_likelihood_impact(){
     ";
     
     echo '
-        function get_tooltip__(point)
+        function get_tooltip_html(point)
         {   
             
             var test = $.ajax({
                 type: "POST",
                 url: BASE_URL + "/api/likelihood_impact_chart/tooltip",
                 data:{
-                    "X": point.x,
-                    "Y": point.y,
-                    "id": point.risk_id,
-                    "subject": point.subject,
-                    "color": point.color,
+                    "risk_ids": point.risk_ids,
                 },
                 success: function(response){
                      return response.data;
@@ -4885,15 +4975,93 @@ function report_likelihood_impact(){
                 },
                 async:false
             });
-        ';
-
-    echo '
-
             return test.responseJSON.data;
         };';
 
     echo "</script>\n";
 
+}
+
+/************************************
+ * FUNCTION: GET DATA OF RISK LEVEL *
+ ************************************/
+function get_data_risk_level( $risk_level , $y , $x , $f){
+    $data = array();
+    $temp = array();
+    
+    $data[] = [
+                'x' => 0,
+                'y' => 0,
+                'risk' => 0,
+            ];
+
+    for ($i=1; $i <= $x; $i++) { 
+       
+        for ($j=1; $j <= $y; $j++) {
+            if ($f == 0) {
+                if ( calculate_risk($j,$i) <= $risk_level ) {
+                
+                    $temp[] = [
+                        'x' => $i,
+                        'y' => $j,
+                        'risk' => calculate_risk($j,$i)
+                    ];
+
+                }
+            } else if ( $f == 1 ) {
+                if ( calculate_risk($j,$i) < $risk_level ) {
+                
+                    $temp[] = [
+                        'x' => $i,
+                        'y' => $j,
+                        'risk' => calculate_risk($j,$i)
+                    ];
+
+                }
+            }
+            
+        }
+    }
+
+    $temp2 = [
+        'x' => 0,
+        'y' => 0,
+    ];
+
+    for ($i=1; $i <= $x; $i++) {
+
+        $temp1 = [
+            'x' => 0,
+            'y' => 0,
+            'risk' => 0
+        ];
+
+        for ($j=0; $j < sizeof($temp); $j++) { 
+            if ( $temp[$j]['x'] == $i) {
+
+                if ($temp[$j]['risk'] >= $temp1['risk'] ) {
+                    $temp1['x'] = $temp[$j]['x'];
+                    $temp1['y'] = $temp[$j]['y'];
+                    $temp1['risk'] = $temp[$j]['risk'];
+                }
+            }
+        }
+
+        if ($temp1['y'] != $temp2['y']) {
+            $data[] = [
+                'x' => $temp2['x'],
+                'y' => $temp1['y']
+            ];
+        }
+
+        $data[] = $temp1;
+
+        $temp2['x'] = $temp1['x'];
+        $temp2['y'] = $temp1['y'];
+        $temp2['risk'] = $temp1['risk'];
+    }
+
+    return $data;
 }
 
 /********************************************************
@@ -5046,12 +5214,17 @@ function create_risk_formula_table()
 
     echo "<br />\n";
 
-    echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"10\">\n";
+    echo "
+        <div>
+            <a id='add-impact' href='#'><img title='".$escaper->escapeHtml($lang['AddImpact'])."' width='25px' src='".$_SESSION['base_url']."/images/plus.png'></a>&nbsp;&nbsp;&nbsp;&nbsp;
+            <a id='delete-impact' href='#'><img title='".$escaper->escapeHtml($lang['DeleteImpact'])."' width='25px' src='".$_SESSION['base_url']."/images/minus.png'></a>
+        </div>
+        ";
+
+    echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"10\" style=\"display: block; overflow-x: auto; white-space: nowrap;\">\n";
         echo "<tr>\n";
             echo "<td>&nbsp;</td>";
             echo "<td align=\"center\">
-                <a id='add-impact' href='#'><img title='".$escaper->escapeHtml($lang['AddImpact'])."' width='25px' src='".$_SESSION['base_url']."/images/plus.png'></a>&nbsp;&nbsp;&nbsp;&nbsp;
-                <a id='delete-impact' href='#'><img title='".$escaper->escapeHtml($lang['DeleteImpact'])."' width='25px' src='".$_SESSION['base_url']."/images/minus.png'></a>
                 </td>";
             echo "<td colspan=\"".count($likelihoods)."\"></td>";
         echo "</tr>\n";
@@ -5106,11 +5279,16 @@ function create_risk_formula_table()
         echo "<td>&nbsp;</td>\n";
         echo "<td colspan=\"".count($likelihoods)."\" align=\"center\"><b>". $escaper->escapeHtml($lang['Likelihood']) ."</b></td>\n";
         echo "<td align=\"center\">
-                <a id='add-likelihood' href='#'><img title='".$escaper->escapeHtml($lang['AddLikelihood'])."' width='25px' src='".$_SESSION['base_url']."/images/plus.png'></a>&nbsp;&nbsp;&nbsp;&nbsp;
-                <a id='delete-likelihood' href='#'><img title='".$escaper->escapeHtml($lang['DeleteLikelihood'])."' width='25px' src='".$_SESSION['base_url']."/images/minus.png'></a>
             </td>";
     echo "</tr>\n";
     echo "</table>\n";
+
+    echo "
+        <div style=\"float:right;\">
+            <a id='add-likelihood' href='#'><img title='".$escaper->escapeHtml($lang['AddLikelihood'])."' width='25px' src='".$_SESSION['base_url']."/images/plus.png'></a>&nbsp;&nbsp;&nbsp;&nbsp;
+            <a id='delete-likelihood' href='#'><img title='".$escaper->escapeHtml($lang['DeleteLikelihood'])."' width='25px' src='".$_SESSION['base_url']."/images/minus.png'></a>
+        </div>
+        ";
 
     echo
     "
