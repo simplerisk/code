@@ -2603,7 +2603,7 @@ function upgrade_from_20180916001($db){
 
     // Set the name column in the file_types table to be unique
     echo "Setting the name in the file_types table to be a unique value.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `file_types` MODIFY `name` VARCHAR(1000) NOT NULL UNIQUE;");
+    $stmt = $db->prepare("ALTER TABLE `file_types` MODIFY `name` VARCHAR(250) NOT NULL UNIQUE;");
     $stmt->execute();
 
     // Add a new table to track file type extensions
