@@ -1,7 +1,7 @@
 <?php
-        /* This Source Code Form is subject to the terms of the Mozilla Public
-         * License, v. 2.0. If a copy of the MPL was not distributed with this
-         * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+    /* This Source Code Form is subject to the terms of the Mozilla Public
+     * License, v. 2.0. If a copy of the MPL was not distributed with this
+     * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
@@ -85,13 +85,77 @@
         // If the risk was found use the values for the risk
         if (count($risk) != 0)
         {
+            $submitted_by = $risk[0]['submitted_by'];
             $status = $risk[0]['status'];
             $subject = $risk[0]['subject'];
+            $reference_id = $risk[0]['reference_id'];
+            $regulation = $risk[0]['regulation'];
+            $control_number = $risk[0]['control_number'];
+            $location = $risk[0]['location'];
+            $source = $risk[0]['source'];
+            $category = $risk[0]['category'];
+            $team = $risk[0]['team'];
+            $additional_stakeholders = $risk[0]['additional_stakeholders'];
+            $technology = $risk[0]['technology'];
+            $owner = $risk[0]['owner'];
+            $manager = $risk[0]['manager'];
+            $assessment = $risk[0]['assessment'];
+            $notes = $risk[0]['notes'];
+            $submission_date = $risk[0]['submission_date'];
+            //$submission_date = date( "m/d/Y", strtotime( $sub_date ) );
+            $mitigation_id = $risk[0]['mitigation_id'];
+            $mgmt_review = $risk[0]['mgmt_review'];
             $calculated_risk = $risk[0]['calculated_risk'];
+            $residual_risk = $risk[0]['residual_risk'];
+            $next_review = $risk[0]['next_review'];
+            $color = get_risk_color($calculated_risk);
+            $residual_color = get_risk_color($residual_risk);
+            $risk_level = get_risk_level_name($calculated_risk);
+            $residual_risk_level = get_risk_level_name($residual_risk);
+            $scoring_method = $risk[0]['scoring_method'];
+            $CLASSIC_likelihood = $risk[0]['CLASSIC_likelihood'];
+            $CLASSIC_impact = $risk[0]['CLASSIC_impact'];
+            $AccessVector = $risk[0]['CVSS_AccessVector'];
+            $AccessComplexity = $risk[0]['CVSS_AccessComplexity'];
+            $Authentication = $risk[0]['CVSS_Authentication'];
+            $ConfImpact = $risk[0]['CVSS_ConfImpact'];
+            $IntegImpact = $risk[0]['CVSS_IntegImpact'];
+            $AvailImpact = $risk[0]['CVSS_AvailImpact'];
+            $Exploitability = $risk[0]['CVSS_Exploitability'];
+            $RemediationLevel = $risk[0]['CVSS_RemediationLevel'];
+            $ReportConfidence = $risk[0]['CVSS_ReportConfidence'];
+            $CollateralDamagePotential = $risk[0]['CVSS_CollateralDamagePotential'];
+            $TargetDistribution = $risk[0]['CVSS_TargetDistribution'];
+            $ConfidentialityRequirement = $risk[0]['CVSS_ConfidentialityRequirement'];
+            $IntegrityRequirement = $risk[0]['CVSS_IntegrityRequirement'];
+            $AvailabilityRequirement = $risk[0]['CVSS_AvailabilityRequirement'];
+            $DREADDamagePotential = $risk[0]['DREAD_DamagePotential'];
+            $DREADReproducibility = $risk[0]['DREAD_Reproducibility'];
+            $DREADExploitability = $risk[0]['DREAD_Exploitability'];
+            $DREADAffectedUsers = $risk[0]['DREAD_AffectedUsers'];
+            $DREADDiscoverability = $risk[0]['DREAD_Discoverability'];
+            $OWASPSkillLevel = $risk[0]['OWASP_SkillLevel'];
+            $OWASPMotive = $risk[0]['OWASP_Motive'];
+            $OWASPOpportunity = $risk[0]['OWASP_Opportunity'];
+            $OWASPSize = $risk[0]['OWASP_Size'];
+            $OWASPEaseOfDiscovery = $risk[0]['OWASP_EaseOfDiscovery'];
+            $OWASPEaseOfExploit = $risk[0]['OWASP_EaseOfExploit'];
+            $OWASPAwareness = $risk[0]['OWASP_Awareness'];
+            $OWASPIntrusionDetection = $risk[0]['OWASP_IntrusionDetection'];
+            $OWASPLossOfConfidentiality = $risk[0]['OWASP_LossOfConfidentiality'];
+            $OWASPLossOfIntegrity = $risk[0]['OWASP_LossOfIntegrity'];
+            $OWASPLossOfAvailability = $risk[0]['OWASP_LossOfAvailability'];
+            $OWASPLossOfAccountability = $risk[0]['OWASP_LossOfAccountability'];
+            $OWASPFinancialDamage = $risk[0]['OWASP_FinancialDamage'];
+            $OWASPReputationDamage = $risk[0]['OWASP_ReputationDamage'];
+            $OWASPNonCompliance = $risk[0]['OWASP_NonCompliance'];
+            $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
+            $custom = $risk[0]['Custom'];
         }
         // If the risk was not found use null values
         else
         {
+            $submitted_by = "";
             // If Risk ID exists.
             if(check_risk_by_id($id)){
                 $status = $lang["RiskDisplayPermission"];
@@ -100,20 +164,112 @@
             else{
                 $status = $lang["RiskIdDoesNotExist"];
             }
+
             $subject = "N/A";
+            $reference_id = "N/A";
+            $regulation = "";
+            $control_number = "N/A";
+            $location = "";
+            $source = "";
+            $category = "";
+            $team = "";
+            $additional_stakeholders = "";
+            $technology = "";
+            $owner = "";
+            $manager = "";
+            $assessment = "";
+            $notes = "";
+            $submission_date = "";
+
+            $mitigation_id = "";
+            $mgmt_review = "";
             $calculated_risk = "0.0";
+
+            $residual_risk = "";
+            $next_review = "";
+            $color = "";
+            $residual_color = "";
+
+            $risk_level = "";
+            $residual_risk_level = "";
+            $scoring_method = "";
+            $CLASSIC_likelihood = "";
+            $CLASSIC_impact = "";
+            $AccessVector = "";
+            $AccessComplexity = "";
+            $Authentication = "";
+
+            $ConfImpact = "";
+            $IntegImpact = "";
+            $AvailImpact = "";
+            $Exploitability = "";
+            $RemediationLevel = "";
+            $ReportConfidence = "";
+            $CollateralDamagePotential = "";
+            $TargetDistribution = "";
+            $ConfidentialityRequirement = "";
+            $IntegrityRequirement = "";
+            $AvailabilityRequirement = "";
+            $DREADDamagePotential = "";
+            $DREADReproducibility = "";
+            $DREADExploitability = "";
+            $DREADAffectedUsers = "";
+            $DREADDiscoverability = "";
+            $OWASPSkillLevel = "";
+            $OWASPMotive = "";
+            $OWASPOpportunity = "";
+            $OWASPSize = "";
+            $OWASPEaseOfDiscovery = "";
+            $OWASPEaseOfExploit = "";
+            $OWASPAwareness = "";
+            $OWASPIntrusionDetection = "";
+            $OWASPLossOfConfidentiality = "";
+            $OWASPLossOfIntegrity = "";
+            $OWASPLossOfAvailability = "";
+            $OWASPLossOfAccountability = "";
+            $OWASPFinancialDamage = "";
+            $OWASPReputationDamage = "";
+            $OWASPNonCompliance = "";
+            $OWASPPrivacyViolation = "";
+            $custom = "";
         }
         // Get the mitigation for the risk
         $mitigation = get_mitigation_by_id($id);
-        // If no mitigation exists for this risk
-        if ($mitigation == false)
+        // If a mitigation exists for the risk and the user is allowed to access
+        if ($mitigation == true && $access)
         {
-            $mitigation_percent = 0;
+            // Set the mitigation values
+            $mitigation_date = $mitigation[0]['submission_date'];
+            $mitigation_date = date(get_default_date_format(), strtotime($mitigation_date));
+            $planning_strategy = $mitigation[0]['planning_strategy'];
+            $mitigation_effort = $mitigation[0]['mitigation_effort'];
+            $mitigation_cost = $mitigation[0]['mitigation_cost'];
+            $mitigation_owner = $mitigation[0]['mitigation_owner'];
+            $mitigation_team = $mitigation[0]['mitigation_team'];
+            $current_solution = $mitigation[0]['current_solution'];
+            $security_requirements = $mitigation[0]['security_requirements'];
+            $security_recommendations = $mitigation[0]['security_recommendations'];
+            $planning_date = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date(get_default_date_format(), strtotime($mitigation[0]['planning_date'])) : "";
+            $mitigation_percent = (isset($mitigation[0]['mitigation_percent']) && $mitigation[0]['mitigation_percent'] >= 0 && $mitigation[0]['mitigation_percent'] <= 100) ? $mitigation[0]['mitigation_percent'] : 0;
+            $mitigation_controls = isset($mitigation[0]['mitigation_controls']) ? $mitigation[0]['mitigation_controls'] : "";
         }
+        // Otherwise
         else
         {
-            $mitigation_percent = isset($mitigation[0]['mitigation_percent']) ? $mitigation[0]['mitigation_percent'] : 0;
-            
+            // Set the values to empty
+            $mitigation_date = "N/A";
+            $mitigation_date = "";
+            $planning_strategy = "";
+            $mitigation_effort = "";
+            $mitigation_cost = 1;
+            $mitigation_owner = $owner;
+            $mitigation_team = $team;
+            $current_solution = "";
+            $security_requirements = "";
+            $security_recommendations = "";
+            $planning_date = "";
+            $mitigation_percent = 0;
+            $mitigation_controls = "";
         }
         
     }

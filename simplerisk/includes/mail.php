@@ -166,10 +166,12 @@ function send_email($name, $email, $subject, $body)
         $port = $mail['phpmailer_port'];
 
 	// Load the PHPMailer library
-	require_once(realpath(__DIR__ . '/PHPMailer/PHPMailerAutoload.php'));
+	require_once(realpath(__DIR__ . '/PHPMailer/src/PHPMailer.php'));
+	require_once(realpath(__DIR__ . '/PHPMailer/src/SMTP.php'));
+	require_once(realpath(__DIR__ . '/PHPMailer/src/Exception.php'));
 
 	// Create a new PHPMailer instance
-	$mail = new PHPMailer;
+	$mail = new PHPMailer\PHPMailer\PHPMailer;
 
 	// If SMTP auto TLS is disabled
 	if ($smtpautotls == "false")

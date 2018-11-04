@@ -46,7 +46,7 @@ function simplerisk_health_check()
 	echo "<br /><b><u>PHP</u></b><br />";
 
 	// Check that this is PHP 5
-	check_php_version();
+	//check_php_version();
 	
 	// Check the necessary PHP extensions are installed
 	check_php_extensions();
@@ -54,7 +54,13 @@ function simplerisk_health_check()
 	echo "<br /><b><u>MySQL</u></b><br />";
 
 	// Check if MySQL STRICT SQL mode is enabled
-	check_strict_sql_mode();
+	//check_strict_sql_mode();
+
+	// Check if MySQL NO_ZERO_DATE mode is enabled
+	check_no_zero_date();
+
+	// Check if MySQL ONLY_FULL_GROUP_BY mode is enabled
+	check_only_full_group_by();
 
 	echo "<br /><b><u>File and Directory Permissions</u></b><br />";
 
@@ -191,7 +197,7 @@ function check_web_connectivity()
 function check_php_extensions()
 {
 	// List of extensions to check for
-	$extensions = array("mysql", "pdo", "pdo_mysql", "mcrypt", "json", "phar", "zlib", "mbstring", "ldap");
+	$extensions = array("pdo", "pdo_mysql", "mcrypt", "json", "phar", "zlib", "mbstring", "ldap");
 
 	// For each extension
 	foreach ($extensions as $extension)
@@ -279,6 +285,62 @@ function check_strict_sql_mode()
 	{
 		health_check_good("Verified that STRICT_TRANS_TABLES is not enabled for MySQL.");
 	}
+}
+
+/********************************
+ * FUNCTION: CHECK NO ZERO DATE *
+ ********************************/
+function check_no_zero_date()
+{
+        // Open a database connection
+        $db = db_open();
+        
+        // Query for the current SQL mode
+        $stmt = $db->prepare("SELECT @@sql_mode;");
+        $stmt->execute();
+        $array = $stmt->fetch();
+        $sql_mode = $array['@@sql_mode'];
+        
+        // Close the database connection
+        db_close($db);
+        
+        // If the row contains NO_ZERO_DATE
+        if (preg_match("/.*NO_ZERO_DATE.*/", $sql_mode))
+        {       
+                health_check_bad("SimpleRisk will not work properly with NO_ZERO_DATE enabled.");
+        }
+        else    
+        {       
+                health_check_good("Verified that NO_ZERO_DATE is not enabled for MySQL.");
+        }
+}
+
+/**************************************
+ * FUNCTION: CHECK ONLY FULL GROUP BY *
+ **************************************/
+function check_only_full_group_by()
+{
+        // Open a database connection
+        $db = db_open();
+        
+        // Query for the current SQL mode
+        $stmt = $db->prepare("SELECT @@sql_mode;");
+        $stmt->execute();
+        $array = $stmt->fetch();
+        $sql_mode = $array['@@sql_mode'];
+        
+        // Close the database connection
+        db_close($db);
+        
+        // If the row contains ONLY_FULL_GROUP_BY
+        if (preg_match("/.*ONLY_FULL_GROUP_BY.*/", $sql_mode))
+        {       
+                health_check_bad("SimpleRisk will not work properly with ONLY_FULL_GROUP_BYenabled.");
+        }
+        else    
+        {       
+                health_check_good("Verified that ONLY_FULL_GROUP_BY is not enabled for MySQL.");
+        }
 }
 
 /*******************************

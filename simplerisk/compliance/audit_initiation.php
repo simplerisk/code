@@ -38,6 +38,10 @@ if (!isset($_SESSION))
 // Load CSRF Magic
 require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
+
 // Include the language file
 require_once(language_file());
 
@@ -328,19 +332,37 @@ if(isset($_GET['initiate']) ){
                 })
             })
             
-            // Event when clicks Initiate Framework Audit button
-            $('body').on("click", ".initiate-framework-audit-btn", function(){
-                document.location.href = BASE_URL + "/compliance/audit_initiation.php?initiate&type=framework&id=" + $(this).data('id');
-            })
+            // Event when clicks Initiate Framework, Control, Test Audit button
+            $('body').on("click", ".initiate-framework-audit-btn, .initiate-control-audit-btn, .initiate-test-btn", function(){
+                if($(this).hasClass("initiate-framework-audit-btn")){
+                    var type = "framework";
+                }else if($(this).hasClass("initiate-control-audit-btn")){
+                    var type = "control";
+                }else if($(this).hasClass("initiate-test-btn")){
+                    var type = "test";
+                }
             
-            // Event when clicks Initiate Control Audit button
-            $('body').on("click", ".initiate-control-audit-btn", function(){
-                document.location.href = BASE_URL + "/compliance/audit_initiation.php?initiate&type=control&id=" + $(this).data('id');
-            })
-            
-            // Event when clicks Initiate Test button
-            $('body').on("click", ".initiate-test-btn", function(){
-                document.location.href = BASE_URL + "/compliance/audit_initiation.php?initiate&type=test&id=" + $(this).data('id');
+                $.ajax({
+                    url: BASE_URL + '/api/compliance/audit_initiation/initiate',
+                    type: 'POST',
+                    data: {
+                        type: type,// control, test
+                        id: $(this).data('id'),
+                    },
+                    success : function (res){
+                        if(res.status_message){
+                            $('#show-alert').html(res.status_message);
+                        }
+                    },
+                    error: function(xhr,status,error){
+                        if(!retryCSRF(xhr, this))
+                        {
+                            if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                $('#show-alert').html(xhr.responseJSON.status_message);
+                            }
+                        }
+                    }
+                });
             })
 
         })

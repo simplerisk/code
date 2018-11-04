@@ -377,10 +377,12 @@ function upgrade_from_20140728001($db)
         $stmt->execute();
         $array = $stmt->fetchAll();
         foreach ($array as $value)
-        {
+        {        
+                $comments = stripslashes($value['comment']);
+
                 $stmt = $db->prepare("UPDATE comments SET comment=:comment WHERE id=:id");
                 $stmt->bindParam(":id", $value['id']);
-                $stmt->bindParam(":comment", stripslashes($value['comment']));
+                $stmt->bindParam(":comment", $comments);
                 $stmt->execute();
         }
 
@@ -391,13 +393,19 @@ function upgrade_from_20140728001($db)
         $array = $stmt->fetchAll();
         foreach ($array as $value)
         {
+                $planning_strategy    = stripslashes($value['planning_strategy']);
+                $mitigation_effort    = stripslashes($value['mitigation_effort']);
+                $current_solution    = stripslashes($value['current_solution']);
+                $security_requirements = stripslashes($value['security_requirements']);
+                $security_recommendations = stripslashes($value['security_recommendations']);
+
                 $stmt = $db->prepare("UPDATE mitigations SET planning_strategy=:planning_strategy, mitigation_effort=:mitigation_effort, current_solution=:current_solution, security_requirements=:security_requirements, security_recommendations=:security_recommendations WHERE id=:id");
                 $stmt->bindParam(":id", $value['id']);
-                $stmt->bindParam(":planning_strategy", stripslashes($value['planning_strategy']));
-                $stmt->bindParam(":mitigation_effort", stripslashes($value['mitigation_effort']));
-                $stmt->bindParam(":current_solution", stripslashes($value['current_solution']));
-                $stmt->bindParam(":security_requirements", stripslashes($value['security_requirements']));
-                $stmt->bindParam(":security_recommendations", stripslashes($value['security_recommendations']));
+                $stmt->bindParam(":planning_strategy", $planning_strategy);
+                $stmt->bindParam(":mitigation_effort", $mitigation_effort);
+                $stmt->bindParam(":current_solution", $current_solution);
+                $stmt->bindParam(":security_requirements", $security_requirements);
+                $stmt->bindParam(":security_recommendations", $security_recommendations);
                 $stmt->execute();
         }
 
@@ -408,11 +416,15 @@ function upgrade_from_20140728001($db)
         $array = $stmt->fetchAll();
         foreach ($array as $value)
         {
+                $review        = stripslashes($value['review']);
+                $next_step    = stripslashes($value['next_step']);
+                $comments    = stripslashes($value['comments']);
+
         $stmt = $db->prepare("UPDATE mgmt_reviews SET review=:review, next_step=:next_step, comments=:comments WHERE id=:id");
                 $stmt->bindParam(":id", $value['id']);
-                $stmt->bindParam(":review", stripslashes($value['review']));
-                $stmt->bindParam(":next_step", stripslashes($value['next_step']));
-                $stmt->bindParam(":comments", stripslashes($value['comments']));
+                $stmt->bindParam(":review", $review);
+                $stmt->bindParam(":next_step", $next_step);
+                $stmt->bindParam(":comments", $comments);
                 $stmt->execute();
         }   
 
@@ -1265,7 +1277,7 @@ function upgrade_from_20160612001($db)
     foreach ($array as $risk)
     {
         $id = $risk['id'];
-        $risk_id = $id + 1000;
+        $risk_id = (int)$id + 1000;
         $status = "Closed";
         $close_reason = "";
         $note = "";
@@ -2572,6 +2584,83 @@ function upgrade_from_20180830001($db){
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20180916-001 *
+ ***************************************/
+function upgrade_from_20180916001($db){
+    // Database version to upgrade
+    $version_to_upgrade = '20180916-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20181103-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Set default value for custom_display_settings field in user table
+    echo "Setting default value for custom_display_settings field in user table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `user` CHANGE `custom_display_settings` `custom_display_settings` VARCHAR(1000) NOT NULL DEFAULT ''; ");
+    $stmt->execute();
+
+    // Set the name column in the file_types table to be unique
+    echo "Setting the name in the file_types table to be a unique value.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `file_types` MODIFY `name` VARCHAR(1000) NOT NULL UNIQUE;");
+    $stmt->execute();
+
+    // Add a new table to track file type extensions
+    echo "Adding a new table to track the upload file type extensions.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `file_type_extensions` (
+          `value` int(11) NOT NULL AUTO_INCREMENT,
+          `name` varchar(10) NOT NULL UNIQUE,
+          PRIMARY KEY(value)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+
+    // Add acceptable file type extensions to table
+    echo "Adding a file type extension for existing file types.<br />\n";
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('gif');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('jpg');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('png');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('jpeg');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('pdf');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('dotx');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('xlsx');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('zip');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('rtf');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('txt');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('xml');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('csv');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('xls');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('doc');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('gz');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('dot');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('xlt');");
+    $stmt->execute();
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES ('xla');");
+    $stmt->execute();
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -2696,7 +2785,7 @@ function upgrade_database()
             case "20180104-001":
                 upgrade_from_20180104001($db);
                 upgrade_database();
-            	break;
+                break;
             case "20180301-001":
                 upgrade_from_20180301001($db);
                 upgrade_database();
@@ -2710,9 +2799,9 @@ function upgrade_database()
                 upgrade_database();
                 break;
             case "20180812-001":
-		upgrade_from_20180812001($db);
-		upgrade_database();
-		break;
+	        upgrade_from_20180812001($db);
+	        upgrade_database();
+	        break;
             case "20180814-001":
                 upgrade_from_20180814001($db);
                 upgrade_database();
@@ -2721,6 +2810,10 @@ function upgrade_database()
                 upgrade_from_20180830001($db);
                 upgrade_database();
                 break;
+	    case "20180916-001":
+		upgrade_from_20180916001($db);
+		upgrade_database();
+		break;
             default:
                 echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
         }

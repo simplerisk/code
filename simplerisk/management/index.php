@@ -36,6 +36,10 @@ if (!isset($_SESSION))
 // Load CSRF Magic
 require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
+
 // Include the language file
 require_once(language_file());
 
@@ -217,7 +221,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
       }
 
       // There is an alert message
-      $risk_id = $last_insert_id + 1000;
+      $risk_id = (int)$last_insert_id + 1000;
 
       echo "<script> var global_risk_id = " . $risk_id . ";</script>";
       

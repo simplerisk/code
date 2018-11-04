@@ -82,6 +82,9 @@ $(document).ready(function(){
             type: "POST",
             url: BASE_URL + "/api/assessment/update?assessment_id=" + assessment_id,
             data: JSON.stringify(assessments),
+            headers: {
+                'CSRF-TOKEN': csrfMagicToken
+            },
             contentType: "application/json",
             success: function(data){
                 if(data.status_message){
@@ -95,6 +98,11 @@ $(document).ready(function(){
                     setTimeout(function(){
                         $("#alert").fadeOut('slow');
                     }, 5000);
+                }
+            },
+            error: function(xhr,status,error){
+                if(!retryCSRF(xhr, this))
+                {
                 }
             }
         })

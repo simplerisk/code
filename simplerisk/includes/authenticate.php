@@ -151,13 +151,17 @@ function is_valid_user($user, $pass, $upgrade = false)
                 $type = 2;
 
                 // Check for a valid Active Directory user
-                $valid_ad = is_valid_ad_user($user, $pass);
+                list($valid_ad, $dn) = is_valid_ad_user($user, $pass);
 
                 // If the user is a valid AD user
                 if ($valid_ad)
                 {
                     // Add the new user
-                    authentication_add_new_user($type, $user);
+                    $user_id = authentication_add_new_user($type, $user);
+
+                    // Add the new team by AD group
+                    set_team_to_ldap_user($user_id, $dn, $pass);
+                    
                 }
             }
             // Otherwise, return that the user is not valid
@@ -182,7 +186,7 @@ function is_valid_user($user, $pass, $upgrade = false)
             require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
 
             // Check for a valid Active Directory user
-            $valid_ad = is_valid_ad_user($user, $pass);
+            list($valid_ad, $dn)= is_valid_ad_user($user, $pass);
         }
     }
     // If the type is saml
@@ -203,7 +207,7 @@ function is_valid_user($user, $pass, $upgrade = false)
     if ($valid_saml || $valid_ad || $valid_simplerisk)
     {
         // Set the user permissions
-        set_user_permissions($user, $pass, $upgrade);
+//        set_user_permissions($user, $pass, $upgrade);
 
         return true;
     }
@@ -255,19 +259,10 @@ function set_user_permissions($user, $pass, $upgrade = false)
     // Store the list in the array
     $array = $stmt->fetchAll();
 
-    // Get base url
-    $base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['SCRIPT_NAME']}";
-    $base_url = htmlspecialchars( $base_url, ENT_QUOTES, 'UTF-8' );
-    $base_url = pathinfo($base_url)['dirname'];
-
-    // Filter out authentication extra from the base url
-    $base_url = str_replace("/extras/authentication", "", $base_url);
-
     // Set the simplerisk timezone for any datetime functions
     set_simplerisk_timezone();
 
     // Set the minimal session values
-    $_SESSION['base_url'] = $base_url;
     $_SESSION['uid'] = $array[0]['value'];
     $_SESSION['user'] = $user;
     $_SESSION['name'] = $array[0]['name'];
@@ -307,15 +302,15 @@ function set_user_permissions($user, $pass, $upgrade = false)
         $_SESSION['comment_risk_management'] = $array[0]['comment_risk_management'];
         $_SESSION['comment_compliance'] = $array[0]['comment_compliance'];
 
-        // If the encryption extra is enabled
-        if (encryption_extra())
-        {
+//        // If the encryption extra is enabled
+//        if (encryption_extra())
+//        {
             // Load the extra
-            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-
+//            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+//            
             // Set the encrypted password in the session
-            $_SESSION['encrypted_pass'] = get_enc_pass($user, fetch_tmp_pass());
-        }
+//            $_SESSION['encrypted_pass'] = get_enc_pass($user, fetch_tmp_pass());
+//        }
     }
 
     // If the users language is not null
@@ -919,7 +914,7 @@ function sess_read($sess_id)
         // If the array is empty
         if (empty($array))
         {
-                return false;
+                return '';
         }
         else return $array[0]['data'];
 }
@@ -1177,94 +1172,138 @@ function add_last_password_history($user_id, $old_salt, $old_password)
  **********************************************/
 function check_add_password_reuse_history($user_id, $password)
 {
-    $pass_policy_reuse_limit = get_setting('pass_policy_reuse_limit');
+	$pass_policy_reuse_limit = get_setting('pass_policy_reuse_limit');
 
-    // Open the database connection
-    $db = db_open();
+	// If the password policy reuse limit is 0
+	if ($pass_policy_reuse_limit == 0)
+	{
+		// We don't need to check
+		return true;
+	}
+	else
+	{
+		// Open the database connection
+		$db = db_open();
 
-    // Check if row exists
-    $stmt = $db->prepare("SELECT * FROM user_pass_reuse_history WHERE user_id = :user_id AND password LIKE :password;");
-    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-    $stmt->bindParam(":password", $password, PDO::PARAM_STR, 60);
-    $stmt->execute();
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+		// Check if row exists
+		$stmt = $db->prepare("SELECT * FROM user_pass_reuse_history WHERE user_id = :user_id AND password LIKE :password;");
+		$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+		$stmt->bindParam(":password", $password, PDO::PARAM_STR, 60);
+		$stmt->execute();
+		$result = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if(!$result){
-        // Insert new record
-        $stmt = $db->prepare("INSERT INTO user_pass_reuse_history(`user_id`, password) VALUES(:user_id, :password);");
-        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-        $stmt->bindParam(":password", $password, PDO::PARAM_STR, 60);
-        $stmt->execute();
-    }elseif($result['counts'] < $pass_policy_reuse_limit){
-        $stmt = $db->prepare("UPDATE user_pass_reuse_history SET `counts`=`counts`+1 WHERE `user_id`=:user_id AND password=:password ");
-        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-        $stmt->bindParam(":password", $password, PDO::PARAM_STR, 60);
-        $stmt->execute();
-    }else{
-        return false;
-    }
+		if(!$result)
+		{
+			// Insert new record
+			$stmt = $db->prepare("INSERT INTO user_pass_reuse_history(`user_id`, password) VALUES(:user_id, :password);");
+			$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+			$stmt->bindParam(":password", $password, PDO::PARAM_STR, 60);
+			$stmt->execute();
+		}
+		elseif($result['counts'] < $pass_policy_reuse_limit)
+		{
+			$stmt = $db->prepare("UPDATE user_pass_reuse_history SET `counts`=`counts`+1 WHERE `user_id`=:user_id AND password=:password ");
+			$stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+			$stmt->bindParam(":password", $password, PDO::PARAM_STR, 60);
+			$stmt->execute();
+		}
+		else
+		{
+			return false;
+		}
+	}
     
-    return true;
+	return true;
 }
 
 /****************************
  * FUNCTION: RESET PASSWORD *
  ****************************/
-function reset_password($user_id, $password, $confirm_pass=false)
+function reset_password($user_id, $current_password, $new_password, $confirm_password)
 {
-    global $lang;
+	global $lang;
+
+	// Get the user by the user ID
+	$user = get_user_by_id($user_id);
+	$username = $user['username'];
     
-    
-    if($confirm_pass === false){
-        $confirm_pass = $password;
-    }
-    // Check if password is valid
-    $error_code = valid_password($password, $confirm_pass, $user_id);
-    if ($error_code == 1)
-    {
-        $user = get_user_by_id($user_id);
-        $username = $user['username'];
-        
-        // Generate the salt
-        $salt = generateSalt($username);
+	// If the current password is correct
+	if (is_valid_user($username, $current_password))
+	{
+		// Check if the new password is valid
+    		$error_code = valid_password($new_password, $confirm_password, $user_id);
 
-        // Generate the password hash
-        $hash = generateHash($salt, $password);
+		// If the new password is valid
+		if ($error_code == 1)
+		{
+			// Generate the salt
+			$salt = generateSalt($username);
 
-        // If it is possible to reuse password
-        if(check_add_password_reuse_history($user_id, $hash)){
-            // Get user old data
-            $old_data = get_salt_and_password_by_user_id($user_id);
+			// Generate the password hash
+			$hash = generateHash($salt, $new_password);
 
-            // Add the old data to the pass_history table
-            add_last_password_history($user_id, $old_data["salt"], $old_data["password"]);
+			// If it is possible to reuse password
+			if(check_add_password_reuse_history($user_id, $hash))
+			{
+				// Get user old data
+				$old_data = get_salt_and_password_by_user_id($user_id);
 
-            // Update the password
-            update_password($username, $hash);
+				// Add the old data to the pass_history table
+				add_last_password_history($user_id, $old_data["salt"], $old_data["password"]);
 
-            // If the encryption extra is enabled
-            if (encryption_extra())
-            {
-                // Load the extra
-                require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+				// Update the password
+				update_password($username, $hash);
 
-                // Set the new encrypted password
-                set_enc_pass($username, $password, $_SESSION['encrypted_pass']);
-            }
+				// If the encryption extra is enabled
+				if (encryption_extra())
+				{
+					// Load the extra
+					require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+					// Set the new encrypted password
+					set_enc_pass($username, $new_password, $_SESSION['encrypted_pass']);
+				}
             
-            // Display an alert
-            set_alert(true, "good", "Your password has been updated successfully!");
+				// Display an alert
+				set_alert(true, "good", "Your password has been updated successfully!");
             
-            if(isset($_SESSION['change_password'])){
-                unset($_SESSION['change_password']);
-            }
+				// Unset the change password value
+				if(isset($_SESSION['change_password']))
+				{
+					unset($_SESSION['change_password']);
+				}
             
-            // Set login status
-            login($username, $password);
-        }else{
-            set_alert(true, "bad", $lang['PasswordNoLongerUse']);
-        }
-    }
+				// Set the user permissions
+				set_user_permissions($username, $new_password);
+
+				// Get base URL
+				$base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['SCRIPT_NAME']}";
+				$base_url = htmlspecialchars( $base_url, ENT_QUOTES, 'UTF-8' );
+				$base_url = pathinfo($base_url)['dirname'];
+
+				// Filter out authentication extra from the base url
+				$base_url = str_replace("/extras/authentication", "", $base_url);
+				$_SESSION['base_url'] = $base_url;
+
+				// Set login status
+				login($username, $new_password);
+			}
+			else
+			{
+				set_alert(true, "bad", $lang['PasswordNoLongerUse']);
+			}
+		}
+		else
+		{
+			// If the error code was false
+			if ($error_code == false)
+			{
+				// Set an alert
+				set_alert(true, "bad", $lang['NewPasswordDoesNotMatchPolicy']);
+			}
+		}
+	}
+	else set_alert(true, "bad", $lang['PasswordIncorrect']);
 }
 
 /*******************

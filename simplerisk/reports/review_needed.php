@@ -52,7 +52,7 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 ?>
 
 <!doctype html>
-<html>
+<html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
 <head>
   <script src="../js/jquery.min.js"></script>

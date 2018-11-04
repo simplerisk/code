@@ -102,12 +102,12 @@
 		}
 
 		// Update the default risk score setting
-		$default_risk_score = $_POST['default_risk_score'];
+		$default_risk_score = (float)$_POST['default_risk_score'];
 		$current_default_risk_score = get_setting("default_risk_score");
 		if ($default_risk_score != $current_default_risk_score)
 		{
-			// If the default risk score is between 0 and 10
-			if (($default_risk_score >= 0) && ($default_risk_score <= 10))
+			// If the default risk score is a numeric value between 0 and 10
+			if (is_numeric($default_risk_score) && ($default_risk_score >= 0) && ($default_risk_score <= 10))
 			{
 				update_setting("default_risk_score", $default_risk_score);
 			}
@@ -205,12 +205,17 @@
 	if (isset($_POST['add_file_type']))
 	{
 		$name = $_POST['new_file_type'];
+		$extension = $_POST['file_type_ext'];
 
-		// Insert a new file type up to 100 chars
-		add_name("file_types", $name, 100);
+		// Insert a new file type (100 chars) with extension (10 chars)
+		$success = add_file_type($name, $extension);
 
-		// Display an alert
-		set_alert(true, "good", "A new upload file type was added successfully.");
+		// If the add was successful
+		if ($success)
+		{
+			// Display an alert
+			set_alert(true, "good", "A new upload file type was added successfully.");
+		}
 	}
 
 	// Check if a file type was deleted
@@ -225,6 +230,21 @@
 
                        	// Display an alert
                        	set_alert(true, "good", "An existing upload file type was removed successfully.");
+                }
+        }
+
+        // Check if a file type extension was deleted
+        if (isset($_POST['delete_file_extension']))
+        {
+                $value = (int)$_POST['file_type_extensions'];
+
+                // Verify value is an integer
+                if (is_int($value))
+                {
+                        delete_value("file_type_extensions", $value);
+
+                        // Display an alert
+                        set_alert(true, "good", "An existing upload file extension was removed successfully.");
                 }
         }
 
@@ -312,18 +332,47 @@
 
 		// Update the session activity timeout setting
 		$session_activity_timeout = (int)$_POST['session_activity_timeout'];
-		$current_session_activity_timeout = get_setting("session_activity_timeout");
-		if ($session_activity_timeout != $current_session_activity_timeout)
+
+		// If the session_activity_timeout value is at least 5 minutes
+		if ($session_activity_timeout >= 300)
 		{
-			update_setting("session_activity_timeout", $session_activity_timeout);
+			$current_session_activity_timeout = get_setting("session_activity_timeout");
+			if ($session_activity_timeout != $current_session_activity_timeout)
+			{
+				update_setting("session_activity_timeout", $session_activity_timeout);
+			}
+		}
+		else
+		{
+			$error = true;
+			set_alert(true, "bad", "We do not recommend setting a session activity timeout less than 300 seconds.");
 		}
 
 		// Update the session renegotiation period setting
 		$session_renegotiation_period = (int)$_POST['session_renegotiation_period'];
-		$current_session_renegotiation_period = get_setting("session_renegotiation_period");
-		if ($session_renegotiation_period != $current_session_renegotiation_period)
+
+		// If the session_renegotiation_period value is at least 5 minutes
+		if ($session_renegotiation_period >= 300)
 		{
-			update_setting("session_renegotiation_period", $session_renegotiation_period);
+			// If the session_renegotiation_period value is less than the session_activity_timeout
+			if ($session_renegotiation_period < get_setting("session_activity_timeout"))
+			{
+				$current_session_renegotiation_period = get_setting("session_renegotiation_period");
+				if ($session_renegotiation_period != $current_session_renegotiation_period)
+				{
+					update_setting("session_renegotiation_period", $session_renegotiation_period);
+				}
+			}
+			else
+			{
+				$error = true;
+				set_alert(true, "bad", "The session renegotiation period should be less than the session activity timeout.");
+			}
+		}
+		else
+		{
+			$error = true;
+			set_alert(true, "bad", "We do not recommend setting a session renegotiation period less than 300 seconds.");
 		}
 
 		// Update the content security policy
@@ -492,10 +541,10 @@
                               <td colspan="2"><u><strong><?php echo $escaper->escapeHtml($lang['UserInterface']); ?></strong></u></td>
                             </tr>
                             <tr>
-                              <td colspan="2"><input <?php if(get_setting('enable_popup') == 1){ echo "checked"; } ?> name="enable_popup" class="hidden-checkbox" size="2" value="90" id="enable_popup" type="checkbox">  <label for="enable_popup"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnablePopupWindowsForTextBoxes']); ?></label></td>
+                              <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('enable_popup')) == 1){ echo "checked"; } ?> name="enable_popup" class="hidden-checkbox" size="2" value="90" id="enable_popup" type="checkbox">  <label for="enable_popup"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnablePopupWindowsForTextBoxes']); ?></label></td>
                             </tr>
                             <tr>
-                              <td colspan="2"><input <?php if(get_setting('plan_projects_show_all') == 1){ echo "checked"; } ?> name="plan_projects_show_all" class="hidden-checkbox" size="2" value="90" id="plan_projects_show_all" type="checkbox">  <label for="plan_projects_show_all"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['ShowAllRisksForPlanProjects']); ?></label></td>
+                              <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('plan_projects_show_all')) == 1){ echo "checked"; } ?> name="plan_projects_show_all" class="hidden-checkbox" size="2" value="90" id="plan_projects_show_all" type="checkbox">  <label for="plan_projects_show_all"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['ShowAllRisksForPlanProjects']); ?></label></td>
                             </tr>
                           </tbody>
                         </table>
@@ -515,7 +564,7 @@
                             </tr>
                             <tr>
                               <td width="300px"><?php echo $escaper->escapeHtml($lang['DefaultLanguage']); ?>:</td>
-                              <td><?php create_dropdown("languages", get_value_by_name("languages", get_setting("default_language")), null, false); ?></td>
+                              <td><?php create_dropdown("languages", get_value_by_name("languages", $escaper->escapeHtml(get_setting("default_language"))), null, false); ?></td>
                             </tr>
                             <tr>
                               <td width="300px"><?php echo $escaper->escapeHtml($lang['DefaultTimezone']); ?>:</td>
@@ -527,7 +576,7 @@
                                     $timezones = timezone_list();
 
                                     // Get the defeault timezone
-                                    $default_timezone = get_setting("default_timezone");
+                                    $default_timezone = $escaper->escapeHtml(get_setting("default_timezone"));
 
                                     // For each timezone
                                     foreach($timezones as $key => $value)
@@ -544,7 +593,7 @@
                               <td>
                                 <?php
                                     // Get the defeault date format
-                                    $default_date_format = get_setting("default_date_format");
+                                    $default_date_format = $escaper->escapeHtml(get_setting("default_date_format"));
 
                                     create_dropdown("date_formats", $default_date_format, "default_date_format", false);
 
@@ -554,19 +603,19 @@
                             </tr>
                             <tr>
                               <td width="300px"><?php echo $escaper->escapeHtml($lang['DefaultRiskScore']); ?>:</td>
-                              <td><input value="<?php echo (get_setting('default_risk_score') ? get_setting('default_risk_score') : 10); ?>" name="default_risk_score" id="default_risk_score" type="number" min="0" step="0.1" max="10" /></td>
+                              <td><input value="<?php echo $escaper->escapeHtml(get_setting('default_risk_score')); ?>" name="default_risk_score" id="default_risk_score" type="number" min="0" step="0.1" max="10" /></td>
                             </tr>
                             <tr>
                               <td><?php echo $escaper->escapeHtml($lang['DefaultInitiatedAuditStatus']) ?>:</td>
-                              <td><?php create_dropdown("test_status", get_setting("initiated_audit_status"), "initiated_audit_status", true, false, false, "", "--", 0); ?></td>
+                              <td><?php create_dropdown("test_status", $escaper->escapeHtml(get_setting("initiated_audit_status")), "initiated_audit_status", true, false, false, "", "--", 0); ?></td>
                             </tr>
                             <tr>
                               <td><?php echo $escaper->escapeHtml($lang['DefaultClosedAuditStatus']) ?>:</td>
-                              <td><?php create_dropdown("test_status", get_setting("closed_audit_status"), "closed_audit_status", false, false, false, "required"); ?></td>
+                              <td><?php create_dropdown("test_status", $escaper->escapeHtml(get_setting("closed_audit_status")), "closed_audit_status", false, false, false, "required"); ?></td>
                             </tr>
                             <tr>
                               <td><?php echo $escaper->escapeHtml($lang['DefaultCurrencySymbol']) ?>:</td>
-                              <td><input type="text" name="default_currency" maxlength="3" value="<?php echo get_setting("currency"); ?>" /></td>
+                              <td><input type="text" name="default_currency" maxlength="3" value="<?php echo $escaper->escapeHtml(get_setting("currency")); ?>" /></td>
                             </tr>
                             <tr>
                               <td><?php echo $escaper->escapeHtml($lang['DefaultAssetValuation']) ?>:</td>
@@ -585,7 +634,7 @@
                               <td>
                                 <?php
                                   // Create role dropdown
-                                  create_dropdown("role", get_setting("default_user_role"), "default_user_role");
+                                  create_dropdown("role", $escaper->escapeHtml(get_setting("default_user_role")), "default_user_role");
                                 ?>
                               </td>
                             </tr>
@@ -593,8 +642,8 @@
                               <td><?php echo $escaper->escapeHtml($lang['NextReviewDateUses']) ?>:</td>
                               <td>
                                 <select name="next_review_date_uses">
-                                    <option value="InherentRisk" <?php echo get_setting("next_review_date_uses") == "InherentRisk" ? "selected" : ""; ?> ><?php echo $escaper->escapeHtml($lang['InherentRisk']); ?></option>
-                                    <option value="ResidualRisk" <?php echo get_setting("next_review_date_uses") == "ResidualRisk" ? "selected" : ""; ?>><?php echo $escaper->escapeHtml($lang['ResidualRisk']); ?></option>
+                                    <option value="InherentRisk" <?php echo $escaper->escapeHtml(get_setting("next_review_date_uses")) == "InherentRisk" ? "selected" : ""; ?> ><?php echo $escaper->escapeHtml($lang['InherentRisk']); ?></option>
+                                    <option value="ResidualRisk" <?php echo $escaper->escapeHtml(get_setting("next_review_date_uses")) == "ResidualRisk" ? "selected" : ""; ?>><?php echo $escaper->escapeHtml($lang['ResidualRisk']); ?></option>
                                 </select>
                               </td>
                             </tr>
@@ -622,10 +671,13 @@
                               <td><h4><?php echo $escaper->escapeHtml($lang['AllowedFileTypes']); ?>:</h4></td>
                             </tr>
                             <tr>
-                              <td><?php echo $escaper->escapeHtml($lang['AddNewFileTypeOf']); ?> <input name="new_file_type" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_file_type" /></td>
+                              <td><?php echo $escaper->escapeHtml($lang['AddNewFileTypeOf']); ?> <input name="new_file_type" type="text" maxlength="50" size="10" style="width: 200px;" />&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['WithExtension']); ?>&nbsp;&nbsp;<input name="file_type_ext" type="text" maxlength="10" size="10" style="width: 50px;" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_file_type" /></td>
                             </tr>
                             <tr>
                               <td><?php echo $escaper->escapeHtml($lang['DeleteCurrentFileTypeOf']); ?> <?php create_dropdown("file_types"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_file_type" /></td>
+                            </tr>
+                            <tr>
+                              <td><?php echo $escaper->escapeHtml($lang['DeleteCurrentExtensionOf']); ?> <?php create_dropdown("file_type_extensions"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_file_extension" /></td>
                             </tr>
                           </tbody>
                         </table>
@@ -646,7 +698,7 @@
                               <td><h4><?php echo $escaper->escapeHtml($lang['MaximumUploadFileSize']); ?>:</h4></td>
                             </tr>
                             <tr>
-                              <td><input name="size" type="number" maxlength="50" size="20" value="<?php echo get_setting('max_upload_size'); ?>" />&nbsp;<?php echo $escaper->escapeHtml($lang['Bytes']); ?><br />
+                              <td><input name="size" type="number" maxlength="50" size="20" value="<?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?>" />&nbsp;<?php echo $escaper->escapeHtml($lang['Bytes']); ?><br />
                 <?php
                         // If the max upload size for SimpleRisk is bigger than the PHP max upload size
                         if($simplerisk_max_upload_size > php_max_allowed_values())
@@ -827,7 +879,7 @@
                               <td colspan="2"><u><strong><?php echo $escaper->escapeHtml($lang['Security']); ?></strong></u></td>
                             </tr>
                             <tr>
-                              <td colspan="2"><input <?php if(get_setting('content_security_policy') == 1){ echo "checked"; } ?> name="content_security_policy" class="hidden-checkbox" size="2" value="90" id="content_security_policy" type="checkbox">  <label for="content_security_policy"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnableCSP']); ?></label></td>
+                              <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('content_security_policy')) == 1){ echo "checked"; } ?> name="content_security_policy" class="hidden-checkbox" size="2" value="90" id="content_security_policy" type="checkbox">  <label for="content_security_policy"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnableCSP']); ?></label></td>
                             </tr>
                           </tbody>
                         </table>
@@ -853,7 +905,7 @@
                               <td colspan="2"><u><strong><?php echo $escaper->escapeHtml($lang['Debugging']); ?></strong></u></td>
                             </tr>
                             <tr>
-                              <td colspan="2"><input <?php if(get_setting('debug_logging') == 1){ echo "checked"; } ?> name="debug_logging" class="hidden-checkbox" size="2" value="90" id="debug_logging" type="checkbox">  <label for="debug_logging"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnableDebugLogging']); ?></label></td>
+                              <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('debug_logging')) == 1){ echo "checked"; } ?> name="debug_logging" class="hidden-checkbox" size="2" value="90" id="debug_logging" type="checkbox">  <label for="debug_logging"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['EnableDebugLogging']); ?></label></td>
                             </tr>
                             <tr>
                               <td width="300px"><?php echo $escaper->escapeHtml($lang['DebugLogFile']); ?>:</td>

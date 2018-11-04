@@ -31,12 +31,16 @@ session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 
 if (!isset($_SESSION))
 {
-        session_name('SimpleRisk');
-        session_start();
+    session_name('SimpleRisk');
+    session_start();
 }
 
 // Load CSRF Magic
 require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
 
 // Include the language file
 require_once(language_file());

@@ -69,7 +69,7 @@
         getRoute()->get('/risk_levels', 'risk_levels');
 
         // RISK API from form
-        getRoute()->get('/management/risk/reopen', 'reopenForm');
+        getRoute()->post('/management/risk/reopen', 'reopenForm');
         getRoute()->get('/management/risk/overview', 'overviewForm');
 
         getRoute()->post('/reports/dynamic', 'dynamicriskForm');
@@ -93,7 +93,7 @@
         getRoute()->post('/management/risk/saveSubject', 'saveSubjectForm');
 
         getRoute()->post('/management/risk/saveComment', 'saveCommentForm');
-        getRoute()->get('/management/risk/accept_mitigation', 'acceptMitigationForm');
+        getRoute()->post('/management/risk/accept_mitigation', 'acceptMitigationForm');
 
         getRoute()->post('/management/impportexport/deleteMapping', 'deleteMapping');
         getRoute()->post('/assessment/update', 'updateAssessment');
@@ -104,12 +104,19 @@
 
         /******************** Governance and Compliance API **********************/
         getRoute()->get('/governance/frameworks', 'getFrameworksResponse');
+        getRoute()->get('/governance/tabular_documents', 'getTabularDocumentsResponse');
+
         getRoute()->post('/governance/update_framework_status', 'updateFrameworkStatusResponse');
         getRoute()->post('/governance/update_framework_parent', 'updateFrameworkParentResponse');
         getRoute()->get('/governance/parent_frameworks_dropdown', 'getParentFrameworksDropdownResponse');
         getRoute()->get('/governance/selected_parent_frameworks_dropdown', 'getSelectedParentFrameworksDropdownResponse');
         getRoute()->get('/governance/control', 'getControlResponse');
         getRoute()->get('/governance/framework', 'getFrameworkResponse');
+        getRoute()->get('/governance/parent_documents_dropdown', 'getParentDocumentsDropdownResponse');
+        getRoute()->get('/governance/documents', 'getDocumentsResponse');
+        getRoute()->get('/governance/document', 'getDocumentResponse');
+        getRoute()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
+        
         getRoute()->get('/compliance/define_tests', 'getDefineTestsResponse');
         getRoute()->get('/compliance/test', 'getTestResponse');
         getRoute()->get('/compliance/initiate_audits', 'getInitiateTestAuditsResponse');
@@ -117,11 +124,7 @@
         getRoute()->post('/compliance/save_audit_comment', 'saveTestAuditCommentResponse');
         getRoute()->get('/compliance/past_audits', 'getPastTestAuditsResponse');
         getRoute()->post('/compliance/reopen_audit', 'reopenTestAuditResponse');
-        getRoute()->get('/governance/parent_documents_dropdown', 'getParentDocumentsDropdownResponse');
-        getRoute()->get('/governance/documents', 'getDocumentsResponse');
-        getRoute()->get('/governance/document', 'getDocumentResponse');
-        getRoute()->get('/governance/tabular_documents', 'getTabularDocumentsResponse');
-        getRoute()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
+        getRoute()->post('/compliance/audit_initiation/initiate', 'initiateFrameworkControlTestsResponse');
         /*************************************************************************/
 
         /***************************** Assessment API *********************************/
@@ -140,6 +143,13 @@
         getRoute()->post('/customization/addOption', 'customization_extra_addOption');
         getRoute()->post('/customization/deleteOption', 'customization_extra_deleteOption');
         getRoute()->post('/customization/saveTemplate', 'customization_extra_saveTemplate');
+        /******************************************************************/
+
+        /********************* Authentication API **************************/
+        getRoute()->post('/admin/authentication/add_ldap_group', 'authentication_extra_add_ldap_group');
+        getRoute()->post('/admin/authentication/get_teams_by_ldap_group', 'authentication_extra_getTeamsByLdapGroup');
+        getRoute()->post('/admin/authentication/delete_ldap_group', 'authentication_extra_deleteLdapGroup');
+        getRoute()->post('/admin/authentication/set_ldap_group_and_teams', 'authentication_extra_setLdapGroupAndTeams');
         /******************************************************************/
 
         /********************* RISK FORMULA API ***************************/

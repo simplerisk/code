@@ -1018,7 +1018,7 @@ function display_accept_mitigation_view($risk_id)
     echo "</div>\n";
 
     // If user has able to accept mitigation permission
-    if($_SESSION['accept_mitigation'])
+    if(!empty($_SESSION['accept_mitigation']))
     {
         // Get accepted mitigation by login user
         $accepted_mitigation = get_accpeted_mitigation($risk_id);
@@ -1052,7 +1052,7 @@ function display_accept_mitigation_view($risk_id)
                     self.html($(\"#_lang_accepting\").val());
                     
                     $.ajax({
-                        type: \"GET\",
+                        type: \"POST\",
                         data: {
                             accept: 1
                         },
@@ -1072,11 +1072,14 @@ function display_accept_mitigation_view($risk_id)
                             self.html($(\"#_lang_accept_mitigation\").val());
                         },
                         error: function(xhr,status,error){
-                            if(xhr.responseJSON && xhr.responseJSON.status_message){
-                                $('#show-alert').html(xhr.responseJSON.status_message);
+                            if(!retryCSRF(xhr, this))
+                            {
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    $('#show-alert').html(xhr.responseJSON.status_message);
+                                }
+                                self.prop(\"disabled\", false);
+                                self.html($(\"#_lang_accept_mitigation\").val());
                             }
-                            self.prop(\"disabled\", false);
-                            self.html($(\"#_lang_accept_mitigation\").val());
                         }
                     })
                 })
@@ -1091,7 +1094,7 @@ function display_accept_mitigation_view($risk_id)
                     self.html($(\"#_lang_rejecting\").val());
                     
                     $.ajax({
-                        type: \"GET\",
+                        type: \"POST\",
                         data: {
                             accept: 0
                         },
@@ -1110,11 +1113,14 @@ function display_accept_mitigation_view($risk_id)
                             self.html($(\"#_lang_reject_mitigation\").val());
                         },
                         error: function(xhr,status,error){
-                            if(xhr.responseJSON && xhr.responseJSON.status_message){
-                                $('#show-alert').html(xhr.responseJSON.status_message);
+                            if(!retryCSRF(xhr, this))
+                            {
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    $('#show-alert').html(xhr.responseJSON.status_message);
+                                }
+                                self.prop(\"disabled\", false);
+                                self.html($(\"#_lang_reject_mitigation\").val());
                             }
-                            self.prop(\"disabled\", false);
-                            self.html($(\"#_lang_reject_mitigation\").val());
                         }
                     })
                 })            

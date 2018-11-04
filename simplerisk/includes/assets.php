@@ -114,7 +114,7 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "")
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("INSERT INTO `assets` (ip, name, value, location, team, details) VALUES (:ip, :name, :value, :location, :team, :details) ON DUPLICATE KEY UPDATE `ip`=:ip, `value`=:value, `location`=:location, `team`=:team, `details`=:details");
+    $stmt = $db->prepare("INSERT INTO `assets` (ip, name, value, location, team, details) VALUES (:ip, :name, :value, :location, :team, :details) ON DUPLICATE KEY UPDATE `ip`=:ip, `value`=:value, `location`=:location, `team`=:team, `details`=:details;");
     $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 15);
     $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
     $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
@@ -126,33 +126,33 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "")
     // If failed to insert, update the record
     if(!$stmt->rowCount())
     {
-        $return = false;
+        $asset_id = 0;
     }
-    else{
-        $return = true;
+    else
+    {
+        $stmt = $db->prepare("SELECT id FROM `assets` WHERE `name`=:name AND `ip`=:ip AND `value`=:value AND `location`=:location AND `team`=:team AND `details`=:details;");
+        $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 15);
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
+        $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
+        $stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
+        $stmt->bindParam(":team", $team, PDO::PARAM_INT, 2);
+        $stmt->bindParam(":details", $details, PDO::PARAM_STR);
+        $stmt->execute();
+        $asset_id = $stmt->fetch(PDO::FETCH_COLUMN);
     }
 
     // Update the asset_id column in risks_to_assets
     $stmt = $db->prepare("UPDATE `risks_to_assets` INNER JOIN `assets` ON `assets`.name = `risks_to_assets`.asset SET `risks_to_assets`.asset_id = `assets`.id;");
     $stmt->execute();
 
-    // Get Latest asset recorded
-    $stmt = $db->prepare("SELECT MAX(Id) FROM assets;");
-    $stmt->execute();
-
-    $dd = $stmt->fetchAll();
-    foreach ($dd as $key => $value) {
-        $asset_id = $value["MAX(Id)"];
-    }
-    
     // Close the database connection
     db_close($db);
-    
+
     $message = "An asset named \"{$name}\" was added by username \"" . $_SESSION['user'] . "\".";
     write_log($asset_id , $_SESSION['uid'], $message, "asset");
     
     // Return success or failure
-    return $return;
+    return $asset_id;
 }
 
 /***************************
@@ -186,7 +186,7 @@ function delete_asset($asset_id)
 {
     // Open the database connection
     $db = db_open();
-    
+
     $name = get_asset_name($asset_id);
 
     // Delete the assets entry
@@ -423,12 +423,13 @@ function tag_assets_to_risk($risk_id, $assets, $entered_assets=false)
                 }
             }
             if(!$asset_id){
-                add_asset('', $asset);
+                $asset_id = add_asset('', $asset);
             }
 
             // Add the new assets for this risk
-            $stmt = $db->prepare("INSERT INTO `risks_to_assets` (`risk_id`, `asset`) VALUES (:risk_id, :asset)");
+            $stmt = $db->prepare("INSERT INTO `risks_to_assets` (`risk_id`, `asset_id`, `asset`) VALUES (:risk_id, :asset_id, :asset)");
             $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+            $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
             $stmt->bindParam(":asset", $asset, PDO::PARAM_STR, 200);
             $stmt->execute();
         }
@@ -473,8 +474,10 @@ function get_list_of_assets($risk_id, $trailing_comma = true)
     // Set the string to empty to start
     $string = "";
 
+    $id = (int)$risk_id - 1000;
+    
     // Get the assets for the risk
-    $assets = get_assets_for_risk($risk_id-1000);
+    $assets = get_assets_for_risk($id);
 
     // For each asset
     foreach ($assets as $asset)

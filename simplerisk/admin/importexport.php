@@ -36,6 +36,10 @@
 
     require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
+    function csrf_startup() {
+        csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+    }
+
     // Check for session timeout or renegotiation
     session_check();
 
@@ -212,7 +216,6 @@
             $("#delete_mapping").click(function(e){
                 e.preventDefault();
                 var mapping_id = $("#import_export_mappings").val();
-                var __csrf_magic = $(this).parents("form").find("[name=__csrf_magic]").val();
                 
                 if(!mapping_id){
                     alert($("#lang_SelectMappingToRemove").val());
@@ -221,9 +224,17 @@
                 $.ajax({
                     method: "POST",
                     url: BASE_URL + "/api/management/impportexport/deleteMapping",
-                    data: {id: mapping_id, __csrf_magic: __csrf_magic},
+                    data: {id: mapping_id},
                     success: function(data){
                         document.location.reload();
+                    },
+                    error: function(xhr,status,error){
+                        if(!retryCSRF(xhr, this))
+                        {
+                            if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                $('#show-alert').html(xhr.responseJSON.status_message);
+                            }
+                        }
                     }
                 })
                 

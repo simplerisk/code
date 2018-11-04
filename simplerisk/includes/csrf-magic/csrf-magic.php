@@ -167,6 +167,11 @@ function csrf_check($fatal = true) {
     $name = $GLOBALS['csrf']['input-name'];
     $ok = false;
     $tokens = '';
+    $headers = apache_request_headers();
+    if(!empty($headers['CSRF-TOKEN'])){
+        $_POST[$name] = $headers['CSRF-TOKEN'];
+    }
+    
     do {
         if (!isset($_POST[$name])) break;
         // we don't regenerate a token and check it because some token creation

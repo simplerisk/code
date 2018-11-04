@@ -36,6 +36,10 @@ require_once(language_file());
 
 require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
+
 // Check for session timeout or renegotiation
 session_check();
 
@@ -54,7 +58,7 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 ?>
 
 <!doctype html>
-<html>
+<html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
 <head>
     <script src="../js/jquery.min.js"></script>

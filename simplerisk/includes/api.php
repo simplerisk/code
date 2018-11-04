@@ -9,6 +9,7 @@ require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
 require_once(realpath(__DIR__ . '/assets.php'));
 require_once(realpath(__DIR__ . '/governance.php'));
+require_once(realpath(__DIR__ . '/permissions.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
@@ -50,7 +51,13 @@ function is_session_authenticated()
     {
         return false;
     }
-    else return true;
+    else 
+    {
+        // Load CSRF Magic
+        require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+        
+        return true;
+    }
 }
 
 /**********************************
@@ -738,7 +745,7 @@ function dynamicriskForm()
         $datas = array();
         foreach($risks as $row){
 //            $row = $risks[$i];
-            $row['id'] = $row['id'] + 1000;
+            $row['id'] = (int)$row['id'] + 1000;
 //            $color = get_risk_color($row['calculated_risk']);
             $color = get_risk_color($row['calculated_risk']);
             $residual_color = get_risk_color($row['residual_risk']);
@@ -753,6 +760,7 @@ function dynamicriskForm()
                 $escaper->escapeHtml($row['source']),
                 $escaper->escapeHtml($row['category']),
                 $escaper->escapeHtml($row['team']),
+                $escaper->escapeHtml($row['additional_stakeholders']),
                 $escaper->escapeHtml($row['technology']),
                 $escaper->escapeHtml($row['owner']),
                 $escaper->escapeHtml($row['manager']),
@@ -1342,7 +1350,7 @@ function closeriskForm(){
         $note = $_POST['note'];
 
         // Submit a review
-        submit_management_review($id, $status, "", "", $_SESSION['uid'], $note, "0000-00-00", true);
+        submit_management_review($id, $status, null, null, $_SESSION['uid'], $note, "0000-00-00", true);
 
         // Close the risk
         close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
@@ -1876,31 +1884,43 @@ function saveCommentForm()
  ********************************************/
 function acceptMitigationForm()
 {
+    // If user has no permission for accept mitigation
+    if(empty($_SESSION['accept_mitigation']))
+    {
+        set_alert(true, "bad", "You have no permission for accept mitigation.");
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+    
     // If the id is not sent
-    if (!isset($_GET['id']))
+    elseif (!isset($_GET['id']))
     {
         set_alert(true, "bad", "You need to specify an id parameter.");
 
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
     }
-    $id = (int)$_GET['id'];
-    $accept = (int)$_GET['accept'];
+    else
+    {
+        $id = (int)$_GET['id'];
+        $accept = (int)$_POST['accept'];
 
-    // Check if user has a permission for accept mitigation
-    if(empty($_SESSION["accept_mitigation"])){
-        set_alert(true, "bad", "You do not have permission to accept mitigation.  Please contact an Administrator if you feel that you have reached this message in error.");
-        // Return a JSON response
-        json_response(400, get_alert(true), NULL);
+        // Check if user has a permission for accept mitigation
+        if(empty($_SESSION["accept_mitigation"])){
+            set_alert(true, "bad", "You do not have permission to accept mitigation.  Please contact an Administrator if you feel that you have reached this message in error.");
+            // Return a JSON response
+            json_response(400, get_alert(true), NULL);
+        }
+
+        accept_mitigation_by_risk_id($id, $accept);
+
+        $message = view_accepted_mitigations($id);
+
+        $data = array("accept_mitigation_text" => $message);
+
+        json_response(200, get_alert(true), $data);
     }
-
-    accept_mitigation_by_risk_id($id, $accept);
-
-    $message = view_accepted_mitigations($id);
-
-    $data = array("accept_mitigation_text" => $message);
-
-    json_response(200, get_alert(true), $data);
 }
 
 /*************************************
@@ -2344,7 +2364,7 @@ function addRisk(){
             notify_new_risk($last_insert_id, $subject);
         }
         // There is an alert message
-        $risk_id = $last_insert_id + 1000;
+        $risk_id = (int)$last_insert_id + 1000;
 
         $status = 200;
         $status_message = "Risk ID " . $risk_id . " submitted successfully!";
@@ -2943,10 +2963,20 @@ function getMitigationControlsDatatable(){
  **********************************************/
 function getFrameworksResponse()
 {
-    $status = (int)$_GET['status'];
-    $result = get_frameworks_as_treegrid($status);
-    echo json_encode($result);exit;
-    exit;
+    global $lang, $escaper;
+
+    // If the user has governance permissions
+    if (check_permission_governance())
+    {
+        $status = (int)$_GET['status'];
+        $result = get_frameworks_as_treegrid($status);
+        echo json_encode($result);exit;
+        exit;
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
 }
 
 /*************************************
@@ -3009,15 +3039,25 @@ function updateFrameworkParentResponse()
  *******************************************************************/
 function getParentFrameworksDropdownResponse()
 {
+    global $lang, $escaper;
+    
     $status = (int)$_GET['status'];
 
-    $frameworks = get_frameworks($status);
+    // If the user has governance permissions
+    if (check_permission_governance())
+    {
+        $frameworks = get_frameworks($status);
 
-    $html = "<select name='parent'>\n";
-    $html .= "<option value='0'>--</option>";
-    make_tree_options_html($frameworks, 0, $html);
-    $html .= "</select>\n";
-    json_response(200, "Get parent framework dropdown html", ["html" => $html]);
+        $html = "<select name='parent'>\n";
+        $html .= "<option value='0'>--</option>";
+        make_tree_options_html($frameworks, 0, $html);
+        $html .= "</select>\n";
+        json_response(200, "Get parent framework dropdown html", ["html" => $html]);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
 }
 
 /******************************************************************
@@ -3025,24 +3065,34 @@ function getParentFrameworksDropdownResponse()
  ******************************************************************/
 function getParentDocumentsDropdownResponse()
 {
-    $type = $_GET['type'];
+    global $lang, $escaper;
 
-    $documents = get_documents($type);
-    $options = [];
-    foreach($documents as $document)
+    // If the user has governance permissions
+    if (check_permission_governance())
     {
-        $options[] = array(
-            'name' => $document['document_name'],
-            'value' => $document['id'],
-            'parent' => $document['parent'],
-        );
-    }
+        $type = $_GET['type'];
 
-    $html = "<select name='parent'>\n";
-    $html .= "<option value='0'>--</option>";
-    make_tree_options_html($options, 0, $html);
-    $html .= "</select>\n";
-    json_response(200, "Get parent documents dropdown html", ["html" => $html]);
+        $documents = get_documents($type);
+        $options = [];
+        foreach($documents as $document)
+        {
+            $options[] = array(
+                'name' => $document['document_name'],
+                'value' => $document['id'],
+                'parent' => $document['parent'],
+            );
+        }
+
+        $html = "<select name='parent'>\n";
+        $html .= "<option value='0'>--</option>";
+        make_tree_options_html($options, 0, $html);
+        $html .= "</select>\n";
+        json_response(200, "Get parent documents dropdown html", ["html" => $html]);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
 }
 
 /****************************************************************
@@ -3050,30 +3100,40 @@ function getParentDocumentsDropdownResponse()
  ****************************************************************/
 function getSelectedParentFrameworksDropdownResponse()
 {
-    $child_id = (int)$_GET['child_id'];
+    global $lang, $escaper;
 
-    // Get child framework
-    $framework = get_framework($child_id);
-    $status = $framework['status'];
+    // If the user has governance permissions
+    if (check_permission_governance())
+    {
+        $child_id = (int)$_GET['child_id'];
 
-    // Parent framework ID
-    $selected = $framework['parent'];
+        // Get child framework
+        $framework = get_framework($child_id);
+        $status = $framework['status'];
 
-    $frameworks = get_frameworks($status);
+        // Parent framework ID
+        $selected = $framework['parent'];
 
-    // Frameworks removed child framework
-    $new_frameworks = [];
-    foreach($frameworks as $framework){
-        if($framework['value'] != $child_id){
-            $new_frameworks[] = $framework;
+        $frameworks = get_frameworks($status);
+
+        // Frameworks removed child framework
+        $new_frameworks = [];
+        foreach($frameworks as $framework){
+            if($framework['value'] != $child_id){
+                $new_frameworks[] = $framework;
+            }
         }
-    }
 
-    $html = "<select name='parent'>\n";
-    $html .= "<option value='0'>--</option>";
-    make_tree_options_html($new_frameworks, 0, $html, "", $selected);
-    $html .= "</select>\n";
-    json_response(200, "Get parent framework dropdown html", ["html" => $html]);
+        $html = "<select name='parent'>\n";
+        $html .= "<option value='0'>--</option>";
+        make_tree_options_html($new_frameworks, 0, $html, "", $selected);
+        $html .= "</select>\n";
+        json_response(200, "Get parent framework dropdown html", ["html" => $html]);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
 }
 
 /***************************************************************
@@ -3083,33 +3143,77 @@ function getSelectedParentDocumentsDropdownResponse()
 {
     global $lang, $escaper;
     
-    $child_id = (int)$_GET['child_id'];
-    $type = $_GET['type'];
+    // If the user has governance permissions
+    if (check_permission_governance())
+    {
+        $child_id = (int)$_GET['child_id'];
+        $type = $_GET['type'];
 
-    // Get child document
-    $child_document = get_document_by_id($child_id);
+        // Get child document
+        $child_document = get_document_by_id($child_id);
 
-    // Parent document ID
-    $selected = $child_document['parent'];
+        // Parent document ID
+        $selected = $child_document['parent'];
 
-    $documents = get_documents($type);
+        $documents = get_documents($type);
 
-    // Documents removed child document
-    $new_documents = [];
-    foreach($documents as $document){
-        if($document['id'] != $child_id){
-            $document['value'] = $document['id'];
-            $document['name'] = $escaper->escapeHtml($document['document_name']);
-            $new_documents[] = $document;
+        // Documents removed child document
+        $new_documents = [];
+        foreach($documents as $document){
+            if($document['id'] != $child_id){
+                $document['value'] = $document['id'];
+                $document['name'] = $escaper->escapeHtml($document['document_name']);
+                $new_documents[] = $document;
+            }
+        }
+
+        $html = "<select name='parent'>\n";
+        $html .= "<option value='0'>--</option>";
+        make_tree_options_html($new_documents, 0, $html, "", $selected);
+        $html .= "</select>\n";
+        json_response(200, "Get parent framework dropdown html", ["html" => $html]);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
+}
+
+/***************************************************************
+ * FUNCTION: Initiate FRAMEWORK CONTROL TESTS AND GET RESPONSE *
+ ***************************************************************/
+function initiateFrameworkControlTestsResponse()
+{
+    global $lang, $escaper;
+    
+    // If the user has compliance permissions
+    if (check_permission_compliance())
+    {
+        $id     = (int)$_POST['id'];
+        $type   = $_POST['type'];
+        
+        if($name = initiate_framework_control_tests($type, $id))
+        {
+            if($type == 'framework'){
+                set_alert(true, "good", $escaper->escapeHtml(_lang('InitiatedAllTestsUnderFramework', ['framework' => $name])));
+            }elseif($type == 'control'){
+                set_alert(true, "good", $escaper->escapeHtml(_lang('InitiatedAllTestsUnderControl', ['control' => $name])));
+            }elseif($type == 'test'){
+                set_alert(true, "good", $escaper->escapeHtml(_lang('InitiatedTest', ['test' => $name])));
+            }
+            json_response(200, get_alert(true), []);
+        }
+        else
+        {
+            set_alert(true, "bad", $escaper->escapeHtml($lang['FailedInitiate']));
+            json_response(400, get_alert(true), NULL);
         }
     }
-//    print_r($new_documents);exit;
-
-    $html = "<select name='parent'>\n";
-    $html .= "<option value='0'>--</option>";
-    make_tree_options_html($new_documents, 0, $html, "", $selected);
-    $html .= "</select>\n";
-    json_response(200, "Get parent framework dropdown html", ["html" => $html]);
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+    }
+    
 }
 
 /*******************************
@@ -3117,9 +3221,19 @@ function getSelectedParentDocumentsDropdownResponse()
  *******************************/
 function getControlResponse()
 {
-    $id = $_GET['control_id'];
-    $control = get_framework_control($id);
-    json_response(200, "Get framework control by ID", ["control" => $control]);
+    global $lang, $escaper;
+
+    // If the user has governance permissions
+    if (check_permission_governance())
+    {
+        $id = $_GET['control_id'];
+        $control = get_framework_control($id);
+        json_response(200, "Get framework control by ID", ["control" => $control]);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
 }
 
 /*********************************
@@ -3127,9 +3241,19 @@ function getControlResponse()
  *********************************/
 function getFrameworkResponse()
 {
-    $id = $_GET['framework_id'];
-    $framework = get_framework($id);
-    json_response(200, "Get framework by ID", ["framework" => $framework]);
+    global $lang, $escaper;
+
+    // If the user has governance permissions
+    if (check_permission_governance())
+    {
+        $id = $_GET['framework_id'];
+        $framework = get_framework($id);
+        json_response(200, "Get framework by ID", ["framework" => $framework]);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
 }
 
 /***********************************************************************
@@ -3140,115 +3264,123 @@ function getDefineTestsResponse()
     global $lang;
     global $escaper;
 
-    $draw = $escaper->escapeHtml($_GET['draw']);
-    $control_framework = empty($_GET['control_framework']) ? [] : $_GET['control_framework'];
-
-    $controls = get_framework_controls_by_filter("all", "all", "all", "all", $control_framework);
-    $recordsTotal = count($controls);
-
-    $data = array();
-    foreach ($controls as $key=>$control)
+    // If the user has compliance permissions
+    if (check_permission_compliance())
     {
-        // If it is not requested to view all
-        if($_GET['length'] != -1){
-            if($key < $_GET['start']){
-                continue;
+        $draw = $escaper->escapeHtml($_GET['draw']);
+        $control_framework = empty($_GET['control_framework']) ? [] : $_GET['control_framework'];
+
+        $controls = get_framework_controls_by_filter("all", "all", "all", "all", $control_framework);
+        $recordsTotal = count($controls);
+
+        $data = array();
+        foreach ($controls as $key=>$control)
+        {
+            // If it is not requested to view all
+            if($_GET['length'] != -1){
+                if($key < $_GET['start']){
+                    continue;
+                }
+                if($key >= ($_GET['start'] + $_GET['length'])){
+                    break;
+                }
             }
-            if($key >= ($_GET['start'] + $_GET['length'])){
-                break;
-            }
-        }
 
-        $tests = get_framework_control_tests_by_control_id($control['id']);
+            $tests = get_framework_control_tests_by_control_id($control['id']);
 
-        $html = "<div class='control-block item-block clearfix'>\n";
-            $html .= "<div class='control-block--header clearfix' data-project=''>\n";
-                $html .= "<br>\n";
-                $html .= "<div class='control-block--row'>\n";
-                    $html .= "<table width='100%'>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>\n";
-                            $html .= "<td >".$escaper->escapeHtml($control['long_name'])."</td>\n";
-                        $html .= "</tr>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlFrameworks'])."</strong>: </td>\n";
-                            $html .= "<td>".$escaper->escapeHtml($control['framework_names'])."</td>\n";
-                        $html .= "</tr>\n";
-                        $html .= "<tr>\n";
-                            $html .= "<td align='right'><strong>". $escaper->escapeHtml($lang['Description']) ."</strong>: </td>\n";
-                            $html .= "<td colspan='5'>". nl2br($escaper->escapeHtml($control['description'])) ."</td>\n";
-                        $html .= "</tr>\n";
-                    $html .= "</table>\n";
-                $html .= "</div>\n";
+            $html = "<div class='control-block item-block clearfix'>\n";
+                $html .= "<div class='control-block--header clearfix' data-project=''>\n";
+                    $html .= "<br>\n";
+                    $html .= "<div class='control-block--row'>\n";
+                        $html .= "<table width='100%'>\n";
+                            $html .= "<tr>\n";
+                                $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>\n";
+                                $html .= "<td >".$escaper->escapeHtml($control['long_name'])."</td>\n";
+                            $html .= "</tr>\n";
+                            $html .= "<tr>\n";
+                                $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlFrameworks'])."</strong>: </td>\n";
+                                $html .= "<td>".$escaper->escapeHtml($control['framework_names'])."</td>\n";
+                            $html .= "</tr>\n";
+                            $html .= "<tr>\n";
+                                $html .= "<td align='right'><strong>". $escaper->escapeHtml($lang['Description']) ."</strong>: </td>\n";
+                                $html .= "<td colspan='5'>". nl2br($escaper->escapeHtml($control['description'])) ."</td>\n";
+                            $html .= "</tr>\n";
+                        $html .= "</table>\n";
+                    $html .= "</div>\n";
 
-                $html .= "<div class='text-right'>\n";
-                    $html .= "<a href='#test--add' data-control-id='". $control['id'] ."' role='button' data-toggle='modal' class='btn add-test'>".$escaper->escapeHtml($lang['AddTest'])."</a>";
-                $html .= "</div>\n";
+                    $html .= "<div class='text-right'>\n";
+                        $html .= "<a href='#test--add' data-control-id='". $control['id'] ."' role='button' data-toggle='modal' class='btn add-test'>".$escaper->escapeHtml($lang['AddTest'])."</a>";
+                    $html .= "</div>\n";
 
-                $html .= "<div class='framework-control-test-list'>\n";
-                    $html .= "<table width='100%' class='table table-bordered table-striped table-condensed sortable'>\n";
-                        $html .= "
-                            <thead>
-                                <tr>
-                                    <th>".$escaper->escapeHtml($lang['ID'])."</th>
-                                    <th>".$escaper->escapeHtml($lang['TestName'])."</th>
-                                    <th>".$escaper->escapeHtml($lang['Tester'])."</th>
-                                    <th>".$escaper->escapeHtml($lang['TestFrequency'])."</th>
-                                    <th>".$escaper->escapeHtml($lang['LastTestDate'])."</th>
-                                    <th>".$escaper->escapeHtml($lang['NextTestDate'])."</th>
-                                    <th>".$escaper->escapeHtml($lang['ApproximateTime'])."</th>
-                                    <th>&nbsp;</th>
-                                </tr>
-                            </thead>
-                        ";
-                        $html .= "<tbody>";
-                            foreach($tests as $test){
-                                // If the last date is not 0000-00-00
-                                if ($test['last_date'] != "0000-00-00")
-                                {
-                                   // Set it to the proper format
-                                   $last_date = strtotime($test['last_date']) ? date(get_default_date_format(), strtotime($test['last_date'])) : "";
-                                }
-                                else $last_date = "";
-
-                                // If the next date is not 0000-00-00
-                                if ($test['next_date'] != "0000-00-00")
-                                {
-                                   // Set it to the proper format
-                                   $next_date = strtotime($test['next_date']) ? date(get_default_date_format(), strtotime($test['next_date'])) : "";
-                                }
-                                else $next_date = "";
-
-                                $html .= "
+                    $html .= "<div class='framework-control-test-list'>\n";
+                        $html .= "<table width='100%' class='table table-bordered table-striped table-condensed sortable'>\n";
+                            $html .= "
+                                <thead>
                                     <tr>
-                                        <td>".$escaper->escapeHtml($test['id'])."</td>
-                                        <td>".$escaper->escapeHtml($test['name'])."</td>
-                                        <td>".$escaper->escapeHtml($test['tester_name'])."</td>
-                                        <td style='text-align:right'>".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $escaper->escapeHtml($lang['days']) : $escaper->escapeHtml($lang['Day']))."</td>
-                                        <td>".$escaper->escapeHtml($last_date)."</td>
-                                        <td>".$escaper->escapeHtml($next_date)."</td>
-                                        <td style='text-align:right'>".(int)$test['approximate_time']. " " .$escaper->escapeHtml($test['approximate_time'] > 1 ? $escaper->escapeHtml($lang['minutes']) : $escaper->escapeHtml($lang['minute']))."</td>
-                                        <td class='text-center'>
-                                            <a href='#test--edit' data-id='".$escaper->escapeHtml($test['id'])."' class='edit-test' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;
-                                            <a href='#test--delete' class='delete-row' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-trash\"></i></a>
-                                        </td>
+                                        <th>".$escaper->escapeHtml($lang['ID'])."</th>
+                                        <th>".$escaper->escapeHtml($lang['TestName'])."</th>
+                                        <th>".$escaper->escapeHtml($lang['Tester'])."</th>
+                                        <th>".$escaper->escapeHtml($lang['TestFrequency'])."</th>
+                                        <th>".$escaper->escapeHtml($lang['LastTestDate'])."</th>
+                                        <th>".$escaper->escapeHtml($lang['NextTestDate'])."</th>
+                                        <th>".$escaper->escapeHtml($lang['ApproximateTime'])."</th>
+                                        <th>&nbsp;</th>
                                     </tr>
-                                ";
-                            }
-                        $html .= "</tbody>";
-                    $html .= "</table>\n";
+                                </thead>
+                            ";
+                            $html .= "<tbody>";
+                                foreach($tests as $test){
+                                    // If the last date is not 0000-00-00
+                                    if ($test['last_date'] != "0000-00-00")
+                                    {
+                                       // Set it to the proper format
+                                       $last_date = strtotime($test['last_date']) ? date(get_default_date_format(), strtotime($test['last_date'])) : "";
+                                    }
+                                    else $last_date = "";
+
+                                    // If the next date is not 0000-00-00
+                                    if ($test['next_date'] != "0000-00-00")
+                                    {
+                                       // Set it to the proper format
+                                       $next_date = strtotime($test['next_date']) ? date(get_default_date_format(), strtotime($test['next_date'])) : "";
+                                    }
+                                    else $next_date = "";
+
+                                    $html .= "
+                                        <tr>
+                                            <td>".$escaper->escapeHtml($test['id'])."</td>
+                                            <td>".$escaper->escapeHtml($test['name'])."</td>
+                                            <td>".$escaper->escapeHtml($test['tester_name'])."</td>
+                                            <td style='text-align:right'>".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $escaper->escapeHtml($lang['days']) : $escaper->escapeHtml($lang['Day']))."</td>
+                                            <td>".$escaper->escapeHtml($last_date)."</td>
+                                            <td>".$escaper->escapeHtml($next_date)."</td>
+                                            <td style='text-align:right'>".(int)$test['approximate_time']. " " .$escaper->escapeHtml($test['approximate_time'] > 1 ? $escaper->escapeHtml($lang['minutes']) : $escaper->escapeHtml($lang['minute']))."</td>
+                                            <td class='text-center'>
+                                                <a href='#test--edit' data-id='".$escaper->escapeHtml($test['id'])."' class='edit-test' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;
+                                                <a href='#test--delete' class='delete-row' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-trash\"></i></a>
+                                            </td>
+                                        </tr>
+                                    ";
+                                }
+                            $html .= "</tbody>";
+                        $html .= "</table>\n";
+                    $html .= "</div>\n";
                 $html .= "</div>\n";
             $html .= "</div>\n";
-        $html .= "</div>\n";
-        $data[] = [$html];
+            $data[] = [$html];
+        }
+        $result = array(
+            'draw' => $draw,
+            'data' => $data,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsTotal,
+        );
+        echo json_encode($result);
     }
-    $result = array(
-        'draw' => $draw,
-        'data' => $data,
-        'recordsTotal' => $recordsTotal,
-        'recordsFiltered' => $recordsTotal,
-    );
-    echo json_encode($result);
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+    }
     exit;
 }
 
@@ -3257,23 +3389,34 @@ function getDefineTestsResponse()
  ***********************/
 function getTestResponse()
 {
+    global $lang, $escaper;
+    
     $id = (int)$_GET['id'];
 
-    $test = get_framework_control_test_by_id($id);
-    if($test){
-        // If the last_date is not 0000-00-00
-        if ($test['last_date'] != "0000-00-00")
-        {
-            // Format the last test date
-            $test['last_date'] = strtotime($test['last_date']) ? date(get_default_date_format(), strtotime($test['last_date'])) : "";
+    // If the user has compliance permissions
+    if (check_permission_compliance())
+    {
+        $test = get_framework_control_test_by_id($id);
+        if($test){
+            // If the last_date is not 0000-00-00
+            if ($test['last_date'] != "0000-00-00")
+            {
+                // Format the last test date
+                $test['last_date'] = strtotime($test['last_date']) ? date(get_default_date_format(), strtotime($test['last_date'])) : "";
+            }
+            else $test['last_date'] = "";
+            
+            $test['next_date'] = strtotime($test['next_date']) ? date(get_default_date_format(), strtotime($test['next_date'])) : "";
+            json_response(200, "success", $test);
+        }else{
+            json_response(400, "Ivalid test ID.", NULL);
         }
-        else $test['last_date'] = "";
-        
-        $test['next_date'] = strtotime($test['next_date']) ? date(get_default_date_format(), strtotime($test['next_date'])) : "";
-        json_response(200, "success", $test);
-    }else{
-        json_response(400, "Ivalid test ID.", NULL);
     }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+    }
+
 }
 
 /*******************************************************
@@ -3284,71 +3427,79 @@ function getInitiateTestAuditsResponse()
     global $lang;
     global $escaper;
 
-    $filter_by_text         = $_GET["filter_by_text"];
-    $filter_by_status       = empty($_GET["filter_by_status"]) ? [] : $_GET["filter_by_status"];
-    $filter_by_frequency    = $_GET["filter_by_frequency"];
-    $filter_by_framework    = empty($_GET["filter_by_framework"]) ? [] : $_GET["filter_by_framework"];
-    $filter_by_control      = $_GET["filter_by_control"];
-
-    $results = array();
-
-    // If framework was loaded
-    if(empty($_GET['id'])){
-        // Get active frameworks
-        $frameworks = get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control);
-//        exit;
-        foreach($frameworks as $framework){
-            $results[] = array(
-                'id' => 'framework_'.$framework['value'],
-                'state' => 'closed',
-                'name' => "<a class='framework-name' data-id='{$framework['value']}' href='' title='".$escaper->escapeHtml($lang['Framework'])."'>".$escaper->escapeHtml($framework['name'])."</a>",
-                'last_audit_date' => $escaper->escapeHtml($framework['last_audit_date']),
-                'desired_frequency' => $escaper->escapeHtml($framework['desired_frequency']),
-                'next_audit_date' => $escaper->escapeHtml($framework['next_audit_date']),
-                'status' => $escaper->escapeHtml($framework['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
-                'action' => "<div class='text-center'><button data-id='{$framework['value']}' class='initiate-framework-audit-btn' >".$escaper->escapeHtml($lang['InitiateFrameworkAudit'])."</button></div>"
-            );
-        }
-    }
-    // If a framework node was clicked
-    elseif(stripos($_GET['id'], "framework_") !== false){
-        $framework_value = (int)str_replace("framework_", "", $_GET['id']);
-        $framework_controls = get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_value);
-        foreach($framework_controls as $framework_control){
-            $results[] = array(
-                'id' => "control_".$framework_value."_".$framework_control['id'],
-                'state' => 'closed',
-                'name' => "<a class='control-name' data-id='{$framework_control['id']}' href='' title='".$escaper->escapeHtml($lang['Control'])."'>".$escaper->escapeHtml($framework_control['short_name'])."</a>",
-                'last_audit_date' => $escaper->escapeHtml($framework_control['last_audit_date']),
-                'desired_frequency' => $escaper->escapeHtml($framework_control['desired_frequency']),
-                'next_audit_date' => $escaper->escapeHtml($framework_control['next_audit_date']),
-                'status' => $escaper->escapeHtml($framework_control['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
-                'action' => "<div class='text-center'><button data-id='{$framework_control['id']}' class='initiate-control-audit-btn' >".$escaper->escapeHtml($lang['InitiateControlAudit'])."</button></div>",
-            );
-        }
-    }
-    elseif(stripos($_GET['id'], "control_") !== false)
+    // If the user has compliance permissions
+    if (check_permission_compliance())
     {
-        $framework_and_control = str_replace("control_", "", $_GET['id']);
-        $framework_id = (int)explode("_", $framework_and_control)[0];
-        $control_id = (int)explode("_", $framework_and_control)[1];
+        $filter_by_text         = $_GET["filter_by_text"];
+        $filter_by_status       = empty($_GET["filter_by_status"]) ? [] : $_GET["filter_by_status"];
+        $filter_by_frequency    = $_GET["filter_by_frequency"];
+        $filter_by_framework    = empty($_GET["filter_by_framework"]) ? [] : $_GET["filter_by_framework"];
+        $filter_by_control      = $_GET["filter_by_control"];
 
-        $framework_control_tests = get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id, $control_id);
-        foreach($framework_control_tests as $framework_control_test){
-            $results[] = array(
-                'id' => "test_".$framework_and_control."_".$framework_control_test['id'],
-                'state' => 'open',
-                'name' => "<a class='test-name' data-id='{$framework_control_test['id']}' href='".$_SESSION['base_url']."/' title='".$escaper->escapeHtml($lang['Test'])."'>".$escaper->escapeHtml($framework_control_test['name'])."</a>",
-                'desired_frequency' => $escaper->escapeHtml($framework_control_test['desired_frequency']),
-                'last_audit_date' => $escaper->escapeHtml($framework_control_test['last_date']),
-                'next_audit_date' => $escaper->escapeHtml($framework_control_test['next_date']),
-                'status' => $escaper->escapeHtml($framework_control_test['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
-                'action' => "<div class='text-center'><button data-id='{$framework_control_test['id']}' class='initiate-test-btn' >".$escaper->escapeHtml($lang['InitiateTest'])."</button></div>",
-            );
+        $results = array();
+
+        // If framework was loaded
+        if(empty($_GET['id'])){
+            // Get active frameworks
+            $frameworks = get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control);
+    //        exit;
+            foreach($frameworks as $framework){
+                $results[] = array(
+                    'id' => 'framework_'.$framework['value'],
+                    'state' => 'closed',
+                    'name' => "<a class='framework-name' data-id='{$framework['value']}' href='' title='".$escaper->escapeHtml($lang['Framework'])."'>".$escaper->escapeHtml($framework['name'])."</a>",
+                    'last_audit_date' => $escaper->escapeHtml($framework['last_audit_date']),
+                    'desired_frequency' => $escaper->escapeHtml($framework['desired_frequency']),
+                    'next_audit_date' => $escaper->escapeHtml($framework['next_audit_date']),
+                    'status' => $escaper->escapeHtml($framework['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
+                    'action' => "<div class='text-center'><button data-id='{$framework['value']}' class='initiate-framework-audit-btn' >".$escaper->escapeHtml($lang['InitiateFrameworkAudit'])."</button></div>"
+                );
+            }
         }
-    }
+        // If a framework node was clicked
+        elseif(stripos($_GET['id'], "framework_") !== false){
+            $framework_value = (int)str_replace("framework_", "", $_GET['id']);
+            $framework_controls = get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_value);
+            foreach($framework_controls as $framework_control){
+                $results[] = array(
+                    'id' => "control_".$framework_value."_".$framework_control['id'],
+                    'state' => 'closed',
+                    'name' => "<a class='control-name' data-id='{$framework_control['id']}' href='' title='".$escaper->escapeHtml($lang['Control'])."'>".$escaper->escapeHtml($framework_control['short_name'])."</a>",
+                    'last_audit_date' => $escaper->escapeHtml($framework_control['last_audit_date']),
+                    'desired_frequency' => $escaper->escapeHtml($framework_control['desired_frequency']),
+                    'next_audit_date' => $escaper->escapeHtml($framework_control['next_audit_date']),
+                    'status' => $escaper->escapeHtml($framework_control['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
+                    'action' => "<div class='text-center'><button data-id='{$framework_control['id']}' class='initiate-control-audit-btn' >".$escaper->escapeHtml($lang['InitiateControlAudit'])."</button></div>",
+                );
+            }
+        }
+        elseif(stripos($_GET['id'], "control_") !== false)
+        {
+            $framework_and_control = str_replace("control_", "", $_GET['id']);
+            $framework_id = (int)explode("_", $framework_and_control)[0];
+            $control_id = (int)explode("_", $framework_and_control)[1];
 
-    echo json_encode($results);
+            $framework_control_tests = get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id, $control_id);
+            foreach($framework_control_tests as $framework_control_test){
+                $results[] = array(
+                    'id' => "test_".$framework_and_control."_".$framework_control_test['id'],
+                    'state' => 'open',
+                    'name' => "<a class='test-name' data-id='{$framework_control_test['id']}' href='".$_SESSION['base_url']."/' title='".$escaper->escapeHtml($lang['Test'])."'>".$escaper->escapeHtml($framework_control_test['name'])."</a>",
+                    'desired_frequency' => $escaper->escapeHtml($framework_control_test['desired_frequency']),
+                    'last_audit_date' => $escaper->escapeHtml($framework_control_test['last_date']),
+                    'next_audit_date' => $escaper->escapeHtml($framework_control_test['next_date']),
+                    'status' => $escaper->escapeHtml($framework_control_test['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
+                    'action' => "<div class='text-center'><button data-id='{$framework_control_test['id']}' class='initiate-test-btn' >".$escaper->escapeHtml($lang['InitiateTest'])."</button></div>",
+                );
+            }
+        }
+        echo json_encode($results);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+    }    
+
     exit;
 }
 
@@ -3360,90 +3511,98 @@ function getPastTestAuditsResponse()
     global $lang;
     global $escaper;
 
-    $draw = $escaper->escapeHtml($_GET['draw']);
-
-    $orderColumn = (int)$_GET['order'][0]['column'];
-    $orderDir = $escaper->escapeHtml($_GET['order'][0]['dir']);
-
-    // Filter params
-    $filters = array(
-        "filter_text"   => $escaper->escapeHtml($_GET['filter_text']),
-        "filter_control"        => $escaper->escapeHtml($_GET['filter_control']),
-        "filter_test_result"    => $escaper->escapeHtml($_GET['filter_test_result']),
-        "filter_framework"      => empty($_GET['filter_framework']) ? [] : $_GET['filter_framework'],
-        "filter_start_audit_date"   => $_GET['filter_start_audit_date'] ? get_standard_date_from_default_format($_GET['filter_start_audit_date']) : "",
-        "filter_end_audit_date"     => $_GET['filter_end_audit_date'] ? get_standard_date_from_default_format($_GET['filter_end_audit_date']) : "",
-    );
-
-    $columnNames = array(
-        "test_name",
-        "last_date",
-        "control_name",
-        "framework_name",
-        "status",
-        "test_result",
-    );
-
-    // Get past tests
-    $past_test_audits = get_framework_control_test_audits(false, $columnNames[$orderColumn], $orderDir, $filters);
-
-    $recordsTotal = count($past_test_audits);
-
-    $data = array();
-
-    foreach ($past_test_audits as $key=>$test_audit)
+    // If the user has compliance permissions
+    if (check_permission_compliance())
     {
-        // If it is not requested to view all
-        if($_GET['length'] != -1){
-            if($key < $_GET['start']){
-                continue;
+        $draw = $escaper->escapeHtml($_GET['draw']);
+
+        $orderColumn = (int)$_GET['order'][0]['column'];
+        $orderDir = $escaper->escapeHtml($_GET['order'][0]['dir']);
+
+        // Filter params
+        $filters = array(
+            "filter_text"   => $escaper->escapeHtml($_GET['filter_text']),
+            "filter_control"        => $escaper->escapeHtml($_GET['filter_control']),
+            "filter_test_result"    => $escaper->escapeHtml($_GET['filter_test_result']),
+            "filter_framework"      => empty($_GET['filter_framework']) ? [] : $_GET['filter_framework'],
+            "filter_start_audit_date"   => $_GET['filter_start_audit_date'] ? get_standard_date_from_default_format($_GET['filter_start_audit_date']) : "",
+            "filter_end_audit_date"     => $_GET['filter_end_audit_date'] ? get_standard_date_from_default_format($_GET['filter_end_audit_date']) : "",
+        );
+
+        $columnNames = array(
+            "test_name",
+            "last_date",
+            "control_name",
+            "framework_name",
+            "status",
+            "test_result",
+        );
+
+        // Get past tests
+        $past_test_audits = get_framework_control_test_audits(false, $columnNames[$orderColumn], $orderDir, $filters);
+
+        $recordsTotal = count($past_test_audits);
+
+        $data = array();
+
+        foreach ($past_test_audits as $key=>$test_audit)
+        {
+            // If it is not requested to view all
+            if($_GET['length'] != -1){
+                if($key < $_GET['start']){
+                    continue;
+                }
+                if($key >= ($_GET['start'] + $_GET['length'])){
+                    break;
+                }
             }
-            if($key >= ($_GET['start'] + $_GET['length'])){
+
+            switch($test_audit['test_result']){
+                case "Pass":
+                    $background_class = "green-background";
+                break;
+                case "Inconclusive":
+                    $background_class = "";
+                break;
+                case "Fail":
+                    $background_class = "red-background";
+                break;
+                case "":
+                    $background_class = "white-background";
                 break;
             }
-        }
+            
+            // If the last date is not 0000-00-00
+            if ($test_audit['last_date'] != "0000-00-00")
+            {
+               // Set it to the proper format
+               $last_date = strtotime($test_audit['last_date']) ? date(get_default_date_format(), strtotime($test_audit['last_date'])) : "";
+            }
+            else $last_date = "";
 
-        switch($test_audit['test_result']){
-            case "Pass":
-                $background_class = "green-background";
-            break;
-            case "Inconclusive":
-                $background_class = "";
-            break;
-            case "Fail":
-                $background_class = "red-background";
-            break;
-            case "":
-                $background_class = "white-background";
-            break;
+            $data[] = [
+                "<div ><a href='".$_SESSION['base_url']."/compliance/view_test.php?id=".$test_audit['id']."' class='text-left'>".$escaper->escapeHtml($test_audit['name'])."</a><input type='hidden' class='background-class' data-background='{$background_class}'></div>",
+                "<div class=\"{}\">".$escaper->escapeHtml($last_date)."</div>",
+                "<div >".$escaper->escapeHtml($test_audit['control_name'])."</div>",
+                "<div >".$escaper->escapeHtml($test_audit['framework_name'])."</div>",
+                "<div >".$escaper->escapeHtml($test_audit['audit_status_name'])."</div>",
+                "<div >".$escaper->escapeHtml($test_audit['test_result'] ? $test_audit['test_result'] : "--")."</div>",
+                "<div class='text-center'><button class='reopen' data-id='{$test_audit['id']}'>".$escaper->escapeHtml($lang['Reopen'])."</button></div>",
+            ];
         }
-        
-        // If the last date is not 0000-00-00
-        if ($test_audit['last_date'] != "0000-00-00")
-        {
-           // Set it to the proper format
-           $last_date = strtotime($test_audit['last_date']) ? date(get_default_date_format(), strtotime($test_audit['last_date'])) : "";
-        }
-        else $last_date = "";
-
-        $data[] = [
-            "<div ><a href='".$_SESSION['base_url']."/compliance/view_test.php?id=".$test_audit['id']."' class='text-left'>".$escaper->escapeHtml($test_audit['name'])."</a><input type='hidden' class='background-class' data-background='{$background_class}'></div>",
-            "<div class=\"{}\">".$escaper->escapeHtml($last_date)."</div>",
-            "<div >".$escaper->escapeHtml($test_audit['control_name'])."</div>",
-            "<div >".$escaper->escapeHtml($test_audit['framework_name'])."</div>",
-            "<div >".$escaper->escapeHtml($test_audit['audit_status_name'])."</div>",
-            "<div >".$escaper->escapeHtml($test_audit['test_result'] ? $test_audit['test_result'] : "--")."</div>",
-            "<div class='text-center'><button class='reopen' data-id='{$test_audit['id']}'>".$escaper->escapeHtml($lang['Reopen'])."</button></div>",
-        ];
+        $result = array(
+            'draw' => $draw,
+            'data' => $data,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsTotal,
+        );
+        echo json_encode($result);
+        exit;
     }
-    $result = array(
-        'draw' => $draw,
-        'data' => $data,
-        'recordsTotal' => $recordsTotal,
-        'recordsFiltered' => $recordsTotal,
-    );
-    echo json_encode($result);
-    exit;
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+    }
 }
 
 /************************************************************************
@@ -3454,91 +3613,99 @@ function getActiveTestAuditsResponse()
     global $lang;
     global $escaper;
 
-    $draw = $escaper->escapeHtml($_GET['draw']);
-
-    $orderColumn = (int)$_GET['order'][0]['column'];
-    $orderDir = $escaper->escapeHtml($_GET['order'][0]['dir']);
-
-    // Filter params
-    $filters = array(
-        "filter_text"       => $escaper->escapeHtml($_GET['filter_text']),
-        "filter_framework"  => empty($_GET['filter_framework']) ? [] : $_GET['filter_framework'],
-        "filter_status"     => empty($_GET['filter_status']) ? [] : $_GET['filter_status'],
-    );
-
-    $columnNames = array(
-        "test_name",
-        "test_frequency",
-        "tester",
-        "objective",
-        "control_name",
-        "framework_name",
-        "status",
-        "last_date",
-        "next_date",
-    );
-
-    // Get active tests
-    $active_tests = get_framework_control_test_audits(true, $columnNames[$orderColumn], $orderDir, $filters);
-
-    $recordsTotal = count($active_tests);
-
-    $data = array();
-
-    foreach ($active_tests as $key=>$test)
+    // If the user has compliance permissions
+    if (check_permission_compliance())
     {
-        // If it is not requested to view all
-        if($_GET['length'] != -1){
-            if($key < $_GET['start']){
-                continue;
-            }
-            if($key >= ($_GET['start'] + $_GET['length'])){
-                break;
-            }
-        }
+        $draw = $escaper->escapeHtml($_GET['draw']);
 
-       if(date("Y-m-d") <= $test['next_date']){
-            $next_date_background_class = "green-background";
-        }else{
-            $next_date_background_class = "red-background";
-        }
-        
-        // If the last date is not 0000-00-00
-        if ($test['last_date'] != "0000-00-00")
-        {
-           // Set it to the proper format
-           $last_date = strtotime($test['last_date']) ? date(get_default_date_format(), strtotime($test['last_date'])) : "";
-        }
-        else $last_date = "";
+        $orderColumn = (int)$_GET['order'][0]['column'];
+        $orderDir = $escaper->escapeHtml($_GET['order'][0]['dir']);
 
-        // If the next date is not 0000-00-00
-        if ($test['next_date'] != "0000-00-00")
+        // Filter params
+        $filters = array(
+            "filter_text"       => $escaper->escapeHtml($_GET['filter_text']),
+            "filter_framework"  => empty($_GET['filter_framework']) ? [] : $_GET['filter_framework'],
+            "filter_status"     => empty($_GET['filter_status']) ? [] : $_GET['filter_status'],
+        );
+
+        $columnNames = array(
+            "test_name",
+            "test_frequency",
+            "tester",
+            "objective",
+            "control_name",
+            "framework_name",
+            "status",
+            "last_date",
+            "next_date",
+        );
+
+        // Get active tests
+        $active_tests = get_framework_control_test_audits(true, $columnNames[$orderColumn], $orderDir, $filters);
+
+        $recordsTotal = count($active_tests);
+
+        $data = array();
+
+        foreach ($active_tests as $key=>$test)
         {
-           // Set it to the proper format
-           $next_date = strtotime($test['next_date']) ? date(get_default_date_format(), strtotime($test['next_date'])) : "";
+            // If it is not requested to view all
+            if($_GET['length'] != -1){
+                if($key < $_GET['start']){
+                    continue;
+                }
+                if($key >= ($_GET['start'] + $_GET['length'])){
+                    break;
+                }
+            }
+
+           if(date("Y-m-d") <= $test['next_date']){
+                $next_date_background_class = "green-background";
+            }else{
+                $next_date_background_class = "red-background";
+            }
+            
+            // If the last date is not 0000-00-00
+            if ($test['last_date'] != "0000-00-00")
+            {
+               // Set it to the proper format
+               $last_date = strtotime($test['last_date']) ? date(get_default_date_format(), strtotime($test['last_date'])) : "";
+            }
+            else $last_date = "";
+
+            // If the next date is not 0000-00-00
+            if ($test['next_date'] != "0000-00-00")
+            {
+               // Set it to the proper format
+               $next_date = strtotime($test['next_date']) ? date(get_default_date_format(), strtotime($test['next_date'])) : "";
+            }
+            else $next_date = "";
+            
+            $data[] = [
+                "<div ><a href='".$_SESSION['base_url']."/compliance/testing.php?id=".$test['id']."' class='text-left'>".$escaper->escapeHtml($test['name'])."</a><input type='hidden' class='background-class' data-background='{$next_date_background_class}'></div>",
+                "<div >".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])."</div>",
+                "<div >".$escaper->escapeHtml($test['tester_name'])."</div>",
+                "<div >".$escaper->escapeHtml($test['objective'])."</div>",
+                "<div >".$escaper->escapeHtml($test['control_name'])."</div>",
+                "<div >".$escaper->escapeHtml($test['framework_name'])."</div>",
+                "<div >".$escaper->escapeHtml($test['audit_status_name'])."</div>",
+                "<div >".$escaper->escapeHtml($last_date)."</div>",
+                "<div class='text-center '>".$escaper->escapeHtml($next_date)."</div>",
+            ];
         }
-        else $next_date = "";
-        
-        $data[] = [
-            "<div ><a href='".$_SESSION['base_url']."/compliance/testing.php?id=".$test['id']."' class='text-left'>".$escaper->escapeHtml($test['name'])."</a><input type='hidden' class='background-class' data-background='{$next_date_background_class}'></div>",
-            "<div >".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])."</div>",
-            "<div >".$escaper->escapeHtml($test['tester_name'])."</div>",
-            "<div >".$escaper->escapeHtml($test['objective'])."</div>",
-            "<div >".$escaper->escapeHtml($test['control_name'])."</div>",
-            "<div >".$escaper->escapeHtml($test['framework_name'])."</div>",
-            "<div >".$escaper->escapeHtml($test['audit_status_name'])."</div>",
-            "<div >".$escaper->escapeHtml($last_date)."</div>",
-            "<div class='text-center '>".$escaper->escapeHtml($next_date)."</div>",
-        ];
+        $result = array(
+            'draw' => $draw,
+            'data' => $data,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsTotal,
+        );
+        echo json_encode($result);
+        exit;
     }
-    $result = array(
-        'draw' => $draw,
-        'data' => $data,
-        'recordsTotal' => $recordsTotal,
-        'recordsFiltered' => $recordsTotal,
-    );
-    echo json_encode($result);
-    exit;
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+    }
 }
 
 /********************************
@@ -3548,15 +3715,23 @@ function saveTestAuditCommentResponse()
 {
     global $lang, $escaper;
 
-    $test_audit_id =  (int)$_POST['id'];
-    $comment =  $escaper->escapeHtml($_POST['comment']);
+    // If the user has compliance permissions
+    if (check_permission_compliance())
+    {
+        $test_audit_id =  (int)$_POST['id'];
+        $comment =  $escaper->escapeHtml($_POST['comment']);
 
-    // Save comment
-    save_test_comment($test_audit_id, $comment);
+        // Save comment
+        save_test_comment($test_audit_id, $comment);
 
-    $commentList = get_testing_comment_list($test_audit_id);
+        $commentList = get_testing_comment_list($test_audit_id);
 
-    json_response(200, "Comment List", $commentList);
+        json_response(200, get_alert(true), $commentList);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+    }
 }
 
 /*******************************
@@ -3564,15 +3739,25 @@ function saveTestAuditCommentResponse()
  *******************************/
 function reopenTestAuditResponse()
 {
-    $audit_id = $_POST['id'];
+    global $lang, $escaper;
 
-    reopen_test_audit($audit_id);
+    // If the user has compliance permissions
+    if (check_permission_compliance())
+    {
+        $audit_id = $_POST['id'];
 
-    $result = array(
-        'status' => true
-    );
+        reopen_test_audit($audit_id);
 
-    json_response(200, "Reopen Test Audit", $result);
+        $result = array(
+            'status' => true
+        );
+
+        json_response(200, "Reopen Test Audit", $result);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+    }
 }
 
 /********************************************************
@@ -3765,6 +3950,86 @@ function customization_extra_saveTemplate()
 
             // Save template and get response
             saveTemplateResponse();
+        }
+    }
+}
+
+/**************************************************
+ * FUNCTION: CUSTOM AUTHENTICATION ADD LDAP GROUP *
+ **************************************************/
+function authentication_extra_add_ldap_group()
+{
+    // Check customization extra is enabled
+    if (custom_authentication_extra())
+    {
+        // If the customization extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/authentication/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
+
+            // Add LDAP group and get response
+            addLdapGroupResponse();
+        }
+    }
+}
+
+/***********************************************************
+ * FUNCTION: CUSTOM AUTHENTICATION GET TEAMS BY LDAP GROUP *
+ ***********************************************************/
+function authentication_extra_getTeamsByLdapGroup()
+{
+    // Check customization extra is enabled
+    if (custom_authentication_extra())
+    {
+        // If the customization extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/authentication/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
+
+            // Get teams response
+            getTeamsByLdapGroupResponse();
+        }
+    }
+}
+
+/*****************************************************
+ * FUNCTION: CUSTOM AUTHENTICATION DELETE LDAP GROUP *
+ *****************************************************/
+function authentication_extra_deleteLdapGroup()
+{
+    // Check customization extra is enabled
+    if (custom_authentication_extra())
+    {
+        // If the customization extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/authentication/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
+
+            // Delete LDAP group and get response
+            deleteLdapGroupResponse();
+        }
+    }
+}
+
+/**************************************************
+ * FUNCTION: CUSTOM AUTHENTICATION SET LDAP TEAMS *
+ **************************************************/
+function authentication_extra_setLdapGroupAndTeams()
+{
+    // Check customization extra is enabled
+    if (custom_authentication_extra())
+    {
+        // If the customization extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/authentication/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
+
+            // Set LDAP teams and get response
+            setLdapGroupAndTeamsResponse();
         }
     }
 }
@@ -4076,10 +4341,20 @@ function update_likelihood_name_api(){
  **********************************************/
 function getDocumentsResponse()
 {
-    $type = $_GET['type'];
-    $result = get_documents_as_treegrid($type);
-    echo json_encode($result);
-    exit;
+    global $lang, $escaper;
+
+    // If the user has governance permissions
+    if (check_permission_governance())
+    {
+        $type = $_GET['type'];
+        $result = get_documents_as_treegrid($type);
+        echo json_encode($result);
+        exit;
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
 }
 
 /**************************************
@@ -4087,12 +4362,22 @@ function getDocumentsResponse()
  **************************************/
 function getDocumentResponse()
 {
-    $id = (int)$_GET['id'];
-    $document = get_document_by_id($id);
+    global $lang, $escaper;
 
-    $document['creation_date'] = ($document['creation_date'] != "0000-00-00" && $document['creation_date']) ? date(get_default_date_format(), strtotime($document['creation_date'])) : "";
+    // If the user has governance permissions
+    if (check_permission_governance())
+    {
+        $id = (int)$_GET['id'];
+        $document = get_document_by_id($id);
 
-    json_response(200, "Success", $document);
+        $document['creation_date'] = ($document['creation_date'] != "0000-00-00" && $document['creation_date']) ? date(get_default_date_format(), strtotime($document['creation_date'])) : "";
+
+        json_response(200, "Success", $document);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
 }
 
 /******************************************************
@@ -4102,61 +4387,69 @@ function getTabularDocumentsResponse()
 {
     global $escaper, $lang;
     
-    $type = $_GET['type'];
-    $document_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-    
-    // Get current document
-    $current_document = get_document_by_id($document_id);
-    $version = $current_document['file_version'];
-    
-    // If this is request to view all versions of selected document.
-    if($document_id)
+    // If the user has governance permissions
+    if (check_permission_governance())
     {
-        // Get documents with versions
-        $documents = get_document_versions_by_id($document_id);
+        $type = $_GET['type'];
+        $document_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         
-        foreach($documents as &$document){
-            $document['id'] = $document['id']."_".$document['file_version'];
-            $document['state'] = "open";
-            $document['document_type'] = $escaper->escapeHtml($document['document_type']);
-            $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name']). " (".$document['file_version'].")" ."</a>";
-            $document['status'] = $escaper->escapeHtml($document['status']);
+        // Get current document
+        $current_document = get_document_by_id($document_id);
+        $version = $current_document['file_version'];
+        
+        // If this is request to view all versions of selected document.
+        if($document_id)
+        {
+            // Get documents with versions
+            $documents = get_document_versions_by_id($document_id);
             
-            $document['creation_date'] = ($document['creation_date'] != "0000-00-00" && $document['creation_date']) ? date(get_default_date_format(), strtotime($document['creation_date'])) : "";
-            $document['actions'] = "<div class=\"text-center\">&nbsp;&nbsp;&nbsp;";
-            if(!empty($_SESSION['delete_documentation']) && $version != $document['file_version'])
-            {
-                $document['actions'] .= "<a class=\"document--delete\" data-version=\"".$document['file_version']."\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a>&nbsp;&nbsp;&nbsp;";
+            foreach($documents as &$document){
+                $document['id'] = $document['id']."_".$document['file_version'];
+                $document['state'] = "open";
+                $document['document_type'] = $escaper->escapeHtml($document['document_type']);
+                $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name']). " (".$document['file_version'].")" ."</a>";
+                $document['status'] = $escaper->escapeHtml($document['status']);
+                
+                $document['creation_date'] = ($document['creation_date'] != "0000-00-00" && $document['creation_date']) ? date(get_default_date_format(), strtotime($document['creation_date'])) : "";
+                $document['actions'] = "<div class=\"text-center\">&nbsp;&nbsp;&nbsp;";
+                if(!empty($_SESSION['delete_documentation']) && $version != $document['file_version'])
+                {
+                    $document['actions'] .= "<a class=\"document--delete\" data-version=\"".$document['file_version']."\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a>&nbsp;&nbsp;&nbsp;";
+                }
+                $document['actions'] .= "</div>";
             }
-            $document['actions'] .= "</div>";
         }
+        // If this is request to view document list.
+        else
+        {
+            $documents = get_documents($type);
+            foreach($documents as &$document){
+                $document['state'] = "closed";
+                $document['document_type'] = $escaper->escapeHtml($document['document_type']);
+                $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name'])."</a>";
+                $document['status'] = $escaper->escapeHtml($document['status']);
+                $document['creation_date'] = ($document['creation_date'] != "0000-00-00" && $document['creation_date']) ? date(get_default_date_format(), strtotime($document['creation_date'])) : "";
+
+                $document['actions'] = "<div class=\"text-center\">&nbsp;&nbsp;&nbsp;";
+                if(!empty($_SESSION['modify_documentation']))
+                {
+                    $document['actions'] .= "<a class=\"document--edit\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;";
+                }
+                if(!empty($_SESSION['delete_documentation']))
+                {
+                    $document['actions'] .= "<a class=\"document--delete\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a>&nbsp;&nbsp;&nbsp;";
+                }
+                $document['actions'] .= "</div>";
+            }
+        }
+        
+        echo json_encode($documents);
+        exit;
     }
-    // If this is request to view document list.
     else
     {
-        $documents = get_documents($type);
-        foreach($documents as &$document){
-            $document['state'] = "closed";
-            $document['document_type'] = $escaper->escapeHtml($document['document_type']);
-            $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name'])."</a>";
-            $document['status'] = $escaper->escapeHtml($document['status']);
-            $document['creation_date'] = ($document['creation_date'] != "0000-00-00" && $document['creation_date']) ? date(get_default_date_format(), strtotime($document['creation_date'])) : "";
-
-            $document['actions'] = "<div class=\"text-center\">&nbsp;&nbsp;&nbsp;";
-            if(!empty($_SESSION['modify_documentation']))
-            {
-                $document['actions'] .= "<a class=\"document--edit\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;";
-            }
-            if(!empty($_SESSION['delete_documentation']))
-            {
-                $document['actions'] .= "<a class=\"document--delete\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a>&nbsp;&nbsp;&nbsp;";
-            }
-            $document['actions'] .= "</div>";
-        }
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
     }
-    
-    echo json_encode($documents);
-    exit;
 }
 
 /*******************************************************
@@ -4213,11 +4506,11 @@ function get_mitigation_control_info(){
             </tr>
             <tr>
             <td align="right"><strong>' . $escaper->escapeHtml($lang['Description']) . '</strong>: </td>
-            <td colspan="5">' . $escaper->escapeHtml( $description ) . '</td>
+            <td colspan="5">' . nl2br($escaper->escapeHtml( $description )) . '</td>
             </tr>
             <tr>
             <td align="right"><strong>' . $escaper->escapeHtml($lang['SupplementalGuidance']) . '</strong>: </td>
-            <td colspan="5">' . $escaper->escapeHtml( $supplemental_guidance ) . '</td>
+            <td colspan="5">' . nl2br($escaper->escapeHtml( $supplemental_guidance )) . '</td>
             </tr>
         </tbody>
     </table>';

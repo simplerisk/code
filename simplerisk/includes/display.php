@@ -1028,7 +1028,7 @@ function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
 /*************************************************
 * FUNCTION: Display Mitigation Controls Dropdown *
 **************************************************/
-function mitigation_controls_dropdown($selected_control_ids_string)
+function mitigation_controls_dropdown($selected_control_ids_string = "")
 {
     global $lang;
     global $escaper;
@@ -2108,14 +2108,14 @@ function classic_scoring_table($id, $calculated_risk, $CLASSIC_likelihood, $CLAS
 
     echo "<tr>\n";
     echo "<td width=\"180\">". $escaper->escapeHtml($lang['Likelihood']) .":</td>\n";
-    echo "<td width=\"30\">[ " . $escaper->escapeHtml($CLASSIC_likelihood) . " ]</td>\n";
+    echo "<td width=\"40\">[ " . $escaper->escapeHtml($CLASSIC_likelihood) . " ]</td>\n";
     echo "<td>" . $escaper->escapeHtml(get_name_by_value("likelihood", $CLASSIC_likelihood)) . "</td>\n";
     echo "<td>&nbsp;</td>\n";
     echo "</tr>\n";
 
     echo "<tr>\n";
     echo "<td width=\"180\">". $escaper->escapeHtml($lang['Impact']) .":</td>\n";
-    echo "<td width=\"30\">[ " . $escaper->escapeHtml($CLASSIC_impact) . " ]</td>\n";
+    echo "<td width=\"40\">[ " . $escaper->escapeHtml($CLASSIC_impact) . " ]</td>\n";
     echo "<td>" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "</td>\n";
     echo "<td>&nbsp;</td>\n";
     echo "</tr>\n";
@@ -3797,7 +3797,7 @@ function view_risks_and_assets_selections($report)
 /******************************************
 * FUNCTION: VIEW GET RISKS BY SELECTIONS *
 ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_asset=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false)
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_asset=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $custom_values=[])
 {
     global $lang;
     global $escaper;
@@ -3876,280 +3876,758 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_as
     echo "</div>\n";
 
     // Risk columns
-        echo display_risk_columns( $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements);
+        echo display_risk_columns( $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $custom_values);
 
 
 
     echo "</form>\n";
 }
 
-/************************************************
+/*********************************
 * FUNCTION: DISPLAY RISK COLUMNS *
-************************************************/
-function display_risk_columns( $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false){
+**********************************/
+function display_risk_columns( $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $custom_values=[]){
     global $escaper, $lang;
     echo "<div class=\"row-fluid\">\n";
 
-    echo "<div class=\"span8\">\n";
-    echo "<div class=\"well\">\n";
-    echo "<div class=\"row-fluid\">\n";
-    echo "<h4>" . $escaper->escapeHtml($lang['RiskColumns']) . ":</h4>\n";
-    echo "<div class=\"span4\">\n";
-    echo "<table border=\"0\">\n";
-    echo "<tr><td><input class=\"hidden-checkbox\" type=\"checkbox\" name=\"id\" id=\"checkbox_id\"" . ($id == true ? " checked=\"yes\"" : "") . "  /> <label for=\"checkbox_id\">". $escaper->escapeHtml($lang['ID']) ."</label> </td></tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"risk_status\" id=\"checkbox_risk_status\"" . ($risk_status == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_risk_status\">". $escaper->escapeHtml($lang['Status']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"subject\" id=\"checkbox_subject\"" . ($subject == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_subject\">". $escaper->escapeHtml($lang['Subject']) ."</label>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"reference_id\" id=\"checkbox_reference_id\"" . ($reference_id == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_reference_id\">". $escaper->escapeHtml($lang['ExternalReferenceId']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"regulation\" id=\"checkbox_regulation\"" . ($regulation == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_regulation\">". $escaper->escapeHtml($lang['ControlRegulation']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"control_number\" id=\"checkbox_control_number\"" . ($control_number == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_control_number\">". $escaper->escapeHtml($lang['ControlNumber']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"location\" id=\"checkbox_location\"" . ($location == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_location\">". $escaper->escapeHtml($lang['SiteLocation']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"source\" id=\"checkbox_source\"" . ($source == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_source\">". $escaper->escapeHtml($lang['RiskSource']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"category\" id=\"checkbox_category\"" . ($category == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_category\">". $escaper->escapeHtml($lang['Category']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"team\" id=\"checkbox_team\"" . ($team == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_team\">". $escaper->escapeHtml($lang['Team']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"technology\" id=\"checkbox_technology\"" . ($technology == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_technology\">". $escaper->escapeHtml($lang['Technology']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"owner\" id=\"checkbox_owner\"" . ($owner == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_owner\">". $escaper->escapeHtml($lang['Owner']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"manager\" id=\"checkbox_manager\"" . ($manager == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_manager\">". $escaper->escapeHtml($lang['OwnersManager']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"submitted_by\" id=\"checkbox_submitted_by\"" . ($submitted_by == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_submitted_by\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</label>
-    </td>
-    </tr>\n";
-    echo "</table>\n";
-    echo "</div>\n";
-    echo "<div class=\"span4\">\n";
-    echo "<table border=\"0\">\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"scoring_method\" id=\"checkbox_scoring_method\"" . ($scoring_method == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_scoring_method\">". $escaper->escapeHtml($lang['RiskScoringMethod']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"calculated_risk\" id=\"checkbox_calculated_risk\"" . ($calculated_risk == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_calculated_risk\">". $escaper->escapeHtml($lang['InherentRisk']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"residual_risk\" id=\"checkbox_residual_risk\"" . ($residual_risk == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_residual_risk\">". $escaper->escapeHtml($lang['ResidualRisk']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"submission_date\" id=\"checkbox_submission_date\"" . ($submission_date == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_submission_date\">". $escaper->escapeHtml($lang['SubmissionDate']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"project\" id=\"checkbox_project\"" . ($project == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_project\">". $escaper->escapeHtml($lang['Project']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"days_open\" id=\"checkbox_days_open\"" . ($days_open == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"checkbox_days_open\">". $escaper->escapeHtml($lang['DaysOpen']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"affected_assets\" id=\"AffectedAssets\"" . ($affected_assets == true ? " checked=\"yes\"" : "") . "  />
-    <label for=\"AffectedAssets\">". $escaper->escapeHtml($lang['AffectedAssets']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"risk_assessment\" id=\"RiskAssessment\"" . ($risk_assessment == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"RiskAssessment\">". $escaper->escapeHtml($lang['RiskAssessment']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"additional_notes\" id=\"AdditionalNotes\"" . ($additional_notes == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"AdditionalNotes\">". $escaper->escapeHtml($lang['AdditionalNotes']) ."</label>
-    </td>
-    </tr>\n";
-    echo "</table>\n";
-    echo "</div>\n";
-    echo "</div>\n";
-    echo "</div>\n";
-    echo "</div>\n";
+    
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        $active_fields = get_active_fields();
+        
+        $risk_fields = [];
+        $mitigation_fields = [];
+        $review_fields = [];
+        
+        foreach($active_fields as $active_field)
+        {
+            switch($active_field['tab_index']){
+                case 1:
+                    $risk_fields[] = $active_field;
+                break;
+                case 2:
+                    $mitigation_fields[] = $active_field;
+                break;
+                case 3:
+                    $review_fields[] = $active_field;
+                break;
+            }
+        }
+        
+        // Risks
+        echo "<div class=\"span8\">\n";
+            echo "<div class=\"well\">\n";
+                echo "<h4>" . $escaper->escapeHtml($lang['RiskColumns']) . ":</h4>\n";
+                echo "<div class=\"row-fluid\">\n";
+                    echo "<div class=\"span4\">\n";
+                        echo "<table border=\"0\">\n";
+                            echo "<tr><td><input class=\"hidden-checkbox\" type=\"checkbox\" name=\"id\" id=\"checkbox_id\"" . ($id == true ? " checked=\"yes\"" : "") . "  /> <label for=\"checkbox_id\">". $escaper->escapeHtml($lang['ID']) ."</label> </td></tr>\n";
+                            
+                            echo "<tr>
+                                <td>
+                                    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"risk_status\" id=\"checkbox_risk_status\"" . ($risk_status == true ? " checked=\"yes\"" : "") . " />
+                                    <label for=\"checkbox_risk_status\">". $escaper->escapeHtml($lang['Status']) ."</label>
+                                </td>
+                            </tr>\n";
+                            echo "<tr>
+                                <td>
+                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"subject\" id=\"checkbox_subject\"" . ($subject == true ? " checked=\"yes\"" : "") . "  />
+                                <label for=\"checkbox_subject\">". $escaper->escapeHtml($lang['Subject']) ."</label>
+                            </tr>\n";
+                        
+                            $count_of_items = floor(count($risk_fields) / 3);    
+                            for($i=0; $i<$count_of_items; $i++){
+                                $risk_field = $risk_fields[$i];
+                                // If this is main field
+                                if($risk_field['is_basic'] == 1) 
+                                {
+                                    $dynamic_field_info = get_dynamic_names_by_main_field_name($risk_field['name']);
+                                    
+                                    // If this main field is valid in dynamic risk page.
+                                    if($dynamic_field_info)
+                                    {
+                                        echo "<tr>
+                                            <td>
+                                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"{$dynamic_field_info['name']}\" id=\"checkbox_{$dynamic_field_info['name']}\"" . (${$dynamic_field_info['name']} == true ? " checked=\"yes\"" : "") . "  />
+                                            <label for=\"checkbox_{$dynamic_field_info['name']}\">". $dynamic_field_info['text'] ."</label>
+                                        </tr>\n";
+                                    }
+                                }
+                                // If this is custom field.
+                                else
+                                {
+                                    echo "<tr>
+                                        <td>
+                                        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$risk_field['id']}\" id=\"checkbox_custom_field_{$risk_field['id']}\"" . (!empty($custom_values["custom_field_{$risk_field['id']}"]) == true ? " checked=\"yes\"" : "") . "  />
+                                        <label for=\"checkbox_custom_field_{$risk_field['id']}\">". $risk_field['name'] ."</label>
+                                    </tr>\n";
+                                }
+                            }
+                        echo "</table>\n";
+                    echo "</div>";
+                    echo "<div class=\"span4\">";
+                        echo "<table border=\"0\">\n";
+                            echo "<tr>
+                                <td>
+                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"calculated_risk\" id=\"checkbox_calculated_risk\"" . ($calculated_risk == true ? " checked=\"yes\"" : "") . "  />
+                                <label for=\"checkbox_calculated_risk\">". $escaper->escapeHtml($lang['InherentRisk']) ."</label>
+                                </td>
+                            </tr>\n";
+                            echo "<tr>
+                                <td>
+                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"residual_risk\" id=\"checkbox_residual_risk\"" . ($residual_risk == true ? " checked=\"yes\"" : "") . "  />
+                                <label for=\"checkbox_residual_risk\">". $escaper->escapeHtml($lang['ResidualRisk']) ."</label>
+                                </td>
+                            </tr>\n";
+                            echo "<tr>
+                                <td>
+                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"project\" id=\"checkbox_project\"" . ($project == true ? " checked=\"yes\"" : "") . " />
+                                <label for=\"checkbox_project\">". $escaper->escapeHtml($lang['Project']) ."</label>
+                                </td>
+                            </tr>\n";
+                            echo "<tr>
+                                <td>
+                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"days_open\" id=\"checkbox_days_open\"" . ($days_open == true ? " checked=\"yes\"" : "") . "  />
+                                <label for=\"checkbox_days_open\">". $escaper->escapeHtml($lang['DaysOpen']) ."</label>
+                                </td>
+                            </tr>\n";
+                            for($i; $i<$count_of_items + $count_of_items; $i++){
+                                $risk_field = $risk_fields[$i];
+                                // If this is main field
+                                if($risk_fields[$i]['is_basic'] == 1) 
+                                {
+                                    $dynamic_field_info = get_dynamic_names_by_main_field_name($risk_field['name']);
+                                    // If this main field is valid in dynamic risk page.
+                                    if($dynamic_field_info)
+                                    {
+                                        echo "<tr>
+                                            <td>
+                                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"{$dynamic_field_info['name']}\" id=\"checkbox_{$dynamic_field_info['name']}\"" . (${$dynamic_field_info['name']} == true ? " checked=\"yes\"" : "") . "  />
+                                            <label for=\"checkbox_{$dynamic_field_info['name']}\">". $dynamic_field_info['text'] ."</label>
+                                        </tr>\n";
+                                    }
+                                }
+                                // If this is custom field.
+                                else
+                                {
+                                    echo "<tr>
+                                        <td>
+                                        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$risk_field['id']}\" id=\"checkbox_custom_field_{$risk_field['id']}\"" . (!empty($custom_values["custom_field_{$risk_field['id']}"]) == true ? " checked=\"yes\"" : "") . "  />
+                                        <label for=\"checkbox_custom_field_{$risk_field['id']}\">". $risk_field['name'] ."</label>
+                                    </tr>\n";
+                                }
+                            }
+                            
+                        echo "</table>\n";
+                    echo "</div>";
+                    
+                    echo "<div class=\"span4\">";
+                        echo "<table border=\"0\">\n";
+                            for($i; $i<count($risk_fields); $i++){
+                                $risk_field = $risk_fields[$i];
+                                // If this is main field
+                                if($risk_fields[$i]['is_basic'] == 1) 
+                                {
+                                    $dynamic_field_info = get_dynamic_names_by_main_field_name($risk_field['name']);
+                                    // If this main field is valid in dynamic risk page.
+                                    if($dynamic_field_info)
+                                    {
+                                        echo "<tr>
+                                            <td>
+                                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"{$dynamic_field_info['name']}\" id=\"checkbox_{$dynamic_field_info['name']}\"" . (${$dynamic_field_info['name']} == true ? " checked=\"yes\"" : "") . "  />
+                                            <label for=\"checkbox_{$dynamic_field_info['name']}\">". $dynamic_field_info['text'] ."</label>
+                                        </tr>\n";
+                                    }
+                                }
+                                // If this is custom field.
+                                else
+                                {
+                                    echo "<tr>
+                                        <td>
+                                        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$risk_field['id']}\" id=\"checkbox_custom_field_{$risk_field['id']}\"" . (!empty($custom_values["custom_field_{$risk_field['id']}"]) ? " checked=\"yes\"" : "") . "  />
+                                        <label for=\"checkbox_custom_field_{$risk_field['id']}\">". $risk_field['name'] ."</label>
+                                    </tr>\n";
+                                }
+                            }
+                        echo "</table>\n";
+                    echo "</div>";
 
-    echo "<div class=\"span4\">\n";
-    echo "<div class=\"well\">\n";
-    echo "<div class=\"row-fluid\">\n";
-    echo "<h4>" . $escaper->escapeHtml($lang['MitigationColumns']) . ":</h4>\n";
-    echo "<table border=\"0\">\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_planned\" id=\"checkbox_mitigation_planned\"" . ($mitigation_planned == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_mitigation_planned\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"planning_strategy\" id=\"checkbox_planning_strategy\"" . ($planning_strategy == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_planning_strategy\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"planning_date\" id=\"checkbox_planning_date\"" . ($planning_date == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_planning_date\">". $escaper->escapeHtml($lang['MitigationPlanning']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_effort\" id=\"checkbox_mitigation_effort\"" . ($mitigation_effort == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_mitigation_effort\">". $escaper->escapeHtml($lang['MitigationEffort']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_cost\" id=\"checkbox_mitigation_cost\"" . ($mitigation_cost == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_mitigation_cost\">". $escaper->escapeHtml($lang['MitigationCost']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_owner\" id=\"checkbox_mitigation_owner\"" . ($mitigation_owner == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_mitigation_owner\">". $escaper->escapeHtml($lang['MitigationOwner']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_team\" id=\"checkbox_mitigation_team\"" . ($mitigation_team == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_mitigation_team\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_date\" id=\"checkbox_mitigation_date\"" . ($mitigation_date == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_mitigation_date\">". $escaper->escapeHtml($lang['MitigationDate']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"current_solution\" id=\"CurrentSolution\"" . ($current_solution == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"CurrentSolution\">". $escaper->escapeHtml($lang['CurrentSolution']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"security_recommendations\" id=\"SecurityRecommendations\"" . ($security_recommendations == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"SecurityRecommendations\">". $escaper->escapeHtml($lang['SecurityRecommendations']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"security_requirements\" id=\"SecurityRequirements\"" . ($security_requirements == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"SecurityRequirements\">". $escaper->escapeHtml($lang['SecurityRequirements']) ."</label>
-    </td>
-    </tr>\n";
-    echo "</table>\n";
-    echo "</div>\n";
-    echo "</div>\n";
-    echo "</div>\n";
+                echo "</div>";
+            echo "</div>";
+        echo "</div>";
+        
+        echo "<div class=\"span4\">\n";
+            echo "<div class=\"well\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                    echo "<h4>" . $escaper->escapeHtml($lang['MitigationColumns']) . ":</h4>\n";
+                    echo "<table border=\"0\">\n";    
+                        echo "<tr>
+                            <td>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_planned\" id=\"checkbox_mitigation_planned\"" . ($mitigation_planned == true ? " checked=\"yes\"" : "") . " />
+                            <label for=\"checkbox_mitigation_planned\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</label>
+                            </td>
+                        </tr>\n";
+                        echo "<tr>
+                            <td>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_date\" id=\"checkbox_mitigation_date\"" . ($mitigation_date == true ? " checked=\"yes\"" : "") . " />
+                            <label for=\"checkbox_mitigation_date\">". $escaper->escapeHtml($lang['MitigationDate']) ."</label>
+                            </td>
+                        </tr>\n";
+                        
+                        foreach($mitigation_fields as $mitigation_field)
+                        {
+                            // If this is main field
+                            if($mitigation_field['is_basic'] == 1) 
+                            {
+                                $dynamic_field_info = get_dynamic_names_by_main_field_name($mitigation_field['name']);
+                                // If this main field is valid in dynamic risk page.
+                                if($dynamic_field_info)
+                                {
+                                    echo "<tr>
+                                        <td>
+                                        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"{$dynamic_field_info['name']}\" id=\"checkbox_{$dynamic_field_info['name']}\"" . (${$dynamic_field_info['name']} == true ? " checked=\"yes\"" : "") . "  />
+                                        <label for=\"checkbox_{$dynamic_field_info['name']}\">". $dynamic_field_info['text'] ."</label>
+                                    </tr>\n";
+                                }
+                            }
+                            else
+                            {
+                                echo "<tr>
+                                    <td>
+                                    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$mitigation_field['id']}\" id=\"checkbox_custom_field_{$mitigation_field['id']}\"" . (!empty($custom_values["custom_field_{$mitigation_field['id']}"]) == true ? " checked=\"yes\"" : "") . "  />
+                                    <label for=\"checkbox_custom_field_{$mitigation_field['id']}\">". $mitigation_field['name'] ."</label>
+                                </tr>\n";
+                            }
+                        }
+                        
+                    echo "</table>\n";    
+                echo "</div>";
+            echo "</div>";
+        echo "</div>";
 
-    echo "<div class=\"span4\">\n";
-    echo "<div class=\"well\">\n";
-    echo "<div class=\"row-fluid\">\n";
-    echo "<h4>" . $escaper->escapeHtml($lang['ReviewColumns']) . ":</h4>\n";
-    echo "<table border=\"0\">\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"management_review\" id=\"checkbox_management_review\"" . ($management_review == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_management_review\">". $escaper->escapeHtml($lang['ManagementReview']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"review_date\" id=\"checkbox_review_date\"" . ($review_date == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_review_date\">". $escaper->escapeHtml($lang['ReviewDate']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"next_review_date\" id=\"checkbox_next_review_date\"" . ($next_review_date == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_next_review_date\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</label>
-    </td>
-    </tr>\n";
-    echo "<tr>
-    <td>
-    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"next_step\" id=\"checkbox_next_step\"" . ($next_step == true ? " checked=\"yes\"" : "") . " />
-    <label for=\"checkbox_next_step\">". $escaper->escapeHtml($lang['NextStep']) ."</label>
-    </td>
-    </tr>\n";
-    echo "</table>\n";
-    echo "</div>\n";
-    echo "</div>\n";
-    echo "</div>\n";
+        echo "<div class=\"span4\" style=\"float: right\">\n";
+            echo "<div class=\"well\">\n";
+                echo "<div class=\"row-fluid\">\n";
+                    echo "<h4>" . $escaper->escapeHtml($lang['ReviewColumns']) . ":</h4>\n";
+                    echo "<table border=\"0\">\n"; 
+                        echo "<tr>
+                            <td>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"management_review\" id=\"checkbox_management_review\"" . ($management_review == true ? " checked=\"yes\"" : "") . " />
+                            <label for=\"checkbox_management_review\">". $escaper->escapeHtml($lang['ManagementReview']) ."</label>
+                            </td>
+                        </tr>\n";
 
-    echo "</div>\n";
+                        foreach($review_fields as $review_field)
+                        {
+                            // If this is main field
+                            if($review_field['is_basic'] == 1) 
+                            {
+                                $dynamic_field_info = get_dynamic_names_by_main_field_name($review_field['name']);
+                                // If this main field is valid in dynamic risk page.
+                                if($dynamic_field_info)
+                                {
+                                    echo "<tr>
+                                        <td>
+                                        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"{$dynamic_field_info['name']}\" id=\"checkbox_{$dynamic_field_info['name']}\"" . (${$dynamic_field_info['name']} == true ? " checked=\"yes\"" : "") . "  />
+                                        <label for=\"checkbox_{$dynamic_field_info['name']}\">". $dynamic_field_info['text'] ."</label>
+                                    </tr>\n";
+                                }
+                            }
+                            else
+                            {
+                                echo "<tr>
+                                    <td>
+                                    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$review_field['id']}\" id=\"checkbox_custom_field_{$review_field['id']}\"" . (!empty($custom_values["custom_field_{$review_field['id']}"]) ? " checked=\"yes\"" : "") . "  />
+                                    <label for=\"checkbox_custom_field_{$review_field['id']}\">". $review_field['name'] ."</label>
+                                </tr>\n";
+                            }
+                        }
 
+                    echo "</table>\n";    
+                echo "</div>";
+            echo "</div>";
+        echo "</div>";
+    } 
+    else
+    {
+        echo "<div class=\"span8\">\n";
+        echo "<div class=\"well\">\n";
+        echo "<div class=\"row-fluid\">\n";
+        echo "<h4>" . $escaper->escapeHtml($lang['RiskColumns']) . ":</h4>\n";
+        echo "<div class=\"span4\">\n";
+        echo "<table border=\"0\">\n";
+        echo "<tr><td><input class=\"hidden-checkbox\" type=\"checkbox\" name=\"id\" id=\"checkbox_id\"" . ($id == true ? " checked=\"yes\"" : "") . "  /> <label for=\"checkbox_id\">". $escaper->escapeHtml($lang['ID']) ."</label> </td></tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"risk_status\" id=\"checkbox_risk_status\"" . ($risk_status == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_risk_status\">". $escaper->escapeHtml($lang['Status']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"subject\" id=\"checkbox_subject\"" . ($subject == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_subject\">". $escaper->escapeHtml($lang['Subject']) ."</label>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"reference_id\" id=\"checkbox_reference_id\"" . ($reference_id == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_reference_id\">". $escaper->escapeHtml($lang['ExternalReferenceId']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"regulation\" id=\"checkbox_regulation\"" . ($regulation == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_regulation\">". $escaper->escapeHtml($lang['ControlRegulation']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"control_number\" id=\"checkbox_control_number\"" . ($control_number == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_control_number\">". $escaper->escapeHtml($lang['ControlNumber']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"location\" id=\"checkbox_location\"" . ($location == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_location\">". $escaper->escapeHtml($lang['SiteLocation']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"source\" id=\"checkbox_source\"" . ($source == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_source\">". $escaper->escapeHtml($lang['RiskSource']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"category\" id=\"checkbox_category\"" . ($category == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_category\">". $escaper->escapeHtml($lang['Category']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"team\" id=\"checkbox_team\"" . ($team == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_team\">". $escaper->escapeHtml($lang['Team']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"additional_stakeholders\" id=\"checkbox_additional_stakeholders\"" . ($additional_stakeholders == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_additional_stakeholders\">". $escaper->escapeHtml($lang['AdditionalStakeholders']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"technology\" id=\"checkbox_technology\"" . ($technology == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_technology\">". $escaper->escapeHtml($lang['Technology']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"owner\" id=\"checkbox_owner\"" . ($owner == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_owner\">". $escaper->escapeHtml($lang['Owner']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"manager\" id=\"checkbox_manager\"" . ($manager == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_manager\">". $escaper->escapeHtml($lang['OwnersManager']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"submitted_by\" id=\"checkbox_submitted_by\"" . ($submitted_by == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_submitted_by\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</label>
+        </td>
+        </tr>\n";
+        echo "</table>\n";
+        echo "</div>\n";
+        echo "<div class=\"span4\">\n";
+        echo "<table border=\"0\">\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"scoring_method\" id=\"checkbox_scoring_method\"" . ($scoring_method == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_scoring_method\">". $escaper->escapeHtml($lang['RiskScoringMethod']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"calculated_risk\" id=\"checkbox_calculated_risk\"" . ($calculated_risk == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_calculated_risk\">". $escaper->escapeHtml($lang['InherentRisk']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"residual_risk\" id=\"checkbox_residual_risk\"" . ($residual_risk == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_residual_risk\">". $escaper->escapeHtml($lang['ResidualRisk']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"submission_date\" id=\"checkbox_submission_date\"" . ($submission_date == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_submission_date\">". $escaper->escapeHtml($lang['SubmissionDate']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"project\" id=\"checkbox_project\"" . ($project == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_project\">". $escaper->escapeHtml($lang['Project']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"days_open\" id=\"checkbox_days_open\"" . ($days_open == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_days_open\">". $escaper->escapeHtml($lang['DaysOpen']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"affected_assets\" id=\"AffectedAssets\"" . ($affected_assets == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"AffectedAssets\">". $escaper->escapeHtml($lang['AffectedAssets']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"risk_assessment\" id=\"RiskAssessment\"" . ($risk_assessment == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"RiskAssessment\">". $escaper->escapeHtml($lang['RiskAssessment']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"additional_notes\" id=\"AdditionalNotes\"" . ($additional_notes == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"AdditionalNotes\">". $escaper->escapeHtml($lang['AdditionalNotes']) ."</label>
+        </td>
+        </tr>\n";
+        echo "</table>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+
+        echo "<div class=\"span4\">\n";
+        echo "<div class=\"well\">\n";
+        echo "<div class=\"row-fluid\">\n";
+        echo "<h4>" . $escaper->escapeHtml($lang['MitigationColumns']) . ":</h4>\n";
+        echo "<table border=\"0\">\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_planned\" id=\"checkbox_mitigation_planned\"" . ($mitigation_planned == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_mitigation_planned\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"planning_strategy\" id=\"checkbox_planning_strategy\"" . ($planning_strategy == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_planning_strategy\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"planning_date\" id=\"checkbox_planning_date\"" . ($planning_date == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_planning_date\">". $escaper->escapeHtml($lang['MitigationPlanning']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_effort\" id=\"checkbox_mitigation_effort\"" . ($mitigation_effort == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_mitigation_effort\">". $escaper->escapeHtml($lang['MitigationEffort']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_cost\" id=\"checkbox_mitigation_cost\"" . ($mitigation_cost == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_mitigation_cost\">". $escaper->escapeHtml($lang['MitigationCost']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_owner\" id=\"checkbox_mitigation_owner\"" . ($mitigation_owner == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_mitigation_owner\">". $escaper->escapeHtml($lang['MitigationOwner']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_team\" id=\"checkbox_mitigation_team\"" . ($mitigation_team == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_mitigation_team\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_date\" id=\"checkbox_mitigation_date\"" . ($mitigation_date == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_mitigation_date\">". $escaper->escapeHtml($lang['MitigationDate']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"current_solution\" id=\"CurrentSolution\"" . ($current_solution == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"CurrentSolution\">". $escaper->escapeHtml($lang['CurrentSolution']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"security_recommendations\" id=\"SecurityRecommendations\"" . ($security_recommendations == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"SecurityRecommendations\">". $escaper->escapeHtml($lang['SecurityRecommendations']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"security_requirements\" id=\"SecurityRequirements\"" . ($security_requirements == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"SecurityRequirements\">". $escaper->escapeHtml($lang['SecurityRequirements']) ."</label>
+        </td>
+        </tr>\n";
+        echo "</table>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+
+        echo "<div class=\"span4\">\n";
+        echo "<div class=\"well\">\n";
+        echo "<div class=\"row-fluid\">\n";
+        echo "<h4>" . $escaper->escapeHtml($lang['ReviewColumns']) . ":</h4>\n";
+        echo "<table border=\"0\">\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"management_review\" id=\"checkbox_management_review\"" . ($management_review == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_management_review\">". $escaper->escapeHtml($lang['ManagementReview']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"review_date\" id=\"checkbox_review_date\"" . ($review_date == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_review_date\">". $escaper->escapeHtml($lang['ReviewDate']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"next_review_date\" id=\"checkbox_next_review_date\"" . ($next_review_date == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_next_review_date\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"next_step\" id=\"checkbox_next_step\"" . ($next_step == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_next_step\">". $escaper->escapeHtml($lang['NextStep']) ."</label>
+        </td>
+        </tr>\n";
+        echo "</table>\n";
+
+        echo "</div>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+
+        echo "</div>\n";
+    }
+}
+
+/*************************************************
+* FUNCTION: GET DYNAMIC NAMES BY MAIN FIELD NAME *
+**************************************************/
+function get_dynamic_names_by_main_field_name($field_name)
+{
+    global $lang, $escaper;
+    
+    $data = array(
+        // risks
+        'ExternalReferenceId' => 
+            [
+                'name' => "reference_id",
+                'text' => $escaper->escapeHtml($lang['ExternalReferenceId']),
+            ],
+        'ControlRegulation' => 
+            [
+                'name' => "regulation",
+                'text' => $escaper->escapeHtml($lang['ControlRegulation']),
+            ],
+        'ControlNumber' => 
+            [
+                'name' => "control_number",
+                'text' => $escaper->escapeHtml($lang['ControlNumber']),
+            ],
+        'SiteLocation' => 
+            [
+                'name' => "location",
+                'text' => $escaper->escapeHtml($lang['SiteLocation']),
+            ],
+        'RiskSource' => 
+            [
+                'name' => "source",
+                'text' => $escaper->escapeHtml($lang['RiskSource']),
+            ],
+        'Category' => 
+            [
+                'name' => "category",
+                'text' => $escaper->escapeHtml($lang['Category']),
+            ],
+        'Team' => 
+            [
+                'name' => "team",
+                'text' => $escaper->escapeHtml($lang['Team']),
+            ],
+        'Technology' => 
+            [
+                'name' => "technology",
+                'text' => $escaper->escapeHtml($lang['Technology']),
+            ],
+        'Owner' => 
+            [
+                'name' => "owner",
+                'text' => $escaper->escapeHtml($lang['Owner']),
+            ],
+        'OwnersManager' => 
+            [
+                'name' => "manager",
+                'text' => $escaper->escapeHtml($lang['OwnersManager']),
+            ],
+        'SubmittedBy' => 
+            [
+                'name' => "submitted_by",
+                'text' => $escaper->escapeHtml($lang['SubmittedBy']),
+            ],
+        'RiskScoringMethod' => 
+            [
+                'name' => "scoring_method",
+                'text' => $escaper->escapeHtml($lang['RiskScoringMethod']),
+            ],
+        'SubmissionDate' => 
+            [
+                'name' => "submission_date",
+                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+            ],
+        'AffectedAssets' => 
+            [
+                'name' => "affected_assets",
+                'text' => $escaper->escapeHtml($lang['AffectedAssets']),
+            ],
+        'RiskAssessment' => 
+            [
+                'name' => "risk_assessment",
+                'text' => $escaper->escapeHtml($lang['RiskAssessment']),
+            ],
+        'AdditionalNotes' => 
+            [
+                'name' => "additional_notes",
+                'text' => $escaper->escapeHtml($lang['AdditionalNotes']),
+            ],
+//        'SupportingDocumentation' => 
+//            [
+//                'name' => "submission_date",
+//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//            ],
+        'AdditionalStakeholders' => 
+            [
+                'name' => "additional_stakeholders",
+                'text' => $escaper->escapeHtml($lang['AdditionalStakeholders']),
+            ],
+        
+        // mitigations
+        'PlanningStrategy' => 
+            [
+                'name' => "planning_strategy",
+                'text' => $escaper->escapeHtml($lang['PlanningStrategy']),
+            ],
+        'MitigationPlanning' => 
+            [
+                'name' => "planning_date",
+                'text' => $escaper->escapeHtml($lang['MitigationPlanning']),
+            ],
+        'MitigationEffort' => 
+            [
+                'name' => "mitigation_effort",
+                'text' => $escaper->escapeHtml($lang['MitigationEffort']),
+            ],
+        'MitigationCost' => 
+            [
+                'name' => "mitigation_cost",
+                'text' => $escaper->escapeHtml($lang['MitigationCost']),
+            ],
+        'MitigationOwner' => 
+            [
+                'name' => "mitigation_owner",
+                'text' => $escaper->escapeHtml($lang['MitigationOwner']),
+            ],
+        'MitigationTeam' => 
+            [
+                'name' => "mitigation_team",
+                'text' => $escaper->escapeHtml($lang['MitigationTeam']),
+            ],
+        'MitigationDate' => 
+            [
+                'name' => "mitigation_date",
+                'text' => $escaper->escapeHtml($lang['MitigationDate']),
+            ],
+//        'MitigationPercent' => 
+//            [
+//                'name' => "submission_date",
+//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//            ],
+//        'AcceptMitigation' => 
+//            [
+//                'name' => "submission_date",
+//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//            ],
+        'CurrentSolution' => 
+            [
+                'name' => "current_solution",
+                'text' => $escaper->escapeHtml($lang['CurrentSolution']),
+            ],
+        'SecurityRecommendations' => 
+            [
+                'name' => "security_recommendations",
+                'text' => $escaper->escapeHtml($lang['SecurityRecommendations']),
+            ],
+        'SecurityRequirements' => 
+            [
+                'name' => "security_requirements",
+                'text' => $escaper->escapeHtml($lang['SecurityRequirements']),
+            ],
+//        'MitigationSupportingDocumentation' => 
+//            [
+//                'name' => "submission_date",
+//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//            ],
+//        'MitigationControlsList' => 
+//            [
+//                'name' => "submission_date",
+//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//            ],
+        
+        // Review
+        'ReviewDate' => 
+            [
+                'name' => "review_date",
+                'text' => $escaper->escapeHtml($lang['ReviewDate']),
+            ],
+//        'Reviewer' => 
+//            [
+//                'name' => "submission_date",
+//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//            ],
+//        'Review' => 
+//            [
+//                'name' => "submission_date",
+//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//            ],
+        'NextReviewDate' => 
+            [
+                'name' => "next_review_date",
+                'text' => $escaper->escapeHtml($lang['NextReviewDate']),
+            ],
+        'NextStep' => 
+            [
+                'name' => "next_step",
+                'text' => $escaper->escapeHtml($lang['NextStep']),
+            ],
+//        'Comment' => 
+//            [
+//                'name' => "submission_date",
+//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
+//            ],
+        
+    );
+    return isset($data[$field_name]) ? $data[$field_name] : "";
 }
 
 /************************************************
@@ -4964,6 +5442,7 @@ function report_likelihood_impact(){
             var test = $.ajax({
                 type: "POST",
                 url: BASE_URL + "/api/likelihood_impact_chart/tooltip",
+                async:false,
                 data:{
                     "risk_ids": point.risk_ids,
                 },
@@ -4971,9 +5450,9 @@ function report_likelihood_impact(){
                      return response.data;
                 },
                 error: function(xhr,status,error){
-                    
-                },
-                async:false
+                    if(!retryCSRF(xhr, this)){
+                    }
+                }
             });
             return test.responseJSON.data;
         };';
@@ -5303,7 +5782,9 @@ function create_risk_formula_table()
                             document.location.href = BASE_URL+\"/admin/configure_risk_formula.php\";
                         },
                         error: function(xhr,status,error){
-                            document.location.href = BASE_URL+\"/admin/configure_risk_formula.php\";
+                            if(!retryCSRF(xhr, this)){
+                                document.location.href = BASE_URL+\"/admin/configure_risk_formula.php\";
+                            }
                         }
                     });
                 })
@@ -5316,7 +5797,10 @@ function create_risk_formula_table()
                             document.location.href = BASE_URL+\"/admin/configure_risk_formula.php\";
                         },
                         error: function(xhr,status,error){
-                            document.location.href = BASE_URL+\"/admin/configure_risk_formula.php\";
+                            if(!retryCSRF(xhr, this))
+                            {
+                                document.location.href = BASE_URL+\"/admin/configure_risk_formula.php\";
+                            }
                         }
                     });
                 })
@@ -5329,7 +5813,10 @@ function create_risk_formula_table()
                             document.location.href = BASE_URL+\"/admin/configure_risk_formula.php\";
                         },
                         error: function(xhr,status,error){
-                            document.location.href = BASE_URL+\"/admin/configure_risk_formula.php\";
+                            if(!retryCSRF(xhr, this))
+                            {
+                                document.location.href = BASE_URL+\"/admin/configure_risk_formula.php\";
+                            }
                         }
                     });
 
@@ -5343,7 +5830,10 @@ function create_risk_formula_table()
                             document.location.href = BASE_URL+\"/admin/configure_risk_formula.php\";
                         },
                         error: function(xhr,status,error){
-                            document.location.href = BASE_URL+\"/admin/configure_risk_formula.php\";
+                            if(!retryCSRF(xhr, this))
+                            {
+                                document.location.href = BASE_URL+\"/admin/configure_risk_formula.php\";
+                            }
                         }
                     });
                 })

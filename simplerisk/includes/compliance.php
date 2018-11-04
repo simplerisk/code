@@ -146,10 +146,12 @@ function display_framework_controls_in_compliance()
  *****************************************/
 function add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $last_date="0000-00-00", $next_date=false){
     if($next_date === false) $next_date = date('Y-m-d');
+	
+	$created_at = date("Y-m-d");
 
     // Open the database connection
     $db = db_open();
-
+	
     // Get the risk levels
     $stmt = $db->prepare("INSERT INTO `framework_control_tests` (`tester`, `test_frequency`, `last_date`, `next_date`, `name`, `objective`, `test_steps`, `approximate_time`, `expected_results`, `framework_control_id`, `created_at`) VALUES (:tester, :test_frequency, :last_date, :next_date, :name, :objective, :test_steps, :approximate_time, :expected_results, :framework_control_id, :created_at)");
     
@@ -163,13 +165,14 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
     $stmt->bindParam(":approximate_time", $approximate_time, PDO::PARAM_INT);
     $stmt->bindParam(":expected_results", $expected_results, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":framework_control_id", $framework_control_id, PDO::PARAM_INT);
-    $stmt->bindParam(":created_at", date("Y-m-d"));
+
+    $stmt->bindParam(":created_at", $created_at);
     $stmt->execute();
 
     $test_id = $db->lastInsertId();
 
     $message = "A new test named \"{$name}\" was created by username \"" . $_SESSION['user'] . "\".";
-    write_log($test_id + 1000, $_SESSION['uid'], $message, "test");
+    write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
 
     // Close the database connection
     db_close($db);
@@ -218,7 +221,7 @@ function update_framework_control_test($test_id, $tester=false, $test_frequency=
     db_close($db);
 
     $message = "A test was updated for test ID \"{$test_id}\" by username \"" . $_SESSION['user'] . "\".";
-    write_log($test_id + 1000, $_SESSION['uid'], $message, "test");
+    write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
     
     return $test_id;
     
@@ -240,7 +243,7 @@ function delete_framework_control_test($test_id){
     db_close($db);
 
     $message = "A test was deleted for test ID \"{$test_id}\" by username \"" . $_SESSION['user'] . "\".";
-    write_log($test_id + 1000, $_SESSION['uid'], $message, "test");
+    write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
     
     return $array;
 }
@@ -693,7 +696,7 @@ function initiate_framework_control_tests($type, $id){
             $tests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             foreach($tests as $test){
                 $message = "An active audit for \"{$test["name"]}\" was initiated by username \"" . $_SESSION['user'] . "\".";
-                write_log($test['test_id'] + 1000, $_SESSION['uid'], $message, "test");
+                write_log((int)$test['test_id'] + 1000, $_SESSION['uid'], $message, "test");
             }
         break;
         case "control":
@@ -735,7 +738,7 @@ function initiate_framework_control_tests($type, $id){
             $tests = $stmt->fetchAll(PDO::FETCH_ASSOC);
             foreach($tests as $test){
                 $message = "An active audit for \"{$test["name"]}\" was initiated by username \"" . $_SESSION['user'] . "\".";
-                write_log($test['test_id'] + 1000, $_SESSION['uid'], $message, "test");
+                write_log((int)$test['test_id'] + 1000, $_SESSION['uid'], $message, "test");
             }
         break;
         case "test":
@@ -758,7 +761,7 @@ function initiate_framework_control_tests($type, $id){
             $stmt->execute();
 
             $message = "An active audit for \"{$test["name"]}\" was initiated by username \"" . $_SESSION['user'] . "\".";
-            write_log($id + 1000, $_SESSION['uid'], $message, "test");
+            write_log((int)$id + 1000, $_SESSION['uid'], $message, "test");
         break;
     }
 
@@ -970,19 +973,19 @@ function save_test_comment($test_audit_id, $comment){
 
         // Open the database connection
         $db = db_open();
-    
+        
         $sql = "
             INSERT INTO `framework_control_test_comments`(`test_audit_id`, `user`, `comment`) VALUES(:test_audit_id, :user, :comment);
         ";
-    
+        
         $stmt = $db->prepare($sql);
         $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_STR);
         $stmt->bindParam(":comment", $comment, PDO::PARAM_INT);
         $stmt->bindParam(":user", $user, PDO::PARAM_INT);
-    
+        
         // Insert a test result
         $stmt->execute();
-    
+        
         // Close the database connection
         db_close($db);
 
@@ -1263,9 +1266,11 @@ function display_test_audit_comment($test_audit_id)
                         $('.comments--list', container).html(data.data);
                         $('.comment-text', container).val('')
                         $('.comment-text', container).focus()
+                    },
+                    error: function(xhr,status,error){
+                        if(!retryCSRF(xhr, this)){}
                     }
                 })
-                location.reload(true);
             })
         
         </script>
@@ -1397,13 +1402,13 @@ function update_test_audit_status($test_audit_id, $status)
     if($status == $closed_audit_status)
     {
         $message = "An audit named \"{$test_audit_name}\" was modified and closed by username \"" . $_SESSION['user'] . "\".";
-        write_log($test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
+        write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
     }
     // The audit status is not closed
     else
     {
         $message = "An audit named \"{$test_audit_name}\" was modified by username \"" . $_SESSION['user'] . "\".";
-        write_log($test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
+        write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
     }
     
 }
@@ -1500,7 +1505,7 @@ function submit_test_result()
         // If submitted files are existing, save files
         if(!empty($_FILES['file'])){
             $files = $_FILES['file'];
-            list($test_audit_status, $file_ids, $errors) = upload_compliance_files($test_audit_id, "test_audit", $files);
+            list($status, $file_ids, $errors) = upload_compliance_files($test_audit_id, "test_audit", $files);
         }
         
         // Check if error was happen in uploading files
@@ -1706,6 +1711,11 @@ function display_past_audits(){
                     },
                     success: function(result){
                         $('#{$tableID}').DataTable().draw();
+                    },
+                    error: function(xhr,status,error){
+                        if(!retryCSRF(xhr, this))
+                        {
+                        }
                     }
                 })
             })
@@ -1923,7 +1933,7 @@ function reopen_test_audit($test_audit_id)
     update_test_audit_status($test_audit_id, 0);
     
     $message = "A closed test audit was for ID \"{$test_audit_id}\" reopened by username \"" . $_SESSION['user'] . "\".";
-    write_log($test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
+    write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
 
     return true;
 }

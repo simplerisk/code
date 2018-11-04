@@ -36,6 +36,10 @@
 
 	require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
+    function csrf_startup() {
+        csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+    }
+
     // Check for session timeout or renegotiation
     session_check();
 
@@ -147,6 +151,7 @@
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/common.js"></script>
     <script type="text/javascript" src="../js/colorpicker.js"></script>
 
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>

@@ -308,7 +308,7 @@ function push_pending_risk()
     }
 
     // There is an alert message
-    $risk_id = $last_insert_id + 1000;
+    $risk_id = (int)$last_insert_id + 1000;
 
     // Delete the pending risk
     delete_pending_risk($pending_risk_id);

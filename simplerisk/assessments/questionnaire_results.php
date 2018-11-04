@@ -37,6 +37,10 @@ require_once(language_file());
 
 require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
+
 // Check for session timeout or renegotiation
 session_check();
 
@@ -84,7 +88,6 @@ if(process_questionnaire_pending_risks()){
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/jquery.dataTables.js"></script>
     <script src="../js/pages/assessment.js"></script>
-    <script src="../js/common.js"></script>
     <script src="../js/cve_lookup.js"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>

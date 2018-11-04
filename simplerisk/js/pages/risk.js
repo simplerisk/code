@@ -827,7 +827,6 @@ $(document).ready(function(){
         
         var getForm = $this.parents('form', tabContainer);
         var form = new FormData($(getForm)[0]);
-
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/management/risk/closerisk?id=" + risk_id,
@@ -887,7 +886,7 @@ $(document).ready(function(){
         var tabContainer = $(this).parents('.tab-data');
         var risk_id = $('.large-text', tabContainer).html();
         $.ajax({
-            type: "GET",
+            type: "POST",
             url: BASE_URL + "/api/management/risk/reopen?id=" + risk_id,
             success: function(data){
                 if($('.show-score').is(":visible")){
@@ -899,12 +898,13 @@ $(document).ready(function(){
                     $('.show-score').hide();
                     $('.hide-score').show();
                 }
-
-            
             },
             error: function(xhr,status,error){
-                if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                if(!retryCSRF(xhr, this))
+                {
+                    if(xhr.responseJSON && xhr.responseJSON.status_message){
+                        $('#show-alert').html(xhr.responseJSON.status_message);
+                    }
                 }
             }
         })

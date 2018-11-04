@@ -36,6 +36,10 @@
 
     require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
+    function csrf_startup() {
+        csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+    }
+
     // Check for session timeout or renegotiation
     session_check();
 
@@ -103,11 +107,11 @@
                 // If the extra is not restricted based on the install type
                 if (!restricted_extra("customauth"))
                 {
-                    echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
-                    echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
-                    echo "</form>\n";
-                    echo "</div>\n";
-                }
+                echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
+                        echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
+                        echo "</form>\n";
+                        echo "</div>\n";
+            }
                 // The extra is restricted
                 else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
             }
@@ -134,6 +138,8 @@
   <head>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/bootstrap-multiselect.js"></script>
+    
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -146,6 +152,7 @@
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
   </head>
 
   <body>
@@ -153,9 +160,10 @@
 <?php
     view_top_menu("Configure");
 
-    // Get any alert messages
-    get_alert();
 ?>
+    <div id="show-alert">
+        <?php echo get_alert(); ?>
+    </div>
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">

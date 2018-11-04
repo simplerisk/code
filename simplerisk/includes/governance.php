@@ -325,6 +325,11 @@ function get_framework_tabs($status)
                                 setTimeout(function(){
                                     location.reload();
                                 }, 1500)
+                            },
+                            error: function(xhr,status,error){
+                                if(!retryCSRF(xhr, this))
+                                {
+                                }
                             }
                         });
                     }
@@ -335,7 +340,12 @@ function get_framework_tabs($status)
                       $.ajax({
                         url: BASE_URL + '/api/governance/update_framework_parent',
                         type: 'POST',
-                        data: {parent : parent, framework_id:framework_id}
+                        data: {parent : parent, framework_id:framework_id},
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this))
+                            {
+                            }
+                        }
                     });
                 }
             \">";
@@ -663,9 +673,12 @@ function add_framework($name, $description, $parent=0, $status=1){
         $order = 0;
     }
     
+    $try_encrypt_name = try_encrypt($name);
+    $try_encrypt_descryption = try_encrypt($description);
+
     // Check if the framework exists
     $stmt = $db->prepare("SELECT * FROM `frameworks` where name=:name");
-    $stmt->bindParam(":name", try_encrypt($name));
+    $stmt->bindParam(":name", $try_encrypt_name);
     $stmt->execute();
     $row = $stmt->fetch();
     if(isset($row[0])){
@@ -674,8 +687,8 @@ function add_framework($name, $description, $parent=0, $status=1){
 
     // Create a framework
     $stmt = $db->prepare("INSERT INTO `frameworks` (`name`, `description`, `parent`, `status`, `order`) VALUES (:name, :description, :parent, :status, :order)");
-    $stmt->bindParam(":name", try_encrypt($name), PDO::PARAM_STR, 100);
-    $stmt->bindParam(":description", try_encrypt($description), PDO::PARAM_STR, 1000);
+    $stmt->bindParam(":name", $try_encrypt_name, PDO::PARAM_STR, 100);
+    $stmt->bindParam(":description", $try_encrypt_descryption, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
     $stmt->bindParam(":status", $status, PDO::PARAM_INT);
     $stmt->bindParam(":order", $order, PDO::PARAM_INT);
@@ -684,7 +697,7 @@ function add_framework($name, $description, $parent=0, $status=1){
     $framework_id = $db->lastInsertId();
 
     $message = "A new framework named \"{$name}\" was created by username \"" . $_SESSION['user'] . "\".";
-    write_log($framework_id + 1000, $_SESSION['uid'], $message, "framework");
+    write_log((int)$framework_id + 1000, $_SESSION['uid'], $message, "framework");
     
     // Close the database connection
     db_close($db);
@@ -696,12 +709,14 @@ function add_framework($name, $description, $parent=0, $status=1){
  * FUNCTION: UPDATE FRAMEWORK *
  ******************************/
 function update_framework($framework_id, $name, $description=false, $parent=false){
+    $try_encrypt_name = try_encrypt($name);
+
     // Open the database connection
     $db = db_open();
 
     // Check if the framework exists
     $stmt = $db->prepare("SELECT * FROM `frameworks` where name=:name and value<>:framework_id");
-    $stmt->bindParam(":name", try_encrypt($name));
+    $stmt->bindParam(":name", $try_encrypt_name);
     $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
     $stmt->execute();
     $row = $stmt->fetch();
@@ -724,7 +739,7 @@ function update_framework($framework_id, $name, $description=false, $parent=fals
     $stmt->execute();
     
     $message = "A framework named \"{$name}\" was updated by username \"" . $_SESSION['user'] . "\".";
-    write_log($framework_id + 1000, $_SESSION['uid'], $message, "framework");
+    write_log((int)$framework_id + 1000, $_SESSION['uid'], $message, "framework");
     
     // Close the database connection
     db_close($db);
@@ -861,7 +876,7 @@ function add_framework_control($control){
     db_close($db);
 
     $message = "A new control named \"{$short_name}\" was created by username \"" . $_SESSION['user'] . "\".";
-    write_log($control_id + 1000, $_SESSION['uid'], $message, "control");
+    write_log((int)$control_id + 1000, $_SESSION['uid'], $message, "control");
     
     return $control_id;
 }
@@ -906,7 +921,7 @@ function update_framework_control($control_id, $control){
     db_close($db);
     
     $message = "A control named \"{$short_name}\" was updated by username \"" . $_SESSION['user'] . "\".";
-    write_log($control_id + 1000, $_SESSION['uid'], $message, "control");
+    write_log((int)$control_id + 1000, $_SESSION['uid'], $message, "control");
     
     // Add residual risk scoring history
     add_residual_risk_scoring_histories_for_control($control_id);
@@ -928,7 +943,7 @@ function add_residual_risk_scoring_histories_for_control($control_id)
     $risk_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
     foreach($risk_ids as $risk_id){
         // Add residual risk score
-        $residual_risk = get_residual_risk($risk_id + 1000);
+        $residual_risk = get_residual_risk((int)$risk_id + 1000);
         add_residual_risk_scoring_history($risk_id, $residual_risk);
     }
 
@@ -969,7 +984,7 @@ function delete_framework_control($control_id){
     $control = get_framework_control($control_id);
 
     $message = "A control named \"{$control['short_name']}\" was deleted by username \"" . $_SESSION['user'] . "\".";
-    write_log($control_id + 1000, $_SESSION['uid'], $message, "control");
+    write_log((int)$control_id + 1000, $_SESSION['uid'], $message, "control");
 
     // Add residual risk scoring history
     add_residual_risk_scoring_histories_for_control($control_id);
@@ -1184,8 +1199,8 @@ function getAvailableControlPriorityList(){
         WHERE t2.value is not null
         GROUP BY
             t2.value
-	ORDER BY
-	    CAST(t2.name AS UNSIGNED), t2.name ASC
+    ORDER BY
+        CAST(t2.name AS UNSIGNED), t2.name ASC
     ";
     
     $stmt = $db->prepare($sql);
@@ -1336,11 +1351,13 @@ function add_document($document_type, $document_name, $parent, $status, $creatio
     }
 
     // Create a document
-    $stmt = $db->prepare("INSERT INTO `documents` (`document_type`, `document_name`, `parent`, `status`, `creation_date`) VALUES (:document_type, :document_name, :parent, :status, :creation_date)");
+    $stmt = $db->prepare("INSERT INTO `documents` (`document_type`, `document_name`, `parent`, `status`, `file_id`, `creation_date`) VALUES (:document_type, :document_name, :parent, :status, :file_id, :creation_date)");
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
     $stmt->bindParam(":status", $status, PDO::PARAM_STR);
+    $init_file_id = 0;
+    $stmt->bindParam(":file_id", $init_file_id, PDO::PARAM_INT);
     $stmt->bindParam(":creation_date", $creation_date, PDO::PARAM_STR);
     $stmt->execute();
     
@@ -1359,18 +1376,28 @@ function add_document($document_type, $document_name, $parent, $status, $creatio
     }
 
     // Check if error was happen in uploading files
-    if(!empty($errors)){
+    if(!empty($errors))
+    {
+        // Delete added document if failed to upload a document file
+        delete_document($document_id);
         $errors = array_unique($errors);
         set_alert(true, "bad", implode(", ", $errors));
         return false;
-    }elseif(!empty($file_id)){
+    }elseif(empty($file_id))
+    {
+        // Delete added document if failed to upload a document file
+        delete_document($document_id);
+        set_alert(true, "bad", $escaper->escapeHtml($lang['FailedToUploadFile']));
+        return false;
+    }else
+    {
         $stmt = $db->prepare("UPDATE `documents` SET file_id=:file_id WHERE id=:document_id ");
         $stmt->bindParam(":file_id", $file_id, PDO::PARAM_INT);
         $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
         $stmt->execute();
-    }
 
-    return $document_id;
+        return $document_id;
+    }
 }
 
 /*****************************

@@ -35,8 +35,11 @@ if (!isset($_SESSION))
 // Include the language file
 require_once(language_file());
 
+// Load CSRF Magic
+require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
 function csrf_startup() {
-    csrf_conf('rewrite-js', "realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.js')");
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
 }
 
 // Check for session timeout or renegotiation

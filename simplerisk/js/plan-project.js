@@ -86,18 +86,20 @@ jQuery(document).ready(function($){
             //return false;
             $('#show-alert').html('');
             $.ajax({
-              url: 'plan-projects.php',
-              type: 'POST',
-              data: {update_order: true, project_ids : order},
-              success : function (data){
-                var message = $(data).filter('#alert');
-                $('#show-alert').append(message);
-                setTimeout(function(){
-                  location.reload();
-                }, 1500)
-              }
+                url: 'plan-projects.php',
+                type: 'POST',
+                data: {update_order: true, project_ids : order},
+                success : function (data){
+                    var message = $(data).filter('#alert');
+                    $('#show-alert').append(message);
+                    setTimeout(function(){
+                        location.reload();
+                    }, 1500)
+                },
+                error: function(xhr,status,error){
+                    if(!retryCSRF(xhr, this)){}
+                }
             });
-            
         }
       });
 
@@ -128,16 +130,20 @@ jQuery(document).ready(function($){
           var status = $(this).attr('data-status');
           $('#show-alert').html('');
           $.ajax({
-            url: 'plan-projects.php',
-            type: 'POST',
-            data: {update_project_status: true, project_id : project_id, status:status},
-            success : function (data){
-              var message = $(data).filter('#alert');
-              $('#show-alert').append(message);
-                setTimeout(function(){
-                location.reload();
-              }, 1500)
-            }
+                url: 'plan-projects.php',
+                type: 'POST',
+                data: {update_project_status: true, project_id : project_id, status:status},
+                success : function (data){
+                    var message = $(data).filter('#alert');
+                    $('#show-alert').append(message);
+                    setTimeout(function(){
+                        location.reload();
+                    }, 1500)
+                },
+                error: function(xhr,status,error){
+                    if(!retryCSRF(xhr, this)){}
+                }
+            
           });
         }
       });
@@ -157,16 +163,20 @@ jQuery(document).ready(function($){
           $('#show-alert').html('');
 
         $.ajax({
-          url: 'plan-projects.php',
-          type: 'POST',
-          data: {update_projects: true, risk_id : risk_id, project_id : project_id},
-          success : function (data){
-            var message = $(data).filter('#alert');
-            $('#show-alert').append(message);
-            setTimeout(function(){
-              location.reload();
-            }, 1500)
-          }
+            url: 'plan-projects.php',
+            type: 'POST',
+            data: {update_projects: true, risk_id : risk_id, project_id : project_id},
+            success : function (data){
+                var message = $(data).filter('#alert');
+                $('#show-alert').append(message);
+                setTimeout(function(){
+                    location.reload();
+                }, 1500)
+            },
+            error: function(xhr,status,error){
+                if(!retryCSRF(xhr, this)){}
+            }
+          
         });
 
           //Bind the draggable option for the risks
@@ -203,7 +213,11 @@ jQuery(document).ready(function($){
             setTimeout(function(){
               location.reload();
             }, 1500)
-          }
+          },
+            error: function(xhr,status,error){
+                if(!retryCSRF(xhr, this)){}
+            }
+          
         });
     },
 

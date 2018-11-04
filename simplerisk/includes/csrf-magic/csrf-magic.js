@@ -46,7 +46,15 @@ CsrfMagic.prototype = {
     //        delete this.csrf_purportedLength;
     //    }
         delete this.csrf_isPost;
-        return this.csrf_send(prepend + data);
+        if(!this.csrf_contentType) this.csrf_contentType = "";
+        if(data === null){
+            return this.csrf_send(prepend);
+        }
+        else if(typeof data == "string" && this.csrf_contentType.toLowerCase().indexOf("application/json") == -1){
+            return this.csrf_send(prepend + data);
+        }else{
+            return this.csrf_send(data);
+        }
     },
     csrf_send: function(data) {
         return this.csrf.send(data);
@@ -58,6 +66,9 @@ CsrfMagic.prototype = {
         if (this.csrf_isPost && header == "Content-length") {
             this.csrf_purportedLength = value;
             return;
+        }
+        if(header == "Content-Type"){
+            this.csrf_contentType = value;
         }
         return this.csrf_setRequestHeader(header, value);
     },
@@ -189,3 +200,21 @@ if (window.XMLHttpRequest && window.XMLHttpRequest.prototype && '\v' != 'v') {
         }
     }
 }
+
+function retryCSRF(xhr, self)
+{
+    var obj = $('<div/>').html(xhr.responseText);
+    var token = obj.find('input[name=\"__csrf_magic\"]').val();
+    if(token)
+    {
+        $('input[name=\"__csrf_magic\"]').val(token);
+        csrfMagicToken = token;
+        $.ajax(self);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+

@@ -33,11 +33,14 @@ if (!isset($_SESSION))
     session_start();
 }
 
+// Load CSRF Magic
+require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
 // Include the language file
 require_once(language_file());
 
 function csrf_startup() {
-    csrf_conf('rewrite-js', "realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.js')");
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
 }
 
 // Check for session timeout or renegotiation
@@ -148,7 +151,7 @@ if (isset($_POST['delete_document']))
 ?>
 
 <!doctype html>
-<html>
+<html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
 <head>
   <script src="../js/jquery.min.js"></script>

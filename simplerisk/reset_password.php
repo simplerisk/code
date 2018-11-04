@@ -42,12 +42,13 @@ if(empty($_SESSION['first_login_uid'])){
 // Check if a password reset was requested
 if (isset($_POST['password_reset']))
 {
-    $user_id            = $_SESSION['first_login_uid'];
-	$password           = $_POST['password'];
-	$repeat_password    = $_POST['repeat_password'];
+	$user_id            = $_SESSION['first_login_uid'];
+	$current_password   = $_POST['current_password'];
+	$new_password       = $_POST['new_password'];
+	$confirm_password    = $_POST['confirm_password'];
 
 	// If a password reset was submitted
-	reset_password($user_id, $password, $repeat_password);
+	reset_password($user_id, $current_password, $new_password, $confirm_password);
 }
 
 ?>
@@ -85,7 +86,7 @@ if (isset($_POST['password_reset']))
 	<div class="container-fluid">
        
 		<div class="row-fluid">
-			<div class="span4 offset4">
+			<div class="span6 offset3">
 				<div class="well">
 					<form name="password_reset" method="post" autocomplete="off" action="" class="password_reset">
 						<?php
@@ -105,8 +106,9 @@ if (isset($_POST['password_reset']))
                                 echo "</td>\n";
                             echo "</tr>\n";
                             
-						    echo "<tr><td width=\"30%\">" . $escaper->escapeHtml($lang['Password']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"password\" id=\"password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
-						    echo "<tr><td width=\"30%\">" . $escaper->escapeHtml($lang['RepeatPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"repeat_password\" id=\"repeat_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
+                                                    echo "<tr><td width=\"30%\">" . $escaper->escapeHtml($lang['CurrentPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"current_password\" id=\"current_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
+						    echo "<tr><td width=\"30%\">" . $escaper->escapeHtml($lang['NewPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"new_password\" id=\"new_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
+						    echo "<tr><td width=\"30%\">" . $escaper->escapeHtml($lang['ConfirmPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"confirm_password\" id=\"confirm_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
 						    echo "</table>\n";
 						?>
 						<div class="form-actions text-right">

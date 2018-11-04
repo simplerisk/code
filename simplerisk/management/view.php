@@ -35,7 +35,12 @@ if (!isset($_SESSION))
 // Include the language file
 require_once(language_file());
 
+// Load CSRF Magic
 require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
 
 // Check for session timeout or renegotiation
 session_check();
@@ -670,6 +675,7 @@ else if (isset($_POST['update_subject']) && (!isset($_SESSION["modify_risks"]) |
     <script src="../js/basescript.js"></script>
     <script src="../js/highcharts/code/highcharts.js"></script>
     <script src="../js/common.js"></script>
+    <script src="../js/pages/risk.js"></script>
     <script src="../js/bootstrap-multiselect.js"></script>
 
     <link rel="stylesheet" href="../css/bootstrap.css">

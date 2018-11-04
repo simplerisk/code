@@ -766,7 +766,8 @@ $(document).ready(function(){
                 return;
             }
             columnNames.push(name);
-            if($("form[name='get_risks_by'] input.hidden-checkbox[name='"+ name +"']").length > 0 &&  !$("form[name='get_risks_by'] input.hidden-checkbox[name='"+ name +"']").is(':checked')){
+//            if($("form[name='get_risks_by'] input.hidden-checkbox[name='"+ name +"']").length > 0 &&  !$("form[name='get_risks_by'] input.hidden-checkbox[name='"+ name +"']").is(':checked')){
+            if(!$("form[name='get_risks_by'] input.hidden-checkbox[name='"+ name +"']").is(':checked')){
                 columnOptions.push(index);
             }
             if(name == defaultSortColumn[0]) {
@@ -858,6 +859,11 @@ $(document).ready(function(){
                 },
                 success: function(data){
                     console.log('success')
+                },
+                error: function(xhr,status,error){
+                    if(!retryCSRF(xhr, this))
+                    {
+                    }
                 }
             });
         })

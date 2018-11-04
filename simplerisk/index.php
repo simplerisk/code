@@ -73,6 +73,18 @@ if (isset($_POST['submit']))
 		// Ping the server
 		ping_server();
 
+        // Set the user permissions
+        set_user_permissions($user, $pass);
+
+        // Get base url
+        $base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['SCRIPT_NAME']}";
+        $base_url = htmlspecialchars( $base_url, ENT_QUOTES, 'UTF-8' );
+        $base_url = pathinfo($base_url)['dirname'];
+
+        // Filter out authentication extra from the base url
+        $base_url = str_replace("/extras/authentication", "", $base_url);
+        $_SESSION['base_url'] = $base_url;
+
         	// Set login status
         	login($user, $pass);
 

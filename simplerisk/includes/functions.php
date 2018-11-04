@@ -759,9 +759,8 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
     else $str .= "<select {$customHtml} id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
 
     // If we want a table that should be ordered by name instead of value
-    if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation" || $name == "projects" || $name == "file_types" || $name == "planning_strategy" || $name == "close_reason" || $name == "status" || $name == "source" || $name == "import_export_mappings" || $name == "test_status")
+    if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation" || $name == "projects" || $name == "file_types" || $name == "file_type_extensions" || $name == "planning_strategy" || $name == "close_reason" || $name == "status" || $name == "source" || $name == "import_export_mappings" || $name == "test_status")
     {
-
         $options = get_table_ordered_by_name($name);
     }
     // If we want a table of only enabled users
@@ -813,7 +812,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
         array_unshift($options, ["value"=>$blankValue, "name"=>$blankText]);
     }
 
-    foreach ($options as $key => &$option)
+    foreach ($options as $key => $option)
     {
         // If the option is selected
         if ($selected == $option['value'] || (!$selected && !$option['value'] && $option['value'] != 0) || $selected=='all')
@@ -825,7 +824,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
         // If ID is used for option's value
         if($useValue)
         {
-            $str .= "    <option title='test' value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
+            $str .= "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
         }
         // If name is used for option's value
         else
@@ -1000,7 +999,7 @@ function calculate_risk($impact, $likelihood)
     // If the impact or likelihood were not specified risk is 10
     else $risk = get_setting('default_risk_score');
 
-    return $risk;
+    return $risk ? $risk : 0;
 }
 
 /****************************
@@ -1656,6 +1655,11 @@ function delete_value($table, $value)
                 $message = "The existing upload file type \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
+            case "file_type_extensions":
+                $risk_id = 1000;
+                $message = "The existing upload extension \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
+                break;
             case "frameworks":
                 $risk_id = 1000;
                 $message = "The existing framework \"" . try_decrypt($name) . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
@@ -2067,12 +2071,12 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     $db = db_open();
 
     // Insert the new user
-    $sql = "INSERT INTO user (`type`, `username`, `name`, `email`, `salt`, `password`, `teams`, `role_id`, `governance`, `riskmanagement`, `compliance`, `assessments`, `asset`, `admin`, `review_veryhigh`, `accept_mitigation`, `review_high`, `review_medium`, `review_low`, `review_insignificant`, `submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`, `change_password`, `add_new_frameworks`, `modify_frameworks`, `delete_frameworks`, `add_new_controls`, `modify_controls`, `delete_controls`";
+    $sql = "INSERT INTO user (`type`, `username`, `name`, `email`, `salt`, `password`, `teams`, `role_id`, `governance`, `riskmanagement`, `compliance`, `assessments`, `asset`, `admin`, `review_veryhigh`, `accept_mitigation`, `review_high`, `review_medium`, `review_low`, `review_insignificant`, `submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`, `change_password`, `add_new_frameworks`, `modify_frameworks`, `delete_frameworks`, `add_new_controls`, `modify_controls`, `delete_controls`, `custom_display_settings`";
     foreach($other_options as $field => $value)
     {
         $sql .= ", `{$field}`";
     }
-    $sql .= ") VALUES (:type, :user, :name, :email, :salt, :hash, :teams, :role_id, :governance, :riskmanagement, :compliance, :assessments, :asset, :admin, :review_veryhigh, :accept_mitigation, :review_high, :review_medium, :review_low, :review_insignificant, :submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor, :change_password, :add_new_frameworks, :modify_frameworks, :delete_frameworks, :add_new_controls, :modify_controls, :delete_controls";
+    $sql .= ") VALUES (:type, :user, :name, :email, :salt, :hash, :teams, :role_id, :governance, :riskmanagement, :compliance, :assessments, :asset, :admin, :review_veryhigh, :accept_mitigation, :review_high, :review_medium, :review_low, :review_insignificant, :submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor, :change_password, :add_new_frameworks, :modify_frameworks, :delete_frameworks, :add_new_controls, :modify_controls, :delete_controls, ''";
     foreach($other_options as $field => $value)
     {
         $sql .= ", :{$field}";
@@ -2117,16 +2121,26 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
         $stmt->bindParam(":{$field}", $other_options[$field], PDO::PARAM_INT);
     }
     $stmt->execute();
+    
+    $user_id = $db->lastInsertId();
 
     // Audit log
     $risk_id = 1000;
-    $message = "The new user \"" . $user . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    if(!empty($_SESSION['uid']))
+    {
+        $message = "The new user \"" . $user . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+        write_log($risk_id, $_SESSION['uid'], $message);
+    }
+    else
+    {
+        $message = "The new user \"" . $user . "\" was added.";
+        write_log($risk_id, $user_id, $message);
+    }
 
     // Close the database connection
     db_close($db);
 
-    return true;
+    return $user_id;
 }
 
 /*************************
@@ -2421,6 +2435,7 @@ function update_password($user, $hash)
 function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders="")
 {
     $submitted_by || ($submitted_by = $_SESSION['uid']);
+
     // Open the database connection
     $db = db_open();
 
@@ -2433,22 +2448,26 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     }else{
         $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `location`, `source`, `category`, `team`, `technology`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `additional_stakeholders`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :location, :source, :category, :team, :technology, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :additional_stakeholders)";
     }
+    
+    $try_encrypt_assessment = try_encrypt($assessment);
+    $try_encrypt_notes = try_encrypt($notes);
 
     $stmt = $db->prepare($sql);
     $stmt->bindParam(":status", $status, PDO::PARAM_STR, 10);
-    $stmt->bindParam(":subject", try_encrypt($subject), PDO::PARAM_STR, 1000);
+    $encrypted_subject = try_encrypt($subject);
+    $stmt->bindParam(":subject", $encrypted_subject, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":reference_id", $reference_id, PDO::PARAM_STR, 20);
     $stmt->bindParam(":regulation", $regulation, PDO::PARAM_INT);
     $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR, 20);
     $stmt->bindParam(":location", $location, PDO::PARAM_INT);
     $stmt->bindParam(":source", $source, PDO::PARAM_INT);
     $stmt->bindParam(":category", $category, PDO::PARAM_INT);
-    $stmt->bindParam(":team", $team, PDO::PARAM_INT);
+    $stmt->bindParam(":team", $team, PDO::PARAM_STR);
     $stmt->bindParam(":technology", $technology, PDO::PARAM_STR);
     $stmt->bindParam(":owner", $owner, PDO::PARAM_INT);
     $stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
-    $stmt->bindParam(":assessment", try_encrypt($assessment), PDO::PARAM_STR);
-    $stmt->bindParam(":notes", try_encrypt($notes), PDO::PARAM_STR);
+    $stmt->bindParam(":assessment", $try_encrypt_assessment, PDO::PARAM_STR);
+    $stmt->bindParam(":notes", $try_encrypt_notes, PDO::PARAM_STR);
     $stmt->bindParam(":project_id", $project_id, PDO::PARAM_STR);
     $stmt->bindParam(":submitted_by", $submitted_by, PDO::PARAM_INT);
     $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR);
@@ -2461,7 +2480,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $last_insert_id = $db->lastInsertId();
 
     // Audit log
-    $risk_id = $last_insert_id + 1000;
+    $risk_id = (int)$last_insert_id + 1000;
     $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $_SESSION['user'] . "\".";
     write_log($risk_id, $submitted_by, $message);
 
@@ -2696,11 +2715,12 @@ function add_risk_scoring_history($risk_id, $calculated_risk)
         return;
     }
 
+    $last_update = date('Y-m-d H:i:s');
     // There is no entry like that, adding new one
     $stmt = $db->prepare("INSERT INTO risk_scoring_history (risk_id, calculated_risk, last_update) VALUES (:risk_id, :calculated_risk, :last_update);");
     $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
     $stmt->bindParam(":calculated_risk", $calculated_risk, PDO::PARAM_STR);
-    $stmt->bindParam(":last_update", date('Y-m-d H:i:s'), PDO::PARAM_STR);
+    $stmt->bindParam(":last_update", $last_update, PDO::PARAM_STR);
     $stmt->execute();
 
     // Close the database connection
@@ -2724,11 +2744,12 @@ function add_residual_risk_scoring_history($risk_id, $residual_risk)
         return;
     }
 
+    $last_update = date('Y-m-d H:i:s');
     // There is no entry like that, adding new one
     $stmt = $db->prepare("INSERT INTO `residual_risk_scoring_history` (risk_id, residual_risk, last_update) VALUES (:risk_id, :residual_risk, :last_update);");
     $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
     $stmt->bindParam(":residual_risk", $residual_risk, PDO::PARAM_STR);
-    $stmt->bindParam(":last_update", date('Y-m-d H:i:s'), PDO::PARAM_STR);
+    $stmt->bindParam(":last_update", $last_update, PDO::PARAM_STR);
     $stmt->execute();
 
     // Close the database connection
@@ -3077,7 +3098,7 @@ function get_calculated_risk_by_id($risk_id)
 function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkill, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPDiscovery, $OWASPExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom)
 {
     // Subtract 1000 from the id
-    $id = $risk_id - 1000;
+    $id = (int)$risk_id - 1000;
 
     // Get old calculated risk
     $old_calculated_risk = get_calculated_risk_by_id($risk_id);
@@ -3299,11 +3320,12 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     $security_recommendations   = try_encrypt($security_recommendations);
 
     $planning_date              = isset($post['planning_date']) ? $post['planning_date'] : "";
-    $mitigation_date            = isset($post['mitigation_date']) ? $post['mitigation_date']." 00:00:00" : date(get_default_datetime_format());
+    $mitigation_date            = isset($post['mitigation_date']) ? $post['mitigation_date'] : date(get_default_datetime_format());
+
     // Convert to standard date
     $mitigation_date            = get_standard_date_from_default_format($mitigation_date, true);
 
-    $mitigation_percent         = (isset($post['mitigation_percent']) && $post['mitigation_percent'] >= 0 && $post['mitigation_percent'] <= 100) ? $post['mitigation_percent'] : "";
+    $mitigation_percent         = (isset($post['mitigation_percent']) && $post['mitigation_percent'] >= 0 && $post['mitigation_percent'] <= 100) ? $post['mitigation_percent'] : 0;
     $mitigation_controls        = empty($post['mitigation_controls']) ? [] : $post['mitigation_controls'];
     $mitigation_controls        = is_array($mitigation_controls) ? implode(",", $mitigation_controls) : $mitigation_controls;
 
@@ -3388,7 +3410,7 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
 
     $error = 1;
     // If a file was submitted
-    if (!empty($_FILES))
+    if (!empty($_FILES['file']))
     {
         // Upload any file that is submitted
         for($i=0; $i<count($_FILES['file']['name']); $i++){
@@ -3418,7 +3440,7 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     /****** end uploading files *******/
 
     // Add residual risk score
-    $residual_risk = get_residual_risk($id + 1000);
+    $residual_risk = get_residual_risk((int)$id + 1000);
     add_residual_risk_scoring_history($id, $residual_risk);
 
     return $current_datetime;
@@ -3465,12 +3487,14 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
     }else{
         $stmt = $db->prepare("INSERT INTO mgmt_reviews (`risk_id`, `review`, `reviewer`, `next_step`, `comments`, `next_review`, `submission_date`) VALUES (:risk_id, :review, :reviewer, :next_step, :comments, :next_review, :submission_date)");
     }
+    
+    $try_encrypt_comments = try_encrypt($comments);
 
     $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
     $stmt->bindParam(":review", $review, PDO::PARAM_INT);
     $stmt->bindParam(":reviewer", $reviewer, PDO::PARAM_INT);
     $stmt->bindParam(":next_step", $next_step, PDO::PARAM_INT);
-    $stmt->bindParam(":comments", try_encrypt($comments), PDO::PARAM_STR);
+    $stmt->bindParam(":comments", $try_encrypt_comments, PDO::PARAM_STR);
     $stmt->bindParam(":next_review", $next_review, PDO::PARAM_STR, 10);
     if($submission_date !== false){
         $stmt->bindParam(":submission_date", $submission_date, PDO::PARAM_STR, 20);
@@ -3744,7 +3768,7 @@ function get_residual_risk($risk_id)
     $db = db_open();
 
     // Subtract 1000 from the id
-    $risk_id = $risk_id - 1000;
+    $risk_id = (int)$risk_id - 1000;
 
     // Query the database
     $stmt = $db->prepare("
@@ -3754,7 +3778,7 @@ function get_residual_risk($risk_id)
             LEFT JOIN mitigations t3 ON t1.id=t3.risk_id
             LEFT JOIN framework_controls t4 ON FIND_IN_SET(t4.id, t3.mitigation_controls)
         WHERE t1.id=:risk_id
-        GROUP BY t1.id
+        GROUP BY t1.id;
     ");
     $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -3823,7 +3847,7 @@ function update_risk_subject($risk_id, $subject)
 function convert_id($id)
 {
     // Add 1000 to any id to make it at least 4 digits
-    $id = $id + 1000;
+    $id = (int)$id + 1000;
 
     return $id;
 }
@@ -3836,7 +3860,7 @@ function check_risk_by_id($id){
     $db = db_open();
 
     // Subtract 1000 from the id
-    $id = $id - 1000;
+    $id = (int)$id - 1000;
 
     // Query the database
     $stmt = $db->prepare("SELECT b.* FROM risk_scoring a INNER JOIN risks b on a.id = b.id WHERE b.id=:id LIMIT 1");
@@ -3863,7 +3887,7 @@ function check_risk_id($id)
     $db = db_open();
 
     // Subtract 1000 from the id
-    $id = $id - 1000;
+    $id = (int)$id - 1000;
 
     // Query the database
     $stmt = $db->prepare("SELECT a.* FROM risks a WHERE a.id=:id;");
@@ -3889,7 +3913,7 @@ function get_risk_by_id($id)
     $db = db_open();
 
     // Subtract 1000 from the id
-    $id = $id - 1000;
+    $id = (int)$id - 1000;
 
     // If the team separation extra is not enabled
     if (!team_separation_extra())
@@ -3946,7 +3970,7 @@ function get_mitigation_by_id($risk_id)
     $db = db_open();
 
     // Subtract 1000 from the id
-    $risk_id = $risk_id - 1000;
+    $risk_id = (int)$risk_id - 1000;
 
     // Query the database
     $stmt = $db->prepare("SELECT t1.*, t1.risk_id AS id,
@@ -4026,7 +4050,7 @@ function get_review_by_id($risk_id)
     $db = db_open();
 
     // Subtract 1000 from the id
-    $risk_id = $risk_id - 1000;
+    $risk_id = (int)$risk_id - 1000;
 
     // Query the database
     $stmt = $db->prepare("SELECT * FROM mgmt_reviews WHERE risk_id=:risk_id ORDER BY submission_date DESC");
@@ -4067,7 +4091,7 @@ function get_close_by_id($risk_id)
     $db = db_open();
 
     // Subtract 1000 from the id
-    $risk_id = $risk_id - 1000;
+    $risk_id = (int)$risk_id - 1000;
 
     // Query the database
     $stmt = $db->prepare("SELECT * FROM closures WHERE risk_id=:risk_id ORDER BY closure_date DESC limit 1");
@@ -4843,7 +4867,7 @@ function get_risk_for_project($project_id)
 // If we only want to get risks reviewed as consider for project
     else
     {
-		    $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" AND b.project_id = :project_id ORDER BY calculated_risk DESC");
+            $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" AND b.project_id = :project_id ORDER BY calculated_risk DESC");
 
     }
     $stmt->bindParam(":project_id", $project_id, PDO::PARAM_INT);
@@ -6924,7 +6948,7 @@ function get_project_tabs($status)
                     $project_id = (int)$risk['project_id'];
                     $color = get_risk_color($risk['calculated_risk']);
 
-                    $risk_number = $risk_id + 1000;
+                    $risk_number = (int)$risk_id + 1000;
 
                     echo '<div class="risk clearfix">
                             <div class="pull-left risk--title"  data-risk="'.$escaper->escapeHtml($risk_id).'"><a href="../management/view.php?id=' . $escaper->escapeHtml(convert_id($risk_id)) . '" target="_blank">#'.$risk_number.' '.$escaper->escapeHtml($subject).'</a></div>
@@ -7681,8 +7705,8 @@ function next_review($risk_level, $id, $next_review, $html = true, $review_level
     // If we want to include the HTML code
     if ($html == true)
     {
-	    // Convert the database ID to a risk ID
-	    $risk_id = convert_id($id);
+        // Convert the database ID to a risk ID
+        $risk_id = convert_id($id);
 
         // Add the href tag to make it HTML
         $html = "<a href=\"../management/mgmt_review.php?id=" . $escaper->escapeHtml($risk_id) . "\">" . $escaper->escapeHtml($text) . "</a>";
@@ -7877,6 +7901,8 @@ function add_comment($risk_id, $user_id, $comment)
 
     // Get current datetime for last_update
     $current_datetime = date('Y-m-d H:i:s');
+    
+    $try_encrypt_comments = try_encrypt($comment);
 
     // Open the database connection
     $db = db_open();
@@ -7886,7 +7912,7 @@ function add_comment($risk_id, $user_id, $comment)
 
     $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
     $stmt->bindParam(":user", $user_id, PDO::PARAM_INT);
-    $stmt->bindParam(":comment", try_encrypt($comment), PDO::PARAM_STR);
+    $stmt->bindParam(":comment", $try_encrypt_comments, PDO::PARAM_STR);
 
     $stmt->execute();
 
@@ -7925,7 +7951,7 @@ function get_comments($id)
     global $escaper;
 
     // Subtract 1000 from id
-    $id = $id - 1000;
+    $id = (int)$id - 1000;
 
     // Open the database connection
     $db = db_open();
@@ -7977,7 +8003,7 @@ function get_audit_trail($id = NULL, $days = 7, $log_type=NULL)
         if ($id > 1000)
         {
             // Subtract 1000 from id
-            $id = $id - 1000;
+            $id = (int)$id - 1000;
 
             // Get the comments for this specific ID
             $stmt = $db->prepare("SELECT timestamp, message FROM audit_log WHERE risk_id=:risk_id AND (`timestamp` > CURDATE()-INTERVAL :days DAY) AND log_type=:log_type ORDER BY timestamp DESC");
@@ -8016,7 +8042,8 @@ function get_audit_trail($id = NULL, $days = 7, $log_type=NULL)
                 $stmt = $db->prepare("SELECT timestamp, message, log_type FROM audit_log WHERE (`timestamp` > CURDATE()-INTERVAL :days DAY) AND ({$log_type_where}) ORDER BY timestamp DESC");
                 $stmt->bindParam(":days", $days, PDO::PARAM_INT);
                 foreach($log_type_array as $key => $val){
-                    $stmt->bindParam(":log_type_{$key}", trim($val), PDO::PARAM_STR, 100);
+                    $value = trim($val);
+                    $stmt->bindParam(":log_type_{$key}", $value, PDO::PARAM_STR, 100);
                 }
             }
         }
@@ -8180,7 +8207,7 @@ function update_mitigation($risk_id, $post)
     /****** end uploading files *******/
 
     // Add residual risk score
-    $residual_risk = get_residual_risk($id + 1000);
+    $residual_risk = get_residual_risk((int)$id + 1000);
     add_residual_risk_scoring_history($id, $residual_risk);
 
     return $current_datetime;
@@ -8388,7 +8415,7 @@ function current_version($param)
 function write_log($risk_id, $user_id, $message, $log_type="risk")
 {
     // Subtract 1000 from id
-    $risk_id = $risk_id - 1000;
+    $risk_id = (int)$risk_id - 1000;
 
     // If the user_id value is not set
     if (!isset($user_id))
@@ -8473,14 +8500,14 @@ function get_announcements()
  ***************************/
 function language_file()
 {
-	// If the language is set for the user
-	if (isset($_SESSION['lang']))
-	{
-		// Use the users language
-		return realpath(__DIR__ . '/../languages/' . $_SESSION['lang'] . '/lang.' . $_SESSION['lang'] . '.php');
-	}
-	else
-	{
+    // If the language is set for the user
+    if (isset($_SESSION['lang']))
+    {
+        // Use the users language
+        return realpath(__DIR__ . '/../languages/' . $_SESSION['lang'] . '/lang.' . $_SESSION['lang'] . '.php');
+    }
+    else
+    {
                 // Set the default language to null
                 $default_language = null;
 
@@ -8502,14 +8529,14 @@ function language_file()
                         if (!$default_language) $default_language = "en";
                 }
 
-		// If the default language is set
-		if ($default_language != false)
-		{
-			// Use the default language
-			return realpath(__DIR__ . '/../languages/' . $default_language . '/lang.' . $default_language . '.php');
-		}
-		// Otherwise, use english
-		else return realpath(__DIR__ . '/../languages/en/lang.en.php');
+        // If the default language is set
+        if ($default_language != false)
+        {
+            // Use the default language
+            return realpath(__DIR__ . '/../languages/' . $default_language . '/lang.' . $default_language . '.php');
+        }
+        // Otherwise, use english
+        else return realpath(__DIR__ . '/../languages/en/lang.en.php');
     }
 }
 
@@ -8905,17 +8932,26 @@ function upload_file($risk_id, $file, $view_type = 1)
     // Get the list of allowed file types
     $stmt = $db->prepare("SELECT `name` FROM `file_types`");
     $stmt->execute();
+    $file_types = $stmt->fetchAll();
 
-    // Get the result
-    $result = $stmt->fetchAll();
+    // Get the list of allowed file extensions
+    $stmt = $db->prepare("SELECT `name` FROM `file_type_extensions`");
+    $stmt->execute();
+    $file_type_extensions = $stmt->fetchAll();
 
     // Close the database connection
     db_close($db);
 
     // Create an array of allowed types
-    foreach ($result as $key => $row)
+    foreach ($file_types as $key => $row)
     {
         $allowed_types[] = $row['name'];
+    }
+
+    // Create an array of allowed extensions
+    foreach ($file_type_extensions as $key => $row)
+    {
+        $allowed_extensions[] = $row['name'];
     }
 
     // If a file was submitted and the name isn't blank
@@ -8924,6 +8960,9 @@ function upload_file($risk_id, $file, $view_type = 1)
         // If the file type is appropriate
         if (in_array($file['type'], $allowed_types))
         {
+            // If the file extension is appropriate
+            if (in_array(pathinfo($file['name'], PATHINFO_EXTENSION), $allowed_extensions))
+            {
             // Get the maximum upload file size
             $max_upload_size = get_setting("max_upload_size");
 
@@ -8993,6 +9032,8 @@ function upload_file($risk_id, $file, $view_type = 1)
                 }
             }
             else return "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
+            }
+            else return "The file extension of the uploaded file (" . pathinfo($file['name'], PATHINFO_EXTENSION) . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
         }
         else return "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
     }
@@ -9089,7 +9130,7 @@ function download_file($unique_name)
             require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
             // If the user has access to view the risk
-            if (extra_grant_access($_SESSION['uid'], $array['risk_id'] + 1000))
+            if (extra_grant_access($_SESSION['uid'], (int)$array['risk_id'] + 1000))
             {
                 // Display the file
                 header("Content-length: " . $array['size']);
@@ -9374,7 +9415,7 @@ function delete_risk($risk_id)
         db_close($db);
 
         // Audit log
-        $risk_id = $risk_id + 1000;
+        $risk_id = (int)$risk_id + 1000;
         $message = "Risk ID \"" . $risk_id . "\" was DELETED by username \"" . $_SESSION['user'] . "\".";
         write_log($risk_id, $_SESSION['uid'], $message);
 
@@ -9421,7 +9462,7 @@ function completed_project($project_id)
             // If the risks status is not Closed
             if ($risk['status'] != "Closed")
             {
-                $id = $risk['id'] + 1000;
+                $id = (int)$risk['id'] + 1000;
                 $status = "Closed";
                 $close_reason = 1;
                 $project = get_name_by_value("projects", $project_id);
@@ -9451,7 +9492,7 @@ function incomplete_project($project_id)
         // If the risk status is Closed
         if ($risk['status'] == "Closed")
         {
-            $id = $risk['id'] + 1000;
+            $id = (int)$risk['id'] + 1000;
 
             // Reopen the risk
             reopen_risk($id);
@@ -9616,7 +9657,7 @@ function update_registration($name, $company, $title, $phone, $email)
 function update_risk_status($risk_id, $status)
 {
     // Adjust the risk id
-    $id = $risk_id - 1000;
+    $id = (int)$risk_id - 1000;
 
     // Open the database connection
     $db = db_open();
@@ -9629,6 +9670,7 @@ function update_risk_status($risk_id, $status)
         $review     = 0;
         $next_step  = 0;
         $next_review = "0000-00-00";
+        $try_encrypt = try_encrypt("--");
         
         $stmt = $db->prepare("INSERT INTO mgmt_reviews (`risk_id`, `review`, `reviewer`, `next_step`, `comments`, `next_review`, `submission_date`) VALUES (:risk_id, :review, :reviewer, :next_step, :comments, :next_review, :submission_date)");
         
@@ -9636,7 +9678,7 @@ function update_risk_status($risk_id, $status)
         $stmt->bindParam(":review", $review, PDO::PARAM_INT);
         $stmt->bindParam(":reviewer", $reviewer, PDO::PARAM_INT);
         $stmt->bindParam(":next_step", $next_step, PDO::PARAM_INT);
-        $stmt->bindParam(":comments", try_encrypt("--"), PDO::PARAM_STR);
+        $stmt->bindParam(":comments", $try_encrypt, PDO::PARAM_STR);
         $stmt->bindParam(":next_review", $next_review, PDO::PARAM_STR, 10);
         $stmt->bindParam(":submission_date", $current_datetime, PDO::PARAM_STR, 20);
         
@@ -10689,7 +10731,7 @@ function ping_server()
     db_close($db);
 
     // Make the https request
-    $fp = fsockopen("tls://ping.simplerisk.com", 443, $errno, $errstr, 30);
+    $fp = fsockopen("ssl://ping.simplerisk.com", 443, $errno, $errstr, 30);
     $out = "GET " . $path . " HTTP/1.1\r\n";
     $out .= "Host: ping.simplerisk.com\r\n";
     $out .= "Connection: Close\r\n\r\n";
@@ -10921,18 +10963,18 @@ function get_string_from_template($template, $data){
  ************************/
 function delete_dir($dir)
 {
-	$tmp = dirname(__FILE__);
+    $tmp = dirname(__FILE__);
 
-	// If this is not Windows (directory paths don't start with /)
-	if (strpos($tmp, '/', 0) !== false)
-	{
-		linux_delete_dir($dir);
-	}
-	// If this is Windows
-	else
-	{
-		windows_delete_dir($dir);
-	}
+    // If this is not Windows (directory paths don't start with /)
+    if (strpos($tmp, '/', 0) !== false)
+    {
+        linux_delete_dir($dir);
+    }
+    // If this is Windows
+    else
+    {
+        windows_delete_dir($dir);
+    }
 }
 
 /*************************
@@ -10959,14 +11001,14 @@ function delete_file($file)
  ******************************/
 function linux_delete_dir($dir)
 {
-	$files = array_diff(scandir($dir), array('.','..'));
+    $files = array_diff(scandir($dir), array('.','..'));
 
-	foreach ($files as $file)
-	{
-		(is_dir("$dir/$file")) ? linux_delete_dir("$dir/$file") : linux_delete_file("$dir/$file");
+    foreach ($files as $file)
+    {
+        (is_dir("$dir/$file")) ? linux_delete_dir("$dir/$file") : linux_delete_file("$dir/$file");
         }
 
-	return rmdir($dir);
+    return rmdir($dir);
 }
 
 /*******************************
@@ -10974,11 +11016,11 @@ function linux_delete_dir($dir)
  *******************************/
 function linux_delete_file($file)
 {
-	// Delete a file in Linux
-	$success = unlink($file);
+    // Delete a file in Linux
+    $success = unlink($file);
 
-	// Return the results
-	return $success;
+    // Return the results
+    return $success;
 }
 
 /********************************
@@ -10986,11 +11028,11 @@ function linux_delete_file($file)
  ********************************/
 function windows_delete_dir($dir)
 {
-	// Recursively delete directory and its contents
-	$success = exec("RMDIR /s \"" . $dir . "\"", $lines, $deleteError);
+    // Recursively delete directory and its contents
+    $success = exec("RMDIR /s \"" . $dir . "\"", $lines, $deleteError);
 
-	// Return the results
-	return $success;
+    // Return the results
+    return $success;
 }
 
 /*********************************
@@ -10998,11 +11040,11 @@ function windows_delete_dir($dir)
  *********************************/
 function windows_delete_file($file)
 {
-	// Delete a file in Windows
-	$success = exec("DEL /F/Q \"" . $file . "\"", $lines, $deleteError);
+    // Delete a file in Windows
+    $success = exec("DEL /F/Q \"" . $file . "\"", $lines, $deleteError);
 
-	// Return the results
-	return $success;
+    // Return the results
+    return $success;
 }
 
 /***************************
@@ -11113,17 +11155,17 @@ function set_session_renegotiation_period()
  *************************/
 function csp_enabled()
 {
-	// Get the setting for the content security policy
-	$content_security_policy = get_setting("content_security_policy");
+    // Get the setting for the content security policy
+    $content_security_policy = get_setting("content_security_policy");
 
-	// If the content security policy is enabled
-	if ($content_security_policy == 1)
-	{
-		// Return true
-		return true;
-	}
-	// Otherwise, return false
-	else return false;
+    // If the content security policy is enabled
+    if ($content_security_policy == 1)
+    {
+        // Return true
+        return true;
+    }
+    // Otherwise, return false
+    else return false;
 }
 
 /*****************************************
@@ -11282,11 +11324,11 @@ function set_default_timezone()
  ******************************************/
 function set_unauthenticated_redirect()
 {
-	// Get the requested URL
-	$requested_url = get_current_url();
+    // Get the requested URL
+    $requested_url = get_current_url();
 
-	// Store it in the session
-	$_SESSION['requested_url'] = $requested_url;
+    // Store it in the session
+    $_SESSION['requested_url'] = $requested_url;
 }
 
 /*******************************************
@@ -11351,7 +11393,8 @@ function accept_mitigation_by_risk_id($risk_id, $accept)
         $stmt = $db->prepare("INSERT INTO `mitigation_accept_users`(`risk_id`, `user_id`, `created_at`) VALUES(:risk_id, :user_id, :created_at);");
         $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
         $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-        $stmt->bindParam(":created_at", date("Y-m-d H:i:s"), PDO::PARAM_STR);
+        $today = date("Y-m-d H:i:s");
+        $stmt->bindParam(":created_at", $today, PDO::PARAM_STR);
         $stmt->execute();
     }
     // If decline mitigation, delete a record
@@ -11459,14 +11502,14 @@ function set_all_teams_to_administrators()
  *************************************/
 function set_simplerisk_timezone()
 {
-	// Get the value set for the timezone in the database
-	$default_timezone = get_setting("default_timezone");
+    // Get the value set for the timezone in the database
+    $default_timezone = get_setting("default_timezone");
 
-	// If no timezone is set, set it to CST
-	if (!$default_timezone) $default_timezone = "America/Chicago";
+    // If no timezone is set, set it to CST
+    if (!$default_timezone) $default_timezone = "America/Chicago";
 
-	// Set the timezone for PHP date functions
-	date_default_timezone_set($default_timezone);
+    // Set the timezone for PHP date functions
+    date_default_timezone_set($default_timezone);
 }
 
 /**********************************
@@ -11474,24 +11517,24 @@ function set_simplerisk_timezone()
  **********************************/
 function add_security_headers()
 {
-	// X-Frame-Options
-	header("X-Frame-Options: DENY");
+    // X-Frame-Options
+    header("X-Frame-Options: DENY");
 
-	// X-XSS-Protection
-	header("X-XSS-Protection: 1; mode=block");
+    // X-XSS-Protection
+    header("X-XSS-Protection: 1; mode=block");
 
-	// X-Content-Type-Options
-	header("X-Content-Type-Options: nosniff");
+    // X-Content-Type-Options
+    header("X-Content-Type-Options: nosniff");
 
-	// Content-Type
-	header("Content-Type: text/html; charset=utf-8");
+    // Content-Type
+    header("Content-Type: text/html; charset=utf-8");
 
-	// If we want to enable the Content Security Policy (CSP) - This may break Chrome
-	if (csp_enabled())
-	{
-        	// Add the Content-Security-Policy header
-        	header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
-	}
+    // If we want to enable the Content Security Policy (CSP) - This may break Chrome
+    if (csp_enabled())
+    {
+            // Add the Content-Security-Policy header
+            header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+    }
 }
 
 /******************************************
@@ -11499,26 +11542,26 @@ function add_security_headers()
  ******************************************/
 function convert_file_size_into_bytes($file_size)
 {
-	// Take a file size in the format ^\s*\d+\s*[kmg].* and extract the number and suffix
-	if(preg_match("/^\s*(\d+)\s*([kmg])/i", $file_size, $matches))
-	{
-		$value = (int) $matches[1];
-		$suffix = strtolower($matches[2]);
-		switch($suffix)
-		{
-			case "g":
-				$value *= 1024;
-			case "m":
-				$value *= 1024;
-			case "k":
-				$value *= 1024;
-		}
+    // Take a file size in the format ^\s*\d+\s*[kmg].* and extract the number and suffix
+    if(preg_match("/^\s*(\d+)\s*([kmg])/i", $file_size, $matches))
+    {
+        $value = (int) $matches[1];
+        $suffix = strtolower($matches[2]);
+        switch($suffix)
+        {
+            case "g":
+                $value *= 1024;
+            case "m":
+                $value *= 1024;
+            case "k":
+                $value *= 1024;
+        }
 
-		return $value;
-	}
+        return $value;
+    }
 
-	// return false to indicate parsing failed
-	return false;
+    // return false to indicate parsing failed
+    return false;
 }
 
 /**************************************
@@ -11803,14 +11846,23 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1)
     // Get the list of allowed file types
     $stmt = $db->prepare("SELECT `name` FROM `file_types`");
     $stmt->execute();
+    $file_types = $stmt->fetchAll();
 
-    // Get the result
-    $result = $stmt->fetchAll();
+    // Get the list of allowed file extensions
+    $stmt = $db->prepare("SELECT `name` FROM `file_type_extensions`");
+    $stmt->execute();
+    $file_type_extensions = $stmt->fetchAll();
 
     // Create an array of allowed types
-    foreach ($result as $key => $row)
+    foreach ($file_types as $key => $row)
     {
         $allowed_types[] = $row['name'];
+    }
+
+    // Create an array of allowed extensions
+    foreach ($file_type_extensions as $key => $row)
+    {
+        $allowed_extensions[] = $row['name'];
     }
     
     $errors = array();
@@ -11833,6 +11885,9 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1)
         // If the file type is appropriate
         if (in_array($file['type'], $allowed_types))
         {
+            // If the file extension is appropriate
+            if (in_array(pathinfo($file['name'], PATHINFO_EXTENSION), $allowed_extensions))
+            {
             // Get the maximum upload file size
             $max_upload_size = get_setting("max_upload_size");
 
@@ -11895,6 +11950,8 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1)
                 }
             }
             else $errors[] = "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
+            }
+            else $errors[] = "The file extension of the uploaded file (" . pathinfo($file['name'], PATHINFO_EXTENSION) . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
         }
         else $errors[] = "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
     }
@@ -12049,37 +12106,37 @@ function update_impact_likelihood( $old_impact_value, $new_impact_value, $old_li
  ******************************/
 function restricted_extra($extra_name)
 {
-	// Get the hosting tier setting
-	$hosting_tier = get_setting('hosting_tier');
+    // Get the hosting tier setting
+    $hosting_tier = get_setting('hosting_tier');
 
-	// If the hosting tier is not set
-	if (!$hosting_tier)
-	{
-		// Return false
-		return false;
-	}
-	// Otherwise, the tier is set
-	else
-	{
-		switch ($hosting_tier)
-		{
-			case 'trial':
-				return trial_extra($extra_name);
-				break;
-			case 'small':
-				return small_extra($extra_name);
-				break;
-			case 'medium':
-				return medium_extra($extra_name);
-				break;
-			case 'large':
-				return large_extra($extra_name);
-				break;
-			default:
-				return true;
-				break;
-		}
-	}
+    // If the hosting tier is not set
+    if (!$hosting_tier)
+    {
+        // Return false
+        return false;
+    }
+    // Otherwise, the tier is set
+    else
+    {
+        switch ($hosting_tier)
+        {
+            case 'trial':
+                return trial_extra($extra_name);
+                break;
+            case 'small':
+                return small_extra($extra_name);
+                break;
+            case 'medium':
+                return medium_extra($extra_name);
+                break;
+            case 'large':
+                return large_extra($extra_name);
+                break;
+            default:
+                return true;
+                break;
+        }
+    }
 }
 
 /*************************
@@ -12087,46 +12144,46 @@ function restricted_extra($extra_name)
  *************************/
 function trial_extra($extra_name)
 {
-	// Check the Extra permission
-	switch($extra_name)
-	{
-		case 'api':
-			// Allow
-			return false;
+    // Check the Extra permission
+    switch($extra_name)
+    {
+        case 'api':
+            // Allow
+            return false;
                         break;
-		case 'complianceforgescf':
-			// Allow
-			return false;
+        case 'complianceforgescf':
+            // Allow
+            return false;
                         break;
-		case 'customauth':
-			// Allow
-			return false;
+        case 'customauth':
+            // Allow
+            return false;
                         break;
-		case 'customization':
-			// Allow
-			return false;
+        case 'customization':
+            // Allow
+            return false;
                         break;
-		case 'encryption':
-			// Don't Allow
-			return true;
+        case 'encryption':
+            // Don't Allow
+            return true;
                         break;
-		case 'importexport':
-			// Allow
-			return false;
+        case 'importexport':
+            // Allow
+            return false;
                         break;
-		case 'notification':
-			// Allow
-			return false;
+        case 'notification':
+            // Allow
+            return false;
                         break;
-		case 'riskassessment':
-			// Allow
-			return false;
+        case 'riskassessment':
+            // Allow
+            return false;
                         break;
-		case 'separation':
-			// Allow
-			return false;
-			break;
-	}
+        case 'separation':
+            // Allow
+            return false;
+            break;
+    }
 }
 
 /*************************
@@ -12138,19 +12195,19 @@ function small_extra($extra_name)
         switch($extra_name)
         {
                 case 'api':
-			// Don't Allow
+            // Don't Allow
                         return true;
                         break;
                 case 'complianceforgescf':
-			// Allow
+            // Allow
                         return false;
                         break;
                 case 'customauth':
-			// Don't Allow
+            // Don't Allow
                         return true;
                         break;
                 case 'customization':
-			// Don't Allow
+            // Don't Allow
                         return true;
                         break;
                 case 'encryption':
@@ -12158,19 +12215,19 @@ function small_extra($extra_name)
                         return true;
                         break;
                 case 'importexport':
-			// Allow
+            // Allow
                         return false;
                         break;
                 case 'notification':
-			// Allow
+            // Allow
                         return false;
                         break;
                 case 'riskassessment':
-			// Allow
+            // Allow
                         return false;
                         break;
                 case 'separation':
-			// Don't Allow
+            // Don't Allow
                         return true;
                         break;
         }
@@ -12268,6 +12325,56 @@ function large_extra($extra_name)
                         return false;
                         break;
         }
+}
+
+/***************************
+ * FUNCTION: ADD FILE TYPE *
+ ***************************/
+function add_file_type($name, $extension)
+{
+	// If no name was provided
+	if (!$name || $name == "")
+	{
+		// Display an alert
+		set_alert(false, "bad", "Please provide a valid file type name.");
+
+		// Return false
+		return false;
+	}
+
+	// If no extension was provided
+	if (!$extension || $extension == "")
+	{
+		// Display an alert
+		set_alert(false, "bad", "Please provide a valid file extension.");
+
+		// Return false
+		return false;
+	}
+
+	// Open the database connection
+	$db = db_open();
+
+	// Insert the new file type
+	$stmt = $db->prepare("INSERT INTO `file_types` (`name`) VALUES (:name) ON DUPLICATE KEY UPDATE `name` = :name;");
+	$stmt->bindParam(":name", $name, PDO::PARAM_STR, 100);
+	$stmt->execute();
+
+	// Insert the new file type extension
+	$stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES (:extension) ON DUPLICATE KEY UPDATE `name` = :extension;");
+	$stmt->bindParam(":extension", $extension, PDO::PARAM_STR, 10);
+	$stmt->execute();
+
+	// Write an audit log entry
+	$risk_id = 1000;
+	$message = "A new upload file type of \"" . $name . "\" for extension \"" . $extension . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+	write_log($risk_id, $_SESSION['uid'], $message);
+	
+	// Close the database connection
+	db_close($db);
+
+	// Return true
+	return true;
 }
 
 ?>

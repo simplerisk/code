@@ -36,6 +36,10 @@ require_once(language_file());
 
 require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
+
 // Check for session timeout or renegotiation
 session_check();
 
@@ -102,11 +106,11 @@ function display($display = "")
             // If the extra is not restricted based on the install type
             if (!restricted_extra("customization"))
             {
-                echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
-                echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
-                echo "</form>\n";
-                echo "</div>\n";
-            }
+            echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
+            echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
+            echo "</form>\n";
+            echo "</div>\n";
+        }
             // The extra is restricted
             else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
         }
