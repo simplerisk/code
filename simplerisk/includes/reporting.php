@@ -26,6 +26,9 @@ function get_open_risks($teams = false)
         }else{
             $options = explode(",", $teams);
             $teams_query = generate_or_query($options, 'team');
+            if(in_array("0", $options)){
+                $teams_query .= " OR team='' ";
+            }
             $teams_query = " AND ( {$teams_query} ) ";
         }
     }else{
@@ -72,6 +75,9 @@ function get_closed_risks($teams = false)
         }else{
             $options = explode(",", $teams);
             $teams_query = generate_or_query($options, 'team');
+            if(in_array("0", $options)){
+                $teams_query .= " OR team='' ";
+            }
             $teams_query = " AND ( {$teams_query} ) ";
         }
     }else{
@@ -499,11 +505,15 @@ function open_risk_level_pie($title = null, $teams = false)
         }else{
             $options = explode(",", $teams);
             $teams_query = generate_or_query($options, 'team', 'b');
+            if(in_array("0", $options)){
+                $teams_query .= " OR b.team='' ";
+            }
             $teams_query = " AND ( {$teams_query} ) ";
         }
     }else{
         $teams_query = "";
     }
+
     
     $chart->chart->renderTo = "open_risk_level_pie";
     $chart->chart->plotBackgroundColor = null;
@@ -728,6 +738,9 @@ function closed_risk_reason_pie($title = null, $teams = false)
         }else{
             $options = explode(",", $teams);
             $teams_query = generate_or_query($options, 'team', 'c');
+            if(in_array("0", $options)){
+                $teams_query .= " OR c.team='' ";
+            }
             $teams_query = " AND ( {$teams_query} ) ";
         }
     }else{
@@ -1736,11 +1749,11 @@ function risks_and_assets_table($report)
     {
         // Risks by Asset
         case 0:
-            $query = "SELECT a.risk_id AS id, a.asset, b.id AS asset_id, b.ip AS asset_ip, b.name AS asset_name, b.value AS asset_value, b.location AS asset_location, b.team AS asset_team, c.status, c.subject, c.submission_date, d.calculated_risk, e.next_review FROM risks_to_assets a LEFT JOIN assets b ON a.asset = b.name LEFT JOIN risks c ON a.risk_id = c.id LEFT JOIN risk_scoring d ON a.risk_id = d.id LEFT JOIN mgmt_reviews e ON c.mgmt_review = e.id WHERE status != \"Closed\" ORDER BY asset_value DESC, asset_name, calculated_risk DESC, id";
+            $query = "SELECT a.risk_id AS id, b.id AS asset_id, b.ip AS asset_ip, b.name AS asset_name, b.value AS asset_value, b.location AS asset_location, b.team AS asset_team, c.status, c.subject, c.submission_date, d.calculated_risk, e.next_review FROM risks_to_assets a LEFT JOIN assets b ON a.asset_id = b.id LEFT JOIN risks c ON a.risk_id = c.id LEFT JOIN risk_scoring d ON a.risk_id = d.id LEFT JOIN mgmt_reviews e ON c.mgmt_review = e.id WHERE status != \"Closed\" ORDER BY asset_value DESC, asset_name, calculated_risk DESC, id";
             break;
         // Assets by Risk
         case 1:
-            $query = "SELECT a.risk_id AS id, a.asset, b.id AS asset_id, b.ip AS asset_ip, b.name AS asset_name, b.value AS asset_value, b.location AS asset_location, b.team AS asset_team, c.status, c.subject, d.calculated_risk FROM risks_to_assets a LEFT JOIN assets b ON a.asset = b.name LEFT JOIN risks c ON a.risk_id = c.id LEFT JOIN risk_scoring d ON a.risk_id = d.id WHERE status != \"Closed\" ORDER BY calculated_risk DESC, id, asset_value DESC, asset_name";
+            $query = "SELECT a.risk_id AS id, b.id AS asset_id, b.ip AS asset_ip, b.name AS asset_name, b.value AS asset_value, b.location AS asset_location, b.team AS asset_team, c.status, c.subject, d.calculated_risk FROM risks_to_assets a LEFT JOIN assets b ON a.asset_id = b.id LEFT JOIN risks c ON a.risk_id = c.id LEFT JOIN risk_scoring d ON a.risk_id = d.id WHERE status != \"Closed\" ORDER BY calculated_risk DESC, id, asset_value DESC, asset_name";
             break;
     }
 
@@ -1771,10 +1784,9 @@ function risks_and_assets_table($report)
         {
             // Get the variables for the row
             $risk_id = (int)$row['id'];
-            $asset = $row['asset'];
             $asset_id = (isset($row['asset_id']) ? (int)$row['asset_id'] : "N/A");
-            $asset_ip = (isset($row['asset_ip']) ? $row['asset_ip'] : "N/A");
-            $asset_name = (isset($row['asset_name']) ? $row['asset_name'] : $asset);
+            $asset_ip = (isset($row['asset_ip']) ? try_decrypt($row['asset_ip']) : "N/A");
+            $asset_name = (isset($row['asset_name']) ? try_decrypt($row['asset_name']) : "N/A");
             $asset_value = $row['asset_value'];
             $asset_location = (isset($row['asset_location']) ? get_name_by_value("location",$row['asset_location']) : "N/A");
             $asset_location = ($asset_location != "" ? $asset_location : "N/A");
@@ -1844,11 +1856,10 @@ echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen
         {
             // Get the variables for the row
             $risk_id = (int)$row['id'];
-            $asset = $row['asset'];
             $asset_id = (int)$row['asset_id'];
-            $asset_ip = (isset($row['asset_ip']) ? $row['asset_ip'] : "N/A");
+            $asset_ip = (isset($row['asset_ip']) ? try_decrypt($row['asset_ip']) : "N/A");
             $asset_ip = ($asset_ip != "" ? $asset_ip : "N/A");
-            $asset_name = (isset($row['asset_name']) ? $row['asset_name'] : $asset);
+            $asset_name = (isset($row['asset_name']) ? try_decrypt($row['asset_name']) : "N/A");
             $asset_value = $row['asset_value'];
             $asset_location = (isset($row['asset_location']) ? get_name_by_value("location",$row['asset_location']) : "N/A");
             $asset_location = ($asset_location != "" ? $asset_location : "N/A");
@@ -2069,7 +2080,7 @@ function get_risks_by_table($status, $group, $sort, $affected_asset, $column_id=
     if (!team_separation_extra())
     {
         // Make the big query
-        $query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100), 2) as residual_risk, c.name AS location, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, p.planning_date AS planning_date, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, p.submission_date AS mitigation_date, v.name AS source, p.current_solution, p.security_recommendations, p.security_requirements
+        $query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100), 2) as residual_risk, c.name AS location, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset_id SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, p.planning_date AS planning_date, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, p.submission_date AS mitigation_date, v.name AS source, p.current_solution, p.security_recommendations, p.security_requirements
             FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON FIND_IN_SET(e.value, a.team) LEFT JOIN technology f ON FIND_IN_SET(f.value, a.technology) LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, p.mitigation_controls) LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = t.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $order_query;
     }
     // Otherwise
@@ -2082,7 +2093,7 @@ function get_risks_by_table($status, $group, $sort, $affected_asset, $column_id=
         $separation_query = get_user_teams_query("a", false, true);
 
         // Make the big query
-        $query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100), 2) as residual_risk, c.name AS location, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, p.planning_date AS planning_date, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, p.submission_date AS mitigation_date, v.name AS source, p.current_solution, p.security_recommendations, p.security_requirements
+        $query = "SELECT a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mitigation_id, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100), 2) as residual_risk, c.name AS location, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset_id SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, p.planning_date AS planning_date, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, p.submission_date AS mitigation_date, v.name AS source, p.current_solution, p.security_recommendations, p.security_requirements
         FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON FIND_IN_SET(e.value, a.team) LEFT JOIN technology f ON FIND_IN_SET(f.value, a.technology) LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, p.mitigation_controls) LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = t.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value " . $status_query . $separation_query . $order_query;
     }
 
@@ -2290,7 +2301,7 @@ function get_header_columns($hide, $id, $risk_status, $subject, $reference_id, $
 {
     global $lang;
     global $escaper;
-    
+
     if($hide){
         $display = "display: none;";
     }else{
@@ -2336,7 +2347,7 @@ function get_header_columns($hide, $id, $risk_status, $subject, $reference_id, $
     echo "<th class=\"mitigation_owner\" data-name='mitigation_owner' " . ($mitigation_owner== true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationOwner']) ."</th>\n";
     echo "<th class=\"mitigation_team\" data-name='mitigation_team' " . ($mitigation_team == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</th>\n";
     echo "<th class=\"mitigation_date\" data-name='mitigation_date' " . ($mitigation_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationDate']) ."</th>\n";
-    
+
     // If customization extra is enabled, add custom fields
     if(customization_extra())
     {
@@ -2525,7 +2536,7 @@ function get_risk_columns_new($hide, $risk, $column_id, $column_status, $column_
         <td class=\"scoring_method\" " . ($column_scoring_method == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >".$escaper->escapeHtml($risk['scoring_method'])."</td>
         <td class=\"calculated_risk risk-cell \" " . ($column_calculated_risk == true ? "" : "style=\"{$display}\" ") . "align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\"><div class='".$escaper->escapeHtml($risk['color'])."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div></td>
         <td class=\"residual_risk risk-cell \" " . ($column_residual_risk == true ? "" : "style=\"{$display}\" ") . "align=\"center\" bgcolor=\"" . $escaper->escapeHtml($residual_color) . "\"><div class='".$escaper->escapeHtml($risk['residual_color'])."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['residual_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($residual_color) . "\"></span></div></div></td>
-        <td class=\"submission_date\" " . ($column_submission_date == true ? "" : "style=\"{$display}\" ") . "align=\"center\" >".$escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date'])))."</td>
+        <td class=\"submission_date\" " . ($column_submission_date == true ? "" : "style=\"{$display}\" ") . "align=\"center\" ><span style='display:none'>".$escaper->escapeHtml($risk['submission_date'])."</span>".$escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date'])))."</td>
         <td class=\"review_date\" " . ($column_review_date == true ? "" : "style=\"{$display}\" ") . "align=\"center\" >".$escaper->escapeHtml($risk['review_date'])."</td>
         <td class=\"project\" " . ($column_project == true ? "" : "style=\"{$display}\" ") . "align=\"center\">".$escaper->escapeHtml($risk['project'])."</td>
         <td class=\"mitigation_planned\" " . ($column_mitigation_planned == true ? "" : "style=\"{$display}\" ") . "align=\"center\">".planned_mitigation($risk['id'], $risk['mitigation_id'])."</td>
@@ -2606,190 +2617,25 @@ function risk_table_open_by_team($teamOptions, $ownerOptions, $managerOptions, $
     global $lang;
     global $escaper;
 
-    $team_querys = array();
-    
-    $params = array();
-    // If at least one team was selected
-    if($teamOptions != ""){
-        $teams = explode(",", $teamOptions);
-        
-        $teamsArray = array();
-        foreach($teams as $team){
-            $params[] = $team;
-            $teamsArray[] = "a.team = :param". (count($params)-1);
-        }
-        $team_query_string = implode(" OR ", $teamsArray);
-//        $team_query .= ' OR ('.$team_query_string.') ';
-        array_push($team_querys, $team_query_string);
-    }
+    global $lang;
+    global $escaper;
 
-    // If at least one owner was selected
-    if($ownerOptions != ""){
-        $owners = explode(",", $ownerOptions);
-
-        $teamsArray = array();
-        foreach($owners as $owner){
-            $params[] = $owner;
-            $teamsArray[] = "a.owner = :param". (count($params)-1);
-        }
-        $team_query_string = implode(" OR ", $teamsArray);
-//        $team_query .= ' OR ('.$team_query_string.') ';
-        array_push($team_querys, $team_query_string);
-    }
-                    
-    // If at least one owner's manager was selected
-    if($managerOptions != ""){
-        $ownersmanagers = explode(",", $managerOptions);
-
-        $teamsArray = array();
-        foreach($ownersmanagers as $ownersmanager){
-            $params[] = $ownersmanager;
-            $teamsArray[] = "a.manager = :param". (count($params)-1);
-        }
-        $team_query_string = implode(" OR ", $teamsArray);
-        array_push($team_querys, $team_query_string);
-    }
-    $team_query = implode(" OR ", $team_querys);
-    if($team_query){
-        $team_query = " AND (". $team_query . ")";
-    }else{
-        $team_query = " AND 0 ";
-    }
-    
-    // number of rows to show per page
-    $rowsperpage = 10;
-
-    // get the current page or set a default
-    if ($currentpageParam && is_numeric($currentpageParam)) {
-       // cast var as int
-       $currentpage = (int) $currentpageParam;
-    } else {
-       // default page num
-       $currentpage = 1;
-    } // end if
-
-    // the offset of the list, based on current page
-    $offset = ($currentpage - 1) * $rowsperpage;
-    
-    /**
-    * Get Risks
-    * 
-    * params: status, sort, group, &totalRows, start, length, group_name_by_seperation, custom_query
-    * status: non-closed
-    * sort: calculated_risk desc
-    * group: none
-    */
-    $count; // total counts
-
-    if($currentpageParam == "all"){
-        $risks = risks_query(0, 0, 0, 0, $count, 0, -1, "", $team_query, $params);
-    }else{
-        $risks = risks_query(0, 0, 0, 0, $count, $offset, $rowsperpage, "", $team_query, $params);
-    }
-
-    
-    // find out total pages
-    $totalpages = ceil($count / $rowsperpage);
-
-
-    // if current page is greater than total pages...
-    if ($currentpage > $totalpages) {
-       // set current page to last page
-       $currentpage = $totalpages;
-    } // end if
-    // if current page is less than first page...
-    if ($currentpage < 1) {
-       // set current page to first page
-       $currentpage = 1;
-    } // end if
-
-
-    $all_style = '';
-    if($currentpageParam == 'all') {
-        $offset = 0;
-        $rowsperpage = $count;
-        $currentpage = -1;
-        $all_style = 'class="active"';   
-    }
-
-    
-    echo "<div class=\"table-scroll\">\n";
-    echo "<table class=\"table table-bordered table-striped table-condensed sortable\">\n";
+    // Display the table header
+    echo "<table data-group='' class=\"table risk-datatable table-bordered table-striped table-condensed  table-margin-top\" style='width: 100%'>\n";
     echo "<thead>\n";
-    echo "<tr>\n";
-    
-    echo get_header_columns(true, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_date, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_custom_values);
+    echo "<tr class='main'>\n";
 
+    // Header columns go here
+    get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_date, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements);
+
+    echo "</tr>\n";
     echo "</thead>\n";
     echo "<tbody>\n";
-
-    // For each risk
-    foreach($risks as $risk){
-        echo "<tr>\n";
-        get_risk_columns_new(true, $risk, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_date, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_custom_values);
-        echo "</tr>\n";
-    }
-
+    
+    // End the table
     echo "</tbody>\n";
     echo "</table>\n";
-    echo "</div>\n";
-
-    echo "<div class=\"pagination clearfix\"><ul class=\"pull-right\">";
-    // range of num links to show
-    $range = 3;
-
-
-    if (!empty ($risks))
-    {
-
-        // if not on page 1, don't show back links
-        if ($currentpage > 1) {
-           // show << link to go back to page 1
-           echo "<li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage=1' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i></a></li>";
-           // get previous page num
-           $prevpage = $currentpage - 1;
-           // show < link to go back to 1 page
-           echo " <li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage={$prevpage}' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i></a></li> ";
-        } else {// end if
-           echo " <li><a href='javascript:void();' class=\"no-bg\"><i class=\"fa fa-chevron-left\"></i></a></li> ";
-        }
-
-        // loop to show links to range of pages around current page
-        for ($x = ($currentpage - $range); $x < (($currentpage + $range) + 1); $x++) {
-           // if it's a valid page number...
-           if (($x > 0) && ($x <= $totalpages)) {
-              // if we're on current page...
-              if ($x == $currentpage) {
-                 // 'highlight' it but don't make a link
-                 echo "<li class=\"active\"><a href=\"#\">{$x}</a></li>";
-              // if not current page...
-              } else {
-                 // make it a link
-                 echo " <li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage={$x}'>{$x}</a></li> ";
-              } // end else
-           } // end if
-        } // end for
-
-        // if not on last page, show forward and last page links
-        if ($currentpage != $totalpages) {
-           // get next page
-           $nextpage = $currentpage + 1;
-            // echo forward link for next page
-           echo " <li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage={$nextpage}' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i></a></li> ";
-           // echo forward link for lastpage
-          echo "<li><a href='{$_SERVER['SCRIPT_NAME']}?currentpage={$totalpages}' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i><i class=\"fa fa-chevron-right\"></i></a></li>";
-        } else { // end if
-           echo " <li><a href='javascript:void(0);' class=\"no-bg\"><i class=\"fa fa-chevron-right\"></i></a></li> ";
-        }
-        /****** end build pagination links ******/
-    }
-
-    echo " <li {$all_style}><a href='{$_SERVER['SCRIPT_NAME']}?currentpage=all'>All</a></li> ";
-
-    echo "</ul></div>";
-
-    return true;
-    
+    echo "<br />\n";
 }
 
 /**********************************
@@ -2913,6 +2759,8 @@ function risks_by_month_table()
 
     // Start the total open risks array with the open risks today
     $total_open_risks[] = $open_risks_today;
+//    print_r($total);
+//    print_r($open_risks_today);exit;
 
     // For each of the past 12 months
     for ($i=1; $i<=12; $i++)
@@ -2944,28 +2792,84 @@ function risks_by_month_table()
 /*************************
  * FUNCTION: RISKS QUERY *
  *************************/
-function risks_query($status, $sort, $group, $affected_asset, &$rowCount, $start=0, $length=10, $group_value_from_db="", $custom_query="", $custom_params=array(), $orderColumnName=null, $orderDir="asc")
+function risks_query($status, $sort, $group, $affected_asset, &$rowCount, $start=0, $length=10, $group_value_from_db="", $custom_query="", $custom_params=array(), $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
 {
     global $lang;
-    // Check the status
-    switch ($status)
+    
+    // If this is risks_by_teams page
+    if($risks_by_team)
     {
-        // Open risks
-        case 0:
-                $status_query = " WHERE a.status != \"Closed\" ";
-                break;
-        // Closed risks
-        case 1:
-                $status_query = " WHERE a.status = \"Closed\" ";
-                break;
-        case 2:
-        // All risks
-                $status_query = " WHERE 1 ";
-                break;
-        // Default to open risks
-        default:
-                $status_query = " WHERE a.status != \"Closed\" ";
-                break;
+        $status_query = " WHERE 1 ";
+
+        $team_querys = array();
+        
+        $params = array();
+        // If at least one team was selected
+        if($teams){
+            $teamsArray = array();
+            foreach($teams as $team){
+                $params[] = $team;
+                $teamsArray[] = "a.team = :param". (count($custom_params) + count($params)-1);
+            }
+            $team_query_string = implode(" OR ", $teamsArray);
+    //        $team_query .= ' OR ('.$team_query_string.') ';
+            array_push($team_querys, $team_query_string);
+        }
+
+        // If at least one owner was selected
+        if($owners){
+
+            $teamsArray = array();
+            foreach($owners as $owner){
+                $params[] = $owner;
+                $teamsArray[] = "a.owner = :param". (count($custom_params) + count($params)-1);
+            }
+            $team_query_string = implode(" OR ", $teamsArray);
+    //        $team_query .= ' OR ('.$team_query_string.') ';
+            array_push($team_querys, $team_query_string);
+        }
+                        
+        // If at least one owner's manager was selected
+        if($ownersmanagers ){
+            $teamsArray = array();
+            foreach($ownersmanagers as $ownersmanager){
+                $params[] = $ownersmanager;
+                $teamsArray[] = "a.manager = :param". (count($custom_params) + count($params)-1);
+            }
+            $team_query_string = implode(" OR ", $teamsArray);
+            array_push($team_querys, $team_query_string);
+        }
+        $team_query = implode(" OR ", $team_querys);
+        if($team_query){
+            $custom_query .= " AND (". $team_query . ")";
+        }else{
+            $custom_query .= " AND 0 ";
+        }
+        $custom_params = array_merge($custom_params, $params);
+    }
+    // If this is dynamic risk page
+    else
+    {
+        // Check the status
+        switch ($status)
+        {
+            // Open risks
+            case 0:
+                    $status_query = " WHERE a.status != \"Closed\" ";
+                    break;
+            // Closed risks
+            case 1:
+                    $status_query = " WHERE a.status = \"Closed\" ";
+                    break;
+            case 2:
+            // All risks
+                    $status_query = " WHERE 1 ";
+                    break;
+            // Default to open risks
+            default:
+                    $status_query = " WHERE a.status != \"Closed\" ";
+                    break;
+        }
     }
     
     if($custom_query){
@@ -3102,6 +3006,9 @@ function risks_query($status, $sort, $group, $affected_asset, &$rowCount, $start
             case "mitigation_date":
                 $sort_name = " mitigation_date {$orderDir} ";
                 break;
+            case "planning_date":
+                $sort_name = " planning_date {$orderDir} ";
+                break;
         }
     }
 
@@ -3216,7 +3123,7 @@ function risks_query($status, $sort, $group, $affected_asset, &$rowCount, $start
         }
     }
 
-    $query = "SELECT a.id AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, p.mitigation_percent, ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100), 2) as residual_risk, c.name AS location, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT adsh.name, ', ') additional_stakeholders, GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, p.planning_date, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, p.submission_date AS mitigation_date, v.name AS source, p.id mitigation_id, p.current_solution, p.security_recommendations, p.security_requirements, ifnull((SELECT name FROM `risk_levels` WHERE value<=b.calculated_risk ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name, n.asset_id
+    $query = "SELECT a.id AS id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, p.mitigation_percent, ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100), 2) as residual_risk, c.name AS location, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT adsh.name, ', ') additional_stakeholders, GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT n.asset_id SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, p.planning_date, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, t.name AS mitigation_owner, u.name AS mitigation_team, p.submission_date AS mitigation_date, v.name AS source, p.id mitigation_id, p.current_solution, p.security_recommendations, p.security_requirements, ifnull((SELECT name FROM `risk_levels` WHERE value-b.calculated_risk<=0.00001 ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name, n.asset_id
     FROM risks a LEFT JOIN risk_scoring b ON a.id = b.id LEFT JOIN location c ON a.location = c.value LEFT JOIN category d ON a.category = d.value LEFT JOIN team e ON FIND_IN_SET(e.value, a.team) LEFT JOIN technology f ON FIND_IN_SET(f.value, a.technology)  LEFT JOIN user g ON a.owner = g.value LEFT JOIN user h ON a.manager = h.value LEFT JOIN user i ON a.submitted_by = i.value LEFT JOIN regulation j ON a.regulation = j.value LEFT JOIN projects k ON a.project_id = k.value LEFT JOIN mgmt_reviews l ON a.mgmt_review = l.id LEFT JOIN next_step m ON l.next_step = m.value LEFT JOIN risks_to_assets n ON a.id = n.risk_id LEFT JOIN closures o ON a.close_id = o.id LEFT JOIN mitigations p ON a.id = p.risk_id LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, p.mitigation_controls) LEFT JOIN planning_strategy q ON p.planning_strategy = q.value LEFT JOIN mitigation_effort r ON p.mitigation_effort = r.value LEFT JOIN asset_values s ON p.mitigation_cost = s.id LEFT JOIN user t ON p.mitigation_owner = t.value LEFT JOIN team u ON p.mitigation_team = u.value LEFT JOIN source v ON a.source = v.value LEFT JOIN user adsh ON FIND_IN_SET(adsh.value, a.additional_stakeholders)  " . $status_query ;
         
     // If the team separation extra is enabled
@@ -3348,7 +3255,15 @@ function risks_query($status, $sort, $group, $affected_asset, &$rowCount, $start
             $next_review_date_html = next_review($risk_level, $risk_id, $risk['next_review'], true, $review_levels);
         }
         $next_step = $risk['next_step'];
-        $affected_assets = $risk['affected_assets'];
+
+	// If the affected assets is not empty
+	if ($risk['affected_assets'] != "")
+	{
+		// Do a lookup for the list of affected assets
+		$affected_assets = get_list_of_assets($risk_id+1000, false);
+	}
+	else $affected_assets = "";
+
         $risk_assessment = try_decrypt($risk['risk_assessment']);
         $additional_notes = try_decrypt($risk['additional_notes']);
         $current_solution = try_decrypt($risk['current_solution']);
@@ -3406,6 +3321,9 @@ function get_pie_array($filter = null, $teams = false)
         }else{
             $options = explode(",", $teams);
             $teams_query = generate_or_query($options, 'team', 'a');
+            if(in_array("0", $options)){
+                $teams_query .= " OR a.team='' ";
+            }
             $teams_query = " AND ( {$teams_query} ) ";
         }
     }else{
@@ -3470,6 +3388,9 @@ function get_pie_array($filter = null, $teams = false)
                             }else{
                                 $options = explode(",", $teams);
                                 $teams_query = generate_or_query($options, 'team', 'c');
+                                if(in_array("0", $options)){
+                                    $teams_query .= " OR c.team='' ";
+                                }
                                 $teams_query = " AND ( {$teams_query} ) ";
                             }
                         }else{
@@ -3691,97 +3612,106 @@ function get_opened_risks_array($timeframe)
  ************************************/
 function get_closed_risks_array($timeframe)
 {
-        // If team separation is not enabled
-        if (!team_separation_extra())
-        {
-                // Open the database connection
-                $db = db_open();
+    // If team separation is not enabled
+    if (!team_separation_extra())
+    {
+        // Open the database connection
+        $db = db_open();
 
-                // Query the database
-        $stmt = $db->prepare("SELECT a.risk_id as id, a.closure_date, c.status FROM closures a LEFT JOIN risks c ON a.risk_id=c.id WHERE a.closure_date=(SELECT max(b.closure_date) FROM closures b WHERE a.risk_id=b.risk_id) AND c.status='Closed' order by closure_date;");
-                $stmt->execute();
+        // Query the database
+//$stmt = $db->prepare("SELECT a.risk_id as id, a.closure_date, c.status FROM closures a LEFT JOIN risks c ON a.risk_id=c.id WHERE a.closure_date=(SELECT max(b.closure_date) FROM closures b WHERE a.risk_id=b.risk_id) AND c.status='Closed' GROUP BY a.risk_id ORDER BY closure_date;");
+        $stmt = $db->prepare("
+            SELECT t1.id, IFNULL(t2.closure_date, NOW()) closure_date, t1.status 
+            FROM `risks` t1 LEFT JOIN `closures` t2 ON t1.close_id=t2.id
+            WHERE t1.status='Closed' 
+            ORDER BY IFNULL(t2.closure_date, NOW());
+        ");
+        $stmt->execute();
 
-                // Store the list in the array
-                $array = $stmt->fetchAll();
+        // Store the list in the array
+        $array = $stmt->fetchAll();
 
-                // Close the database connection
-                db_close($db);
-        }
-        // Otherwise team separation is enabled
-        else
-        {
-                //Include the team separation extra
-                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        // Close the database connection
+        db_close($db);
+    }
+    // Otherwise team separation is enabled
+    else
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                // Get the closed risks stripped
-                $array = strip_get_closed_risks_array();
-        }
+        // Get the closed risks stripped
+        $array = strip_get_closed_risks_array();
+    }
 
-        // Set the defaults
-        $counter = -1;
-        $current_date = "";
-        $close_date = array();
+    // Set the defaults
+    $counter = -1;
+    $current_date = "";
+    $close_date = array();
     $close_count = array();
+    
+    // For each row
+    foreach ($array as $key=>$row)
+    {
+            // If the timeframe is by day
+            if ($timeframe === "day")
+            {
+                    // Set the date to the day
+                    $date = date('Y-m-d', strtotime($row['closure_date']));
+            }
+            // If the timeframe is by month
+            else if ($timeframe === "month")
+            {
+                    // Set the date to the month
+                    $date = date('Y-m', strtotime($row['closure_date']));
+            }
+            // If the timeframe is by year
+            else if ($timeframe === "year")
+            {
+                    // Set the date to the year
+                    $date = date('Y', strtotime($row['closure_date']));
+            }
 
-        // For each row
-        foreach ($array as $key=>$row)
-        {
-                // If the timeframe is by day
-                if ($timeframe === "day")
-                {
-                        // Set the date to the day
-                        $date = date('Y-m-d', strtotime($row['closure_date']));
-                }
-                // If the timeframe is by month
-                else if ($timeframe === "month")
-                {
-                        // Set the date to the month
-                        $date = date('Y-m', strtotime($row['closure_date']));
-                }
-                // If the timeframe is by year
-                else if ($timeframe === "year")
-                {
-                        // Set the date to the year
-                        $date = date('Y', strtotime($row['closure_date']));
-                }
+            // If the date is different from the current date
+            if ($current_date != $date)
+            {
+                    // Increment the counter
+                    $counter = $counter + 1;
 
-                // If the date is different from the current date
-                if ($current_date != $date)
-                {
-                        // Increment the counter
-                        $counter = $counter + 1;
+                    // Set the current date
+                    $current_date = $date;
 
-                        // Set the current date
-                        $current_date = $date;
+                    // Add the date
+                    $close_date[$counter] = $current_date;
 
-                        // Add the date
-                        $close_date[$counter] = $current_date;
+                    // Set the close count to 1
+                    $close_count[$counter] = 1;
 
-                        // Set the close count to 1
-                        $close_count[$counter] = 1;
+                    // If this is the first entry
+                    if ($counter == 0)
+                    {
+                        // Set the close total to 1
+                        $close_total[$counter] = 1;
+                    }
+                    // Otherwise, add the value of this row to the previous value
+                    else 
+                    {
+                        $close_total[$counter] = $close_total[$counter-1] + 1;
+                    }
+            }
+            // Otherwise, if the date is the same
+            else
+            {
+                // Increment the closed count
+                $close_count[$counter] = $close_count[$counter] + 1;
 
-                        // If this is the first entry
-                        if ($counter == 0)
-                        {
-                                // Set the close total to 1
-                                $close_total[$counter] = 1;
-                        }
-                        // Otherwise, add the value of this row to the previous value
-                        else $close_total[$counter] = $close_total[$counter-1] + 1;
-                }
-                // Otherwise, if the date is the same
-                else
-                {
-                        // Increment the closed count
-                        $close_count[$counter] = $close_count[$counter] + 1;
-
-                        // Update the close total
-                        $close_total[$counter] = $close_total[$counter] + 1;
-                }
-        }
-
-        // Return the close date array
-        return array($close_date, $close_count);
+                // Update the close total
+                $close_total[$counter] = $close_total[$counter] + 1;
+            }
+    }
+    
+    // Return the close date array
+    return array($close_date, $close_count);
 }
 
 /****************************************

@@ -58,6 +58,7 @@
 <html>
 
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -117,7 +118,7 @@
                 <!-- START PAYPAL FORM -->
                 <form action="https://www.paypal.com/cgi-bin/webscr" method="post" class="payformmargin">
                 <input type="hidden" name="cmd" value="_xclick">
-                <input type="hidden" name="business" value="josh@simplerisk.org">
+                <input type="hidden" name="business" value="josh@simplerisk.com">
                 <input type="hidden" name="item_name" value="Donation for Risk Management Software">
                 <input type="hidden" name="no_note" value="1">
                 <input type="hidden" name="currency_code" value="USD">

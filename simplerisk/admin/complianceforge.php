@@ -121,6 +121,7 @@ function display()
 <html>
 
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -143,7 +144,9 @@ function display()
 
     <script type="text/javascript" src="../js/jquery.tree.min.js"></script>
     <link rel="stylesheet" type="text/css" href="../css/jquery.tree.min.css" />
-
+    <?php
+        setup_alert_requirements("..");
+    ?>
     <script type="text/javascript">
     $(function(){
         $("#complianceforge_frameworks").multiselect({

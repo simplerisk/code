@@ -32,6 +32,9 @@
     // Check for session timeout or renegotiation
     session_check();
 
+    // Include the language file
+    require_once(language_file());
+    
     // If access is authenticated
     if (is_authenticated())
     {
@@ -101,7 +104,13 @@
         getRoute()->get('/datatable/framework_controls', 'getFrameworkControlsDatatable');
         getRoute()->get('/datatable/mitigation_controls', 'getMitigationControlsDatatable');
         getRoute()->get('/role_responsibilities/get_responsibilities', 'getResponsibilitiesByRoleIdForm');
-
+        
+        
+        /******************** Risk Management Dtatatable API **********************/
+        getRoute()->get('/risk_management/plan_mitigation', 'getPlanMitigationsDatatableResponse');
+        getRoute()->get('/risk_management/managment_review', 'getManagementReviewsDatatableResponse');
+        getRoute()->get('/risk_management/review_risks', 'getReviewRisksDatatableResponse');
+        
         /******************** Governance and Compliance API **********************/
         getRoute()->get('/governance/frameworks', 'getFrameworksResponse');
         getRoute()->get('/governance/tabular_documents', 'getTabularDocumentsResponse');
@@ -125,6 +134,7 @@
         getRoute()->get('/compliance/past_audits', 'getPastTestAuditsResponse');
         getRoute()->post('/compliance/reopen_audit', 'reopenTestAuditResponse');
         getRoute()->post('/compliance/audit_initiation/initiate', 'initiateFrameworkControlTestsResponse');
+        getRoute()->get('/compliance/audit_timeline', 'auditTimelineResponse');
         /*************************************************************************/
 
         /***************************** Assessment API *********************************/
@@ -139,17 +149,21 @@
         getRoute()->get('/assessment/questionnaire/template_questions/dynamic', 'assessment_extra_questionnaireTemplateQuestionsDynamicAPI');
         /******************************************************************************/
 
+        /******************************* Assets API *************************************/
+        getRoute()->post('/assets/verify_asset', 'assets_verify_asset');
+        getRoute()->post('/assets/discard_asset', 'assets_discard_asset');
+        getRoute()->post('/assets/delete_asset', 'assets_delete_asset');
+        getRoute()->get('/assets/verified_asset_body', 'assets_verified_asset_table_body');
+        /********************************************************************************/
+
+        /********************* Authentication API **************************/
+        getRoute()->get('/authentication/ldap_group_dropdown', 'authentication_extra_ldap_group_dropdown');
+        /******************************************************************/
+
         /********************* Customization API **************************/
         getRoute()->post('/customization/addOption', 'customization_extra_addOption');
         getRoute()->post('/customization/deleteOption', 'customization_extra_deleteOption');
         getRoute()->post('/customization/saveTemplate', 'customization_extra_saveTemplate');
-        /******************************************************************/
-
-        /********************* Authentication API **************************/
-        getRoute()->post('/admin/authentication/add_ldap_group', 'authentication_extra_add_ldap_group');
-        getRoute()->post('/admin/authentication/get_teams_by_ldap_group', 'authentication_extra_getTeamsByLdapGroup');
-        getRoute()->post('/admin/authentication/delete_ldap_group', 'authentication_extra_deleteLdapGroup');
-        getRoute()->post('/admin/authentication/set_ldap_group_and_teams', 'authentication_extra_setLdapGroupAndTeams');
         /******************************************************************/
 
         /********************* RISK FORMULA API ***************************/

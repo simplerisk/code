@@ -28,19 +28,12 @@ session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 
 if (!isset($_SESSION))
 {
-        session_name('SimpleRisk');
-        session_start();
+    session_name('SimpleRisk');
+    session_start();
 }
 
 // Include the language file
 require_once(language_file());
-
-// Load CSRF Magic
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-function csrf_startup() {
-    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-}
 
 // Check for session timeout or renegotiation
 session_check();
@@ -51,6 +44,13 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   set_unauthenticated_redirect();
   header("Location: ../index.php");
   exit(0);
+}
+
+// Load CSRF Magic
+require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
 }
 
 // Enforce that the user has access to risk management
@@ -199,7 +199,10 @@ if (isset($_POST['delete_project']))
 
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
-
+    
+  <?php
+      setup_alert_requirements("..");
+  ?>
 
   <?php
   // Get the projects
@@ -359,7 +362,6 @@ if (isset($_POST['delete_project']))
         <?php view_risk_management_menu("PrioritizeForProjectPlanning"); ?>
       </div>
       <div class="span9">
-        <div id="show-alert"></div>
         <div class="row-fluid">
           <div class="span12">
             <!-- Container Begins  -->

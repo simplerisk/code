@@ -9,6 +9,7 @@ require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/assessments.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
+require_once(realpath(__DIR__ . '/assets.php'));
 
 // Include the language file
 require_once(language_file());
@@ -2661,6 +2662,267 @@ function upgrade_from_20180916001($db){
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20181103-001 *
+ ***************************************/
+function upgrade_from_20181103001($db){
+    // Database version to upgrade
+    $version_to_upgrade = '20181103-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20190105-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Create contributing_risks table
+    echo "Creating contributing_risks table.<br />\n";
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `contributing_risks`(id INT NOT NULL AUTO_INCREMENT, `subject` varchar(1000) NOT NULL, `weight` float NOT NULL, PRIMARY KEY(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt->execute();
+
+    // Add default contributing risks
+    echo "Adding default contributing risk.<br />\n";
+    $stmt = $db->prepare("INSERT INTO contributing_risks(`subject`, weight) VALUES('Safety', 0.25), ('SLA', 0.25), ('Financial', 0.25), ('Reputation', 0.25);");
+    $stmt->execute();
+
+    // Add \"Contributing Risk\" value to scoring_methods table
+    echo "Adding \"Contributing Risk\" value to scoring_methods table.<br />\n";
+    $stmt = $db->prepare("INSERT INTO `scoring_methods` (`value`, `name`) VALUES ('6', 'Contributing Risk'); ");
+    $stmt->execute();
+
+    // Create risk_scoring_contributing_impacts table
+    echo "Creating risk_scoring_contributing_impacts table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `risk_scoring_contributing_impacts` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `risk_scoring_id` int(11) NOT NULL,
+          `contributing_risk_id` int(11) NOT NULL,
+          `impact` int(11) NOT NULL,
+          PRIMARY KEY(id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+    
+    // Add a field Contributing_Likelihood to risk_scoring table
+    echo "Adding a field Contributing_Likelihood to risk_scoring table.<br />\n";
+    $stmt = $db->prepare("
+        ALTER TABLE `risk_scoring` ADD `Contributing_Likelihood` INT DEFAULT '0'; 
+    ");
+    $stmt->execute();
+
+    // Create assessment_scoring_contributing_impacts table
+    echo "Creating assessment_scoring_contributing_impacts table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `assessment_scoring_contributing_impacts` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `assessment_scoring_id` int(11) NOT NULL,
+          `contributing_risk_id` int(11) NOT NULL,
+          `impact` int(11) NOT NULL,
+          PRIMARY KEY(id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+
+    // Add a field Contributing_Likelihood to assessment_scoring table
+    echo "Adding a field Contributing_Likelihood to assessment_scoring table.<br />\n";
+    $stmt = $db->prepare("
+        ALTER TABLE `assessment_scoring` ADD `Contributing_Likelihood` INT DEFAULT '0'; 
+    ");
+    $stmt->execute();
+
+    // Delete records for deleted risks from closures table
+    echo "Deleting records for deleted risks from closures table.<br />\n";
+    $stmt = $db->prepare("
+        DELETE t1 FROM closures t1 LEFT JOIN risks t2 ON t1.risk_id=t2.id WHERE t2.id IS NULL; 
+    ");
+    $stmt->execute();
+
+    // Create new records in closures table for risks to unmatched close_id
+    echo "Creating new records in closures table for risks to unmatched close_id.<br />\n";
+    $stmt = $db->prepare("
+        INSERT INTO `closures` (`id`, `risk_id`, `user_id`, `closure_date`, `close_reason`, `note`)
+        SELECT t1.close_id, t1.id, {$_SESSION['uid']}, CURRENT_TIMESTAMP, 2, '--'
+        FROM risks t1 LEFT JOIN closures t2 ON t1.close_id=t2.id
+        WHERE t1.status='Closed' AND t1.close_id>0 AND t2.id IS NULL
+        ;
+    ");
+    $stmt->execute();
+
+    // Create new records in closures table for risks close_id is null
+    echo "Creating new records in closures table for risks to unmatched close_id.<br />\n";
+    $stmt = $db->prepare("
+        INSERT INTO `closures` (`risk_id`, `user_id`, `closure_date`, `close_reason`, `note`)
+        SELECT t1.id, {$_SESSION['uid']}, CURRENT_TIMESTAMP, 2, '--'
+        FROM risks t1 
+        WHERE t1.status='Closed' AND (t1.close_id IS NULL OR t1.close_id=0) 
+        ;
+    ");
+    $stmt->execute();
+
+    // Update close_id in risks table for risks close_id is null
+    echo "Updating close_id in risks table for risks close_id is null.<br />\n";
+    $stmt = $db->prepare("
+        UPDATE `risks` t1, `closures` t2, (SELECT risk_id, max(closure_date) closure_date FROM `closures` GROUP BY risk_id) t3 SET t1.close_id=t2.id WHERE t1.id=t2.risk_id and t2.risk_id=t3.risk_id and t2.closure_date=t3.closure_date;
+    ");
+    $stmt->execute();
+
+    // Delete records for deleted risks from comments table
+    echo "Deleting records for deleted risks from comments table.<br />\n";
+    $stmt = $db->prepare("
+        DELETE t1 FROM comments t1 LEFT JOIN risks t2 ON t1.risk_id=t2.id WHERE t2.id IS NULL; 
+    ");
+    $stmt->execute();
+
+    // Delete records for deleted risks from files table
+    echo "Deleting records for deleted risks from files table.<br />\n";
+    $stmt = $db->prepare("
+        DELETE t1 FROM files t1 LEFT JOIN risks t2 ON t1.risk_id=t2.id WHERE t2.id IS NULL; 
+    ");
+    $stmt->execute();
+
+    // Delete records for deleted risks from mgmt_reviews table
+    echo "Deleting records for deleted risks from mgmt_reviews table.<br />\n";
+    $stmt = $db->prepare("
+        DELETE t1 FROM mgmt_reviews t1 LEFT JOIN risks t2 ON t1.risk_id=t2.id WHERE t2.id IS NULL; 
+    ");
+    $stmt->execute();
+
+    // Delete records for deleted risks from mitigations table
+    echo "Deleting records for deleted risks from mitigations table.<br />\n";
+    $stmt = $db->prepare("
+        DELETE t1 FROM mitigations t1 LEFT JOIN risks t2 ON t1.risk_id=t2.id WHERE t2.id IS NULL; 
+    ");
+    $stmt->execute();
+
+    // Delete records for deleted risks from risks_to_assets table
+    echo "Deleting records for deleted risks from risks_to_assets table.<br />\n";
+    $stmt = $db->prepare("
+        DELETE t1 FROM risks_to_assets t1 LEFT JOIN risks t2 ON t1.risk_id=t2.id WHERE t2.id IS NULL; 
+    ");
+    $stmt->execute();
+
+    // Delete records for deleted risks from risk_scoring table
+    echo "Deleting records for deleted risks from risk_scoring table.<br />\n";
+    $stmt = $db->prepare("
+        DELETE t1 FROM risk_scoring t1 LEFT JOIN risks t2 ON t1.id=t2.id WHERE t2.id IS NULL; 
+    ");
+    $stmt->execute();
+
+    // Delete records for deleted risks from risk scoring history table
+    echo "Deleting records for deleted risks from risk scoring history table.<br />\n";
+    $stmt = $db->prepare("
+        DELETE t1 FROM risk_scoring_history t1 LEFT JOIN risks t2 ON t1.risk_id=t2.id WHERE t2.id IS NULL; 
+    ");
+    $stmt->execute();
+
+    // Delete records for deleted risks from residual risk scoring history table
+    echo "Deleting records for deleted risks from residual risk scoring history table.<br />\n";
+    $stmt = $db->prepare("
+        DELETE t1 FROM residual_risk_scoring_history t1 LEFT JOIN risks t2 ON t1.risk_id=t2.id WHERE t2.id IS NULL; 
+    ");
+    $stmt->execute();
+
+    // Increase limit of characters for name of Impact table
+    echo "Increasing limit of characters for name of Impact table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `impact` CHANGE `name` `name` VARCHAR(50); ");
+    $stmt->execute();
+
+    // Increase limit of characters for name of Likelihood table
+    echo "Increasing limit of characters for name of Likelihood table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `likelihood` CHANGE `name` `name` VARCHAR(50); ");
+    $stmt->execute();
+
+    // Add a new field to framework_control_tests table
+    echo "Adding a new field, `additional_stakeholders` to framework_control_tests table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `framework_control_tests` ADD `additional_stakeholders` VARCHAR( 500 ) NOT NULL after `created_at`;");
+    $stmt->execute();
+    
+    // Adding `verified` field to the `assets` table
+    echo "Adding `verified` field to the `assets` table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `assets` ADD `verified` TINYINT NOT NULL DEFAULT 0 AFTER `created`;");
+    $stmt->execute();
+
+    // Set the existing assets' `verified` flag to true
+    echo "Set the existing assets' `verified` flag to true.<br />\n";
+    $stmt = $db->prepare("UPDATE `assets` SET `verified`=1;");
+    $stmt->execute();
+
+    // Create new setting for 'Automatically verify new assets' and set to false by default
+    echo "Create new setting for 'Automatically verify new assets' and set to false by default.<br />\n";
+    $stmt = $db->prepare("INSERT INTO `settings` (`name`, `value`) VALUES ('auto_verify_new_assets', '0');");
+    $stmt->execute();
+
+    // Get any assets in risks_to_assets that are not in assets
+    $stmt = $db->prepare("SELECT * FROM risks_to_assets WHERE asset_id NOT IN (SELECT id FROM assets);");
+    $stmt->execute();
+    $assets = $stmt->fetchAll();
+
+    // If there are assets in risks_to_assets that are not in assets
+    if (count($assets) > 0)
+    {
+        // Add the assets as unverified assets
+        echo "Moving assets to unverified.<br />\n";
+
+        // Create an array for the risks_to_assets
+        $risks_to_assets = array();
+
+        // For each of the assets
+        foreach ($assets as $asset)
+        {
+            // Get the asset values
+            $name = $asset['asset'];
+            $risk_id = $asset['risk_id'];
+            $asset_id = $asset['asset_id'];
+
+            // Delete the entry in the risks_to_assets table
+            $stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE risk_id = :risk_id AND asset_id = :asset_id");
+            $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+            $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Add the asset as unverified
+            $asset_id = add_asset("", $name);
+
+            $risks_to_assets[] = array("risk_id" => $risk_id, "asset_id" => $asset_id);
+        }
+
+        // Updating unique key of `risks_to_assets` table to use both `risk_id` and `asset_id`
+        echo "Updating unique key of `risks_to_assets` table to use both `risk_id` and `asset_id`.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks_to_assets` DROP INDEX `risk_id`, ADD UNIQUE KEY `risk_id` (`risk_id`,`asset_id`);");
+        $stmt->execute();
+
+        // For each risks_to_assets
+        foreach ($risks_to_assets as $asset)
+        {
+            $risk_id = $asset['risk_id'];
+            $asset_id = $asset['asset_id'];
+
+            // Add a new entry in the risks_to_assets table
+            $stmt = $db->prepare("INSERT INTO `risks_to_assets` (`risk_id`, `asset_id`) VALUES (:risk_id, :asset_id)");
+            $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+            $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+            $stmt->execute();
+        }
+    }
+
+    // Check if the asset column exists in the risks_to_assets table
+    $stmt = $db->prepare("SHOW COLUMNS FROM `risks_to_assets` LIKE 'asset';");
+    $stmt->execute();
+    $result = $stmt->fetchAll();
+
+    // If the asset column exists in the risks_to_assets table
+    if (count($result) > 0)
+    {
+        // Drop the asset column in the risks_to_assets table
+        echo "Dropping the asset column from the risks_to_assets table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks_to_assets` DROP COLUMN `asset`;");
+        $stmt->execute();
+    }
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -2799,9 +3061,9 @@ function upgrade_database()
                 upgrade_database();
                 break;
             case "20180812-001":
-	        upgrade_from_20180812001($db);
-	        upgrade_database();
-	        break;
+                upgrade_from_20180812001($db);
+                upgrade_database();
+                break;
             case "20180814-001":
                 upgrade_from_20180814001($db);
                 upgrade_database();
@@ -2810,10 +3072,14 @@ function upgrade_database()
                 upgrade_from_20180830001($db);
                 upgrade_database();
                 break;
-	    case "20180916-001":
-		upgrade_from_20180916001($db);
-		upgrade_database();
-		break;
+            case "20180916-001":
+                upgrade_from_20180916001($db);
+                upgrade_database();
+                break;
+            case "20181103-001":
+                upgrade_from_20181103001($db);
+                upgrade_database();
+                break;
             default:
                 echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
         }

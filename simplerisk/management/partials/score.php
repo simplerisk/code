@@ -91,6 +91,11 @@
           {
             custom_scoring_table($id, $custom);
           }
+          // Scoring method is Custom
+          else if ($scoring_method == "6")
+          {
+            contributing_risk_scoring_table($id, $calculated_risk, $ContributingLikelihood, $ContributingImpacts);
+          }
           ?>
         </div>
     </div>
@@ -121,6 +126,11 @@
           else if ($scoring_method == "5")
           {
             edit_custom_score($custom);
+          }
+          // Scoring method is Contributing Risk
+          else if ($scoring_method == "6")
+          {
+            edit_contributing_risk_score($ContributingLikelihood, $ContributingImpacts);
           }
           ?>
         </div>

@@ -93,4 +93,30 @@ function enforce_permission_compliance()
         }
 }
 
+/*************************************
+ * FUNCTION: CHECK PERMISSION ASSET *
+ *************************************/
+function check_permission_asset()
+{
+        // Check if asset is authorized
+        if (!isset($_SESSION["asset"]) || $_SESSION["asset"] != 1)
+        {
+                return false;
+        }
+        else return true;
+}
+
+/*******************************************
+ * FUNCTION: ENFORCE PERMISSION ASSET *
+ *******************************************/
+function enforce_permission_asset()
+{
+        // If asset is not authorized
+        if (!check_permission_asset())
+        {
+                header("Location: ../index.php");
+                exit(0);
+        }
+}
+
 ?>

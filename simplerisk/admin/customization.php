@@ -135,6 +135,7 @@ function display($display = "")
 <html>
 
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
@@ -152,6 +153,10 @@ function display($display = "")
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    
+    <?php
+        setup_alert_requirements("..");
+    ?>    
   </head>
 
   <body>
@@ -160,9 +165,7 @@ function display($display = "")
     view_top_menu("Configure");
 
 ?>
-    <div id="show-alert">
-        <?php echo get_alert(); ?>
-    </div>
+<?php get_alert(); ?>
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">

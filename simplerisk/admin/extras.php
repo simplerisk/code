@@ -59,6 +59,7 @@
 <html>
 
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -73,6 +74,9 @@
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <?php
+        setup_alert_requirements("..");
+    ?>    
   </head>
 
   <body>
@@ -97,9 +101,9 @@
                 <table width="100%" class="table table-bordered table-condensed">
                 <thead>
                 <tr>
-                  <td width="155px"><b><u>Extra Name</u></b></td>
-                  <td><b><u>Description</u></b></td>
-                  <td width="60px"><b><u>Enabled</u></b></td>
+                  <td width="155px"><b><u><?php echo $escaper->escapeHtml($lang['ExtraName']); ?></u></b></td>
+                  <td><b><u><?php echo $escaper->escapeHtml($lang['Description']); ?></u></b></td>
+                  <td width="60px"><b><u><?php echo $escaper->escapeHtml($lang['Enabled']); ?></u></b></td>
                 </tr>
                 </thead>
                 <tbody>
@@ -164,7 +168,7 @@
                 </tr>
                 <tbody>
                 </table>
-                <p>If you are interested in adding these or other custom functionality to your SimpleRisk installation, please send an e-mail to <a href="mailto:extras@simplerisk.org?Subject=Interest%20in%20SimpleRisk%20Extras" target="_top">extras@simplerisk.org</a>.</p>
+                <p>If you are interested in adding these or other custom functionality to your SimpleRisk installation, please send an e-mail to <a href="mailto:extras@simplerisk.com?Subject=Interest%20in%20SimpleRisk%20Extras" target="_top">extras@simplerisk.com</a>.</p>
               </div>
             </div>
           </div>

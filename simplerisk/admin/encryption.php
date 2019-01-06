@@ -7,8 +7,8 @@
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-	require_once(realpath(__DIR__ . '/../includes/display.php'));
-	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/../includes/display.php'));
+    require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
     // Include Zend Escaper for HTML Output Encoding
     require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -59,6 +59,7 @@
     {
         // Include the API Extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
         // If the user wants to activate the extra
         if (isset($_POST['activate']))
         {
@@ -72,6 +73,13 @@
             // Disable the Encrypted Database Extra
             disable_encryption_extra();
         }
+
+	// If the user has requested to delete the backup file
+	if (isset($_POST['delete_backup_file']))
+	{
+		// Delete the backup file
+		delete_backup_file();
+	}
     }
 
 /*********************
@@ -79,8 +87,9 @@
  *********************/
 function display()
 {
-	global $lang;
-	global $escaper;
+    global $lang;
+    global $escaper;
+
     // If the extra directory exists
     if (is_dir(realpath(__DIR__ . '/../extras/encryption')))
     {
@@ -91,10 +100,10 @@ function display()
             if (!restricted_extra("encryption"))
             {
                 echo "<form name=\"activate_extra\" method=\"post\" action=\"\">\n";
-                if(installed_mcrypt()){
+                if(installed_openssl()){
                     echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
                 }else{
-                    echo "<p>". $escaper->escapeHtml($lang['mCryptWarning']) ."</p>\n";
+                    echo "<p>". $escaper->escapeHtml($lang['OpensslWarning']) ."</p>\n";
                 }
                 echo "</form>\n";
             }
@@ -106,7 +115,7 @@ function display()
         {
             // Include the Encryption Extra
             require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-
+            
             display_encryption();
         }
     }
@@ -123,6 +132,7 @@ function display()
 <html>
 
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -137,6 +147,10 @@ function display()
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    
+    <?php
+        setup_alert_requirements("..");
+    ?>    
   </head>
 
   <body>

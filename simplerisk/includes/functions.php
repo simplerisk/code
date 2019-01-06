@@ -97,8 +97,14 @@ function get_table($name)
         // Order by name
         $stmt = $db->prepare("SELECT * FROM `{$name}` ORDER BY name");
     }
+    // If this is ldap_group_and_teams table
+    elseif ($name == "ldap_group_and_teams")
+    {
+        $stmt = $db->prepare("SELECT t1.*, t2.name as team_name FROM `{$name}` t1 LEFT JOIN `team` t2 ON t1.team_id=t2.value ORDER BY t1.value");
+    }    
     // Otherwise, order by value
-    else {
+    else 
+    {
         $stmt = $db->prepare("SELECT * FROM `{$name}` ORDER BY value");
     }
 
@@ -1253,14 +1259,14 @@ function change_scoring_method($risk_id, $scoring_method)
 /**************************
  * FUNCTION: UPDATE TABLE *
  **************************/
-function update_table($table, $name, $value)
+function update_table($table, $name, $value, $length=20)
 {
     // Open the database connection
     $db = db_open();
 
     // Get the risk levels
     $stmt = $db->prepare("UPDATE {$table} SET name=:name WHERE value=:value");
-    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, $length);
     $stmt->bindParam(":value", $value, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -2527,7 +2533,7 @@ function get_cvss_numeric_value($abrv_metric_name, $abrv_metric_value)
 /*********************************
  * FUNCTION: SUBMIT RISK SCORING *
  *********************************/
-function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_likelihood="", $CLASSIC_impact="", $AccessVector="N", $AccessComplexity="L", $Authentication="N", $ConfImpact="C", $IntegImpact="C", $AvailImpact="C", $Exploitability="ND", $RemediationLevel="ND", $ReportConfidence="ND", $CollateralDamagePotential="ND", $TargetDistribution="ND", $ConfidentialityRequirement="ND", $IntegrityRequirement="ND", $AvailabilityRequirement="ND", $DREADDamage="10", $DREADReproducibility="10", $DREADExploitability="10", $DREADAffectedUsers="10", $DREADDiscoverability="10", $OWASPSkill="10", $OWASPMotive="10", $OWASPOpportunity="10", $OWASPSize="10", $OWASPDiscovery="10", $OWASPExploit="10", $OWASPAwareness="10", $OWASPIntrusionDetection="10", $OWASPLossOfConfidentiality="10", $OWASPLossOfIntegrity="10", $OWASPLossOfAvailability="10", $OWASPLossOfAccountability="10", $OWASPFinancialDamage="10", $OWASPReputationDamage="10", $OWASPNonCompliance="10", $OWASPPrivacyViolation="10", $custom="10")
+function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_likelihood="", $CLASSIC_impact="", $AccessVector="N", $AccessComplexity="L", $Authentication="N", $ConfImpact="C", $IntegImpact="C", $AvailImpact="C", $Exploitability="ND", $RemediationLevel="ND", $ReportConfidence="ND", $CollateralDamagePotential="ND", $TargetDistribution="ND", $ConfidentialityRequirement="ND", $IntegrityRequirement="ND", $AvailabilityRequirement="ND", $DREADDamage="10", $DREADReproducibility="10", $DREADExploitability="10", $DREADAffectedUsers="10", $DREADDiscoverability="10", $OWASPSkill="10", $OWASPMotive="10", $OWASPOpportunity="10", $OWASPSize="10", $OWASPDiscovery="10", $OWASPExploit="10", $OWASPAwareness="10", $OWASPIntrusionDetection="10", $OWASPLossOfConfidentiality="10", $OWASPLossOfIntegrity="10", $OWASPLossOfAvailability="10", $OWASPLossOfAccountability="10", $OWASPFinancialDamage="10", $OWASPReputationDamage="10", $OWASPNonCompliance="10", $OWASPPrivacyViolation="10", $custom="10", $ContributingLikelihood="", $ContributingImpacts=[])
 {
     // Open the database connection
     $db = db_open();
@@ -2558,6 +2564,9 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
         $stmt->bindParam(":calculated_risk", $calculated_risk, PDO::PARAM_STR);
         $stmt->bindParam(":CLASSIC_likelihood", $CLASSIC_likelihood, PDO::PARAM_INT);
         $stmt->bindParam(":CLASSIC_impact", $CLASSIC_impact, PDO::PARAM_INT);
+
+        // Add the risk score
+        $stmt->execute();
     }
     // If the scoring method is CVSS (2)
     else if ($scoring_method == 2)
@@ -2600,6 +2609,9 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
         $stmt->bindParam(":CVSS_ConfidentialityRequirement", $ConfidentialityRequirement, PDO::PARAM_STR, 3);
         $stmt->bindParam(":CVSS_IntegrityRequirement", $IntegrityRequirement, PDO::PARAM_STR, 3);
         $stmt->bindParam(":CVSS_AvailabilityRequirement", $AvailabilityRequirement, PDO::PARAM_STR, 3);
+
+        // Add the risk score
+        $stmt->execute();
     }
     // If the scoring method is DREAD (3)
     else if ($scoring_method == 3)
@@ -2617,6 +2629,9 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
         $stmt->bindParam(":DREAD_Exploitability", $DREADExploitability, PDO::PARAM_INT);
         $stmt->bindParam(":DREAD_AffectedUsers", $DREADAffectedUsers, PDO::PARAM_INT);
         $stmt->bindParam(":DREAD_Discoverability", $DREADDiscoverability, PDO::PARAM_INT);
+
+        // Add the risk score
+        $stmt->execute();
     }
     // If the scoring method is OWASP (4)
     else if ($scoring_method == 4){
@@ -2656,6 +2671,9 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
         $stmt->bindParam(":OWASP_ReputationDamage",$OWASPReputationDamage, PDO::PARAM_INT);
         $stmt->bindParam(":OWASP_NonCompliance",$OWASPNonCompliance, PDO::PARAM_INT);
         $stmt->bindParam(":OWASP_PrivacyViolation",$OWASPPrivacyViolation, PDO::PARAM_INT);
+
+        // Add the risk score
+        $stmt->execute();
     }
     // If the scoring method is Custom (5)
     else if ($scoring_method == 5){
@@ -2675,15 +2693,52 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
         $stmt->bindParam(":scoring_method", $scoring_method, PDO::PARAM_INT);
         $stmt->bindParam(":calculated_risk", $calculated_risk, PDO::PARAM_STR);
         $stmt->bindParam(":Custom", $custom, PDO::PARAM_STR, 5);
+
+        // Add the risk score
+        $stmt->execute();
+    }
+    // If the scroing method is Contributing Risk (6)
+    else if($scoring_method == 6){
+        $max_likelihood = count(get_table("likelihood"));
+        $max_impact = count(get_table("impact"));
+        
+        $ImpactSum = 0;
+        foreach($ContributingImpacts as $contributing_risk_id => $ContributingImpact){
+            $weight = get_contributing_weight_by_id($contributing_risk_id);
+            $ImpactSum += $weight * $ContributingImpact;
+        }
+
+        // Set default Contributing Likelihood value
+        $ContributingLikelihood = $ContributingLikelihood ? $ContributingLikelihood : $max_likelihood;
+        // Set default Contributing Impact value
+        $ImpactSum = $ImpactSum ? $ImpactSum : $max_impact;
+        
+        $calculated_risk = round(($ContributingLikelihood + $ImpactSum) / ($max_likelihood + $max_impact) * 10, 2);
+        
+        // Create the database query
+        $stmt = $db->prepare("INSERT INTO risk_scoring (`id`, `scoring_method`, `calculated_risk`, `Contributing_Likelihood`) VALUES (:last_insert_id, :scoring_method, :calculated_risk, :Contributing_Likelihood)");
+        $stmt->bindParam(":last_insert_id", $last_insert_id, PDO::PARAM_INT);
+        $stmt->bindParam(":scoring_method", $scoring_method, PDO::PARAM_INT);
+        $stmt->bindParam(":calculated_risk", $calculated_risk, PDO::PARAM_STR);
+        $stmt->bindParam(":Contributing_Likelihood", $ContributingLikelihood, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        // Save contributing impacts and contributing risk IDs
+        foreach($ContributingImpacts as $contributing_risk_id => $ContributingImpact){
+            // Create the database query
+            $stmt = $db->prepare("INSERT INTO `risk_scoring_contributing_impacts` (`risk_scoring_id`, `contributing_risk_id`, `impact`) VALUES (:last_insert_id, :contributing_risk_id, :impact)");
+            $stmt->bindParam(":last_insert_id", $last_insert_id, PDO::PARAM_INT);
+            $stmt->bindParam(":contributing_risk_id", $contributing_risk_id, PDO::PARAM_INT);
+            $stmt->bindParam(":impact", $ContributingImpact, PDO::PARAM_INT);
+            $stmt->execute();
+        }
+        
     }
     // Otherwise
     else
     {
         return false;
     }
-
-    // Add the risk score
-    $stmt->execute();
 
     // Close the database connection
     db_close($db);
@@ -3074,6 +3129,84 @@ function update_custom_score($risk_id, $custom)
     return $calculated_risk;
 }
 
+/********************************************
+ * FUNCTION: UPDATE CONTRIBUTING RISK SCORE *
+ ********************************************/
+function update_contributing_risk_score($risk_id, $ContributingLikelihood="", $ContributingImpacts=[])
+{
+    // Get old calculated risk
+    $old_calculated_risk = get_calculated_risk_by_id($risk_id);
+
+    // Subtract 1000 from the risk_id
+    $id = (int)$risk_id - 1000;
+
+    // Open the database connection
+    $db = db_open();
+
+    $max_likelihood = count(get_table("likelihood"));
+    $max_impact = count(get_table("impact"));
+    
+    $ImpactSum = 0;
+    foreach($ContributingImpacts as $contributing_risk_id => $ContributingImpact){
+        $weight = get_contributing_weight_by_id($contributing_risk_id);
+        $ImpactSum += $weight * $ContributingImpact;
+    }
+    
+    // Set default Contributing Likelihood value
+    $ContributingLikelihood = $ContributingLikelihood ? $ContributingLikelihood : $max_likelihood;
+    // Set default Contributing Impact value
+    $ImpactSum = $ImpactSum ? $ImpactSum : $max_impact;
+    
+    $calculated_risk = round(($ContributingLikelihood + $ImpactSum) / ($max_likelihood + $max_impact) * 10, 2);
+
+    // Create the database query
+    $stmt = $db->prepare("UPDATE risk_scoring SET calculated_risk=:calculated_risk, Contributing_Likelihood=:Contributing_Likelihood WHERE id=:id; ");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->bindParam(":calculated_risk", $calculated_risk, PDO::PARAM_STR);
+    $stmt->bindParam(":Contributing_Likelihood", $ContributingLikelihood, PDO::PARAM_INT);
+    // Add the risk score
+    $stmt->execute();
+    
+    // Create the database query
+    $stmt = $db->prepare("DELETE from risk_scoring_contributing_impacts WHERE risk_scoring_id=:id; ");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    // Delete existing all risk scoring contributing impacts
+    $stmt->execute();
+    
+    // Save contributing impacts and contributing risk IDs
+    foreach($ContributingImpacts as $contributing_risk_id => $ContributingImpact){
+        // Create the database query
+        $stmt = $db->prepare("INSERT INTO `risk_scoring_contributing_impacts` (`risk_scoring_id`, `contributing_risk_id`, `impact`) VALUES (:id, :contributing_risk_id, :impact); ");
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->bindParam(":contributing_risk_id", $contributing_risk_id, PDO::PARAM_INT);
+        $stmt->bindParam(":impact", $ContributingImpact, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    // Display an alert
+    set_alert(true, "good", "Risk scoring was updated successfully.");
+
+    // Close the database connection
+    db_close($db);
+
+    // If risk score was changed
+    if($old_calculated_risk != $calculated_risk)
+    {
+        // Add risk scoring history
+        add_risk_scoring_history($id, $calculated_risk);
+
+        // Add residual risk scoring history
+        $residual_risk = get_residual_risk($id+1000);
+        add_residual_risk_scoring_history($id, $residual_risk);
+
+        // Audit log
+        $message = "Risk score has been updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+        write_log($risk_id, $_SESSION['uid'], $message);
+    }
+
+    return $calculated_risk;
+}
+
 /**************************************
  * FUNCTION: GET CALCULATE RISK BY ID *
  **************************************/
@@ -3095,7 +3228,7 @@ function get_calculated_risk_by_id($risk_id)
 /*********************************
  * FUNCTION: UPDATE RISK SCORING *
  *********************************/
-function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkill, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPDiscovery, $OWASPExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom)
+function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkill, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPDiscovery, $OWASPExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood="", $ContributingImpacts=[])
 {
     // Subtract 1000 from the id
     $id = (int)$risk_id - 1000;
@@ -3120,7 +3253,7 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
         $calculated_risk = calculate_risk($CLASSIC_impact, $CLASSIC_likelihood);
 
         // Create the database query
-        $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, CLASSIC_likelihood=:CLASSIC_likelihood, CLASSIC_impact=:CLASSIC_impact WHERE id=:id");
+        $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, CLASSIC_likelihood=:CLASSIC_likelihood, CLASSIC_impact=:CLASSIC_impact WHERE id=:id; ");
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":scoring_method", $scoring_method, PDO::PARAM_INT);
         $stmt->bindParam(":calculated_risk", $calculated_risk, PDO::PARAM_STR);
@@ -3150,7 +3283,7 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
         $calculated_risk = calculate_cvss_score($AccessVectorScore, $AccessComplexityScore, $AuthenticationScore, $ConfImpactScore, $IntegImpactScore, $AvailImpactScore, $ExploitabilityScore, $RemediationLevelScore, $ReportConfidenceScore, $CollateralDamagePotentialScore, $TargetDistributionScore, $ConfidentialityRequirementScore, $IntegrityRequirementScore, $AvailabilityRequirementScore);
 
         // Create the database query
-        $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, CVSS_AccessVector=:CVSS_AccessVector, CVSS_AccessComplexity=:CVSS_AccessComplexity, CVSS_Authentication=:CVSS_Authentication, CVSS_ConfImpact=:CVSS_ConfImpact, CVSS_IntegImpact=:CVSS_IntegImpact, CVSS_AvailImpact=:CVSS_AvailImpact, CVSS_Exploitability=:CVSS_Exploitability, CVSS_RemediationLevel=:CVSS_RemediationLevel, CVSS_ReportConfidence=:CVSS_ReportConfidence, CVSS_CollateralDamagePotential=:CVSS_CollateralDamagePotential, CVSS_TargetDistribution=:CVSS_TargetDistribution, CVSS_ConfidentialityRequirement=:CVSS_ConfidentialityRequirement, CVSS_IntegrityRequirement=:CVSS_IntegrityRequirement, CVSS_AvailabilityRequirement=:CVSS_AvailabilityRequirement WHERE id=:id");
+        $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, CVSS_AccessVector=:CVSS_AccessVector, CVSS_AccessComplexity=:CVSS_AccessComplexity, CVSS_Authentication=:CVSS_Authentication, CVSS_ConfImpact=:CVSS_ConfImpact, CVSS_IntegImpact=:CVSS_IntegImpact, CVSS_AvailImpact=:CVSS_AvailImpact, CVSS_Exploitability=:CVSS_Exploitability, CVSS_RemediationLevel=:CVSS_RemediationLevel, CVSS_ReportConfidence=:CVSS_ReportConfidence, CVSS_CollateralDamagePotential=:CVSS_CollateralDamagePotential, CVSS_TargetDistribution=:CVSS_TargetDistribution, CVSS_ConfidentialityRequirement=:CVSS_ConfidentialityRequirement, CVSS_IntegrityRequirement=:CVSS_IntegrityRequirement, CVSS_AvailabilityRequirement=:CVSS_AvailabilityRequirement WHERE id=:id; ");
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":scoring_method", $scoring_method, PDO::PARAM_INT);
         $stmt->bindParam(":calculated_risk", $calculated_risk, PDO::PARAM_STR);
@@ -3176,7 +3309,7 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
         $calculated_risk = ($DREADDamage + $DREADReproducibility + $DREADExploitability + $DREADAffectedUsers + $DREADDiscoverability)/5;
 
         // Create the database query
-        $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, DREAD_DamagePotential=:DREAD_DamagePotential, DREAD_Reproducibility=:DREAD_Reproducibility, DREAD_Exploitability=:DREAD_Exploitability, DREAD_AffectedUsers=:DREAD_AffectedUsers, DREAD_Discoverability=:DREAD_Discoverability WHERE id=:id");
+        $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, DREAD_DamagePotential=:DREAD_DamagePotential, DREAD_Reproducibility=:DREAD_Reproducibility, DREAD_Exploitability=:DREAD_Exploitability, DREAD_AffectedUsers=:DREAD_AffectedUsers, DREAD_Discoverability=:DREAD_Discoverability WHERE id=:id; ");
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":scoring_method", $scoring_method, PDO::PARAM_INT);
         $stmt->bindParam(":calculated_risk", $calculated_risk, PDO::PARAM_STR);
@@ -3205,7 +3338,7 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
         $calculated_risk = round((($OWASP_impact * $OWASP_likelihood) / 10), 1);
 
         // Create the database query
-        $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, OWASP_SkillLevel=:OWASP_SkillLevel, OWASP_Motive=:OWASP_Motive, OWASP_Opportunity=:OWASP_Opportunity, OWASP_Size=:OWASP_Size, OWASP_EaseOfDiscovery=:OWASP_EaseOfDiscovery, OWASP_EaseOfExploit=:OWASP_EaseOfExploit, OWASP_Awareness=:OWASP_Awareness, OWASP_IntrusionDetection=:OWASP_IntrusionDetection, OWASP_LossOfConfidentiality=:OWASP_LossOfConfidentiality, OWASP_LossOfIntegrity=:OWASP_LossOfIntegrity, OWASP_LossOfAvailability=:OWASP_LossOfAvailability, OWASP_LossOfAccountability=:OWASP_LossOfAccountability, OWASP_FinancialDamage=:OWASP_FinancialDamage, OWASP_ReputationDamage=:OWASP_ReputationDamage, OWASP_NonCompliance=:OWASP_NonCompliance, OWASP_PrivacyViolation=:OWASP_PrivacyViolation WHERE id=:id");
+        $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, OWASP_SkillLevel=:OWASP_SkillLevel, OWASP_Motive=:OWASP_Motive, OWASP_Opportunity=:OWASP_Opportunity, OWASP_Size=:OWASP_Size, OWASP_EaseOfDiscovery=:OWASP_EaseOfDiscovery, OWASP_EaseOfExploit=:OWASP_EaseOfExploit, OWASP_Awareness=:OWASP_Awareness, OWASP_IntrusionDetection=:OWASP_IntrusionDetection, OWASP_LossOfConfidentiality=:OWASP_LossOfConfidentiality, OWASP_LossOfIntegrity=:OWASP_LossOfIntegrity, OWASP_LossOfAvailability=:OWASP_LossOfAvailability, OWASP_LossOfAccountability=:OWASP_LossOfAccountability, OWASP_FinancialDamage=:OWASP_FinancialDamage, OWASP_ReputationDamage=:OWASP_ReputationDamage, OWASP_NonCompliance=:OWASP_NonCompliance, OWASP_PrivacyViolation=:OWASP_PrivacyViolation WHERE id=:id; ");
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":scoring_method", $scoring_method, PDO::PARAM_INT);
         $stmt->bindParam(":calculated_risk", $calculated_risk, PDO::PARAM_STR);
@@ -3240,11 +3373,16 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
         $calculated_risk = $custom;
 
         // Create the database query
-        $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, Custom=:Custom WHERE id=:id");
+        $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, Custom=:Custom WHERE id=:id; ");
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->bindParam(":scoring_method", $scoring_method, PDO::PARAM_INT);
         $stmt->bindParam(":calculated_risk", $calculated_risk, PDO::PARAM_STR);
         $stmt->bindParam(":Custom", $custom, PDO::PARAM_STR, 5);
+    }
+    // If the scoring method is Contributing Risk (6)
+    else if ($scoring_method == 6)
+    {
+        $calculated_risk = update_contributing_risk_score($id+1000, $ContributingLikelihood, $ContributingImpacts);
     }
     // Otherwise
     else
@@ -3919,12 +4057,13 @@ function get_risk_by_id($id)
     if (!team_separation_extra())
     {
         // Query the database
-        $stmt = $db->prepare("SELECT a.*, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+        $stmt = $db->prepare("SELECT a.*, group_concat(distinct CONCAT_WS('_', rsci.contributing_risk_id, rsci.impact)) as Contributing_Risks_Impacts, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
         FROM risk_scoring a
             INNER JOIN risks b on a.id = b.id
             LEFT JOIN mgmt_reviews c on b.mgmt_review = c.id
             LEFT JOIN mitigations mg ON b.id = mg.risk_id
             LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+            LEFT JOIN risk_scoring_contributing_impacts rsci ON a.id=rsci.risk_scoring_id
         WHERE b.id=:id 
         GROUP BY
             b.id
@@ -3941,11 +4080,15 @@ function get_risk_by_id($id)
         $separation_query = get_user_teams_query("b", false, true);
 
         // Query the database
-        $stmt = $db->prepare("SELECT a.*, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+        $stmt = $db->prepare("SELECT a.*, group_concat(distinct CONCAT_WS('_', rsci.contributing_risk_id, rsci.impact)) as Contributing_Risks_Impacts, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
             FROM risk_scoring a INNER JOIN risks b on a.id = b.id LEFT JOIN mgmt_reviews c on b.mgmt_review = c.id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
                 LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
-            WHERE b.id=:id " . $separation_query . " LIMIT 1;
+                LEFT JOIN risk_scoring_contributing_impacts rsci ON a.id=rsci.risk_scoring_id
+            WHERE b.id=:id " . $separation_query . "
+            GROUP BY
+            b.id
+            LIMIT 1;
         ");
     }
 
@@ -4894,8 +5037,41 @@ function get_risk_for_project($project_id)
 /***********************
  * FUNCTION: GET RISKS *
  ***********************/
-function get_risks($sort_order=0)
+function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 {
+    // If sort_field is defined, set sort query
+    if($order_field)
+    {
+        $order_dir = $order_dir=="asc" ? "asc" : "desc";
+        switch($order_field)
+        {
+            case "id":
+                $sort_query = " ORDER BY b.id {$order_dir} ";
+            break;
+            case "risk_status":
+                $sort_query = " ORDER BY b.status {$order_dir} ";
+            break;
+            case "subject":
+                if (encryption_extra())
+                {
+                    $sort_query = " ORDER BY b.order_by_subject {$order_dir} ";
+                }else{
+                    $sort_query = " ORDER BY b.subject {$order_dir} ";
+                }
+            break;
+            case "calculated_risk":
+                $sort_query = " ORDER BY a.calculated_risk {$order_dir} ";
+            break;
+            case "submission_date":
+                $sort_query = " ORDER BY b.submission_date {$order_dir} ";
+            break;
+            case "days_open":
+                $sort_query = " ORDER BY datediff(NOW(), b.submission_date) {$order_dir} ";
+            break;
+        }
+        
+    }
+
     // Open the database connection
     $db = db_open();
 
@@ -4958,6 +5134,11 @@ function get_risks($sort_order=0)
     // 1 = Show risks requiring mitigations
     else if ($sort_order == 1)
     {
+        // Set default sort field
+        if(empty($sort_query)){
+            $sort_query = " ORDER BY a.calculated_risk DESC ";
+        }
+        
         // If the team separation extra is not enabled
         if (!team_separation_extra())
         {
@@ -4974,8 +5155,8 @@ function get_risks($sort_order=0)
                 WHERE
                     b.mitigation_id = 0 and b.status != \"Closed\"
                 GROUP BY b.id
-                ORDER BY
-                    a.calculated_risk DESC
+                {$sort_query}
+                ;
             ");
         }
         else
@@ -4999,8 +5180,8 @@ function get_risks($sort_order=0)
                 WHERE
                     b.mitigation_id = 0 and b.status != \"Closed\"  " . $separation_query . "
                 GROUP BY b.id
-                ORDER BY
-                    a.calculated_risk DESC
+                {$sort_query}
+                ;
             ");
         }
 
@@ -5013,13 +5194,18 @@ function get_risks($sort_order=0)
     // 2 = Show risks requiring management review
     else if ($sort_order == 2)
     {
+        // Set default sort field
+        if(empty($sort_query)){
+            $sort_query = " ORDER BY a.calculated_risk DESC ";
+        }
+
         // If the team separation extra is not enabled
         if (!team_separation_extra())
         {
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -5030,8 +5216,8 @@ function get_risks($sort_order=0)
                     b.mgmt_review = 0 and b.status != \"Closed\"
                 GROUP BY
                     b.id
-                ORDER BY
-                    a.calculated_risk DESC
+                {$sort_query}
+                ;
             ");
         }
         else
@@ -5045,7 +5231,7 @@ function get_risks($sort_order=0)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
@@ -5056,9 +5242,8 @@ function get_risks($sort_order=0)
                     b.mgmt_review = 0 and b.status != \"Closed\"  {$separation_query}
                 GROUP BY
                     b.id
-                ORDER BY
-                    a.calculated_risk DESC
-
+                {$sort_query}
+                ;
             ");
         }
 
@@ -5071,19 +5256,26 @@ function get_risks($sort_order=0)
     // 3 = Show risks by review date
     else if ($sort_order == 3)
     {
+        // Set default sort field
+        if(empty($sort_query)){
+            $sort_query = " ORDER BY b.review_date ASC ";
+        }
+
         // If the team separation extra is not enabled
         if (!team_separation_extra())
         {
             // Query the database
-            $stmt = $db->prepare("SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
-            FROM risk_scoring a
-                LEFT JOIN risks b ON a.id = b.id
-                LEFT JOIN mgmt_reviews c ON b.mgmt_review = c.id
-                LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
-            WHERE b.status != \"Closed\"
-            GROUP BY b.id
-            ORDER BY review_date ASC; ");
+            $stmt = $db->prepare("
+                SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+                FROM risk_scoring a
+                    LEFT JOIN risks b ON a.id = b.id
+                    LEFT JOIN mgmt_reviews c ON b.mgmt_review = c.id
+                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                WHERE b.status != \"Closed\"
+                GROUP BY b.id
+                {$sort_query}
+            ;");
         }
         else
         {
@@ -5101,8 +5293,8 @@ function get_risks($sort_order=0)
                     LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
                 WHERE b.status != \"Closed\" " . $separation_query . "
                 GROUP BY b.id
-                ORDER BY review_date ASC
-            ");
+                {$sort_query}
+            ;");
         }
 
         $stmt->execute();
@@ -5890,7 +6082,7 @@ function get_risk_table($sort_order=0, $activecol="")
     if($sort_order == 22){
         echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Team']) ."</th>\n";
     }
-    echo "<th align=\"center\" width=\"80px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+    echo "<th align=\"center\" width=\"80px\">". $escaper->escapeHtml($lang['InherentRisk']) ."</th>\n";
     echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['Submitted']) ."</th>\n";
     echo "<th align=\"center\" width=\"150px\" class=\"mitigation-head\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</th>\n";
     echo "<th align=\"center\" width=\"160px\">". $escaper->escapeHtml($lang['ManagementReview']) ."</th>\n";
@@ -7178,7 +7370,7 @@ function get_reviews_table($sort_order=3)
     echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
     echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['Status']) ."</th>\n";
     echo "<th align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
-    echo "<th align=\"center\" width=\"65px\">". $escaper->escapeHtml($lang['Risk']) ."</th>\n";
+    echo "<th align=\"center\" width=\"65px\">". $escaper->escapeHtml($lang['InherentRisk']) ."</th>\n";
     echo "<th align=\"center\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
     echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
     echo "</tr>\n";
@@ -7188,7 +7380,7 @@ function get_reviews_table($sort_order=3)
         // For each risk
         //foreach ($reviews as $review)
     for ($i=$offset; $i<min($rowsperpage+$offset, $count); $i++)
-        {
+    {
         // Get the review
         $review = $reviews[$i];
 
@@ -7325,16 +7517,16 @@ function management_review($risk_id, $mgmt_review, $next_review)
     // If the review hasn't happened
     if ($mgmt_review == "0")
     {
-        $value = "<a href=\"../management/mgmt_review.php?id=" . $escaper->escapeHtml($risk_id) ."\">". $escaper->escapeHtml($lang['No']) ."</a>";
+        $value = "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview\">". $escaper->escapeHtml($lang['No']) ."</a>";
     }else{
         $d = DateTime::createFromFormat('Y-m-d', $next_review);
 //        if($d && $d->format('Y-m-d') === $next_review && (strtotime($next_review) + 24*3600) <= time() ){
         if($d && $d->format('Y-m-d') === $next_review ){
             // If review doensn't past due.
-            $value = "<a class=\"management yes\" href=\"../management/mgmt_review.php?id=" . $escaper->escapeHtml($risk_id) ."\">".$escaper->escapeHtml($lang['Yes']).'</a>';
+            $value = "<a class=\"management yes\" href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview\">".$escaper->escapeHtml($lang['Yes']).'</a>';
         }else{
             // If review past due.
-            $value = "<a class=\"management pastdue\" href=\"../management/mgmt_review.php?id=" . $escaper->escapeHtml($risk_id) ."\">".$escaper->escapeHtml($lang['PASTDUE']).'</a>';
+            $value = "<a class=\"management pastdue\" href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview\">".$escaper->escapeHtml($lang['PASTDUE']).'</a>';
         }
     }
 
@@ -7352,11 +7544,11 @@ function planned_mitigation($risk_id, $mitigation_id)
         // If the review hasn't happened
         if ($mitigation_id == "0")
         {
-                $value = "<a href=\"../management/mitigate.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "\">". $escaper->escapeHtml($lang['No']) ."</a>";
+            $value = "<a href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "\">". $escaper->escapeHtml($lang['No']) ."</a>";
         }
         else
         {
-                $value = "<a class=\"mitigation yes\" href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "\">".$escaper->escapeHtml($lang['Yes'])."</a>";
+            $value = "<a class=\"mitigation yes\" href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "\">".$escaper->escapeHtml($lang['Yes'])."</a>";
         }
 
         return $value;
@@ -7365,22 +7557,22 @@ function planned_mitigation($risk_id, $mitigation_id)
 /*******************************
  * FUNCTION: GET NAME BY VALUE *
  *******************************/
-function get_name_by_value($table, $value)
+function get_name_by_value($table, $value, $default = "")
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Query the database
-        $stmt = $db->prepare("SELECT name FROM $table WHERE value=:value LIMIT 1");
-        $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+    // Query the database
+    $stmt = $db->prepare("SELECT name FROM $table WHERE value=:value LIMIT 1");
+    $stmt->bindParam(":value", $value, PDO::PARAM_INT);
 
-        $stmt->execute();
+    $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
     // If we get a value back from the query
     if (isset($array[0]['name']))
@@ -7389,7 +7581,7 @@ function get_name_by_value($table, $value)
         return $array[0]['name'];
     }
     // Otherwise, return an empty string
-    else return "";
+    else return $default;
 }
 
 /*******************************
@@ -7697,7 +7889,9 @@ function next_review($risk_level, $id, $next_review, $html = true, $review_level
         // If the next review date is after today
         if ($next_review != $lang['PASTDUE'] && (strtotime($next_review->format('Y-m-d')) + 24*3600) > time())
         {
-            $text = $next_review->format(DATESIMPLE);
+            $default_date_format = get_default_date_format();
+            
+            $text = $next_review->format($default_date_format);
         }
         else $text = $lang['PASTDUE'];
     }
@@ -7709,7 +7903,7 @@ function next_review($risk_level, $id, $next_review, $html = true, $review_level
         $risk_id = convert_id($id);
 
         // Add the href tag to make it HTML
-        $html = "<a href=\"../management/mgmt_review.php?id=" . $escaper->escapeHtml($risk_id) . "\">" . $escaper->escapeHtml($text) . "</a>";
+        $html = "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "&type=2&action=editreview\">" . $escaper->escapeHtml($text) . "</a>";
 
         // Return the HTML code
         return $html;
@@ -7770,7 +7964,8 @@ function next_review_by_score($calculated_risk)
     // Next review date
     $today = new DateTime('NOW');
     $next_review = $today->add(new DateInterval('P'.$days.'D'));
-    $next_review = $next_review->format(DATESIMPLE);
+    $default_date_format = get_default_date_format();
+    $next_review = $next_review->format($default_date_format);
 
     // Return the next review date
     return $next_review;
@@ -8500,8 +8695,14 @@ function get_announcements()
  ***************************/
 function language_file()
 {
+    // If the session hasn't been defined yet
+    if (!isset($_SESSION))
+    {
+        // Return an empty language file
+        return realpath(__DIR__ . '/../languages/empty.php');
+    }
     // If the language is set for the user
-    if (isset($_SESSION['lang']))
+    else if (isset($_SESSION['lang']))
     {
         // Use the users language
         return realpath(__DIR__ . '/../languages/' . $_SESSION['lang'] . '/lang.' . $_SESSION['lang'] . '.php');
@@ -8633,18 +8834,18 @@ function get_settting_by_name($name){
  ***********************************/
 function team_separation_extra()
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
     // See if the team separation extra is available
-        $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'team_separation'");
-        $stmt->execute();
+    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'team_separation'");
+    $stmt->execute();
 
-        // Get the results array
-        $array = $stmt->fetchAll();
+    // Get the results array
+    $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
         // If no value was found
     if (empty($array))
@@ -8880,6 +9081,13 @@ function governance_extra()
  ****************************************/
 function installed_mcrypt(){
     return extension_loaded("mcrypt");
+}
+
+/*****************************************
+ * FUNCTION: CHECK INSTALLED PHP-OPENSSL *
+ *****************************************/
+function installed_openssl(){
+    return extension_loaded("openssl");
 }
 
 /******************************
@@ -9368,59 +9576,59 @@ function delete_risk($risk_id)
 
     // Remove comments for the risk
     $stmt = $db->prepare("DELETE FROM `comments` WHERE `risk_id`=:id;");
-        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
-        $return = $stmt->execute();
+    $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+    $return = $stmt->execute();
 
     // Remove files for the risk
     $stmt = $db->prepare("DELETE FROM `files` WHERE `risk_id`=:id;");
-        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
-        $return = $stmt->execute();
+    $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+    $return = $stmt->execute();
 
     // Remove management reviews for the risk
     $stmt = $db->prepare("DELETE FROM `mgmt_reviews` WHERE `risk_id`=:id;");
-        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
-        $return = $stmt->execute();
+    $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+    $return = $stmt->execute();
 
     // Remove mitigations for the risk
     $stmt = $db->prepare("DELETE FROM `mitigations` WHERE `risk_id`=:id;");
-        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
-        $return = $stmt->execute();
+    $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+    $return = $stmt->execute();
 
     // Remove asset mapping for the risk
     $stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE `risk_id`=:id;");
-        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
-        $return = $stmt->execute();
+    $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+    $return = $stmt->execute();
 
     // Remove the risk scoring for the risk
     $stmt = $db->prepare("DELETE FROM `risk_scoring` WHERE `id`=:id;");
-        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
-        $return = $stmt->execute();
+    $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+    $return = $stmt->execute();
 
     // Remove the risk
-        $stmt = $db->prepare("DELETE FROM `risks` WHERE `id`=:id;");
-        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
-        $return = $stmt->execute();
+    $stmt = $db->prepare("DELETE FROM `risks` WHERE `id`=:id;");
+    $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+    $return = $stmt->execute();
         
     // Remove the risk scoring history
-        $stmt = $db->prepare("DELETE FROM `risk_scoring_history` WHERE `risk_id`=:id;");
-        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
-        $return = $stmt->execute();
+    $stmt = $db->prepare("DELETE FROM `risk_scoring_history` WHERE `risk_id`=:id;");
+    $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+    $return = $stmt->execute();
 
     // Remove the residual risk scoring history
-        $stmt = $db->prepare("DELETE FROM `residual_risk_scoring_history` WHERE `risk_id`=:id;");
-        $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
-        $return = $stmt->execute();
+    $stmt = $db->prepare("DELETE FROM `residual_risk_scoring_history` WHERE `risk_id`=:id;");
+    $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+    $return = $stmt->execute();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // Audit log
-        $risk_id = (int)$risk_id + 1000;
-        $message = "Risk ID \"" . $risk_id . "\" was DELETED by username \"" . $_SESSION['user'] . "\".";
-        write_log($risk_id, $_SESSION['uid'], $message);
+    // Audit log
+    $risk_id = (int)$risk_id + 1000;
+    $message = "Risk ID \"" . $risk_id . "\" was DELETED by username \"" . $_SESSION['user'] . "\".";
+    write_log($risk_id, $_SESSION['uid'], $message);
 
-        // Return success or failure
-        return $return;
+    // Return success or failure
+    return $return;
 }
 
 /*******************************
@@ -9713,10 +9921,10 @@ function update_risk_status($risk_id, $status)
         close_risk($risk_id, $reviewer, $status, $close_reason, $note);
         
     } else {
-    $stmt = $db->prepare("UPDATE risks SET `status`=:status WHERE `id`=:id");
-    $stmt->bindParam(":status", $status, PDO::PARAM_STR, 50);
-    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-    $stmt->execute();
+        $stmt = $db->prepare("UPDATE risks SET `status`=:status WHERE `id`=:id");
+        $stmt->bindParam(":status", $status, PDO::PARAM_STR, 50);
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
     }
 
     // Close the database connection
@@ -10634,13 +10842,17 @@ function get_technology_names($ids="")
 /********************************************
  * FUNCTION: GET STAKEHOLDER NAMES FROM IDS *
  ********************************************/
-function get_stakeholder_names($ids="")
+function get_stakeholder_names($ids="", $limit=99)
 {
     if(!$ids){
         return "";
     }
 
-    $idArray = explode(",", $ids);
+    if (is_array($ids)) 
+        $idArray = $ids;
+    else   
+        $idArray = explode(",", $ids);
+    
     foreach($idArray as &$id){
         $id = intval($id);
     }
@@ -10659,12 +10871,15 @@ function get_stakeholder_names($ids="")
     db_close($db);
 
     $names = array();
-
+    $count = 0;
     foreach($users as $user){
         $names[] = $user['name'];
+        $count += 1;
+        if ($count == $limit)
+            break;
     }
 
-    return implode(", ", $names);
+    return implode(", ", $names) . (count($users) > $limit ? ", ...": "");
 }
 
 /*************************
@@ -11040,6 +11255,8 @@ function windows_delete_dir($dir)
  *********************************/
 function windows_delete_file($file)
 {
+    $file = str_replace("/", "\\", $file);
+    
     // Delete a file in Windows
     $success = exec("DEL /F/Q \"" . $file . "\"", $lines, $deleteError);
 
@@ -11833,6 +12050,19 @@ function update_all_next_review_dates()
     db_close($db);
 }
 
+/**********************
+ * FUNCTION: IS ADMIN *
+ **********************/
+function is_admin()
+{
+    // If the user is not logged in as an administrator
+    if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
+    {
+        return false;
+    }
+    else return true;
+}
+
 /*************************************
  * FUNCTION: UPLOAD COMPLIANCE FILES *
  *************************************/
@@ -11881,79 +12111,81 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1)
             'error' => $files['error'][$key],
         );
         
+        if (strlen($file['name']) <= 100) {
         
-        // If the file type is appropriate
-        if (in_array($file['type'], $allowed_types))
-        {
-            // If the file extension is appropriate
-            if (in_array(pathinfo($file['name'], PATHINFO_EXTENSION), $allowed_extensions))
+            // If the file type is appropriate
+            if (in_array($file['type'], $allowed_types))
             {
-            // Get the maximum upload file size
-            $max_upload_size = get_setting("max_upload_size");
-
-            // If the file size is less than max size
-            if ($file['size'] < $max_upload_size)
-            {
-                // If there was no error with the upload
-                if ($file['error'] == 0)
+                // If the file extension is appropriate
+                if (in_array(pathinfo($file['name'], PATHINFO_EXTENSION), $allowed_extensions))
                 {
-                    // Read the file
-                    $content = fopen($file['tmp_name'], 'rb');
-
-                    // Create a unique file name
-                    $unique_name = generate_token(30);
-
-                    // Store the file in the database
-                    $stmt = $db->prepare("INSERT compliance_files (ref_id, ref_type, name, unique_name, type, size, user, content, version) VALUES (:ref_id, :ref_type, :name, :unique_name, :type, :size, :user, :content, :version)");
-                    $stmt->bindParam(":ref_id", $test_audit_id, PDO::PARAM_INT);
-                    $stmt->bindParam(":ref_type", $ref_type, PDO::PARAM_STR);
-                    $stmt->bindParam(":name", $file['name'], PDO::PARAM_STR, 30);
-                    $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
-                    $stmt->bindParam(":type", $file['type'], PDO::PARAM_STR, 30);
-                    $stmt->bindParam(":size", $file['size'], PDO::PARAM_INT);
-                    $stmt->bindParam(":user", $user, PDO::PARAM_INT);
-                    $stmt->bindParam(":content", $content, PDO::PARAM_LOB);
-                    $stmt->bindParam(":version", $version, PDO::PARAM_INT);
-                    $stmt->execute();
-                    
-                    $file_ids[] = $db->lastInsertId();
-                }
-                // Otherwise
-                else
+                // Get the maximum upload file size
+                $max_upload_size = get_setting("max_upload_size");
+    
+                // If the file size is less than max size
+                if ($file['size'] < $max_upload_size)
                 {
-                    switch ($file['error'])
+                    // If there was no error with the upload
+                    if ($file['error'] == 0)
                     {
-                        case 1:
-                            $errors[] = "The uploaded file exceeds the upload_max_filesize directive in php.ini.";
-                            break;
-                        case 2:
-                            $errors[] = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.";
-                            break;
-                        case 3:
-                            $errors[] = "The uploaded file was only partially uploaded.";
-                            break;
-                        case 4:
-//                            $errors[] = "No file was uploaded.";
-                            break;
-                        case 6:
-                            $errors[] = "Missing a temporary folder.";
-                            break;
-                        case 7:
-                            $errors[] = "Failed to write file to disk.";
-                            break;
-                        case 8:
-                            $errors[] = "A PHP extension stopped the file upload.";
-                            break;
-                        default:
-                            $errors[] = "There was an error with the file upload.";
+                        // Read the file
+                        $content = fopen($file['tmp_name'], 'rb');
+    
+                        // Create a unique file name
+                        $unique_name = generate_token(30);
+    
+                        // Store the file in the database
+                        $stmt = $db->prepare("INSERT compliance_files (ref_id, ref_type, name, unique_name, type, size, user, content, version) VALUES (:ref_id, :ref_type, :name, :unique_name, :type, :size, :user, :content, :version)");
+                        $stmt->bindParam(":ref_id", $test_audit_id, PDO::PARAM_INT);
+                        $stmt->bindParam(":ref_type", $ref_type, PDO::PARAM_STR);
+                        $stmt->bindParam(":name", $file['name'], PDO::PARAM_STR, 30);
+                        $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
+                        $stmt->bindParam(":type", $file['type'], PDO::PARAM_STR, 30);
+                        $stmt->bindParam(":size", $file['size'], PDO::PARAM_INT);
+                        $stmt->bindParam(":user", $user, PDO::PARAM_INT);
+                        $stmt->bindParam(":content", $content, PDO::PARAM_LOB);
+                        $stmt->bindParam(":version", $version, PDO::PARAM_INT);
+                        $stmt->execute();
+                        
+                        $file_ids[] = $db->lastInsertId();
+                    }
+                    // Otherwise
+                    else
+                    {
+                        switch ($file['error'])
+                        {
+                            case 1:
+                                $errors[] = "The uploaded file exceeds the upload_max_filesize directive in php.ini.";
+                                break;
+                            case 2:
+                                $errors[] = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.";
+                                break;
+                            case 3:
+                                $errors[] = "The uploaded file was only partially uploaded.";
+                                break;
+                            case 4:
+//                                $errors[] = "No file was uploaded.";
+                                break;
+                            case 6:
+                                $errors[] = "Missing a temporary folder.";
+                                break;
+                            case 7:
+                                $errors[] = "Failed to write file to disk.";
+                                break;
+                            case 8:
+                                $errors[] = "A PHP extension stopped the file upload.";
+                                break;
+                            default:
+                                $errors[] = "There was an error with the file upload.";
+                        }
                     }
                 }
+                else $errors[] = "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
+                }
+                else $errors[] = "The file extension of the uploaded file (" . pathinfo($file['name'], PATHINFO_EXTENSION) . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
             }
-            else $errors[] = "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
-            }
-            else $errors[] = "The file extension of the uploaded file (" . pathinfo($file['name'], PATHINFO_EXTENSION) . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
-        }
-        else $errors[] = "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
+            else $errors[] = "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
+        } else $errors[] = "The uploaded file name is longer than the allowed maximum (100 characters).";
     }
 
     // Close the database connection
@@ -12332,49 +12564,367 @@ function large_extra($extra_name)
  ***************************/
 function add_file_type($name, $extension)
 {
-	// If no name was provided
-	if (!$name || $name == "")
-	{
-		// Display an alert
-		set_alert(false, "bad", "Please provide a valid file type name.");
+    // If no name was provided
+    if (!$name || $name == "")
+    {
+        // Display an alert
+        set_alert(false, "bad", "Please provide a valid file type name.");
 
-		// Return false
-		return false;
-	}
+        // Return false
+        return false;
+    }
 
-	// If no extension was provided
-	if (!$extension || $extension == "")
-	{
-		// Display an alert
-		set_alert(false, "bad", "Please provide a valid file extension.");
+    // If no extension was provided
+    if (!$extension || $extension == "")
+    {
+        // Display an alert
+        set_alert(false, "bad", "Please provide a valid file extension.");
 
-		// Return false
-		return false;
-	}
+        // Return false
+        return false;
+    }
 
-	// Open the database connection
-	$db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-	// Insert the new file type
-	$stmt = $db->prepare("INSERT INTO `file_types` (`name`) VALUES (:name) ON DUPLICATE KEY UPDATE `name` = :name;");
-	$stmt->bindParam(":name", $name, PDO::PARAM_STR, 100);
-	$stmt->execute();
+    // Insert the new file type
+    $stmt = $db->prepare("INSERT INTO `file_types` (`name`) VALUES (:name) ON DUPLICATE KEY UPDATE `name` = :name;");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 100);
+    $stmt->execute();
 
-	// Insert the new file type extension
-	$stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES (:extension) ON DUPLICATE KEY UPDATE `name` = :extension;");
-	$stmt->bindParam(":extension", $extension, PDO::PARAM_STR, 10);
-	$stmt->execute();
+    // Insert the new file type extension
+    $stmt = $db->prepare("INSERT INTO `file_type_extensions` (`name`) VALUES (:extension) ON DUPLICATE KEY UPDATE `name` = :extension;");
+    $stmt->bindParam(":extension", $extension, PDO::PARAM_STR, 10);
+    $stmt->execute();
 
-	// Write an audit log entry
-	$risk_id = 1000;
-	$message = "A new upload file type of \"" . $name . "\" for extension \"" . $extension . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-	write_log($risk_id, $_SESSION['uid'], $message);
-	
-	// Close the database connection
-	db_close($db);
+    // Write an audit log entry
+    $risk_id = 1000;
+    $message = "A new upload file type of \"" . $name . "\" for extension \"" . $extension . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+    write_log($risk_id, $_SESSION['uid'], $message);
+    
+    // Close the database connection
+    db_close($db);
 
-	// Return true
-	return true;
+    // Return true
+    return true;
+}
+
+/************************************
+ * FUNCTION: SAVE CONTRIBUTING RISK *
+ ************************************/
+function add_contributing_risk($subject, $weight)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Insert the new file type
+    $stmt = $db->prepare("INSERT INTO `contributing_risks` (`subject`, `weight`) VALUES(:subject, :weight); ");
+    $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 100);
+    $stmt->bindParam(":weight", $weight);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/************************************
+ * FUNCTION: SAVE CONTRIBUTING RISK *
+ ************************************/
+function update_contributing_risk($id, $subject, $weight)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Insert the new file type
+    $stmt = $db->prepare("UPDATE `contributing_risks` SET `subject`=:subject, `weight`=:weight WHERE id=:id; ");
+    $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 100);
+    $stmt->bindParam(":weight", $weight);
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/*************************************
+ * FUNCTION: SAVE CONTRIBUTING RISKS *
+ *************************************/
+function save_contributing_risks($subjects, $weights, $existing_subjects=[], $existing_weights=[])
+{
+    global $lang, $escaper;
+
+    $weight_sum = 0;
+    foreach($weights as $weight){
+        $weight_sum += $weight;
+    }
+    
+    foreach($existing_weights as $existing_weight){
+        $weight_sum += $existing_weight;
+    }
+    // If total weight isn't equal to 1
+    if (abs($weight_sum - 1) >= 0.0001)
+    {
+        // Display an alert
+        set_alert(false, "bad", $escaper->escapeHtml($lang['TotalContributingWeightsShouldBe1']));
+
+        // Return false
+        return false;
+    }
+
+    // Update existing contributing risks
+    foreach($existing_weights as $id => $existing_weight){
+        // Save contributing risk
+        update_contributing_risk($id, $existing_subjects[$id], $existing_weights[$id]);
+    }
+    
+    // Delete contributing risks
+    $existing_ids = array_keys($existing_weights);
+    // Open the database connection
+    $db = db_open();
+    // Delete contributing risks not inlcuding existing ids
+    $stmt = $db->prepare("DELETE FROM `contributing_risks` WHERE FIND_IN_SET(id, :existing_ids) = 0; ");
+    $existing_ids_string = implode(",", $existing_ids);
+    $stmt->bindParam(":existing_ids", $existing_ids_string, PDO::PARAM_STR);
+    $stmt->execute();
+    // Close the database connection
+    db_close($db);
+    
+    // Create new contributing risks
+    foreach($weights as $key => $weight){
+        // Add contributing risk
+        add_contributing_risk($subjects[$key], $weights[$key]);
+    }
+
+    // Return true
+    return true;
+}
+
+/*************************************
+ * FUNCTION: GET CONTRIBUTING RISKS *
+ *************************************/
+function get_contributing_risks()
+{
+    global $lang, $escaper;
+    
+    // Open the database connection
+    $db = db_open();
+
+    // Order by name
+    $stmt = $db->prepare("SELECT * FROM `contributing_risks`; ");
+
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+	return $array;
+}
+
+/*************************************************************
+ * FUNCTION: GET CONTRIBUTING WEIGHT BY CONTRIBUTING RISK ID *
+ *************************************************************/
+function get_contributing_weight_by_id($id)
+{
+    if(empty($GLOBALS['contributing_risks'])){
+        $GLOBALS['contributing_risks'] = get_contributing_risks();
+    }
+    foreach($GLOBALS['contributing_risks'] as $contributing_risk){
+        if($contributing_risk['id'] == $id){
+            return $contributing_risk['weight'];
+        }
+    }
+    return false;
+}
+
+/**************************************************************
+ * FUNCTION: GET CONTRIBUTING ID BY CONTRIBUTING RISK SUBJECT *
+ **************************************************************/
+function get_contributing_id_by_subject($subject)
+{
+    if(empty($GLOBALS['contributing_risks'])){
+        $GLOBALS['contributing_risks'] = get_contributing_risks();
+    }
+    foreach($GLOBALS['contributing_risks'] as $contributing_risk){
+        if($contributing_risk['subject'] == $subject){
+            return $contributing_risk['id'];
+        }
+    }
+    return false;
+}
+
+/*******************************************************************************
+ * FUNCTION: GET CONTRIBUTING IMPACTS BY CONTRIBUTING SUBJECT AND IMPACT NAMES *
+ *******************************************************************************/
+function get_contributing_impacts_by_subjectimpact_names($subject_impact_names)
+{
+    // if subject and impact names is emtpty, return []
+    if(!$subject_impact_names)
+    {
+        return [];
+    }
+    
+    // Set initial value to Contributing Impacts
+    $ContributingImpacts = [];
+    
+    $subject_impact_names_arr = explode(",", $subject_impact_names);
+    foreach($subject_impact_names_arr as $subject_impact_name){
+        list($subject, $impact_name) = explode("_", $subject_impact_name);
+        $contributing_risk_id = get_contributing_id_by_subject($subject);
+        $impact = get_value_by_name("impact", $impact_name);
+        $ContributingImpacts[$contributing_risk_id] = $impact;
+    }
+    
+    return $ContributingImpacts;
+}
+
+/*******************************************************************************
+ * FUNCTION: GET CONTRIBUTING IMPACTS BY CONTRIBUTING SUBJECT AND IMPACT VALUES *
+ *******************************************************************************/
+function get_contributing_impacts_by_subjectimpact_values($subject_impact_values)
+{
+    if($subject_impact_values)
+    {
+        $contributing_risks_impact_arr = explode(",", $subject_impact_values);
+        $ContributingImpacts = [];
+        foreach($contributing_risks_impact_arr as $contributing_riskid_and_impact){
+            // $contributing_riskid_and_impact has no spliter "_"
+            if(strpos($contributing_riskid_and_impact, "_") === false)
+            {
+                continue;
+            }
+            // $contributing_riskid_and_impact has spliter "_", set $ContributingImpacts array
+            else{
+                list($contributing_id, $impact) = explode("_", $contributing_riskid_and_impact);
+                $ContributingImpacts[$contributing_id] = $impact;
+            }
+        }
+    }
+    else
+    {
+        $ContributingImpacts = [];
+    }
+    return $ContributingImpacts;
+}
+
+/**********************************************************************************
+ * FUNCTION: GET CONTRIBUTING IMPACTS BY KEY FROM MULTI CONTRIBUTING RISK IMPACTS *
+ **********************************************************************************/
+function get_contributing_impacts_by_key_from_multi($AllContributingImpacts, $key)
+{
+    $ContributingImpacts = [];
+    foreach($AllContributingImpacts as $contributing_risk_id => $AllContributingImpact){
+        $ContributingImpacts[$contributing_risk_id] = $AllContributingImpact[$key];
+    }
+    
+    return $ContributingImpacts;
+}
+
+/*************************************************************************************
+ * FUNCTION: GET LOCALIZED YES/NO BASED ON THE BOOL/INT VALUE PASSED TO THE FUNCTION *
+ *************************************************************************************/
+function localized_yes_no($val)
+{
+    global $lang;
+    return boolval($val) ? $lang['Yes'] : $lang['No'];
+}
+
+/*************************************************************************************
+ * FUNCTION: GET FORMATTED DATE *
+ *************************************************************************************/
+function format_date($date)
+{
+    // If the date is not 0000-00-00
+    if ($date != "0000-00-00")
+    {
+        // Set it to the proper format
+        return strtotime($date) ? date(get_default_date_format(), strtotime($date)) : "";
+    }
+    else return "";
+}
+
+/**************************
+ * FUNCTION: TABLE EXISTS *
+ **************************/
+function table_exists($table)
+{
+        // Open the database connection
+        $db = db_open();
+
+        // Query the schema for the table
+	$database = DB_DATABASE;
+        $stmt = $db->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema = :database AND table_name = :table;");
+        $stmt->bindParam(":database", $database, PDO::PARAM_STR);
+        $stmt->bindParam(":table", $table, PDO::PARAM_STR);
+        $stmt->execute();
+
+        // Fetch the results
+        $results = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        // If we have any results
+        if (count($results) > 0)
+        {
+                return true;
+        }
+        else return false;
+}
+
+/*************************
+ * FUNCTION: HASH EQUALS *
+ *************************/
+// This function does not exist in PHP < 5.6 so we define it here
+if (!function_exists('hash_equals')) {
+
+    /**
+     * Timing attack safe string comparison
+     * 
+     * Compares two strings using the same time whether they're equal or not.
+     * This function should be used to mitigate timing attacks; for instance, when testing crypt() password hashes.
+     * 
+     * @param string $known_string The string of known length to compare against
+     * @param string $user_string The user-supplied string
+     * @return boolean Returns TRUE when the two strings are equal, FALSE otherwise.
+     */
+    function hash_equals($known_string, $user_string)
+    {
+        if (func_num_args() !== 2) {
+            // handle wrong parameter count as the native implentation
+            trigger_error('hash_equals() expects exactly 2 parameters, ' . func_num_args() . ' given', E_USER_WARNING);
+            return null;
+        }
+        if (is_string($known_string) !== true) {
+            trigger_error('hash_equals(): Expected known_string to be a string, ' . gettype($known_string) . ' given', E_USER_WARNING);
+            return false;
+        }
+        $known_string_len = strlen($known_string);
+        $user_string_type_error = 'hash_equals(): Expected user_string to be a string, ' . gettype($user_string) . ' given'; // prepare wrong type error message now to reduce the impact of string concatenation and the gettype call
+        if (is_string($user_string) !== true) {
+            trigger_error($user_string_type_error, E_USER_WARNING);
+            // prevention of timing attacks might be still possible if we handle $user_string as a string of diffent length (the trigger_error() call increases the execution time a bit)
+            $user_string_len = strlen($user_string);
+            $user_string_len = $known_string_len + 1;
+        } else {
+            $user_string_len = $known_string_len + 1;
+            $user_string_len = strlen($user_string);
+        }
+        if ($known_string_len !== $user_string_len) {
+            $res = $known_string ^ $known_string; // use $known_string instead of $user_string to handle strings of diffrent length.
+            $ret = 1; // set $ret to 1 to make sure false is returned
+        } else {
+            $res = $known_string ^ $user_string;
+            $ret = 0;
+        }
+        for ($i = strlen($res) - 1; $i >= 0; $i--) {
+            $ret |= ord($res[$i]);
+        }
+        return $ret === 0;
+    }
+
 }
 
 ?>

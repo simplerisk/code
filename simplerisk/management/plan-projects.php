@@ -177,6 +177,11 @@ if (isset($_POST['delete_project']))
   }
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+     // The request is using the POST method
+    json_response(200, get_alert(true), null);
+}
+
 ?>
 
 <!doctype html>
@@ -202,7 +207,9 @@ if (isset($_POST['delete_project']))
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
 
-
+  <?php
+      setup_alert_requirements("..");
+  ?>
   <?php
   // Get the projects
   $projects = get_projects();
@@ -341,7 +348,6 @@ if (isset($_POST['delete_project']))
         <?php view_risk_management_menu("PrioritizeForProjectPlanning"); ?>
       </div>
       <div class="span9" id="project-container">
-        <div id="show-alert"></div>
         <div class="row-fluid">
           <div class="span12">
             <!-- Container Bigins  -->

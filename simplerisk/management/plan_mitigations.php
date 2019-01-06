@@ -28,19 +28,12 @@ session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 
 if (!isset($_SESSION))
 {
-        session_name('SimpleRisk');
-        session_start();
+    session_name('SimpleRisk');
+    session_start();
 }
 
 // Include the language file
 require_once(language_file());
-
-// Load CSRF Magic
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-function csrf_startup() {
-    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-}
 
 // Check for session timeout or renegotiation
 session_check();
@@ -52,6 +45,14 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../index.php");
   exit(0);
 }
+
+// Load CSRF Magic
+require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
+
 
 // Enforce that the user has access to risk management
 enforce_permission_riskmanagement();
@@ -113,13 +114,22 @@ if (isset($_GET['mitigated']))
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
 
-	<?php display_asset_autocomplete_script(get_entered_assets()); ?>
+    <?php
+        setup_alert_requirements("..");
+    ?>    
+    
+	<?php display_asset_autocomplete_script(get_verified_assets()); ?>
 </head>
 
 <body>
   <?php
   view_top_menu("RiskManagement");
   ?>
+  <?php  
+      // Get any alert messages
+      get_alert();
+  ?>
+  
     <div class="tabs new-tabs">
         <div class="container-fluid">
             <div class="row-fluid">
@@ -145,18 +155,14 @@ if (isset($_GET['mitigated']))
             <?php view_risk_management_menu("PlanYourMitigations"); ?>
             </div>
             <div class="span9">
-                <div id="show-alert">
-                    <?php  
-                        // Get any alert messages
-                        get_alert();
-                    ?>
-                </div>
                 <div id="tab-content-container" class="row-fluid">
                     <div id="tab-container" class="tab-data">
                         <div class="row-fluid">
                             <div class="span12 ">
                                 <p><?php echo $escaper->escapeHtml($lang['MitigationPlanningHelp']); ?>.</p>
-                                <?php get_risk_table(1,$activecol="mitigation"); ?>
+                                <?php // get_risk_table(1,$activecol="mitigation"); ?>
+                                
+                                <?php display_plan_mitigations(); ?>
                             </div>
                         </div>
                     </div>

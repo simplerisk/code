@@ -254,6 +254,7 @@ function handleSelection(choice, parent) {
         $(".dread-holder", parent).hide();
         $(".owasp-holder", parent).hide();
         $(".custom-holder", parent).hide();
+        $(".contributing-risk-holder", parent).hide();
     }
     if (choice=="2") {
         $(".classic-holder", parent).hide();
@@ -261,6 +262,7 @@ function handleSelection(choice, parent) {
         $(".dread-holder", parent).hide();
         $(".owasp-holder", parent).hide();
         $(".custom-holder", parent).hide();
+        $(".contributing-risk-holder", parent).hide();
     }
     if (choice=="3") {
         $(".classic-holder", parent).hide();
@@ -268,6 +270,7 @@ function handleSelection(choice, parent) {
         $(".dread-holder", parent).show();
         $(".owasp-holder", parent).hide();
         $(".custom-holder", parent).hide();
+        $(".contributing-risk-holder", parent).hide();
     }
     if (choice=="4") {
         $(".classic-holder", parent).hide();
@@ -275,6 +278,7 @@ function handleSelection(choice, parent) {
         $(".dread-holder", parent).hide();
         $(".owasp-holder", parent).show();
         $(".custom-holder", parent).hide();
+        $(".contributing-risk-holder", parent).hide();
     }
     if (choice=="5") {
         $(".classic-holder", parent).hide();
@@ -282,6 +286,15 @@ function handleSelection(choice, parent) {
         $(".dread-holder", parent).hide();
         $(".owasp-holder", parent).hide();
         $(".custom-holder", parent).show();
+        $(".contributing-risk-holder", parent).hide();
+    }
+    if (choice=="6") {
+        $(".classic-holder", parent).hide();
+        $(".cvss-holder", parent).hide();
+        $(".dread-holder", parent).hide();
+        $(".owasp-holder", parent).hide();
+        $(".custom-holder", parent).hide();
+        $(".contributing-risk-holder", parent).show();
     }
 }
 

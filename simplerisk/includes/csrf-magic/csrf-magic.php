@@ -251,11 +251,17 @@ function csrf_callback($tokens) {
         if ($key == $GLOBALS['csrf']['input-name']) continue;
         $data .= '<input type="hidden" name="'.htmlspecialchars($key).'" value="'.htmlspecialchars($value).'" />';
     }
+    if(!empty($_FILES)){
+        foreach($_FILES as $key => $file){
+            $data .= '<input type="file" style="display: none" name="'.htmlspecialchars($key).'" />';
+        }
+    }
+    
     echo "<html><head><title>CSRF check failed</title></head>
         <body>
         <p>CSRF check failed. Your form session may have expired, or you may not have
         cookies enabled.</p>
-        <form method='post' action=''>$data<input type='submit' value='Try again' /></form>
+        <form method='post' action='' enctype='multipart/form-data'>$data<input type='submit' value='Try again' /></form>
         <p>Debug: $tokens</p></body></html>
 ";
 }

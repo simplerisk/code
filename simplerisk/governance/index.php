@@ -325,7 +325,9 @@ if (isset($_POST['update_control']))
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
 
-
+  <?php
+      setup_alert_requirements("..");
+  ?>
   <?php
     // Get the frameworks
     $frameworks = get_frameworks();
@@ -478,7 +480,6 @@ if (isset($_POST['update_control']))
         <?php view_governance_menu("DefineControlFrameworks"); ?>
       </div>
       <div class="span9">
-        <div id="show-alert"></div>
         <div class="row-fluid">
           <div class="span12">
             <!--  Frameworks container Begin -->

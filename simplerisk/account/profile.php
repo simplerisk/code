@@ -189,6 +189,7 @@
 <html>
 
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -207,6 +208,10 @@
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    
+    <?php
+        setup_alert_requirements("..");
+    ?>    
     <script type="text/javascript">
         $(function(){
             $(document).ready(function(){
@@ -256,7 +261,7 @@
                         },
                         error: function(xhr,status,error){
                             if(xhr.responseJSON && xhr.responseJSON.status_message){
-                                $('#show-alert').html(xhr.responseJSON.status_message);
+                                showAlertsFromArray(xhr.responseJSON.status_message);
                             }
                         }
                     })

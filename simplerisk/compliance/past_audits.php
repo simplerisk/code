@@ -64,6 +64,7 @@ enforce_permission_compliance();
 <html>
 
 <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -81,6 +82,10 @@ enforce_permission_compliance();
     
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <?php
+        setup_alert_requirements("..");
+    ?>    
+    
 </head>
 
 <body>
@@ -96,8 +101,7 @@ enforce_permission_compliance();
             <div class="span3">
                 <?php view_compliance_menu("PastAudits"); ?>
             </div>
-            <div class="span9 compliance-content-container content-margin-height">
-                <div id="show-alert"></div>
+            <div class="span9 compliance-content-container content-margin-height">                
                 <div class="row-fluid">
                     <div class="span12">
                         <?php display_past_audits(); ?>

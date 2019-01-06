@@ -34,10 +34,14 @@ if (!isset($_SESSION))
 // Include the language file
 require_once(language_file());
 
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
 // Check for session timeout or renegotiation
 session_check();
+
+require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
 
 // Check if access is authorized
 if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
@@ -73,7 +77,6 @@ array_unshift($ownersManagerOptions, array(
     'name' => $lang['NoOwnersManager'],
 ));
 
-// Set the columns
 // Names list of Risk columns
 $columns = array(
     'id',
@@ -119,23 +122,33 @@ $columns = array(
 
 $custom_values = [];
 
-foreach($columns as $column){
-    ${$column} = isset($_GET[$column]) ? true : false;
-}
-
-foreach($_GET as $key => $column){
-    if(stripos($key, "custom_field_") === 0){
-        $custom_values[$key] = 1;
+if(is_array($custom_display_settings = $_SESSION['custom_display_settings']) && !isset($_POST['status'])){
+    foreach($columns as $column){
+        ${$column} = in_array($column, $custom_display_settings) ? true : false;
     }
+    foreach($custom_display_settings as $custom_display_setting){
+        if(stripos($custom_display_setting, "custom_field_") === 0){
+            $custom_values[$custom_display_setting] = 1;
+        }
+    }
+}elseif(isset($_POST['status'])){
+    foreach($columns as $column){
+        ${$column} = isset($_POST[$column]) ? true : false;
+    }
+    foreach($_POST as $key=>$val){
+        if(stripos($key, "custom_field_") === 0){
+            $custom_values[$key] = 1;
+        }
+    }
+}else{
+    $id = true;
+    $subject = true;
+    $calculated_risk = true;
+    $residual_risk = true;
+    $submission_date = true;
+    $mitigation_planned = true;
+    $management_review = true;
 }
-
-    // Set the default fields to show
-//    $id = true;
-//    $subject = true;
-//    $calculated_risk = true;
-//    $submission_date = true;
-//    $mitigation_planned = true;
-//    $management_review = true;
 
 ?>
 
@@ -149,13 +162,17 @@ foreach($_GET as $key => $column){
     <script src="../js/bootstrap-multiselect.js"></script>
     <script src="../js/sorttable.js"></script>
     <script src="../js/obsolete.js"></script>
+    <script src="../js/jquery.dataTables.js"></script>
+    <script src="../js/dynamic.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
+    <link rel="stylesheet" href="../css/jquery.dataTables.css">
 
+    <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <script type="text/javascript">
@@ -222,18 +239,18 @@ foreach($_GET as $key => $column){
                 }
             });
             
-            $(".pagination ul > li > a").click(function(e){
-                e.preventDefault();
-                $("#currentpage").val($(this).text().trim().toLowerCase());
+//            $(".pagination ul > li > a").click(function(e){
+//                e.preventDefault();
+//                $("#currentpage").val($(this).text().trim().toLowerCase());
 
-                clearTimeout(typingTimer);
-                typingTimer = setTimeout(submit_form, doneInterval);
-            })
-            
-            $(".colums-select-container input[type=checkbox]").click(function(){
-                clearTimeout(typingTimer);
-                typingTimer = setTimeout(submit_form, doneInterval);
-            })
+//                clearTimeout(typingTimer);
+//                typingTimer = setTimeout(submit_form, doneInterval);
+//            })
+//            
+//            $(".colums-select-container input[type=checkbox]").click(function(){
+//                clearTimeout(typingTimer);
+//                typingTimer = setTimeout(submit_form, doneInterval);
+//            })
         });
     </script>
 
@@ -266,7 +283,7 @@ foreach($_GET as $key => $column){
                 
                 <div class="row-fluid" style="margin-top: 14px;">
                     <div class="well">
-                        <form id="risks_by_teams_form" method="GET">
+                        <form id="risks_by_teams_form" name="get_risks_by" method="GET">
                             <input type="hidden" value="<?php echo (int)$currentpage; ?>" name="currentpage" id="currentpage" >
                             <input type="hidden" value="<?php echo $escaper->escapeHtml($teams); ?>" name="teams" id="team_options">
                             <input type="hidden" value="<?php echo $escaper->escapeHtml($owners); ?>" name="owners" id="owner_options">

@@ -34,14 +34,10 @@ if (!isset($_SESSION))
 // Include the language file
 require_once(language_file());
 
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-function csrf_startup() {
-    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-}
-
 // Check for session timeout or renegotiation
 session_check();
+
+require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
 // Check if access is authorized
 if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
@@ -49,6 +45,10 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
     set_unauthenticated_redirect();
     header("Location: ../index.php");
     exit(0);
+}
+
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
 }
 
 // Record the page the workflow started from as a session variable
@@ -219,6 +219,9 @@ if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "dow
   <link rel="stylesheet" href="../css/divshot-canvas.css">
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+  <?php
+      setup_alert_requirements("..");
+  ?>  
 </head>
 
 <body>

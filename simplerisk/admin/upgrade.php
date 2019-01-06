@@ -85,7 +85,8 @@
 
 <html ng-app="SimpleRisk">
   <head>
-    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+      <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
+      <title>SimpleRisk: Enterprise Risk Management Simplified</title>
       <!-- build:css vendor/vendor.min.css -->
       <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" media="screen" />
       <!-- endbuild -->
@@ -98,6 +99,9 @@
 
       <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
       <link rel="stylesheet" href="../css/theme.css">
+      <?php
+          setup_alert_requirements("..");
+      ?>      
   </head>
 
   <body ng-controller="MainCtrl" class="login--page">

@@ -1381,7 +1381,9 @@ function add_document($document_type, $document_name, $parent, $status, $creatio
         // Delete added document if failed to upload a document file
         delete_document($document_id);
         $errors = array_unique($errors);
-        set_alert(true, "bad", implode(", ", $errors));
+        foreach ($errors as $error) {
+            set_alert(true, "bad", $escaper->escapeHtml($error));
+        }
         return false;
     }elseif(empty($file_id))
     {

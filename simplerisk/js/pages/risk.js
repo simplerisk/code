@@ -9,7 +9,7 @@ function addRisk($this){
             form.append('file['+j+']', file);
         })
     });
-    $('#show-alert').html('');
+
     $.ajax({
         type: "POST",
         url: "index.php",
@@ -19,30 +19,26 @@ function addRisk($this){
         contentType: false,
         processData: false,
         success: function(data){
-            var message = $(data).filter('#alert');
-            var is_red_alert = $(".redalert", message).length;
-            var risk_id = $(data).filter('#risk_hid_id');
-            var messate_html = "<div id=\"alert\" class=\"container-fluid\">"+message.html()+"</div>";
+            console.log(data);
+            var message = data.message;
+            var risk_id = data.risk_id;
+            
+            if (!data.error){
+                toastr.success(data.message);
 
-            $('#show-alert').html(messate_html);
-            // If error was returned
-            if (!is_red_alert){
                 if (isNaN(index)){
                     var subject = $('input[name="subject"]', getForm).val();
                     var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-                    $('#tab span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+subject);
-                    //$('#tab span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+$('input[name="subject"]', getForm).val());
+                    $('#tab span:eq(0)').html('<b>ID:'+risk_id+' </b>'+subject);
                 } else {
                     var subject = $('input[name="subject"]', getForm).val();
                     var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-                    $('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+subject);
-                    //$('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id[0].innerText+' </b>'+$('input[name="subject"]', getForm).val());
+                    $('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id+' </b>'+subject);
                 }
-//                $('input, select, textarea', getForm).prop('disabled', true);
                 
                 $.ajax({
                     type: "GET",
-                    url: BASE_URL + "/api/management/risk/viewhtml?id=" + risk_id[0].innerText,
+                    url: BASE_URL + "/api/management/risk/viewhtml?id=" + risk_id,
                     success: function(data){
                         tabContainer.html(data.data);
 
@@ -50,12 +46,13 @@ function addRisk($this){
                     },
                     error: function(xhr,status,error){
                         if(xhr.responseJSON && xhr.responseJSON.status_message){
-                            $('#show-alert').html(xhr.responseJSON.status_message);
+                            showAlertsFromArray(xhr.responseJSON.status_message);
                         }
                     }
                 })
                 $this.prop('disabled', true);
             } else {
+                toastr.error(data.message);
                 $this.removeAttr('disabled');
             }
         }
@@ -68,7 +65,7 @@ function addRisk($this){
             addRisk($this);
         }else{
             if(xhr.responseJSON && xhr.responseJSON.status_message){
-                $('#show-alert').html(xhr.responseJSON.status_message);
+                showAlertsFromArray(xhr.responseJSON.status_message);
             }
         }
     });
@@ -283,28 +280,36 @@ $(document).ready(function(){
     * Open new risk
     * 
     */
-    $("td.open-risk a").click(function(e){
+    $('body').on("click", "td.open-risk a", function(e){
         e.preventDefault();
         var riskID = $(this).parents('tr').data('id');
+        if(!riskID){
+            riskID = $(this).parent().data('id');
+        }
         var tabContainerID = addTabContainer();
         var tabContainer = $("#" + tabContainerID);
+
         $.ajax({
             type: "GET",
             url: BASE_URL + "/api/management/risk/viewhtml?id=" + riskID,
             success: function(data){
                 tabContainer.html(data.data);
+                
                 callbackAfterRefreshTab(tabContainer, 0);
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
     })
-    $("td.open-mitigation a").click(function(e){
+    $('body').on("click", "td.open-mitigation a", function(e){
         e.preventDefault();
         var riskID = $(this).parents('tr').data('id');
+        if(!riskID){
+            riskID = $(this).parent().data('id');
+        }
         var tabContainerID = addTabContainer();
         var tabContainer = $("#" + tabContainerID);
         var value = $(this).html().toLowerCase();
@@ -318,14 +323,17 @@ $(document).ready(function(){
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
     })
-    $("td.open-review a").click(function(e){
+    $('body').on("click", "td.open-review a", function(e){
         e.preventDefault();
         var riskID = $(this).parents('tr').data('id');
+        if(!riskID){
+            riskID = $(this).parent().data('id');
+        }
         var tabContainerID = addTabContainer();
         var tabContainer = $("#" + tabContainerID);
         var value = $(this).html().toLowerCase();
@@ -339,7 +347,7 @@ $(document).ready(function(){
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
@@ -349,8 +357,7 @@ $(document).ready(function(){
     * RST tab evemts
     * 
     */
-    $('.container-fluid').delegate('.tab-show', 'click', function(){
-        $('#show-alert').html('');
+    $('.container-fluid').delegate('.tab-show', 'click', function(){        
         $('.form-tab').removeClass('selected');
         $(this).addClass('selected');
         var index = $('.tab-close', this).attr('data-id');
@@ -408,7 +415,7 @@ $(document).ready(function(){
                 form.append('file['+j+']', file);
             })
         });
-        $('#show-alert').html('');
+        
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/management/risk/saveSubject?id=" + risk_id,
@@ -427,8 +434,8 @@ $(document).ready(function(){
                     $('.show-score').hide();
                     $('.hide-score').show();
                 }
-                if(data.status_message){
-                    $('#show-alert').html(data.status_message);
+                if(data.status_message){                    
+                    showAlertsFromArray(data.status_message);
                 }
             }
         })
@@ -440,7 +447,7 @@ $(document).ready(function(){
                 updateSubject($this);
             }else{
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         });
@@ -500,6 +507,10 @@ $(document).ready(function(){
         var risk_id = $('.large-text', tabContainer).html();
         var $this = $(this);
         
+        editDetailsRequest(risk_id, tabContainer);
+    })
+    
+    function editDetailsRequest(risk_id, tabContainer){
         $.ajax({
             type: "GET",
             url: BASE_URL + "/api/management/risk/editdetails?action=editdetail&id=" + risk_id,
@@ -510,12 +521,11 @@ $(document).ready(function(){
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
-        
-    })
+    }
     
     
     $('body').on('click', '.cancel-edit-details', function(e){
@@ -524,6 +534,10 @@ $(document).ready(function(){
         var risk_id = $('.large-text', tabContainer).html();
         var $this = $(this);
         
+        cancelEditDetailsRequest(risk_id, tabContainer);
+    })
+    
+    function cancelEditDetailsRequest(risk_id, tabContainer){
         $.ajax({
             type: "GET",
             url: BASE_URL + "/api/management/risk/editdetails?id=" + risk_id,
@@ -533,11 +547,11 @@ $(document).ready(function(){
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
-    })
+    }
     
     function updateRisk($this){
         var tabContainer = $this.parents('.tab-data');
@@ -552,7 +566,7 @@ $(document).ready(function(){
                 form.append('file['+j+']', file);
             })
         });
-        $('#show-alert').html('');
+
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/management/risk/saveDetails?id=" + risk_id,
@@ -567,7 +581,7 @@ $(document).ready(function(){
                 getScoreByAction(tabContainer, scoring_method);
 
                 if(data.status_message){
-                    $('#show-alert').html(data.status_message);
+                    showAlertsFromArray(data.status_message);
                 }
             }
         })
@@ -579,7 +593,7 @@ $(document).ready(function(){
                 updateRisk($this);
             }else{
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         });
@@ -611,7 +625,7 @@ $(document).ready(function(){
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
@@ -633,7 +647,7 @@ $(document).ready(function(){
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
@@ -650,7 +664,7 @@ $(document).ready(function(){
                 form.append('file['+j+']', file);
             })
         });
-        $('#show-alert').html('');
+
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/management/risk/saveMitigation?id=" + risk_id,
@@ -665,7 +679,7 @@ $(document).ready(function(){
                 $('.score--wrapper', tabContainer).html(data.score_wrapper_html);
                 callbackAfterRefreshTab(tabContainer, 1);
                 if(result.status_message){
-                    $('#show-alert').html(result.status_message);
+                    showAlertsFromArray(result.status_message);
                 }
             }
         })
@@ -677,7 +691,7 @@ $(document).ready(function(){
                 updateMitigation($this);
             }else{
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         });
@@ -708,7 +722,7 @@ $(document).ready(function(){
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
@@ -730,7 +744,7 @@ $(document).ready(function(){
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
@@ -747,7 +761,7 @@ $(document).ready(function(){
                 form.append('file['+j+']', file);
             })
         });
-        $('#show-alert').html('');
+        
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/management/risk/saveReview?id=" + risk_id,
@@ -760,7 +774,7 @@ $(document).ready(function(){
                 $('.content-container', tabContainer).html(data.data);
                 callbackAfterRefreshTab(tabContainer, 2);
                 if(data.status_message){
-                    $('#show-alert').html(data.status_message);
+                    showAlertsFromArray(data.status_message);
                 }
                 $('.save-review').prop('disabled', false)
             }
@@ -773,7 +787,7 @@ $(document).ready(function(){
                 updateReview($this);
             }else{
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
             $('.save-review').prop('disabled', false)
@@ -813,7 +827,7 @@ $(document).ready(function(){
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
@@ -839,7 +853,7 @@ $(document).ready(function(){
                 tabContainer.html(data.data);
                 callbackAfterRefreshTab(tabContainer);
                 if(data.status_message){
-                    $('#show-alert').html(data.status_message);
+                    showAlertsFromArray(data.status_message);
                 }
             }
         })
@@ -851,7 +865,7 @@ $(document).ready(function(){
                 closeRisk($this);
             }else{
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         });
@@ -873,7 +887,7 @@ $(document).ready(function(){
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
@@ -903,7 +917,7 @@ $(document).ready(function(){
                 if(!retryCSRF(xhr, this))
                 {
                     if(xhr.responseJSON && xhr.responseJSON.status_message){
-                        $('#show-alert').html(xhr.responseJSON.status_message);
+                        showAlertsFromArray(xhr.responseJSON.status_message);
                     }
                 }
             }
@@ -929,7 +943,7 @@ $(document).ready(function(){
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
@@ -954,7 +968,7 @@ $(document).ready(function(){
                 tabContainer.html(data.data);
                 callbackAfterRefreshTab(tabContainer);
                 if(data.status_message){
-                    $('#show-alert').html(data.status_message);
+                    showAlertsFromArray(data.status_message);
                 }
             }
         })
@@ -966,7 +980,7 @@ $(document).ready(function(){
                 updateStatus($this);
             }else{
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         });
@@ -998,10 +1012,21 @@ $(document).ready(function(){
                     $('.show-score').show();
                     $('.hide-score').hide();
                 }
+                
+                /* Update risk scoring method in details tab */
+                // If details tab is in Edit
+                if($('.cancel-edit-details', tabContainer).length){
+                    editDetailsRequest(risk_id, tabContainer);
+                }
+                // If details tab is in View
+                else{
+                    cancelEditDetailsRequest(risk_id, tabContainer);
+                }
+                
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
@@ -1045,25 +1070,19 @@ $(document).ready(function(){
                 }
                 
                 if(data.status_message){
-                    $('#show-alert').html(data.status_message);
+                    showAlertsFromArray(data.status_message);
                 }
                 
-//                $.ajax({
-//                    type: "GET",
-//                    url: "../api/management/risk/overview?id=" + risk_id,
-//                    success: function(data){
-//                        if($('.show-score').is(":visible")){
-//                            $('.overview-container', tabContainer).html(data.data);
-//                            $('.show-score').show();
-//                            $('.hide-score').hide();
-//                        }else{
-//                            $('.overview-container', tabContainer).html(data.data);
-//                            $('.show-score').hide();
-//                            $('.hide-score').show();
-//                        }
-//                    }
-//                })
-                
+                /* Update risk scoring method in details tab */
+                // If details tab is in Edit
+                if($('.cancel-edit-details', tabContainer).length){
+                    editDetailsRequest(risk_id, tabContainer);
+                }
+                // If details tab is in View
+                else{
+                    cancelEditDetailsRequest(risk_id, tabContainer);
+                }
+
             }
         })
         .fail(function(xhr, textStatus){
@@ -1074,7 +1093,7 @@ $(document).ready(function(){
                 updateScore($this);
             }else{
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         });
@@ -1135,7 +1154,7 @@ $(document).ready(function(){
                 $(".comment-text", tabContainer).val('')
                 $(".comment-text", tabContainer).focus()
                 if(data.status_message){
-                    $('#show-alert').html(data.status_message);
+                    showAlertsFromArray(data.status_message);
                 }
             }
         })
@@ -1147,7 +1166,7 @@ $(document).ready(function(){
                 saveComment($this);
             }else{
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         });
@@ -1224,7 +1243,7 @@ $(document).ready(function(){
         var form = $(this).parents('form');
         popupdread(form);
     })
-    
+   
     /**
     * events in clicking Score Using OWASP button of edit details page, muti tabs case
     */
@@ -1234,9 +1253,18 @@ $(document).ready(function(){
         popupowasp(form);
     })
     
+    /**
+    * events in clicking Score Using Contributing Risk button of edit details page, muti tabs case
+    */
+    $('body').on('click', '[name=contributingRiskSubmit]', function(e){
+        e.preventDefault();
+        var form = $(this).parents('form');
+        popupcontributingrisk(form);
+    })
+    
     
 })
 
 
 
-   
+    

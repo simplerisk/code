@@ -33,16 +33,6 @@ if (!isset($_SESSION))
         session_start();
 }
 
-// Load CSRF Magic
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-function csrf_startup() {
-    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-}
-
-// Include the language file
-require_once(language_file());
-
 // Check for session timeout or renegotiation
 session_check();
 
@@ -53,6 +43,16 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../index.php");
   exit(0);
 }
+
+// Load CSRF Magic
+require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
+
+// Include the language file
+require_once(language_file());
 
 // Enforce that the user has access to risk management
 enforce_permission_riskmanagement();
@@ -73,7 +73,11 @@ if (isset($_POST['subject']) && $_POST['subject'] == "")
   $submit_risks = false;
 
   // Display an alert
-  set_alert(true, "bad", "The subject of a risk cannot be empty.");
+  ob_end_clean();
+  $data = array("risk_id" => $risk_id, "error" => true, "message" => $escaper->escapeHtml("The subject of a risk cannot be empty."));
+  header('Content-type:application/json;charset=utf-8');
+  echo json_encode($data);
+  return;  
 }
 
 // Check if a new risk was submitted and the user has permissions to submit new risks
@@ -151,6 +155,10 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
   // Custom Risk Scoring
   $custom = (float)$_POST['Custom'];
+  
+  // Contributing Risk Scoring
+  $ContributingLikelihood = (int)$_POST["ContributingLikelihood"];
+  $ContributingImpacts = $_POST["ContributingImpacts"];
 
   // Submit risk and get back the id
   $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders);
@@ -165,7 +173,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     }
 
   // Submit risk scoring
-  submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom);
+  submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
 
   // Tag assets to risk
   tag_assets_to_risk($last_insert_id, $assets);
@@ -206,7 +214,11 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
       delete_risk($last_insert_id);
 
       // Display an alert
-      set_alert(true, "bad", $error);
+      ob_end_clean();
+      $data = array("error" => true, "message" => $escaper->escapeHtml($error));
+      header('Content-type:application/json;charset=utf-8');
+      echo json_encode($data);
+      return;
   }
   else 
   {
@@ -227,7 +239,11 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
       
       // Display an alert   
       $RiskSubmitSuccess = _lang("RiskSubmitSuccess", ["subject" => $escaper->escapeHtml($subject)]);
-      set_alert(true, "good", $RiskSubmitSuccess);
+      ob_end_clean();
+      $data = array("risk_id" => $risk_id, "error" => false, "message" => $escaper->escapeHtml($RiskSubmitSuccess));
+      header('Content-type:application/json;charset=utf-8');
+      echo json_encode($data);
+      return;
   }
 
 }
@@ -271,8 +287,10 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
         <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
-
-        <?php display_asset_autocomplete_script(get_entered_assets()); ?>
+        <?php
+            setup_alert_requirements("..");
+        ?>
+        <?php display_asset_autocomplete_script(get_verified_assets()); ?>
     </head>
 
     <body>
@@ -283,7 +301,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
             // Get any alert messages
             get_alert();
         ?>
-        <div id="risk_hid_id" style="display: none"  > <?php if (isset($risk_id)) echo $escaper->escapeHtml($risk_id);?></div>
+        
         <div class="tabs new-tabs">
         <div class="container-fluid">
 
@@ -312,8 +330,6 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
               <?php view_risk_management_menu("SubmitYourRisks"); ?>
             </div>
             <div class="span9">
-
-              <div id="show-alert"></div>
 
               <div class="row-fluid" id="tab-content-container">
                 <div class='tab-data' id="tab-container">

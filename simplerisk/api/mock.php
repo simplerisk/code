@@ -125,6 +125,11 @@
           "custom_field": {
               "21":"Custom first",
               "41":"Custom value"
+          },
+          "ContributingLikelihood": "2",
+          "ContributingImpacts": {
+              "5": "2",
+              "7": "3"
           }
         }';
         $results['response'] = '{
@@ -321,6 +326,11 @@
                     "OWASP_NonCompliance": "10",
                     "OWASP_PrivacyViolation": "10",
                     "Custom": "10",
+                    "ContributingLikelihood": "2",
+                    "ContributingImpacts": {
+                        "5": "2",
+                        "7": "3"
+                    },
                     "closure_date": "2015-09-15 06:26:47",
                     "custom_values": [
                         {
@@ -527,7 +537,12 @@
           "custom_field": {
               "21":"Custom first",
               "41":"Custom value"
-          }
+          },
+          "ContributingLikelihood": "2",
+          "ContributingImpacts": {
+              "5": "2",
+              "7": "3"
+          },
         }';
 
         $results['response'] = '{
@@ -544,6 +559,7 @@
 <html>
 
 <head>
+  <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
   <script src="../js/bootstrap.min.js"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">

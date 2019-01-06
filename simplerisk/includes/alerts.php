@@ -16,10 +16,22 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
  ***********************/
 function set_alert($alert = false, $type = "good", $message = "")
 {
-    // Write the alert to the session
-    $_SESSION['alert'] = $alert;
-    $_SESSION['alert_type'] = $type;
-    $_SESSION['alert_message'] = $message;
+    // create array to keep the alerts in
+    $alerts = array();    
+
+    // Get it from the session if there's already something in it
+    if (isset($_SESSION['alerts']) && is_array($_SESSION['alerts'])) {
+        $alerts = $_SESSION['alerts'];    
+    }
+    
+    // Add the new alert
+    array_push($alerts, array(
+            'alert' => $alert, 
+            'alert_type' => $type,
+            'alert_message' => $message
+        ));
+    
+    $_SESSION['alerts'] = $alerts;
 }
 
 /***********************
@@ -28,40 +40,45 @@ function set_alert($alert = false, $type = "good", $message = "")
 function get_alert($returnHtml = false)
 {
     global $escaper;
-    
-    $html = "";
-    
-    if (isset($_SESSION['alert']) && $_SESSION['alert'] == true)
+
+    if (isset($_SESSION['alerts']) && is_array($_SESSION['alerts']))
     {
-        if ($_SESSION['alert_type'] == "good")
-        {
-            $html .= "
-                <div id=\"alert\" class=\"container-fluid\">
-                    <div class=\"row-fluid\">
-                        <div class=\"span10 greenalert\"><span><i class=\"fa fa-check\"></i>" . $escaper->escapeHtml($_SESSION['alert_message']) . "</span></div>
-                    </div>
-                </div>
-            ";
-        }
-        else if ($_SESSION['alert_type'] == "bad")
-        {
-            $html .= "
-                <div id=\"alert\" class=\"container-fluid\">
-                    <div class=\"row-fluid\">
-                        <div class=\"span10 redalert\"><span><i class=\"fa fa-check\"></i>" . $escaper->escapeHtml($_SESSION['alert_message']) . "</span></div>
-                    </div>
-                </div>
-            ";
+        // If it has to return the alert data...
+        if($returnHtml){
+            
+            $result = array();
+            
+            // ...we build the array with the required format(also, escaping the messages)...
+            foreach($_SESSION['alerts'] as $alert) {
+                array_push($result, array(
+                    'alert_type' => ($alert['alert_type'] == "good"?"success":"error"),
+                    'alert_message' => $escaper->escapeHtml($alert['alert_message'])
+                ));                
+            }
+            
+            clear_alert();
+            // ...and return it as a JSON string.
+            return json_encode($result);           
+            
+        } else {
+            // Print the script into the html output that'll show the alerts
+            echo "
+                <script>
+                    $( document ).ready(function() {";
+            
+            foreach($_SESSION['alerts'] as $alert) {
+                echo "
+                        toastr." . ($alert['alert_type'] == "good"?"success":"error") . "('" . $escaper->escapeHtml($alert['alert_message']) . "');";            
+            }
+            
+            echo "
+                    });\n
+                </script>";
         }
     }
 
     // Clear the alert
     clear_alert();
-    if($returnHtml){
-        return $html;
-    }else{
-        echo $html;
-    }
 }
 
 /*************************
@@ -69,9 +86,29 @@ function get_alert($returnHtml = false)
  *************************/
 function clear_alert()
 {
-    $_SESSION['alert'] = false;
-    $_SESSION['alert_type'] = "";
-    $_SESSION['alert_message'] = "";
+    $_SESSION['alerts'] = array();
+}
+
+
+/*************************************
+ * FUNCTION: SETUP ALERT REQUIREMENTS*
+ *************************************/
+function setup_alert_requirements($path_to_root = "")
+{
+    global $escaper;
+    
+    echo "<script src=\"" . $escaper->escapeHtml($path_to_root) . "/js/alerts/toastr.min.js\"></script>\n";
+    echo "<script src=\"" . $escaper->escapeHtml($path_to_root) . "/js/alerts/alert-helper.js\"></script>\n";
+    echo "<link rel=\"stylesheet\" href=\"" . $escaper->escapeHtml($path_to_root) . "/css/toastr.min.css\" />\n";
+    echo "<style>\n";
+    echo "    .toast-top-right {\n";
+    echo "        top: 75px;\n";
+    echo "        right: 12px;\n";
+    echo "    }\n";
+    echo "    #toast-container > div {\n";
+    echo "        opacity:1;\n";
+    echo "    }\n";
+    echo "</style>\n";
 }
 
 ?>

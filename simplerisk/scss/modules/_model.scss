@@ -31,7 +31,24 @@
     box-shadow: none;
 
   }
+  
+  .view-field{
+      color: #fff;
+  }
 
+  select:disabled{
+      background-color: #fff;
+  }
+
+}
+
+#alert-modal{
+    .message-container{
+        margin-bottom: 25px;
+        .message{
+            font-size: 20px;
+        }
+    }
 }
 
 .vertical-alignment-helper {

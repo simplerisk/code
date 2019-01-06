@@ -34,21 +34,21 @@
     // Include the language file
     require_once(language_file());
 
-    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-    function csrf_startup() {
-        csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-    }
-
     // Check for session timeout or renegotiation
     session_check();
 
     // Check if access is authorized
     if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
     {
-       	    set_unauthenticated_redirect();
-            header("Location: ../index.php");
-            exit(0);
+        set_unauthenticated_redirect();
+        header("Location: ../index.php");
+        exit(0);
+    }
+
+    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+
+    function csrf_startup() {
+        csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
     }
 
     // Check if access is authorized
@@ -156,7 +156,7 @@
 
                 display_import_export();
 
-		display_import_export_selector();
+		        display_import_export_selector();
             }
         }
         // Otherwise, the Extra does not exist
@@ -171,6 +171,7 @@
 <html>
 
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/sorttable.js"></script>
@@ -186,15 +187,15 @@
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <?php
+        setup_alert_requirements("..");
+    ?>     
   </head>
 
   <body>
 
 <?php
     view_top_menu("Configure");
-
-    // Get any alert messages
-    get_alert();
 ?>
     <div class="container-fluid">
         <div class="row-fluid">
@@ -210,7 +211,7 @@
             </div>
         </div>
     </div>
-    <input type="hidden" id="lang_SelectMappingToRemove" value="<?php echo $lang["SelectMappingToRemove"]; ?>">
+    <input type="hidden" id="lang_SelectMappingToRemove" value="<?php echo $escaper->escapeHtml($lang["SelectMappingToRemove"]); ?>">
     <script type="">
         $(document).ready(function(){
             $("#delete_mapping").click(function(e){
@@ -232,7 +233,7 @@
                         if(!retryCSRF(xhr, this))
                         {
                             if(xhr.responseJSON && xhr.responseJSON.status_message){
-                                $('#show-alert').html(xhr.responseJSON.status_message);
+                                showAlertsFromArray(xhr.responseJSON.status_message);
                             }
                         }
                     }
@@ -241,6 +242,10 @@
             })
         })
     </script>
+<?php
+    // Get any alert messages
+    get_alert();
+?>
   </body>
 
 </html>

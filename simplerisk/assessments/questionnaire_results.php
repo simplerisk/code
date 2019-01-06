@@ -83,11 +83,13 @@ if(process_questionnaire_pending_risks()){
 <html>
 
 <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/jquery.dataTables.js"></script>
     <script src="../js/pages/assessment.js"></script>
+    <script src="../js/common.js"></script>
     <script src="../js/cve_lookup.js"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -102,7 +104,9 @@ if(process_questionnaire_pending_risks()){
     <link rel="stylesheet" href="../css/display.css">
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
-
+    <?php
+        setup_alert_requirements("..");
+    ?>
 </head>
 
 <body>

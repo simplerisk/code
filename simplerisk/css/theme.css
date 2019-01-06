@@ -1099,6 +1099,13 @@ input[type="submit"]:visited {
   background-color: #eb1a22;
 }
 
+.btn.btn-success {
+  background-color: #28a745;
+}
+.btn.btn-success:hover, .btn.btn-success:active, .btn.btn-success:visited {
+  background-color: #218838;
+}
+
 .btn.btn-default {
   background-color: #6f6f6f;
 }
@@ -1307,6 +1314,10 @@ form#comment {
 }
 .specified_time_holder select {
   width: auto;
+}
+
+.label-for-edit {
+  cursor: pointer;
 }
 
 #template-container .left-panel, #template-container .right-panel, #template-container .bottom-panel {
@@ -1777,6 +1788,19 @@ form#comment {
   padding: 0px 15px 15px 15px;
   border-top: 0px;
   box-shadow: none;
+}
+.modal .view-field {
+  color: #fff;
+}
+.modal select:disabled {
+  background-color: #fff;
+}
+
+#alert-modal .message-container {
+  margin-bottom: 25px;
+}
+#alert-modal .message-container .message {
+  font-size: 20px;
 }
 
 .vertical-alignment-helper {
@@ -2525,10 +2549,10 @@ div.doc-link.edit-mode {
   /*            background-image: none;*/
 }
 
-#risk-table-container {
+#risk-table-container, #risks-open-by-team-container {
   padding-bottom: 50px;
 }
-#risk-table-container .dataTables_wrapper.no-footer .dataTables_scrollBody {
+#risk-table-container .dataTables_wrapper.no-footer .dataTables_scrollBody, #risks-open-by-team-container .dataTables_wrapper.no-footer .dataTables_scrollBody {
   border-bottom: 0px;
 }
 

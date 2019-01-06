@@ -140,6 +140,10 @@ else
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
 
+  
+  <?php
+      setup_alert_requirements("..");
+  ?>  
 </head>
 
 <body>
@@ -155,12 +159,6 @@ else
         <?php view_assessments_menu($menu); ?>
       </div>
       <div class="span9">
-        <div id="show-alert">
-            <?php  
-                // Get any alert messages
-                get_alert();
-            ?>
-        </div>
 
         <?php
         // If the action was create

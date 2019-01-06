@@ -181,7 +181,9 @@ if (isset($_POST['delete_document']))
 
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
-
+  <?php
+      setup_alert_requirements("..");
+  ?>
 
 </head>
 
@@ -201,7 +203,6 @@ if (isset($_POST['delete_document']))
         <?php view_governance_menu("DocumentProgram"); ?>
       </div>
       <div class="span9">
-        <div id="show-alert"></div>
         <div class="row-fluid">
           <div class="span12">
             <!--  Documents container Begin -->
@@ -268,7 +269,7 @@ if (isset($_POST['delete_document']))
             <label for=""><?php echo $escaper->escapeHtml($lang['DocumentName']); ?></label>
             <input required="" type="text" name="document_name" id="document_name" value="" class="form-control" />
             <label for=""><?php echo $escaper->escapeHtml($lang['CreationDate']); ?></label>
-            <input type="text" class="form-control datepicker" name="creation_date">
+            <input type="text" class="form-control datepicker" name="creation_date" value="<?php echo $escaper->escapeHtml(date(get_default_date_format())); ?>">
             <label for=""><?php echo $escaper->escapeHtml($lang['ParentDocument']); ?></label>
             <div class="parent_documents_container">
                 <select>

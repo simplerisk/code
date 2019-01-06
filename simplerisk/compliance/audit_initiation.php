@@ -145,6 +145,7 @@ if (isset($_POST['update_control']))
 if(isset($_POST['update_test'])){
     $test_id        = (int)$_POST['test_id'];
     $tester         = (int)$_POST['tester'];
+    $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
     $test_frequency = (int)$_POST['test_frequency'];
     $last_date      = get_standard_date_from_default_format($_POST['last_date']);
     $next_date      = get_standard_date_from_default_format($_POST['next_date']);
@@ -155,7 +156,7 @@ if(isset($_POST['update_test'])){
     $expected_results = $escaper->escapeHtml($_POST['expected_results']);
     
     // Update a framework control test
-    update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date);
+    update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders);
     
     set_alert(true, "good", $escaper->escapeHtml($lang['TestSuccessUpdated']));
     
@@ -188,6 +189,7 @@ if(isset($_GET['initiate']) ){
 <html>
 
 <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery.easyui.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
@@ -205,6 +207,9 @@ if(isset($_GET['initiate']) ){
     
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <?php
+        setup_alert_requirements("..");
+    ?>    
 </head>
 
 <body>
@@ -220,8 +225,7 @@ if(isset($_GET['initiate']) ){
             <div class="span3">
                 <?php view_compliance_menu("InitialAudits"); ?>
             </div>
-            <div class="span9 compliance-content-container content-margin-height">
-                <div id="show-alert"></div>
+            <div class="span9 compliance-content-container content-margin-height">                
                 <div class="row-fluid">
                     <div class="span12">
                         <div class="custom-treegrid-container" id="initiate-audits">
@@ -317,6 +321,8 @@ if(isset($_GET['initiate']) ){
                         
                         $('[name=test_id]', modal).val(data['id']);
                         $('[name=tester]', modal).val(data['tester']);
+                        $('#additional_stakeholders', modal).multiselect('deselectAll', false);
+                        $('#additional_stakeholders', modal).multiselect('select', data['additional_stakeholders']);
                         $('[name=test_frequency]', modal).val(data['test_frequency']);
                         $('[name=last_date]', modal).val(data['last_date']);
                         $('[name=next_date]', modal).val(data['next_date']);
@@ -351,14 +357,14 @@ if(isset($_GET['initiate']) ){
                     },
                     success : function (res){
                         if(res.status_message){
-                            $('#show-alert').html(res.status_message);
+                            showAlertsFromArray(res.status_message);
                         }
                     },
                     error: function(xhr,status,error){
                         if(!retryCSRF(xhr, this))
                         {
                             if(xhr.responseJSON && xhr.responseJSON.status_message){
-                                $('#show-alert').html(xhr.responseJSON.status_message);
+                                showAlertsFromArray(xhr.responseJSON.status_message);
                             }
                         }
                     }
@@ -452,6 +458,9 @@ if(isset($_GET['initiate']) ){
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
             <?php create_dropdown("user", NULL, "tester", false, false, false); ?>
+
+            <label for=""><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?></label>
+            <?php create_multiple_dropdown("user", NULL, "additional_stakeholders"); ?>
             
             <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?></label>
             <input type="number" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
@@ -486,6 +495,11 @@ if(isset($_GET['initiate']) ){
 
       </div>
     </div>
+    <script>
+        $( document ).ready(function() {
+            $("#additional_stakeholders").multiselect();
+        });
+    </script>
     <?php display_set_default_date_format_script(); ?>
 </body>
 </html>

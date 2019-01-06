@@ -54,38 +54,6 @@
                 exit(0);
         }
 
-        // Check if the impact update was submitted
-        if (isset($_POST['update_impact']))
-        {
-                $new_name = $_POST['new_name'];
-                $value = (int)$_POST['impact'];
-
-                // Verify value is an integer
-                if (is_int($value))
-                {
-                        update_table("impact", $new_name, $value);
-
-			// Display an alert
-			set_alert(true, "good", "The impact naming convention was updated successfully.");
-                }
-        }
-
-        // Check if the likelihood update was submitted
-        if (isset($_POST['update_likelihood']))
-        {
-                $new_name = $_POST['new_name'];
-                $value = (int)$_POST['likelihood'];
-
-                // Verify value is an integer
-                if (is_int($value))
-                {
-                        update_table("likelihood", $new_name, $value);
-
-			// Display an alert
-			set_alert(true, "good", "The likelihood naming convention was updated successfully.");
-                }
-        }
-
         // Check if the mitigation effort update was submitted
         if (isset($_POST['update_mitigation_effort']))
         {
@@ -107,6 +75,7 @@
 <html>
 
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -121,6 +90,9 @@
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <?php
+        setup_alert_requirements("..");
+    ?>    
   </head>
 
   <body>
@@ -140,20 +112,6 @@
           <div class="row-fluid">
             <div class="span12">
               <div class="hero-unit">
-                <form name="impact" method="post" action="">
-                <p>
-                <h4><?php echo $escaper->escapeHtml($lang['Impact']); ?>:</h4>
-                <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("impact") ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_impact" /></p>
-                </form>
-              </div>
-              <div class="hero-unit">
-                <form name="likelihood" method="post" action="">
-                <p>
-                <h4><?php echo $escaper->escapeHtml($lang['Likelihood']); ?>:</h4>
-                <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("likelihood") ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_likelihood" /></p>
-                </form>
-              </div>
-              <div class="hero-unit">
                 <form name="mitigation_effort" method="post" action="">
                 <p>
                 <h4><?php echo $escaper->escapeHtml($lang['MitigationEffort']); ?>:</h4>
@@ -166,5 +124,4 @@
       </div>
     </div>
   </body>
-
 </html>

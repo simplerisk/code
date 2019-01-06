@@ -37,6 +37,10 @@ if (!isset($_SESSION))
 // Load CSRF Magic
 require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
+
 // Include the language file
 require_once(language_file());
 
@@ -76,6 +80,7 @@ if (isset($_POST['submit_test_result']))
 <html>
 
 <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery.easyui.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
@@ -94,6 +99,10 @@ if (isset($_POST['submit_test_result']))
     
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <?php
+        setup_alert_requirements("..");
+    ?>    
+    
 </head>
 
 <body>
@@ -110,7 +119,6 @@ if (isset($_POST['submit_test_result']))
                 <?php view_compliance_menu("ActiveAudits"); ?>
             </div>
             <div class="span9 compliance-content-container content-margin-height">
-                <div id="show-alert"></div>
                 <div class="row-fluid">
                     <div class="span12">
                         <?php display_testing(); ?>

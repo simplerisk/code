@@ -39,7 +39,7 @@ $(document).ready(function(){
                 },
                 error: function(xhr,status,error){
                     if(xhr.responseJSON && xhr.responseJSON.status_message){
-                        $('#show-alert').html(xhr.responseJSON.status_message);
+                        showAlertsFromArray(xhr.responseJSON.status_message);
                     }
                 }
             })

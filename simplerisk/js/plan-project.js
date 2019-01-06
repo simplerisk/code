@@ -54,7 +54,7 @@ jQuery(document).ready(function($){
       $( ".sortable" ).sortable({
         items: 'div.project-block[id!=no-sort]',
         cursor: "move",
-        start : function(event, ui) {
+        start : function(event, ui) {            
             var start_pos = ui.item.index()+ 1;
             ui.item.data('start_pos', start_pos);
         },
@@ -84,14 +84,13 @@ jQuery(document).ready(function($){
             var project_id = $(ui.item.html()).attr('data-project');
             var priority = ui.item.index() + 1;
             //return false;
-            $('#show-alert').html('');
+
             $.ajax({
                 url: 'plan-projects.php',
                 type: 'POST',
                 data: {update_order: true, project_ids : order},
                 success : function (data){
-                    var message = $(data).filter('#alert');
-                    $('#show-alert').append(message);
+                    showAlertsFromArray(data.status_message);
                     setTimeout(function(){
                         location.reload();
                     }, 1500)
@@ -128,14 +127,13 @@ jQuery(document).ready(function($){
 
           var project_id = $(ui.draggable.html()).attr('data-project');
           var status = $(this).attr('data-status');
-          $('#show-alert').html('');
+
           $.ajax({
                 url: 'plan-projects.php',
                 type: 'POST',
                 data: {update_project_status: true, project_id : project_id, status:status},
                 success : function (data){
-                    var message = $(data).filter('#alert');
-                    $('#show-alert').append(message);
+                    showAlertsFromArray(data.status_message);
                     setTimeout(function(){
                         location.reload();
                     }, 1500)
@@ -160,24 +158,22 @@ jQuery(document).ready(function($){
           $(this).find('.risks').append('<div class="risk">'+ui.draggable.html()+'</div>');
           var risk_id = $(ui.draggable.html()).attr('data-risk');
           var project_id = $('.project-block--header', this).attr('data-project');
-          $('#show-alert').html('');
 
-        $.ajax({
-            url: 'plan-projects.php',
-            type: 'POST',
-            data: {update_projects: true, risk_id : risk_id, project_id : project_id},
-            success : function (data){
-                var message = $(data).filter('#alert');
-                $('#show-alert').append(message);
-                setTimeout(function(){
-                    location.reload();
-                }, 1500)
-            },
-            error: function(xhr,status,error){
-                if(!retryCSRF(xhr, this)){}
-            }
-          
-        });
+          $.ajax({
+              url: 'plan-projects.php',
+              type: 'POST',
+              data: {update_projects: true, risk_id : risk_id, project_id : project_id},
+              success : function (data){
+                  showAlertsFromArray(data.status_message);
+                  setTimeout(function(){
+                      location.reload();
+                  }, 1500)
+              },
+              error: function(xhr,status,error){
+                  if(!retryCSRF(xhr, this)){}
+              }
+            
+          });
 
           //Bind the draggable option for the risks
           self.draggableRisks();
@@ -201,24 +197,22 @@ jQuery(document).ready(function($){
 
     deleteProject : function(form){
       var project_id = $(form).find('input');
-      $('#show-alert').html('');
-        $.ajax({
-          url: 'plan-projects.php',
-          type: 'POST',
-          data: {delete_project: true, project_id : project_id[0]['value']},
-          success : function (data){
-            $('#project--delete').modal('hide');
-            var message = $(data).filter('#alert');
-            $('#show-alert').append(message);
-            setTimeout(function(){
-              location.reload();
-            }, 1500)
-          },
-            error: function(xhr,status,error){
-                if(!retryCSRF(xhr, this)){}
-            }
-          
-        });
+      $.ajax({
+        url: 'plan-projects.php',
+        type: 'POST',
+        data: {delete_project: true, project_id : project_id[0]['value']},
+        success : function (data){
+          $('#project--delete').modal('hide');
+          showAlertsFromArray(data.status_message);
+          setTimeout(function(){
+            location.reload();
+          }, 1500)
+        },
+          error: function(xhr,status,error){
+              if(!retryCSRF(xhr, this)){}
+          }
+        
+      });
     },
 
     createProject : function(form){

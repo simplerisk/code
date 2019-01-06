@@ -129,7 +129,7 @@ $pie_array = get_pie_array(null, $teams);
                 <u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u>: &nbsp;
                 <?php create_multiple_dropdown("teams", ":".implode(":", explode(",", $teams)).":" , NULL, $teamOptions); ?>
                 <form id="risks_dashboard_form" method="GET">
-                    <input type="hidden" value="<?php echo $teams; ?>" name="teams" id="team_options">
+                    <input type="hidden" value="<?php echo $escaper->escapeHtml($teams); ?>" name="teams" id="team_options">
                 </form>
             </div>
         </div>

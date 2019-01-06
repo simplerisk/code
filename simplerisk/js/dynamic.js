@@ -758,6 +758,9 @@ $(document).ready(function(){
         var sortColumns = [["calculated_risk", "desc"], ["id", "asc"], ["subject", "asc"], ["residual_risk", "desc"]];
         var defaultSortColumnIndex = 0;
         var defaultSortColumn = sortColumns[$("#sort").val()];
+        if(defaultSortColumn == undefined){
+            defaultSortColumn = sortColumns[defaultSortColumnIndex];
+        }
         var columnOptions = [];
         var columnNames = [];
         $(".risk-datatable tr.main th").each(function(index){
@@ -770,7 +773,7 @@ $(document).ready(function(){
             if(!$("form[name='get_risks_by'] input.hidden-checkbox[name='"+ name +"']").is(':checked')){
                 columnOptions.push(index);
             }
-            if(name == defaultSortColumn[0]) {
+            if(defaultSortColumn != undefined && name == defaultSortColumn[0]) {
                 defaultSortColumnIndex = index;
             }
         })
@@ -798,6 +801,14 @@ $(document).ready(function(){
                         d.sort              = $("#sort").val();
                         d.affected_asset    = $("#affected_asset").val();
                         d.group_value       = $this.data('group');
+                        
+                        // Set params in risks_by_teams page
+                        if($("#teams").length){
+                            d.risks_by_team     = 1;
+                            d.teams             = $("#teams").val();
+                            d.owners            = $("#owners").val();
+                            d.ownersmanagers    = $("#ownersmanagers").val();
+                        }
                     }
                 },
                 order: [[defaultSortColumnIndex, defaultSortColumn[1]]],
@@ -807,11 +818,11 @@ $(document).ready(function(){
                         "visible" : false
                     },
                     {
-                        "targets" : 15,
+                        "targets" : 16,
                         "className" : "risk-cell",
                     },
                     {
-                        "targets" : 16,
+                        "targets" : 17,
                         "className" : "risk-cell",
                     },
                     {

@@ -89,6 +89,9 @@ if ((isset($_POST['search'])) && $manage_assets)
   <link rel="stylesheet" href="../css/display.css">
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+  <?php
+    setup_alert_requirements("..");
+  ?>
 
   <script type="text/javascript">
   var loading={

@@ -82,6 +82,7 @@
                 'allow_submitter_to_risk'       => isset($_POST['allow_submitter_to_risk']) ? 1 : 0,
                 'allow_team_member_to_risk'     => isset($_POST['allow_team_member_to_risk']) ? 1 : 0,
                 'allow_stakeholder_to_risk'     => isset($_POST['allow_stakeholder_to_risk']) ? 1 : 0,
+                'allow_all_to_risk_noassign_team'     => isset($_POST['allow_all_to_risk_noassign_team']) ? 1 : 0,
             );
             update_permission_settings($permissions);
             set_alert(true, "good", $lang['SavedSuccess']);
@@ -105,10 +106,10 @@
                 // If the extra is not restricted based on the install type
                 if (!restricted_extra("separation"))
                 {
-                    echo "<form name=\"activate_extra\" method=\"post\" action=\"\">\n";
-                    echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
-                    echo "</form>\n";
-                 }
+                echo "<form name=\"activate_extra\" method=\"post\" action=\"\">\n";
+                echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
+                echo "</form>\n";
+            }
                  // The extra is restricted
                  else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
             }
@@ -134,6 +135,7 @@
 <html>
 
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -148,6 +150,9 @@
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <?php
+        setup_alert_requirements("..");
+    ?>    
   </head>
 
   <body>

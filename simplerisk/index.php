@@ -159,6 +159,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
 ?>
 <html ng-app="SimpleRisk">
 <head>
+  <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <!-- build:css vendor/vendor.min.css -->
   <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" media="screen" />
@@ -174,6 +175,10 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
   <link rel="stylesheet" href="css/theme.css">
 
   <script src="js/jquery.min.js"></script>
+  
+  <?php
+      setup_alert_requirements("..");
+  ?>  
 </head>
 <body ng-controller="MainCtrl" class="login--page">
   <?php view_top_menu("Home"); ?>

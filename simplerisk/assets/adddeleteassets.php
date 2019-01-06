@@ -36,6 +36,10 @@ require_once(language_file());
 
 require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
+
 // Check for session timeout or renegotiation
 session_check();
 
@@ -66,23 +70,24 @@ if ((isset($_POST['add_asset'])) && $manage_assets)
   $details = $_POST['details'];
 
   // Add the asset
-  $success = add_asset($ip, $name, $value, $location, $team, $details);
+  $success = add_asset($ip, $name, $value, $location, $team, $details, true);
 
   // If the asset add was successful
   if ($success)
   {
     // Display an alert
-    set_alert(true, "good", $lang['AssetWasAddedSuccessfully']);
+    set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasAddedSuccessfully']));
   }
   else
   {
     // Display an alert
-    set_alert(true, "bad", $lang['ThereWasAProblemAddingTheAsset']);
+    set_alert(true, "bad", $escaper->escapeHtml($lang['ThereWasAProblemAddingTheAsset']));
   }
 }
 
 // Check if assets were deleted
-if ((isset($_POST['delete_assets'])) && $manage_assets)
+$discard_all = isset($_POST['discard_all']);
+if ((isset($_POST['delete_all']) || $discard_all) && $manage_assets)
 {
   $assets = $_POST['assets'];
 
@@ -93,14 +98,36 @@ if ((isset($_POST['delete_assets'])) && $manage_assets)
   if ($success)
   {
     // Display an alert
-    set_alert(true, "good", $lang['AssetWasDeletedSuccessfully']);
+    set_alert(true, "good", $escaper->escapeHtml($discard_all? $lang['AssetWasDiscardedSuccessfully']: $lang['AssetWasDeletedSuccessfully']));
   }
   else
   {
     // Display an alert
-    set_alert(true, "bad", $lang['ThereWasAProblemDeletingTheAsset']);
+    set_alert(true, "bad", $escaper->escapeHtml($discard_all ? $lang['ThereWasAProblemDiscardingTheAsset'] : $lang['ThereWasAProblemDeletingTheAsset']));
   }
 }
+
+// Check if assets were deleted
+if (isset($_POST['verify_all']) && $manage_assets)
+{
+  $assets = $_POST['assets'];
+
+  // Verify the assets
+  $success = verify_assets($assets);
+
+  // If the asset verification was successful
+  if ($success)
+  {
+    // Display an alert
+    set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasVerifiedSuccessfully']));
+  }
+  else
+  {
+    // Display an alert
+    set_alert(true, "bad", $escaper->escapeHtml($lang['ThereWasAProblemVerifyingTheAsset']));
+  }
+}
+
 
 ?>
 
@@ -111,6 +138,7 @@ if ((isset($_POST['delete_assets'])) && $manage_assets)
   <script src="../js/jquery.min.js"></script>
   <script src="../js/jquery-ui.min.js"></script>
   <script src="../js/bootstrap.min.js"></script>
+  <script src="../js/pages/asset.js?<?php echo time() ?>"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -127,17 +155,10 @@ if ((isset($_POST['delete_assets'])) && $manage_assets)
   <link rel="stylesheet" href="../css/display.css">
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+  <?php
+      setup_alert_requirements("..");
+  ?>  
 
-  <script type="text/javascript">
-  function checkAll(bx) {
-    var cbs = document.getElementsByTagName('input');
-    for(var i=0; i < cbs.length; i++) {
-      if (cbs[i].type == 'checkbox') {
-        cbs[i].checked = bx.checked;
-      }
-    }
-  }
-  </script>
   <?php display_simple_autocomplete_script(get_unentered_assets()); ?>
 
 </head>
@@ -204,21 +225,52 @@ if ((isset($_POST['delete_assets'])) && $manage_assets)
                   <button type="submit" name="add_asset" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
                 </form>
               </div>
-              <div class="hero-unit">
 
-                <h4><?php echo $escaper->escapeHTML($lang['DeleteAnExistingAsset']); ?></h4>
-                <form name="delete" method="post" action="">
-                  <button type="submit" name="delete_assets" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Delete']); ?></button>
-                  <?php display_asset_table(); ?>
-                  <button type="submit" name="delete_assets" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Delete']); ?></button>
-                </form>
+              <?php if (has_unverified_assets()) { ?>
 
-              </div>
+                  <div id="unverified_assets" class="hero-unit">
+
+                    <h4><?php echo $escaper->escapeHTML($lang['UnverifiedAssets']); ?></h4>
+                    <form name="verify" method="post" action="">
+                      <button type="submit" name="verify_all" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['VerifyAll']); ?></button>
+                      <button type="submit" name="discard_all" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['DiscardAll']); ?></button>
+                      <?php display_unverified_asset_table(); ?>
+                      <button type="submit" name="verify_all" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['VerifyAll']); ?></button>
+                      <button type="submit" name="discard_all" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['DiscardAll']); ?></button>
+                    </form>
+
+                  </div>
+
+              <?php } ?>
+                  <div id="verified_asset_table_wrapper" class="hero-unit" <?php if (!has_verified_assets()) { ?> style="display:none"<?php } ?>>
+
+                    <h4><?php echo $escaper->escapeHTML($lang['VerifiedAssets']); ?></h4>
+                    <form name="delete" method="post" action="">
+                      <button type="submit" name="delete_all" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['DeleteAll']); ?></button>
+                      <?php display_asset_table(); ?>
+                      <button type="submit" name="delete_all" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['DeleteAll']); ?></button>
+                    </form>
+                  </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <script>
+      $( document ).ready(function() {
+          $("button.verify-asset").click(function() {
+              verify_discard_or_delete_asset("verify", $(this));
+          });
+
+         $("button.discard-asset").click(function() {
+              verify_discard_or_delete_asset("discard", $(this));
+          });
+
+         $("button.delete-asset").click(function() {
+              verify_discard_or_delete_asset("delete", $(this));
+          });
+      });
+    </script>
     <?php display_set_default_date_format_script(); ?>
   </body>
 

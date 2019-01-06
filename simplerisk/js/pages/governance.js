@@ -207,8 +207,7 @@ function redrawFrameworkControl() {
 
 
 $(document).ready(function(){
-    $('.container-fluid').delegate('.tab-show', 'click', function(){
-        $('#show-alert').html('');
+    $('.container-fluid').delegate('.tab-show', 'click', function(){        
         $('.form-tab').removeClass('selected');
         $(this).addClass('selected');
         $('.tab-data').hide();

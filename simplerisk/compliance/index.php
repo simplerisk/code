@@ -58,16 +58,17 @@ enforce_permission_compliance();
 // Check if adding test
 if(isset($_POST['add_test'])){
     $tester = (int)$_POST['tester'];
+    $additional_stakeholders = empty($_POST['additional_stakeholders_add']) ? "" : implode(",", $_POST['additional_stakeholders_add']);
     $test_frequency = (int)$_POST['test_frequency'];
     $name = $_POST['name'];
     $objective = $_POST['objective'];
     $test_steps = $_POST['test_steps'];
-    $approximate_time = is_int($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
+    $approximate_time = !empty($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
     $expected_results = $_POST['expected_results'];
     $framework_control_id = (int)$_POST['framework_control_id'];
-    
+
     // Add a framework control test
-    add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id);
+    add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders);
     
     set_alert(true, "good", $escaper->escapeHtml($lang['TestSuccessCreated']));
     
@@ -79,17 +80,18 @@ if(isset($_POST['add_test'])){
 if(isset($_POST['update_test'])){
     $test_id         = (int)$_POST['test_id'];
     $tester         = (int)$_POST['tester'];
+    $additional_stakeholders = empty($_POST['additional_stakeholders_edit']) ? "" : implode(",", $_POST['additional_stakeholders_edit']);
     $test_frequency = (int)$_POST['test_frequency'];
     $last_date      = get_standard_date_from_default_format($_POST['last_date']);
     $next_date      = get_standard_date_from_default_format($_POST['next_date']);
-    $name           = $escaper->escapeHtml($_POST['name']);
-    $objective      = $escaper->escapeHtml($_POST['objective']);
-    $test_steps     = $escaper->escapeHtml($_POST['test_steps']);
-    $approximate_time = is_int($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
-    $expected_results = $escaper->escapeHtml($_POST['expected_results']);
-    
+    $name           = $_POST['name'];
+    $objective      = $_POST['objective'];
+    $test_steps     = $_POST['test_steps'];
+    $approximate_time = !empty($_POST['approximate_time']) ? (int)$_POST['approximate_time'] : 0;
+    $expected_results = $_POST['expected_results'];
+
     // Update a framework control test
-    update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date);
+    update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders);
     
     set_alert(true, "good", $escaper->escapeHtml($lang['TestSuccessUpdated']));
     
@@ -116,6 +118,7 @@ if(isset($_POST['delete_test'])){
 <html>
 
 <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -132,6 +135,10 @@ if(isset($_POST['delete_test'])){
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <?php
+        setup_alert_requirements("..");
+    ?>    
+    
 </head>
 
 <body>
@@ -148,7 +155,6 @@ if(isset($_POST['delete_test'])){
                 <?php view_compliance_menu("DefineTests"); ?>
             </div>
             <div class="span9 compliance-content-container">
-                <div id="show-alert"></div>
                 <div class="row-fluid">
                     <div class="span12">
                         <span><?php echo $escaper->escapeHtml($lang['ControlFramework']); ?>: &nbsp;</span>
@@ -184,6 +190,9 @@ if(isset($_POST['delete_test'])){
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
             <?php create_dropdown("user", NULL, "tester", false, false, false); ?>
             
+            <label for=""><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?></label>
+            <?php create_multiple_dropdown("user", NULL, "additional_stakeholders_add"); ?>
+
             <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?></label>
             <input type="number" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
             
@@ -222,6 +231,9 @@ if(isset($_POST['delete_test'])){
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
             <?php create_dropdown("user", NULL, "tester", false, false, false); ?>
+
+            <label for=""><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?></label>
+            <?php create_multiple_dropdown("user", NULL, "additional_stakeholders_edit"); ?>
             
             <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?></label>
             <input type="number" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
@@ -275,6 +287,13 @@ if(isset($_POST['delete_test'])){
 
       </div>
     </div>
+
+    <script>
+        $( document ).ready(function() {
+            $("#additional_stakeholders_add").multiselect();
+            $("#additional_stakeholders_edit").multiselect();
+        });
+    </script>
 
     <?php display_set_default_date_format_script(); ?>
 </body>

@@ -69,6 +69,14 @@
 			update_setting("enable_popup", $enable_popup);
 		}
 
+        // Update the 'Automatically verify new assets' setting
+        $auto_verify_new_assets = (isset($_POST['auto_verify_new_assets'])) ? 1 : 0;
+		$current_auto_verify_new_assets = get_setting("auto_verify_new_assets");
+		if ($auto_verify_new_assets != $current_auto_verify_new_assets)
+		{
+			update_setting("auto_verify_new_assets", $auto_verify_new_assets);
+		}
+
 		// Update the setting to show all risks for plan projects
 		$plan_projects_show_all = (isset($_POST['plan_projects_show_all'])) ? 1 : 0;
 		$current_plan_projects_show_all = get_setting("plan_projects_show_all");
@@ -429,6 +437,7 @@
 <html>
 
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -444,6 +453,9 @@
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/settings_tabs.css">
+    <?php
+        setup_alert_requirements("..");
+    ?>    
     <script>
       function dropdown_transport()
       {
@@ -545,6 +557,9 @@
                             </tr>
                             <tr>
                               <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('plan_projects_show_all')) == 1){ echo "checked"; } ?> name="plan_projects_show_all" class="hidden-checkbox" size="2" value="90" id="plan_projects_show_all" type="checkbox">  <label for="plan_projects_show_all"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['ShowAllRisksForPlanProjects']); ?></label></td>
+                            </tr>
+                            <tr>
+                              <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('auto_verify_new_assets')) == 1){ echo "checked"; } ?> name="auto_verify_new_assets" class="hidden-checkbox" size="2" value="90" id="auto_verify_new_assets" type="checkbox">  <label for="auto_verify_new_assets"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['AutomaticallyVerifyNewAssets']); ?></label></td>
                             </tr>
                           </tbody>
                         </table>

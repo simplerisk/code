@@ -148,7 +148,7 @@ function is_valid_user($user, $pass, $upgrade = false)
                 require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
 
                 // Set the type to LDAP
-                $type = 2;
+                $type = "ldap";
 
                 // Check for a valid Active Directory user
                 list($valid_ad, $dn) = is_valid_ad_user($user, $pass);
@@ -394,7 +394,7 @@ function is_valid_simplerisk_user($user, $pass)
     db_close($db);
 
     // If the passwords are equal
-    if (($providedPassword == $storedPassword) || ($oldProvidedPassword == $storedPassword))
+    if (hash_equals($storedPassword, $providedPassword) || hash_equals($storedPassword, $oldProvidedPassword))
     {
         return true;
     }
@@ -446,10 +446,17 @@ function generate_token($size)
 {               
         $token = "";
         $values = array_merge(range(0, 9), range('a', 'z'), range('A', 'Z'));
+	$values_count = count($values);
         
         for ($i = 0; $i < $size; $i++)
         {
-                $token .= $values[array_rand($values)];
+                // If the random int function exists (PHP 7)
+                if (function_exists('random_int'))
+                {
+                        // Generate the token using the random_int function
+                        $token .= $values[random_int(0, $values_count-1)];
+                }
+                else $token .= $values[array_rand($values)];
         }
  
         return $token;
@@ -497,24 +504,6 @@ function password_reset_by_userid($userid)
     $username = $array[0]['username'];
     $name = $array[0]['name'];
     $email = $array[0]['email'];
-    
-    // Update user encryptied_pass if encryption_level is "user" and activated=1.
-    if (encryption_extra())
-    {
-        // Load the extra
-        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-        if(activated_user($username)){
-
-            $tmp_pass = fetch_tmp_pass() . ":" . $array[0]['salt'];
-            $encrypted_pass = encrypt($tmp_pass, $_SESSION['encrypted_pass']);
-            
-            // Insert into the password reset table
-            $stmt = $db->prepare("UPDATE `user_enc` set `encrypted_pass` = '{$encrypted_pass}', activated=0 where value=:userid ");
-            $stmt->bindParam(':userid', $userid, PDO::PARAM_INT);
-            $stmt->execute();
-        }
-    }
-    
 
     // Insert into the password reset table
     $stmt = $db->prepare("INSERT INTO password_reset (`username`, `token`) VALUES (:username, :token)");
@@ -609,24 +598,6 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
 {
     global $lang, $escaper;
     $userid = is_simplerisk_user($username);
-    
-    // If the encryption extra is enabled
-    if (encryption_extra())
-    {
-        // Load the extra
-        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-        
-        // Check if can be encrypted from external
-        if(!check_encryption_from_external($username)){
-            
-            // Display an alert
-            set_alert(true, "bad", $escaper->escapeHtml($lang['ResetPasswordMessageInUserLevelEncryption']));
-
-            // Return false
-            return false;
-        }
-    }
-    
 
     // If the reset token is valid
     if (is_valid_reset_token($username, $token))
@@ -656,16 +627,6 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
                 // Close the database connection
                 db_close($db);
 
-                // If the encryption extra is enabled
-                if (encryption_extra())
-                {
-                    // Load the extra
-                    require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-
-                    // Set the new encrypted password
-                    set_enc_pass($username, $password);
-                }
-
                 // Display an alert
                 set_alert(true, "good", "Your password has been reset successfully!");
                 return true;
@@ -694,7 +655,7 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
     else
     {
         // Display an alert
-        set_alert(true, "bad", "There was an error with your password reset.");
+        set_alert(true, "bad", "Invalid user reset token.");
 
         // Return false
         return false;

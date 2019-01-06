@@ -71,6 +71,9 @@ $(document).ready(function(){
                     OWASPPrivacyViolation: $(this).find('[name="OWASPPrivacyViolation[]"]').val(),
                     
                     Custom: $(this).find('[name="Custom[]"]').val(),
+                    
+                    ContributingLikelihood: $(this).find('[name="ContributingLikelihood[]"]').val(),
+//                    ContributingImpacts: $(this).find('[name="ContributingImpacts[]"]').val(),
                 });
             })
             
@@ -88,16 +91,7 @@ $(document).ready(function(){
             contentType: "application/json",
             success: function(data){
                 if(data.status_message){
-                    var messageHtml = '<div id="alert" class="container-fluid">'
-                     +      '<div class="row-fluid">'
-                     +          '<div class="span10 greenalert"><span><i class="fa fa-check"></i>' + data.status_message + '</span></div>'
-                     +      '</div>'
-                     + '</div>';
-                     
-                    $('#show-alert').html(messageHtml);
-                    setTimeout(function(){
-                        $("#alert").fadeOut('slow');
-                    }, 5000);
+                    toastr.success(data.status_message);
                 }
             },
             error: function(xhr,status,error){
@@ -143,6 +137,14 @@ $(document).ready(function(){
         popupowasp(form);
     })
 
+    /**
+    * events in clicking Score Using Contributing Risk button of edit details page, muti tabs case
+    */
+    $('body').on('click', '[name=contributingRiskSubmit]', function(e){
+        e.preventDefault();
+        var form = $(this).parents('.risk-scoring-container');
+        popupcontributingrisk(form);
+    })
     
 })
 

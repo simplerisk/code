@@ -91,11 +91,13 @@ else
     header("Location: ../index.php");
     exit(0);
 }
+
 ?>
 <!doctype html>
 <html>
 
 <head>
+  <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
   <script src="../js/jquery.min.js"></script>
   <script src="../js/jquery-ui.min.js"></script>
   <script src="../js/bootstrap.min.js"></script>
@@ -115,13 +117,17 @@ else
 
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+  
+  <?php
+      setup_alert_requirements("..");
+  ?>  
 </head>
 
 <body>
     <div class="navbar">
         <div class="navbar-inner">
             <div class="container">
-                <a class="brand" href="http://www.simplerisk.org/"><img src='../images/logo@2x.png' alt='SimpleRisk' /></a>
+                <a class="brand" href="http://www.simplerisk.com/"><img src='../images/logo@2x.png' alt='SimpleRisk' /></a>
             </div>
         </div>
     </div>

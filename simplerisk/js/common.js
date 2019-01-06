@@ -97,6 +97,16 @@ function popupowasp(parent)
     my_window = window.open(BASE_URL + '/management/owasp_rating.php','popupwindow','width=665,height=570,menu=0,status=0');
 }
 
+/**
+* popup when click "Score Using Contributing Risk"
+* 
+*/
+function popupcontributingrisk(parent)
+{
+    parentOfScores = parent;
+    my_window = window.open(BASE_URL + '/management/contributingrisk_rating.php','popupwindow','width=665,height=570,menu=0,status=0');
+}
+
 function closepopup()
     {
     if(false == my_window.closed)
@@ -223,7 +233,7 @@ function riskScoringChart(renderTo, risk_id, risk_levels){
         },
         error: function(xhr,status,error){
             if(xhr.responseJSON && xhr.responseJSON.status_message){
-                $('#show-alert').html(xhr.responseJSON.status_message);
+                showAlertsFromArray(xhr.responseJSON.status_message);
             }
         }
     })
@@ -250,10 +260,34 @@ function riskScoringChart(renderTo, risk_id, risk_levels){
         },
         error: function(xhr,status,error){
             if(xhr.responseJSON && xhr.responseJSON.status_message){
-                $('#show-alert').html(xhr.responseJSON.status_message);
+                showAlertsFromArray(xhr.responseJSON.status_message);
             }
         }
     })
+}
+
+function alert(message){
+    var modal_container_id = "alert-modal";
+    if(!$("#" + modal_container_id).length){
+        var modal_html = '';
+        modal_html += '<div id="' + modal_container_id + '" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">';
+            modal_html += '<div class="modal-body">';
+
+              modal_html += '<div class="form-group text-center message-container">';
+                modal_html += '<label class="message">'+message+'</label>'
+              modal_html += '</div>';
+
+              modal_html += '<div class="form-group text-center">';
+                modal_html += '<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">OK</button>';
+              modal_html += '</div>';
+            modal_html += '</div>';
+        modal_html += '</div>';
+        $("body").append(modal_html);
+    }
+    
+    $("#" + modal_container_id+" .message").html(message);
+    
+    $("#" + modal_container_id).modal('show');
 }
 
 $(document).ready(function(){
@@ -310,7 +344,7 @@ $(document).ready(function(){
             },
             error: function(xhr,status,error){
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
-                    $('#show-alert').html(xhr.responseJSON.status_message);
+                    showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
         })
