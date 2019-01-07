@@ -2740,7 +2740,7 @@ function upgrade_from_20181103001($db){
     echo "Creating new records in closures table for risks to unmatched close_id.<br />\n";
     $stmt = $db->prepare("
         INSERT INTO `closures` (`id`, `risk_id`, `user_id`, `closure_date`, `close_reason`, `note`)
-        SELECT t1.close_id, t1.id, {$_SESSION['uid']}, CURRENT_TIMESTAMP, 2, '--'
+        SELECT t1.close_id, t1.id, 1, CURRENT_TIMESTAMP, 2, '--'
         FROM risks t1 LEFT JOIN closures t2 ON t1.close_id=t2.id
         WHERE t1.status='Closed' AND t1.close_id>0 AND t2.id IS NULL
         ;
@@ -2751,7 +2751,7 @@ function upgrade_from_20181103001($db){
     echo "Creating new records in closures table for risks to unmatched close_id.<br />\n";
     $stmt = $db->prepare("
         INSERT INTO `closures` (`risk_id`, `user_id`, `closure_date`, `close_reason`, `note`)
-        SELECT t1.id, {$_SESSION['uid']}, CURRENT_TIMESTAMP, 2, '--'
+        SELECT t1.id, 1, CURRENT_TIMESTAMP, 2, '--'
         FROM risks t1 
         WHERE t1.status='Closed' AND (t1.close_id IS NULL OR t1.close_id=0) 
         ;
@@ -2902,6 +2902,13 @@ function upgrade_from_20181103001($db){
             $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
             $stmt->execute();
         }
+    }
+    else
+    {
+        // Updating unique key of `risks_to_assets` table to use both `risk_id` and `asset_id`
+        echo "Updating unique key of `risks_to_assets` table to use both `risk_id` and `asset_id`.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks_to_assets` DROP INDEX `risk_id`, ADD UNIQUE KEY `risk_id` (`risk_id`,`asset_id`);");
+        $stmt->execute();
     }
 
     // Check if the asset column exists in the risks_to_assets table
