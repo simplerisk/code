@@ -1,3 +1,12 @@
+var current_tab_close_object;
+function close_current_tab(index)
+{
+    $('#tab-container'+index+'').remove();
+    current_tab_close_object.parent().remove();
+    $('.tab-show').first().addClass('selected');
+    $('.tab-data').first().show();
+}
+
 function addRisk($this){
     var tabContainer = $this.parents('.tab-data');
     var getForm = $this.parent().parent().parent().parent();
@@ -19,7 +28,6 @@ function addRisk($this){
         contentType: false,
         processData: false,
         success: function(data){
-            console.log(data);
             var message = data.message;
             var risk_id = data.risk_id;
             
@@ -181,7 +189,7 @@ function addRisk($this){
         /**
         * Build multiselect box
         */
-        $(".multiselect", tabContainer).multiselect();
+        $(".multiselect", tabContainer).multiselect({buttonWidth: '100%'});
     }
     
     /*
@@ -367,19 +375,20 @@ $(document).ready(function(){
     });
 
     $('.container-fluid').delegate('.tab-close', 'click', function(){
+        current_tab_close_object = $(this);
+        
         var index = $(this).attr('data-id');
         var tabContainer = $("#tab-container" + index);
         if ($('div.container-fluid div.new').length > 1)
         {
-            if (!checkEditable(tabContainer) || confirm($("#_delete_tab_alert").val()) ){
-                $('#tab-container'+index+'').remove();
-                $(this).parent().remove();
-                $('.tab-show').first().addClass('selected');
-                $('.tab-data').last().show();
+            if (!checkEditable(tabContainer) || confirm($("#_delete_tab_alert").val(), "close_current_tab('"+index+"')") ){
+                close_current_tab(index)
             }
             return false;
         }
     });
+    
+    
     /*****************/
     
     

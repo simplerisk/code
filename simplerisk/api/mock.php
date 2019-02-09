@@ -77,7 +77,8 @@
           "control_number": "",
           "assets": "credit card data, google-public-dns-a.google.com, ",
           "technology": "8",
-          "team": "3",
+          "team": [3],
+          "additional_stakeholders": [1,17,16,15],
           "owner": "16",
           "manager": "15",
           "source": "4",
@@ -155,7 +156,7 @@
           "mitigation_effort": "2",
           "mitigation_cost": "2",
           "mitigation_owner": "17",
-          "mitigation_team": "2",
+          "mitigation_team": "2,3",
           "current_solution": "Current solution",
           "security_requirements": "Requirements",
           "security_recommendations": "Recommends",
@@ -369,8 +370,8 @@
             "mitigation_max_cost": "200000",
             "mitigation_owner": "17",
             "mitigation_owner_name": "Demo Director",
-            "mitigation_team": "6",
-            "mitigation_team_name": "IT Systems Management",
+            "mitigation_team": "2,3",
+            "mitigation_team_name": "IT Systems Management, Collaboration",
             "current_solution": "Current solution",
             "security_requirements": "System requirements",
             "security_recommendations": "Security recommendations",
@@ -542,7 +543,7 @@
           "ContributingImpacts": {
               "5": "2",
               "7": "3"
-          },
+          }
         }';
 
         $results['response'] = '{

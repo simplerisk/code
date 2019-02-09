@@ -290,6 +290,32 @@ function alert(message){
     $("#" + modal_container_id).modal('show');
 }
 
+function confirm(message, callback){
+    var modal_container_id = "confirm-modal";
+    if(!$("#" + modal_container_id).length){
+        var modal_html = '';
+        modal_html += '<div id="' + modal_container_id + '" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">';
+            modal_html += '<div class="modal-body">';
+
+              modal_html += '<div class="form-group text-center message-container">';
+                modal_html += '<label class="message">'+message+'</label>'
+              modal_html += '</div>';
+
+              modal_html += '<div class="form-group text-center">';
+                modal_html += '<button class="btn btn-default " data-dismiss="modal" aria-hidden="true" >Cancel</button>';
+                modal_html += '&nbsp;&nbsp;&nbsp;';
+                modal_html += '<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true" onclick="'+ callback +'">Yes</button>';
+              modal_html += '</div>';
+            modal_html += '</div>';
+        modal_html += '</div>';
+        $("body").append(modal_html);
+    }
+    
+    $("#" + modal_container_id+" .message").html(message);
+    
+    $("#" + modal_container_id).modal('show');
+}
+
 $(document).ready(function(){
     if(jQuery.ui !== undefined){
         jQuery.ui.autocomplete.prototype._resizeMenu = function () {
@@ -364,9 +390,12 @@ $(document).ready(function(){
 
         return false;
     })
+    if($('#tab-container .datepicker').length){
+        $('#tab-container .datepicker').datepicker();
+    }
     
     if($("#tab-container .multiselect").length){
-        $("#tab-container .multiselect").multiselect();
+        $("#tab-container .multiselect").multiselect({buttonWidth: '100%'});
     }
 
 })

@@ -67,7 +67,7 @@ array_unshift($teamOptions, array(
     'name' => $lang['Unassigned'],
 ));
 
-$ownerOptions = $ownersManagerOptions = get_table_ordered_by_name("user");
+$ownerOptions = $ownersManagerOptions = get_options_from_table("enabled_users");
 array_unshift($ownerOptions, array(
     'value' => "0",
     'name' => $lang['NoOwner'],

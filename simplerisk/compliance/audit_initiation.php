@@ -418,7 +418,7 @@ if(isset($_GET['initiate']) ){
             <textarea name="supplemental_guidance" value="" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ControlOwner']); ?></label>
-            <?php create_dropdown("user", NULL, "control_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
+            <?php create_dropdown("enabled_users", NULL, "control_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ControlFrameworks']); ?></label>
             <?php create_multiple_dropdown("frameworks", NULL); ?>
@@ -457,10 +457,10 @@ if(isset($_GET['initiate']) ){
             <input type="text" name="name" value="" class="form-control">
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
-            <?php create_dropdown("user", NULL, "tester", false, false, false); ?>
+            <?php create_dropdown("enabled_users", NULL, "tester", false, false, false); ?>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?></label>
-            <?php create_multiple_dropdown("user", NULL, "additional_stakeholders"); ?>
+            <?php create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders"); ?>
             
             <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?></label>
             <input type="number" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>

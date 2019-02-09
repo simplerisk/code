@@ -166,6 +166,9 @@ function display()
         </div>
       </div>
     </div>
+    <script>
+        <?php prevent_form_double_submit_script(); ?>
+    </script>
   </body>
 
 </html>

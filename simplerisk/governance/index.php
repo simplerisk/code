@@ -725,7 +725,7 @@ if (isset($_POST['update_control']))
         <textarea name="supplemental_guidance" value="" class="form-control" rows="6" style="width:100%;"></textarea>
 
         <label for=""><?php echo $escaper->escapeHtml($lang['ControlOwner']); ?></label>
-        <?php create_dropdown("user", NULL, "control_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
+        <?php create_dropdown("enabled_users", NULL, "control_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
 
         <label for=""><?php echo $escaper->escapeHtml($lang['ControlFrameworks']); ?></label>
         <?php create_multiple_dropdown("frameworks", NULL, "add_framework_ids"); ?>
@@ -777,7 +777,7 @@ if (isset($_POST['update_control']))
         <textarea name="supplemental_guidance" value="" class="form-control" rows="6" style="width:100%;"></textarea>
 
         <label for=""><?php echo $escaper->escapeHtml($lang['ControlOwner']); ?></label>
-        <?php create_dropdown("user", NULL, "control_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
+        <?php create_dropdown("enabled_users", NULL, "control_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
 
         <label for=""><?php echo $escaper->escapeHtml($lang['ControlFrameworks']); ?></label>
         <?php create_multiple_dropdown("frameworks", NULL); ?>

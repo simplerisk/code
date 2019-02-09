@@ -328,7 +328,7 @@ function get_framework_control_test_audit_by_id($test_audit_id){
     $db = db_open();
 
     $stmt = $db->prepare("
-        SELECT t1.*, t2.name tester_name, t3.short_name control_name, GROUP_CONCAT(DISTINCT t4.name) framework_name, t5.id result_id, t5.test_result, t5.summary, t5.test_date, t5.submitted_by, t5.submission_date, t6.additional_stakeholders
+        SELECT t1.*, t2.name tester_name, t3.short_name control_name, t3.control_owner, GROUP_CONCAT(DISTINCT t4.name) framework_name, t5.id result_id, t5.test_result, t5.summary, t5.test_date, t5.submitted_by, t5.submission_date, t6.additional_stakeholders
         FROM `framework_control_test_audits` t1
             LEFT JOIN `user` t2 ON t1.tester = t2.value
             LEFT JOIN `framework_controls` t3 ON t1.framework_control_id = t3.id AND t3.deleted=0
@@ -545,7 +545,7 @@ function display_active_audits(){
                 </div>
                 <div class='span3'>
                     <div class='multiselect-content-container'>";
-                        create_multiple_dropdown("user", "all", "filter_by_tester");
+                        create_multiple_dropdown("enabled_users", "all", "filter_by_tester");
     echo "          </div>
                 </div>
             </div>
@@ -1031,10 +1031,11 @@ function save_test_comment($test_audit_id, $comment){
         $sql = "
             INSERT INTO `framework_control_test_comments`(`test_audit_id`, `user`, `comment`) VALUES(:test_audit_id, :user, :comment);
         ";
-        
+
+        $enc_comment = try_encrypt($comment);
         $stmt = $db->prepare($sql);
         $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
-        $stmt->bindParam(":comment", try_encrypt($comment), PDO::PARAM_STR);
+        $stmt->bindParam(":comment", $enc_comment, PDO::PARAM_STR);
         $stmt->bindParam(":user", $user, PDO::PARAM_INT);
         
         // Insert a test result
@@ -1092,14 +1093,7 @@ function display_testing()
     $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
     
     // If test date is not set, set today as default
-    if(!$test_audit['test_date'] || $test_audit['test_date']=="0000-00-00")
-    {
-        $test_audit['test_date'] = date(get_default_date_format());
-    }
-    else
-    {
-        $test_audit['test_date'] = date(get_default_date_format(), strtotime($test_audit['test_date']));
-    }
+    $test_audit['test_date'] = format_date($test_audit['test_date'], date(get_default_date_format()));
     
     echo "
         <form class='well' method='POST' enctype='multipart/form-data'>
@@ -1130,7 +1124,7 @@ function display_testing()
                             <tr>
                                 <td valign='top'>".$escaper->escapeHtml($lang['Tester']).":&nbsp;&nbsp;</td>
                                 <td>";
-                                    create_dropdown("user", $test_audit['tester'], "tester", false, false, false);
+                                    create_dropdown("enabled_users", $test_audit['tester'], "tester", false, false, false);
                                 echo "
                                 </td>
                             </tr>
@@ -1184,6 +1178,10 @@ function display_testing()
                             <tr>
                                 <td valign='top'>".$escaper->escapeHtml($lang['AdditionalStakeholders']).":&nbsp;&nbsp;</td>
                                 <td align='left'>".$escaper->escapeHtml($test_audit['additional_stakeholders'] ? get_stakeholder_names($test_audit['additional_stakeholders']) : "--")."</td>
+                            </tr>
+                            <tr>
+                                <td valign='top'>".$escaper->escapeHtml($lang['ControlOwner']).":&nbsp;&nbsp;</td>
+                                <td align='left'>".$escaper->escapeHtml($test_audit['control_owner'] ? get_name_by_value("user", $test_audit['control_owner']) : "--")."</td>
                             </tr>
                             <tr>
                                 <td valign='top'>".$escaper->escapeHtml($lang['ExpectedResults']).":&nbsp;&nbsp;</td>
@@ -1953,6 +1951,12 @@ function display_detail_test()
                                 </td>
                             </tr>
                             <tr>
+                                <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['ControlOwner']).":&nbsp;&nbsp;</strong></td>
+                                <td>
+                                    ".$escaper->escapeHtml(get_name_by_value("user", $test_audit['control_owner']))."
+                                </td>
+                            </tr>
+                            <tr>
                                 <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['DesiredFrequency']).":&nbsp;&nbsp;</strong></td>
                                 <td>
                                     ".(int)$test_audit['desired_frequency']. " " .$escaper->escapeHtml($test_audit['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])."
@@ -1961,13 +1965,13 @@ function display_detail_test()
                             <tr>
                                 <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['CreatedDate']).":&nbsp;&nbsp;</strong></td>
                                 <td>
-                                    ".$test_audit['created_at']."
+                                    ".$escaper->escapeHtml(format_date($test_audit['created_at'], "--"))."
                                 </td>
                             </tr>
                             <tr>
                                 <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['AdditionalStakeholders']).":&nbsp;&nbsp;</strong></td>
                                 <td>
-                                    ".get_stakeholder_names($test_audit['additional_stakeholders'])."
+                                    ".$escaper->escapeHtml(get_stakeholder_names($test_audit['additional_stakeholders']))."
                                 </td>
                             </tr>
                         </table>                    
@@ -1988,7 +1992,7 @@ function display_detail_test()
                             <tr>
                                 <td valign='top' class='text-right'><strong>".$escaper->escapeHtml($lang['TestDate']).":&nbsp;&nbsp;</strong></td>
                                 <td>
-                                    ".$test_audit['last_date']."
+                                    ".$escaper->escapeHtml(format_date($test_audit['last_date'], "--"))."
                                 </td>
                             </tr>
 

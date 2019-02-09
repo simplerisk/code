@@ -77,6 +77,13 @@
 			update_setting("auto_verify_new_assets", $auto_verify_new_assets);
 		}
 
+        // Update the alert timeout
+        $alert_timeout = $_POST['alert_timeout'];
+        if ($alert_timeout != get_setting("alert_timeout")) {
+            // Update the base url
+            update_setting("alert_timeout", $alert_timeout);
+        }
+
 		// Update the setting to show all risks for plan projects
 		$plan_projects_show_all = (isset($_POST['plan_projects_show_all'])) ? 1 : 0;
 		$current_plan_projects_show_all = get_setting("plan_projects_show_all");
@@ -196,17 +203,27 @@
 		{
 			// Update the default user role
 			update_setting("next_review_date_uses", $next_review_date_uses);
-
-			// Update all next review dates based on next_review_date_uses setting 
-			update_all_next_review_dates();
 		}
 
-        	// If all setting values were saved successfully
-        	if (!$error)
-        	{
-                	// Display an alert
-                	set_alert(true, "good", "The settings were updated successfully.");
-        	}
+        // Update the base url
+        $simplerisk_base_url = $_POST['simplerisk_base_url'];
+        $current_simplerisk_base_url = get_setting("simplerisk_base_url");
+        if ($simplerisk_base_url != $current_simplerisk_base_url)
+        {
+            // If the base url is not empty
+            if ($simplerisk_base_url != "")
+            {
+                // Update the base url
+                update_setting("simplerisk_base_url", $simplerisk_base_url);
+            }
+        }
+
+        // If all setting values were saved successfully
+        if (!$error)
+        {
+            // Display an alert
+            set_alert(true, "good", "The settings were updated successfully.");
+        }
 	}
 
 	// Check if a new file type was submitted
@@ -561,6 +578,35 @@
                             <tr>
                               <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('auto_verify_new_assets')) == 1){ echo "checked"; } ?> name="auto_verify_new_assets" class="hidden-checkbox" size="2" value="90" id="auto_verify_new_assets" type="checkbox">  <label for="auto_verify_new_assets"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['AutomaticallyVerifyNewAssets']); ?></label></td>
                             </tr>
+                            <tr>
+                              <td width="300px"><?php echo $escaper->escapeHtml($lang['AlertTimeout']); ?>:</td>
+                              <td>
+                                <?php
+                                    echo "<select id=\"alert_timeout\" name=\"alert_timeout\" class=\"form-field\" style=\"width:auto;\">\n";
+
+                                    // Create the list of possible timeouts
+                                    $possible_timeouts = array(
+                                        "5"     => _lang('TimeoutXSeconds', array('timeout' => '5')),
+                                        "10"    => _lang('TimeoutXSeconds', array('timeout' => '10')),
+                                        "15"    => _lang('TimeoutXSeconds', array('timeout' => '15')),
+                                        "30"    => _lang('TimeoutXSeconds', array('timeout' => '30')),
+                                        "60"    => _lang('TimeoutXSeconds', array('timeout' => '60')),
+                                        "0"     => $lang['StayUntilClicked'],
+                                    );
+
+                                    // Get the current value
+                                    $alert_timeout = get_setting("alert_timeout", "5");
+
+                                    // For each possible timeout
+                                    foreach($possible_timeouts as $key => $value)
+                                    {
+                                        echo "<option value=\"" . $key . "\"" . ($key == $alert_timeout ? " selected" : "") . ">" . $escaper->escapeHtml($value) . "</option>\n";
+                                    }
+
+                                    echo "</select>\n";
+                                ?>
+                              </td>
+                            </tr>
                           </tbody>
                         </table>
                       </td>
@@ -611,8 +657,6 @@
                                     $default_date_format = $escaper->escapeHtml(get_setting("default_date_format"));
 
                                     create_dropdown("date_formats", $default_date_format, "default_date_format", false);
-
-                                    echo "</select>\n";
                                 ?>
                               </td>
                             </tr>
@@ -661,6 +705,10 @@
                                     <option value="ResidualRisk" <?php echo $escaper->escapeHtml(get_setting("next_review_date_uses")) == "ResidualRisk" ? "selected" : ""; ?>><?php echo $escaper->escapeHtml($lang['ResidualRisk']); ?></option>
                                 </select>
                               </td>
+                            </tr>
+                            <tr>
+                              <td><?php echo $escaper->escapeHtml($lang['SimpleriskBaseUrl']) ?>:</td>
+                              <td><input type="text" name="simplerisk_base_url" value="<?php echo $escaper->escapeHtml(get_setting("simplerisk_base_url")); ?>" /></td>
                             </tr>
                           </tbody>
                         </table>

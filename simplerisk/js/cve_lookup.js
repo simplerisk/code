@@ -50,18 +50,15 @@ function get_cve_info(cve, parent)
  *******************************/
 function process_cve_info(cve_info_json, parent)
 {
-    // Parse out the JSON values and process them
-    var url = cve_info_json[0]['url'];
-//	document.getElementById('notes').value=url;
-    $("[name=notes]", parent).val(url)
-    
-    var summary = cve_info_json[0]['summary'];
-//	document.getElementById('assessment').value=summary;
-    $("[name=assessment]").val(summary)
-    
-    var id = cve_info_json[0]['id'];
-    var modified = cve_info_json[0]['modified'];
-    var published = cve_info_json[0]['published'];
+    if (cve_info_json && cve_info_json[0]) {
+        // Parse out the JSON values and process them
+
+        if ('url' in cve_info_json[0])
+            $("[name=notes]", parent).val(cve_info_json[0]['url']);
+
+        if ('summary' in cve_info_json[0])
+            $("[name=assessment]").val(cve_info_json[0]['summary']);
+    }
 }
 
 /***************************
@@ -87,27 +84,27 @@ function get_cvss_info(cve, parent)
  *******************************/
 function process_cvss_info(cvss_info_json, parent)
 {
-	// Parse out the JSON values and process them
-	var access_complexity = cvss_info_json[0]['Access Complexity'];
-	process_access_complexity(access_complexity, parent);
-    
-	var access_vector = cvss_info_json[0]['Access Vector'];
-	process_access_vector(access_vector, parent);
-    
-	var authentication = cvss_info_json[0]['Authentication'];
-	process_authentication(authentication, parent);
-    
-	var availability_impact = cvss_info_json[0]['Availability Impact'];
-	process_availability_impact(availability_impact, parent);
-    
-	var base = cvss_info_json[0]['Base'];
-	var confidentiality_impact = cvss_info_json[0]['Confidentiality Impact'];
-	process_confidentiality_impact(confidentiality_impact, parent);
-    
-	var exploit = cvss_info_json[0]['Exploit'];
-	var impact = cvss_info_json[0]['Impact'];
-	var integrity_impact = cvss_info_json[0]['Integrity Impact'];
-	process_integrity_impact(integrity_impact, parent);
+    if (cvss_info_json && cvss_info_json[0]) {
+        // Parse out the JSON values and process them
+
+        if ('Access Complexity' in cvss_info_json[0])
+            process_access_complexity(cvss_info_json[0]['Access Complexity'], parent);
+
+        if ('Access Vector' in cvss_info_json[0])
+            process_access_vector(cvss_info_json[0]['Access Vector'], parent);
+
+        if ('Authentication' in cvss_info_json[0])
+            process_authentication(cvss_info_json[0]['Authentication'], parent);
+
+        if ('Availability Impact' in cvss_info_json[0])
+            process_availability_impact(cvss_info_json[0]['Availability Impact'], parent);
+
+        if ('Confidentiality Impact' in cvss_info_json[0])
+            process_confidentiality_impact(cvss_info_json[0]['Confidentiality Impact'], parent);
+
+        if ('Integrity Impact' in cvss_info_json[0])
+            process_integrity_impact(cvss_info_json[0]['Integrity Impact'], parent);
+    }
 }
 
 /***************************************
@@ -241,7 +238,6 @@ function select_cvss(parent)
     $(".dread-holder", parent).hide();
     $(".owasp-holder", parent).hide();
     $(".custom-holder", parent).hide();
-    
 }
 
 /*************************
@@ -303,17 +299,17 @@ function handleSelection(choice, parent) {
  *****************************/
 function get_nessus_info(cve, parent)
 {
-        $.ajax({
-            type:'GET',
-            url:'https://vfeed.simplerisk.com/?method=get_nessus&id='+cve,
-            processData: true,
-            cache: true,
-            data: {},
-            dataType: 'json',
-            success: function (data) {
-                    process_nessus_info(data, parent);
-            }
-        });
+    $.ajax({
+        type:'GET',
+        url:'https://vfeed.simplerisk.com/?method=get_nessus&id='+cve,
+        processData: true,
+        cache: true,
+        data: {},
+        dataType: 'json',
+        success: function (data) {
+                process_nessus_info(data, parent);
+        }
+    });
 }
 
 /*********************************
@@ -321,12 +317,9 @@ function get_nessus_info(cve, parent)
  *********************************/
 function process_nessus_info(cve_info_json, parent)
 {
-    // Parse out the JSON values and process them
-    var name = cve_info_json[0]['name'];
-//      document.getElementById('notes').value=url;
-    $("[name=subject]").val(name)
-
-    var family = cve_info_json[0]['family'];
-    var file = cve_info_json[0]['file'];
-    var id = cve_info_json[0]['id'];
+    if (cve_info_json && cve_info_json[0]) {
+        // Parse out the JSON values and process them
+        if ('name' in cve_info_json[0])
+            $("[name=subject]").val(cve_info_json[0]['name']);
+    }
 }

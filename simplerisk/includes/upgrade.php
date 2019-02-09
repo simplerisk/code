@@ -10,6 +10,7 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/assessments.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
 require_once(realpath(__DIR__ . '/assets.php'));
+require_once(realpath(__DIR__ . '/governance.php'));
 
 // Include the language file
 require_once(language_file());
@@ -323,7 +324,7 @@ function upgrade_from_20140728001($db)
 
     // Creating a table to store supporting documentation files
     echo "Creating a table to store supporting documentation files.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE files(id INT NOT NULL AUTO_INCREMENT, risk_id INT NOT NULL, name VARCHAR(100) NOT NULL, unique_name VARCHAR(30) NOT NULL, type VARCHAR(30) NOT NULL, size INT NOT NULL, timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, user INT NOT NULL, content BLOB NOT NULL, PRIMARY KEY(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS files(id INT NOT NULL AUTO_INCREMENT, risk_id INT NOT NULL, name VARCHAR(100) NOT NULL, unique_name VARCHAR(30) NOT NULL, type VARCHAR(30) NOT NULL, size INT NOT NULL, timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, user INT NOT NULL, content BLOB NOT NULL, PRIMARY KEY(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Strip slashes from user table entries
@@ -539,9 +540,11 @@ function upgrade_from_20141214001($db)
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
     // Add the field to track asset management permission
-    echo "Adding a field to track asset management permissions.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD asset tinyint(1) DEFAULT 0 NOT NULL AFTER lang;");
-    $stmt->execute();
+    if (!field_exists_in_table('asset', 'user')) {
+        echo "Adding a field to track asset management permissions.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD asset tinyint(1) DEFAULT 0 NOT NULL AFTER lang;");
+        $stmt->execute();
+    }
 
     // Give admin users asset management permissions
     echo "Giving admin users asset management permissions.<br />\n";
@@ -661,9 +664,11 @@ function upgrade_from_20150321001($db)
     $stmt->execute();
 
     // Add an id column to the review levels table
-    echo "Adding an id column to the review levels table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `review_levels` ADD id int(11) DEFAULT 0 NOT NULL FIRST;");
-    $stmt->execute();
+    if (!field_exists_in_table('id', 'review_levels')) {
+        echo "Adding an id column to the review levels table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `review_levels` ADD id int(11) DEFAULT 0 NOT NULL FIRST;");
+        $stmt->execute();
+    }
 
     // Set default ids for the review levels table
     echo "Setting default ids for the review levels table.<br />\n";
@@ -679,9 +684,11 @@ function upgrade_from_20150321001($db)
         $stmt->execute();
     
     // Add a new Very High user responsibility
-    echo "Adding a new Very High user responsibility.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD review_veryhigh tinyint(1) NOT NULL DEFAULT '0' AFTER `admin`;");
-    $stmt->execute();
+    if (!field_exists_in_table('review_veryhigh', 'user')) {
+        echo "Adding a new Very High user responsibility.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD review_veryhigh tinyint(1) NOT NULL DEFAULT '0' AFTER `admin`;");
+        $stmt->execute();
+    }
 
     // Give admin users ability to review Very High risks
     echo "Giving admin users the ability to review Very High risks.<br />\n";
@@ -689,9 +696,11 @@ function upgrade_from_20150321001($db)
     $stmt->execute();
 
     // Add a new Insignificant user responsibility
-    echo "Adding a new Insignificant user responsibility.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD review_insignificant tinyint(1) NOT NULL DEFAULT '0' AFTER `review_low`;");
+    if (!field_exists_in_table('review_insignificant', 'user')) {
+        echo "Adding a new Insignificant user responsibility.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD review_insignificant tinyint(1) NOT NULL DEFAULT '0' AFTER `review_low`;");
         $stmt->execute();
+    }
 
     // Give admin users ability to review Insignificant risks
     echo "Giving admin users the ability to review Insignificant risks.<br />\n";
@@ -726,7 +735,7 @@ function upgrade_from_20150531001($db)
 
     // Create a new file type table
     echo "Creating a new table to track upload file types.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE `file_types` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `file_types` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add default file types
@@ -745,9 +754,11 @@ function upgrade_from_20150531001($db)
     $stmt->execute();
 
     // Add a mitigation_team field to the mitigations table
-    echo "Adding a mitigation_team field to the mitigations table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_team int(11) NOT NULL AFTER mitigation_effort;");
-    $stmt->execute();
+    if (!field_exists_in_table('mitigation_team', 'mitigations')) {
+        echo "Adding a mitigation_team field to the mitigations table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_team int(11) NOT NULL AFTER mitigation_effort;");
+        $stmt->execute();
+    }
 
     // If the batch asset file exists
     if (file_exists(realpath(__DIR__ . '/../assets/batch.php')))
@@ -763,9 +774,11 @@ function upgrade_from_20150531001($db)
     }
 
     // Add a value column to the assets table
-    echo "Adding a value column to the assets table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `assets` ADD value int(11) DEFAULT 5 AFTER name;");
-    $stmt->execute();
+    if (!field_exists_in_table('value', 'assets')) {
+        echo "Adding a value column to the assets table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `assets` ADD value int(11) DEFAULT 5 AFTER name;");
+        $stmt->execute();
+    }
 
     // Add a setting to show not registered
     echo "Adding a setting to show SimpleRisk is not registered.<br />\n";
@@ -914,44 +927,48 @@ function upgrade_from_20150930001($db)
     $stmt->execute();
 
     // Add a location field for assets
-    echo "Adding a location field for assets.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `assets` ADD location int(11) NOT NULL AFTER value;");
-    $stmt->execute();
+    if (!field_exists_in_table('location', 'assets')) {
+        echo "Adding a location field for assets.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `assets` ADD location int(11) NOT NULL AFTER value;");
+        $stmt->execute();
+    }
 
     // Add a team field for assets
-    echo "Adding a team field for assets.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `assets` ADD team int(11) NOT NULL AFTER location;");
-    $stmt->execute();
+    if (!field_exists_in_table('team', 'assets')) {
+        echo "Adding a team field for assets.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `assets` ADD team int(11) NOT NULL AFTER location;");
+        $stmt->execute();
+    }
 
-        // If the manage asset file exists
-        if (file_exists(realpath(__DIR__ . '/../assets/manage.php')))
-        {
-                // Delete the manage asset file
-                echo "Deleting the asset management file.<br />\n";
+    // If the manage asset file exists
+    if (file_exists(realpath(__DIR__ . '/../assets/manage.php')))
+    {
+        // Delete the manage asset file
+        echo "Deleting the asset management file.<br />\n";
         $file = realpath(__DIR__ . '/../assets/manage.php');
         $success = delete_file($file);
-                if (!$success)
-                {
-                        echo "<font color=\"red\"><b>Could not delete the asset management file.  You can manually delete it here: " . realpath(__DIR__ . '/../assets/manage.php') . "</b></font><br />\n";
-                }
-        }
-
-        // If the asset valuation file exists
-        if (file_exists(realpath(__DIR__ . '/../assets/valuation.php')))
+        if (!$success)
         {
-                // Delete the asset valuation file
-                echo "Deleting the asset valuation file.<br />\n";
+            echo "<font color=\"red\"><b>Could not delete the asset management file.  You can manually delete it here: " . realpath(__DIR__ . '/../assets/manage.php') . "</b></font><br />\n";
+        }
+    }
+
+    // If the asset valuation file exists
+    if (file_exists(realpath(__DIR__ . '/../assets/valuation.php')))
+    {
+        // Delete the asset valuation file
+        echo "Deleting the asset valuation file.<br />\n";
         $file = realpath(__DIR__ . '/../assets/valuation.php');
         $success = delete_file($file);
-                if (!$success)
-                {
-                        echo "<font color=\"red\"><b>Could not delete the asset valuation file.  You can manually delete it here: " . realpath(__DIR__ . '/../assets/valuation.php') . "</b></font><br />\n";
-                }
+        if (!$success)
+        {
+            echo "<font color=\"red\"><b>Could not delete the asset valuation file.  You can manually delete it here: " . realpath(__DIR__ . '/../assets/valuation.php') . "</b></font><br />\n";
         }
+    }
 
     // Create the asset values table
     echo "Creating the asset values table.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE `asset_values` (`id` int(11) NOT NULL, `min_value` int(11) NOT NULL, `max_value` int(11) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `asset_values` (`id` int(11) NOT NULL, `min_value` int(11) NOT NULL, `max_value` int(11) DEFAULT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add initial asset values
@@ -965,14 +982,18 @@ function upgrade_from_20150930001($db)
     $stmt->execute();
 
     // Add a mitigation_owner field to the mitigations table
-    echo "Adding a mitigation_owner field to the mitigations table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_owner int(11) NOT NULL AFTER mitigation_effort;");
-    $stmt->execute();
+    if (!field_exists_in_table('mitigation_owner', 'mitigations')) {
+        echo "Adding a mitigation_owner field to the mitigations table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_owner int(11) NOT NULL AFTER mitigation_effort;");
+        $stmt->execute();
+    }
 
     // Add a mitigation_cost field to the mitigations table
-    echo "Adding a mitigation_cost field to the mitigations table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_cost int(11) NOT NULL DEFAULT 1 AFTER mitigation_effort;");
-    $stmt->execute();
+    if (!field_exists_in_table('mitigation_cost', 'mitigations')) {
+        echo "Adding a mitigation_cost field to the mitigations table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD mitigation_cost int(11) NOT NULL DEFAULT 1 AFTER mitigation_effort;");
+        $stmt->execute();
+    }
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
@@ -994,9 +1015,11 @@ function upgrade_from_20151108001($db)
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
     // Add an asset_id field to the risks_to_assets table
-    echo "Adding an asset_id field to the risks_to_assets table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `risks_to_assets` ADD COLUMN `asset_id` int(11) NOT NULL AFTER risk_id;");
-    $stmt->execute();
+    if (!field_exists_in_table('asset_id', 'risks_to_assets')) {
+        echo "Adding an asset_id field to the risks_to_assets table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks_to_assets` ADD COLUMN `asset_id` int(11) NOT NULL AFTER risk_id;");
+        $stmt->execute();
+    }
 
     // Delete orphaned entries in the assets table
     echo "Deleting orphaned entries in the assets table.<br />\n";
@@ -1014,13 +1037,15 @@ function upgrade_from_20151108001($db)
     $stmt->execute();
 
     // Add a type field to the file table
-    echo "Adding a type field to the file table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `files` ADD COLUMN `view_type` int(11) DEFAULT 1 AFTER `risk_id`;");
-    $stmt->execute(); 
+    if (!field_exists_in_table('view_type', 'files')) {
+        echo "Adding a type field to the file table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `files` ADD COLUMN `view_type` int(11) DEFAULT 1 AFTER `risk_id`;");
+        $stmt->execute();
+    }
 
     // Add a new status table
     echo "Adding a new status table.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE `status` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `status` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
     // Add new custom statuses
@@ -1075,7 +1100,7 @@ function upgrade_from_20151219001($db)
 
     // Add a risk source table
     echo "Adding a new risk source table.<br />\n";
-    $stmt = $db->prepare("CREATE TABLE `source` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `source` (value int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
 
         // Add new custom statuses
@@ -1106,9 +1131,11 @@ function upgrade_from_20151219001($db)
         $stmt->execute();
 
         // Add a source column to the risks table
-        echo "Adding a source column to the risks table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `risks` ADD source int(11) NOT NULL AFTER location;");
-        $stmt->execute();
+        if (!field_exists_in_table('source', 'risks')) {
+            echo "Adding a source column to the risks table.<br />\n";
+            $stmt = $db->prepare("ALTER TABLE `risks` ADD source int(11) NOT NULL AFTER location;");
+            $stmt->execute();
+        }
 
         // Update the database version
         update_database_version($db, $version_to_upgrade, $version_upgrading_to);
@@ -1121,13 +1148,13 @@ function upgrade_from_20151219001($db)
  **************************************/
 function upgrade_from_20160124001($db)
 {
-        // Database version to upgrade
-        $version_to_upgrade = '20160124-001';
+    // Database version to upgrade
+    $version_to_upgrade = '20160124-001';
 
-        // Database version upgrading to
-        $version_upgrading_to = '20160331-001';
+    // Database version upgrading to
+    $version_upgrading_to = '20160331-001';
 
-        echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
     // Delete old extra versions from settings table
     echo "Deleting old extra versions from settings table.<br />\n";
@@ -1140,20 +1167,22 @@ function upgrade_from_20160124001($db)
     $stmt = $db->prepare("DELETE FROM `settings` WHERE name='import_export_version';");
     $stmt->execute();
 
-        // Add the field to track assessments permission
+    // Add the field to track assessments permission
+    if (!field_exists_in_table('assessments', 'user')) {
         echo "Adding a field to track assessments permissions.<br />\n";
         $stmt = $db->prepare("ALTER TABLE `user` ADD assessments tinyint(1) DEFAULT 0 NOT NULL AFTER lang;");
         $stmt->execute();
+    }
 
-        // Give admin users assessments permissions
-        echo "Giving admin users assessments permissions.<br />\n";
-        $stmt = $db->prepare("UPDATE `user` SET assessments='1' WHERE admin='1';");
-        $stmt->execute();
+    // Give admin users assessments permissions
+    echo "Giving admin users assessments permissions.<br />\n";
+    $stmt = $db->prepare("UPDATE `user` SET assessments='1' WHERE admin='1';");
+    $stmt->execute();
 
-        // Add the assessment tracking table
-        echo "Adding the table to track assessments.<br />\n";
-        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assessments` (id int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(200) NOT NULL, created TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-        $stmt->execute();
+    // Add the assessment tracking table
+    echo "Adding the table to track assessments.<br />\n";
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `assessments` (id int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(200) NOT NULL, created TIMESTAMP DEFAULT NOW()) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt->execute();
 
     // Add the assessment questions table
     echo "Adding the table to track assessment questions.<br />\n";
@@ -1356,9 +1385,11 @@ function upgrade_from_20161122001($db)
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
     // Added a new field mitigate planning date to the mitigate table
-    echo "Adding a new field mitigate planning date to the mitigate table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `mitigations` ADD `planning_date` DATE NOT NULL AFTER `submitted_by`;");
-    $stmt->execute();
+    if (!field_exists_in_table('planning_date', 'mitigations')) {
+        echo "Adding a new field mitigate planning date to the mitigate table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD `planning_date` DATE NOT NULL AFTER `submitted_by`;");
+        $stmt->execute();
+    }
 
     // Updated user to be able to allow for more teams
     echo "Updating the user to be able to allow for more teams.<br />\n";
@@ -1366,9 +1397,11 @@ function upgrade_from_20161122001($db)
     $stmt->execute();
 
     // Added a new field, details to the asset table
-    echo "Adding a new field, details to the asset table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `assets` ADD  `details` LONGTEXT  AFTER `team`;");
-    $stmt->execute();
+    if (!field_exists_in_table('details', 'assets')) {
+        echo "Adding a new field, details to the asset table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `assets` ADD  `details` LONGTEXT  AFTER `team`;");
+        $stmt->execute();
+    }
 
     // Added new rows, pass_policy_min_age, pass_policy_max_age, pass_policy_attempt_lockout, pass_policy_re_use_tracking to the settings table.
     echo "Adding new rows for pass_policy_min_age, pass_policy_max_age, pass_policy_attempt_lockout, pass_policy_re_use_tracking to the settings table. <br />\n";
@@ -1387,9 +1420,11 @@ function upgrade_from_20161122001($db)
     $stmt->execute();
 
     // Added last_password_change_date to user table:
-    echo "Adding last_password_change_date to user table. <br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD `last_password_change_date` TIMESTAMP DEFAULT NOW() AFTER `last_login`;");
-    $stmt->execute();
+    if (!field_exists_in_table('last_password_change_date', 'user')) {
+        echo "Adding last_password_change_date to user table. <br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `last_password_change_date` TIMESTAMP DEFAULT NOW() AFTER `last_login`;");
+        $stmt->execute();
+    }
 
     // Set last password change date to current date for all users
     echo "Setting the last password change date to now for all users.<br />\n";
@@ -1397,9 +1432,11 @@ function upgrade_from_20161122001($db)
     $stmt->execute();
 
     // Add lockout to user table
-    echo "Adding lockout to user table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD `lockout` TINYINT NOT NULL DEFAULT 0 AFTER `enabled`;");
-    $stmt->execute();
+    if (!field_exists_in_table('lockout', 'user')) {
+        echo "Adding lockout to user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `lockout` TINYINT NOT NULL DEFAULT 0 AFTER `enabled`;");
+        $stmt->execute();
+    }
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
@@ -1430,8 +1467,10 @@ function upgrade_from_20170102001($db){
     $stmt->execute();
 
     // Set a primary key to risk score table.
-    $stmt = $db->prepare("ALTER TABLE `risk_scoring_history` ADD PRIMARY KEY (`id`);");
-    $stmt->execute();
+    if (!field_exists_in_table('id', 'risk_scoring_history')) {
+        $stmt = $db->prepare("ALTER TABLE `risk_scoring_history` ADD PRIMARY KEY (`id`);");
+        $stmt->execute();
+    }
 
     // Set a primary key to auto increment.
     $stmt = $db->prepare("ALTER TABLE `risk_scoring_history` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;");
@@ -1491,9 +1530,11 @@ function upgrade_from_20170108001($db){
     $stmt->execute();
     
     // Added color field to risk_levels table.
-    echo "Added a color field to risk_levels table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `risk_levels` ADD `color` VARCHAR(20) NOT NULL AFTER `name`; ");
-    $stmt->execute();
+    if (!field_exists_in_table('color', 'risk_levels')) {
+        echo "Added a color field to risk_levels table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risk_levels` ADD `color` VARCHAR(20) NOT NULL AFTER `name`; ");
+        $stmt->execute();
+    }
 
     $stmt = $db->prepare("UPDATE `risk_levels` SET `color` = 'red' WHERE `name` = 'Very High'; ");
     $stmt->execute();
@@ -1589,9 +1630,11 @@ function upgrade_from_20170416001($db){
     $stmt->execute();
 
     // Add a new field, `change_password` to user table
-    echo "Add a new field, `change_password` to user table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD `change_password` TINYINT NOT NULL DEFAULT '0';");
-    $stmt->execute();
+    if (!field_exists_in_table('change_password', 'user')) {
+        echo "Add a new field, `change_password` to user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `change_password` TINYINT NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
@@ -1611,14 +1654,18 @@ function upgrade_from_20170614001($db){
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
     // Add a new field, mitigation_percent to mitigations table
-    echo "Add a new field, `mitigation_percent` to `mitigations` table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `mitigations` ADD `mitigation_percent` INT NOT NULL;");
-    $stmt->execute();
+    if (!field_exists_in_table('mitigation_percent', 'mitigations')) {
+        echo "Add a new field, `mitigation_percent` to `mitigations` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD `mitigation_percent` INT NOT NULL;");
+        $stmt->execute();
+    }
 
     // Add a new field, custom_display_settings to manage dynamic columns
-    echo "Add a new field, `custom_display_settings` to `user` table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD `custom_display_settings` VARCHAR( 1000 ) NOT NULL;");
-    $stmt->execute();
+    if (!field_exists_in_table('custom_display_settings', 'user')) {
+        echo "Add a new field, `custom_display_settings` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `custom_display_settings` VARCHAR( 1000 ) NOT NULL;");
+        $stmt->execute();
+    }
 
     // Add a new setting, default risk score
     echo "Add a new setting, default risk score.<br />\n";
@@ -1626,9 +1673,11 @@ function upgrade_from_20170614001($db){
     $stmt->execute();
 
     // Add a new field to risks table
-    echo "Add a new field, `additional_stakeholders` to risks table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `risks` ADD `additional_stakeholders` VARCHAR( 500 ) NOT NULL;");
-    $stmt->execute();
+    if (!field_exists_in_table('additional_stakeholders', 'risks')) {
+        echo "Add a new field, `additional_stakeholders` to risks table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD `additional_stakeholders` VARCHAR( 500 ) NOT NULL;");
+        $stmt->execute();
+    }
 
     // Set NOTIFY_ADDITIONAL_STAKEHOLDERS to true by default
     echo "Set NOTIFY_ADDITIONAL_STAKEHOLDERS to true by default.<br />\n";
@@ -1697,24 +1746,32 @@ function upgrade_from_20170724001($db){
     }
     
     // Add a field, comment to pending_risks table
-    echo "Add a comment field for pending risks.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `pending_risks` ADD `comment` VARCHAR( 500 ) NULL AFTER `asset`; ");
-    $stmt->execute();
+    if (!field_exists_in_table('comment', 'pending_risks')) {
+        echo "Add a comment field for pending risks.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `pending_risks` ADD `comment` VARCHAR( 500 ) NULL AFTER `asset`; ");
+        $stmt->execute();
+    }
 
     // Add a new field, `compliance` to user table
-    echo "Adding a new `compliance` permission to the user table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD `compliance` TINYINT NOT NULL DEFAULT '0' AFTER `lang`;");
-    $stmt->execute();
+    if (!field_exists_in_table('compliance', 'user')) {
+        echo "Adding a new `compliance` permission to the user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `compliance` TINYINT NOT NULL DEFAULT '0' AFTER `lang`;");
+        $stmt->execute();
+    }
 
     // Add a new field, `riskmanagement` to user table
-    echo "Adding a new `riskmanagement` permission to the user table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD `riskmanagement` TINYINT NOT NULL DEFAULT '1' AFTER `lang`;");
-    $stmt->execute();
+    if (!field_exists_in_table('riskmanagement', 'user')) {
+        echo "Adding a new `riskmanagement` permission to the user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `riskmanagement` TINYINT NOT NULL DEFAULT '1' AFTER `lang`;");
+        $stmt->execute();
+    }
 
     // Add a new field, `governance` to user table
-    echo "Adding a new `governance` permission to the user table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD `governance` TINYINT NOT NULL DEFAULT '0' AFTER `lang`;");
-    $stmt->execute();
+    if (!field_exists_in_table('governance', 'user')) {
+        echo "Adding a new `governance` permission to the user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `governance` TINYINT NOT NULL DEFAULT '0' AFTER `lang`;");
+        $stmt->execute();
+    }
 
     // Give admin users governance permissions
     echo "Giving admin users governance permissions.<br />\n";
@@ -1736,8 +1793,10 @@ function upgrade_from_20170724001($db){
     $stmt->execute();
 
     // Add some common control frameworks
-    $stmt = $db->prepare("ALTER TABLE `frameworks` ADD `order` INT NOT NULL;");
-    $stmt->execute();
+    if (!field_exists_in_table('order', 'frameworks')) {
+        $stmt = $db->prepare("ALTER TABLE `frameworks` ADD `order` INT NOT NULL;");
+        $stmt->execute();
+    }
 
     // Update the assessment answers table to accept a float for risk score
     echo "Updating the assessment answers table to accept a float for risk score.<br />\n";
@@ -1766,12 +1825,14 @@ function upgrade_from_20170724001($db){
     $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `fields` (id int(11) AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL UNIQUE, type VARCHAR(20) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
     $stmt->execute();
 
-     // Add assessment_answer_id field to pending_risks table.
-    echo "Add assessment_answer_id field to pending_risks table.<br />\n";
-    $stmt = $db->prepare("
-        ALTER TABLE `pending_risks` ADD `assessment_answer_id` INT NOT NULL AFTER `assessment_id`;
-    ");
-    $stmt->execute();
+    // Add assessment_answer_id field to pending_risks table.
+    if (!field_exists_in_table('assessment_answer_id', 'pending_risks')) {
+        echo "Add assessment_answer_id field to pending_risks table.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE `pending_risks` ADD `assessment_answer_id` INT NOT NULL AFTER `assessment_id`;
+        ");
+        $stmt->execute();
+    }
     
    // Creating a table to store framework controls.
     echo "Creating a table to store framework controls.<br />\n";
@@ -1870,11 +1931,13 @@ function upgrade_from_20170724001($db){
     $stmt->execute();
     
     // Add mitigation_controls field to `mitigations` table
-    echo "Add mitigation_controls field to `mitigations` table.<br />\n";
-    $stmt = $db->prepare("
-        ALTER TABLE `mitigations` ADD `mitigation_controls` MEDIUMTEXT;
-    ");
-    $stmt->execute();
+    if (!field_exists_in_table('mitigation_controls', 'mitigations')) {
+        echo "Add mitigation_controls field to `mitigations` table.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE `mitigations` ADD `mitigation_controls` MEDIUMTEXT;
+        ");
+        $stmt->execute();
+    }
 
     // Add PHPMailer settings
     echo "Adding PHPMailer setting for SMTP Auto TLS.<br />\n";
@@ -1906,20 +1969,51 @@ function upgrade_from_20170724001($db){
     $stmt->execute();
     
     // Add parent field to frameworks
-    echo "Adding parent field to frameworks.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `frameworks` ADD `parent` INT NOT NULL AFTER `value`;");
-    $stmt->execute();
+    if (!field_exists_in_table('parent', 'frameworks')) {
+        echo "Adding parent field to frameworks.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `frameworks` ADD `parent` INT NOT NULL AFTER `value`;");
+        $stmt->execute();
+    }
     
     // Add last_audit_date, next_audit_date, desired_frequency field to frameworks
-    echo "Adding last_audit_date, next_audit_date, desired_frequency, status field to frameworks.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `frameworks` ADD `last_audit_date` DATE , ADD `next_audit_date` DATE , ADD `desired_frequency` INT ;");
-    $stmt->execute();
+    if (!field_exists_in_table('last_audit_date', 'frameworks')) {
+        echo "Adding last_audit_date field to frameworks.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `frameworks` ADD `last_audit_date` DATE;");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('next_audit_date', 'frameworks')) {
+        echo "Adding next_audit_date field to frameworks.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `frameworks` ADD `next_audit_date` DATE;");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('desired_frequency', 'frameworks')) {
+        echo "Adding desired_frequency field to frameworks.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `frameworks` ADD `desired_frequency` INT;");
+        $stmt->execute();
+    }    
     
     // Add last_audit_date, next_audit_date, desired_frequency field to framework_controls
-    echo "Adding last_audit_date, next_audit_date, desired_frequency, status field to framework_controls.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `last_audit_date` DATE , ADD `next_audit_date` DATE , ADD `desired_frequency` INT, ADD `status` INT NOT NULL DEFAULT '1' ;");
-    $stmt->execute();
-    
+    if (!field_exists_in_table('last_audit_date', 'framework_controls')) {
+        echo "Adding last_audit_date field to framework_controls.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `last_audit_date` DATE;");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('next_audit_date', 'framework_controls')) {
+        echo "Adding next_audit_date field to framework_controls.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `next_audit_date` DATE;");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('desired_frequency', 'framework_controls')) {
+        echo "Adding desired_frequency field to framework_controls.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `desired_frequency` INT;");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('status', 'framework_controls')) {
+        echo "Adding status field to framework_controls.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `status` INT NOT NULL DEFAULT '1';");
+        $stmt->execute();
+    }
+
     // Create `framework_control_test_audits` table
     echo "Creating `framework_control_test_audits` table.<br />\n";
     $stmt = $db->prepare("
@@ -1982,7 +2076,7 @@ function upgrade_from_20170724001($db){
         CREATE TABLE IF NOT EXISTS `framework_control_test_comments` (
           `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
           `test_audit_id` int(11) NOT NULL,
-          `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
           `user` int(11) NOT NULL,
           `comment` mediumtext NOT NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
@@ -1990,9 +2084,11 @@ function upgrade_from_20170724001($db){
     $stmt->execute();
 
     // Add a log_type field
-    echo "Adding a log_type field.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `audit_log` ADD `log_type` VARCHAR(100) NOT NULL ;");
-    $stmt->execute();
+    if (!field_exists_in_table('log_type', 'audit_log')) {
+        echo "Adding a log_type field.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `audit_log` ADD `log_type` VARCHAR(100) NOT NULL ;");
+        $stmt->execute();
+    }
 
     // Set the timestamp not to update on update
     echo "Setting the timestamp for the audit_log not to update on update.<br />\n";
@@ -2056,9 +2152,11 @@ function upgrade_from_20170724001($db){
     $stmt->execute();
 
     // Add assessment_scoring_id field to assessment_answers table
-    echo "Adding assessment_scoring_id field to assessment_answers table. <br />\n";
-    $stmt = $db->prepare("ALTER TABLE `assessment_answers` ADD `assessment_scoring_id` INT NOT NULL AFTER `risk_score` ");
-    $stmt->execute();
+    if (!field_exists_in_table('assessment_scoring_id', 'assessment_answers')) {
+        echo "Adding assessment_scoring_id field to assessment_answers table. <br />\n";
+        $stmt = $db->prepare("ALTER TABLE `assessment_answers` ADD `assessment_scoring_id` INT NOT NULL AFTER `risk_score` ");
+        $stmt->execute();
+    }
     
     // Add an entry in the assessment_scoring table for each current assessment answer
     echo "Adding an entry in the assessment scoring table for each assessment answer.<br />\n";
@@ -2112,9 +2210,11 @@ function upgrade_from_20180104001($db){
     $stmt->execute();
 
     // Add a mitigation_percent field to framework_controls table
-    echo "Adding a mitigation_percent field to framework_controls table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `mitigation_percent` INT NOT NULL DEFAULT '0' AFTER `desired_frequency`;");
-    $stmt->execute();
+    if (!field_exists_in_table('mitigation_percent', 'framework_controls')) {
+        echo "Adding a mitigation_percent field to framework_controls table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `mitigation_percent` INT NOT NULL DEFAULT '0' AFTER `desired_frequency`;");
+        $stmt->execute();
+    }
 
     // Created a table, test_status.
     echo "Creating a table, test_status.<br />\n";
@@ -2234,14 +2334,18 @@ function upgrade_from_20180301001($db){
     $stmt->execute();
 
     // Add deleted field to framework_controls table
-    echo "Adding deleted field to framework_controls table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `deleted` TINYINT NOT NULL DEFAULT '0';");
-    $stmt->execute();
+    if (!field_exists_in_table('deleted', 'framework_controls')) {
+        echo "Adding deleted field to framework_controls table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `deleted` TINYINT NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
 
     // Add display_name field to risk_levels table
-    echo "Adding display_name field to risk_levels table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `risk_levels` ADD `display_name` VARCHAR(20) NOT NULL; ");
-    $stmt->execute();
+    if (!field_exists_in_table('display_name', 'risk_levels')) {
+        echo "Adding display_name field to risk_levels table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risk_levels` ADD `display_name` VARCHAR(20) NOT NULL; ");
+        $stmt->execute();
+    }
 
     // Set display_name values
     echo "Setting display_name values.<br />\n";
@@ -2310,14 +2414,18 @@ function upgrade_from_20180301001($db){
     $stmt->execute();
     
     // Add a field, role_id to `user` table
-    echo "Adding a field, role_id to `user` table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD `role_id` INT NOT NULL AFTER `teams` ;");
-    $stmt->execute();
+    if (!field_exists_in_table('role_id', 'user')) {
+        echo "Adding a field, role_id to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `role_id` INT NOT NULL AFTER `teams` ;");
+        $stmt->execute();
+    }
 
     // Add a field, accept_mitigation to `user` table
-    echo "Adding a field, accept_mitigation to `user` table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD `accept_mitigation` TINYINT(1) NOT NULL DEFAULT '0' AFTER `review_high`; ");
-    $stmt->execute();
+    if (!field_exists_in_table('accept_mitigation', 'user')) {
+        echo "Adding a field, accept_mitigation to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `accept_mitigation` TINYINT(1) NOT NULL DEFAULT '0' AFTER `review_high`; ");
+        $stmt->execute();
+    }
     
     // Get all teams
     $stmt = $db->prepare("SELECT value FROM `team` ");
@@ -2341,14 +2449,39 @@ function upgrade_from_20180301001($db){
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ");
     $stmt->execute();
-    
-    // Add new fields to user table 
-    echo "Adding new fields, `add_new_frameworks`, `modify_frameworks`, `delete_frameworks`, `add_new_controls`, `modify_controls`, `delete_controls` to `user` table.<br />\n";
-    $stmt = $db->prepare("
-        ALTER TABLE `user` ADD `add_new_frameworks` TINYINT NOT NULL DEFAULT '0' , ADD `modify_frameworks` TINYINT NOT NULL DEFAULT '0' , ADD `delete_frameworks` TINYINT NOT NULL DEFAULT '0' , ADD `add_new_controls` TINYINT NOT NULL DEFAULT '0' , ADD `modify_controls` TINYINT NOT NULL DEFAULT '0' , ADD `delete_controls` TINYINT NOT NULL DEFAULT '0' ; 
-    ");
-    $stmt->execute();
-    
+
+    // Add new fields to user table
+    if (!field_exists_in_table('add_new_frameworks', 'user')) {
+        echo "Adding new field `add_new_frameworks` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `add_new_frameworks` TINYINT NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('modify_frameworks', 'user')) {
+        echo "Adding new field `modify_frameworks` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `modify_frameworks` TINYINT NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('delete_frameworks', 'user')) {
+        echo "Adding new field `delete_frameworks` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `delete_frameworks` TINYINT NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('add_new_controls', 'user')) {
+        echo "Adding new field `add_new_controls` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `add_new_controls` TINYINT NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('modify_controls', 'user')) {
+        echo "Adding new field `modify_controls` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `modify_controls` TINYINT NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('delete_controls', 'user')) {
+        echo "Adding new field `delete_controls` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `delete_controls` TINYINT NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+
     // Assign new governance roles to the users who currently have the Allow access to Governance  menu field checked
     $stmt = $db->prepare("UPDATE `user` SET add_new_frameworks=1, modify_frameworks=1, delete_frameworks=1, add_new_controls=1, modify_controls=1, delete_controls=1 WHERE governance=1; ");
     $stmt->execute();
@@ -2402,9 +2535,21 @@ function upgrade_from_20180627001($db){
     $stmt->execute();
     
     // Add new fields, `add_documentation`, `modify_documentation`, `delete_documentation` to user table
-    echo "Adding a new `add_documentation` permission to the user table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD `add_documentation` TINYINT NOT NULL DEFAULT '0', ADD `modify_documentation` TINYINT NOT NULL DEFAULT '0' AFTER `add_documentation`, ADD `delete_documentation` TINYINT NOT NULL DEFAULT '0' AFTER `modify_documentation`; ");
-    $stmt->execute();
+    if (!field_exists_in_table('add_documentation', 'user')) {
+        echo "Adding a new `add_documentation` permission to the user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `add_documentation` TINYINT NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('modify_documentation', 'user')) {
+        echo "Adding a new `modify_documentation` permission to the user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `modify_documentation` TINYINT NOT NULL DEFAULT '0' AFTER `add_documentation`;");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('delete_documentation', 'user')) {
+        echo "Adding a new `delete_documentation` permission to the user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `delete_documentation` TINYINT NOT NULL DEFAULT '0' AFTER `modify_documentation`;");
+        $stmt->execute();
+    }
 
     // Set add/modify/delete documentation responsibilities to users who currently have the Allow access to Governance menu field 
     echo "Setting add/modify/delete documentation responsibilities to users who currently have the Allow access to Governance menu field.<br />\n";
@@ -2451,11 +2596,13 @@ function upgrade_from_20180627001($db){
     $stmt->execute();
 
     // Add version filed to compliance_files table
-    echo "Adding version field to compliance_files table.<br />\n";
-    $stmt = $db->prepare("
-        ALTER TABLE `compliance_files` ADD `version` INT NULL DEFAULT NULL;
-    ");
-    $stmt->execute();
+    if (!field_exists_in_table('version', 'compliance_files')) {
+        echo "Adding version field to compliance_files table.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE `compliance_files` ADD `version` INT NULL DEFAULT NULL;
+        ");
+        $stmt->execute();
+    }
     
     // Set default impact value for invalid impacts
     echo "Setting default impact value for invalid impacts.<br />\n";
@@ -2512,9 +2659,16 @@ function upgrade_from_20180627001($db){
     $stmt->execute();
     
     // Adding comment permissions to user table
-    echo "Adding new fields, `comment_risk_management`, `comment_compliance` to `user` table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `user` ADD `comment_risk_management` TINYINT( 1 ) NOT NULL DEFAULT '0' , ADD `comment_compliance` TINYINT( 1 ) NOT NULL DEFAULT '0';");
-    $stmt->execute();
+    if (!field_exists_in_table('comment_risk_management', 'user')) {
+        echo "Adding new field `comment_risk_management` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `comment_risk_management` TINYINT( 1 ) NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('comment_compliance', 'user')) {
+        echo "Adding new field `comment_compliance` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `comment_compliance` TINYINT( 1 ) NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
 
     // Set existing user permissions to allow comments
     echo "Setting permissions for existing users with risk management access to comment.<br />\n";
@@ -2703,11 +2857,13 @@ function upgrade_from_20181103001($db){
     $stmt->execute();
     
     // Add a field Contributing_Likelihood to risk_scoring table
-    echo "Adding a field Contributing_Likelihood to risk_scoring table.<br />\n";
-    $stmt = $db->prepare("
-        ALTER TABLE `risk_scoring` ADD `Contributing_Likelihood` INT DEFAULT '0'; 
-    ");
-    $stmt->execute();
+    if (!field_exists_in_table('Contributing_Likelihood', 'risk_scoring')) {
+        echo "Adding a field Contributing_Likelihood to risk_scoring table.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE `risk_scoring` ADD `Contributing_Likelihood` INT DEFAULT '0'; 
+        ");
+        $stmt->execute();
+    }
 
     // Create assessment_scoring_contributing_impacts table
     echo "Creating assessment_scoring_contributing_impacts table.<br />\n";
@@ -2723,11 +2879,13 @@ function upgrade_from_20181103001($db){
     $stmt->execute();
 
     // Add a field Contributing_Likelihood to assessment_scoring table
-    echo "Adding a field Contributing_Likelihood to assessment_scoring table.<br />\n";
-    $stmt = $db->prepare("
-        ALTER TABLE `assessment_scoring` ADD `Contributing_Likelihood` INT DEFAULT '0'; 
-    ");
-    $stmt->execute();
+    if (!field_exists_in_table('Contributing_Likelihood', 'assessment_scoring')) {
+        echo "Adding a field Contributing_Likelihood to assessment_scoring table.<br />\n";
+        $stmt = $db->prepare("
+            ALTER TABLE `assessment_scoring` ADD `Contributing_Likelihood` INT DEFAULT '0'; 
+        ");
+        $stmt->execute();
+    }
 
     // Delete records for deleted risks from closures table
     echo "Deleting records for deleted risks from closures table.<br />\n";
@@ -2832,14 +2990,18 @@ function upgrade_from_20181103001($db){
     $stmt->execute();
 
     // Add a new field to framework_control_tests table
-    echo "Adding a new field, `additional_stakeholders` to framework_control_tests table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `framework_control_tests` ADD `additional_stakeholders` VARCHAR( 500 ) NOT NULL after `created_at`;");
-    $stmt->execute();
-    
+    if (!field_exists_in_table('additional_stakeholders', 'framework_control_tests')) {
+        echo "Adding a new field, `additional_stakeholders` to framework_control_tests table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_control_tests` ADD `additional_stakeholders` VARCHAR( 500 ) NOT NULL after `created_at`;");
+        $stmt->execute();
+    }
+
     // Adding `verified` field to the `assets` table
-    echo "Adding `verified` field to the `assets` table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `assets` ADD `verified` TINYINT NOT NULL DEFAULT 0 AFTER `created`;");
-    $stmt->execute();
+    if (!field_exists_in_table('verified', 'assets')) {
+        echo "Adding `verified` field to the `assets` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `assets` ADD `verified` TINYINT NOT NULL DEFAULT 0 AFTER `created`;");
+        $stmt->execute();
+    }
 
     // Set the existing assets' `verified` flag to true
     echo "Set the existing assets' `verified` flag to true.<br />\n";
@@ -2923,6 +3085,146 @@ function upgrade_from_20181103001($db){
         echo "Dropping the asset column from the risks_to_assets table.<br />\n";
         $stmt = $db->prepare("ALTER TABLE `risks_to_assets` DROP COLUMN `asset`;");
         $stmt->execute();
+    }
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20190105-001 *
+ ***************************************/
+function upgrade_from_20190105001($db){
+    // Database version to upgrade
+    $version_to_upgrade = '20190105-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20190210-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Update mitigation_team field from Int to String
+    echo "Updating mitigation_team field from Int to String.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `mitigations` CHANGE `mitigation_team` `mitigation_team` VARCHAR(100) DEFAULT ''; ");
+    $stmt->execute();
+
+    // Add `review_date` field to the `documents` table
+    if (!field_exists_in_table('review_date', 'documents')) {
+        echo "Add `review_date` field to the `documents` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `review_date` date AFTER `creation_date`;");
+        $stmt->execute();
+    }
+
+    // Remove the ON UPDATE CURRENT_TIMESTAMP from tables
+    echo "Removing ON UPDATE CURRENT_TIMESTAMP from closures table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `closures` CHANGE `closure_date` `closure_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;");
+    $stmt->execute();
+    echo "Removing ON UPDATE CURRENT_TIMESTAMP from comments table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `comments` CHANGE `date` `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;");
+    $stmt->execute();
+    echo "Removing ON UPDATE CURRENT_TIMESTAMP from framework_control_test_comments table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `framework_control_test_comments` CHANGE `date` `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;");
+    $stmt->execute(); 
+
+    /*Changes related to using frameworks instead of the regulations table for
+      control regulations*/
+
+    // Rename Regulation "PCI DSS" to "PCI DSS 3.2"
+    update_table("regulation", "PCI DSS 3.2", get_value_by_name("regulation", "PCI DSS"));
+
+    // Rename Framework "PCI DSS" to "PCI DSS 3.2"
+    if(get_value_by_name("frameworks", "PCI DSS")){
+        update_framework(get_value_by_name("frameworks", "PCI DSS"), "PCI DSS 3.2");
+    }
+    
+    // Rename Framework from "Sarbanes-Oxley" to "Sarbanes-Oxley (SOX)"
+    if(get_value_by_name("frameworks", "Sarbanes-Oxley")){
+        update_framework(get_value_by_name("frameworks", "Sarbanes-Oxley"), "Sarbanes-Oxley (SOX)");
+    }
+
+    // Get the list of regulations
+    $options = get_table("regulation");
+
+    $mappings = array();
+
+    // Create the regulation_id => framework_id mapping while adding the missing frameworks
+    foreach ($options as $option) {
+        $id = get_value_by_name("frameworks", $option['name']);
+        if (!$id) {
+            $id = add_framework($option['name'], "");
+        }
+
+        $mappings[$option['value']] = $id;
+    }
+
+    // Get the list of risks that have regulations setup
+    $stmt = $db->prepare("select ri.id risk_id, ri.regulation from risks ri where ri.regulation is not null and ri.regulation > 0;");
+    $stmt->execute();
+
+    // Store the list in the array
+    $risks = $stmt->fetchAll();
+
+    // Update risks to point to the new framework ids
+    foreach ($risks as $risk) {
+        $stmt = $db->prepare("UPDATE risks SET regulation = :regulation WHERE id = :id;");
+        $stmt->bindParam(":id", $risk['risk_id'], PDO::PARAM_INT);
+        $stmt->bindParam(":regulation", $mappings[$risk['regulation']], PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    // Update framework_controls to be able to allow for more framework_ids
+    echo "Updating the framework_controls to be able to allow for more framework_ids.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `framework_controls` MODIFY `framework_ids` VARCHAR(4000);");
+    $stmt->execute();
+
+    // Update dates in the 'mgmt_reviews.next_review' column thats format isn't
+    // 'Y-m-d'. If we successfully updated every date or there were none to start with
+    // we update the column's type from 'varchar(10)' to 'date'
+    require_once(realpath(__DIR__ . '/datefix.php'));
+    if (getTypeOfColumn('mgmt_reviews', 'next_review') == 'varchar') {
+        echo "Updating reviews where the `next_review` date is not in the proper format.<br />\n";
+        $count = count($reviews = getAllReviewsWithDateIssues());
+
+        if ($count) {
+            foreach ($reviews as $review) {
+                $date = $review['next_review'];
+                $pf = possibleFormats($date);
+
+                if (count($pf) == 0) { //Not a date
+                    resetNextReviewDate($review['review_id']);
+                    $count -= 1;
+                } elseif (count($pf) == 1 && fixNextReviewDateFormat($review['review_id'], $pf[0])) { //save the date
+                    $count -= 1;
+                }
+            }
+        }
+
+        // Only re-count if we have to, but do it to make sure
+        if (!$count && !count(getAllReviewsWithDateIssues())) {
+            // Change `next_review` column to date type
+            if (changeNextReviewToDateType()) {
+                echo "Successfully fixed all review date issues!<br />\n";
+            }
+        }
+    }
+
+    if (!get_setting('simplerisk_base_url') && isset($_SERVER) and array_key_exists('SERVER_NAME', $_SERVER)) {
+        echo "Setting the default value for the SimpleRisk Base URL.<br />\n";
+
+        $url = get_current_url();
+
+        // Remove the admin path from the URL
+        $url = preg_replace('/\/admin\/.*/', '', $url);
+
+        add_setting('simplerisk_base_url', $url);
+    }
+
+    //Setting the default value for the alert timeout
+    if (!get_setting("alert_timeout")) {
+        echo "Setting the default value for the alert timeout.<br />\n";
+        //Indicate that it should use the default settings
+        add_setting('alert_timeout', '5');
     }
 
     // Update the database version
@@ -3085,6 +3387,10 @@ function upgrade_database()
                 break;
             case "20181103-001":
                 upgrade_from_20181103001($db);
+                upgrade_database();
+                break;
+            case "20190105-001":
+                upgrade_from_20190105001($db);
                 upgrade_database();
                 break;
             default:

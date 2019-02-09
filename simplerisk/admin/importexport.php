@@ -43,7 +43,10 @@
         set_unauthenticated_redirect();
         header("Location: ../index.php");
         exit(0);
+
     }
+
+    checkUploadedFileSizeErrors();
 
     require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
@@ -119,6 +122,13 @@
             // Export the CSV file
             export_csv("assessments");
         }
+
+        // If the user selected to do an asset export
+        if (isset($_POST['assets_export']))
+        {
+            // Export the CSV file
+            export_csv("assets");
+        }
     }
 
     /*********************
@@ -156,7 +166,7 @@
 
                 display_import_export();
 
-		        display_import_export_selector();
+		display_import_export_selector();
             }
         }
         // Otherwise, the Extra does not exist
@@ -187,6 +197,7 @@
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/settings_tabs.css">
     <?php
         setup_alert_requirements("..");
     ?>     
@@ -237,10 +248,18 @@
                             }
                         }
                     }
-                })
+                });
                 
-            })
-        })
+            });
+            $('#import').submit(function(event) {
+                if (<?php echo get_setting('max_upload_size'); ?> <= $("#import input[type='file']")[0].files[0].size) {
+                    toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
+                    event.preventDefault();
+                }
+            });
+        });
+
+        <?php prevent_form_double_submit_script(); ?>
     </script>
 <?php
     // Get any alert messages

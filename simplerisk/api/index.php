@@ -97,19 +97,21 @@
 
         getRoute()->post('/management/risk/saveComment', 'saveCommentForm');
         getRoute()->post('/management/risk/accept_mitigation', 'acceptMitigationForm');
+        getRoute()->post('/management/risk/fix_review_date_format', 'fixReviewDateFormat');
 
         getRoute()->post('/management/impportexport/deleteMapping', 'deleteMapping');
+
         getRoute()->post('/assessment/update', 'updateAssessment');
 
         getRoute()->get('/datatable/framework_controls', 'getFrameworkControlsDatatable');
         getRoute()->get('/datatable/mitigation_controls', 'getMitigationControlsDatatable');
         getRoute()->get('/role_responsibilities/get_responsibilities', 'getResponsibilitiesByRoleIdForm');
-        
-        
-        /******************** Risk Management Dtatatable API **********************/
+
+        /******************** Risk Management Datatatable API **********************/
         getRoute()->get('/risk_management/plan_mitigation', 'getPlanMitigationsDatatableResponse');
         getRoute()->get('/risk_management/managment_review', 'getManagementReviewsDatatableResponse');
         getRoute()->get('/risk_management/review_risks', 'getReviewRisksDatatableResponse');
+        getRoute()->get('/risk_management/review_date_issues', 'getReviewsWithDateIssuesDatatableResponse');
         
         /******************** Governance and Compliance API **********************/
         getRoute()->get('/governance/frameworks', 'getFrameworksResponse');
@@ -153,6 +155,7 @@
         getRoute()->post('/assets/verify_asset', 'assets_verify_asset');
         getRoute()->post('/assets/discard_asset', 'assets_discard_asset');
         getRoute()->post('/assets/delete_asset', 'assets_delete_asset');
+        getRoute()->post('/assets/update_asset', 'assets_update_asset');
         getRoute()->get('/assets/verified_asset_body', 'assets_verified_asset_table_body');
         /********************************************************************************/
 

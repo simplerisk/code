@@ -43,13 +43,17 @@ if(isset($_GET['token']) && $_GET['token']){
 // Check if a password reset email was requested
 if (isset($_POST['send_reset_email']))
 {
-	$username = $_POST['user'];
+    if (isset($_SERVER) && array_key_exists('SERVER_NAME', $_SERVER) && (get_setting('simplerisk_base_url') . $_SERVER['REQUEST_URI']) == get_current_url()) {
+        $username = $_POST['user'];
 
-	// Try to generate a password reset token
-	password_reset_by_username($username);
+        // Try to generate a password reset token
+        password_reset_by_username($username);
 
-	// Display an alert
-	set_alert(true, "good", "If the user exists in the system, then a password reset e-mail should be on it's way.");
+        // Display an alert
+        set_alert(true, "good", $lang['PassworResetEmailSent']);
+    } else {
+        set_alert(true, "bad", $lang['PassworResetRequestFailed']);
+    }
 }
 
 // Check if a password reset was requested
@@ -64,7 +68,7 @@ if (isset($_POST['password_reset']))
 	if (password_reset_by_token($username, $token, $password, $repeat_password))
 	{
 		// Display an alert
-		set_alert(true, "good", "Your password has been reset successfully.  You will be redirected to the login page in 5 seconds.");
+		set_alert(true, "good", $lang['PassworResetSuccessfulRedirectIn5Secs']);
 
 		// Redirect back to the login page
 		$redirect_js = true;
@@ -74,7 +78,7 @@ if (isset($_POST['password_reset']))
         if (isset($_SESSION['alert']) && $_SESSION['alert'] == true){
         }else{
             // Display an alert
-            set_alert(true, "bad", "There was a problem with your password reset request.  Please try again.");
+            set_alert(true, "bad", $lang['PassworResetRequestFailed']);
         }
 	}
 }

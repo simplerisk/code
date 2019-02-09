@@ -74,7 +74,7 @@ if (isset($_POST['subject']) && $_POST['subject'] == "")
 
   // Display an alert
   ob_end_clean();
-  $data = array("risk_id" => $risk_id, "error" => true, "message" => $escaper->escapeHtml("The subject of a risk cannot be empty."));
+  $data = array("error" => true, "message" => $escaper->escapeHtml("The subject of a risk cannot be empty."));
   header('Content-type:application/json;charset=utf-8');
   echo json_encode($data);
   return;  
@@ -256,10 +256,11 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
     <head>
         <script>
-        var simplerisk = {
-            risk: "<?php echo $lang['Risk']; ?>",
-	    newrisk: "<?php echo $lang['NewRisk']; ?>"
-        }
+            var simplerisk = {
+                risk: "<?php echo $lang['Risk']; ?>",
+	            newrisk: "<?php echo $lang['NewRisk']; ?>"
+            }
+            
         </script>
         <script src="../js/jquery.min.js"></script>
         <script src="../js/jquery-ui.min.js"></script>
@@ -277,7 +278,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
         <link rel="stylesheet" href="../css/bootstrap.css">
         <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-        <link rel="stylesheet" href="../css/jquery-ui.min.css">
+<!--        <link rel="stylesheet" href="../css/jquery-ui.min.css">-->
 
         <link rel="stylesheet" href="../css/jquery.dataTables.css">
         <link rel="stylesheet" href="../css/divshot-util.css">
@@ -355,7 +356,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <input type="hidden" id="enable_popup" value="<?php echo get_setting('enable_popup'); ?>">
         <script>
             $(document).ready(function() {
-
+                
                 window.onbeforeunload = function() {
                     if ($('#subject:enabled').val() != ''){
                         return "Are you sure you want to procced without saving the risk?";
@@ -443,8 +444,12 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                         });
                         
                     // Add multiple selctets
-                    $('.multiselect', "#tab-container"+num_tabs).multiselect();
-
+                    $('.multiselect', "#tab-container"+num_tabs).multiselect({buttonWidth: '100%'});
+                    
+                    // Add DatePicker
+                    if($('.datepicker', "#tab-container"+num_tabs).length){
+                        $('.datepicker', "#tab-container"+num_tabs).datepicker();
+                    }
                 });
 
 

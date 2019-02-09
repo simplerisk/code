@@ -90,7 +90,7 @@ function display_control_regulation_view($regulation)
     echo $escaper->escapeHtml($lang['ControlRegulation']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<input style=\"cursor: default;\" type=\"text\" name=\"regulation\" id=\"regulation\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("regulation", $regulation)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("regulation", $regulation)) . "\" disabled=\"disabled\" />\n";
+    echo "<input style=\"cursor: default;\" type=\"text\" name=\"regulation\" id=\"regulation\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("frameworks", $regulation)) . "\" disabled=\"disabled\" />\n";
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -341,7 +341,6 @@ function display_supporting_documentation_view($risk_id, $view_type)
 **********************************************************/
 function display_main_detail_feilds_by_panel_view($panel_name, $fields, $risk_id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact)
 {
-    $custom_values = getCustomFieldValuesByRiskId($risk_id);
 
     foreach($fields as $field)
     {
@@ -437,7 +436,15 @@ function display_main_detail_feilds_by_panel_view($panel_name, $fields, $risk_id
             // If custom field
             else
             {
-                display_custom_field_view($field, $custom_values);
+                // If customization extra is enabled
+                if(customization_extra())
+                {
+                    // Include the extra
+                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                    
+                    $custom_values = getCustomFieldValuesByRiskId($risk_id);
+                    display_custom_field_risk_view($field, $custom_values);
+                }
             }
         }
     }
@@ -523,7 +530,7 @@ function display_control_regulation_edit($regulation)
     echo $escaper->escapeHtml($lang['ControlRegulation']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    create_dropdown("regulation", $regulation);
+    create_dropdown("frameworks", $regulation);
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -611,7 +618,7 @@ function display_additional_stakeholders_edit($additional_stakeholders)
     echo $escaper->escapeHtml($lang['AdditionalStakeholders']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7 multiselect-holder\">\n";
-    create_stakeholder_dropdown($additional_stakeholders);
+    create_multiusers_dropdown("additional_stakeholders", $additional_stakeholders);
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -628,7 +635,7 @@ function display_owner_edit($owner)
     echo $escaper->escapeHtml($lang['Owner']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    create_dropdown("user", $owner, "owner");
+    create_dropdown("enabled_users", $owner, "owner");
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -645,7 +652,7 @@ function display_owners_manager_edit($manager)
     echo $escaper->escapeHtml($lang['OwnersManager']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    create_dropdown("user", $manager, "manager");
+    create_dropdown("enabled_users", $manager, "manager");
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -718,58 +725,11 @@ function display_supporting_documentation_edit($risk_id, $view_type)
     echo "</div>\n";
 }
 
-/**************************************
-* FUNCTION: DISPLAY CUSTOM FIELD EDIT *
-***************************************/
-function display_custom_field_edit($field, $custom_values)
-{
-    global $lang, $escaper;
-
-    $value = "";
-    
-    // Get value of custom filed
-    foreach($custom_values as $custom_value)
-    {
-        if($custom_value['field_id'] == $field['id']){
-            $value = $custom_value['value'];
-            break;
-        }
-    }
-    
-    echo "<div class=\"row-fluid\">\n";
-        echo "<div class=\"span5 text-right\" >\n";
-            echo $escaper->escapeHtml($field['name']) .": \n";
-        echo "</div>\n";
-        echo "<div class=\"span7\">\n";
-            if($field['type'] == "dropdown")
-            {
-                create_dropdown("custom_field_".$field['id'], $value, "custom_field[{$field['id']}]");
-            }
-            elseif($field['type'] == "multidropdown")
-            {
-                $values = explode(",", $value);
-                $values = ":".implode(":", $values).":";
-                create_multiple_dropdown("custom_field_".$field['id'], $values, "custom_field[{$field['id']}]", NULL, false, "--", "", true, "class='multiselect'");
-            }
-            elseif($field['type'] == "shorttext")
-            {
-                echo "<input type=\"text\" name=\"custom_field[{$field['id']}]\" value=\"".$escaper->escapeHtml($value)."\" >" ;
-            }
-            elseif($field['type'] == "longtext")
-            {
-                echo "<textarea class=\"active-textfield custom-longtext\" name=\"custom_field[{$field['id']}]\" cols=\"50\" rows=\"3\" >" . $escaper->escapeHtml($value) . "</textarea>";
-            }
-        echo "</div>\n";
-    echo "</div>\n";
-}
-
 /*********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS EDIT *
 **********************************************************/
 function display_main_detail_feilds_by_panel_edit($panel_name, $fields, $risk_id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts)
 {
-    $custom_values = getCustomFieldValuesByRiskId($risk_id);
-
     foreach($fields as $field)
     {
         // Check if this field is main field and details in left panel
@@ -859,7 +819,15 @@ function display_main_detail_feilds_by_panel_edit($panel_name, $fields, $risk_id
             }
             else
             {
-                display_custom_field_edit($field, $custom_values);
+                // If customization extra is enabled
+                if(customization_extra())
+                {
+                    // Include the extra
+                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+                    $custom_values = getCustomFieldValuesByRiskId($risk_id);
+                    display_custom_field_edit($field, $custom_values);
+                }
             }
           
         }
@@ -963,7 +931,7 @@ function display_mitigation_owner_view($mitigation_owner)
     echo $escaper->escapeHtml($lang['MitigationOwner']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_owner\" id=\"mitigation_owner\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) . "\" disabled=\"disabled\" />\n";
+    echo "<span>". $escaper->escapeHtml(get_name_by_value("user", $mitigation_owner)) ."</span>\n";
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -980,7 +948,7 @@ function display_mitigation_team_view($mitigation_team)
     echo $escaper->escapeHtml($lang['MitigationTeam']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<input style=\"cursor: default;\" type=\"text\" name=\"mitigation_team\" id=\"mitigation_team\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("team", $mitigation_team)) . "\" disabled=\"disabled\" />\n";
+    echo "<span>".$escaper->escapeHtml(get_names_by_multi_values("team", $mitigation_team))."</span>\n";
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -1187,7 +1155,6 @@ function display_security_recommendations_view($security_recommendations)
 *************************************************************/
 function display_main_mitigation_feilds_by_panel_view($panel_name, $fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls)
 {
-    $custom_values = getCustomFieldValuesByRiskId($risk_id);
 
     foreach($fields as $field)
     {
@@ -1267,17 +1234,25 @@ function display_main_mitigation_feilds_by_panel_view($panel_name, $fields, $ris
             // If custom field
             else
             {
-                display_custom_field_view($field, $custom_values);
+                // If customization extra is enabled
+                if(customization_extra())
+                {
+                    // Include the extra
+                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+                    $custom_values = getCustomFieldValuesByRiskId($risk_id);
+                    display_custom_field_risk_view($field, $custom_values);
+                }
             }
             
         }
     }
 }
 
-/**************************************
-* FUNCTION: DISPLAY CUSTOM FIELD VIEW *
-***************************************/
-function display_custom_field_view($field, $custom_values, $review_id=0)
+/***************************************
+* FUNCTION: DISPLAY CUSTOM FIELD PRINT *
+****************************************/
+function display_custom_field_print($field, $custom_values, $review_id=0)
 {
     global $lang, $escaper;
 
@@ -1292,25 +1267,14 @@ function display_custom_field_view($field, $custom_values, $review_id=0)
         }
     }
     
-    echo "<div class=\"row-fluid\">\n";
-        echo "<div class=\"span5 text-right\" >\n";
-            echo $escaper->escapeHtml($field['name']) .": \n";
-        echo "</div>\n";
-        echo "<div class=\"span7\" style=\"margin-bottom: 15px; padding-top: 4px;\">\n";
-            if($field['type'] == "dropdown")
-            {
-                echo $escaper->escapeHtml(get_name_by_value("custom_field_".$field['id'], $value));
-            }
-            elseif($field['type'] == "multidropdown")
-            {
-                echo $escaper->escapeHtml(get_names_by_multi_values("custom_field_".$field['id'], $value));
-            }
-            elseif($field['type'] == "shorttext" || $field['type'] == "longtext")
-            {
-                echo nl2br($escaper->escapeHtml($value));
-            }
-        echo "</div>\n";
-    echo "</div>\n";
+    echo "<tr>\n";
+        echo "<td >\n";
+            echo "<b>". $escaper->escapeHtml($field['name']) .":</td>\n";
+        echo "<td>\n";
+            echo get_custom_field_name_by_value($field['id'], $field['type'], $value);
+        echo "</td>\n";
+    echo "</tr>";
+    
 }
 
 /****************************************************
@@ -1421,7 +1385,7 @@ function display_mitigation_owner_edit($mitigation_owner)
                 .$escaper->escapeHtml($lang['MitigationOwner']) .": 
             </div>
             <div class=\"span7\">";
-                create_dropdown("user", $mitigation_owner, "mitigation_owner", true);
+                create_dropdown("enabled_users", $mitigation_owner, "mitigation_owner", true);
         echo "</div>
         </div>
     ";
@@ -1440,7 +1404,9 @@ function display_mitigation_team_edit($mitigation_team)
                 .$escaper->escapeHtml($lang['MitigationTeam']) .": 
             </div>
             <div class=\"span7\">";
-                create_dropdown("team", $mitigation_team, "mitigation_team", true);
+                $mitigation_team_values = ":".implode(":", explode(",", $mitigation_team)).":";
+//                create_dropdown("team", $mitigation_team, "mitigation_team", true);
+                create_multiple_dropdown("team", $mitigation_team_values, "mitigation_team", NULL, false, "", "", true, " class='multiselect' ");
             echo "</div>
         </div>
     ";
@@ -1546,7 +1512,6 @@ function display_security_recommendations_edit($security_recommendations)
 *************************************************************/
 function display_main_mitigation_feilds_by_panel_edit($panel_name, $fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls)
 {
-    $custom_values = getCustomFieldValuesByRiskId($risk_id);
 
     foreach($fields as $field)
     {
@@ -1628,7 +1593,15 @@ function display_main_mitigation_feilds_by_panel_edit($panel_name, $fields, $ris
             }
             else
             {
-                display_custom_field_edit($field, $custom_values);
+                // If customization extra is enabled
+                if(customization_extra())
+                {
+                    // Include the extra
+                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+                    $custom_values = getCustomFieldValuesByRiskId($risk_id);
+                    display_custom_field_edit($field, $custom_values);
+                }
             }
 
 
@@ -1713,12 +1686,9 @@ function display_next_step_view($next_step)
 function display_next_review_date_view($next_review)
 {
     global $lang, $escaper;
-
-    // If next review date wasn't due, convert next review date to default date format
+    
     if(!$next_review){
         $next_review = "";
-    }elseif($next_review != $lang['PASTDUE']){
-        $next_review = date(get_default_date_format(), strtotime($next_review));
     }
     
     echo "<div class=\"row-fluid\">\n";
@@ -1753,7 +1723,6 @@ function display_comments_view($comment)
 *********************************************************/
 function display_main_review_feilds_by_panel_view($panel_name, $fields, $risk_id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment)
 {
-    $custom_values = getCustomFieldValuesByRiskId($risk_id, false, $review_id);
 
     foreach($fields as $field)
     {
@@ -1802,7 +1771,15 @@ function display_main_review_feilds_by_panel_view($panel_name, $fields, $risk_id
             // If custom field
             else
             {
-                display_custom_field_view($field, $custom_values, $review_id);
+                // If customization extra is enabled
+                if(customization_extra())
+                {
+                    // Include the extra
+                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+                    $custom_values = getCustomFieldValuesByRiskId($risk_id, false, $review_id);
+                    display_custom_field_risk_view($field, $custom_values, $review_id);
+                }
             }
         
         }
@@ -1901,8 +1878,8 @@ function display_set_next_review_date_edit($default_next_review)
             echo $escaper->escapeHtml($lang['WouldYouLikeToUseADifferentDate']).'</strong>';
 
             echo "<div class=\"clearfix radio-buttons-holder radio-padded-top-bottom\">";
-                echo "<div class=\"pull-left active-textfield\"><input type=\"radio\" name=\"custom_date\" value=\"no\" onclick=\"hideNextReview()\" id=\"no\" class=\"hidden-radio\" checked /> <label for=\"no\">".$escaper->escapeHtml($lang['No'])."</label></div>";
-                echo "<div class=\"pull-left radio-padded-right\"><input type=\"radio\" name=\"custom_date\" value=\"yes\" onclick=\"showNextReview()\" id=\"yes\" class=\"hidden-radio\" /><label for=\"yes\">".$escaper->escapeHtml($lang['Yes'])."</label></div>";
+                echo "<div class=\"pull-left active-textfield\"><input type=\"radio\" name=\"custom_date\" value=\"no\" id=\"no\" class=\"hidden-radio\" checked /> <label for=\"no\">".$escaper->escapeHtml($lang['No'])."</label></div>";
+                echo "<div class=\"pull-left radio-padded-right\"><input type=\"radio\" name=\"custom_date\" value=\"yes\" id=\"yes\" class=\"hidden-radio\" /><label for=\"yes\">".$escaper->escapeHtml($lang['Yes'])."</label></div>";
             echo "</div>";
         echo "</div>";
     echo "</div>";
@@ -1924,7 +1901,6 @@ function display_set_next_review_date_edit($default_next_review)
 *********************************************************/
 function display_main_review_feilds_by_panel_edit($panel_name, $fields, $risk_id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review)
 {
-    $custom_values = getCustomFieldValuesByRiskId($risk_id, false, $review_id);
 
     foreach($fields as $field)
     {
@@ -1973,7 +1949,15 @@ function display_main_review_feilds_by_panel_edit($panel_name, $fields, $risk_id
             }
             else
             {
-                display_custom_field_edit($field, $custom_values);
+                // If customization extra is enabled
+                if(customization_extra())
+                {
+                    // Include the extra
+                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+                    $custom_values = getCustomFieldValuesByRiskId($risk_id, false, $review_id);
+                    display_custom_field_edit($field, $custom_values);
+                }
             }
         }
     }
@@ -2085,7 +2069,6 @@ function display_main_detail_feilds_by_panel_add($panel_name, $fields)
                     case 'SupportingDocumentation':
                         display_supporting_documentation_add();  
                     break;
-                        
                 }
 
                 if($field['active'] == 0){
@@ -2094,7 +2077,14 @@ function display_main_detail_feilds_by_panel_add($panel_name, $fields)
             }
             else
             {
-                display_custom_field_edit($field, []);
+                // If customization extra is enabled
+                if(customization_extra())
+                {
+                    // Include the extra
+                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+                    display_custom_field_edit($field, []);
+                }
             }
         }
     }

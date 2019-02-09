@@ -74,12 +74,19 @@
             disable_encryption_extra();
         }
 
-	// If the user has requested to delete the backup file
-	if (isset($_POST['delete_backup_file']))
-	{
-		// Delete the backup file
-		delete_backup_file();
-	}
+        // If the user has requested to delete the backup file
+        if (isset($_POST['delete_backup_file']))
+        {
+            // Delete the backup file
+            delete_backup_file();
+        }
+
+        // If the user has requested to revert to unencrypted backup
+        if (isset($_POST['revert_to_unencrypted_backup']))
+        {
+            // Delete the backup file
+            revert_to_unencrypted_backup();
+        }
     }
 
 /*********************
@@ -178,6 +185,8 @@ function display()
         </div>
       </div>
     </div>
+    <script>
+        <?php prevent_form_double_submit_script(); ?>
+    </script>    
   </body>
-
 </html>

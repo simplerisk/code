@@ -619,7 +619,7 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
                 $hash = generateHash($salt, $password);
 
                 // Update the password
-                $stmt = $db->prepare("UPDATE user SET password=:hash WHERE username=:username");
+                $stmt = $db->prepare("UPDATE user SET password=:hash, last_password_change_date=NOW() WHERE username=:username");
                 $stmt->bindParam(":hash", $hash, PDO::PARAM_STR, 60);
                 $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
                 $stmt->execute();

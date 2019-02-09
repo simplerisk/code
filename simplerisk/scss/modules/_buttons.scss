@@ -37,6 +37,14 @@ input[type="submit"]{
   }
 }
 
+.btn.btn-success{
+  background-color: $color-5;
+
+  &:hover,&:active,&:visited{
+    background-color: darken($color-5,5%);
+  }
+}
+
 .btn.btn-default{
   background-color: $color-2;
 

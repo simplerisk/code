@@ -102,7 +102,6 @@ if (isset($_GET['id']))
         $assessment = $risk[0]['assessment'];
         $notes = $risk[0]['notes'];
         $submission_date = $risk[0]['submission_date'];
-        //$submission_date = date( "m/d/Y", strtotime( $sub_date ) );
         $mitigation_id = $risk[0]['mitigation_id'];
         $mgmt_review = $risk[0]['mgmt_review'];
         $calculated_risk = $risk[0]['calculated_risk'];
@@ -245,11 +244,7 @@ if (isset($_GET['id']))
         $ContributingImpacts = [];
     }
 
-    if ($submission_date == "")
-    {
-        $submission_date = "N/A";
-    }
-    else $submission_date = date(get_default_date_format(), strtotime($submission_date));
+    $submission_date = format_date($submission_date, "N/A");
 
     // Get the mitigation for the risk
     $mitigation = get_mitigation_by_id($id);
@@ -259,7 +254,7 @@ if (isset($_GET['id']))
     {
         // Set the mitigation values
         $mitigation_date = $mitigation[0]['submission_date'];
-        $mitigation_date = date(get_default_date_format(), strtotime($mitigation_date));
+        $mitigation_date = format_date($mitigation_date);
         $planning_strategy = $mitigation[0]['planning_strategy'];
         $mitigation_effort = $mitigation[0]['mitigation_effort'];
         $mitigation_cost = $mitigation[0]['mitigation_cost'];
@@ -268,7 +263,7 @@ if (isset($_GET['id']))
         $current_solution = $mitigation[0]['current_solution'];
         $security_requirements = $mitigation[0]['security_requirements'];
         $security_recommendations = $mitigation[0]['security_recommendations'];
-        $planning_date = ($mitigation[0]['planning_date'] && $mitigation[0]['planning_date'] != "0000-00-00") ? date(get_default_date_format(), strtotime($mitigation[0]['planning_date'])) : "";
+        $planning_date = format_date($mitigation[0]['planning_date']);
         $mitigation_percent = (isset($mitigation[0]['mitigation_percent']) && $mitigation[0]['mitigation_percent'] >= 0 && $mitigation[0]['mitigation_percent'] <= 100) ? $mitigation[0]['mitigation_percent'] : 0;
         $mitigation_controls = isset($mitigation[0]['mitigation_controls']) ? $mitigation[0]['mitigation_controls'] : "";
     }

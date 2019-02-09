@@ -194,16 +194,20 @@ if (isset($_POST['add_user']))
                 // Insert a new user
                 add_user($type, $user, $email, $name, $salt, $hash, $team, $role_id, $governance, $riskmanagement, $compliance, $assessments, $asset, $admin, $review_veryhigh, $accept_mitigation, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor, $change_password, $add_new_frameworks, $modify_frameworks, $delete_frameworks, $add_new_controls, $modify_controls, $delete_controls, $other_options);
 
-                // If the encryption extra is enabled
+		// If the encryption extra is enabled
                 if (encryption_extra())
                 {
                     // Load the extra
                     require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-                    // Add the new encrypted user
-                    add_user_enc($pass, $salt, $user);
+                    // If the encryption method is mcrypt
+                    if (isset($_SESSION['encryption_method']) && $_SESSION['encryption_method'] == "mcrypt")
+                    {
+                        // Add the new encrypted user
+                        add_user_enc($pass, $salt, $user);
+                    }
                 }
-                
+
                 // Clear values
                 $name = "";
                 $email = "";
@@ -282,11 +286,15 @@ if (isset($_POST['delete_user']))
             // Load the extra
             require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-            // Delete the value from the user_enc table
-            delete_user_enc($value);
+            // If the encryption method is mcrypt
+            if (isset($_SESSION['encryption_method']) && $_SESSION['encryption_method'] == "mcrypt")
+            {
+                // Delete the value from the user_enc table
+                delete_user_enc($value);
 
-            // Check to see if all users have now been activated
-            check_all_activated();
+                // Check to see if all users have now been activated
+                check_all_activated();
+            }
         }
 
         // Display an alert

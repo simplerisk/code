@@ -380,8 +380,9 @@ function get_framework_controls($control_ids=false)
             LEFT JOIN `family` t4 on t1.family=t4.value
             LEFT JOIN `control_phase` t5 on t1.control_phase=t5.value
             LEFT JOIN `user` t6 on t1.control_owner=t6.value
+            LEFT JOIN `frameworks` t7 ON FIND_IN_SET(t7.value, t1.framework_ids)
         WHERE
-            t1.deleted=0
+            (t7.status=1 or t1.framework_ids is null or t1.framework_ids = '') AND t1.deleted=0
     ";
     if($control_ids !== false)
     {
@@ -1333,7 +1334,7 @@ function make_tree_options_html($options, $parent, &$html, $indent="", $selected
 /******************************
  * FUNCTION: ADD NEW DOCUMENT *
  ******************************/
-function add_document($document_type, $document_name, $parent, $status, $creation_date){
+function add_document($document_type, $document_name, $parent, $status, $creation_date, $review_date){
     global $lang, $escaper;
     
     // Open the database connection
@@ -1351,7 +1352,7 @@ function add_document($document_type, $document_name, $parent, $status, $creatio
     }
 
     // Create a document
-    $stmt = $db->prepare("INSERT INTO `documents` (`document_type`, `document_name`, `parent`, `status`, `file_id`, `creation_date`) VALUES (:document_type, :document_name, :parent, :status, :file_id, :creation_date)");
+    $stmt = $db->prepare("INSERT INTO `documents` (`document_type`, `document_name`, `parent`, `status`, `file_id`, `creation_date`, `review_date`) VALUES (:document_type, :document_name, :parent, :status, :file_id, :creation_date, :review_date)");
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
@@ -1359,8 +1360,10 @@ function add_document($document_type, $document_name, $parent, $status, $creatio
     $init_file_id = 0;
     $stmt->bindParam(":file_id", $init_file_id, PDO::PARAM_INT);
     $stmt->bindParam(":creation_date", $creation_date, PDO::PARAM_STR);
+    $stmt->bindParam(":review_date", $review_date, PDO::PARAM_STR);
+
     $stmt->execute();
-    
+
     $document_id = $db->lastInsertId();
 
     // Close the database connection
@@ -1382,14 +1385,14 @@ function add_document($document_type, $document_name, $parent, $status, $creatio
         delete_document($document_id);
         $errors = array_unique($errors);
         foreach ($errors as $error) {
-            set_alert(true, "bad", $escaper->escapeHtml($error));
+            set_alert(true, "bad", $error);
         }
         return false;
     }elseif(empty($file_id))
     {
         // Delete added document if failed to upload a document file
         delete_document($document_id);
-        set_alert(true, "bad", $escaper->escapeHtml($lang['FailedToUploadFile']));
+        set_alert(true, "bad", $lang['FailedToUploadFile']);
         return false;
     }else
     {
@@ -1405,12 +1408,12 @@ function add_document($document_type, $document_name, $parent, $status, $creatio
 /*****************************
  * FUNCTION: UPDATE DOCUMENT *
  *****************************/
-function update_document($document_id, $document_type, $document_name, $parent, $status, $creation_date){
+function update_document($document_id, $document_type, $document_name, $parent, $status, $creation_date, $review_date){
     global $lang, $escaper;
     
     // Open the database connection
     $db = db_open();
-    
+
     // Check if the framework exists
     $stmt = $db->prepare("SELECT * FROM `documents` where document_name=:document_name AND document_type=:document_type AND id<>:id; ");
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
@@ -1424,15 +1427,16 @@ function update_document($document_id, $document_type, $document_name, $parent, 
     }
 
     // Update a document
-    $stmt = $db->prepare("UPDATE `documents` SET `document_type`=:document_type, `document_name`=:document_name, `parent`=:parent, `status`=:status, `creation_date`=:creation_date WHERE id=:document_id; ");
+    $stmt = $db->prepare("UPDATE `documents` SET `document_type`=:document_type, `document_name`=:document_name, `parent`=:parent, `status`=:status, `creation_date`=:creation_date, `review_date`=:review_date WHERE id=:document_id; ");
     $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
     $stmt->bindParam(":status", $status, PDO::PARAM_STR);
     $stmt->bindParam(":creation_date", $creation_date, PDO::PARAM_STR);
+    $stmt->bindParam(":review_date", $review_date, PDO::PARAM_STR);
     $stmt->execute();
-    
+
     // Close the database connection
     db_close($db);
 
@@ -1440,7 +1444,7 @@ function update_document($document_id, $document_type, $document_name, $parent, 
     if(!empty($_FILES['file'])){
         $document = get_document_by_id($document_id);
         $version = $document['file_version'] + 1;
-        
+
         $files = $_FILES['file'];
         list($status, $file_ids, $errors) = upload_compliance_files($document_id, "documents", $files, $version);
         if($file_ids){
@@ -1527,7 +1531,8 @@ function get_document_hierarchy_tabs($type="")
     echo "<thead >";
     echo "<th data-options=\"field:'document_name'\" width='40%'>".$escaper->escapeHtml($lang['DocumentName'])."</th>";
     echo "<th data-options=\"field:'document_type'\" width='20%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
-    echo "<th data-options=\"field:'creation_date'\" width='20%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
+    echo "<th data-options=\"field:'creation_date'\" width='10%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
+    echo "<th data-options=\"field:'review_date'\" width='10%'>".$escaper->escapeHtml($lang['ReviewDate'])."</th>";
     echo "<th data-options=\"field:'status'\" width='20%'>".$escaper->escapeHtml($lang['Status'])."</th>";
 //    echo "<th data-options=\"field:'actions'\" width='10%'>&nbsp;</th>";
     echo "</thead>\n";
@@ -1568,7 +1573,8 @@ function get_document_tabular_tabs($type, $document_id=0)
     echo "<thead >";
     echo "<th data-options=\"field:'document_name'\" width='40%'>".$escaper->escapeHtml($lang['DocumentName'])."</th>";
     echo "<th data-options=\"field:'document_type'\" width='20%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
-    echo "<th data-options=\"field:'creation_date'\" width='20%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
+    echo "<th data-options=\"field:'creation_date'\" width='10%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
+    echo "<th data-options=\"field:'review_date'\" width='10%'>".$escaper->escapeHtml($lang['ReviewDate'])."</th>";
     echo "<th data-options=\"field:'status'\" width='10%'>".$escaper->escapeHtml($lang['Status'])."</th>";
     echo "<th data-options=\"field:'actions'\" width='10%'>&nbsp;</th>";
     echo "</thead>\n";
@@ -1596,7 +1602,8 @@ function get_documents_as_treegrid($type){
         $document['document_type'] = $escaper->escapeHtml($document['document_type']);
         $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name'])."</a>";
         $document['status'] = $escaper->escapeHtml($document['status']);
-        $document['creation_date'] = ($document['creation_date'] != "0000-00-00" && $document['creation_date']) ? date(get_default_date_format(), strtotime($document['creation_date'])) : "";
+        $document['creation_date'] = format_date($document['creation_date']);
+        $document['review_date'] = format_date($document['review_date']);
         $document['actions'] = "<div class=\"text-center\"><a class=\"framework-block--edit\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;<a class=\"framework-block--delete\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a></div>";
     }
     $results = array();

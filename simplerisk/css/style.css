@@ -385,3 +385,10 @@ p.comment-block{
     user-select: text;
 }
 
+label.danger {
+    color: #ed3139 !important;
+}
+
+label.success {
+    color: #468847 !important;
+}

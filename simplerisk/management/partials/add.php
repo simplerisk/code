@@ -22,7 +22,7 @@
     if (csp_enabled())
     {
         // Add the Content-Security-Policy header
-        header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+        header("Content-Security-Policy: default-src 'self' 'unsafe-inline' *.highcharts.com *.googleapis.com *.gstatic.com *.jquery.com;");
     }
 
     // Session handler is database

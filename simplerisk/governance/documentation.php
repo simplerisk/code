@@ -33,11 +33,13 @@ if (!isset($_SESSION))
     session_start();
 }
 
-// Load CSRF Magic
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
 // Include the language file
 require_once(language_file());
+
+checkUploadedFileSizeErrors();
+
+// Load CSRF Magic
+require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
 function csrf_startup() {
     csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
@@ -66,6 +68,7 @@ if (isset($_POST['add_document']))
       $status        = $_POST['status'];
       $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
       $creation_date = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
+      $review_date   = get_standard_date_from_default_format($_POST['review_date']);
 
       // Check if the document name is null
       if (!$document_type || !$document_name)
@@ -82,7 +85,7 @@ if (isset($_POST['add_document']))
                 set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddDocumentationPermission']));
             }
             // Insert a new document
-            elseif($errors = add_document($document_type, $document_name, $parent, $status, $creation_date))
+            elseif($errors = add_document($document_type, $document_name, $parent, $status, $creation_date, $review_date))
             {
                 // Display an alert
                 set_alert(true, "good", $escaper->escapeHtml($lang['DocumentAdded']));
@@ -99,9 +102,9 @@ if (isset($_POST['update_document']))
       $document_name = $_POST['document_name'];
       $parent        = (int)$_POST['parent'];
       $status        = $_POST['status'];
-      $creation_date = $_POST['creation_date'];
       $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
       $creation_date = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
+      $review_date   = get_standard_date_from_default_format($_POST['review_date']);
 
       // Check if the document name is null
       if (!$document_type || !$document_name)
@@ -118,10 +121,10 @@ if (isset($_POST['update_document']))
                 set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyDocumentationPermission']));
             }
             // Update document
-            elseif($errors = update_document($id, $document_type, $document_name, $parent, $status, $creation_date))
+            elseif($errors = update_document($id, $document_type, $document_name, $parent, $status, $creation_date, $review_date))
             {
                 // Display an alert
-                set_alert(true, "good", $escaper->escapeHtml($lang['DocumentAdded']));
+                set_alert(true, "good", $escaper->escapeHtml($lang['DocumentUpdated']));
             }
       }
       refresh();
@@ -256,7 +259,7 @@ if (isset($_POST['delete_document']))
     <!-- MODEL WINDOW FOR ADDING DOCUMENT -->
     <div id="document-program--add" class="modal hide fade" tabindex="-1" role="dialog">
       <div class="modal-body">
-        <form class="" action="#" method="post" autocomplete="off" enctype=multipart/form-data>
+        <form id="add-document-form" class="" action="#" method="post" autocomplete="off" enctype="multipart/form-data">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['DocumentType']); ?></label>
             <select required="" class="document_type" name="document_type">
@@ -270,6 +273,8 @@ if (isset($_POST['delete_document']))
             <input required="" type="text" name="document_name" id="document_name" value="" class="form-control" />
             <label for=""><?php echo $escaper->escapeHtml($lang['CreationDate']); ?></label>
             <input type="text" class="form-control datepicker" name="creation_date" value="<?php echo $escaper->escapeHtml(date(get_default_date_format())); ?>">
+            <label for=""><?php echo $escaper->escapeHtml($lang['ReviewDate']); ?></label>
+            <input type="text" class="form-control datepicker" name="review_date">
             <label for=""><?php echo $escaper->escapeHtml($lang['ParentDocument']); ?></label>
             <div class="parent_documents_container">
                 <select>
@@ -283,9 +288,12 @@ if (isset($_POST['delete_document']))
                 <option value="Approved"><?php echo $escaper->escapeHtml($lang['Approved']) ?></option>
             </select>
             <div class="file-uploader">
+                <label for=""><?php echo $escaper->escapeHtml($lang['File']); ?></label>
+                <input required="" type="text" class="form-control readonly" style="width: 50%; margin-bottom: 0px; cursor: default;"/>
                 <label for="file-upload" class="btn"><?php echo $escaper->escapeHtml($lang['ChooseFile']) ?></label>
                 <font size="2"><strong>Max <?php echo round(get_setting('max_upload_size')/1024/1024); ?> Mb</strong></font>
-                <input required="" type="file" id="file-upload" name="file[]" class="hidden-file-upload active" />
+                <input type="file" id="file-upload" name="file[]" class="hidden-file-upload active" />
+                <label id="file-size" for=""></label>
             </div>
           </div>
           <br>
@@ -298,10 +306,10 @@ if (isset($_POST['delete_document']))
       </div>
     </div>
     
-    <!-- MODEL WINDOW FOR ADDING DOCUMENT -->
+    <!-- MODEL WINDOW FOR UPDATING DOCUMENT -->
     <div id="document-update-modal" class="modal hide fade" tabindex="-1" role="dialog">
       <div class="modal-body">
-        <form class="" action="#" method="post" autocomplete="off" enctype=multipart/form-data>
+        <form id="update-document-form" class="" action="#" method="post" autocomplete="off" enctype="multipart/form-data">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['DocumentType']); ?></label>
             <select required="" class="document_type" name="document_type">
@@ -315,6 +323,8 @@ if (isset($_POST['delete_document']))
             <input required="" type="text" name="document_name" id="document_name" value="" class="form-control" />
             <label for=""><?php echo $escaper->escapeHtml($lang['CreationDate']); ?></label>
             <input type="text" class="form-control datepicker" name="creation_date">
+            <label for=""><?php echo $escaper->escapeHtml($lang['ReviewDate']); ?></label>
+            <input type="text" class="form-control datepicker" name="review_date">
             <label for=""><?php echo $escaper->escapeHtml($lang['ParentDocument']); ?></label>
             <div class="parent_documents_container">
                 <select>
@@ -329,9 +339,12 @@ if (isset($_POST['delete_document']))
             </select>
             <input type="hidden" name="document_id" value="">
             <div class="file-uploader">
+                <label for=""><?php echo $escaper->escapeHtml($lang['File']); ?></label>
+                <input type="text" class="form-control readonly" style="width: 50%; margin-bottom: 0px; cursor: default;"/>
                 <label for="file-upload-update" class="btn"><?php echo $escaper->escapeHtml($lang['ChooseFile']) ?></label>
                 <font size="2"><strong>Max <?php echo round(get_setting('max_upload_size')/1024/1024); ?> Mb</strong></font>
                 <input type="file" id="file-upload-update" name="file[]" class="hidden-file-upload active" />
+                <label id="file-size" for=""></label>
             </div>
           </div>
           <br>
@@ -363,10 +376,39 @@ if (isset($_POST['delete_document']))
 
       </div>
     </div>
-    
+
     <?php display_set_default_date_format_script(); ?>
-    
+
     <script>
+        function displayFileSize(label, size) {
+            if (<?php echo get_setting('max_upload_size'); ?> > size)
+                label.attr("class","success");
+            else
+                label.attr("class","danger");
+
+            var iSize = (size / 1024);
+            if (iSize / 1024 > 1)
+            {
+                if (((iSize / 1024) / 1024) > 1)
+                {
+                    iSize = (Math.round(((iSize / 1024) / 1024) * 100) / 100);
+                    label.html("<?php echo $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize + "Gb");
+                }
+                else
+                {
+                    iSize = (Math.round((iSize / 1024) * 100) / 100)
+                    label.html("<?php echo $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize + "Mb");
+                }
+            }
+            else
+            {
+                iSize = (Math.round(iSize * 100) / 100)
+                label.html("<?php echo $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize  + "kb");
+            }
+        }
+
+        var fileAPISupported = typeof $("<input type='file'>").get(0).files != "undefined";
+
         $(document).ready(function(){
             var $tabs = $( "#documents-tab-content" ).tabs({
                 activate: function(event, ui){
@@ -426,13 +468,67 @@ if (isset($_POST['delete_document']))
                         $("#document-update-modal [name=document_type]").val(data.document_type);
                         $("#document-update-modal [name=document_name]").val(data.document_name);
                         $("#document-update-modal [name=creation_date]").val(data.creation_date);
+                        $("#document-update-modal [name=review_date]").val(data.review_date);
                         $("#document-update-modal [name=status]").val(data.status);
                         $("#document-update-modal").modal();
                     }
                 });
                         
-            })
+            });
 
+            if (fileAPISupported) {
+                $("input.readonly").on('keydown paste focus', function(e){
+                    e.preventDefault();
+                    e.currentTarget.blur();
+                });
+
+                $("#add-document-form input.readonly").click(function(){
+                    $("#file-upload").trigger("click");
+                });
+
+                $("#update-document-form input.readonly").click(function(){
+                    $("#file-upload-update").trigger("click");
+                });
+
+                $('#file-upload').change(function(e){
+                    if (!e.target.files[0])
+                        return;
+
+                    var fileName = e.target.files[0].name;
+                    $("#add-document-form input.readonly").val(fileName);
+
+                    displayFileSize($("#add-document-form #file-size"), e.target.files[0].size);
+
+                });
+
+                $('#file-upload-update').change(function(e){
+                    if (!e.target.files[0])
+                        return;
+
+                    var fileName = e.target.files[0].name;
+                    $("#update-document-form input.readonly").val(fileName);
+
+                    displayFileSize($("#update-document-form #file-size"), e.target.files[0].size);
+
+                });
+
+                $("#add-document-form").submit(function(event) {
+                    if (<?php echo get_setting('max_upload_size'); ?> <= $('#file-upload')[0].files[0].size) {
+                        toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
+                        event.preventDefault();
+                    }
+                });
+
+                $("#update-document-form").submit(function(event) {
+                    if (<?php echo get_setting('max_upload_size'); ?> <= $('#file-upload-update')[0].files[0].size) {
+                        toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
+                        event.preventDefault();
+                    }
+                });
+            } else { // If File API is not supported
+                $("input.readonly").remove();
+                $('#file-upload').prop('required',true);
+            }
         });
     </script>
     

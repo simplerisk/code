@@ -177,6 +177,9 @@ function display()
       </div>
     </div>
     <?php display_set_default_date_format_script(); ?>
+    <script>
+        <?php prevent_form_double_submit_script(); ?>
+    </script>    
   </body>
 
 </html>

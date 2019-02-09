@@ -80,3 +80,42 @@ function verify_discard_or_delete_asset(action, _this) {
         });
     }
 }
+
+function updateAsset(e, self) {
+    self || (self = $(this));
+    
+    var tr = self.closest('tr');
+    if (tr) {
+        var id = tr.data('id');
+        if (id && !isNaN(id)) {
+            var fieldName = self.attr('id') ? self.attr('id') : self.attr('name');
+            var fieldValue = self.val();
+            
+            $.ajax({
+                type: "POST",
+                url: BASE_URL + "/api/assets/update_asset",
+                data : {
+                    id: id,
+                    fieldName: fieldName,
+                    fieldValue: fieldValue,
+                },
+                headers: {
+                    'CSRF-TOKEN': csrfMagicToken
+                },
+                success: function(data){
+                    if(data.status_message){
+                        showAlertsFromArray(data.status_message);
+                    }
+                },
+                error: function(xhr,status,error){
+                    if(xhr.responseJSON && xhr.responseJSON.status_message){
+                        showAlertsFromArray(xhr.responseJSON.status_message);
+                    }
+                    if(!retryCSRF(xhr, this))
+                    {
+                    }
+                }
+            });
+        }
+    }
+}

@@ -259,7 +259,7 @@ function get_custom_table($type)
     // If we want a frameworks table
     else if ($type == "frameworks")
     {
-        $stmt = $db->prepare("SELECT value, name FROM frameworks WHERE status=1 ORDER BY name");
+        $stmt = $db->prepare("SELECT value, name FROM frameworks WHERE status=1 ORDER BY `order`");
     }
     // If we want a date_formats table
     else if ($type == "date_formats")
@@ -294,6 +294,40 @@ function get_custom_table($type)
 
     return $array;
 }
+
+/************************************
+ * FUNCTION: GET OPTIONS FROM TABLE *
+ ************************************/
+function get_options_from_table($name)
+{
+    // If we want a table that should be ordered by name instead of value
+    if (in_array($name, array("user", "category", "team", "technology",
+        "location", "regulation", "projects", "file_types", "file_type_extensions",
+        "planning_strategy", "close_reason", "status", "source", "import_export_mappings", "test_status"))) {
+
+        $options = get_table_ordered_by_name($name);
+    }
+    else if (in_array($name, array("enabled_users", "disabled_users", "languages", "family", "date_formats", "parent_frameworks", "frameworks"))) {
+        $options = get_custom_table($name);
+    }
+    // Otherwise
+    else
+    {
+        // Get the list of options
+        $options = get_table($name);
+    }
+
+    // Sort options array
+    if($name == "parent_frameworks" || $name == "projects"){
+        uasort($options, function($a, $b){
+            if($a['name'] == $b['name']) return 0;
+            return ($a['name'] < $b['name']) ? -1 : 1;
+        });
+    }
+
+    return $options;
+}
+
 
 /*****************************
  * FUNCTION: GET RISK LEVELS *
@@ -711,10 +745,10 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
     echo "  </select>\n";
 }
 
-/*****************************************
- * FUNCTION: CREATE SKATEHOLDER DROPDOWN *
- *****************************************/
-function create_stakeholder_dropdown($selected = "", $name="additional_stakeholders[]"){
+/****************************************
+ * FUNCTION: CREATE MULTIUSERS DROPDOWN *
+ ****************************************/
+function create_multiusers_dropdown($name, $selected = ""){
     global $escaper;
 
     // Make selected to array
@@ -723,8 +757,8 @@ function create_stakeholder_dropdown($selected = "", $name="additional_stakehold
         $selected = array();
     }
 
-    $options = get_table_ordered_by_name('user');
-    $str = "<select class=\"multiselect\" name=\"{$name}\" multiple class=\"form-field form-control\" style=\"width:auto;\">\n";
+    $options = get_options_from_table("enabled_users");
+    $str = "<select class=\"multiselect\" id=\"{$name}\" name=\"{$name}[]\" multiple class=\"form-field form-control\" style=\"width:auto;\">\n";
     // For each option
     foreach ($options as $option)
     {
@@ -764,53 +798,7 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
     }
     else $str .= "<select {$customHtml} id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
 
-    // If we want a table that should be ordered by name instead of value
-    if ($name == "user" || $name == "category" || $name == "team" || $name == "technology" || $name == "location" || $name == "regulation" || $name == "projects" || $name == "file_types" || $name == "file_type_extensions" || $name == "planning_strategy" || $name == "close_reason" || $name == "status" || $name == "source" || $name == "import_export_mappings" || $name == "test_status")
-    {
-        $options = get_table_ordered_by_name($name);
-    }
-    // If we want a table of only enabled users
-    else if ($name == "enabled_users")
-    {
-        $options = get_custom_table($name);
-    }
-    // If we want a table of only disabled users
-    else if ($name == "disabled_users")
-    {
-        $options = get_custom_table($name);
-    }
-    // If we want a table of languages
-    else if ($name == "languages")
-    {
-        $options = get_custom_table($name);
-    }
-    // If we want a table of family
-    else if ($name == "family")
-    {
-        $options = get_custom_table($name);
-    }
-    // If we want parent frameworks
-    else if($name == "parent_frameworks"){
-        $options = get_custom_table($name);
-    }
-    // If we want date formats
-    else if($name == "date_formats"){
-        $options = get_custom_table($name);
-    }
-    // Otherwise
-    else
-    {
-        // Get the list of options
-        $options = get_table($name);
-    }
-
-    // Sort options array
-    if($name == "parent_frameworks"){
-        uasort($options, function($a, $b){
-            if($a['name'] == $b['name']) return 0;
-            return ($a['name'] < $b['name']) ? -1 : 1;
-        });
-    }
+    $options = get_options_from_table($name);
 
     // If the blank is true
     if ($blank == true)
@@ -870,7 +858,8 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $opti
 
     // Get the list of options
     if($options === NULL){
-        if($name == "frameworks"){
+        $options = get_options_from_table($name);
+        /*if($name == "frameworks"){
             $options = get_custom_table($name);
         }
         elseif($name == "family"){
@@ -878,7 +867,7 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $opti
         }
         else{
             $options = get_table($name);
-        }
+        }*/
     }
 
     // If the blank is true
@@ -2307,6 +2296,7 @@ function get_id_by_user($user)
  *******************************/
 function core_get_mapping_value($prefix, $type, $mappings, $csv_line)
 {
+
     // Create the search term
     $search_term = $prefix . $type;
 
@@ -3447,7 +3437,21 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     $mitigation_effort          = isset($post['mitigation_effort']) ? (int)$post['mitigation_effort'] : 0;
     $mitigation_cost            = isset($post['mitigation_cost']) ? (int)$post['mitigation_cost'] : 0;
     $mitigation_owner           = isset($post['mitigation_owner']) ? (int)$post['mitigation_owner'] : 0;
-    $mitigation_team            = isset($post['mitigation_team']) ? (int)$post['mitigation_team'] : 0;
+    if(isset($post['mitigation_team']))
+    {
+        if(is_array($post['mitigation_team']))
+        {
+            $mitigation_team = implode(",", $post['mitigation_team']);
+        }
+        else
+        {
+            $mitigation_team = $post['mitigation_team'];
+        }
+    }
+    else
+    {
+        $mitigation_team = "";
+    }
     $current_solution           = isset($post['current_solution']) ? $post['current_solution'] : "";
     $current_solution           = try_encrypt($current_solution);
 
@@ -3474,7 +3478,6 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     // Otherwise, set the proper format for submitting to the database
     else
     {
-        // $planning_date = date(get_default_date_format(), strtotime($planning_date));
         $planning_date = get_standard_date_from_default_format($planning_date);
     }
 
@@ -3491,7 +3494,7 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     $stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
     $stmt->bindParam(":mitigation_cost", $mitigation_cost, PDO::PARAM_INT);
     $stmt->bindParam(":mitigation_owner", $mitigation_owner, PDO::PARAM_INT);
-    $stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
+    $stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_STR);
     $stmt->bindParam(":current_solution", $current_solution, PDO::PARAM_STR);
     $stmt->bindParam(":security_requirements", $security_requirements, PDO::PARAM_STR);
     $stmt->bindParam(":security_recommendations", $security_recommendations, PDO::PARAM_STR);
@@ -3771,7 +3774,6 @@ function update_risk($risk_id, $is_api = false)
     $assets                 = get_param("post", "assets", false);
     $submission_date        = get_param("post", "submission_date", false);
     if($submission_date !== false){
-//        $submission_date        =  date("Y-m-d H:i:s", strtotime($submission_date));
         $submission_date        =  get_standard_date_from_default_format($submission_date);
     }
 
@@ -4121,16 +4123,19 @@ function get_mitigation_by_id($risk_id)
             t3.name as mitigation_effort_name,
             t4.min_value AS mitigation_min_cost, t4.max_value AS mitigation_max_cost,
             t5.name as mitigation_owner_name,
-            t6.name as mitigation_team_name,
+            group_concat(distinct t6.name) as mitigation_team_name,
             t7.name as submitted_by_name
         FROM mitigations t1
             left join planning_strategy t2 on t1.planning_strategy=t2.value
             left join mitigation_effort t3 on t1.mitigation_effort=t3.value
             left join asset_values t4 on t1.mitigation_cost=t4.id
             left join user t5 on t1.mitigation_owner=t5.value
-            left join team t6 on t1.mitigation_team=t6.value
+            left join team t6 on FIND_IN_SET(t6.value, t1.mitigation_team)
             left join user t7 on t1.submitted_by=t7.value
-        WHERE t1.risk_id=:risk_id"
+        WHERE t1.risk_id=:risk_id
+        GROUP BY t1.id
+        ;
+    "
     );
     $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
 
@@ -4624,7 +4629,7 @@ function get_risks_count($sort_order)
         if (!team_separation_extra())
         {
             // Query the database
-            $stmt = $db->prepare("SELECT a.id FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value ORDER BY DATE(b.submission_date) DESC");
+            $stmt = $db->prepare("SELECT a.id FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value /* LEFT JOIN team g ON b.mitigation_team = g.value */ ORDER BY DATE(b.submission_date) DESC");
         }
         else
         {
@@ -4635,7 +4640,7 @@ function get_risks_count($sort_order)
             $separation_query = get_user_teams_query("a", true, false);
 
             // Query the database
-            $stmt = $db->prepare("SELECT a.id FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
+            $stmt = $db->prepare("SELECT a.id FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value /* LEFT JOIN team g ON b.mitigation_team = g.value */ " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
         }
 
         $stmt->execute();
@@ -5621,55 +5626,55 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
     // 12 = Show management reviews by date
     else if ($sort_order == 12)
     {
-            // If the team separation extra is not enabled
-            if (!team_separation_extra())
-            {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
+        // Query the database
+        $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value ORDER BY DATE(b.submission_date) DESC");
+        }
+        else
+        {
+                // Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                // Get the separation query string
+                $separation_query = get_user_teams_query("a", true, false);
+
             // Query the database
-            $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value ORDER BY DATE(b.submission_date) DESC");
-            }
-            else
-            {
-                    // Include the team separation extra
-                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
+        }
 
-                    // Get the separation query string
-                    $separation_query = get_user_teams_query("a", true, false);
+        $stmt->execute();
 
-                // Query the database
-                $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS review, e.name AS next_step FROM risks a JOIN mgmt_reviews b ON a.id = b.risk_id JOIN user c ON b.reviewer = c.value LEFT JOIN review d ON b.review = d.value LEFT JOIN next_step e ON b.next_step = e.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
-    }
-
-            $stmt->execute();
-
-            // Store the list in the array
-            $array = $stmt->fetchAll();
+        // Store the list in the array
+        $array = $stmt->fetchAll();
     }
 
     // 13 = Show mitigations by date
     else if ($sort_order == 13)
     {
-            // If the team separation extra is not enabled
-            if (!team_separation_extra())
-            {
+        // If the team separation extra is not enabled
+        if (!team_separation_extra())
+        {
             // Query the database
-            $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, g.name AS mitigation_team FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value ORDER BY DATE(b.submission_date) DESC");
-            }
-            else
-            {
-                    // Include the team separation extra
-                    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, group_concat(distinct g.name) AS mitigation_team FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON FIND_IN_SET(g.value, b.mitigation_team) GROUP BY a.id ORDER BY DATE(b.submission_date) DESC; ");
+        }
+        else
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-                    // Get the separation query string
-                    $separation_query = get_user_teams_query("a", true, false);
+            // Get the separation query string
+            $separation_query = get_user_teams_query("a", true, false);
 
-                // Query the database
-                $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, g.name AS mitigation_team FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON b.mitigation_team = g.value " . $separation_query . " ORDER BY DATE(b.submission_date) DESC");
-    }
+            // Query the database
+            $stmt = $db->prepare("SELECT a.subject, a.id, b.submission_date, c.name, d.name AS planning_strategy, e.name AS mitigation_effort, b.mitigation_cost, f.name AS mitigation_owner, group_concat(distinct g.name) AS mitigation_team FROM risks a JOIN mitigations b ON a.id = b.risk_id JOIN user c ON b.submitted_by = c.value LEFT JOIN planning_strategy d ON b.planning_strategy = d.value LEFT JOIN mitigation_effort e ON b.mitigation_effort = e.value LEFT JOIN user f ON b.mitigation_owner = f.value LEFT JOIN team g ON FIND_IN_SET(g.value, b.mitigation_team) " . $separation_query . " GROUP BY a.id ORDER BY DATE(b.submission_date) DESC; ");
+        }
 
-            $stmt->execute();
+        $stmt->execute();
 
-            // Store the list in the array
-            $array = $stmt->fetchAll();
+        // Store the list in the array
+        $array = $stmt->fetchAll();
     }
 
     // 14 = Show open risks scored by DREAD Scoring
@@ -6118,7 +6123,7 @@ function get_risk_table($sort_order=0, $activecol="")
             echo "<td align=\"center\" >". $escaper->escapeHtml($risk['team_name']) ."</td>\n";
         }
         echo "<td align=\"center\" class=\"" . $escaper->escapeHtml($color) . " risk-cell \">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></td>\n";
-        echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']))) . "</td>\n";
+        echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']))) . "</td>\n";
 
         // If the active column is management
         if ($activecol == 'management')
@@ -6255,8 +6260,8 @@ function get_submitted_risks_table($sort_order=11)
             echo "<tr>\n";
             echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
             echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
-    echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
-    echo "<td class=\"risk-cell\" align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . " \"></span> </td>\n";
+            echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
+            echo "<td class=\"risk-cell\" align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . " \"></span> </td>\n";
             echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['status']) . "</td>\n";
             echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['team']) . "</td>\n";
             echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
@@ -6302,7 +6307,7 @@ function get_mitigations_table($sort_order=13)
             echo "<tr>\n";
             echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
             echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
-            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
+            echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
             echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['planning_strategy']) . "</td>\n";
             echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['mitigation_effort']) . "</td>\n";
             echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(get_asset_value_by_id($risk['mitigation_cost'])) . "</td>\n";
@@ -6348,10 +6353,10 @@ function get_reviewed_risk_table($sort_order=12)
             echo "<tr>\n";
             echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
             echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
-    echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
-    echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['review']) . "</td>\n";
-    echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['next_step']) . "</td>\n";
-    echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
+            echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
+            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['review']) . "</td>\n";
+            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['next_step']) . "</td>\n";
+            echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['name']) . "</td>\n";
             echo "</tr>\n";
         }
 
@@ -6391,13 +6396,14 @@ function get_closed_risks_table($sort_order=17)
     {
         // Get the risk color
         $color = get_risk_color($risk['calculated_risk']);
-
+        
         echo "<tr>\n";
         echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
         echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($risk['subject']) . "</td>\n";
         echo "<td class=\"risk-cell\" align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"150px\">" . $escaper->escapeHtml($risk['calculated_risk']) . " <span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . " \"></span> </td>\n";
                 echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['team']) . "</td>\n";
-        echo "<td align=\"center\" width=\"150px\">" . ( !$risk['closure_date'] ? $lang["Unknown"] : $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['closure_date']))) ) . "</td>\n";
+        echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . (!$risk['closure_date'] ? "" : $escaper->escapeHtml(date("YmdHis", strtotime($risk['closure_date'])))) . "\">"
+            . ( !$risk['closure_date'] ? $lang["Unknown"] : $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['closure_date']))) ) . "</td>\n";
         echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['user']) . "</td>\n";
         echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml($risk['close_reason']) . "</td>\n";
         echo "</tr>\n";
@@ -6480,7 +6486,7 @@ function get_risk_teams_table($sort_order=18)
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
     }
 }
@@ -6556,7 +6562,7 @@ function get_risk_technologies_table($sort_order=19)
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
 }
@@ -6598,7 +6604,7 @@ function get_risk_scoring_table()
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
-                echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
+                echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -6635,7 +6641,7 @@ function get_risk_scoring_table()
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
-        echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
+        echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -6672,7 +6678,7 @@ function get_risk_scoring_table()
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
-        echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
+        echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -6709,7 +6715,7 @@ function get_risk_scoring_table()
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
-        echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
+        echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -6746,7 +6752,7 @@ function get_risk_scoring_table()
                 echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
                 echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                 echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
-        echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
+        echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                 echo "</tr>\n";
         }
 
@@ -6808,7 +6814,7 @@ function get_projects_and_risks_table()
                     echo "<td align=\"left\" width=\"50px\"><a href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
                     echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
                     echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($risk['calculated_risk']) . "</td>\n";
-                    echo "<td align=\"center\" width=\"150px\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
+                    echo "<td align=\"center\" width=\"150px\" sorttable_customkey=\"" . $escaper->escapeHtml(date("YmdHis", strtotime($risk['submission_date']))) . "\">" . $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))) . "</td>\n";
                     echo "</tr>\n";
                 }
             }
@@ -7520,7 +7526,7 @@ function management_review($risk_id, $mgmt_review, $next_review)
         $value = "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview\">". $escaper->escapeHtml($lang['No']) ."</a>";
     }else{
         $d = DateTime::createFromFormat('Y-m-d', $next_review);
-//        if($d && $d->format('Y-m-d') === $next_review && (strtotime($next_review) + 24*3600) <= time() ){
+
         if($d && $d->format('Y-m-d') === $next_review ){
             // If review doensn't past due.
             $value = "<a class=\"management yes\" href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview\">".$escaper->escapeHtml($lang['Yes']).'</a>';
@@ -7541,17 +7547,17 @@ function planned_mitigation($risk_id, $mitigation_id)
     global $lang;
     global $escaper;
 
-        // If the review hasn't happened
-        if ($mitigation_id == "0")
-        {
-            $value = "<a href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "\">". $escaper->escapeHtml($lang['No']) ."</a>";
-        }
-        else
-        {
-            $value = "<a class=\"mitigation yes\" href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "\">".$escaper->escapeHtml($lang['Yes'])."</a>";
-        }
+    // If the review hasn't happened
+    if (!$mitigation_id)
+    {
+        $value = "<a href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "\">". $escaper->escapeHtml($lang['No']) ."</a>";
+    }
+    else
+    {
+        $value = "<a class=\"mitigation yes\" href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "\">".$escaper->escapeHtml($lang['Yes'])."</a>";
+    }
 
-        return $value;
+    return $value;
 }
 
 /*******************************
@@ -7577,6 +7583,10 @@ function get_name_by_value($table, $value, $default = "")
     // If we get a value back from the query
     if (isset($array[0]['name']))
     {
+        // Try decrypt if necessary
+        if (in_array($table, array("frameworks")))
+            return try_decrypt($array[0]['name']);
+
         // Return that value
         return $array[0]['name'];
     }
@@ -7808,7 +7818,7 @@ function get_next_review_default($risk_id){
 /**********************************
  * FUNCTION: GET NEXT REVIEW DATE *
  **********************************/
-function next_review($risk_level, $id, $next_review, $html = true, $review_levels = array(), $submission_date = false)
+function next_review($risk_level, $id, $next_review, $html = true, $review_levels = array(), $submission_date = false, $return_standard_format = false)
 {
     global $lang;
     global $escaper;
@@ -7889,9 +7899,9 @@ function next_review($risk_level, $id, $next_review, $html = true, $review_level
         // If the next review date is after today
         if ($next_review != $lang['PASTDUE'] && (strtotime($next_review->format('Y-m-d')) + 24*3600) > time())
         {
-            $default_date_format = get_default_date_format();
+            $date_format = $return_standard_format ? 'Y-m-d' : get_default_date_format();
             
-            $text = $next_review->format($default_date_format);
+            $text = $next_review->format($date_format);
         }
         else $text = $lang['PASTDUE'];
     }
@@ -8291,7 +8301,21 @@ function update_mitigation($risk_id, $post)
     $mitigation_effort  = (int)$post['mitigation_effort'];
     $mitigation_cost    = (int)$post['mitigation_cost'];
     $mitigation_owner   = (int)$post['mitigation_owner'];
-    $mitigation_team    = (int)$post['mitigation_team'];
+    if(isset($post['mitigation_team']))
+    {
+        if(is_array($post['mitigation_team']))
+        {
+            $mitigation_team = implode(",", $post['mitigation_team']);
+        }
+        else
+        {
+            $mitigation_team = $post['mitigation_team'];
+        }
+    }
+    else
+    {
+        $mitigation_team = "";
+    }
     $current_solution   = try_encrypt($post['current_solution']);
     $security_requirements      = try_encrypt($post['security_requirements']);
     $security_recommendations   = try_encrypt($post['security_recommendations']);
@@ -8307,10 +8331,8 @@ function update_mitigation($risk_id, $post)
     // Otherwise, set the proper format for submitting to the database
     else
     {
-        // $planning_date = date("Y-m-d", strtotime($planning_date));
         $planning_date = get_standard_date_from_default_format($planning_date);
     }
-
 
     // Get current datetime for last_update
     $current_datetime = date("Y-m-d H:i:s");
@@ -8327,7 +8349,7 @@ function update_mitigation($risk_id, $post)
     $stmt->bindParam(":mitigation_effort", $mitigation_effort, PDO::PARAM_INT);
     $stmt->bindParam(":mitigation_cost", $mitigation_cost, PDO::PARAM_INT);
     $stmt->bindParam(":mitigation_owner", $mitigation_owner, PDO::PARAM_INT);
-    $stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_INT);
+    $stmt->bindParam(":mitigation_team", $mitigation_team, PDO::PARAM_STR);
     $stmt->bindParam(":current_solution", $current_solution, PDO::PARAM_STR);
     $stmt->bindParam(":security_requirements", $security_requirements, PDO::PARAM_STR);
     $stmt->bindParam(":security_recommendations", $security_recommendations, PDO::PARAM_STR);
@@ -8696,39 +8718,40 @@ function get_announcements()
 function language_file()
 {
     // If the session hasn't been defined yet
-    if (!isset($_SESSION))
+    // Making it fall through if called from the command line to load the default
+    if (!isset($_SESSION) && PHP_SAPI !== 'cli')
     {
         // Return an empty language file
         return realpath(__DIR__ . '/../languages/empty.php');
     }
     // If the language is set for the user
-    else if (isset($_SESSION['lang']))
+    elseif (isset($_SESSION['lang']))
     {
         // Use the users language
         return realpath(__DIR__ . '/../languages/' . $_SESSION['lang'] . '/lang.' . $_SESSION['lang'] . '.php');
     }
     else
     {
-                // Set the default language to null
-                $default_language = null;
+        // Set the default language to null
+        $default_language = null;
 
-                // Try connecting to the database
-                try
-                {
-                        $db = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
-                }
-                catch (PDOException $e)
-                {
-                        $default_language = "en";
-                }
+        // Try connecting to the database
+        try
+        {
+            $db = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+        }
+        catch (PDOException $e)
+        {
+            $default_language = "en";
+        }
 
-                // If we can connect to the database
-                if (is_null($default_language))
-                {
-                        // Get the default language
-                        $default_language = get_setting("default_language");
-                        if (!$default_language) $default_language = "en";
-                }
+        // If we can connect to the database
+        if (is_null($default_language))
+        {
+            // Get the default language
+            $default_language = get_setting("default_language");
+            if (!$default_language) $default_language = "en";
+        }
 
         // If the default language is set
         if ($default_language != false)
@@ -8806,7 +8829,7 @@ function customization_extra()
 /*****************************************
  * FUNCTION: GET SETTING VALUE BY NAME *
  *****************************************/
-function get_settting_by_name($name){
+function get_setting_by_name($name){
     // Open the database connection
     $db = db_open();
 
@@ -9732,6 +9755,8 @@ function write_debug_log($value)
  ******************************/
 function add_registration($name, $company, $title, $phone, $email)
 {
+    global $lang;
+
     // Create the SimpleRisk instance ID if it doesn't already exist
     $instance_id = create_simplerisk_instance_id();
 
@@ -9748,26 +9773,32 @@ function add_registration($name, $company, $title, $phone, $email)
 
     // Register instance with the web service
     $results = simplerisk_service_call($data);
-    $regex_pattern = "/<api_key>(.*)<\/api_key>/";
+
+    if (!$results || !is_array($results)) {
+        set_alert(true, "bad", $lang['FailedToRegisterInstance']);
+
+        // Return a failure
+        return 0;
+    }
 
     foreach ($results as $line)
     {
-            if (preg_match($regex_pattern, $line, $matches))
-            {
-                $services_api_key = $matches[1];
+        if (preg_match("/<api_key>(.*)<\/api_key>/", $line, $matches))
+        {
+            $services_api_key = $matches[1];
 
             // Open the database connection
             $db = db_open();
 
-                // Add the registration
-                $stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('registration_name', :name), ('registration_company', :company), ('registration_title', :title), ('registration_phone', :phone), ('registration_email', :email), ('services_api_key', :services_api_key)");
-                $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
-                $stmt->bindParam(":company", $company, PDO::PARAM_STR, 200);
-                $stmt->bindParam(":title", $title, PDO::PARAM_STR, 200);
-                $stmt->bindParam(":phone", $phone, PDO::PARAM_STR, 200);
-                $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
+            // Add the registration
+            $stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('registration_name', :name), ('registration_company', :company), ('registration_title', :title), ('registration_phone', :phone), ('registration_email', :email), ('services_api_key', :services_api_key)");
+            $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
+            $stmt->bindParam(":company", $company, PDO::PARAM_STR, 200);
+            $stmt->bindParam(":title", $title, PDO::PARAM_STR, 200);
+            $stmt->bindParam(":phone", $phone, PDO::PARAM_STR, 200);
+            $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
             $stmt->bindParam(":services_api_key", $services_api_key, PDO::PARAM_STR, 50);
-                $stmt->execute();
+            $stmt->execute();
 
             // Mark the instance as registered
             $stmt = $db->prepare("UPDATE `settings` SET value=1 WHERE name='registration_registered';");
@@ -9781,11 +9812,55 @@ function add_registration($name, $company, $title, $phone, $email)
 
             // Return the result
             return $result;
+        } elseif (preg_match("/<result>(.*)<\/result>/", $line, $matches)) {
+            switch($matches[1]) {
+                case "Not Purchased":
+                    // Display an alert
+                    set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
+
+                    // Return a failure
+                    return 0;
+
+                case "Invalid Extra Name":
+                    // Display an alert
+                    set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
+
+                    // Return a failure
+                    return 0;
+
+                case "Unmatched IP Address":
+                    // Display an alert
+                    set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
+
+                    // Return a failure
+                    return 0;
+
+                case "Instance Disabled":
+                    // Display an alert
+                    set_alert(true, "bad", $lang['InstanceIsDisabled']);
+
+                    // Return a failure
+                    return 0;
+
+                case "Invalid Instance or Key":
+                case "failure":
+                    // Display an alert
+                    set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
+
+                    // Return a failure
+                    return 0;
+
+                default:
+                    set_alert(true, "bad", $lang['FailedToRegisterInstance']);
+
+                    // Return a failure
+                    return 0;
             }
+        }
     }
 
-        // Return a failure
-        return 0;
+    // Return a failure
+    return 0;
 }
 
 /*********************************
@@ -9793,66 +9868,111 @@ function add_registration($name, $company, $title, $phone, $email)
  *********************************/
 function update_registration($name, $company, $title, $phone, $email)
 {
+    global $lang;
+
     // Get the instance id
     $instance_id = get_setting("instance_id");
 
     // Get the services API key
     $services_api_key = get_setting("services_api_key");
 
-        // Create the data to send
-        $data = array(
-                'action' => 'update_instance',
-                'instance_id' => $instance_id,
+    // Create the data to send
+    $data = array(
+        'action' => 'update_instance',
+        'instance_id' => $instance_id,
         'api_key' => $services_api_key,
-                'name' => $name,
-                'company' => $company,
-                'title' => $title,
-                'phone' => $phone,
-                'email' => $email,
-        );
+        'name' => $name,
+        'company' => $company,
+        'title' => $title,
+        'phone' => $phone,
+        'email' => $email,
+    );
 
-        // Register instance with the web service
-        $results = simplerisk_service_call($data);
-        $regex_pattern = "/<result>success<\/result>/";
+    // Register instance with the web service
+    $result = simplerisk_service_call($data);
 
-        foreach ($results as $line)
-        {
-        // If the service returned a success
-                if (preg_match($regex_pattern, $line, $matches))
-                {
-                // Open the database connection
-                $db = db_open();
+    if (!$result || !is_array($result) || !preg_match("/<result>(.*)<\/result>/", $result[0], $matches)) {
+        set_alert(true, "bad", $lang['FailedToUpdateInstance']);
 
-                // Update the registration
+        // Return a failure
+        return 0;
+    }
+
+    switch($matches[1]) {
+        case "Not Purchased":
+            // Display an alert
+            set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
+
+            // Return a failure
+            return 0;
+
+        case "Invalid Extra Name":
+            // Display an alert
+            set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
+
+            // Return a failure
+            return 0;
+
+        case "Unmatched IP Address":
+            // Display an alert
+            set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
+
+            // Return a failure
+            return 0;
+
+        case "Instance Disabled":
+            // Display an alert
+            set_alert(true, "bad", $lang['InstanceIsDisabled']);
+
+            // Return a failure
+            return 0;
+
+        case "Invalid Instance or Key":
+        case "failure":
+            // Display an alert
+            set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
+
+            // Return a failure
+            return 0;
+
+        case "success":
+            // Open the database connection
+            $db = db_open();
+
+            // Update the registration
             $stmt = $db->prepare("UPDATE `settings` SET value=:name WHERE name='registration_name'");
             $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
             $stmt->execute();
 
-                $stmt = $db->prepare("UPDATE `settings` SET value=:company WHERE name='registration_company'");
-                $stmt->bindParam(":company", $company, PDO::PARAM_STR, 200);
-                $stmt->execute();
+            $stmt = $db->prepare("UPDATE `settings` SET value=:company WHERE name='registration_company'");
+            $stmt->bindParam(":company", $company, PDO::PARAM_STR, 200);
+            $stmt->execute();
 
-                $stmt = $db->prepare("UPDATE `settings` SET value=:title WHERE name='registration_title'");
-                $stmt->bindParam(":title", $title, PDO::PARAM_STR, 200);
-                $stmt->execute();
+            $stmt = $db->prepare("UPDATE `settings` SET value=:title WHERE name='registration_title'");
+            $stmt->bindParam(":title", $title, PDO::PARAM_STR, 200);
+            $stmt->execute();
 
-                $stmt = $db->prepare("UPDATE `settings` SET value=:phone WHERE name='registration_phone'");
-                $stmt->bindParam(":phone", $phone, PDO::PARAM_STR, 200);
-                $stmt->execute();
+            $stmt = $db->prepare("UPDATE `settings` SET value=:phone WHERE name='registration_phone'");
+            $stmt->bindParam(":phone", $phone, PDO::PARAM_STR, 200);
+            $stmt->execute();
 
-                $stmt = $db->prepare("UPDATE `settings` SET value=:email WHERE name='registration_email'");
-                $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
-                $stmt->execute();
+            $stmt = $db->prepare("UPDATE `settings` SET value=:email WHERE name='registration_email'");
+            $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
+            $stmt->execute();
 
-                        // Download the update extra
-                        $result = download_extra("upgrade");
+            // Download the update extra
+            $result = download_extra("upgrade");
 
-                // Close the database connection
-                db_close($db);
+            // Close the database connection
+            db_close($db);
 
             // Return the result
             return $result;
-        }
+        default:
+            set_alert(true, "bad", $lang['FailedToUpdateInstance']);
+
+            // Return a failure
+            return 0;
     }
 
     // Return a failure
@@ -9953,7 +10073,15 @@ function try_decrypt($value)
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
         if(!isset($_SESSION['encrypted_pass']) || !$_SESSION['encrypted_pass']){
-            $decrypted_value = "XXXX";
+            // If there's no session, try to get the password from the init.php
+            $password = fetch_key();
+
+            if ($password) {
+                // If we could, then use it
+                $decrypted_value = decrypt($password, $value);
+            } else {
+                $decrypted_value = "XXXX";
+            }
         }
         else{
             // Decrypt the value
@@ -10842,7 +10970,7 @@ function get_technology_names($ids="")
 /********************************************
  * FUNCTION: GET STAKEHOLDER NAMES FROM IDS *
  ********************************************/
-function get_stakeholder_names($ids="", $limit=99)
+function get_stakeholder_names($ids="", $limit=4)
 {
     if(!$ids){
         return "";
@@ -11132,7 +11260,7 @@ function update_family($value, $short_name){
     // Close the database connection
     db_close($db);
 
-    return;
+    return true;
 }
 
 /***************************
@@ -11750,7 +11878,7 @@ function add_security_headers()
     if (csp_enabled())
     {
             // Add the Content-Security-Policy header
-            header("Content-Security-Policy: default-src 'self' 'unsafe-inline';");
+            header("Content-Security-Policy: default-src 'self' 'unsafe-inline' *.highcharts.com *.googleapis.com *.gstatic.com *.jquery.com;");
     }
 }
 
@@ -11998,58 +12126,6 @@ function delete_likelihood()
     return $stmt->rowCount();
 }
 
-/*********************************************************************************
- * FUNCTION: UPDATE ALL NEXT REVIEW DATES BASED ON NEXT_REVIEW_DATE_USES SETTING *
- *********************************************************************************/
-function update_all_next_review_dates()
-{
-    global $lang, $escaper;
-
-    $current_next_review_date_uses = get_setting("next_review_date_uses");
-
-    // Open the database connection
-    $db = db_open();
-
-    $stmt = $db->prepare("SELECT t1.id review_id, t1.risk_id, t1.submission_date , t4.calculated_risk, ROUND((t4.calculated_risk - (t4.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
-        FROM `mgmt_reviews` t1 
-            INNER JOIN (SELECT risk_id, max(submission_date) submission_date FROM `mgmt_reviews` GROUP BY risk_id) t2 ON t1.risk_id=t2.risk_id AND t1.submission_date=t2.submission_date
-            INNER JOIN `risks` t3 ON t1.risk_id=t3.id
-            INNER JOIN risk_scoring t4 ON t3.id = t4.id
-            LEFT JOIN mitigations mg ON t3.id = mg.risk_id
-            LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
-        GROUP BY t1.risk_id
-        ;
-    ");
-    $stmt->execute();
-    $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    
-    $review_levels = get_review_levels();
-    
-    foreach($reviews as $review){
-        // If next_review_date_uses setting is Residual Risk.
-        if($current_next_review_date_uses == "ResidualRisk")
-        {
-            $residual_risk_level = get_risk_level_name($review['residual_risk']);
-            $next_review = next_review($residual_risk_level, $review['risk_id'], "0000-00-00", false, $review_levels, $review["submission_date"]);
-        }
-        // If next_review_date_uses setting is Inherent Risk.
-        else
-        {
-            $risk_level = get_risk_level_name($review['calculated_risk']);
-            $next_review = next_review($risk_level, $review['risk_id'], "0000-00-00", false, $review_levels, $review["submission_date"]);
-        }
-        
-        $stmt = $db->prepare("UPDATE `mgmt_reviews` SET next_review=:next_review WHERE id=:review_id;");
-        $stmt->bindParam(":next_review", $next_review, PDO::PARAM_STR, 20);
-        $stmt->bindParam(":review_id", $review['review_id'], PDO::PARAM_STR, 20);
-        $stmt->execute();
-    }
-
-    // Close the database connection
-    db_close($db);
-}
-
 /**********************
  * FUNCTION: IS ADMIN *
  **********************/
@@ -12295,10 +12371,10 @@ function get_mitigation_team_query_string($user_teams, $rename = false)
             // If we need to rename the team
             if ($rename != false)
             {
-                $string .= "'{$team}' = {$rename}.mitigation_team OR " ;
+                $string .= " FIND_IN_SET('{$team}', {$rename}.mitigation_team) OR " ;
             }
             // Otherwise append the team to the string
-            else $string .= "'{$team}' = mitigation_team OR " ;
+            else $string .= " FIND_IN_SET('{$team}', mitigation_team) OR " ;
         }
     }
     
@@ -12831,18 +12907,24 @@ function localized_yes_no($val)
     return boolval($val) ? $lang['Yes'] : $lang['No'];
 }
 
-/*************************************************************************************
- * FUNCTION: GET FORMATTED DATE *
- *************************************************************************************/
-function format_date($date)
+/*********************************************************************************
+ * FUNCTION: GET FORMATTED DATE                                                  *
+ *                                                                               *
+ * Use it only on dates got from the database, as strtotime is not suited to be  *
+ * used on user input since it can't handle all the date formats we support.     *
+ *                                                                               *
+ * On user input use the `get_standard_date_from_default_format` function before *
+ * writing into the database                                                     *
+ *********************************************************************************/
+function format_date($date, $default = "")
 {
     // If the date is not 0000-00-00
-    if ($date != "0000-00-00")
+    if ($date && $date != "0000-00-00")
     {
         // Set it to the proper format
         return strtotime($date) ? date(get_default_date_format(), strtotime($date)) : "";
     }
-    else return "";
+    else return $default;
 }
 
 /**************************
@@ -12850,28 +12932,113 @@ function format_date($date)
  **************************/
 function table_exists($table)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Query the schema for the table
-	$database = DB_DATABASE;
-        $stmt = $db->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema = :database AND table_name = :table;");
-        $stmt->bindParam(":database", $database, PDO::PARAM_STR);
-        $stmt->bindParam(":table", $table, PDO::PARAM_STR);
-        $stmt->execute();
+    // Query the schema for the table
+    $database = DB_DATABASE;
+    $stmt = $db->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema = :database AND table_name = :table;");
+    $stmt->bindParam(":database", $database, PDO::PARAM_STR);
+    $stmt->bindParam(":table", $table, PDO::PARAM_STR);
+    $stmt->execute();
 
-        // Fetch the results
-        $results = $stmt->fetchAll();
+    // Fetch the results
+    $results = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // If we have any results
-        if (count($results) > 0)
-        {
-                return true;
+    // If we have any results
+    if (count($results) > 0)
+    {
+        return true;
+    }
+    else return false;
+}
+
+/***********************************
+ * FUNCTION: FIELD EXISTS IN TABLE *
+ ***********************************/
+function field_exists_in_table($field, $table) {
+
+    // Open the database connection
+    $db = db_open();
+
+    // Query the field of the table
+    $stmt = $db->prepare("SHOW COLUMNS FROM `{$table}` LIKE '{$field}';");
+    $stmt->execute();
+
+    // Fetch the results
+    $results = $stmt->rowCount();
+
+    // Close the database connection
+    db_close($db);
+
+    return $results;
+}
+
+/*********************************************
+ * FUNCTION: CHECK UPLOADED FILE SIZE ERRORS *
+ ********************************************/
+function checkUploadedFileSizeErrors() {
+    global $lang, $escaper;
+
+    // This check is here because if the user uploads a file that's size exceeds the `post_max_size` defined in the
+    // php.ini then it'll wipe out the contents of the $_POST and cause a CSRF validation failure.
+    // In this case we'll just simply refresh the page and display an error message.
+    if (isset($_SERVER['REQUEST_METHOD'])&& $_SERVER['REQUEST_METHOD'] === 'POST'
+        && isset($_SERVER['CONTENT_LENGTH']) && empty($_POST)) {
+
+        $maxPostSize = trim(ini_get('post_max_size'));
+        if ($maxPostSize != '') {
+            $last = strtolower(
+                $maxPostSize{strlen($maxPostSize) - 1}
+            );
+        } else {
+            $last = '';
         }
-        else return false;
+
+        $maxPostSize = (int)$maxPostSize;
+        switch ($last) {
+            // The 'G' modifier is available since PHP 5.1.0
+            case 'g':
+                $maxPostSize *= 1024;
+                // fall through
+            case 'm':
+                $maxPostSize *= 1024;
+                // fall through
+            case 'k':
+                $maxPostSize *= 1024;
+                // fall through
+        }
+
+        if ($_SERVER['CONTENT_LENGTH'] > $maxPostSize) {
+            set_alert(true, "bad", $lang['UploadingFileTooBig']);
+            refresh();
+        }
+    }
+}
+
+/******************************************
+ * FUNCTION: GET PHP EXECUTABLE FROM PATH *
+ * Only works if the executable is on the *
+ * path.                                  *
+ ******************************************/
+function getPHPExecutableFromPath() {
+  $paths = explode(PATH_SEPARATOR, getenv('PATH'));
+  foreach ($paths as $path) {
+    // we need this for XAMPP (Windows)
+    if (strstr($path, 'php.exe') && isset($_SERVER["WINDIR"]) && file_exists($path) && is_file($path)) {
+        return $path;
+    }
+    else {
+        $php_executable = $path . DIRECTORY_SEPARATOR . "php" . (isset($_SERVER["WINDIR"]) ? ".exe" : "");
+        if (file_exists($php_executable) && is_file($php_executable)) {
+           return $php_executable;
+        }
+    }
+  }
+  return FALSE; // not found
 }
 
 /*************************
@@ -12925,6 +13092,124 @@ if (!function_exists('hash_equals')) {
         return $ret === 0;
     }
 
+}
+
+/*****************************************************************************
+ * FUNCTION: PREVENT EXTRA DOUBLE SUBMIT                                     *
+ * This function won't let the enable logic of the extra run                 *
+ * when it's already enabled or the disable logic when it's already disabled *
+ * $extra       = The name of the extra                                      *
+ * $is_enable   = Whether the function is called from the extra's enable     *
+ *****************************************************************************/
+function prevent_extra_double_submit($extra, $is_enable) {
+
+    global $lang;
+
+    /*
+        The encryption_extra() == $is_enable part might need some explanation:
+        We only have to interrupt if
+            - the extra is turned on and it's the enable function
+            - the extra is turned off and it's the disable function
+        thus it makes sense to compare the two and interrupt when they're equal.
+
+        extra | enable | interrupt
+        --------------------------
+          1   |    1   |    1
+          1   |    0   |    0
+          0   |    1   |    0
+          0   |    0   |    1
+    */
+    $interrupt =
+        ($extra == "encryption" && (encryption_extra() == $is_enable)) ||
+        ($extra == "custom_authentication" && (custom_authentication_extra() == $is_enable)) ||
+        ($extra == "customization" && (customization_extra() == $is_enable)) ||
+        ($extra == "team_separation" && (team_separation_extra() == $is_enable)) ||
+        ($extra == "notification" && (notification_extra() == $is_enable)) ||
+        ($extra == "import_export" && (import_export_extra() == $is_enable)) ||
+        ($extra == "api" && (api_extra() == $is_enable)) ||
+        ($extra == "assessments" && (assessments_extra() == $is_enable)) ||
+        ($extra == "complianceforge" && (complianceforge_extra() == $is_enable)) ||
+        ($extra == "complianceforge_scf" && (complianceforge_scf_extra() == $is_enable)) ||
+        ($extra == "governance" && (governance_extra() == $is_enable));
+
+    if ($interrupt) {
+        set_alert(true, "bad", $lang['ExtraIsAlready' . ($is_enable ? 'Enabled': 'Disabled')]);
+        refresh();
+    }
+}
+
+/***********************************************
+ * FUNCTION: PREVENT FORM DOUBLE SUBMIT SCRIPT *
+ ***********************************************/
+function prevent_form_double_submit_script() {
+    echo "$(document).ready(function(){
+            $('form').submit(function(evt) {
+                setTimeout(function(){ $(\"input[type='submit']\").prop('disabled', true); }, 1);
+                return true;
+            });
+        });\n";
+}
+
+/*********************************
+ * FUNCTION: GET RISK BY SUBJECT *
+ *********************************/
+function get_risk_by_subject($subject)
+{
+	// If the encrypted db extra is enabled
+	if (encryption_extra())
+	{
+        // Load the extra
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+        return encryption_get_risk_by_subject($subject);
+	}
+	// If the encrypted db extra is not enabled
+	else
+	{
+		// Open the database connection
+		$db = db_open();
+
+		// Search for a risk with this subject
+		$stmt = $db->prepare("SELECT id FROM risks WHERE subject = :subject;");
+		$stmt->bindParam(":subject", $subject, PDO::PARAM_STR);
+		$stmt->execute();
+
+		// Fetch the result
+		$result = $stmt->fetchAll();
+
+		// Close the database connection
+		db_close($db);
+
+		// If we have at least one result
+		if (count($result) > 0)
+		{
+			// Return the first risk id
+			return $result[0]['id'];
+		}
+		else return false;
+	}
+
+	// Return false
+	return false;
+}
+
+/*******************************************
+ * FUNCTION: GET TYPE OF COLUMN            *
+ * Please note, that this function only    *
+ * returns 'varchar' of type 'varchar(10)' *
+ *******************************************/
+function getTypeOfColumn($table, $column) {
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT DATA_TYPE FROM information_schema.COLUMNS WHERE TABLE_NAME = :table AND COLUMN_NAME = :column;");
+    $stmt->bindParam(":table", $table, PDO::PARAM_STR);
+    $stmt->bindParam(":column", $column, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $result = $stmt->fetch();
+
+    db_close($db);
+
+    return $result?$result['DATA_TYPE']:"";
 }
 
 ?>

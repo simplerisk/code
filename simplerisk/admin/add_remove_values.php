@@ -36,6 +36,10 @@
 
     require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
+    function csrf_startup() {
+        csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+    }
+
     // Check for session timeout or renegotiation
     session_check();
 
@@ -54,752 +58,236 @@
 		exit(0);
 	}
 
-    // Check if a new review was submitted
-    if (isset($_POST['add_review']))
-    {
-        $name = $_POST['new_review'];
+    $customAddFunction_team = function($name) {
+        // Insert a new team
+        $teamId = add_name("team", $name);
 
-        // Insert a new category up to 50 chars
-        add_name("review", $name, 50);
-
-        // Display an alert
-        set_alert(true, "good", "A new review was added successfully.");
-    }
-    
-    // Check if the review update was submitted
-    if (isset($_POST['update_review']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_review_name'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            update_table("review", $new_name, $value);
-
-            // Display an alert
-            set_alert(true, "good", "The review name was updated successfully.");
-        }
-    }
-
-    // Check if a review was deleted
-    if (isset($_POST['delete_review']))
-    {
-        $value = (int)$_POST['review'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            delete_value("review", $value);
-
-            // Display an alert
-            set_alert(true, "good", "An existing review was removed successfully.");
-        }
-    }
-
-    // Check if a new next step was submitted
-    if (isset($_POST['add_next_step']))
-    {
-        $name = $_POST['new_next_step'];
-
-        // Insert a new category up to 50 chars
-        add_name("next_step", $name, 50);
-
-        // Display an alert
-        set_alert(true, "good", "A new next step was added successfully.");
-    }
-    
-    // Check if the next step update was submitted
-    if (isset($_POST['update_next_step']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_next_step_name'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            update_table("next_step", $new_name, $value);
-
-            // Display an alert
-            set_alert(true, "good", "The next step name was updated successfully.");
-        }
-    }
-
-    // Check if a next step was deleted
-    if (isset($_POST['delete_next_step']))
-    {
-        $value = (int)$_POST['next_step'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            delete_value("next_step", $value);
-
-            // Display an alert
-            set_alert(true, "good", "An existing next step was removed successfully.");
-        }
-    }
-
-    // Check if a new category was submitted
-    if (isset($_POST['add_category']))
-    {
-        $name = $_POST['new_category'];
-
-        // Insert a new category up to 50 chars
-        add_name("category", $name, 50);
-
-		// Display an alert
-		set_alert(true, "good", "A new category was added successfully.");
-    }
-
-    // Check if the category update was submitted
-    if (isset($_POST['update_category']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_category_name'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            update_table("category", $new_name, $value);
-
-		    // Display an alert
-		    set_alert(true, "good", "The category name was updated successfully.");
-        }
-    }
-
-    // Check if a category was deleted
-    if (isset($_POST['delete_category']))
-    {
-        $value = (int)$_POST['category'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            delete_value("category", $value);
-
-			// Display an alert
-			set_alert(true, "good", "An existing category was removed successfully.");
-        }
-    }
-
-    // Check if a new team was submitted
-    if (isset($_POST['add_team']))
-    {
-        $name = $_POST['new_team'];
-
-        // Insert a new team up to 50 chars
-        $teamId = add_name("team", $name, 50);
-        
         // Set all teams to admistrator users
         set_all_teams_to_administrators();
 
-	    // Display an alert
-	    set_alert(true, "good", "A new team was added successfully.");
-    }
+        return $teamId;
+    };
 
-	// Check if the team update was submitted
-	if (isset($_POST['update_team']))
-	{
-		$new_name = $_POST['new_name'];
-		$value = (int)$_POST['update_team_name'];
-
-		// Verify value is an integer
-		if (is_int($value))
-		{
-			update_table("team", $new_name, $value);
-
-			// Display an alert
-			set_alert(true, "good", "The team name was updated successfully.");
-		}
-	}
-
-    // Check if a team was deleted
-    if (isset($_POST['delete_team']))
-    {
-        $value = (int)$_POST['team'];
-
-        // Verify value is an integer
-        if (is_int($value))
+    $customDeleteFunction_team = function($name) {
+        // If team separation is enabled
+        if (team_separation_extra())
         {
-			// If team separation is enabled
-			if (team_separation_extra())
-			{
-				// Check if a risk is assigned to the team
-				$risks = get_risks_by_team($value);
-
-				// If the risks array is empty
-				if (empty($risks))
-				{
-					$delete = true;
-				}
-				else
-				{
-					$delete = false;
-				}
-			}
-			else
-			{
-				$delete = true;
-			}
-
-			// If it is ok to delete the team
-			if ($delete)
-			{
-                delete_value("team", $value);
-
-				// Display an alert
-				set_alert(true, "good", "An existing team was removed successfully.");
-			}
-			else
-			{
-				// Display an alert
-				set_alert(true, "bad", "Cannot delete this team because there are risks that are currently using it.");
-			}
+            // Check if a risk is assigned to the team
+            $delete = empty(get_risks_by_team($name));
         }
-    }
-
-    // Check if a new technology was submitted
-    if (isset($_POST['add_technology']))
-    {
-        $name = $_POST['new_technology'];
-
-        // Insert a new technology up to 50 chars
-        add_name("technology", $name, 50);
-
-		// Display an alert
-		set_alert(true, "good", "A new technology was added successfully.");
-    }
-
-    // Check if the technology update was submitted
-    if (isset($_POST['update_technology']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_technology_name'];
-
-        // Verify value is an integer
-        if (is_int($value))
+        else
         {
-            update_table("technology", $new_name, $value);
-
-			// Display an alert
-			set_alert(true, "good", "The technology name was updated successfully.");
+            $delete = true;
         }
-    }
 
-    // Check if a technology was deleted
-    if (isset($_POST['delete_technology']))
-    {
-        $value = (int)$_POST['technology'];
-
-        // Verify value is an integer
-        if (is_int($value))
+        // If it is ok to delete the team
+        if ($delete)
         {
-            delete_value("technology", $value);
-
-			// Display an alert
-			set_alert(true, "good", "An existing technology was removed successfully.");
+            return delete_value("team", $name);
         }
-    }
-
-    // Check if a new location was submitted
-    if (isset($_POST['add_location']))
-    {
-        $name = $_POST['new_location'];
-
-        // Insert a new location up to 100 chars
-        add_name("location", $name, 100);
-
-		// Display an alert
-		set_alert(true, "good", "A new location was added successfully.");
-    }
-
-    // Check if the location update was submitted
-    if (isset($_POST['update_location']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_location_name'];
-
-        // Verify value is an integer
-        if (is_int($value))
+        else
         {
-            update_table("location", $new_name, $value);
-
-			// Display an alert
-			set_alert(true, "good", "The location name was updated successfully.");
-        }
-    }
-
-    // Check if a location was deleted
-    if (isset($_POST['delete_location']))
-    {
-        $value = (int)$_POST['location'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            delete_value("location", $value);
-
-		    // Display an alert
-		    set_alert(true, "good", "An existing location was removed successfully.");
-        }
-    }
-
-    // Check if a new control regulation was submitted
-    if (isset($_POST['add_regulation']))
-    {
-        $name = $_POST['new_regulation'];
-
-        // Insert a new regulation up to 50 chars
-        add_name("regulation", $name, 50);
-
-		// Display an alert
-		set_alert(true, "good", "A new control regulation was added successfully.");
-    }
-
-    // Check if the regulation update was submitted
-    if (isset($_POST['update_regulation']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_regulation_name'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            update_table("regulation", $new_name, $value);
-
-			// Display an alert
-			set_alert(true, "good", "The regulation name was updated successfully.");
-        }
-    }
-
-    // Check if a control regulation was deleted
-    if (isset($_POST['delete_regulation']))
-    {
-        $value = (int)$_POST['regulation'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            delete_value("regulation", $value);
-
-			// Display an alert
-			set_alert(true, "good", "An existing control regulation was removed successfully.");
-        }
-    }
-
-    // Check if a new planning strategy was submitted
-    if (isset($_POST['add_planning_strategy']))
-    {
-        $name = $_POST['new_planning_strategy'];
-
-        // Insert a new planning strategy up to 20 chars
-        add_name("planning_strategy", $name, 20);
-
-		// Display an alert
-		set_alert(true, "good", "A new planning strategy was added successfully.");
-    }
-
-    // Check if the planning strategy update was submitted
-    if (isset($_POST['update_planning_strategy']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_planning_strategy_name'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            update_table("planning_strategy", $new_name, $value);
-
-			// Display an alert
-			set_alert(true, "good", "The planning strategy name was updated successfully.");
-        }
-    }
-
-    // Check if a planning strategy was deleted
-    if (isset($_POST['delete_planning_strategy']))
-    {
-        $value = (int)$_POST['planning_strategy'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            delete_value("planning_strategy", $value);
-
-			// Display an alert
-			set_alert(true, "good", "An existing planning strategy was removed successfully.");
-        }
-    }
-
-    // Check if a new close reason was submitted
-    if (isset($_POST['add_close_reason']))
-    {
-        $name = $_POST['new_close_reason'];
-
-        // Insert a new close reason up to 50 chars
-        add_name("close_reason", $name, 50);
-
-		// Display an alert
-		set_alert(true, "good", "A new close reason was added successfully.");
-    }
-
-    // Check if the close reason update was submitted
-    if (isset($_POST['update_close_reason']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_close_reason_name'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            update_table("close_reason", $new_name, $value);
-
-			// Display an alert
-			set_alert(true, "good", "The close reason name was updated successfully.");
-        }
-    }
-
-    // Check if a close reason was deleted
-    if (isset($_POST['delete_close_reason']))
-    {
-        $value = (int)$_POST['close_reason'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            delete_value("close_reason", $value);
-
-			// Display an alert
-			set_alert(true, "good", "An existing close reason was removed successfully.");
-        }
-    }
-
-    // Check if a new status was submitted
-    if (isset($_POST['add_status']))
-    {
-        $name = $_POST['new_status'];
-
-        // Insert a new status up to 50 chars
-        add_name("status", $name, 50);
-
-		// Display an alert
-		set_alert(true, "good", "A new status was added successfully.");
-    }
-
-    // Check if the status update was submitted
-    if (isset($_POST['update_status']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_status_name'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            update_table("status", $new_name, $value);
-
-			// Display an alert
-			set_alert(true, "good", "The status name was updated successfully.");
-        }
-    }
-
-    // Check if a status was deleted
-    if (isset($_POST['delete_status']))
-    {
-        $value = (int)$_POST['status'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            delete_value("status", $value);
-
-			// Display an alert
-			set_alert(true, "good", "An existing status was removed successfully.");
-        }
-    }
-
-    // Check if a new source was submitted
-    if (isset($_POST['add_source']))
-    {
-        $name = $_POST['new_source'];
-
-        // Insert a new source up to 50 chars
-        add_name("source", $name, 50);
-
-	    // Display an alert
-	    set_alert(true, "good", "A new source was added successfully.");
-    }
-
-    // Check if the source update was submitted
-    if (isset($_POST['update_source']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_source_name'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            update_table("source", $new_name, $value);
-
-			// Display an alert
-			set_alert(true, "good", "The source name was updated successfully.");
-        }
-    }
-
-    // Check if a source was deleted
-    if (isset($_POST['delete_source']))
-    {
-        $value = (int)$_POST['source'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            delete_value("source", $value);
-
-			// Display an alert
-			set_alert(true, "good", "An existing source was removed successfully.");
-        }
-    }
-    
-    // Check if a new control class was submitted
-    if (isset($_POST['add_control_class']))
-    {
-        $name = $_POST['new_control_class'];
-
-        // Insert a new control class up to 20hars
-        add_name("control_class", $name, 20);
-
-        // Display an alert
-        set_alert(true, "good", "A new control class was added successfully.");
-    }
-    
-    // Check if the control class update was submitted
-    if (isset($_POST['update_control_class']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_value'];
-
-        // Verify value is an integer
-        if ($value)
-        {
-            update_table("control_class", $new_name, $value);
-
+            global $lang;
             // Display an alert
-            set_alert(true, "good", "The control class name was updated successfully.");
-        }else{
-            // Display an alert
-            set_alert(true, "bad", "You must should select a valid control class.");
+            set_alert(true, "bad", $lang['CantDeleteTeamItsInUseByARisk']);
+            return false;
         }
-    }
+    };
 
-    // Check if a control class was deleted
-    if (isset($_POST['delete_control_class']))
-    {
-        $value = (int)$_POST['control_class'];
+    $customDeleteFunction_test_status = function($id) {
 
-        // Verify value is an integer
-        if (is_int($value))
+        $closed_audit_status = get_setting("closed_audit_status");
+        // If Closed status
+        if($id == $closed_audit_status)
         {
-            delete_value("control_class", $value);
-
+            global $lang;
             // Display an alert
-            set_alert(true, "good", "An existing control class was removed successfully.");
+            set_alert(true, "bad", $lang['TheClosedStatusCantBeDeleted']);
+            return false;
         }
-    }
-    
-    // Check if a new control phase was submitted
-    if (isset($_POST['add_control_phase']))
-    {
-        $name = $_POST['new_control_phase'];
-
-        // Insert a new control phase up to 20 chars
-        add_name("control_phase", $name, 200);
-
-        // Display an alert
-        set_alert(true, "good", "A new control phase was added successfully.");
-    }
-    
-    // Check if the control phase update was submitted
-    if (isset($_POST['update_control_phase']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_value'];
-
-        // Verify value is an integer
-        if ($value)
+        // If status is not Closed
+        else
         {
-            update_table("control_phase", $new_name, $value);
-
-            // Display an alert
-            set_alert(true, "good", "The control phase name was updated successfully.");
-        }else{
-            // Display an alert
-            set_alert(true, "bad", "You must should select a valid control phase.");
+            return delete_value("test_status", $id);
         }
-    }
+    };
 
-    // Check if a control phase was deleted
-    if (isset($_POST['delete_control_phase']))
-    {
-        $value = (int)$_POST['control_phase'];
+    // The configuration the page rendering is based on
+    // for custom functions you can either use anonymous functions(see examples defined above)
+    // or existing functions(the name should be passed as a string).
+    $tableConfig = array(
+        'review' => array(
+            'headerKey' => 'Review',
+            'lengthLimit' => 50,
+        ),
+        'next_step' => array(
+            'headerKey' => 'NextStep',
+            'lengthLimit' => 50,
+        ),
+        'category' => array(
+            'headerKey' => 'Category',
+            'lengthLimit' => 50,
+        ),
+        'team' => array(
+            'headerKey' => 'Team',
+            'lengthLimit' => 50,
+            'customAddFunction' => $customAddFunction_team,
+            'customDeleteFunction' => $customDeleteFunction_team,
+        ),
+        'technology' => array(
+            'headerKey' => 'Technology',
+            'lengthLimit' => 50,
+        ),
+        'location' => array(
+            'headerKey' => 'SiteLocation',
+            'lengthLimit' => 100,
+        ),
+        'regulation' => array(
+            'headerKey' => 'ControlRegulation',
+            'lengthLimit' => 50,
+        ),
+        'planning_strategy' => array(
+            'headerKey' => 'RiskPlanningStrategy',
+            'lengthLimit' => 20,
+        ),
+        'close_reason' => array(
+            'headerKey' => 'CloseReason',
+            'lengthLimit' => 50,
+        ),
+        'status' => array(
+            'headerKey' => 'Status',
+            'lengthLimit' => 50,
+        ),
+        'source' => array(
+            'headerKey' => 'RiskSource',
+            'lengthLimit' => 50,
+        ),
+        'control_class' => array(
+            'headerKey' => 'ControlClass',
+            'lengthLimit' => 20, //can be more
+        ),
+        'control_phase' => array(
+            'headerKey' => 'ControlPhase',
+            'lengthLimit' => 200, //can be more
+        ),
+        'control_priority' => array(
+            'headerKey' => 'ControlPriority',
+            'lengthLimit' => 20, //can be more
+        ),
+        'family' => array(
+            'headerKey' => 'ControlFamily',
+            'lengthLimit' => 100,
+            'customAddFunction' => 'add_family',
+            'customUpdateFunction' => 'update_family',
+            'customDeleteFunction' => 'delete_family',
+        ),
+        'test_status' => array(
+            'headerKey' => 'AuditStatus',
+            'lengthLimit' => 100,
+            'customDeleteFunction' => $customDeleteFunction_test_status,
+        ),
+    );
 
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            delete_value("control_phase", $value);
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
 
-            // Display an alert
-            set_alert(true, "good", "An existing control phase was removed successfully.");
-        }
-    }
-    
-    // Check if a new control priority was submitted
-    if (isset($_POST['add_control_priority']))
-    {
-        $name = $_POST['new_control_priority'];
+        if (in_array($_POST['action'], array('add', 'update', 'delete'))
+        && array_key_exists($_POST['table_name'], $tableConfig)) {
+            $tableName = $_POST['table_name'];
 
-        // Insert a new control priority up to 20hars
-        add_name("control_priority", $name, 20);
+            if (in_array($_POST['action'], array('add', 'update'))) {
+                if (!isset($_POST['name']) || !trim($_POST['name'])) {
+                    set_alert(true, "bad", $lang['YouNeedToSpecifyANameParameter']);
+                    json_response(400, get_alert(true), NULL);
+                } else {
+                    $name = trim($_POST['name']);
 
-        // Display an alert
-        set_alert(true, "good", "A new control priority was added successfully.");
-    }
-    
-    // Check if the control priority update was submitted
-    if (isset($_POST['update_control_priority']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_value'];
-
-        // Verify value is an integer
-        if ($value)
-        {
-            update_table("control_priority", $new_name, $value);
-
-            // Display an alert
-            set_alert(true, "good", "The control prirority name was updated successfully.");
-        }else{
-            // Display an alert
-            set_alert(true, "bad", "You must should select a valid control priority.");
-        }
-    }
-
-    // Check if a control priority was deleted
-    if (isset($_POST['delete_control_priority']))
-    {
-        $value = (int)$_POST['control_priority'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            delete_value("control_priority", $value);
-
-            // Display an alert
-            set_alert(true, "good", "An existing control priority was removed successfully.");
-        }
-    }
-    
-    // Check if a new family was submitted
-    if (isset($_POST['add_family']))
-    {
-        $short_name = $_POST['new_family'];
-
-        // Insert a new family
-        add_family($short_name);
-
-        // Display an alert
-        set_alert(true, "good", "A new control family was added successfully.");
-    }
-    
-    // Check if the family update was submitted
-    if (isset($_POST['update_family']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_value'];
-
-        // Verify value is an integer
-        if ($value)
-        {
-            update_family($value, $new_name);
-
-            // Display an alert
-            set_alert(true, "good", "The control family name was updated successfully.");
-        }else{
-            // Display an alert
-            set_alert(true, "bad", "You must should select a valid control family.");
-        }
-    }
-
-    // Check if a control family was deleted
-    if (isset($_POST['delete_family']))
-    {
-        $value = (int)$_POST['family'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            delete_family($value);
-
-            // Display an alert
-            set_alert(true, "good", "An existing control family was removed successfully.");
-        }
-    }
-    
-    // Check if a new test status was submitted
-    if (isset($_POST['add_test_status']))
-    {
-        $name = $_POST['new_status'];
-
-        // Insert a new test status up to 50hars
-        add_name("test_status", $name, 50);
-
-        // Display an alert
-        set_alert(true, "good", "A new test status was added successfully.");
-    }
-    
-    // Check if the test status update was submitted
-    if (isset($_POST['update_test_status']))
-    {
-        $new_name = $_POST['new_name'];
-        $value = (int)$_POST['update_value'];
-
-        // Verify value is an integer
-        if ($value)
-        {
-            update_table("test_status", $new_name, $value);
-
-            // Display an alert
-            set_alert(true, "good", "The test status was updated successfully.");
-        }else{
-            // Display an alert
-            set_alert(true, "bad", "You must should select a valid test status.");
-        }
-    }
-
-    // Check if a control priority was deleted
-    if (isset($_POST['delete_test_status']))
-    {
-        $value = (int)$_POST['test_status'];
-
-        // Verify value is an integer
-        if (is_int($value))
-        {
-            $closed_audit_status = get_setting("closed_audit_status");
-            // If Closed status
-            if($value == $closed_audit_status)
-            {
-                // Display an alert
-                set_alert(true, "bad", $escaper->escapeHtml($lang['TheClosedStatusCantBeDeleted']));
+                    $lengthLimit = $tableConfig[$tableName]['lengthLimit'];
+                    // Size check
+                    if (strlen($name) > $lengthLimit) {
+                        // As we render the UI controls with the same limits we shouldn't see this message
+                        set_alert(true, "bad", _lang('TheEnteredValueIsTooLong', ['limit' => $lengthLimit]));
+                        json_response(400, get_alert(true), NULL);
+                    }
+                }
             }
-            // If status is not Closed
-            else
-            {
-                delete_value("test_status", $value);
 
-                // Display an alert
-                set_alert(true, "good", $escaper->escapeHtml($lang['AuditStatusDeleted']));
+            if (in_array($_POST['action'], array('update', 'delete'))) {
+                if (!isset($_POST['id']) || !trim($_POST['id']) || !preg_match('/^\d+$/', trim($_POST['id']))) {
+                    set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+                    json_response(400, get_alert(true), NULL);
+                } else {
+                    $id = (int)trim($_POST['id']);
+                }
             }
+
+            switch ($_POST['action']) {
+                case "add":
+                    // If the custom add function is set
+                    if (array_key_exists('customAddFunction', $tableConfig[$tableName])) {
+                        // Call it with the required parameters
+                        $result = $tableConfig[$tableName]['customAddFunction']($name);
+                    } else {
+                        // Insert a new item
+                        $result = add_name($tableName, $name);
+                    }
+
+                    // Display an alert
+                    if ($result)
+                        set_alert(true, "good", $lang['ANewItemWasAddedSuccessfully']);
+                    else
+                        set_alert(true, "bad", $lang['FailedToAddNewItem']);
+
+                    break;
+
+                case "update":
+                    // If the custom update function is set
+                    if (array_key_exists('customUpdateFunction', $tableConfig[$tableName])) {
+                        // Call it with the required parameters
+                        $result = $tableConfig[$tableName]['customUpdateFunction']($id, $name);
+                    } else {
+                        $result = update_table($tableName, $name, $id);
+                    }
+
+                    // Display an alert
+                    if ($result)
+                        set_alert(true, "good", $lang['AnItemWasUpdatedSuccessfully']);
+                    else
+                        set_alert(true, "bad", $lang['FailedToUpdateItem']);
+
+                    break;
+
+                case "delete":
+                    // If the custom delete function is set
+                    if (array_key_exists('customDeleteFunction', $tableConfig[$tableName])) {
+                        // Call it with the required parameters
+                        $result = $tableConfig[$tableName]['customDeleteFunction']($id);
+                    } else {
+                        $result = delete_value($tableName, $id);
+                    }
+
+                    // Display an alert
+                    if ($result)
+                        set_alert(true, "good", $lang['AnItemWasDeletedSuccessfully']);
+                    else
+                        set_alert(true, "bad", $lang['FailedToDeleteItem']);
+
+                    break;
+            }
+
+            // Return a JSON response
+            json_response(200, get_alert(true), get_options_from_table($tableName));
+            return;
+        } else {
+            // Didn't want to put anything informative here as this message will only be
+            // seen if someone is calling this with forged data
+            set_alert(true, "bad", $lang['MissingConfiguration']);
+
+            // Return a JSON response
+            json_response(400, get_alert(true), NULL);
+            return;
         }
     }
+
 ?>
 
 <!doctype html>
@@ -823,7 +311,7 @@
         <link rel="stylesheet" href="../css/theme.css">
         <?php
             setup_alert_requirements("..");
-        ?>        
+        ?>
     </head>
 
     <body>
@@ -841,173 +329,117 @@
                 </div>
                 <div class="span9">
                     <div class="row-fluid">
-                        <div class="span12">
-                            <div class="hero-unit">
-                                <form name="review_form" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['Review']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewReviewNamed']); ?>: <input name="new_review" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_review" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("review", NULL, "update_review_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_review" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentReviewNamed']); ?> <?php create_dropdown("review"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_review" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="next_step_form" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['NextStep']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewNextstepNamed']); ?>: <input name="new_next_step" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_next_step" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("next_step", NULL, "update_next_step_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_next_step" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentNextstepNamed']); ?> <?php create_dropdown("next_step"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_next_step" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="category" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['Category']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewCategoryNamed']); ?> <input name="new_category" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_category" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("category", NULL, "update_category_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_category" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentCategoryNamed']); ?> <?php create_dropdown("category"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_category" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="team" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['Team']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewTeamNamed']); ?> <input name="new_team" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_team" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("team", NULL, "update_team_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_team" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentTeamNamed']); ?> <?php create_dropdown("team"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_team" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="technology" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['Technology']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewTechnologyNamed']); ?> <input name="new_technology" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_technology" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("technology", NULL, "update_technology_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_technology" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentTechnologyNamed']); ?> <?php create_dropdown("technology"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_technology" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="location" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['SiteLocation']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewSiteLocationNamed']); ?> <input name="new_location" type="text" maxlength="100" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_location" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("location", NULL, "update_location_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_location" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentSiteLocationNamed']); ?> <?php create_dropdown("location"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_location" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="regulation" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['ControlRegulation']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewControlRegulationNamed']); ?> <input name="new_regulation" type="text" maxlength="50" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_regulation" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("regulation", NULL, "update_regulation_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_regulation" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentControlRegulationNamed']); ?> <?php create_dropdown("regulation"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_regulation" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="planning_strategy" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['RiskPlanningStrategy']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewRiskPlanningStrategyNamed']); ?> <input name="new_planning_strategy" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_planning_strategy" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("planning_strategy", NULL, "update_planning_strategy_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_planning_strategy" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentRiskPlanningStrategyNamed']); ?> <?php create_dropdown("planning_strategy"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_planning_strategy" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="close_reason" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['CloseReason']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewCloseReasonNamed']); ?> <input name="new_close_reason" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_close_reason" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("close_reason", NULL, "update_close_reason_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_close_reason" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentCloseReasonNamed']); ?> <?php create_dropdown("close_reason"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_close_reason" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="status" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['Status']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewStatusNamed']); ?> <input name="new_status" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_status" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("status", NULL, "update_status_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_status" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteStatusNamed']); ?> <?php create_dropdown("status"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_status" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="source" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['RiskSource']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewSourceNamed']); ?> <input name="new_source" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_source" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("source", NULL, "update_source_name"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_source" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteSourceNamed']); ?> <?php create_dropdown("source"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_source" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="control_class_form" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['ControlClass']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewControlClassNamed']); ?>: <input name="new_control_class" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_control_class" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("control_class", NULL, "update_value"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_control_class" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentControlClassNamed']); ?> <?php create_dropdown("control_class"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_control_class" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="control_phase_form" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['ControlPhase']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewControlPhaseNamed']); ?>: <input name="new_control_phase" type="text" maxlength="200" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_control_phase" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("control_phase", NULL, "update_value"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_control_phase" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentControlPhaseNamed']); ?> <?php create_dropdown("control_phase"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_control_phase" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="control_priority" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['ControlPriority']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewControlPriorityNamed']); ?>: <input name="new_control_priority" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_control_priority" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("control_priority", NULL, "update_value"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_control_priority" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentControlPriorityNamed']); ?> <?php create_dropdown("control_priority"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_control_priority" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="family" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewControlFamilyNamed']); ?>: <input name="new_family" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_family" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("family", NULL, "update_value"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_family" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentControlFamilyNamed']); ?> <?php create_dropdown("family"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_family" />
-                                    </p>
-                                </form>
-                            </div>
-                            <div class="hero-unit">
-                                <form name="test_status_form" method="post" action="">
-                                    <p>
-                                        <h4><?php echo $escaper->escapeHtml($lang['AuditStatus']); ?>:</h4>
-                                        <?php echo $escaper->escapeHtml($lang['AddNewStatusNamed']); ?>: <input name="new_status" type="text" maxlength="20" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_test_status" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("test_status", NULL, "update_value"); ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_test_status" /><br />
-                                        <?php echo $escaper->escapeHtml($lang['DeleteCurrentStatusNamed']); ?> <?php create_dropdown("test_status"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_test_status" />
-                                    </p>
-                                </form>
-                            </div>
-                            
+                        <div id="crud-wrapper" class="span12">
+                            <?php
+                                $text_change = $escaper->escapeHtml($lang['Change']);
+                                $text_to = $escaper->escapeHtml($lang['to']);
+                                $text_update = $escaper->escapeHtml($lang['Update']);
+                                $text_add = $escaper->escapeHtml($lang['Add']);
+                                $text_delete = $escaper->escapeHtml($lang['Delete']);
+                                $text_deleteItem = $escaper->escapeHtml($lang['DeleteItemNamed']);
+                                $text_addItem = $escaper->escapeHtml($lang['AddNewItemNamed']);
+
+                                foreach ($tableConfig as $table => $config) {
+                                    echo "
+                                    <div class='hero-unit' data-table_name='" . $table . "'>\n
+                                        <p>\n
+                                            <h4>" . $escaper->escapeHtml($lang[$config['headerKey']]) . ":</h4>\n
+                                            " . $text_addItem . ":&nbsp;&nbsp;<input id='" . $table . "_new' type='text' maxlength='" . $config['lengthLimit'] . "' size='20' />&nbsp;&nbsp;<input type='submit' value=" .  $text_add . " data-action='add' /><br />\n
+                                            " . $text_change . "&nbsp;&nbsp;";
+                                            create_dropdown($table, NULL, $table . "_update_from");
+                                    echo $text_to . "&nbsp;<input id='" . $table . "_update_to' type='text' maxlength='" . $config['lengthLimit'] . "' size='20' />&nbsp;&nbsp;<input type='submit' value='" . $text_update . "' data-action='update' /><br />
+                                            " . $text_deleteItem . ":&nbsp;&nbsp;";
+                                            create_dropdown($table, NULL, $table . "_delete");
+                                    echo "&nbsp;&nbsp;<input type='submit' value='" . $text_delete . "' data-action='delete' />
+                                        </p>
+                                    </div>";
+                                }
+                            ?>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </body>
+        <script>
 
+            function refreshDropdown(dropdown, data) {
+                dropdown.empty();
+                dropdown.append($('<option>', {
+                    value: 0,
+                    text : "--"
+                }));
+                $.each(data, function (i, item) {
+                    dropdown.append($('<option>', {
+                        value: item.value,
+                        text : item.name
+                    }));
+                });
+            }
+
+            function crudAction() {
+                console.log($(this));
+                var div = $(this).closest('div');
+                if (div) {
+                    console.log(div);
+                    var tableName = div.data('table_name');
+                    var action = $(this).data('action');
+                    console.log(tableName + " - " + action);
+                    if (tableName && action) {
+                        var formData = new FormData();
+                        formData.append('table_name', tableName);
+                        formData.append('action', action);
+                        switch(action) {
+                            case "add":
+                                formData.append('name', div.find('#' + tableName + '_new').val());
+                                break;
+                            case "update":
+                                formData.append('id', div.find('#' + tableName + '_update_from').val());
+                                formData.append('name', div.find('#' + tableName + '_update_to').val());
+                                break;
+                            case "delete":
+                                formData.append('id', div.find('#' + tableName + '_delete').val());
+                                break;
+                        }
+
+                        $.ajax({
+                            type: "POST",
+                            url: window.location.href,
+                            data : formData,
+                            processData:false,
+                            contentType: false,
+                            headers: {
+                                'CSRF-TOKEN': csrfMagicToken
+                            },
+                            success: function(data){
+                                if(data.status_message){
+                                    showAlertsFromArray(data.status_message);
+                                }
+
+                                // Empty input boxes
+                                div.find('#' + tableName + '_new').val("");
+                                div.find('#' + tableName + '_update_to').val("");
+
+                                // Refresh dropdowns
+                                refreshDropdown(div.find('#' + tableName + '_update_from'), data.data);
+                                refreshDropdown(div.find('#' + tableName + '_delete'), data.data);
+                            },
+                            error: function(xhr,status,error){
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                                if(!retryCSRF(xhr, this))
+                                {
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+
+            $(document).ready(function() {
+                $('#crud-wrapper input[type="submit"]').click(crudAction);
+            });
+
+        </script>
+    </body>
 </html>

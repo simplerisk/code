@@ -69,7 +69,6 @@ if (is_dir(realpath(__DIR__ . '/../extras/customization')))
     {
         // Enable the Customization Extra
         enable_customization_extra();
-        refresh();
     }
 
     // If the user wants to deactivate the extra
@@ -77,16 +76,43 @@ if (is_dir(realpath(__DIR__ . '/../extras/customization')))
     {
         // Disable the Customization Extra
         disable_customization_extra();
-        refresh();
     }
 
     // If the user wants to deactivate the extra
     if (isset($_POST['restore']))
     {
+        $fgroup = get_param("POST", "fgroup", "risk");
         // Set default main fields
-        set_default_main_fields();
+        set_default_main_fields($fgroup);
         refresh();
     }
+
+    // Check if creating field was submitted
+    if (isset($_POST['create_field']))
+    {
+        $fgroup = $_POST['fgroup'];
+        $name = $_POST['name'];
+        $type = $_POST['type'];
+
+        // Create the new field
+        if ($field_id = create_field($fgroup, $name, $type))
+        {
+            // Set field_id as Session variable for auto select of custom fields dropdown
+            $_SESSION['custom_field_id'] = $field_id;
+            
+            // Audit log
+            $risk_id = 1000;
+            $message = "A custom field named \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+
+            
+            // Display an alert
+            set_alert(true, "good", "The new custom field was created successfully.");
+        }
+        
+        refresh();
+    }
+    
 }
 
 /*********************
@@ -140,6 +166,8 @@ function display($display = "")
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap-multiselect.js"></script>
+    <script src="../js/common.js"></script>
+    
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -182,5 +210,8 @@ function display($display = "")
           </div>
         </div>
       </div>
+    <script>
+        <?php prevent_form_double_submit_script(); ?>
+    </script>      
   </body>
 </html>

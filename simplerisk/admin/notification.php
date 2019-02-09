@@ -184,7 +184,9 @@ function display($display = "")
                 $("#specified_" + period).show();
                 $("input, select", "#specified_" + period).prop('disabled', false);
             })
-        })
+        });
+
+        <?php prevent_form_double_submit_script(); ?>
     </script>
   </body>
 

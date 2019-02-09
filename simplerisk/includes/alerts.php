@@ -60,7 +60,7 @@ function get_alert($returnHtml = false)
             // ...and return it as a JSON string.
             return json_encode($result);           
             
-        } else {
+        } elseif (isset($_SESSION['alerts']) && !empty($_SESSION['alerts'])) {
             // Print the script into the html output that'll show the alerts
             echo "
                 <script>
@@ -96,9 +96,19 @@ function clear_alert()
 function setup_alert_requirements($path_to_root = "")
 {
     global $escaper;
-    
+
     echo "<script src=\"" . $escaper->escapeHtml($path_to_root) . "/js/alerts/toastr.min.js\"></script>\n";
     echo "<script src=\"" . $escaper->escapeHtml($path_to_root) . "/js/alerts/alert-helper.js\"></script>\n";
+    $timeOut = get_setting("alert_timeout");
+    if ($timeOut || $timeOut === "0") {
+        $timeOut = (int)$timeOut;
+        echo "<script>\n";
+        echo "    toastr.options.timeOut = " . ($timeOut * 1000) . ";\n";
+        if ($timeOut === 0) { //otherwise we're using the default 2 seconds
+            echo "    toastr.options.extendedTimeOut = 0;\n";
+        }
+        echo "</script>\n";
+    }
     echo "<link rel=\"stylesheet\" href=\"" . $escaper->escapeHtml($path_to_root) . "/css/toastr.min.css\" />\n";
     echo "<style>\n";
     echo "    .toast-top-right {\n";

@@ -78,7 +78,7 @@
     $username = $user_info['username'];
     $name = $user_info['name'];
     $email = $user_info['email'];
-    $last_login = date(get_default_datetime_format(), strtotime($user_info['last_login']));
+    $last_login = format_date($user_info['last_login']);
     $teams = $user_info['teams'];
     $language = $user_info['lang'];
     $asset = $user_info['asset'];

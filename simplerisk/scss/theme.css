@@ -915,6 +915,13 @@ input[type="submit"] {
   input[type="submit"]:visited {
     background-color: #3a3a3a; }
 
+.btn.btn-success {
+  background-color: #28a745;
+}
+.btn.btn-success:hover, .btn.btn-success:active, .btn.btn-success:visited {
+  background-color: #218838;
+}
+
 .btn.btn-danger {
   background-color: #ed3139; }
   .btn.btn-danger:hover, .btn.btn-danger:active, .btn.btn-danger:visited {

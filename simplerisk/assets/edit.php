@@ -36,6 +36,10 @@ require_once(language_file());
 
 require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
+function csrf_startup() {
+    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+}
+
 // Check for session timeout or renegotiation
 session_check();
 
@@ -53,34 +57,6 @@ if (!isset($_SESSION["asset"]) || $_SESSION["asset"] != 1)
     header("Location: ../index.php");
     exit(0);
 }
-else $manage_assets = true;
-
-// Check if an asset update was submitted
-if ((isset($_POST['update_asset'])) && $manage_assets)
-{
-  // Get the ids and values
-  $ids = $_POST['ids'];
-  $values = $_POST['values'];
-  $locations = $_POST['locations'];
-  $teams = $_POST['teams'];
-  $details = $_POST['details'];
-
-  // For each asset
-  for ($i=0; $i<count($ids); $i++)
-  {
-    // If the value is between 1 and 10
-    if ($values[$i] >= 1 && $values[$i] <= 10)
-    {
-      // If the location is empty set it to zero
-      if ($locations[$i] == "") $locations[$i] = 0;
-
-      // If the team is empty set it to zero
-      if ($teams[$i] == "") $teams[$i] = 0;
-
-      edit_asset($ids[$i], $values[$i], $locations[$i], $teams[$i], $details[$i]);
-    }
-  }
-}
 
 ?>
 <!doctype html>
@@ -89,6 +65,7 @@ if ((isset($_POST['update_asset'])) && $manage_assets)
 <head>
   <script src="../js/jquery.min.js"></script>
   <script src="../js/bootstrap.min.js"></script>
+  <script src="../js/pages/asset.js"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -114,6 +91,21 @@ if ((isset($_POST['update_asset'])) && $manage_assets)
   // Get any alert messages
   get_alert();
   ?>
+  <script>
+  $(document).ready(function() {
+        $('#edit-assets-table select').change(updateAsset);
+        var oldValue = "";
+        $('#edit-assets-table textarea').bind('focusin', function(){
+            oldValue = $(this).val();
+        })
+        $('#edit-assets-table textarea').bind('focusout', function(){
+            var newValue = $(this).val();
+            if(oldValue !== newValue){
+                updateAsset(null, $(this));
+            }
+        })
+  });
+  </script>
   <div id="load" style="display:none;">Scanning IPs... Please wait.</div>
   <div class="container-fluid">
     <div class="row-fluid">
@@ -124,13 +116,8 @@ if ((isset($_POST['update_asset'])) && $manage_assets)
         <div class="row-fluid">
           <div class="span12">
             <div class="hero-unit">
-              <form name="edit_asset" method="post" action="">
-                  <h4><?php echo $escaper->escapeHtml($lang['EditAssets']); ?><button type="submit" name="update_asset" class="pull-right btn btn-primary"><?php echo $escaper->escapeHtml($lang['Update']); ?></button></h4><br>
-                  <?php display_edit_asset_table(); ?>
-                  <div class="row-fluid">
-                      <button type="submit" name="update_asset" class="pull-right btn btn-primary"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
-                  </div>
-              </form>
+              <h4><?php echo $escaper->escapeHtml($lang['EditAssets']); ?></h4><br>
+                <?php display_edit_asset_table(); ?>
             </div>
           </div>
         </div>

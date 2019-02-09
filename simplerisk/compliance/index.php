@@ -188,10 +188,10 @@ if(isset($_POST['delete_test'])){
             <input type="text" name="name" required="" value="" class="form-control">
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
-            <?php create_dropdown("user", NULL, "tester", false, false, false); ?>
+            <?php create_dropdown("enabled_users", NULL, "tester", false, false, false); ?>
             
             <label for=""><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?></label>
-            <?php create_multiple_dropdown("user", NULL, "additional_stakeholders_add"); ?>
+            <?php create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders_add"); ?>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?></label>
             <input type="number" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
@@ -230,10 +230,10 @@ if(isset($_POST['delete_test'])){
             <input type="text" name="name" required="" value="" class="form-control">
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
-            <?php create_dropdown("user", NULL, "tester", false, false, false); ?>
+            <?php create_dropdown("enabled_users", NULL, "tester", false, false, false); ?>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?></label>
-            <?php create_multiple_dropdown("user", NULL, "additional_stakeholders_edit"); ?>
+            <?php create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders_edit"); ?>
             
             <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?></label>
             <input type="number" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>

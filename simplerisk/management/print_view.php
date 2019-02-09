@@ -94,7 +94,6 @@
             $assessment = $risk[0]['assessment'];
             $notes = $risk[0]['notes'];
             $submission_date = $risk[0]['submission_date'];
-            // $submission_date = date( "m/d/Y", strtotime( $sub_date ) );
             $mitigation_id = $risk[0]['mitigation_id'];
             $mgmt_review = $risk[0]['mgmt_review'];
             $calculated_risk = $risk[0]['calculated_risk'];
@@ -337,7 +336,7 @@
           </div>
           <div class="row-fluid">
             <div class="well">
-              <?php view_print_mitigation_details($mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations); ?>
+              <?php view_print_mitigation_details($id, $mitigation_date, $planning_strategy, $mitigation_effort, $current_solution, $security_requirements, $security_recommendations); ?>
             </div>
           </div>
           <div class="row-fluid">

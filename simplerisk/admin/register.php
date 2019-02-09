@@ -157,18 +157,18 @@
 		// Otherwise get the registration values from the database
 		else
 		{
-        		$name = get_setting("registration_name");
-	        	$company = get_setting("registration_company");
-        		$title = get_setting("registration_title");
-        		$phone = get_setting("registration_phone");
-        		$email = get_setting("registration_email");
+            $name = get_setting("registration_name");
+            $company = get_setting("registration_company");
+            $title = get_setting("registration_title");
+            $phone = get_setting("registration_phone");
+            $email = get_setting("registration_email");
 		}
 
 		// If the user wants to install the Upgrade Extra
 		if (isset($_POST['get_upgrade_extra']))
 		{
-	        	// Download the extra
-        		$result = download_extra("upgrade");
+            // Download the extra
+            $result = download_extra("upgrade");
 		}
 		// If the user wants to install the Authentication Extra
 		else if (isset($_POST['get_authentication_extra']))
@@ -179,62 +179,62 @@
 		// If the user wants to install the Encryption Extra
 		else if (isset($_POST['get_encryption_extra']))
 		{
-	        	// Download the extra
-        		$result = download_extra("encryption");
+            // Download the extra
+            $result = download_extra("encryption");
 		}
 		// If the user wants to install the Import-Export Extra
 		else if (isset($_POST['get_importexport_extra']))
 		{
-	        	// Download the extra
-        		$result = download_extra("import-export");
+            // Download the extra
+            $result = download_extra("import-export");
 		}
 		// If the user wants to install the Notification Extra
 		else if (isset($_POST['get_notification_extra']))
 		{
-	        	// Download the extra
-        		$result = download_extra("notification");
+            // Download the extra
+            $result = download_extra("notification");
 		}
 		// If the user wants to install the Separation Extra
 		else if (isset($_POST['get_separation_extra']))
 		{
-	        	// Download the extra
-        		$result = download_extra("separation");
+            // Download the extra
+            $result = download_extra("separation");
 		}
 		else if (isset($_POST['get_governance_extra']))
 		{
 			// Download the extra
 			$result = download_extra("governance");
 		}
-        	// If the user wants to install the Risk Assessments Extra
-        	else if (isset($_POST['get_assessments_extra']))
-        	{
-            		// Download the extra
-            		$result = download_extra("assessments");
-        	}
-        	// If the user wants to install the API Extra
-        	else if (isset($_POST['get_api_extra']))
-        	{
-            		// Download the extra
-            		$result = download_extra("api");
-        	}
-                // If the user wants to install the ComplianceForge Extra
-                else if (isset($_POST['get_complianceforge_extra']))
-                {
-                        // Download the extra
-                        $result = download_extra("complianceforge");
-                }
-                // If the user wants to install the ComplianceForge SCF Extra
-                else if (isset($_POST['get_complianceforge_scf_extra']))
-                {
-                        // Download the extra
-                        $result = download_extra("complianceforgescf");
-                }
-                // If the user wants to install the Customization Extra
-                else if (isset($_POST['get_customization_extra']))
-                {
-                        // Download the extra
-                        $result = download_extra("customization");
-                }
+        // If the user wants to install the Risk Assessments Extra
+        else if (isset($_POST['get_assessments_extra']))
+        {
+            // Download the extra
+            $result = download_extra("assessments");
+        }
+        // If the user wants to install the API Extra
+        else if (isset($_POST['get_api_extra']))
+        {
+            // Download the extra
+            $result = download_extra("api");
+        }
+        // If the user wants to install the ComplianceForge Extra
+        else if (isset($_POST['get_complianceforge_extra']))
+        {
+            // Download the extra
+            $result = download_extra("complianceforge");
+        }
+        // If the user wants to install the ComplianceForge SCF Extra
+        else if (isset($_POST['get_complianceforge_scf_extra']))
+        {
+            // Download the extra
+            $result = download_extra("complianceforgescf");
+        }
+        // If the user wants to install the Customization Extra
+        else if (isset($_POST['get_customization_extra']))
+        {
+            // Download the extra
+            $result = download_extra("customization");
+        }
 	}
 ?>
 
@@ -312,7 +312,7 @@
                                     <tbody>
                                         <tr>
                                             <td width="140px">Mysqldump Path: &nbsp;</td>
-                                            <td><input  name="mysqldump_path" value="<?php echo get_settting_by_name('mysqldump_path') ?>" type="text"></td>
+                                            <td><input  name="mysqldump_path" value="<?php echo $escaper->escapeHtml(get_setting_by_name('mysqldump_path')); ?>" type="text"></td>
                                         </tr>
                                     </tbody>
                                 </table>

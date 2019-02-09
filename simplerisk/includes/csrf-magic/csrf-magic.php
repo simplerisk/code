@@ -257,14 +257,55 @@ function csrf_callback($tokens) {
         }
     }
     
-    echo "<html><head><title>CSRF check failed</title></head>
-        <body>
-        <p>CSRF check failed. Your form session may have expired, or you may not have
-        cookies enabled.</p>
-        <form method='post' action='' enctype='multipart/form-data'>$data<input type='submit' value='Try again' /></form>
-        <p>Debug: $tokens</p></body></html>
-";
+    // Get referer URL
+    $referer_url = get_referer_url();
+    
+    // If base_url session value is empty, get current base url
+    if(empty($_SESSION['base_url']))
+    {
+        $base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['SCRIPT_NAME']}";
+        $base_url = htmlspecialchars( $base_url, ENT_QUOTES, 'UTF-8' );
+        $base_url = pathinfo($base_url)['dirname'];
+    }
+    // IF base_url session exists, use the value
+    else
+    {
+        $base_url = $_SESSION['base_url'];
+    }
+    
+    // If request comes from other host, reject the request
+    if(stripos($_SESSION['base_url'], $referer_url) === false)
+    {
+        echo "<html><head><title>CSRF check failed</title></head>
+            <body>
+                <p>Bad Request</p>
+            </body>
+        </html>";
+    }
+    // If request comes from this host, return retry html
+    else
+    {
+        echo "<html><head><title>CSRF check failed</title></head>
+            <body>
+            <p>CSRF check failed. Your form session may have expired, or you may not have
+            cookies enabled.</p>
+            <form method='post' action='' enctype='multipart/form-data'>$data<input type='submit' value='Try again' /></form>
+            <p>Debug: $tokens</p></body></html>
+        ";
+    }
+    
 }
+
+/**
+ * GET REFERER URL FOR SUBMITTED FORM
+ */
+function get_referer_url()
+{
+    $urls = parse_url( $_SERVER['HTTP_REFERER'] );
+    $referer_url = $urls['scheme']."://".$urls['host']. (isset($urls['port'])?":".$urls['port']:"");
+    return $referer_url;
+}
+
 /**
  * Checks if a composite token is valid. Outward facing code should use this
  * instead of csrf_check_token()

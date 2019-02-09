@@ -209,6 +209,9 @@ function retryCSRF(xhr, self)
     {
         $('input[name=\"__csrf_magic\"]').val(token);
         csrfMagicToken = token;
+        if(self.headers['CSRF-TOKEN']){
+            self.headers['CSRF-TOKEN'] = token;
+        }
         $.ajax(self);
         return true;
     }
