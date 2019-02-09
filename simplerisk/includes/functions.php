@@ -8826,6 +8826,15 @@ function customization_extra()
     else return false;
 }
 
+/*************************************************
+ *  FUNCTION: WRONG SPELLING GET SETTING BY NAME *
+ *************************************************/
+function get_settting_by_name($name)
+{
+        // Call the proper function
+        get_setting_by_name($name);
+}
+
 /*****************************************
  * FUNCTION: GET SETTING VALUE BY NAME *
  *****************************************/
