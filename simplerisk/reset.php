@@ -43,7 +43,8 @@ if(isset($_GET['token']) && $_GET['token']){
 // Check if a password reset email was requested
 if (isset($_POST['send_reset_email']))
 {
-    if (isset($_SERVER) && array_key_exists('SERVER_NAME', $_SERVER) && (get_setting('simplerisk_base_url') . $_SERVER['REQUEST_URI']) == get_current_url()) {
+    if (isset($_SERVER) && array_key_exists('SERVER_NAME', $_SERVER) && (get_setting('simplerisk_base_url') === preg_replace('/\/reset\.php.*/', '', get_current_url()))) {
+
         $username = $_POST['user'];
 
         // Try to generate a password reset token
