@@ -18,30 +18,23 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-// Session handler is database
-if (USE_DATABASE_FOR_SESSIONS == "true")
-{
-  session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-}
-
-// Start the session
-session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
 if (!isset($_SESSION))
 {
+    // Session handler is database
+    if (USE_DATABASE_FOR_SESSIONS == "true")
+    {
+        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+    }
+
+    // Start the session
+    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
     session_name('SimpleRisk');
     session_start();
 }
 
-// Load CSRF Magic
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
 // Include the language file
 require_once(language_file());
-
-function csrf_startup() {
-    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-}
 
 // Check for session timeout or renegotiation
 session_check();
@@ -53,6 +46,10 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
     header("Location: ../index.php");
     exit(0);
 }
+
+// Include the CSRF-magic library
+// Make sure it's called after the session is properly setup
+include_csrf_magic();
 
 // Enforce that the user has access to governance
 enforce_permission_governance();
@@ -350,6 +347,7 @@ if (isset($_POST['update_control']))
         $(document).ready(function(){
             var $tabs = $( "#frameworks-tab-content, #controls-tab-content" ).tabs({
                 activate: function(event, ui){
+                    fixTreeGridCollapsableColumn();
                     $(".framework-table").treegrid('resize');
                 }
             })
@@ -694,7 +692,7 @@ if (isset($_POST['update_control']))
     <form class="" id="framework-delete-form" action="" method="post">
       <div class="form-group text-center">
         <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisFramework']); ?></label>
-        <input type="hidden" name="framework_id" value="" />
+        <input type="hidden" class="delete-id" name="framework_id" value="" />
       </div>
 
       <div class="form-group text-center project-delete-actions">
@@ -817,7 +815,7 @@ if (isset($_POST['update_control']))
     <form class="" id="control--delete" action="" method="post">
       <div class="form-group text-center">
         <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisControl']); ?></label>
-        <input type="hidden" name="control_id" value="" />
+        <input type="hidden" class="delete-id" name="control_id" value="" />
       </div>
 
       <div class="form-group text-center control-delete-actions">

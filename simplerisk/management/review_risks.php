@@ -17,17 +17,17 @@
     // Add various security headers
     add_security_headers();
 
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
     if (!isset($_SESSION))
     {
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
+        {
+            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        }
+
+        // Start the session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
         session_name('SimpleRisk');
         session_start();
     }
@@ -46,13 +46,10 @@
         exit(0);
     }
 
-    // Load CSRF Magic
-    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+    // Include the CSRF-magic library
+    // Make sure it's called after the session is properly setup
+    include_csrf_magic();
 
-    function csrf_startup() {
-        csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-    }
-    
     // Enforce that the user has access to risk management
     enforce_permission_riskmanagement();
 
@@ -102,6 +99,9 @@
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
+
+    <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
+    <script src="../js/selectize.min.js"></script>
 
     <?php
         setup_alert_requirements("..");

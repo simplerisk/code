@@ -17,17 +17,17 @@
     // Add various security headers
     add_security_headers();
 
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
     if (!isset($_SESSION))
     {
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
+        {
+            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        }
+
+        // Start the session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
         session_name('SimpleRisk');
         session_start();
     }
@@ -75,6 +75,13 @@
 		if ($auto_verify_new_assets != $current_auto_verify_new_assets)
 		{
 			update_setting("auto_verify_new_assets", $auto_verify_new_assets);
+		}
+
+        // Update the 'Document Exception update resets its approval' setting
+        $exception_update_resets_approval = (isset($_POST['exception_update_resets_approval'])) ? 1 : 0;
+		if ($exception_update_resets_approval != get_setting("exception_update_resets_approval"))
+		{
+			update_setting("exception_update_resets_approval", $exception_update_resets_approval);
 		}
 
         // Update the alert timeout
@@ -218,6 +225,15 @@
             }
         }
 
+        /* Commented until the rest of the functionality is implemented
+        // Update the Risk Appetite
+        $risk_appetite = $_POST['risk_appetite'];
+        if ($risk_appetite != get_setting("risk_appetite") && $risk_appetite != "")
+        {
+            // Update the Risk Appetite
+            update_setting("risk_appetite", $risk_appetite);
+        }*/
+
         // If all setting values were saved successfully
         if (!$error)
         {
@@ -318,6 +334,7 @@
                 $from_name = $_POST['from_name'];
                 $replyto_email = $_POST['replyto_email'];
                 $replyto_name = $_POST['replyto_name'];
+                $prepend = $_POST['prepend'];
                 $host = $_POST['host'];
                 $smtpautotls = (isset($_POST['smtpautotls'])) ? "true" : "false";
                 $smtpauth = (isset($_POST['smtpauth'])) ? "true" : "false";
@@ -327,7 +344,7 @@
                 $port = $_POST['port'];
 
                 // Update the mail settings
-                update_mail_settings($transport, $from_email, $from_name, $replyto_email, $replyto_name, $host, $smtpautotls, $smtpauth, $username, $password, $encryption, $port);
+                update_mail_settings($transport, $from_email, $from_name, $replyto_email, $replyto_name, $host, $smtpautotls, $smtpauth, $username, $password, $encryption, $port, $prepend);
 
                 // Display an alert
                 set_alert(true, "good", "Mail settings were updated successfully.");
@@ -456,10 +473,12 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
+    <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <link rel="stylesheet" type="text/css" href="../css/jquery-ui.min.css" />
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
 
@@ -577,6 +596,9 @@
                             </tr>
                             <tr>
                               <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('auto_verify_new_assets')) == 1){ echo "checked"; } ?> name="auto_verify_new_assets" class="hidden-checkbox" size="2" value="90" id="auto_verify_new_assets" type="checkbox">  <label for="auto_verify_new_assets"  >&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['AutomaticallyVerifyNewAssets']); ?></label></td>
+                            </tr>
+                            <tr>
+                              <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('exception_update_resets_approval')) == 1){ echo "checked"; } ?> name="exception_update_resets_approval" class="hidden-checkbox" size="2" value="90" id="exception_update_resets_approval" type="checkbox"><label for="exception_update_resets_approval">&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['ExceptionUpdateResetsApproval']); ?></label></td>
                             </tr>
                             <tr>
                               <td width="300px"><?php echo $escaper->escapeHtml($lang['AlertTimeout']); ?>:</td>
@@ -710,6 +732,80 @@
                               <td><?php echo $escaper->escapeHtml($lang['SimpleriskBaseUrl']) ?>:</td>
                               <td><input type="text" name="simplerisk_base_url" value="<?php echo $escaper->escapeHtml(get_setting("simplerisk_base_url")); ?>" /></td>
                             </tr>
+                            <!-- It is hidden until the rest of the functionality is implemented -->
+                            <!-- tr> 
+                              <td><?php #echo $escaper->escapeHtml($lang['RiskAppetite']) ?>:</td>
+                              <td class="risk-cell sorting_1">
+                                <?php #$risk_appetite = get_setting("risk_appetite", 0);?>
+                                <div>
+                                    <span id="risk_appetite_display" style="border:0; font-weight:bold;"><?php #echo $risk_appetite; ?></span>
+                                    <span id="risk_appetite_color" class="risk-color" style="background-color:#ff0000"></span>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colspan="2">
+                                <input type="hidden" id="risk_appetite" name="risk_appetite" value="<?php #echo $risk_appetite; ?>">
+                                <?php /*
+                                    $risk_levels = get_risk_levels();
+
+                                    if ((int)$risk_levels[0]['value'] > 0) {
+                                        array_unshift($risk_levels, array('value' => 0.0, 'name' => 'Insignificant', 'color' => 'white', 'display_name' => $lang['Insignificant']));
+                                    }
+
+                                    $ranges = [];
+                                    $number_of_levels = count($risk_levels);
+                                    foreach($risk_levels as $key => $level) {
+                                        $next_key = ($key + 1 < $number_of_levels) ? $key + 1 : null;
+                                        $ranges[] = array('display_name' => $level['display_name'],
+                                                            'color' => $level['color'],
+                                                            'range' => [(int)$level['value'], $next_key ? $risk_levels[$next_key]['value'] - 0.1 : 9999]);
+                                    }
+
+                                    foreach($ranges as $key => $range) {
+                                        if ($key == 0)
+                                            $slider_bg_grad = "{$range['color']} " . ($range['range'][1] * 10) . "%";
+                                        elseif ($key == count($ranges) - 1) {
+                                            $slider_bg_grad .= ", {$range['color']} " . ($ranges[$key - 1]['range'][1] * 10) . "%, {$range['color']} 100%";
+                                        } else {
+                                            $slider_bg_grad .= ", {$range['color']} " . ($ranges[$key - 1]['range'][1] * 10) . "%, {$range['color']} " . ($range['range'][1] * 10) . "%";
+                                        }
+                                    }
+                                */ ?>
+                                <div id="slider" style="margin-top: 10px; background-image: linear-gradient(90deg, <?php #echo $slider_bg_grad; ?>); background-size: 100% 100%;"></div>
+                                  <script>
+                                    <?php #echo "var ranges = " . json_encode($ranges) . ";"; ?>
+
+                                    function handleValueInRange(value) {
+                                        var index, len;
+                                        for (index = 0, len = ranges.length; index < len; ++index) {
+                                            if (ranges[index]['range'][0] <= value && ranges[index]['range'][1] >= value) {
+                                                $("#risk_appetite_display").text(ranges[index]['display_name'] + " (" + value + ")");
+                                                $("#risk_appetite").val(value);
+                                                $("#risk_appetite_color").css('background-color', ranges[index]['color']);
+
+                                                return;
+                                            }
+                                        }
+                                    }
+
+                                    $(document).ready(function() {
+                                      $("#slider").slider({
+                                        value:<?php #echo $risk_appetite * 10; ?>,
+                                        min: 0,
+                                        max: 100,
+                                        step: 1,
+                                        create: function() {
+                                          handleValueInRange($("#slider").slider("value") / 10);
+                                        },
+                                        slide: function(event, ui) {
+                                            handleValueInRange(ui.value / 10);
+                                        }
+                                      });
+                                    });
+                                </script>
+                              </td>
+                            </tr-->
                           </tbody>
                         </table>
                       </td>
@@ -790,20 +886,21 @@
               <div id="mail" style="display: none;">
                 <form name="mail_settings" method="post" action="">
 		<?php
-		        // Get the mail settings
-		        $mail = get_mail_settings();
-		        $transport = $mail['phpmailer_transport'];
-		        $from_email = $mail['phpmailer_from_email'];
-        		$from_name = $mail['phpmailer_from_name'];
-        		$replyto_email = $mail['phpmailer_replyto_email'];
-        		$replyto_name = $mail['phpmailer_replyto_name'];
-        		$host = $mail['phpmailer_host'];
-        		$smtpautotls = $mail['phpmailer_smtpautotls'];
-        		$smtpauth = $mail['phpmailer_smtpauth'];
-        		$username = $mail['phpmailer_username'];
-        		$password = $mail['phpmailer_password'];
-        		$encryption = $mail['phpmailer_smtpsecure'];
-        		$port = $mail['phpmailer_port'];
+                // Get the mail settings
+                $mail = get_mail_settings();
+                $transport = $mail['phpmailer_transport'];
+                $from_email = $mail['phpmailer_from_email'];
+                $from_name = $mail['phpmailer_from_name'];
+                $replyto_email = $mail['phpmailer_replyto_email'];
+                $replyto_name = $mail['phpmailer_replyto_name'];
+                $prepend = $mail['phpmailer_prepend'];
+                $host = $mail['phpmailer_host'];
+                $smtpautotls = $mail['phpmailer_smtpautotls'];
+                $smtpauth = $mail['phpmailer_smtpauth'];
+                $username = $mail['phpmailer_username'];
+                $password = $mail['phpmailer_password'];
+                $encryption = $mail['phpmailer_smtpsecure'];
+                $port = $mail['phpmailer_port'];
 		?>
                   <table border="1" width="600" cellpadding="10px">
                   <tbody>
@@ -834,6 +931,10 @@
                         <tr>
                           <td><?php echo $escaper->escapeHTML($lang['ReplyToEmail']); ?>:&nbsp;&nbsp;</td>
                           <td><input type="email" name="replyto_email" value="<?php echo $escaper->escapeHTML($replyto_email); ?>" /></td>
+                        </tr>
+                        <tr>
+                          <td><?php echo $escaper->escapeHTML($lang['Prepend']); ?>:&nbsp;&nbsp;</td>
+                          <td><input type="text" name="prepend" value="<?php echo $escaper->escapeHTML($prepend); ?>" /></td>
                         </tr>
                         <tr class="smtp"<?php echo ($transport=="sendmail") ? " style=\"display: none;\"" : "" ?>>
                           <td><?php echo $escaper->escapeHTML($lang['Host']); ?>:&nbsp;&nbsp;</td>

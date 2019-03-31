@@ -17,3 +17,19 @@
 .label-for-edit{
     cursor: pointer;
 }
+
+.audit-option-container{
+    margin-bottom: 10px;
+    .audit-select-folder{
+        float: left;
+    }
+    .audit-download-folder{
+        float: right;
+        >a{
+            cursor: pointer;
+        }
+        .down-icon{
+            margin-top: -10px;
+        }
+    }
+}

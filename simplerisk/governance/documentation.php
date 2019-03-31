@@ -18,17 +18,17 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-// Session handler is database
-if (USE_DATABASE_FOR_SESSIONS == "true")
-{
-  session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-}
-
-// Start the session
-session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
 if (!isset($_SESSION))
 {
+    // Session handler is database
+    if (USE_DATABASE_FOR_SESSIONS == "true")
+    {
+      session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+    }
+
+    // Start the session
+    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
     session_name('SimpleRisk');
     session_start();
 }
@@ -37,13 +37,6 @@ if (!isset($_SESSION))
 require_once(language_file());
 
 checkUploadedFileSizeErrors();
-
-// Load CSRF Magic
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-function csrf_startup() {
-    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-}
 
 // Check for session timeout or renegotiation
 session_check();
@@ -56,6 +49,10 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
     exit(0);
 }
 
+// Include the CSRF-magic library
+// Make sure it's called after the session is properly setup
+include_csrf_magic();
+
 // Enforce that the user has access to governance
 enforce_permission_governance();
 
@@ -64,6 +61,8 @@ if (isset($_POST['add_document']))
 {
       $document_type = $_POST['document_type'];
       $document_name = $_POST['document_name'];
+      $framework_ids = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
+      $control_ids   = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
       $parent        = $_POST['parent'];
       $status        = $_POST['status'];
       $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
@@ -85,7 +84,7 @@ if (isset($_POST['add_document']))
                 set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddDocumentationPermission']));
             }
             // Insert a new document
-            elseif($errors = add_document($document_type, $document_name, $parent, $status, $creation_date, $review_date))
+            elseif($errors = add_document($document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $review_date))
             {
                 // Display an alert
                 set_alert(true, "good", $escaper->escapeHtml($lang['DocumentAdded']));
@@ -100,6 +99,8 @@ if (isset($_POST['update_document']))
       $id            = $_POST['document_id'];
       $document_type = $_POST['document_type'];
       $document_name = $_POST['document_name'];
+      $framework_ids = empty($_POST['framework_ids']) ? [] : $_POST['framework_ids'];
+      $control_ids   = empty($_POST['control_ids']) ? [] : $_POST['control_ids'];
       $parent        = (int)$_POST['parent'];
       $status        = $_POST['status'];
       $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
@@ -121,7 +122,7 @@ if (isset($_POST['update_document']))
                 set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyDocumentationPermission']));
             }
             // Update document
-            elseif($errors = update_document($id, $document_type, $document_name, $parent, $status, $creation_date, $review_date))
+            elseif($errors = update_document($id, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $review_date))
             {
                 // Display an alert
                 set_alert(true, "good", $escaper->escapeHtml($lang['DocumentUpdated']));
@@ -188,6 +189,12 @@ if (isset($_POST['delete_document']))
       setup_alert_requirements("..");
   ?>
 
+  <style>
+    button.multiselect {
+        max-width: 500px;
+        overflow-x: hidden;
+    }
+  </style>
 </head>
 
 <body>
@@ -271,6 +278,10 @@ if (isset($_POST['delete_document']))
             </select>
             <label for=""><?php echo $escaper->escapeHtml($lang['DocumentName']); ?></label>
             <input required="" type="text" name="document_name" id="document_name" value="" class="form-control" />
+            <label for=""><?php echo $escaper->escapeHtml($lang['Frameworks']); ?></label>
+            <?php create_multiple_dropdown("frameworks", NULL, "framework_ids"); ?>
+            <label for=""><?php echo $escaper->escapeHtml($lang['Controls']); ?></label>
+            <?php create_multiple_dropdown("framework_controls", NULL, "control_ids"); ?>
             <label for=""><?php echo $escaper->escapeHtml($lang['CreationDate']); ?></label>
             <input type="text" class="form-control datepicker" name="creation_date" value="<?php echo $escaper->escapeHtml(date(get_default_date_format())); ?>">
             <label for=""><?php echo $escaper->escapeHtml($lang['ReviewDate']); ?></label>
@@ -321,6 +332,10 @@ if (isset($_POST['delete_document']))
             </select>
             <label for=""><?php echo $escaper->escapeHtml($lang['DocumentName']); ?></label>
             <input required="" type="text" name="document_name" id="document_name" value="" class="form-control" />
+            <label for=""><?php echo $escaper->escapeHtml($lang['Frameworks']); ?></label>
+            <?php create_multiple_dropdown("frameworks", NULL, "framework_ids"); ?>
+            <label for=""><?php echo $escaper->escapeHtml($lang['Controls']); ?></label>
+            <?php create_multiple_dropdown("framework_controls", NULL, "control_ids"); ?>
             <label for=""><?php echo $escaper->escapeHtml($lang['CreationDate']); ?></label>
             <input type="text" class="form-control datepicker" name="creation_date">
             <label for=""><?php echo $escaper->escapeHtml($lang['ReviewDate']); ?></label>
@@ -423,9 +438,11 @@ if (isset($_POST['delete_document']))
             $(".tab-show[data-content='"+ tabContentId +"']").addClass("selected");
             $(".tab-data").addClass("hide");
             $(tabContentId).removeClass("hide");
-            
+
             $(".datepicker").datepicker();
-            
+
+            $("[name='framework_ids[]'], [name='control_ids[]']").multiselect();
+
             $("#document-program--add .document_type").change(function(){
                 $parent = $(this).parents(".modal");
                 $.ajax({
@@ -467,9 +484,12 @@ if (isset($_POST['delete_document']))
                         $("#document-update-modal [name=document_id]").val(data.id);
                         $("#document-update-modal [name=document_type]").val(data.document_type);
                         $("#document-update-modal [name=document_name]").val(data.document_name);
+                        $("#document-update-modal [name='control_ids[]']").multiselect('select', data.control_ids);
+                        $("#document-update-modal [name='framework_ids[]']").multiselect('select', data.framework_ids);
                         $("#document-update-modal [name=creation_date]").val(data.creation_date);
                         $("#document-update-modal [name=review_date]").val(data.review_date);
                         $("#document-update-modal [name=status]").val(data.status);
+
                         $("#document-update-modal").modal();
                     }
                 });

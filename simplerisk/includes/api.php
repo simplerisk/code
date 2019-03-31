@@ -54,11 +54,29 @@ function is_session_authenticated()
     }
     else 
     {
-        // If an api key was sent
+        // If internal request on browser, check csrf token
         if(!isset($_GET['key']))
         {
             // Load CSRF Magic
             require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+        }
+        else
+        {
+            if (api_extra())
+            {
+                require_once(realpath(__DIR__ . '/../extras/api/index.php'));
+                
+                if(!is_valid_key_by_uid($_GET['key'], $_SESSION['uid']))
+                {
+                    // Load CSRF Magic
+                    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+                }
+            }
+            else
+            {
+                // Load CSRF Magic
+                require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+            }
         }
 
         return true;
@@ -132,6 +150,9 @@ function show_endpoints()
 
   // Show the reports menu
   show_reports();
+  
+  // Show audit log
+  show_audit_log();
 }
 
 /*****************************
@@ -167,13 +188,23 @@ function show_admin()
         </ul>';
 }
 
-/**************************
- * FUNCTION: SHOW REPORTS *
- **************************/
+/******************************
+ * FUNCTION: REPORTS API LIST *
+ ******************************/
 function show_reports()
 {
   echo '<ul>
           <li><a href="reports/dynamic">/reports/dynamic</a> -> (shows dynamic risk report)</li>
+        </ul>';
+}
+
+/********************************
+ * FUNCTION: AUDIT LOG API LIST *
+ ********************************/
+function show_audit_log()
+{
+  echo '<ul>
+          <li><a href="mock.php?option=get_audit_logs">/audit_logs</a> -> (return audit logs)</li>
         </ul>';
 }
 
@@ -318,6 +349,7 @@ function dynamicrisk()
         $sort = $_GET['sort'];
         $group = $_GET['group'];
         $affected_asset = isset($_GET['affected_asset']) ? $_GET['affected_asset'] : 0;
+        $tags_filter = isset($_GET['tags_filter']) ? array_map('intval', $_GET['tags_filter']) : [];
         $start = (isset($_GET['start']) && $_GET['start']) ? $_GET['start'] : 0;
         $length = (isset($_GET['length']) && $_GET['length']) ? $_GET['length'] : 10;
         $rowCount = "";
@@ -325,7 +357,7 @@ function dynamicrisk()
         $review_levels = get_review_levels();
 
         // Query the risks
-        $data = risks_query($status, $sort, $group, $affected_asset, $rowCount, $start, $length);
+        $data = risks_query($status, $sort, $group, $affected_asset, $tags_filter, $rowCount, $start, $length);
         $rows = array();
         foreach($data as $risk){
             $row = array(
@@ -369,6 +401,7 @@ function dynamicrisk()
                 "mitigation_owner"      => $escaper->escapeHtml($risk['mitigation_owner']),
                 "mitigation_team"       => $escaper->escapeHtml($risk['mitigation_team']),
                 "closure_date"          => $escaper->escapeHtml($risk['closure_date']),
+                "risk_tags"             => $escaper->escapeHtml($risk['risk_tags']),
             );
             $rows[] = $row;
         }
@@ -712,6 +745,7 @@ function dynamicriskForm()
         $sort   = isset($_POST['sort']) ? $_POST['sort'] : 0;
         $group  = isset($_POST['group']) ? $_POST['group'] : 0;
         $affected_asset  = isset($_POST['affected_asset']) ? $_POST['affected_asset'] : 0;
+        $tags_filter = isset($_POST['tags_filter']) ? array_map ('intval', $_POST['tags_filter']) : [];
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
         $group_value_from_db = $_POST['group_value'] ? $_POST['group_value'] : "";
@@ -727,7 +761,7 @@ function dynamicriskForm()
         
         $rowCount = 0;
         // Query the risks
-        $risks = risks_query($status, $sort, $group, $affected_asset, $rowCount, $start, $length, $group_value_from_db, "", [], $orderColumnName, $orderDir, $risks_by_team, $teams, $owners, $ownersmanagers);
+        $risks = risks_query($status, $sort, $group, $affected_asset, $tags_filter, $rowCount, $start, $length, $group_value_from_db, "", [], $orderColumnName, $orderDir, $risks_by_team, $teams, $owners, $ownersmanagers);
 
 //        $orderColumnIndex = $_POST['order'][0]['column'];
 //        $orderDir = $_POST['order'][0]['dir'];
@@ -807,6 +841,7 @@ function dynamicriskForm()
                 $escaper->escapeHtml($row['mitigation_owner']),
                 $escaper->escapeHtml($row['mitigation_team']),
                 $escaper->escapeHtml($row['mitigation_date']),
+                $escaper->escapeHtml($row['risk_tags']),
             );
 
             // If customization extra is enabled, add custom fields
@@ -924,6 +959,7 @@ function getTabHtml($id, $template){
         $assessment = $risk[0]['assessment'];
         $notes = $risk[0]['notes'];
         $submission_date = $risk[0]['submission_date'];
+        $risk_tags = $risk[0]['risk_tags'];
         $mitigation_id = $risk[0]['mitigation_id'];
         $mgmt_review = $risk[0]['mgmt_review'];
         $calculated_risk = $risk[0]['calculated_risk'];
@@ -1008,6 +1044,7 @@ function getTabHtml($id, $template){
         $assessment = "";
         $notes = "";
         $submission_date = "";
+        $risk_tags = "";
         $mitigation_id = "";
         $mgmt_review = "";
         $calculated_risk = "0.0";
@@ -1463,6 +1500,10 @@ function saveDetailsForm()
 
         $error = update_risk($id);
 
+        $tags = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
+        // Update tags
+        updateTagsOfType($id-1000, 'risk', $tags);
+
         $risk = get_risk_by_id($id);
 
         /************************** Save Risk Score Method *********************************************/
@@ -1634,13 +1675,16 @@ function saveMitigationForm()
  *************************************/
 function saveReviewForm()
 {
+    global $lang;
+
     // If the id is not sent
     if (!isset($_GET['id']))
     {
-        set_alert(true, "bad", "You need to specify an id parameter.");
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
 
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
+        return;
     }
 
     $id = $_GET['id'];
@@ -1700,6 +1744,25 @@ function saveReviewForm()
             }
 
             submit_management_review($id, $status, $review, $next_step, $reviewer, $comments, $custom_review);
+
+            if ($next_step == 2) {
+                $project = !empty($_POST['project']) ? $_POST['project'] : 0;
+                $prefix = 'new-projval-prfx-';
+                if (startsWith($project, $prefix)) {//It's a new project's name
+                    $name = substr($project, strlen($prefix));
+                    $project = add_name("projects", try_encrypt($name));
+
+                    if ($project)
+                        set_alert(true, "good", $lang['SuccessCreateProject']);
+                }
+
+                if (ctype_digit((string)$project)) {
+                    update_risk_project((int)$project, $id - 1000);
+                    set_alert(true, "good", $lang['SuccessSetProject']);
+                } else {
+                    set_alert(true, "bad", $lang['ThereWasAProblemWithAddingTheProject']);
+                }
+            }
         }
 
         $html = getTabHtml($id, 'details');
@@ -1711,8 +1774,6 @@ function saveReviewForm()
 
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
-
-
     }
 
 
@@ -1865,6 +1926,8 @@ function saveSubjectForm()
  ****************************************/
 function saveCommentForm()
 {
+    global $escaper, $lang;
+    
     // If the id is not sent
     if (!isset($_GET['id']))
     {
@@ -1877,18 +1940,18 @@ function saveCommentForm()
 
     $access = check_access_for_risk($id);
 
-    if(!isset($_SESSION["modify_risks"]) || $_SESSION["modify_risks"] != 1 || !$access){
-        set_alert(true, "bad", "You do not have permission to modify risks.  Any risks that you attempt to modify will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
+//    if(!isset($_SESSION["modify_risks"]) || $_SESSION["modify_risks"] != 1 || !$access){
+    if(!$access){
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoAccessRiskPermission']));
 
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
     }
-    
-    if($_SESSION["comment_risk_management"] == 1) {
+    elseif($_SESSION["comment_risk_management"] == 1) {
         $comment = $_POST['comment'];
 
         if($comment == null){
-            set_alert(true, "bad", "Your comment not added to the risk. Please fill the comment field.");
+            set_alert(true, "bad", $escaper->escapeHtml($lang['CommentRiskRequired']));
 
             // Return a JSON response
             json_response(400, get_alert(true), NULL);
@@ -1901,7 +1964,7 @@ function saveCommentForm()
         }
     }
     else {
-        set_alert(true, "bad", "You do not have permission to add comments to risks");
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoCommentRiskPermission']));
     }
     $html = getTabHtml($id, 'comments-list');
 
@@ -2667,7 +2730,7 @@ function deleteMapping(){
 function updateAssessment(){
     global $lang, $escaper;
 
-    $rows = json_decode( file_get_contents('php://input'), true );
+    $rows = $_POST['assessments'];
     $assessment_id = (int)$_GET["assessment_id"];
     if(assessments_extra()){
         require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
@@ -2870,7 +2933,7 @@ function getFrameworkControlsDatatable(){
                             $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
                             $html .= "<td width='22%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
                             $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlFrameworks'])."</strong>: </td>\n";
-                            $html .= "<td width='17%'>".$escaper->escapeHtml($control['framework_names'])."</td>\n";
+                            $html .= "<td width='17%'>". display_expandable_framework_names($control['framework_names'], 8) ."</td>\n";
                         $html .= "</tr>\n";
                         $html .= "<tr>\n";
                             $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>\n";
@@ -2963,7 +3026,7 @@ function getMitigationControlsDatatable(){
                             $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
                             $html .= "<td width='22%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
                             $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlFrameworks'])."</strong>: </td>\n";
-                            $html .= "<td width='17%'>".$escaper->escapeHtml($control['framework_names'])."</td>\n";
+                            $html .= "<td width='17%'>". display_expandable_framework_names($control['framework_names'], 8) ."</td>\n";
                         $html .= "</tr>\n";
                         $html .= "<tr>\n";
                             $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>\n";
@@ -3017,7 +3080,7 @@ function getFrameworksResponse()
     {
         $status = (int)$_GET['status'];
         $result = get_frameworks_as_treegrid($status);
-        echo json_encode($result);exit;
+        echo json_encode($result);
         exit;
     }
     else
@@ -3278,7 +3341,7 @@ function auditTimelineResponse()
 
         $orderColumn = isset($_GET['order'][0]['column']) ? $_GET['order'][0]['column'] : "";
         $orderColumnName = isset($_GET['columns'][$orderColumn]['name']) ? $_GET['columns'][$orderColumn]['name'] : null;;
-        $orderDir = $escaper->escapeHtml($_GET['order'][0]['dir']);
+        $orderDir = strtolower($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
 
         // Get risks requiring mitigations
         $audit_tests = get_audit_tests($orderColumnName, $orderDir);
@@ -3300,26 +3363,29 @@ function auditTimelineResponse()
             }
             
             $data[] = [
-                "",
-                "",
-                "",
-                "",
+                $escaper->escapeHtml($audit_test['name']),
+                $escaper->escapeHtml($audit_test['framework_names']),
+                $audit_test['last_date'],
+                $audit_test['next_date'],
             ];
         }
-        $result = array(
-            'draw' => $draw,
-            'data' => $data,
-            'recordsTotal' => $recordsTotal,
-            'recordsFiltered' => $recordsTotal,
-        );
-        echo json_encode($result);
-        exit;
     }
     else
     {
-        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForCompliance']));
-        json_response(400, get_alert(true), NULL);
+        $draw = $escaper->escapeHtml($_GET['draw']);
+        $data = [];
+        $recordsTotal = 0;
+        $recordsTotal = 0;
     }
+
+    $result = array(
+        'draw' => $draw,
+        'data' => $data,
+        'recordsTotal' => $recordsTotal,
+        'recordsFiltered' => $recordsTotal,
+    );
+    echo json_encode($result);
+    exit;
     
 }
 
@@ -3410,7 +3476,7 @@ function getDefineTestsResponse()
                             $html .= "</tr>\n";
                             $html .= "<tr>\n";
                                 $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlFrameworks'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['framework_names'])."</td>\n";
+                                $html .= "<td>" . display_expandable_framework_names($control['framework_names'], 8) . "</td>\n";
                             $html .= "</tr>\n";
                             $html .= "<tr>\n";
                                 $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </td>\n";
@@ -3614,19 +3680,19 @@ function getPastTestAuditsResponse()
     // If the user has compliance permissions
     if (check_permission_compliance())
     {
-        $draw = $escaper->escapeHtml($_GET['draw']);
+        $draw = $escaper->escapeHtml($_POST['draw']);
 
-        $orderColumn = (int)$_GET['order'][0]['column'];
-        $orderDir = $escaper->escapeHtml($_GET['order'][0]['dir']);
+        $orderColumn = (int)$_POST['order'][0]['column'];
+        $orderDir = strtolower($_POST['order'][0]['dir']) == "asc" ? "asc" : "desc";
 
         // Filter params
         $filters = array(
-            "filter_text"   => $escaper->escapeHtml($_GET['filter_text']),
-            "filter_control"        => $escaper->escapeHtml($_GET['filter_control']),
-            "filter_test_result"    => $escaper->escapeHtml($_GET['filter_test_result']),
-            "filter_framework"      => empty($_GET['filter_framework']) ? [] : $_GET['filter_framework'],
-            "filter_start_audit_date"   => $_GET['filter_start_audit_date'] ? get_standard_date_from_default_format($_GET['filter_start_audit_date']) : "",
-            "filter_end_audit_date"     => $_GET['filter_end_audit_date'] ? get_standard_date_from_default_format($_GET['filter_end_audit_date']) : "",
+            "filter_text"   => $escaper->escapeHtml($_POST['filter_text']),
+            "filter_control"        => empty($_POST['filter_control']) ? [] : $_POST['filter_control'],
+            "filter_test_result"    => empty($_POST['filter_test_result']) ? [] : $_POST['filter_test_result'],
+            "filter_framework"      => empty($_POST['filter_framework']) ? [] : $_POST['filter_framework'],
+            "filter_start_audit_date"   => $_POST['filter_start_audit_date'] ? get_standard_date_from_default_format($_POST['filter_start_audit_date']) : "",
+            "filter_end_audit_date"     => $_POST['filter_end_audit_date'] ? get_standard_date_from_default_format($_POST['filter_end_audit_date']) : "",
         );
 
         $columnNames = array(
@@ -3648,29 +3714,16 @@ function getPastTestAuditsResponse()
         foreach ($past_test_audits as $key=>$test_audit)
         {
             // If it is not requested to view all
-            if($_GET['length'] != -1){
-                if($key < $_GET['start']){
+            if($_POST['length'] != -1){
+                if($key < $_POST['start']){
                     continue;
                 }
-                if($key >= ($_GET['start'] + $_GET['length'])){
+                if($key >= ($_POST['start'] + $_POST['length'])){
                     break;
                 }
             }
 
-            switch($test_audit['test_result']){
-                case "Pass":
-                    $background_class = "green-background";
-                break;
-                case "Inconclusive":
-                    $background_class = "";
-                break;
-                case "Fail":
-                    $background_class = "red-background";
-                break;
-                case "":
-                    $background_class = "white-background";
-                break;
-            }
+            $background_class = $escaper->escapeHtml($test_audit['background_class']);
 
             $last_date = format_date($test_audit['last_date']);
 
@@ -3713,7 +3766,7 @@ function getActiveTestAuditsResponse()
         $draw = $escaper->escapeHtml($_GET['draw']);
 
         $orderColumn = (int)$_GET['order'][0]['column'];
-        $orderDir = $escaper->escapeHtml($_GET['order'][0]['dir']);
+        $orderDir = strtolower($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
 
         // Filter params
         $filters = array(
@@ -4415,6 +4468,8 @@ function getDocumentResponse()
 
         $document['creation_date'] = format_date($document['creation_date']);
         $document['review_date'] = format_date($document['review_date']);
+        $document['control_ids'] = explode(',', $document['control_ids']);
+        $document['framework_ids'] = explode(',', $document['framework_ids']);
 
         json_response(200, "Success", $document);
     }
@@ -4983,6 +5038,75 @@ function assets_discard_asset()
     assets_delete_asset(true);
 }
 
+function assets_verify_assets()
+{
+    global $lang, $escaper;
+
+        // If the ids are not sent
+    if (!isset($_POST['ids']))
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    } else {
+        // If the user has asset permissions
+        if (check_permission_asset())
+        {
+            $ids = json_decode($_POST['ids']);
+            if (verify_assets($ids)) {
+                set_alert(true, "good", $escaper->escapeHtml($lang['AssetsWereVerifiedSuccessfully']));
+                json_response(200, get_alert(true), null);
+            } else {
+                set_alert(true, "bad", $escaper->escapeHtml($lang['ThereWasAProblemVerifyingTheAssets']));
+                json_response(400, get_alert(true), NULL);
+            }
+        }
+        else
+        {
+            set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForAsset']));
+            json_response(400, get_alert(true), NULL);
+        }
+    }
+}
+
+
+function assets_delete_assets($discard=false)
+{
+    global $lang, $escaper;
+
+        // If the ids are not sent
+    if (!isset($_POST['ids']))
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    } else {
+        // If the user has asset permissions
+        if (check_permission_asset())
+        {
+            $ids = json_decode($_POST['ids']);
+            if (delete_assets($ids)) {
+                set_alert(true, "good", $escaper->escapeHtml($discard? $lang['AssetsWereDiscardedSuccessfully']: $lang['AssetsWereDeletedSuccessfully']));
+                json_response(200, get_alert(true), null);
+            } else {
+                set_alert(true, "bad", $escaper->escapeHtml($discard? $lang['ThereWasAProblemDiscardingTheAssets'] : $lang['ThereWasAProblemDeletingTheAssets']));
+                json_response(400, get_alert(true), NULL);
+            }
+        }
+        else
+        {
+            set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForAsset']));
+            json_response(400, get_alert(true), NULL);
+        }
+    }
+}
+
+function assets_discard_assets()
+{
+    assets_delete_assets(true);
+}
 
 /**************************
  * FUNCTION: UPDATE ASSET *
@@ -5038,7 +5162,15 @@ function assets_update_asset()
             if($updated){
                 $asset = get_asset_by_id($id)[0];
                 set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasUpdatedSuccessfully']));
-                json_response(200, get_alert(true), null);
+                if ($fieldName == "tags") {
+                    $options = [];
+                    foreach(getTagsOfType('asset') as $tag) {
+                        $options[] = array('label' => $tag);
+                    }
+                    json_response(200, get_alert(true), $options);
+                } else {
+                    json_response(200, get_alert(true), null);
+                }
             }
             // If failed for update
             else{
@@ -5170,5 +5302,707 @@ function fixReviewDateFormat() {
         }
     }
 }
+
+/*************************************
+ * FUNCTION: GET TAG OPTIONS OF TYPE *
+ *************************************/
+function getTagOptionsOfType() {
+
+    global $lang, $escaper;
+
+    // If the id is not sent
+    if (!isset($_GET['type']) && $_GET['type'] !== 'risk' && $_GET['type'] !== 'asset')
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyATypeParameter']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+    else
+    {
+        $type = $_GET['type'];
+
+        if ($type === 'risk' && !check_permission_riskmanagement()) {
+            set_alert(true, "bad", $lang['NoPermissionForRiskManagement']);
+            json_response(400, get_alert(true), NULL);
+            return;
+        } elseif($type === 'asset' && !check_permission_asset()) {
+            set_alert(true, "bad", $lang['NoPermissionForAsset']);
+            json_response(400, get_alert(true), NULL);
+            return;
+        } else {
+            $options = [];
+            foreach(getTagsOfType($type) as $tag) {
+                $options[] = array('label' => $tag);
+            }
+
+            json_response(200, null, $options);
+        }
+    }
+}
+
+/***********************************
+ * FUNCTION: UPDATE RISK LEVEL API *
+ ***********************************/
+function update_risk_level_API() {
+
+    global $lang, $escaper;
+
+    $level = (int)$_POST['level'];
+
+    if ($level < 0 || $level > 3) {
+        set_alert(true, "bad", $lang['RiskLevelInvalidLevelParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $field = $_POST['field'];
+
+    if (!in_array($field, ['value', 'color', 'display_name'])) {
+        set_alert(true, "bad", $lang['RiskLevelInvalidFieldParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $value = $_POST['value'];
+    $risk_levels = get_risk_levels();
+    $originalValue = $risk_levels[$level][$field];
+
+    if ($field === 'value') {
+        if (!is_numeric($value)) {
+            set_alert(true, "bad", $lang['RiskLevelNonNumericValueParameter']);
+
+            // Return a JSON response
+            json_response(400, get_alert(true), $originalValue);
+            return;
+        } else {
+            $value = (float)$value;
+            $risk_levels[$level][$field] = $value;
+        }
+    } elseif(strlen($value) > 20) {
+        set_alert(true, "bad", $lang['RiskLevelTooLongValueParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), $originalValue);
+        return;
+    }
+
+    // Check if low < medium < high < very high
+    if (($risk_levels[0]['value'] < $risk_levels[1]['value']) && ($risk_levels[1]['value'] < $risk_levels[2]) && ($risk_levels[2]['value'] < $risk_levels[3]['value']))
+    {
+        $level_names_arr = array("Low", "Medium", "High", "Very High");
+        $name = $level_names_arr[$level];
+
+        update_risk_level($field, $value, $name);
+
+        // Audit log
+        write_log(1000, $_SESSION['uid'], _lang('RiskLevelAuditLog', array(
+            'field' => $field == 'display_name'? 'display name' : $field,
+            'name' => $name,
+            'originalValue' => $originalValue,
+            'value' => $value,
+            'user' => $_SESSION['user']
+        )));
+
+        set_alert(true, "good", $lang['RiskLevelSuccessfullyUpdated']);
+        json_response(200, get_alert(true), null);
+        return;
+    }
+    // Otherwise, there was a problem with the order
+    else
+    {
+        set_alert(true, "bad", $lang['RiskLevelInvalidValueOrder']);
+        json_response(400, get_alert(true), $originalValue);
+        return;
+    }
+}
+
+/*****************************
+ * FUNCTION: LIST EXCEPTIONS *
+ *****************************/
+function get_exceptions_as_treegrid_api()
+{
+    global $lang;
+
+    if (!check_permission_governance()) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('view')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionCreate']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    if (empty($_GET['type']) || !trim($_GET['type']) || !in_array($_GET['type'], ['policy', 'control', 'unapproved'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyATypeParameter']);
+
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $type = $_GET['type'];
+    $result = get_exceptions_as_treegrid($type);
+    echo json_encode($result);
+    exit;
+}
+
+/********************************
+ * FUNCTION: GET EXCEPTION DATA *
+ ********************************/
+function get_exception_api()
+{
+    global $lang;
+
+    if (!check_permission_governance()) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('view')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionCreate']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    if (empty($_GET['id']) || !trim($_GET['id']) || !ctype_digit($_GET['id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $exception = get_exception((int)$_GET['id']);
+
+    $exception['additional_stakeholders'] = explode(',', $exception['additional_stakeholders']);
+    $exception['creation_date'] = format_date($exception['creation_date']);
+    $exception['next_review_date'] = format_date($exception['next_review_date']);
+    $exception['approval_date'] = format_date($exception['approval_date']);
+    $exception['approved'] = boolval($exception['approved']);
+
+    json_response(200, null, $exception);
+
+}
+
+/***********************************************
+ * FUNCTION: GET EXCEPTION DATA FOR DISPLAYING *
+ ***********************************************/
+function get_exception_for_display_api()
+{
+    global $lang, $escaper;
+
+    if (!check_permission_governance()) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('view')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionCreate']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    if (empty($_GET['id']) || !trim($_GET['id']) || !ctype_digit($_GET['id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+
+        json_response(400, get_alert(true), NULL);
+        return;
+    }elseif (empty($_GET['type']) || !trim($_GET['type']) || !in_array($_GET['type'], ['policy', 'control'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyATypeParameter']);
+
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    $type = $_GET['type'];
+    $exception = get_exception_for_display((int)$_GET['id'], $type);
+
+    $exception['name'] = $escaper->escapeHtml($exception['name']);
+    $exception["{$type}_name"] = $escaper->escapeHtml($exception['parent_name']);
+    $exception["type"] = $type;
+    $exception["type_text"] = $escaper->escapeHtml($lang[ucfirst($type)]);
+    $exception['owner'] = $escaper->escapeHtml($exception['owner']);
+    $exception['additional_stakeholders'] = get_stakeholder_names($exception['additional_stakeholders']);
+    $exception['creation_date'] = format_date($exception['creation_date']);
+    $exception['next_review_date'] = format_date($exception['next_review_date']);
+    if ($type = $_GET['approval']) {
+        $exception['approval_date'] = format_date($exception['approval_date']);
+        $exception['approver'] = $escaper->escapeHtml($exception['approver']);
+    } else {
+        //If we need the info for approval
+        //we'll show what the value of the approval date and approver will be
+        $exception['approval_date'] = date(get_default_date_format());
+        $exception['approver'] = $escaper->escapeHtml($_SESSION['name'] ? $_SESSION['name'] : $_SESSION['user']);
+    }
+    $exception['description'] = nl2br($escaper->escapeHtml($exception['description']));
+    $exception['justification'] = nl2br($escaper->escapeHtml($exception['justification']));
+
+    foreach($exception as $key => $value) {
+        if (strlen($value) == 0)
+            $exception[$key] = "--";
+    }
+
+    json_response(200, null, $exception);
+}
+
+function create_exception_api() {
+
+    global $lang;
+
+    if (!check_permission_governance()) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('create')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionCreate']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    ##Checking required parameters##
+    ################################
+    if (empty($_POST['name']) || !trim($_POST['name'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyANameParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (empty($_POST['owner']) || !ctype_digit($_POST['owner']) || !get_user_by_id((int)$_POST['owner'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyTheOwnerParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $policy = ctype_digit($_POST['policy']) ? (int)$_POST['policy'] : false;
+    $control = ctype_digit($_POST['control']) ? (int)$_POST['control'] : false;
+
+    //You have to choose a policy or a control, you can't choose both
+    if (!($policy xor $control)) {
+        set_alert(true, "bad", $lang['ChooseAPolicyOrControl']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $name = $_POST['name'];
+    $owner = (int)$_POST['owner'];
+    $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
+    $review_frequency = !empty($_POST['review_frequency']) ? $_POST['review_frequency'] : 0;
+    $description = $_POST['description'];
+    $justification = $_POST['justification'];
+
+    ##Checking if non-required parameters have valid values##
+    #########################################################
+    if ($review_frequency < 0) {
+        set_alert(true, "bad", $lang['InvalidReviewFrequency']);
+
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $today_dt = strtotime(date('Ymd'));
+    $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
+
+    if (!$creation_date || $creation_date === "0000-00-00")
+        $creation_date = date('Y-m-d');
+    else {
+        if (strtotime($creation_date) > $today_dt) {
+            set_alert(true, "bad", $lang['InvalidCreationDate']);
+
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
+    }
+
+    //calculate next review date
+    $next_review_date = get_standard_date_from_default_format($_POST['next_review_date']);
+    if (!$next_review_date || $next_review_date === "0000-00-00") {
+        $next_review_date = strtotime($creation_date) + ($review_frequency * 24 * 3600);
+        if ($next_review_date < $today_dt) {
+            $next_review_date = $today_dt;
+        }
+        $next_review_date = date('Y-m-d', $next_review_date);
+    } elseif (strtotime($next_review_date) < $today_dt) {
+        set_alert(true, "bad", $lang['InvalidNextReviewDate']);
+
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $approval_date = get_standard_date_from_default_format($_POST['approval_date']);
+    $approver = (ctype_digit($_POST['approver']) && get_user_by_id((int)$_POST['owner'])) ? (int)$_POST['approver'] : false;
+    $approved = false;
+    if ($approval_date && $approval_date !== "0000-00-00") {
+        if (strtotime($approval_date) > $today_dt) {
+            set_alert(true, "bad", $lang['InvalidApprovalDate']);
+
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
+        //Can only be approved if the user has the approve_exception permission
+        $approved = boolval($approver) && check_permission_exception('approve');
+    }
+
+    // Approval Date can't be before the Creation Date
+    if ($approval_date !== "0000-00-00" && strtotime($approval_date) < strtotime($creation_date)) {
+        set_alert(true, "bad", $lang['InvalidApprovalDateCreationDateOrder']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    try {
+        $id = create_exception($name, $policy, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification);
+    } catch(Exception $e) {
+        error_log($e);
+        set_alert(true, "bad", $lang['ThereWasAProblemCreatingTheException']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    // If success for create
+    if($id){
+        set_alert(true, "good", $lang['ExceptionWasCreatedSuccessfully']);
+
+        //returning the created exception's type
+        //the returned data is needed to know what tabs to refresh
+        json_response(200, get_alert(true), array('approved' => $approved, 'type' => $policy ? "policy" : "control"));
+    }
+    // If failed for update
+    else{
+        set_alert(true, "bad", $lang['ThereWasAProblemCreatingTheException']);
+        json_response(400, get_alert(true), NULL);
+    }
+}
+
+function update_exception_api() {
+
+    global $lang;
+
+    if (!check_permission_governance()) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('update')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionUpdate']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    ##Checking required parameters##
+    ################################
+    if (empty($_POST['exception_id']) || !ctype_digit($_POST['exception_id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (empty($_POST['name']) || !trim($_POST['name'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyANameParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (empty($_POST['owner']) || !ctype_digit($_POST['owner']) || !get_user_by_id((int)$_POST['owner'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyTheOwnerParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $policy = ctype_digit($_POST['policy']) ? (int)$_POST['policy'] : false;
+    $control = ctype_digit($_POST['control']) ? (int)$_POST['control'] : false;
+
+    //You have to choose a policy or a control, you can't choose both
+    if (!($policy xor $control)) {
+        set_alert(true, "bad", $lang['ChooseAPolicyOrControl']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $id = (int)$_POST['exception_id'];
+    $name = $_POST['name'];
+    $owner = (int)$_POST['owner'];
+    $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
+    $review_frequency = !empty($_POST['review_frequency']) ? $_POST['review_frequency'] : 0;
+    $description = $_POST['description'];
+    $justification = $_POST['justification'];
+
+    ##Checking if non-required parameters have valid values##
+    #########################################################
+    if ($review_frequency < 0) {
+        set_alert(true, "bad", $lang['InvalidReviewFrequency']);
+
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $today_dt = strtotime(date('Ymd'));
+    $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
+
+    if (!$creation_date || $creation_date === "0000-00-00")
+        $creation_date = date('Y-m-d');
+    else {
+        if (strtotime($creation_date) > $today_dt) {
+            set_alert(true, "bad", $lang['InvalidCreationDate']);
+
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
+    }
+
+    //calculate next review date
+    $next_review_date = get_standard_date_from_default_format($_POST['next_review_date']);
+    if (!$next_review_date || $next_review_date === "0000-00-00") {
+        $next_review_date = strtotime($creation_date) + ($review_frequency * 24 * 3600);
+        if ($next_review_date < $today_dt) {
+            $next_review_date = $today_dt;
+        }
+        $next_review_date = date('Y-m-d', $next_review_date);
+    } elseif (strtotime($next_review_date) < $today_dt) {
+        set_alert(true, "bad", $lang['InvalidNextReviewDate']);
+
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $approved_original = !empty($_POST['approved_original']);
+    $approval_date = get_standard_date_from_default_format($_POST['approval_date']);
+    $approver = (ctype_digit($_POST['approver']) && get_user_by_id((int)$_POST['owner'])) ? (int)$_POST['approver'] : false;
+    $approved = false;
+    if ($approval_date && $approval_date !== "0000-00-00") {
+        if (strtotime($approval_date) > $today_dt) {
+            set_alert(true, "bad", $lang['InvalidApprovalDate']);
+
+            json_response(400, get_alert(true), NULL);
+            return;
+        }
+
+        //Can only be approved if the user has the approve_exception permission
+        $approved = boolval($approver) && check_permission_exception('approve');
+    }
+
+    if ($approved && get_setting('exception_update_resets_approval')) {
+        $approved = false;
+    }
+
+    // Approval Date can't be before the Creation Date
+    if ($approval_date !== "0000-00-00" && strtotime($approval_date) < strtotime($creation_date)) {
+        set_alert(true, "bad", $lang['InvalidApprovalDateCreationDateOrder']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    try {
+        update_exception(
+            $name,
+            $policy,
+            $control,
+            $owner,
+            $additional_stakeholders,
+            $creation_date,
+            $review_frequency,
+            $next_review_date,
+            $approval_date,
+            $approver,
+            $approved,
+            $description,
+            $justification,
+            $id);
+
+        set_alert(true, "good", $lang['ExceptionWasUpdatedSuccessfully']);
+
+        //returning the created exception's type
+        //the returned data is needed to know what tabs to refresh
+        json_response(200, get_alert(true), array('approved' => $approved_original, 'type' => $policy ? "policy" : "control"));
+        return;
+    } catch(Exception $e) {
+        error_log($e);
+        set_alert(true, "bad", $lang['ThereWasAProblemUpdatingTheException']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+}
+
+function approve_exception_api() {
+
+    global $lang;
+
+    if (!check_permission_governance()) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('approve')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionApprove']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    // If the id is not sent
+    if (empty($_POST['exception_id']) || !ctype_digit($_POST['exception_id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    }else {
+        $id = (int)$_POST['exception_id'];
+
+        approve_exception($id);
+
+        set_alert(true, "good", $lang['ExceptionWasApprovedSuccessfully']);
+        json_response(200, get_alert(true), null);
+    }
+}
+
+function delete_exception_api() {
+
+    global $lang;
+
+    if (!check_permission_governance()) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('delete')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionDelete']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    // If the id is not sent
+    if (empty($_POST['exception_id']) || !ctype_digit($_POST['exception_id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    }else {
+        $id = (int)$_POST['exception_id'];
+
+        delete_exception($id);
+
+        set_alert(true, "good", $lang['ExceptionWasDeletedSuccessfully']);
+        json_response(200, get_alert(true), null);
+    }
+}
+
+function batch_delete_exception_api() {
+
+    global $lang;
+
+    if (!check_permission_governance()) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('delete')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionDelete']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    // If the id is not sent
+    if (empty($_POST['parent_id']) || !ctype_digit($_POST['parent_id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+        return;
+    }elseif (empty($_POST['type']) || !trim($_POST['type']) || !in_array($_POST['type'], ['policy', 'control'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyATypeParameter']);
+
+        json_response(400, get_alert(true), NULL);
+        return;
+    }else {
+
+        $approved = !empty($_POST['approved']);
+        $type = $_POST['type'];
+
+        batch_delete_exception((int)$_POST['parent_id'], $type, $approved);
+
+        set_alert(true, "good", $lang['ExceptionsWereDeletedSuccessfully_' . $type]);
+        json_response(200, get_alert(true), null);
+    }
+}
+
+/******************************************
+ * FUNCTION: GET EXCEPTIONS AUDIT LOG API *
+ ******************************************/
+function get_exceptions_audit_log_api() 
+{
+
+    global $lang;
+
+    if (!check_permission_governance()) {
+        set_alert(true, "bad", $lang['NoPermissionForGovernance']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (!check_permission_exception('view')) {
+        set_alert(true, "bad", $lang['NoPermissionForExceptionView']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $days = !empty($_GET['days']) && ctype_digit($_GET['days']) ? (int)$_GET['days'] : 7;
+
+    if ($days < 0)
+        $days = 7;
+
+    json_response(200, null, array_map(function($log) {
+            return array(
+                'timestamp' => date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp'])),
+                'message' => try_decrypt($log['message'])
+            );
+        }, get_exceptions_audit_log($days))
+    );
+}
+
+/*******************************
+ * FUNCTION: GET AUDIT LOG API *
+ *******************************/
+function get_audit_logs_api() 
+{
+    global $lang;
+
+    if (is_admin()) 
+    {
+        $days = get_param("get", "days", 7);
+        $log_type = get_param("get", "log_type", NULL);
+        
+        // If log_type is string, try to make array by comman and trim all values
+        if($log_type)
+        {
+            $log_type = array_map(function($log_type){
+                return trim($log_type);
+            }, explode(",", $log_type));
+        }
+        else
+        {
+            $log_type = NULL;
+        }
+
+        json_response(200, null, array_map(function($log) {
+                return array(
+                    'timestamp' => date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp'])),
+                    'username' => $log['user_fullname'],
+                    'message' => $log['message']
+                );
+            }, get_audit_trail(NULL, $days, $log_type))
+        );
+
+        return;
+    } 
+    else
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($escaper->escapeHtml($lang['AdminPermissionRequired'])));
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+}
+
 
 ?>

@@ -142,6 +142,19 @@ function download_extra($name)
     } else {
         // Write the extra to a file in the temporary directory
         $extra_file = sys_get_temp_dir() . '/' . $name . '.tar.gz';
+
+        // Try to remove the file to make sure we can create the new one
+        delete_file($extra_file);
+
+        //Check if we succeeded
+        if (file_exists($extra_file)) {
+            // Display an alert
+            set_alert(true, "bad", $lang['FailedToCleanupExtraFiles']);
+
+            // Return a failure
+            return 0;
+        }
+
         $result = file_put_contents($extra_file, $result);
 
         // Decompress the extra file

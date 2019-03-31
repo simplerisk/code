@@ -16,17 +16,17 @@
     // Add various security headers
     add_security_headers();
 
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-    session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
     if (!isset($_SESSION))
     {
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
+        {
+        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        }
+
+        // Start the session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
         session_name('SimpleRisk');
         session_start();
     }
@@ -48,18 +48,16 @@
 
     checkUploadedFileSizeErrors();
 
-    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-    function csrf_startup() {
-        csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-    }
-
     // Check if access is authorized
     if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
     {
             header("Location: ../index.php");
             exit(0);
     }
+
+    // Include the CSRF-magic library
+    // Make sure it's called after the session is properly setup
+    include_csrf_magic();
 
     // If the extra directory exists
     if (is_dir(realpath(__DIR__ . '/../extras/import-export')))
@@ -252,7 +250,7 @@
                 
             });
             $('#import').submit(function(event) {
-                if (<?php echo get_setting('max_upload_size'); ?> <= $("#import input[type='file']")[0].files[0].size) {
+                if ($("#import input[type='file']").length && <?php echo get_setting('max_upload_size'); ?> <= $("#import input[type='file']")[0].files[0].size) {
                     toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                     event.preventDefault();
                 }

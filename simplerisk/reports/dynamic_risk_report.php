@@ -16,17 +16,17 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-// Session handler is database
-if (USE_DATABASE_FOR_SESSIONS == "true")
-{
-    session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-}
-
-// Start the session
-session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
 if (!isset($_SESSION))
 {
+    // Session handler is database
+    if (USE_DATABASE_FOR_SESSIONS == "true")
+    {
+        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+    }
+
+    // Start the session
+    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
     session_name('SimpleRisk');
     session_start();
 }
@@ -37,8 +37,6 @@ require_once(language_file());
 // Check for session timeout or renegotiation
 session_check();
 
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
 // Check if access is authorized
 if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 {
@@ -47,9 +45,9 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
     exit(0);
 }
 
-function csrf_startup() {
-    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-}
+// Include the CSRF-magic library
+// Make sure it's called after the session is properly setup
+include_csrf_magic();
 
 // Record the page the workflow started from as a session variable
 $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
@@ -98,6 +96,17 @@ else if (isset($_GET['sort']))
 }
 else $sort = 0;
 
+// Set the Tags
+if (isset($_POST['tags_filter']))
+{
+    $tags_filter = empty($_POST['tags_filter']) ? [] : array_map('intval', $_POST['tags_filter']);
+}
+else if (isset($_GET['tags_filter']))
+{
+    $tags_filter = empty($_GET['tags_filter']) ? [] : array_map('intval', $_GET['tags_filter']);
+}
+else $tags_filter = [];
+
 // Names list of Risk columns
 $columns = array(
     'id',
@@ -139,6 +148,7 @@ $columns = array(
     'current_solution',
     'security_recommendations',
     'security_requirements',
+    'risk_tags',
 );
 
 $custom_values = [];
@@ -193,7 +203,7 @@ if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "dow
             // Include the Import-Export Extra
             require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
 
-            download_risks_by_table($status, $group, $sort, $affected_asset, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $custom_values);
+            download_risks_by_table($status, $group, $sort, $affected_asset, $tags_filter, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $custom_values);
         }
     }
 }
@@ -209,6 +219,7 @@ if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "dow
   <script src="../js/obsolete.js"></script>
   <script src="../js/jquery.dataTables.js"></script>
   <script src="../js/dynamic.js"></script>
+  <script src="../js/bootstrap-multiselect.js"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -240,7 +251,7 @@ if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "dow
         <div class="row-fluid">
           <div id="selections" class="span12">
             <div class="well">
-              <?php view_get_risks_by_selections($status, $group, $sort, $affected_asset, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $custom_values); ?>
+              <?php view_get_risks_by_selections($status, $group, $sort, $affected_asset, $tags_filter, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $custom_values); ?>
             </div>
           </div>
         </div>
@@ -267,7 +278,7 @@ if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "dow
         <div class="row-fluid">
           <div class="span12">
             <div id="risk-table-container">
-                <?php get_risks_by_table($status, $group, $sort, $affected_asset, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $custom_values); ?>
+                <?php get_risks_by_table($status, $group, $sort, $affected_asset, $tags_filter, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $custom_values); ?>
             </div>
           </div>
         </div>

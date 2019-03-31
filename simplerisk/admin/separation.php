@@ -1,4 +1,4 @@
-<?php
+    <?php
     /* This Source Code Form is subject to the terms of the Mozilla Public
      * License, v. 2.0. If a copy of the MPL was not distributed with this
      * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -6,8 +6,8 @@
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-	require_once(realpath(__DIR__ . '/../includes/display.php'));
-	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/../includes/display.php'));
+    require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
     // Include Zend Escaper for HTML Output Encoding
     require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -16,17 +16,17 @@
     // Add various security headers
     add_security_headers();
 
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-		session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-    // Start the session
-	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
     if (!isset($_SESSION))
     {
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
+        {
+            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        }
+
+        // Start the session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
         session_name('SimpleRisk');
         session_start();
     }
@@ -54,13 +54,13 @@
         exit(0);
     }
 
-	// If the extra directory exists
-	if (is_dir(realpath(__DIR__ . '/../extras/separation')))
-	{
-		// Include the Separation Extra
-		require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    // If the extra directory exists
+    if (is_dir(realpath(__DIR__ . '/../extras/separation')))
+    {
+        // Include the Separation Extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-		// If the user wants to activate the extra
+        // If the user wants to activate the extra
         if (isset($_POST['activate']))
         {
             // Enable the Separation Extra
@@ -87,15 +87,15 @@
             update_permission_settings($permissions);
             set_alert(true, "good", $lang['SavedSuccess']);
         }
-	}
+    }
 
     /*********************
      * FUNCTION: DISPLAY *
      *********************/
     function display()
     {
-	    global $lang;
-	    global $escaper;
+        global $lang;
+        global $escaper;
 
         // If the extra directory exists
         if (is_dir(realpath(__DIR__ . '/../extras/separation')))
@@ -119,22 +119,22 @@
                 // Include the Team Separation Extra
                 require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-			    display_team_separation();
+                display_team_separation();
             }
         }
-	    // Otherwise, the Extra does not exist
-	    else
-	    {
-		    echo "<a href=\"https://www.simplerisk.com/extras\" target=\"_blank\">Purchase the Extra</a>\n";
-	    }
+        // Otherwise, the Extra does not exist
+        else
+        {
+            echo "<a href=\"https://www.simplerisk.com/extras\" target=\"_blank\">Purchase the Extra</a>\n";
+        }
     }
 
-?>
+    ?>
 
-<!doctype html>
-<html>
+    <!doctype html>
+    <html>
 
-  <head>
+    <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
@@ -153,16 +153,16 @@
     <?php
         setup_alert_requirements("..");
     ?>    
-  </head>
+    </head>
 
-  <body>
+    <body>
 
-<?php
-	view_top_menu("Configure");
+    <?php
+    view_top_menu("Configure");
 
-	// Get any alert messages
-	get_alert();
-?>
+    // Get any alert messages
+    get_alert();
+    ?>
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
@@ -183,5 +183,5 @@
     <script>
         <?php prevent_form_double_submit_script(); ?>
     </script>
-  </body>
-</html>
+    </body>
+    </html>

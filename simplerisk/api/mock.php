@@ -12,20 +12,20 @@
     // Add various security headers
     add_security_headers();
 
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
+    if (!isset($_SESSION))
     {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-        if (!isset($_SESSION))
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
         {
-            session_name('SimpleRisk');
-            session_start();
+            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
         }
+
+        // Start the session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
+        session_name('SimpleRisk');
+        session_start();
+    }
 
     // Check for session timeout or renegotiation
     session_check();
@@ -550,6 +550,32 @@
           "status": 200,
           "status_message": "Risk ID 2287 updated successfully!",
           "data": null
+        }';
+        
+        return;
+    }
+
+    function mock_get_audit_logs(&$results){
+        $results = array();
+        $results['url'] = "/api/audit_logs?key={key}&days=7&log_type=risk, contact";
+        $results['method'] = "GET";
+        $results['params'] = '';
+
+        $results['response'] = '{
+          "status": 200,
+          "status_message": "Success",
+          "data":  [
+            {
+              "timestamp": "29/03/2019 2:26 AM CET",
+              "username": "Admin",
+              "message": "A management review was submitted for risk ID \"1088\" by username \"admin\"."
+            },
+            {
+              "timestamp": "29/03/2019 2:26 AM CET",
+              "username": "Admin",
+              "message": "Risk(ID:1088) was assigned to project \"test project\" by user \"admin\"."
+            }
+          ]
         }';
         
         return;

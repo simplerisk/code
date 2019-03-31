@@ -30,7 +30,7 @@ jQuery(document).ready(function($){
         //$(this).parents('.project-block').fadeOut('400').delay('500').remove();
         var project_id = $(this).attr('data-id');
         var modal = $('#project--delete');
-        $('input', modal).val(project_id);
+        $("[name='project_id']", modal).val(project_id);
         $(modal).modal('show');
       });
 
@@ -196,11 +196,11 @@ jQuery(document).ready(function($){
     },
 
     deleteProject : function(form){
-      var project_id = $(form).find('input');
+      var project_id = $(form).find("[name='project_id']").val();
       $.ajax({
         url: 'plan-projects.php',
         type: 'POST',
-        data: {delete_project: true, project_id : project_id[0]['value']},
+        data: {delete_project: true, project_id : project_id},
         success : function (data){
           $('#project--delete').modal('hide');
           showAlertsFromArray(data.status_message);

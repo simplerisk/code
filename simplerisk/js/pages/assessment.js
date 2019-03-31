@@ -84,11 +84,9 @@ $(document).ready(function(){
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/assessment/update?assessment_id=" + assessment_id,
-            data: JSON.stringify(assessments),
-            headers: {
-                'CSRF-TOKEN': csrfMagicToken
+            data: {
+                assessments: assessments
             },
-            contentType: "application/json",
             success: function(data){
                 if(data.status_message){
                     toastr.success(data.status_message);

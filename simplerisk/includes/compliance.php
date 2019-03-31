@@ -23,9 +23,9 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 function display_framework_controls_in_compliance()
 {
     global $lang, $escaper;
-    
+
     $tableID = "framework-controls";
-    
+
     echo "
         <table width=\"100%\" id=\"{$tableID}\" >
             <thead class='hide'>
@@ -105,7 +105,8 @@ function display_framework_controls_in_compliance()
             
             $(\"body\").on(\"click\", \".add-test\", function(){
                 $(\"#test-new-form\")[0].reset();
-                $(\"[name=framework_control_id]\", $(\"#test-new-form\")).val($(this).data('control-id'))
+                $(\"[name=framework_control_id]\", $(\"#test-new-form\")).val($(this).data('control-id'));
+                \$(\"#test-new-form .datepicker\").datepicker({maxDate: new Date});
             })
             
             $(\"body\").on(\"click\", \".delete-row\", function(){
@@ -133,12 +134,11 @@ function display_framework_controls_in_compliance()
                         \$('[name=test_steps]', form).val(data['test_steps']);
                         \$('[name=approximate_time]', form).val(data['approximate_time']);
                         \$('[name=expected_results]', form).val(data['expected_results']);
-                        \$(\".datepicker\" , form).datepicker();
+                        \$('[name=last_date]', form).datepicker({maxDate: new Date});
+                        \$('[name=next_date]', form).datepicker({minDate: new Date});
                     }
                 })
-                
             })
-            
         </script>
     ";
 }
@@ -147,8 +147,19 @@ function display_framework_controls_in_compliance()
  * FUNCTION: ADD FRAMEWORK CONTROLS TEST *
  *****************************************/
 function add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders = "", $last_date="0000-00-00", $next_date=false){
-    if($next_date === false) $next_date = date('Y-m-d');
-	
+    if($next_date === false) {
+        if (!$last_date || $last_date === "0000-00-00") {
+            $next_date = date("Y-m-d");
+        } else {
+            $calc_next_date = date("Y-m-d", strtotime($last_date) + $test_frequency*24*60*60);
+            if($calc_next_date < date("Y-m-d")){
+                $next_date = date("Y-m-d");
+            } else {
+                $next_date = $calc_next_date;
+            }
+        }
+    }
+
 	$created_at = date("Y-m-d");
 
     // Open the database connection
@@ -260,7 +271,7 @@ function get_framework_control_test_ids(){
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT `id` FROM `framework_control_tests`");
+    $stmt = $db->prepare("SELECT `id` FROM `framework_control_tests`; ");
     $stmt->execute();
 
     $array = $stmt->fetchAll();
@@ -815,9 +826,13 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
     // Open the database connection
     $db = db_open();
 
+    $select_background_class = $active ? "" : ", t8.background_class ";
+
     $sql = "
-        SELECT t1.id, t1.test_id, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps, t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, t1.status, t1.created_at, 
-        t2.name tester_name, t3.short_name control_name, GROUP_CONCAT(DISTINCT t4.name) framework_name, t5.test_result, t5.summary, t5.submitted_by, t5.submission_date, ifnull(t6.name, '--') audit_status_name, t7.additional_stakeholders
+        SELECT t1.id, t1.test_id, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps,
+            t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, t1.status, t1.created_at,
+            t2.name tester_name, t3.short_name control_name, GROUP_CONCAT(DISTINCT t4.name) framework_name, t5.test_result,
+            t5.summary, t5.submitted_by, t5.submission_date, ifnull(t6.name, '--') audit_status_name, t7.additional_stakeholders{$select_background_class}
         FROM `framework_control_test_audits` t1
             LEFT JOIN `user` t2 ON t1.tester = t2.value
             LEFT JOIN `framework_controls` t3 ON t1.framework_control_id = t3.id AND t3.deleted=0
@@ -825,6 +840,7 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
             LEFT JOIN `framework_control_test_results` t5 ON t1.id=t5.test_audit_id
             LEFT JOIN `test_status` t6 ON t1.status=t6.value
             LEFT JOIN `framework_control_tests` t7 ON t7.id=t1.test_id
+            LEFT JOIN `test_results` t8 ON t8.name=t5.test_result
     ";
 
     $wheres = array();
@@ -841,15 +857,40 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
     {
         $wheres[] = " t1.status='".$closed_audit_status."' ";
     }
+
     if($filters !== false){
-        if(!empty($filters['filter_control'])){
-            $wheres[] = " t3.short_name like :filter_control ";
-            $filters['filter_control'] = "%{$filters['filter_control']}%";
+        if(isset($filters['filter_control'])){
+            if($filters['filter_control'])
+            {
+                foreach($filters['filter_control'] as &$val){
+                    $val = (int)$val;
+                }
+                unset($val);
+
+                $wheres[] = " t3.id IN (".implode(",", $filters['filter_control']).") ";
+            }
+            else
+            {
+                $wheres[] = " 0 ";
+            }
         }
-        if(!empty($filters['filter_test_result'])){
-            $wheres[] = " t5.test_result like :filter_test_result ";
-            $filters['filter_test_result'] = "%{$filters['filter_test_result']}%";
+
+        if(isset($filters['filter_test_result'])){
+            if($filters['filter_test_result'])
+            {
+                foreach($filters['filter_test_result'] as &$val){
+                    $val = (int)$val;
+                }
+                unset($val);
+
+                $wheres[] = " t8.value IN (".implode(",", $filters['filter_test_result']).") ";
+            }
+            else
+            {
+                $wheres[] = " 0 ";
+            }
         }
+
         if(isset($filters['filter_framework'])){
             if($filters['filter_framework']){
                 $framework_wheres = [];
@@ -873,15 +914,15 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
                         $framework_wheres[] = "(t3.framework_ids like '{$framework_filter_pattern1}' or t3.framework_ids like '{$framework_filter_pattern2}' or t3.framework_ids like '{$framework_filter_pattern3}' or t3.framework_ids like '{$framework_filter_pattern4}')";
                     }
                 }
-                
+
                 $wheres[] = "(". implode(" OR ", $framework_wheres) . ")";
             }
             else
             {
                 $wheres[] = " 0 ";
             }
-        
         }
+
         if(isset($filters['filter_status'])){
             if($filters['filter_status'])
             {
@@ -889,7 +930,7 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
                     $val = (int)$val;
                 }
                 unset($val);
-                
+
                 $wheres[] = " t1.status IN (".implode(",", $filters['filter_status']).") ";
             }
             else
@@ -963,12 +1004,6 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
 
     $stmt = $db->prepare($sql);
     if($filters !== false){
-        if(!empty($filters['filter_control'])){
-            $stmt->bindParam(":filter_control", $filters['filter_control'], PDO::PARAM_STR, 200);
-        }
-        if(!empty($filters['filter_test_result'])){
-            $stmt->bindParam(":filter_test_result", $filters['filter_test_result'], PDO::PARAM_STR, 200);
-        }
         if(!empty($filters['filter_start_audit_date'])){
             $stmt->bindParam(":filter_start_audit_date", $filters['filter_start_audit_date'], PDO::PARAM_STR, 10);
         }
@@ -1112,13 +1147,9 @@ function display_testing()
                             </tr>
                             <tr>
                                 <td valign='top'>".$escaper->escapeHtml($lang['TestResult']).":&nbsp;&nbsp;</td>
-                                <td>
-                                    <select name='test_result'>
-                                        <option value=''>--</option>
-                                        <option ". ($test_audit['test_result'] == 'Pass' ? "selected" : "") ." value='Pass'>Pass</option>
-                                        <option ". ($test_audit['test_result'] == 'Inconclusive' ? "selected" : "") ." value='Inconclusive'>Inconclusive</option>
-                                        <option ". ($test_audit['test_result'] == 'Fail' ? "selected" : "") ." value='Fail'>Fail</option>
-                                    </select>
+                                <td>";
+                                    create_dropdown("test_results", $test_audit['test_result'], "test_result", true, false, false, "", "--");
+                                echo "
                                 </td>
                             </tr>
                             <tr>
@@ -1245,7 +1276,7 @@ function display_test_audit_trail($test_audit_id)
                 <div class=\"collapsible\" style='display:none'>
                     <div class=\"row-fluid\">
                         <div class=\"span12 audit-trail\">";
-                            get_audit_trail($test_audit_id+1000, 36500, 'test_audit');
+                            get_audit_trail_html($test_audit_id+1000, 36500, 'test_audit');
                         echo "</div>
                     </div>
                 </div>
@@ -1666,7 +1697,7 @@ function download_compliance_file($unique_name)
 function display_past_audits()
 {
     global $lang, $escaper;
-    
+
     $tableID = "past-audits";
 
     echo "
@@ -1678,29 +1709,30 @@ function display_past_audits()
             </div>
             <div class='row-fluid'>
                 <div class='span2' align='right'>
-                    <strong>".$escaper->escapeHtml($lang['FilterByText']).":&nbsp;&nbsp;&nbsp;</strong>
+                    <strong>".$escaper->escapeHtml($lang['TestResult']).":&nbsp;&nbsp;&nbsp;</strong>
                 </div>
-                <div class='span2'>
-                <input type='text' id='filter_by_text' class='form-control'>
+                <div class='span3'>";
+                    create_multiple_dropdown("test_results_filter", "all", "filter_by_test_result");
+    echo "
                 </div>
                 <div class='span2' align='right'>
                     <strong>".$escaper->escapeHtml($lang['Control']).":&nbsp;&nbsp;&nbsp;</strong>
                 </div>
-                <div class='span2'>
-                    <input type='text' id='filter_by_control' class='form-control'>
-                </div>
-                <div class='span2' align='right'>
-                    <strong>".$escaper->escapeHtml($lang['TestResult']).":&nbsp;&nbsp;&nbsp;</strong>
-                </div>
-                <div class='span2'>
-                    <input type='text' id='filter_by_test_result' class='form-control'>
-                </div>
+                <div class='span4'>";
+                    create_multiple_dropdown("framework_controls", "all", "filter_by_control");
+    echo "      </div>
             </div>
             <div class='row-fluid'>
                 <div class='span2' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['FilterByText']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span3'>
+                    <input type='text' id='filter_by_text' class='form-control'>
+                </div>
+                <div class='span2' align='right'>
                     <strong>".$escaper->escapeHtml($lang['Framework']).":&nbsp;&nbsp;&nbsp;</strong>
                 </div>
-                <div class='span2'>
+                <div class='span4'>
                     <div class='multiselect-content-container'>
                         <select id='filter_by_framework' class='' multiple=''>
                             <option selected value='-1'>".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
@@ -1712,7 +1744,6 @@ function display_past_audits()
                         echo "</select>
                     </div>
                 </div>
-                
             </div>
             <div class='row-fluid'>
                 <div class='span2' align='right'>
@@ -1743,6 +1774,27 @@ function display_past_audits()
         </table>
         <br>
         <script>
+            $('#filter_by_framework').multiselect({
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                maxHeight: 250,
+                buttonWidth: '100%',
+                includeSelectAllOption: true
+            });
+
+            $('#filter_by_control').multiselect({
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                maxHeight: 250,
+                buttonWidth: '100%',
+                includeSelectAllOption: true
+            });
+
+            $('#filter_by_test_result').multiselect({
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                maxHeight: 250,
+                buttonWidth: '100%',
+                includeSelectAllOption: true
+            });
+
             var pageLength = 10;
             var form = $('#{$tableID}').parents('form');
             var datatableInstance = $('#{$tableID}').DataTable({
@@ -1755,12 +1807,14 @@ function display_past_audits()
                 dom : \"flrtip\",
                 pageLength: pageLength,
                 dom : \"flrti<'#view-all.view-all'>p\",
+                order: [[1, 'desc']],
                 createdRow: function(row, data, index){
                     var background = $('.background-class', $(row)).data('background');
                     $(row).find('td').addClass(background)
                 },
                 ajax: {
                     url: BASE_URL + '/api/compliance/past_audits',
+                    type: 'POST',
                     data: function(d){
                         d.filter_text = \$(\"#filter_by_text\").val();
                         d.filter_control    = \$(\"#filter_by_control\").val();
@@ -1831,32 +1885,25 @@ function display_past_audits()
             } 
             
             // timer identifier
-            var typingTimer;                
+            var typingTimer;
             // time in ms (1 second)
-            var doneTypingInterval = 1000;  
+            var doneTypingInterval = 1000;
 
-            $('#filter_by_framework').multiselect({
-                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
-                includeSelectAllOption: true
-            });
-            
             $('#start_audit_date, #end_audit_date').datepicker()
+            $('#filter_by_test_result').change(function(){
+                redrawPastAudits();
+            });
 
+            $('#filter_by_framework').change(function(){
+                redrawPastAudits();
+            });
+            $('#filter_by_control').change(function(){
+                redrawPastAudits();
+            });
             // Search filter event
             $('#filter_by_text').keyup(function(){
                 clearTimeout(typingTimer);
                 typingTimer = setTimeout(redrawPastAudits, doneTypingInterval);
-            });
-            $('#filter_by_control').keyup(function(){
-                clearTimeout(typingTimer);
-                typingTimer = setTimeout(redrawPastAudits, doneTypingInterval);
-            });
-            $('#filter_by_test_result').keyup(function(){
-                clearTimeout(typingTimer);
-                typingTimer = setTimeout(redrawPastAudits, doneTypingInterval);
-            });
-            $('#filter_by_framework').change(function(){
-                redrawPastAudits();
             });
             $('#start_audit_date').change(function(){
                 clearTimeout(typingTimer);
@@ -1866,7 +1913,6 @@ function display_past_audits()
                 clearTimeout(typingTimer);
                 typingTimer = setTimeout(redrawPastAudits, doneTypingInterval);
             });
-            
         </script>
     ";
 }
@@ -2376,7 +2422,78 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
  ****************************************/
 function get_audit_tests($order_field=false, $order_dir=false)
 {
-    return [];
+    // Open the database connection
+    $db = db_open();
+
+    $sql = "
+        SELECT t1.name, t1.last_date, t1.next_date, GROUP_CONCAT(DISTINCT t3.name) framework_names
+        FROM `framework_control_tests` t1
+            INNER JOIN `framework_controls` t2 ON t1.framework_control_id=t2.id
+            LEFT JOIN `frameworks` t3 ON FIND_IN_SET(t3.value, t2.framework_ids)
+        GROUP BY
+            t1.id
+    ";
+    
+    switch($order_field)
+    {
+        case "test_name";
+            $sql .= " ORDER BY t1.name {$order_dir} ";
+        break;
+        case "associated_frameworks";
+            // If encryption extra is disabled, sort by query
+            if(!encryption_extra())
+            {
+                $sql .= " ORDER BY framework_names {$order_dir} ";
+            }
+        break;
+        case "last_test_date";
+            $sql .= " ORDER BY t1.last_date {$order_dir} ";
+        break;
+        case "next_test_date";
+            $sql .= " ORDER BY t1.next_date {$order_dir} ";
+        break;
+    }
+    $sql .= ";";
+    
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+
+    $audit_tests = $stmt->fetchAll();
+
+    // closed the database connection
+    db_close($db);
+    
+    if(encryption_extra())
+    {
+        // Decrypt associtated framework names
+        foreach($audit_tests as &$row){
+            $framework_names = explode(",", $row['framework_names']);
+            foreach($framework_names as &$framework_name)
+            {
+                $framework_name = try_decrypt($framework_name);
+            }
+            $row['framework_names'] = implode(", ", $framework_names);
+        }
+        
+        // If encryption extra is enabled and sort field is Associated Frameworks, sort by manually
+        if($order_field == "associated_frameworks")
+        {
+            usort($audit_tests, function($a, $b) use ($order_dir)
+                {
+                    $aValue = trim($a['framework_names']);
+                    $bValue = trim($b['framework_names']);
+                    
+                    if($order_dir == 'asc'){
+                        return strcasecmp($aValue, $bValue);
+                    }else{
+                        return strcasecmp($bValue, $aValue);
+                    }
+                }
+            );
+        }
+    }
+    
+    return $audit_tests;
 }
 
 ?>

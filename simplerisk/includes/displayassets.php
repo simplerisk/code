@@ -47,6 +47,9 @@ function display_main_detail_asset_feilds_add($fields)
                 case 'AssetDetails':
                     display_asset_details_edit($display);
                 break;
+                case 'Tags':
+                    display_asset_tags_edit($display);
+                break;
             }
 
         }
@@ -62,7 +65,7 @@ function display_main_detail_asset_feilds_add($fields)
             {
                 // Include the extra
                 require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                display_custom_field_edit($field, [], "table");
+                display_custom_field_edit($field, [], "div_2:10");
             }
         }
     }
@@ -75,14 +78,14 @@ function display_asset_name_edit($display = true)
 {
     global $lang, $escaper;
 
-    $display ? $displayString = "" : $displayString = " display: none; ";
-    
-    echo "
-        <tr style='{$displayString}'>
-            <td>". $escaper->escapeHTML($lang['AssetName']) .": &nbsp;</td>
-            <td><div class=\"ui-widget\"><input type=\"text\" id=\"asset_name\" name=\"asset_name\" maxlength=\"200\" size=\"20\" /></div></td>
-        </tr>
-    ";
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo "<div class=\"row-fluid\"{$displayString}>";
+        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['AssetName']).":</div>";
+        echo "<div class=\"span10\">";
+            echo "<input type=\"text\" id=\"asset_name\" name=\"asset_name\" maxlength=\"200\" size=\"20\" />";
+        echo "</div>";
+    echo "</div>";
 }
 
 /*************************************
@@ -92,14 +95,14 @@ function display_asset_ip_address_edit($display = true)
 {
     global $lang, $escaper;
 
-    $display ? $displayString = "" : $displayString = " display: none; ";
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
 
-    echo "
-        <tr style='{$displayString}'>
-            <td>". $escaper->escapeHTML($lang['IPAddress']) .":&nbsp;</td>
-            <td><input type=\"text\" name=\"ip\" maxlength=\"15\" size=\"20\" /></td>
-        </tr>
-    ";
+    echo "<div class=\"row-fluid\"{$displayString}>";
+        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['IPAddress']).":</div>";
+        echo "<div class=\"span10\">";
+            echo "<input type=\"text\" name=\"ip\" maxlength=\"15\" size=\"20\" />";
+        echo "</div>";
+    echo "</div>";
 }
 
 /************************************
@@ -109,20 +112,17 @@ function display_asset_valuation_edit($display = true)
 {
     global $lang, $escaper;
 
-    $display ? $displayString = "" : $displayString = " display: none; ";
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
 
     // Get the default asset valuation
     $default = get_default_asset_valuation();
 
-    echo "
-        <tr style='{$displayString}'>
-            <td>". $escaper->escapeHTML($lang['AssetValuation']) .": &nbsp;</td>
-            <td>";
-                // Create the asset valuation dropdown
-                create_asset_valuation_dropdown("value", $default);
-            echo "</td>
-        </tr>
-    ";
+    echo "<div class=\"row-fluid\"{$displayString}>";
+        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['AssetValuation']).":</div>";
+        echo "<div class=\"span10\">";
+            create_asset_valuation_dropdown("value", $default);
+        echo "</div>";
+    echo "</div>";
 }
 
 /****************************************
@@ -132,16 +132,14 @@ function display_asset_site_location_edit($display = true)
 {
     global $lang, $escaper;
 
-    $display ? $displayString = "" : $displayString = " display: none; ";
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
 
-    echo "
-        <tr style='{$displayString}'>
-            <td>". $escaper->escapeHTML($lang['SiteLocation']) .": &nbsp;</td>
-            <td>";
-                create_dropdown("location");
-            echo "</td>
-        </tr>
-    ";
+    echo "<div class=\"row-fluid\"{$displayString}>";
+        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['SiteLocation']).":</div>";
+        echo "<div class=\"span10\">";
+            create_dropdown("location");
+        echo "</div>";
+    echo "</div>";
 }
 
 /*******************************
@@ -151,16 +149,14 @@ function display_asset_team_edit($display = true)
 {
     global $lang, $escaper;
 
-    $display ? $displayString = "" : $displayString = " display: none; ";
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
 
-    echo "
-        <tr style='{$displayString}'>
-            <td>". $escaper->escapeHTML($lang['Team']) .": &nbsp;</td>
-            <td>";
-                create_dropdown("team");
-            echo "</td>
-        </tr>
-    ";
+    echo "<div class=\"row-fluid\"{$displayString}>";
+        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['Team']).":</div>";
+        echo "<div class=\"span10\">";
+            create_dropdown("team");
+        echo "</div>";
+    echo "</div>";
 }
 
 /**********************************
@@ -170,14 +166,42 @@ function display_asset_details_edit($display = true)
 {
     global $lang, $escaper;
 
-    $display ? $displayString = "" : $displayString = " display: none; ";
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
 
-    echo "
-        <tr style='{$displayString}'>
-            <td>". $escaper->escapeHTML($lang['AssetDetails']) .": &nbsp;</td>
-            <td><textarea name=\"details\" cols=\"\" rows=\"\" style=\"width: 100%;\"></textarea></td>
-        </tr>
-    ";
+    echo "<div class=\"row-fluid\"{$displayString}>";
+        echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['AssetDetails']).":</div>";
+        echo "<div class=\"span8\">";
+            echo "<textarea name=\"details\" cols=\"\" rows=\"\" style=\"width: 100%;\"></textarea>";
+        echo "</div>";
+    echo "</div>";
+}
+
+/************************************
+ * FUNCTION: DISPLAY RISK TAGS EDIT *
+ ************************************/
+function display_asset_tags_edit($display = true)
+{
+    global $lang, $escaper;
+
+    $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
+
+    echo "  <div class=\"row-fluid\"{$displayString}>";
+    echo "      <div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['Tags']).":</div>";
+    echo "      <div class=\"span8\">";
+    echo "          <input class=\"selectize-marker\" type=\"text\" readonly id=\"tags\" name=\"tags\">
+                    <script>
+                        $('#tags').selectize({
+                            plugins: ['remove_button', 'restore_on_backspace'],
+                            delimiter: ',',
+                            create: true,
+                            valueField: 'label',
+                            labelField: 'label',
+                            searchField: 'label',
+                            sortField: [{ field: 'label', direction: 'asc' }],
+                        });
+                    </script>";
+    echo "      </div>";
+    echo "  </div>";
 }
 
 /*****************************************
@@ -214,6 +238,9 @@ function display_main_detail_asset_feilds_th($fields)
                 break;
                 case 'AssetDetails':
                     display_asset_details_th();
+                break;
+                case 'Tags':
+                    display_asset_tags_th();
                 break;
             }
 
@@ -291,6 +318,16 @@ function display_asset_details_th()
     echo "<th align=\"left\">" . $escaper->escapeHtml($lang['AssetDetails']) . "</th>\n";
 }
 
+/*************************************
+* FUNCTION: DISPLAY ASSET TAGS TH *
+**************************************/
+function display_asset_tags_th()
+{
+    global $lang, $escaper;
+
+    echo "<th align=\"left\">" . $escaper->escapeHtml($lang['Tags']) . "</th>\n";
+}
+
 /*****************************************
 * FUNCTION: DISPLAY MAIN ASSET FIELDS TD *
 ******************************************/
@@ -318,6 +355,9 @@ function display_main_detail_asset_feilds_td_view($fields, $asset)
                 break;
                 case 'AssetDetails':
                     display_asset_details_td($asset['details']);
+                break;
+                case 'Tags':
+                    display_asset_tags_td($asset['tags']);
                 break;
             }
 
@@ -378,18 +418,18 @@ function display_asset_valuation_td($asset_valuation)
 /*******************************************
 * FUNCTION: DISPLAY ASSET SITE LOCATION TD *
 ********************************************/
-function display_asset_site_location_td($asset_site_lcoation)
+function display_asset_site_location_td($asset_site_location)
 {
     global $lang, $escaper;
     
     // If tde location is unspecified
-    if ($asset_site_lcoation == 0)
+    if ($asset_site_location == 0)
     {
-        $asset_site_lcoation = "N/A";
+        $asset_site_location = "N/A";
     }
-    else $asset_site_lcoation = get_name_by_value("location", $asset_site_lcoation);
+    else $asset_site_location = get_name_by_value("location", $asset_site_location);
 
-    echo "<td align=\"left\">" . $escaper->escapeHtml($asset_site_lcoation) . "</td>\n";
+    echo "<td align=\"left\">" . $escaper->escapeHtml($asset_site_location) . "</td>\n";
 }
 
 /**********************************
@@ -402,7 +442,7 @@ function display_asset_team_td($asset_team)
     // If the team is unspecified
     if ($asset_team == 0)
     {
-        $asset['team'] = "N/A";
+        $asset_team = "N/A";
     }
     else $asset_team = get_name_by_value("team", $asset_team);
 
@@ -417,6 +457,16 @@ function display_asset_details_td($asset_details)
     global $lang, $escaper;
 
     echo "<td align=\"left\">" . $escaper->escapeHtml(try_decrypt($asset_details)) . "</td>\n";
+}
+
+/*************************************
+* FUNCTION: DISPLAY ASSET TAGS TD *
+**************************************/
+function display_asset_tags_td($asset_tags)
+{
+    global $lang, $escaper;
+
+    echo "<td align=\"left\">" . $escaper->escapeHtml(str_replace (",", ", ", $asset_tags)) . "</td>\n";
 }
 
 /*****************************************
@@ -447,8 +497,10 @@ function display_main_detail_asset_feilds_td_edit($fields, $asset)
                 case 'AssetDetails':
                     display_asset_details_td_edit($asset['id'], $asset['details']);
                 break;
+                case 'Tags':
+                    display_asset_tags_td_edit($asset['id'], $asset['tags']);
+                break;
             }
-
         }
         else
         {
@@ -483,12 +535,12 @@ function display_asset_valuation_td_edit($asset_id, $asset_valuation)
 /************************************************
 * FUNCTION: DISPLAY ASSET SITE LOCATION TD EDIT *
 *************************************************/
-function display_asset_site_location_td_edit($asset_id, $asset_site_lcoation)
+function display_asset_site_location_td_edit($asset_id, $asset_site_location)
 {
     global $escaper;
     
     echo "<td>\n";
-        create_dropdown("location", $asset_site_lcoation, "location-" . $escaper->escapeHtml($asset_id));
+        create_dropdown("location", $asset_site_location, "location-" . $escaper->escapeHtml($asset_id));
     echo "</td>\n";
 }
 
@@ -513,6 +565,34 @@ function display_asset_details_td_edit($asset_id, $asset_details)
 
     echo "<td>\n";
     echo "<textarea id='details-" . $escaper->escapeHtml($asset_id) . "'>". $escaper->escapeHtml(try_decrypt($asset_details)) ."</textarea>\n";
+    echo "</td>\n";
+}
+
+
+/*********************************************
+ * FUNCTION: DISPLAY ASSET TAGS EDIT TD EDIT *
+ *********************************************/
+function display_asset_tags_td_edit($asset_id, $asset_tags)
+{
+    global $lang, $escaper;
+
+    $id="tags-" . $escaper->escapeHtml($asset_id);
+    echo "<td>\n";
+    echo "  <input type=\"text\" class=\"selectize-marker\" readonly id='{$id}' value=\"". $escaper->escapeHtml($asset_tags) ."\">
+            <script>
+                $('#{$id}').selectize({
+                    plugins: ['remove_button', 'restore_on_backspace'],
+                    delimiter: ',',
+                    create: true,
+                    valueField: 'label',
+                    labelField: 'label',
+                    searchField: 'label',
+                    sortField: [{ field: 'label', direction: 'asc' }],
+                    onChange: function() {
+                        updateAsset(null, $('#{$id}'));
+                    }
+                });
+            </script>";
     echo "</td>\n";
 }
 

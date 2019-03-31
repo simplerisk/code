@@ -256,7 +256,9 @@ function add_risk_details(){
 
                 echo "</div>\n";
                 echo "<!-- second coulmn end -->\n";
+
             echo "</div>\n";
+            display_risk_tags_edit();
         }
 
         echo "<div class=\"row-fluid\">\n";
@@ -283,7 +285,7 @@ function add_risk_details(){
 /*******************************
 * FUNCTION: VIEW RISK DETAILS *
 *******************************/
-function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact)
+function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags)
 {
     global $lang;
     global $escaper;
@@ -314,14 +316,14 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5 left-panel\">\n";
-                display_main_detail_feilds_by_panel_view('left', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact);
-                display_main_detail_feilds_by_panel_view('left', $inactive_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact);
+                display_main_detail_feilds_by_panel_view('left', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags);
+                display_main_detail_feilds_by_panel_view('left', $inactive_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags);
                 echo "&nbsp;";
             echo "</div>";
 
             // Right Panel
             echo "<div class=\"span5 right-panel\">\n";
-                display_main_detail_feilds_by_panel_view('right', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact);
+                display_main_detail_feilds_by_panel_view('right', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -329,7 +331,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
         // Bottom panel
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"span12 bottom-panel\">";
-                display_main_detail_feilds_by_panel_view('bottom', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact);
+                display_main_detail_feilds_by_panel_view('bottom', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -385,6 +387,9 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
             echo "</div>\n";
 
         echo "</div>\n";
+
+        display_risk_tags_view($tags);
+
     }
 
 }
@@ -392,7 +397,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 /*************************************
 * FUNCTION: VIEW PRINT RISK DETAILS *
 *************************************/
-function view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes)
+function view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $tags)
 {
     global $lang;
     global $escaper;
@@ -475,6 +480,10 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
     echo "<td>" . $escaper->escapeHtml(get_list_of_assets($id, false)) . "</td>\n";
     echo "</tr>\n";
 
+    echo "<tr>\n";
+    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Tags']) . ":</td>\n";
+    echo "<td>" . $escaper->escapeHtml($tags) . "</td>\n";
+    echo "</tr>\n";
     // If customization extra is enabled
     if(customization_extra())
     {
@@ -628,7 +637,7 @@ function risk_score_method_html($scoring_method="1", $CLASSIC_likelihood="", $CL
 /*******************************
 * FUNCTION: EDIT RISK DETAILS *
 *******************************/
-function edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts)
+function edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags)
 {
     global $lang;
     global $escaper;
@@ -656,14 +665,14 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5 left-panel\">\n";
-                display_main_detail_feilds_by_panel_edit('left', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
-                display_main_detail_feilds_by_panel_edit('left', $inactive_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
+                display_main_detail_feilds_by_panel_edit('left', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags);
+                display_main_detail_feilds_by_panel_edit('left', $inactive_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags);
                 echo "&nbsp;";
             echo "</div>";
 
             // Right Panel
             echo "<div class=\"span5 right-panel\">\n";
-                display_main_detail_feilds_by_panel_edit('right', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
+                display_main_detail_feilds_by_panel_edit('right', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -671,7 +680,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
         // Bottom panel
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"row-fluid bottom-panel\">\n";
-                display_main_detail_feilds_by_panel_edit('bottom', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
+                display_main_detail_feilds_by_panel_edit('bottom', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -722,6 +731,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 
             echo "</div>\n";
         echo "</div>\n";
+        display_risk_tags_edit($tags);
     }
 
 
@@ -1086,7 +1096,7 @@ function mitigation_controls_dropdown($selected_control_ids_string = "")
     global $escaper;
 
     require_once(realpath(__DIR__ . '/governance.php'));
-    $controls = get_framework_controls();
+    $controls = get_framework_controls_dropdown_data();
 
     $selected_control_ids = explode(",", $selected_control_ids_string);
 
@@ -1333,7 +1343,7 @@ function view_review_details($id, $review_id, $review_date, $reviewer, $review, 
 
                     display_review_view($review);
 
-                    display_next_step_view($next_step);
+                    display_next_step_view($next_step, $id);
 
                     display_next_review_date_view($next_review);
 
@@ -3441,13 +3451,6 @@ function view_top_menu($active)
                                                 echo "<a class=\"brand\" href=\"https://www.simplerisk.com/\"><img src='images/logo@2x.png' alt='SimpleRisk Logo' /></a>\n";
     echo "<div class=\"navbar-content\">\n";
     echo "<ul class=\"nav\">\n";
-        // echo "<li class=\"active\">\n";
-        // echo "<a href=\"index.php\">" . $escaper->escapeHtml($lang['Home']) . "</a>\n";
-        // echo "</li>\n";
-        // echo "<li>\n";
-        // echo "<a href=\"management/index.php\">" . $escaper->escapeHtml($lang['RiskManagement']) . "</a>\n";
-        // echo "</li>\n";
-
         // If the user has asset management permissions
         if (isset($_SESSION["asset"]) && $_SESSION["asset"] == "1")
         {
@@ -3567,7 +3570,42 @@ function view_top_menu($active)
         echo "</div>\n";
 
 
+        // If the user is logged in
+        if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
+        {
+            // Show the user profile menu
+            echo "<div class=\"pull-right user--info\">\n";
+            echo "<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
+            echo "<ul class=\"dropdown-menu\">\n";
+            echo "<li>\n";
+            echo "<a href=\"../account/profile.php\">". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
+            echo "</li>\n";
+            echo "<li>\n";
+            echo "<a href=\"../logout.php\">". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
+            echo "</li>\n";
+            echo "</ul>\n";
+            echo "</div>\n";
+        }
+        
         if ($active != "Home"){
+            echo "<div class=\"pull-right help\">\n";
+            echo "<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"><img src=\"../images/helpicon-top.png\"><span class=\"caret\"></span></a>\n";
+            echo "<ul class=\"dropdown-menu\">\n";
+            echo "<li>\n";
+            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000228831\" target=\"_blank\">". $escaper->escapeHtml($lang['HowToVideos']) ."</a>\n";
+            echo "</li>\n";
+            echo "<li>\n";
+            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000168810\" target=\"_blank\">". $escaper->escapeHtml($lang['FAQs']) ."</a>\n";
+            echo "</li>\n";
+            echo "<li>\n";
+            echo "<a href=\"https://github.com/simplerisk/documentation/raw/master/SimpleRisk%20Release%20Notes%20" . latest_version('app') . ".pdf\" target=\"_blank\">". $escaper->escapeHtml($lang['WhatsNew']) ."</a>\n";
+            echo "</li>\n";
+            echo "<li>\n";
+            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/articles/6000190811-simplerisk-feature-roadmap\" target=\"_blank\">". $escaper->escapeHtml($lang['Roadmap']) ."</a>\n";
+            echo "</li>\n";
+            echo "</ul>\n";
+            echo "</div>\n";
+
             echo "<div class=\"pull-right search-risks\">\n";
             echo "<a id=\"show-search-pop\"><i class=\"fa fa-search\"></i></a>";
             echo "<div class=\"search-popup\">";
@@ -3591,24 +3629,6 @@ function view_top_menu($active)
             echo "$(\".search-popup .search--wrapper input[type=text]\").focus();\n";
             echo "});\n";
             echo "</script>\n";
-        }
-
-
-        // If the user is logged in
-        if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
-        {
-            // Show the user profile menu
-            echo "<div class=\"pull-right user--info\">\n";
-            echo "<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
-            echo "<ul class=\"dropdown-menu\">\n";
-            echo "<li>\n";
-            echo "<a href=\"../account/profile.php\">". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
-            echo "</li>\n";
-            echo "<li>\n";
-            echo "<a href=\"../logout.php\">". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
-            echo "</li>\n";
-            echo "</ul>\n";
-            echo "</div>\n";
         }
     }
 
@@ -3634,6 +3654,11 @@ function view_governance_menu($active)
     echo ($active == "DocumentProgram" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"documentation.php\"> <span>2</span> " . $escaper->escapeHtml($lang['DocumentProgram']) . "</a>\n";
     echo "</li>\n";
+    if (check_permission_exception('view')) {
+        echo ($active == "DocumentExceptions" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"document_exceptions.php\"> <span>3</span> " . $escaper->escapeHtml($lang['DocumentExceptions']) . "</a>\n";
+        echo "</li>\n";
+    }
     echo "</ul>\n";
 }
 
@@ -3800,9 +3825,14 @@ function view_reporting_menu($active)
     echo ($active == "ClosedRisksByDate" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"closed_by_date.php\">" . $escaper->escapeHtml($lang['ClosedRisksByDate']) . "</a>\n";
     echo "</li>\n";
-    echo ($active == "AuditTimeline" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"audit_timeline.php\">" . $escaper->escapeHtml($lang['AuditTimeline']) . "</a>\n";
-    echo "</li>\n";
+    
+    // If User has permission for complicance menu, shows Audit Timeline report
+    if(!empty($_SESSION['compliance']))
+    {
+        echo ($active == "AuditTimeline" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"audit_timeline.php\">" . $escaper->escapeHtml($lang['AuditTimeline']) . "</a>\n";
+        echo "</li>\n";
+    } 
 
     // Obsolete Reports
     echo "<li id=\"obsolete_menu\"><a href=\"#\" onclick=\"javascript:showObsolete()\">" . $escaper->escapeHtml($lang['ObsoleteReports']) . "</a></li>\n";
@@ -3950,12 +3980,12 @@ function view_risks_and_assets_selections($report)
 /******************************************
 * FUNCTION: VIEW GET RISKS BY SELECTIONS *
 ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_asset=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $custom_values=[])
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_asset=0, $tags_filter=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $custom_values=[])
 {
     global $lang;
     global $escaper;
 
-    echo "<form name=\"get_risks_by\" method=\"post\" action=\"dynamic_risk_report.php\">\n";
+    echo "<form id=\"get_risks_by\" name=\"get_risks_by\" target=\"_blank\" method=\"post\" action=\"dynamic_risk_report.php\">\n";
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span12\">\n";
     echo "<a href=\"javascript:;\" onclick=\"javascript: closeSearchBox()\"><img src=\"../images/X-100.png\" width=\"10\" height=\"10\" align=\"right\" /></a>\n";
@@ -4027,9 +4057,35 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_as
     echo "</div>\n";
 
     echo "</div>\n";
+    echo "<div class=\"row-fluid\">\n";
+
+    // Tags Selection
+    echo "<div class=\"span3\">\n";
+    echo "<div class=\"well\">\n";
+    echo "<h4>" . $escaper->escapeHtml($lang['Tags']) . ":</h4>\n";
+    create_multiple_dropdown("risk_tags", $tags_filter, "tags_filter");
+    echo "</div>\n";
+    echo "</div>\n";
+    echo "  <script>
+                var changeTimer;
+                $('#tags_filter').multiselect({
+                    allSelectedText: 'ALL',
+                    maxHeight: 250,
+                    buttonWidth: '100%',
+                    includeSelectAllOption: true,
+                    onChange: function(element, checked){
+                        clearTimeout(changeTimer);
+                        changeTimer = setTimeout(function(){
+                            $('#get_risks_by').submit();
+                        }, 2000);
+                    }
+                });
+            </script>";
+
+    echo "</div>\n";
 
     // Risk columns
-        echo display_risk_columns( $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $custom_values);
+        echo display_risk_columns( $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $custom_values);
 
 
 
@@ -4039,7 +4095,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_as
 /*********************************
 * FUNCTION: DISPLAY RISK COLUMNS *
 **********************************/
-function display_risk_columns( $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $custom_values=[]){
+function display_risk_columns( $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $custom_values=[]){
     global $escaper, $lang;
     echo "<div class=\"row-fluid\">\n";
 
@@ -4050,7 +4106,7 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
         $active_fields = get_active_fields();
-        
+
         $risk_fields = [];
         $mitigation_fields = [];
         $review_fields = [];
@@ -4394,6 +4450,12 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
         <td>
         <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"submitted_by\" id=\"checkbox_submitted_by\"" . ($submitted_by == true ? " checked=\"yes\"" : "") . "  />
         <label for=\"checkbox_submitted_by\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"risk_tags\" id=\"checkbox_risk_tags\"" . ($risk_tags == true ? " checked=\"yes\"" : "") . "  />
+        <label for=\"checkbox_risk_tags\">". $escaper->escapeHtml($lang['Tags']) ."</label>
         </td>
         </tr>\n";
         echo "</table>\n";
@@ -4772,6 +4834,11 @@ function get_dynamic_names_by_main_field_name($field_name)
             [
                 'name' => "next_step",
                 'text' => $escaper->escapeHtml($lang['NextStep']),
+            ],
+        'Tags' =>
+            [
+                'name' => "risk_tags",
+                'text' => $escaper->escapeHtml($lang['Tags']),
             ],
 //        'Comment' => 
 //            [
@@ -6003,7 +6070,9 @@ function create_risk_formula_table()
                         },
                         error: function(xhr,status,error){
                             if(!retryCSRF(xhr, this)){
-                                document.location.reload();
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
                             }
                         }
                     });
@@ -6019,7 +6088,9 @@ function create_risk_formula_table()
                         error: function(xhr,status,error){
                             if(!retryCSRF(xhr, this))
                             {
-                                document.location.reload();
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
                             }
                         }
                     });
@@ -6035,7 +6106,9 @@ function create_risk_formula_table()
                         error: function(xhr,status,error){
                             if(!retryCSRF(xhr, this))
                             {
-                                document.location.reload();
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
                             }
                         }
                     });
@@ -6051,7 +6124,9 @@ function create_risk_formula_table()
                         error: function(xhr,status,error){
                             if(!retryCSRF(xhr, this))
                             {
-                                document.location.reload();
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
                             }
                         }
                     });
@@ -6542,84 +6617,87 @@ function display_audit_timeline()
 {
     global $lang, $escaper;
     
-    $tableID = "audit-timeline";
-    
-    echo "
-
-        <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
-            <thead >
-                <tr >
-                    <th data-name='test_name' align=\"left\" width=\"200px\" valign=\"top\">".$escaper->escapeHtml($lang['TestName'])."</th>
-                    <th data-name='associated_frameworks' align=\"left\" valign=\"top\">".$escaper->escapeHtml($lang['AssociatedFrameworks'])."</th>
-                    <th data-name='last_test_date' align=\"left\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['LastTestDate'])."</th>
-                    <th data-name='next_test_date' align=\"center\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['NextTestDate'])."</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        <br>
-        <script>
-            var pageLength = 10;
-            var form = $('#{$tableID}').parents('form');
-            var datatableInstance = $('#{$tableID}').DataTable({
-                bFilter: false,
-                bLengthChange: false,
-                processing: true,
-                serverSide: true,
-                bSort: true,
-                pagingType: \"full_numbers\",
-                dom : \"flrtip\",
-                pageLength: pageLength,
-                dom : \"flrti<'#view-all.view-all'>p\",
-                createdRow: function(row, data, index){
-                    var background = $('.background-class', $(row)).data('background');
-                    $(row).find('td').addClass(background)
-                },
-                order: [[3, 'asc']],
-                ajax: {
-                    url: BASE_URL + '/api/compliance/audit_timeline',
-                    data: function(d){
+    // If User has permission for complicance menu, shows Audit Timeline report
+    if(!empty($_SESSION['compliance']))
+    {
+        $tableID = "audit-timeline";
+        
+        echo "
+            <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
+                <thead >
+                    <tr >
+                        <th data-name='test_name' align=\"left\" width=\"200px\" valign=\"top\">".$escaper->escapeHtml($lang['TestName'])."</th>
+                        <th data-name='associated_frameworks' align=\"left\" valign=\"top\">".$escaper->escapeHtml($lang['AssociatedFrameworks'])."</th>
+                        <th data-name='last_test_date' align=\"left\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['LastTestDate'])."</th>
+                        <th data-name='next_test_date' align=\"center\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['NextTestDate'])."</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <br>
+            <script>
+                var pageLength = 10;
+                var form = $('#{$tableID}').parents('form');
+                var datatableInstance = $('#{$tableID}').DataTable({
+                    bFilter: false,
+                    bLengthChange: false,
+                    processing: true,
+                    serverSide: true,
+                    bSort: true,
+                    pagingType: \"full_numbers\",
+                    dom : \"flrtip\",
+                    pageLength: pageLength,
+                    dom : \"flrti<'#view-all.view-all'>p\",
+                    createdRow: function(row, data, index){
+                        var background = $('.background-class', $(row)).data('background');
+                        $(row).find('td').addClass(background)
                     },
-                    complete: function(response){
+                    order: [[3, 'asc']],
+                    ajax: {
+                        url: BASE_URL + '/api/compliance/audit_timeline',
+                        data: function(d){
+                        },
+                        complete: function(response){
+                        }
                     }
-                }
-            });
-            
-            // Add paginate options
-            datatableInstance.on('draw', function(e, settings){
-                $('.paginate_button.first').html('<i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i>');
-                $('.paginate_button.previous').html('<i class=\"fa fa-chevron-left\"></i>');
+                });
+                
+                // Add paginate options
+                datatableInstance.on('draw', function(e, settings){
+                    $('.paginate_button.first').html('<i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i>');
+                    $('.paginate_button.previous').html('<i class=\"fa fa-chevron-left\"></i>');
 
-                $('.paginate_button.last').html('<i class=\"fa fa-chevron-right\"></i><i class=\"fa fa-chevron-right\"></i>');
-                $('.paginate_button.next').html('<i class=\"fa fa-chevron-right\"></i>');
-            })
-            
-            // Add all text to View All button on bottom
-            $('.view-all').html(\"".$escaper->escapeHtml($lang['ALL'])."\");
+                    $('.paginate_button.last').html('<i class=\"fa fa-chevron-right\"></i><i class=\"fa fa-chevron-right\"></i>');
+                    $('.paginate_button.next').html('<i class=\"fa fa-chevron-right\"></i>');
+                })
+                
+                // Add all text to View All button on bottom
+                $('.view-all').html(\"".$escaper->escapeHtml($lang['ALL'])."\");
 
-            // View All
-            $(\".view-all\").click(function(){
-                var oSettings =  datatableInstance.settings();
-                oSettings[0]._iDisplayLength = -1;
-                datatableInstance.draw()
-                $(this).addClass(\"current\");
-            })
-            
-            // Page event
-            $(\"body\").on(\"click\", \"span > .paginate_button\", function(){
-                var index = $(this).attr('aria-controls').replace(\"DataTables_Table_\", \"\");
-
-                var oSettings =  datatableInstance.settings();
-                if(oSettings[0]._iDisplayLength == -1){
-                    $(this).parents(\".dataTables_wrapper\").find('.view-all').removeClass('current');
-                    oSettings[0]._iDisplayLength = pageLength;
+                // View All
+                $(\".view-all\").click(function(){
+                    var oSettings =  datatableInstance.settings();
+                    oSettings[0]._iDisplayLength = -1;
                     datatableInstance.draw()
-                }
-            })
-            
-        </script>
-    ";
+                    $(this).addClass(\"current\");
+                })
+                
+                // Page event
+                $(\"body\").on(\"click\", \"span > .paginate_button\", function(){
+                    var index = $(this).attr('aria-controls').replace(\"DataTables_Table_\", \"\");
+
+                    var oSettings =  datatableInstance.settings();
+                    if(oSettings[0]._iDisplayLength == -1){
+                        $(this).parents(\".dataTables_wrapper\").find('.view-all').removeClass('current');
+                        oSettings[0]._iDisplayLength = pageLength;
+                        datatableInstance.draw()
+                    }
+                })
+                
+            </script>
+        ";
+    }
 }
 
 
@@ -6725,18 +6803,12 @@ function display_review_date_issues()
                     if (format == '') {
                         alert('" . $escaper->escapeHtml($lang['YouNeedToSpecifyTheFormatParameter']) . "');
                     } else {
-                        var formData = new FormData();
-                        formData.append('review_id', data[4]);
-                        formData.append('format', format);
-
                         $.ajax({
                             type: \"POST\",
                             url: BASE_URL + \"/api/management/risk/fix_review_date_format\",
-                            data : formData,
-                            processData:false,
-                            contentType: false,
-                            headers: {
-                                'CSRF-TOKEN': csrfMagicToken
+                            data : {
+                                review_id: data[4],
+                                format: format
                             },
                             success: function(data){
                                 if(data.status_message){
@@ -6782,5 +6854,36 @@ function display_review_date_issues()
         </script>
     ";
 }
+
+/**********************************
+ * FUNCTION: GET AUDIT TRAIL HTML *
+ **********************************/
+function get_audit_trail_html($id = NULL, $days = 7, $log_type=NULL)
+{
+    global $escaper;
+
+    // If the ID is greater than 1000 or NULL
+    if ($id > 1000 || $id === NULL)
+    {
+        $logs = get_audit_trail($id, $days, $log_type);
+
+        foreach ($logs as $log)
+        {
+            $date = date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp']));
+
+            echo "<p>" . $escaper->escapeHtml($date) . " > " . $escaper->escapeHtml($log['message']) . "</p>\n";
+        }
+
+        // Return true
+        return true;
+    }
+    // Otherwise this is not a valid ID
+    else
+    {
+        // Return false
+        return false;
+    }
+}
+
 
 ?>

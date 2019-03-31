@@ -119,4 +119,25 @@ function enforce_permission_asset()
         }
 }
 
+/*************************************
+ * FUNCTION: CHECK PERMISSION ASSET *
+ *************************************/
+$exception_permissions = ['view' ,'create' ,'update' ,'delete' ,'approve'];
+function check_permission_exception($function)
+{
+    global $exception_permissions;
+    return in_array($function, $exception_permissions)
+            && isset($_SESSION["{$function}_exception"])
+            && $_SESSION["{$function}_exception"] == 1;
+}
+
+function enforce_permission_exception($function)
+{
+    // If exception is not authorized
+    if (!check_permission_exception($function))
+    {
+        header("Location: ../index.php");
+        exit(0);
+    }
+}
 ?>

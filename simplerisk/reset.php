@@ -16,19 +16,19 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-// Session handler is database
-if (USE_DATABASE_FOR_SESSIONS == "true")
-{
-	session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-}
-
-// Start session
-session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
 if (!isset($_SESSION))
 {
-        session_name('SimpleRisk');
-        session_start();
+    // Session handler is database
+    if (USE_DATABASE_FOR_SESSIONS == "true")
+    {
+        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+    }
+
+    // Start session
+    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
+    session_name('SimpleRisk');
+    session_start();
 }
 
 // Include the language file
@@ -45,13 +45,13 @@ if (isset($_POST['send_reset_email']))
 {
     if (isset($_SERVER) && array_key_exists('SERVER_NAME', $_SERVER) && (get_setting('simplerisk_base_url') === preg_replace('/\/reset\.php.*/', '', get_current_url()))) {
 
-        $username = $_POST['user'];
+	$username = $_POST['user'];
 
-        // Try to generate a password reset token
-        password_reset_by_username($username);
+	// Try to generate a password reset token
+	password_reset_by_username($username);
 
-        // Display an alert
-        set_alert(true, "good", $lang['PassworResetEmailSent']);
+	// Display an alert
+	set_alert(true, "good", $lang['PassworResetEmailSent']);
     } else {
         set_alert(true, "bad", $lang['PassworResetRequestFailed']);
     }

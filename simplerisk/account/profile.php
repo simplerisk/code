@@ -17,17 +17,17 @@
     // Add various security headers
     add_security_headers();
 
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-        // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
     if (!isset($_SESSION))
     {
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
+        {
+            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        }
+
+        // Start the session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
         session_name('SimpleRisk');
         session_start();
     }
@@ -109,7 +109,13 @@
     $delete_documentation = $user_info['delete_documentation'];
     $comment_risk_management = $user_info['comment_risk_management'];
     $comment_compliance = $user_info['comment_compliance'];
-    
+
+    $view_exception = $user_info['view_exception'];
+    $create_exception = $user_info['create_exception'];
+    $update_exception = $user_info['update_exception'];
+    $delete_exception = $user_info['delete_exception'];
+    $approve_exception = $user_info['approve_exception'];
+
     $role_id = $user_info['role_id'];
 
     // Check if a new password was submitted
@@ -331,7 +337,12 @@
                           <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="add_documentation" type="checkbox"<?php if ($add_documentation) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToAddDocumentation']); ?></td></tr>
                           <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="modify_documentation" type="checkbox"<?php if ($modify_documentation) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyDocumentation']); ?></td></tr>
                           <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="delete_documentation" type="checkbox"<?php if ($delete_documentation) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteDocumentation']); ?></td></tr>
-                          
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="view_exception" type="checkbox"<?php if ($view_exception) echo " checked" ?> /> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToViewDocumentException']); ?> </td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="create_exception" type="checkbox"<?php if ($create_exception) echo " checked" ?> /> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCreateDocumentException']); ?> </td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="update_exception" type="checkbox"<?php if ($update_exception) echo " checked" ?> /> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToUpdateDocumentException']); ?> </td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="delete_exception" type="checkbox"<?php if ($delete_exception) echo " checked" ?> /> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteDocumentException']); ?> </td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="approve_exception" type="checkbox"<?php if ($approve_exception) echo " checked" ?> /> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToApproveDocumentException']); ?> </td></tr>
+
                           <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></td></tr>
                           <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="riskmanagement" type="checkbox"<?php if ($riskmanagement) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToRiskManagementMenu']); ?></td></tr>
                           <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="submit_risks" type="checkbox"<?php if ($submit_risks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToSubmitNewRisks']); ?></td></tr>

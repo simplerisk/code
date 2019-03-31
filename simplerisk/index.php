@@ -16,20 +16,20 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-// Session handler is database
-if (USE_DATABASE_FOR_SESSIONS == "true")
-{
-	session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-}
-
-// Start session
-session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
 if (!isset($_SESSION))
 {
-	sess_gc(1440);
-	session_name('SimpleRisk');
-	session_start();
+    // Session handler is database
+    if (USE_DATABASE_FOR_SESSIONS == "true")
+    {
+        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+    }
+
+    // Start session
+    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
+    sess_gc(1440);
+    session_name('SimpleRisk');
+    session_start();
 }
 
 // Include the language file
@@ -38,40 +38,40 @@ require_once(language_file());
 // If the login form was posted
 if (isset($_POST['submit']))
 {
-	$user = $_POST['user'];
-	$pass = $_POST['pass'];
+    $user = $_POST['user'];
+    $pass = $_POST['pass'];
 
-	// Check for expired lockouts
-	check_expired_lockouts();
+    // Check for expired lockouts
+    check_expired_lockouts();
 
-	// If the user is valid
-	if (is_valid_user($user, $pass))
-	{
-        	$uid = get_id_by_user($user);
-        	$array = get_user_by_id($uid);
+    // If the user is valid
+    if (is_valid_user($user, $pass))
+    {
+        $uid = get_id_by_user($user);
+        $array = get_user_by_id($uid);
 
-            	if($array['change_password'])
-		{
-                	$_SESSION['first_login_uid'] = $uid;
+        if($array['change_password'])
+        {
+            $_SESSION['first_login_uid'] = $uid;
 
-            		if (encryption_extra())
-            		{
-                		// Load the extra
-                		require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+            if (encryption_extra())
+            {
+                // Load the extra
+                require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
 
-                		// Get the current password encrypted with the temp key
-                		check_user_enc($user, $pass);
-            		}
+                // Get the current password encrypted with the temp key
+                check_user_enc($user, $pass);
+            }
 
-            		header("location: reset_password.php");
-			exit;
-        	}
+            header("location: reset_password.php");
+            exit;
+        }
 
-		// Create the SimpleRisk instance ID if it doesn't already exist
-		create_simplerisk_instance_id();
+        // Create the SimpleRisk instance ID if it doesn't already exist
+        create_simplerisk_instance_id();
 
-		// Ping the server
-		ping_server();
+        // Ping the server
+        ping_server();
 
         // Set the user permissions
         set_user_permissions($user, $pass);
@@ -85,76 +85,76 @@ if (isset($_POST['submit']))
         $base_url = str_replace("/extras/authentication", "", $base_url);
         $_SESSION['base_url'] = $base_url;
 
-        	// Set login status
-        	login($user, $pass);
+        // Set login status
+        login($user, $pass);
 
-  	}
-  	// If the user is not a valid user
-  	else
-  	{
-		$_SESSION["access"] = "denied";
+      }
+      // If the user is not a valid user
+      else
+      {
+          $_SESSION["access"] = "denied";
 
-		// Display an alert
-		set_alert(true, "bad", "Invalid username or password.");
+          // Display an alert
+          set_alert(true, "bad", "Invalid username or password.");
 
-		// If the password attempt lockout is enabled
-		if(get_setting("pass_policy_attempt_lockout") != 0)
-		{
-			// Add the login attempt and block if necessary
-			add_login_attempt_and_block($user);
-		}
-  	}
+          // If the password attempt lockout is enabled
+          if(get_setting("pass_policy_attempt_lockout") != 0)
+          {
+              // Add the login attempt and block if necessary
+              add_login_attempt_and_block($user);
+          }
+      }
 }
 
 if (isset($_SESSION["access"]) && ($_SESSION["access"] == "granted"))
 {
-	// Select where to redirect the user next
-	select_redirect();
+    // Select where to redirect the user next
+    select_redirect();
 }
 
 // If the user has already authorized and we are authorizing with duo
 if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
 {
-	// If a response has been posted
-  	if (isset($_POST['sig_response']))
-  	{
-    		// Include the custom authentication extra
-    		require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
+    // If a response has been posted
+    if (isset($_POST['sig_response']))
+    {
+        // Include the custom authentication extra
+        require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
 
-    		// Get the authentication settings
-    		$configs = get_authentication_settings();
+        // Get the authentication settings
+        $configs = get_authentication_settings();
 
-    		// For each configuration
-    		foreach ($configs as $config)
-    		{
-      			// Set the name value pair as a variable
-      			${$config['name']} = $config['value'];
-    		}
+        // For each configuration
+        foreach ($configs as $config)
+        {
+              // Set the name value pair as a variable
+              ${$config['name']} = $config['value'];
+        }
 
-    		// Get the response back from Duo
-    		$resp = Duo\Web::verifyResponse($IKEY, $SKEY, get_duo_akey(), $_POST['sig_response']);
+        // Get the response back from Duo
+        $resp = Duo\Web::verifyResponse($IKEY, $SKEY, get_duo_akey(), $_POST['sig_response']);
 
-    		// If the response is not null
-    		if ($resp != NULL)
-    		{
+        // If the response is not null
+        if ($resp != NULL)
+        {
 
-      			// If the encryption extra is enabled
-      			if (encryption_extra())
-      			{
-        			// Load the extra
-        			require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
+            // If the encryption extra is enabled
+            if (encryption_extra())
+            {
+                // Load the extra
+                require_once(realpath(__DIR__ . '/extras/encryption/index.php'));
 
-        			// Check user enc
-        			check_user_enc($user, $pass);
-      			}
+                // Check user enc
+                check_user_enc($user, $pass);
+            }
 
-      			// Grant the user access
-      			grant_access();
+            // Grant the user access
+            grant_access();
 
-			// Select where to redirect the user next
-			select_redirect();
-    		}
-  	}
+            // Select where to redirect the user next
+            select_redirect();
+        }
+    }
 }
 ?>
 <html ng-app="SimpleRisk">
@@ -226,7 +226,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
     if (custom_authentication_extra())
     {
         // If SSO Login is enabled or not set yet
-	if(get_setting_by_name("GO_TO_SSO_LOGIN") === false || get_setting_by_name("GO_TO_SSO_LOGIN") === '1')
+    if(get_setting("GO_TO_SSO_LOGIN") === false || get_setting("GO_TO_SSO_LOGIN") === '1')
         {
             // Display the SSO login link
             echo "<tr><td colspan=\"2\"><label><a href=\"extras/authentication/login.php\">" . $escaper->escapeHtml($lang['GoToSSOLoginPage']) . "</a></label></td></tr>\n";

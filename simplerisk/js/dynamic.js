@@ -27,8 +27,7 @@ $(document).ready(function(){
                 defaultSortColumnIndex = index;
             }
         })
-        
-        
+
         var riskDataTables = [];
         $(".risk-datatable").each(function(index){
             var $this = $(this);
@@ -58,6 +57,8 @@ $(document).ready(function(){
                             d.teams             = $("#teams").val();
                             d.owners            = $("#owners").val();
                             d.ownersmanagers    = $("#ownersmanagers").val();
+                        } else {
+                            d.tags_filter    = $("#tags_filter").val();
                         }
                     }
                 },
@@ -76,7 +77,7 @@ $(document).ready(function(){
                         "className" : "risk-cell",
                     },
                     {
-                        "targets" : [21, 22, 23, 26, 27, 28, 29, 30],
+                        "targets" : [21, 22, 23, 26, 27, 28, 29, 30, 39],
                         "orderable" : false,
                     },
                 ]

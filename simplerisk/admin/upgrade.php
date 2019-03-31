@@ -16,10 +16,11 @@
     // Add various security headers
     add_security_headers();
 
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
     if (!isset($_SESSION))
     {
+        // Start the session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
         session_name('SimpleRiskDBUpgrade');
         session_start();
     }

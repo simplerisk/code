@@ -20,19 +20,20 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-// Session handler is database
-if (USE_DATABASE_FOR_SESSIONS == "true")
-{
-  session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-}
-
-// Start the session
-session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
 
 if (!isset($_SESSION))
 {
-        session_name('SimpleRisk');
-        session_start();
+    // Session handler is database
+    if (USE_DATABASE_FOR_SESSIONS == "true")
+    {
+        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+    }
+
+    // Start the session
+    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
+    session_name('SimpleRisk');
+    session_start();
 }
 
 // Load CSRF Magic
@@ -57,20 +58,40 @@ enforce_permission_compliance();
 
 // Check if adding test
 if(isset($_POST['add_test'])){
-    $tester = (int)$_POST['tester'];
-    $additional_stakeholders = empty($_POST['additional_stakeholders_add']) ? "" : implode(",", $_POST['additional_stakeholders_add']);
-    $test_frequency = (int)$_POST['test_frequency'];
-    $name = $_POST['name'];
-    $objective = $_POST['objective'];
-    $test_steps = $_POST['test_steps'];
-    $approximate_time = !empty($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
-    $expected_results = $_POST['expected_results'];
-    $framework_control_id = (int)$_POST['framework_control_id'];
+    $tester                     = (int)$_POST['tester'];
+    $additional_stakeholders    = empty($_POST['additional_stakeholders_add']) ? "" : implode(",", $_POST['additional_stakeholders_add']);
+    $test_frequency             = (int)$_POST['test_frequency'];
+    $last_date                  = get_standard_date_from_default_format($_POST['last_date']);
+    $name                       = $_POST['name'];
+    $objective                  = $_POST['objective'];
+    $test_steps                 = $_POST['test_steps'];
+    $approximate_time           = !empty($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
+    $expected_results           = $_POST['expected_results'];
+    $framework_control_id       = (int)$_POST['framework_control_id'];
+
+    if (!$last_date)
+        $last_date = "0000-00-00";
+    else {
+        if ($last_date && strtotime($last_date) > strtotime(date('Ymd'))) {
+            set_alert(true, "bad", $lang['InvalidLastTestDate']);
+            refresh();
+        }
+    }
+
+    if ($test_frequency < 0) {
+        set_alert(true, "bad", $lang['InvalidTestFrequency']);
+        refresh();
+    }
+
+    if ($approximate_time < 0) {
+        set_alert(true, "bad", $lang['InvalidApproximateTime']);
+        refresh();
+    }
 
     // Add a framework control test
-    add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders);
+    add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders, $last_date);
     
-    set_alert(true, "good", $escaper->escapeHtml($lang['TestSuccessCreated']));
+    set_alert(true, "good", $lang['TestSuccessCreated']);
     
     // Refresh current page
     refresh();
@@ -78,22 +99,62 @@ if(isset($_POST['add_test'])){
 
 // Check if editing test
 if(isset($_POST['update_test'])){
-    $test_id         = (int)$_POST['test_id'];
-    $tester         = (int)$_POST['tester'];
-    $additional_stakeholders = empty($_POST['additional_stakeholders_edit']) ? "" : implode(",", $_POST['additional_stakeholders_edit']);
-    $test_frequency = (int)$_POST['test_frequency'];
-    $last_date      = get_standard_date_from_default_format($_POST['last_date']);
-    $next_date      = get_standard_date_from_default_format($_POST['next_date']);
-    $name           = $_POST['name'];
-    $objective      = $_POST['objective'];
-    $test_steps     = $_POST['test_steps'];
-    $approximate_time = !empty($_POST['approximate_time']) ? (int)$_POST['approximate_time'] : 0;
-    $expected_results = $_POST['expected_results'];
+    $today_dt                   = strtotime(date('Ymd'));
+    $test_id                    = (int)$_POST['test_id'];
+    $tester                     = (int)$_POST['tester'];
+    $additional_stakeholders    = empty($_POST['additional_stakeholders_edit']) ? "" : implode(",", $_POST['additional_stakeholders_edit']);
+    $test_frequency             = (int)$_POST['test_frequency'];
+    $last_date                  = get_standard_date_from_default_format($_POST['last_date']);
+    $next_date                  = get_standard_date_from_default_format($_POST['next_date']);
+    $name                       = $_POST['name'];
+    $objective                  = $_POST['objective'];
+    $test_steps                 = $_POST['test_steps'];
+    $approximate_time           = !empty($_POST['approximate_time']) ? (int)$_POST['approximate_time'] : 0;
+    $expected_results           = $_POST['expected_results'];
+
+    if ($test_frequency < 0) {
+        set_alert(true, "bad", $lang['InvalidTestFrequency']);
+        //$test_frequency = false;
+        refresh();
+    }
+
+    if ($approximate_time < 0) {
+        set_alert(true, "bad", $lang['InvalidApproximateTime']);
+        //$approximate_time = false;
+        refresh();
+    }
+
+    if (!$last_date)
+        $last_date = false;
+    else {
+        if (strtotime($last_date) > $today_dt) {
+            set_alert(true, "bad", $lang['InvalidLastTestDate']);
+            //$last_date = false;
+            refresh();
+        }
+    }
+
+    if (!$next_date)
+        $next_date = false;
+    else {
+        if (strtotime($next_date) < $today_dt) {
+            set_alert(true, "bad", $lang['InvalidNextTestDate']);
+            //$next_date = false;
+            refresh();
+        }
+    }
+
+    if ($last_date && $next_date && strtotime($next_date) < strtotime($last_date)) {
+            set_alert(true, "bad", $lang['InvalidNextTestDateLastTestDateOrder']);
+            //$next_date = false;
+            //$last_date = false;
+            refresh();
+    }
 
     // Update a framework control test
     update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders);
     
-    set_alert(true, "good", $escaper->escapeHtml($lang['TestSuccessUpdated']));
+    set_alert(true, "good", $lang['TestSuccessUpdated']);
     
     // Refresh current page
     refresh();
@@ -106,7 +167,7 @@ if(isset($_POST['delete_test'])){
     // Add a framework control
     delete_framework_control_test($test_id);
     
-    set_alert(true, "good", $escaper->escapeHtml($lang['SuccessTestDeleted']));
+    set_alert(true, "good", $lang['SuccessTestDeleted']);
     
     // Refresh current page
     refresh();
@@ -194,8 +255,11 @@ if(isset($_POST['delete_test'])){
             <?php create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders_add"); ?>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?></label>
-            <input type="number" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
+            <input type="number" min="0" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
             
+            <label for=""><?php echo $escaper->escapeHtml($lang['LastTestDate']); ?></label>
+            <input type="text" name="last_date" value="" class="form-control datepicker">
+
             <label for=""><?php echo $escaper->escapeHtml($lang['Objective']); ?></label>
             <textarea name="objective" class="form-control" rows="6" style="width:100%;"></textarea>
 
@@ -203,7 +267,7 @@ if(isset($_POST['delete_test'])){
             <textarea name="test_steps" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ApproximateTime']); ?></label>
-            <input type="number" name="approximate_time" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['minutes']); ?>)</span>
+            <input type="number" min="0" name="approximate_time" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['minutes']); ?>)</span>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ExpectedResults']); ?></label>
             <textarea name="expected_results" class="form-control" rows="6" style="width:100%;"></textarea>
@@ -236,7 +300,7 @@ if(isset($_POST['delete_test'])){
             <?php create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders_edit"); ?>
             
             <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?></label>
-            <input type="number" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
+            <input type="number" min="0" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
             
             <label for=""><?php echo $escaper->escapeHtml($lang['LastTestDate']); ?></label>
             <input type="text" name="last_date" value="" class="form-control datepicker"> 
@@ -251,7 +315,7 @@ if(isset($_POST['delete_test'])){
             <textarea name="test_steps" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ApproximateTime']); ?></label>
-            <input type="number" name="approximate_time" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['minutes']); ?>)</span>
+            <input type="number" min="0" name="approximate_time" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['minutes']); ?>)</span>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ExpectedResults']); ?></label>
             <textarea name="expected_results" class="form-control" rows="6" style="width:100%;"></textarea>

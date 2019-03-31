@@ -16,29 +16,23 @@
     // Add various security headers
     add_security_headers();
 
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
     if (!isset($_SESSION))
     {
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
+        {
+            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        }
+
+        // Start the session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
         session_name('SimpleRisk');
         session_start();
     }
 
     // Include the language file
     require_once(language_file());
-
-    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-    function csrf_startup() {
-        csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-    }
 
     // Check for session timeout or renegotiation
     session_check();
@@ -59,6 +53,10 @@
     }
     else $manage_assets = true;
 
+    // Include the CSRF-magic library
+    // Make sure it's called after the session is properly setup
+    include_csrf_magic();
+
     // Check if an asset was added
     if ((isset($_POST['add_asset'])) && $manage_assets)
     {
@@ -68,68 +66,34 @@
         $location = $_POST['location'];
         $team = $_POST['team'];
         $details = $_POST['details'];
-
-        // Add the asset
-        $success = add_asset($ip, $name, $value, $location, $team, $details, true);
-
-        // If the asset add was successful
-        if ($success)
+        $tags = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
+        
+        if($name)
         {
-            // Display an alert
-            set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasAddedSuccessfully']));
+            // Add the asset
+            $success = add_asset($ip, $name, $value, $location, $team, $details, $tags, true);
+
+            // If the asset add was successful
+            if ($success)
+            {
+                // Display an alert
+                set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasAddedSuccessfully']));
+            }
+            else
+            {
+                // Display an alert
+                set_alert(true, "bad", $escaper->escapeHtml($lang['ThereWasAProblemAddingTheAsset']));
+            }
         }
         else
         {
             // Display an alert
-            set_alert(true, "bad", $escaper->escapeHtml($lang['ThereWasAProblemAddingTheAsset']));
+            set_alert(true, "bad", $escaper->escapeHtml($lang['AssetNameIsRequired']));
         }
+
         
         refresh();
     }
-
-    // Check if assets were deleted
-    $discard_all = isset($_POST['discard_all']);
-    if ((isset($_POST['delete_all']) || $discard_all) && $manage_assets)
-    {
-        $assets = $_POST['assets'];
-
-        // Delete the assets
-        $success = delete_assets($assets);
-
-        // If the asset delete was successful
-        if ($success)
-        {
-            // Display an alert
-            set_alert(true, "good", $escaper->escapeHtml($discard_all? $lang['AssetWasDiscardedSuccessfully']: $lang['AssetWasDeletedSuccessfully']));
-        }
-        else
-        {
-            // Display an alert
-            set_alert(true, "bad", $escaper->escapeHtml($discard_all ? $lang['ThereWasAProblemDiscardingTheAsset'] : $lang['ThereWasAProblemDeletingTheAsset']));
-        }
-    }
-
-    // Check if assets were deleted
-    if (isset($_POST['verify_all']) && $manage_assets)
-    {
-        $assets = $_POST['assets'];
-
-        // Verify the assets
-        $success = verify_assets($assets);
-
-        // If the asset verification was successful
-        if ($success)
-        {
-            // Display an alert
-            set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasVerifiedSuccessfully']));
-        }
-        else
-        {
-            // Display an alert
-            set_alert(true, "bad", $escaper->escapeHtml($lang['ThereWasAProblemVerifyingTheAsset']));
-        }
-    }
-
 
 ?>
 
@@ -141,6 +105,8 @@
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/pages/asset.js?<?php echo time() ?>"></script>
+    <script src="../js/bootstrap-multiselect.js"></script>
+    <script src="../js/jquery.blockUI.min.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -157,12 +123,25 @@
     <link rel="stylesheet" href="../css/display.css">
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+
+    <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
+    <script src="../js/selectize.min.js"></script>
     <?php
         setup_alert_requirements("..");
     ?>  
 
     <?php display_simple_autocomplete_script(get_unentered_assets()); ?>
-
+    <script>
+        $.blockUI.defaults.css = {
+            padding: 0,
+            margin: 0,
+            width: '30%',
+            top: '40%',
+            left: '35%',
+            textAlign: 'center',
+            cursor: 'wait'
+        };
+    </script>
 </head>
 
 <body>
@@ -182,13 +161,30 @@
                 <div class="row-fluid">
                     <div class="span12">
                         <div class="hero-unit">
-                            <h4><?php echo $escaper->escapeHTML($lang['AddANewAsset']); ?></h4>
-                            <form name="add" method="post" action="" id="add-asset-container">
-                                <?php
-                                    display_add_asset();
-                                ?>
-                                <button type="submit" name="add_asset" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
-                            </form>
+                            <div class="row-fluid">
+                                <div class="wrap-text span12 text-left"><h4><?php echo $escaper->escapeHTML($lang['AddANewAsset']); ?></h4></div>
+                            </div>
+                            <br/>
+                            <div class="row-fluid">
+                                <div class="span8">
+                                    <form name="add" method="post" action="" id="add-asset-container">
+                                        <?php
+                                            display_add_asset();
+                                        ?>
+                                        <div class="row-fluid">
+                                            <div class="span1">
+                                                <button type="submit" name="add_asset" class="btn btn-primary"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    <script>
+                                        $(document).ready(function() {
+                                            $('.multiselect').multiselect({buttonWidth: '300px'});
+                                            $('.datepicker').datepicker();
+                                        });
+                                    </script>
+                                </div>
+                            </div>
                         </div>
 
                         <?php if (has_unverified_assets()) { ?>
@@ -234,11 +230,26 @@
             $("button.delete-asset").click(function() {
                 verify_discard_or_delete_asset("delete", $(this));
             });
+
+            $("#unverified_assets [name='verify_all']").click(function(e) {
+                e.preventDefault();
+                verify_discard_or_delete_all_assets("verify", $(this));
+            });
+
+            $("#unverified_assets [name='discard_all']").click(function(e) {
+                e.preventDefault();
+                verify_discard_or_delete_all_assets("discard", $(this));
+            });
+
+            $("#verified_asset_table_wrapper [name='delete_all']").click(function(e) {
+                e.preventDefault();
+                verify_discard_or_delete_all_assets("delete", $(this));
+            });
         });
     </script>
     <style type="">
         textarea{
-            width: 200px !important;
+            width: 100% !important;
         }
     </style>
     <?php display_set_default_date_format_script(); ?>

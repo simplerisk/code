@@ -18,19 +18,19 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-// Session handler is database
-if (USE_DATABASE_FOR_SESSIONS == "true")
-{
-  session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-}
-
-// Start the session
-session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
 if (!isset($_SESSION))
 {
-        session_name('SimpleRisk');
-        session_start();
+    // Session handler is database
+    if (USE_DATABASE_FOR_SESSIONS == "true")
+    {
+      session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+    }
+
+    // Start the session
+    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
+    session_name('SimpleRisk');
+    session_start();
 }
 
 // Check for session timeout or renegotiation
@@ -44,12 +44,9 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   exit(0);
 }
 
-// Load CSRF Magic
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-function csrf_startup() {
-    csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-}
+// Include the CSRF-magic library
+// Make sure it's called after the session is properly setup
+include_csrf_magic();
 
 // Include the language file
 require_once(language_file());
@@ -99,6 +96,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   $notes = $_POST['notes'];
   $assets = $_POST['assets'];
   $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
+  $risk_tags = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
 
   // Risk scoring method
   // 1 = Classic
@@ -162,7 +160,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
   // Submit risk and get back the id
   $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders);
-  
+
     // If the encryption extra is enabled, updates order_by_subject
     if (encryption_extra())
     {
@@ -177,6 +175,9 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
   // Tag assets to risk
   tag_assets_to_risk($last_insert_id, $assets);
+
+  //Add tags
+  updateTagsOfType($last_insert_id, 'risk', $risk_tags);
 
   $error = 1;
   // If a file was submitted
@@ -288,6 +289,10 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
         <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
+
+        <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
+        <script src="../js/selectize.min.js"></script>
+
         <?php
             setup_alert_requirements("..");
         ?>

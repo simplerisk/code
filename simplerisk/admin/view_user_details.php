@@ -16,17 +16,17 @@
     // Add various security headers
     add_security_headers();
 
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-      session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
     if (!isset($_SESSION))
     {
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
+        {
+          session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        }
+
+        // Start the session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
         session_name('SimpleRisk');
         session_start();
     }
@@ -100,7 +100,12 @@
           $delete_documentation     = isset($_POST['delete_documentation']) ? 1 : 0;
           $comment_risk_management  = isset($_POST['comment_risk_management']) ? 1 : 0;
           $comment_compliance       = isset($_POST['comment_compliance']) ? 1 : 0;
- 
+
+          $view_exception           = isset($_POST['view_exception']) ? 1 : 0;
+          $create_exception         = isset($_POST['create_exception']) ? 1 : 0;
+          $update_exception         = isset($_POST['update_exception']) ? 1 : 0;
+          $delete_exception         = isset($_POST['delete_exception']) ? 1 : 0;
+          $approve_exception        = isset($_POST['approve_exception']) ? 1 : 0;
 
           // Change the type from a numeric to alpha
           switch($type){
@@ -152,6 +157,11 @@
                 "delete_documentation" => $delete_documentation,
                 "comment_risk_management" => $comment_risk_management,
                 "comment_compliance" => $comment_compliance,
+                "view_exception" => $view_exception,
+                "create_exception" => $create_exception,
+                "update_exception" => $update_exception,
+                "delete_exception" => $delete_exception,
+                "approve_exception" => $approve_exception,
             ];
 
           // Update the user
@@ -216,6 +226,11 @@
       $comment_risk_management = $user_info['comment_risk_management'];
       $comment_compliance = $user_info['comment_compliance'];
 
+      $view_exception = $user_info['view_exception'];
+      $create_exception = $user_info['create_exception'];
+      $update_exception = $user_info['update_exception'];
+      $delete_exception = $user_info['delete_exception'];
+      $approve_exception = $user_info['approve_exception'];
   }
   else
   {
@@ -263,6 +278,12 @@
       $delete_documentation = false;
       $comment_risk_management = false;
       $comment_compliance = false; 
+
+      $view_exception = false;
+      $create_exception = false;
+      $update_exception = false;
+      $delete_exception = false;
+      $approve_exception = false;
   }
 ?>
 
@@ -372,6 +393,11 @@
             document.getElementsByName("add_documentation")[0].checked = true;
             document.getElementsByName("modify_documentation")[0].checked = true;
             document.getElementsByName("delete_documentation")[0].checked = true;
+            document.getElementsByName("view_exception")[0].checked = true;
+            document.getElementsByName("create_exception")[0].checked = true;
+            document.getElementsByName("update_exception")[0].checked = true;
+            document.getElementsByName("delete_exception")[0].checked = true;
+            document.getElementsByName("approve_exception")[0].checked = true;
         }
         else {
             document.getElementsByName("governance")[0].checked = false;
@@ -384,6 +410,11 @@
             document.getElementsByName("add_documentation")[0].checked = false;
             document.getElementsByName("modify_documentation")[0].checked = false;
             document.getElementsByName("delete_documentation")[0].checked = false;
+            document.getElementsByName("view_exception")[0].checked = false;
+            document.getElementsByName("create_exception")[0].checked = false;
+            document.getElementsByName("update_exception")[0].checked = false;
+            document.getElementsByName("delete_exception")[0].checked = false;
+            document.getElementsByName("approve_exception")[0].checked = false;
         }
     }
 
@@ -556,7 +587,11 @@
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="add_documentation" name="add_documentation" type="checkbox"<?php if ($add_documentation) echo " checked" ?> /> <label for="add_documentation"> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToAddDocumentation']); ?></label> </td></tr>
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="modify_documentation" name="modify_documentation" type="checkbox"<?php if ($modify_documentation) echo " checked" ?> /> <label for="modify_documentation"> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyDocumentation']); ?></label> </td></tr>
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="delete_documentation" name="delete_documentation" type="checkbox"<?php if ($delete_documentation) echo " checked" ?> /> <label for="delete_documentation"> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteDocumentation']); ?></label> </td></tr>
-
+                                    <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="view_exception" name="view_exception" type="checkbox"<?php if ($view_exception) echo " checked" ?> /> <label for="view_exception"> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToViewDocumentException']); ?></label> </td></tr>
+                                    <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="create_exception" name="create_exception" type="checkbox"<?php if ($create_exception) echo " checked" ?> /> <label for="create_exception"> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCreateDocumentException']); ?></label> </td></tr>
+                                    <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="update_exception" name="update_exception" type="checkbox"<?php if ($update_exception) echo " checked" ?> /> <label for="update_exception"> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToUpdateDocumentException']); ?></label> </td></tr>
+                                    <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="delete_exception" name="delete_exception" type="checkbox"<?php if ($delete_exception) echo " checked" ?> /> <label for="delete_exception"> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteDocumentException']); ?></label> </td></tr>
+                                    <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="approve_exception" name="approve_exception" type="checkbox"<?php if ($approve_exception) echo " checked" ?> /> <label for="approve_exception"> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToApproveDocumentException']); ?></label> </td></tr>
 
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2"><input class="hidden-checkbox" id="check_risk_mgmt" name="check_risk_mgmt" type="checkbox" onclick="checkAllRiskMgmt(this)" /> <label for="check_risk_mgmt"> &nbsp;<?php echo $escaper->escapeHtml($lang['CheckAllRiskMgmt']); ?></label></td></tr>
                                     <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input class="hidden-checkbox" id="riskmanagement" name="riskmanagement" type="checkbox"<?php if ($riskmanagement) echo " checked" ?> /> <label for="riskmanagement"> &nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToRiskManagementMenu']); ?></label> </td></tr>

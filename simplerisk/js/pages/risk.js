@@ -66,16 +66,13 @@ function addRisk($this){
         }
     })
     .fail(function(xhr, textStatus){
-        var obj = $('<div/>').html(xhr.responseText);
-        var token = obj.find('input[name="__csrf_magic"]').val();
-        if(token){
-            $('input[name="__csrf_magic"]').val(token);
-            addRisk($this);
-        }else{
+        if(!retryCSRF(xhr, this))
+        {
             if(xhr.responseJSON && xhr.responseJSON.status_message){
                 showAlertsFromArray(xhr.responseJSON.status_message);
             }
         }
+        
     });
   }
   
@@ -449,12 +446,8 @@ $(document).ready(function(){
             }
         })
         .fail(function(xhr, textStatus){
-            var obj = $('<div/>').html(xhr.responseText);
-            var token = obj.find('input[name="__csrf_magic"]').val();
-            if(token){
-                $('input[name="__csrf_magic"]').val(token);
-                updateSubject($this);
-            }else{
+            if(!retryCSRF(xhr, this))
+            {
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
                     showAlertsFromArray(xhr.responseJSON.status_message);
                 }
@@ -595,12 +588,8 @@ $(document).ready(function(){
             }
         })
         .fail(function(xhr, textStatus){
-            var obj = $('<div/>').html(xhr.responseText);
-            var token = obj.find('input[name="__csrf_magic"]').val();
-            if(token){
-                $('input[name="__csrf_magic"]').val(token);
-                updateRisk($this);
-            }else{
+            if(!retryCSRF(xhr, this))
+            {
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
                     showAlertsFromArray(xhr.responseJSON.status_message);
                 }
@@ -693,16 +682,13 @@ $(document).ready(function(){
             }
         })
         .fail(function(xhr, textStatus){
-            var obj = $('<div/>').html(xhr.responseText);
-            var token = obj.find('input[name="__csrf_magic"]').val();
-            if(token){
-                $('input[name="__csrf_magic"]').val(token);
-                updateMitigation($this);
-            }else{
+            if(!retryCSRF(xhr, this))
+            {
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
                     showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
+
         });
     }
     
@@ -712,8 +698,6 @@ $(document).ready(function(){
     });
     /****** end mitigation *******/
 
-    
-    
     /**** start review *****/
     $('body').on('click', '.perform-review', function(e){
         e.preventDefault();
@@ -789,17 +773,13 @@ $(document).ready(function(){
             }
         })
         .fail(function(xhr, textStatus){
-            var obj = $('<div/>').html(xhr.responseText);
-            var token = obj.find('input[name="__csrf_magic"]').val();
-            if(token){
-                $('input[name="__csrf_magic"]').val(token);
-                updateReview($this);
-            }else{
+            if(!retryCSRF(xhr, this))
+            {
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
                     showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
-            $('.save-review').prop('disabled', false)
+            $('.save-review').prop('disabled', false);
         });
     }
     
@@ -867,12 +847,8 @@ $(document).ready(function(){
             }
         })
         .fail(function(xhr, textStatus){
-            var obj = $('<div/>').html(xhr.responseText);
-            var token = obj.find('input[name="__csrf_magic"]').val();
-            if(token){
-                $('input[name="__csrf_magic"]').val(token);
-                closeRisk($this);
-            }else{
+            if(!retryCSRF(xhr, this))
+            {
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
                     showAlertsFromArray(xhr.responseJSON.status_message);
                 }
@@ -982,12 +958,8 @@ $(document).ready(function(){
             }
         })
         .fail(function(xhr, textStatus){
-            var obj = $('<div/>').html(xhr.responseText);
-            var token = obj.find('input[name="__csrf_magic"]').val();
-            if(token){
-                $('input[name="__csrf_magic"]').val(token);
-                updateStatus($this);
-            }else{
+            if(!retryCSRF(xhr, this))
+            {
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
                     showAlertsFromArray(xhr.responseJSON.status_message);
                 }
@@ -1095,16 +1067,13 @@ $(document).ready(function(){
             }
         })
         .fail(function(xhr, textStatus){
-            var obj = $('<div/>').html(xhr.responseText);
-            var token = obj.find('input[name="__csrf_magic"]').val();
-            if(token){
-                $('input[name="__csrf_magic"]').val(token);
-                updateScore($this);
-            }else{
+            if(!retryCSRF(xhr, this))
+            {
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
                     showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
+
         });
     }
     $('body').on('click', '.updatescore button[type=submit]', function(e){
@@ -1168,16 +1137,13 @@ $(document).ready(function(){
             }
         })
         .fail(function(xhr, textStatus){
-            var obj = $('<div/>').html(xhr.responseText);
-            var token = obj.find('input[name="__csrf_magic"]').val();
-            if(token){
-                $('input[name="__csrf_magic"]').val(token);
-                saveComment($this);
-            }else{
+            if(!retryCSRF(xhr, this))
+            {
                 if(xhr.responseJSON && xhr.responseJSON.status_message){
                     showAlertsFromArray(xhr.responseJSON.status_message);
                 }
             }
+
         });
     }
     $('body').on('click', '.comment-submit', function(e){
@@ -1271,6 +1237,59 @@ $(document).ready(function(){
         popupcontributingrisk(form);
     })
     
+    /**
+    * Show/Hide Project Name if Next Step is Consider for Project
+    */
+    $('body').on('change', '[name=next_step]', function(){
+        var tabContainer = $(this).parents('.tab-data');
+        var risk_id = $('.large-text', tabContainer).html();
+        
+        var getForm = $(this).parents('form', tabContainer);
+
+        // If Next Step is Consider(value=2) for Project
+        if($(this).val() == 2)
+        {
+            $(".project-holder", tabContainer).show();
+        }
+        else
+        {
+            $(".project-holder", tabContainer).hide();
+        }
+    })
+    
+    /**
+    * Event when click plus button on review formn
+    */
+    $('body').on('click', '.project-holder .set-project', function(e){
+        e.preventDefault();
+        var tabContainer = $(this).parents('.tab-data');
+        var risk_id = $('.large-text', tabContainer).html();
+        var project_id = $("#project_name", tabContainer).val();
+        if(project_id !== ""){
+            $.ajax({
+                type: "POST",
+                url: BASE_URL + "/api/management/risk/setProjectToRisk?id=" + risk_id,
+                data: {
+                    project_id: project_id
+                },
+                success: function(data){
+                    
+                    if(data.status_message){                    
+                        showAlertsFromArray(data.status_message);
+                    }
+                },
+                error: function(xhr,status,error){
+                    if(!retryCSRF(xhr, this))
+                    {
+                        if(xhr.responseJSON && xhr.responseJSON.status_message){
+                            showAlertsFromArray(xhr.responseJSON.status_message);
+                        }
+                    }
+                }
+            })
+        }
+        
+    })
     
 })
 

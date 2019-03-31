@@ -26,7 +26,7 @@ jQuery(document).ready(function($){
             //$(this).parents('.framework-block').fadeOut('400').delay('500').remove();
             var framework_id = $(this).attr('data-id');
             var modal = $('#framework--delete');
-            $('input', modal).val(framework_id);
+            $('.delete-id', modal).val(framework_id);
             $(modal).modal('show');
           });
 
@@ -34,7 +34,7 @@ jQuery(document).ready(function($){
             event.preventDefault();
             var control_id = $(this).attr('data-id');
             var modal = $('#control--delete');
-            $('input', modal).val(control_id);
+            $('.delete-id', modal).val(control_id);
             $(modal).modal('show');
           });
 
@@ -259,3 +259,14 @@ $(document).ready(function(){
 
     
 });
+
+//Function to give some margin to the text-spans in the collapsable column to
+//force a reflow in case a text is overflowing
+function fixTreeGridCollapsableColumn() {
+    $(".datagrid .datagrid-row>td:first-child>div").each(function() {
+        if ($(this)[0].scrollWidth >  $(this).innerWidth()) {
+            var indentCount = $(this).find('.tree-indent, .tree-hit').length;
+            $(this).find('.tree-title').css('margin-right', (indentCount * 7) + 'px');
+        };
+    });
+}

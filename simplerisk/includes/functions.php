@@ -200,7 +200,7 @@ function get_table_ordered_by_name($table_name)
     $stmt->execute();
 
     // Store the list in the array
-    $array = $stmt->fetchAll();
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Close the database connection
     db_close($db);
@@ -214,8 +214,11 @@ function get_table_ordered_by_name($table_name)
             // Try to decrypt it
             $option['name'] = try_decrypt($option['name']);
         }
+        usort($array, function($a, $b){
+            return strcmp( strtolower(trim($a['name'])), strtolower(trim($b['name'])));
+        });
     }
-
+    
     return $array;
 }
 
@@ -271,7 +274,55 @@ function get_custom_table($type)
     {
         $stmt = $db->prepare("SELECT value, name FROM frameworks WHERE parent=0 ORDER BY name");
     }
-
+    // If we want the framework controls
+    else if ($type == "framework_controls")
+    {
+        $stmt = $db->prepare("SELECT `id` as value, `short_name` as name FROM `framework_controls` WHERE `deleted`=0 ORDER BY `short_name`;");
+    }
+    // If we want the tags used on risks
+    else if ($type == "risk_tags")
+    {
+        $stmt = $db->prepare("
+            SELECT
+                `t`.`id` as value, `t`.`tag` as name
+            FROM
+                `tags` `t`
+                INNER JOIN `tags_taggees` `tt` ON `t`.`id`=`tt`.`tag_id`
+            WHERE
+                `tt`.`type`='risk'
+            GROUP BY `t`.`tag`
+            ORDER BY `t`.`tag`;
+        ");
+    }
+    // If we want the tags used on assets
+    else if ($type == "asset_tags")
+    {
+        $stmt = $db->prepare("
+            SELECT
+                `t`.`id` as value, `t`.`tag` as name
+            FROM
+                `tags` `t`
+                INNER JOIN `tags_taggees` `tt` ON `t`.`id`=`tt`.`tag_id`
+            WHERE
+                `tt`.`type`='asset'
+            GROUP BY `t`.`tag`
+            ORDER BY `t`.`tag`;
+        ");
+    }
+    // If we want the test results(used for setting the test result)
+    else if ($type == "test_results")
+    {
+        $stmt = $db->prepare("SELECT name as value, name FROM test_results ORDER BY name");
+    }
+    // If we want the test results(used for filtering on the test result)
+    else if ($type == "test_results_filter")
+    {
+        $stmt = $db->prepare("SELECT value, name FROM test_results ORDER BY name");
+    }
+    else if ($type == "policies")
+    {
+        $stmt = $db->prepare("SELECT id as value, document_name as name FROM documents where document_type = 'policies' ORDER BY document_name");
+    }
     // Execute the database query
     $stmt->execute();
 
@@ -292,6 +343,18 @@ function get_custom_table($type)
         }
     }
 
+    // Localize test results names
+    if ($type == "test_results" || $type == "test_results_filter")
+    {
+        global $lang;
+        // For each option
+        foreach ($array as &$option)
+        {
+            // Try to localize it
+            $option['name'] = $lang[$option['name']];
+        }
+    }
+
     return $array;
 }
 
@@ -300,6 +363,8 @@ function get_custom_table($type)
  ************************************/
 function get_options_from_table($name)
 {
+    global $lang, $escaper;
+    
     // If we want a table that should be ordered by name instead of value
     if (in_array($name, array("user", "category", "team", "technology",
         "location", "regulation", "projects", "file_types", "file_type_extensions",
@@ -307,7 +372,8 @@ function get_options_from_table($name)
 
         $options = get_table_ordered_by_name($name);
     }
-    else if (in_array($name, array("enabled_users", "disabled_users", "languages", "family", "date_formats", "parent_frameworks", "frameworks"))) {
+    else if (in_array($name, array("enabled_users", "disabled_users", "languages", "family", "date_formats",
+            "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter", "policies"))) {
         $options = get_custom_table($name);
     }
     // Otherwise
@@ -537,102 +603,6 @@ function convert_color_code($color_name)
     }
 }
 
-/********************************
- * FUNCTION: UPDATE RISK LEVELS *
- ********************************/
-function update_risk_levels($veryhigh, $high, $medium, $low)
-{
-    if (!(($low['value'] < $medium['value']) && ($medium['value'] < $high) && ($high['value'] < $veryhigh['value'])))
-    {
-        return false;
-    }
-    
-    $risk_levels = get_risk_Levels();
-
-    // Open the database connection
-    $db = db_open();
-
-    $status = check_changed_risk_levels( $veryhigh['value'] , "Very High", $risk_levels);
-    // Update the very high risk level
-    $stmt = $db->prepare("UPDATE `risk_levels` SET value=:value, color=:color, display_name=:display_name WHERE name='Very High'");
-    $stmt->bindParam(":value", $veryhigh['value'], PDO::PARAM_STR);
-    $stmt->bindParam(":color", $veryhigh['color'], PDO::PARAM_STR);
-    $stmt->bindParam(":display_name", $veryhigh['display_name'], PDO::PARAM_STR);
-    $stmt->execute();
-
-    $high_status = check_changed_risk_levels( $high['value'] , "High", $risk_levels);
-    if ($status && $high_status) {
-        $status .= " and " . $high_status;
-    } else if ( !$status && $high_status ){
-        $status = $high_status;
-    }
-    // Update the high risk level
-    $stmt = $db->prepare("UPDATE `risk_levels` SET value=:value, color=:color, display_name=:display_name WHERE name='High'");
-    $stmt->bindParam(":value", $high['value'], PDO::PARAM_STR);
-    $stmt->bindParam(":color", $high['color'], PDO::PARAM_STR);
-    $stmt->bindParam(":display_name", $high['display_name'], PDO::PARAM_STR);
-    $stmt->execute();
-
-    $mediumn_status = check_changed_risk_levels( $medium['value'] , "Medium", $risk_levels);
-    if ($status && $mediumn_status) {
-        $status .= " and " . $mediumn_status;
-    } else if ( !$status && $mediumn_status ){
-        $status = $mediumn_status;
-    }
-    // Update the medium risk level
-    $stmt = $db->prepare("UPDATE `risk_levels` SET value=:value, color=:color, display_name=:display_name WHERE name='Medium'");
-    $stmt->bindParam(":value", $medium['value'], PDO::PARAM_STR);
-    $stmt->bindParam(":color", $medium['color'], PDO::PARAM_STR);
-    $stmt->bindParam(":display_name", $medium['display_name'], PDO::PARAM_STR);
-    $stmt->execute();
-
-    $low_status = check_changed_risk_levels( $low['value'] , "Low", $risk_levels);
-    if ($status && $low_status) {
-        $status .= " and " . $low_status;
-    } else if ( !$status && $low_status ){
-        $status = $low_status;
-    }
-    // Update the low risk level
-    $stmt = $db->prepare("UPDATE `risk_levels` SET value=:value, color=:color, display_name=:display_name WHERE name='Low'");
-    $stmt->bindParam(":value", $low['value'], PDO::PARAM_STR);
-    $stmt->bindParam(":color", $low['color'], PDO::PARAM_STR);
-    $stmt->bindParam(":display_name", $low['display_name'], PDO::PARAM_STR);
-    $stmt->execute();
-
-    // Audit log
-    $risk_id = 1000;
-    $status = $status ? "(". $status . ")" : "";
-
-    if ($status) {
-        $message = "Risk level scoring " . $status . " was modified by the \"" . $_SESSION['user'] . "\" user.";
-    write_log($risk_id, $_SESSION['uid'], $message);
-    }
-
-    // Close the database connection
-    db_close($db);
-
-    return true;
-}
-
-/***************************************
- * FUNCTION: CHECK CHANGED RISK LEVELS *
- **************************************/
-function check_changed_risk_levels( $value , $name, $risk_levels )
-{
-    $status = "";
-    foreach($risk_levels as $risk_level)
-    {
-        if($risk_level['name'] == $name){
-            if($risk_level['value'] != $value){
-                $status = $name;
-            }
-            break;
-        }
-    }
-
-    return $status;    
-}
-
 /************************************
  * FUNCTION: UPDATE REVIEW SETTINGS *
  ************************************/
@@ -859,15 +829,6 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $opti
     // Get the list of options
     if($options === NULL){
         $options = get_options_from_table($name);
-        /*if($name == "frameworks"){
-            $options = get_custom_table($name);
-        }
-        elseif($name == "family"){
-            $options = get_custom_table($name);
-        }
-        else{
-            $options = get_table($name);
-        }*/
     }
 
     // If the blank is true
@@ -876,6 +837,8 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $opti
         array_unshift($options, ["value"=>$blankValue, "name"=>$blankText]);
     }
 
+    $is_selected_array = is_array($selected);
+
     // For each option
     foreach ($options as $option)
     {
@@ -883,7 +846,10 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $opti
         $regex_pattern = "/:" . $option['value'] .":/";
 
         // If the user belongs to the team or all was selected
-        if (preg_match($regex_pattern, $selected, $matches) || $selected == "all" || (!$selected && !$option['value']))
+        if ($selected == "all" ||
+           ($is_selected_array && in_array($option['value'], $selected)) ||
+           (!$selected && !$option['value']) ||
+           (!$is_selected_array && preg_match($regex_pattern, $selected, $matches)))
         {
             $text = " selected";
         }
@@ -1328,7 +1294,7 @@ function get_setting($setting, $default=false)
     db_close($db);
 
     // If the array isn't empty
-    if (!empty($array))
+    if ($array)
     {
         // Set the value to the array value
         $value = $array[0]['value'];
@@ -1357,6 +1323,18 @@ function get_default_date_format()
     return $php_date_format;
 }
 
+/******************************************************
+ * FUNCTION: CONVERT DEFAULT DATE FORMAT TO JS FORMAT *
+ ******************************************************/
+function get_default_date_format_for_js()
+{
+    $default_date_format = get_setting("default_date_format");
+    $js_date_format = str_ireplace("YYYY", "yy", $default_date_format);
+    $js_date_format = str_ireplace("MM", "mm", $js_date_format);
+    $js_date_format = str_ireplace("DD", "dd", $js_date_format);
+    return $js_date_format;
+}
+
 /************************************************************
  * FUNCTION: CONVERT DEFAULT DATE TIME FORMAT TO PHP FORMAT *
  ************************************************************/
@@ -1365,6 +1343,26 @@ function get_default_datetime_format($time_format="H:i:s")
     $format = get_default_date_format();
 
     return $format." ".$time_format;
+}
+
+/*********************************************************************************
+ * FUNCTION: GET FORMATTED DATE                                                  *
+ *                                                                               *
+ * Use it only on dates got from the database, as strtotime is not suited to be  *
+ * used on user input since it can't handle all the date formats we support.     *
+ *                                                                               *
+ * On user input use the `get_standard_date_from_default_format` function before *
+ * writing into the database                                                     *
+ *********************************************************************************/
+function format_date($date, $default = "")
+{
+    // If the date is not 0000-00-00
+    if ($date && $date != "0000-00-00")
+    {
+        // Set it to the proper format
+        return strtotime($date) ? date(get_default_date_format(), strtotime($date)) : "";
+    }
+    else return $default;
 }
 
 /****************************************************************************
@@ -1395,18 +1393,6 @@ function get_standard_date_from_default_format($formatted_date, $time=false)
     }
 
     return $standard_date;
-}
-
-/******************************************************
- * FUNCTION: CONVERT DEFAULT DATE FORMAT TO JS FORMAT *
- ******************************************************/
-function get_default_date_format_for_js()
-{
-    $default_date_format = get_setting("default_date_format");
-    $js_date_format = str_ireplace("YYYY", "yy", $default_date_format);
-    $js_date_format = str_ireplace("MM", "mm", $js_date_format);
-    $js_date_format = str_ireplace("DD", "dd", $js_date_format);
-    return $js_date_format;
 }
 
 /****************************
@@ -2313,7 +2299,7 @@ function core_get_mapping_value($prefix, $type, $mappings, $csv_line)
         $value = $csv_line[$key];
 
         // Return the value
-        return $value;
+        return trim($value);
     }
     else return null;
 }
@@ -3613,6 +3599,10 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         $next_review = "0000-00-00";
     }
 
+    if(!$submission_date){
+        $submission_date = date("Y-m-d H:i:s");
+    }
+
     // Subtract 1000 from risk_id
     $id = (int)$risk_id - 1000;
 
@@ -3623,11 +3613,7 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
     $db = db_open();
 
     // Add the review
-    if($submission_date === false){
-        $stmt = $db->prepare("INSERT INTO mgmt_reviews (`risk_id`, `review`, `reviewer`, `next_step`, `comments`, `next_review`) VALUES (:risk_id, :review, :reviewer, :next_step, :comments, :next_review)");
-    }else{
-        $stmt = $db->prepare("INSERT INTO mgmt_reviews (`risk_id`, `review`, `reviewer`, `next_step`, `comments`, `next_review`, `submission_date`) VALUES (:risk_id, :review, :reviewer, :next_step, :comments, :next_review, :submission_date)");
-    }
+    $stmt = $db->prepare("INSERT INTO mgmt_reviews (`risk_id`, `review`, `reviewer`, `next_step`, `comments`, `next_review`, `submission_date`) VALUES (:risk_id, :review, :reviewer, :next_step, :comments, :next_review, :submission_date)");
     
     $try_encrypt_comments = try_encrypt($comments);
 
@@ -3637,9 +3623,7 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
     $stmt->bindParam(":next_step", $next_step, PDO::PARAM_INT);
     $stmt->bindParam(":comments", $try_encrypt_comments, PDO::PARAM_STR);
     $stmt->bindParam(":next_review", $next_review, PDO::PARAM_STR, 10);
-    if($submission_date !== false){
-        $stmt->bindParam(":submission_date", $submission_date, PDO::PARAM_STR, 20);
-    }
+    $stmt->bindParam(":submission_date", $submission_date, PDO::PARAM_STR, 20);
 
     $stmt->execute();
 
@@ -3684,10 +3668,12 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         write_log($risk_id, $_SESSION['uid'], $message);
     }
 
+    $review_id = $db->lastInsertId();
+    
     // Close the database connection
     db_close($db);
 
-    return true;
+    return $review_id;
 }
 
 /*************************
@@ -4059,14 +4045,20 @@ function get_risk_by_id($id)
     if (!team_separation_extra())
     {
         // Query the database
-        $stmt = $db->prepare("SELECT a.*, group_concat(distinct CONCAT_WS('_', rsci.contributing_risk_id, rsci.impact)) as Contributing_Risks_Impacts, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+        $stmt = $db->prepare("
+        SELECT
+            a.*, group_concat(distinct CONCAT_WS('_', rsci.contributing_risk_id, rsci.impact)) as Contributing_Risks_Impacts, b.*, c.next_review,
+            ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
+            GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR ',') as risk_tags
         FROM risk_scoring a
             INNER JOIN risks b on a.id = b.id
             LEFT JOIN mgmt_reviews c on b.mgmt_review = c.id
             LEFT JOIN mitigations mg ON b.id = mg.risk_id
             LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
             LEFT JOIN risk_scoring_contributing_impacts rsci ON a.id=rsci.risk_scoring_id
-        WHERE b.id=:id 
+            LEFT JOIN tags_taggees tt ON tt.taggee_id = b.id and tt.type = 'risk'
+            LEFT JOIN tags t on t.id = tt.tag_id
+        WHERE b.id=:id
         GROUP BY
             b.id
         LIMIT 1; ");
@@ -4082,11 +4074,17 @@ function get_risk_by_id($id)
         $separation_query = get_user_teams_query("b", false, true);
 
         // Query the database
-        $stmt = $db->prepare("SELECT a.*, group_concat(distinct CONCAT_WS('_', rsci.contributing_risk_id, rsci.impact)) as Contributing_Risks_Impacts, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+        $stmt = $db->prepare("
+            SELECT
+                a.*, group_concat(distinct CONCAT_WS('_', rsci.contributing_risk_id, rsci.impact)) as Contributing_Risks_Impacts, b.*, c.next_review,
+                ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
+                GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR ',') as risk_tags
             FROM risk_scoring a INNER JOIN risks b on a.id = b.id LEFT JOIN mgmt_reviews c on b.mgmt_review = c.id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
                 LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
                 LEFT JOIN risk_scoring_contributing_impacts rsci ON a.id=rsci.risk_scoring_id
+                LEFT JOIN tags_taggees tt ON tt.taggee_id = b.id and tt.type = 'risk'
+                LEFT JOIN tags t on t.id = tt.tag_id
             WHERE b.id=:id " . $separation_query . "
             GROUP BY
             b.id
@@ -5000,10 +4998,40 @@ function get_risks_unassigned_project()
     return $array;
 }
 
-/**********************************
- * FUNCTION: GET RISK FOR PROJECT *
- **********************************/
-function get_risk_for_project($project_id)
+/************************************
+ * FUNCTION: GET PROJECT BY RISK ID *
+ ************************************/
+function get_project_by_risk_id($risk_id)
+{
+    $risk_id = $risk_id - 1000;
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT a.value, a.name
+        FROM projects a INNER JOIN risks b ON a.value = b.project_id
+        WHERE b.id=:risk_id;
+    ");
+    $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Store the list in the array
+    $project = $stmt->fetch();
+
+    db_close($db);
+    
+    // If project exists, decrypt project name
+    if($project)
+    {
+        $project['name'] = try_decrypt($project['name']);
+    }
+
+    return $project;
+}
+
+/*************************************
+ * FUNCTION: GET RISKS BY PROJECT ID *
+ *************************************/
+function get_risks_by_project_id($project_id)
 {
     $db = db_open();
 
@@ -5012,11 +5040,10 @@ function get_risk_for_project($project_id)
     {
         $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id WHERE status != 'Closed' AND b.project_id = :project_id ORDER BY calculated_risk DESC;");
     }
-// If we only want to get risks reviewed as consider for project
+    // If we only want to get risks reviewed as consider for project
     else
     {
             $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" AND b.project_id = :project_id ORDER BY calculated_risk DESC");
-
     }
     $stmt->bindParam(":project_id", $project_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -7027,6 +7054,7 @@ function clone_risk_project($project_id, $risk_id)
  *********************************/
 function update_risk_project($project_id, $risk_id)
 {
+    global $lang;
     // Open the database connection
     $db = db_open();
 
@@ -7039,6 +7067,17 @@ function update_risk_project($project_id, $risk_id)
 
     // Close the database connection
     db_close($db);
+
+    // Audit log
+    write_log($risk_id + 1000, $_SESSION['uid'],
+        _lang('RiskProjectAssociationAuditLog',
+            array(
+                'risk_id' => $risk_id + 1000,
+                'project_name' => get_name_by_value('projects', $project_id, $lang['UnassignedRisks']),
+                'user' => $_SESSION['user']
+            )
+        )
+    );
 
     return true;
 }
@@ -7072,7 +7111,7 @@ function get_projects_count($status)
     $projects = count_by_status($status);
     if ($status == 1)
     {
-          echo $projects[0]['count'] - 1;
+          echo $projects[0]['count'];
     }
     else
     {
@@ -7092,12 +7131,11 @@ function get_project_tabs($status)
 
     if ($status == 1)
     {
-        $i = null;
-    } else
-    {
-        $i = 1;
-    }
-
+        array_unshift($projects, ['value' => 0, 'name' => $escaper->escapeHtml($lang['UnassignedRisks']), 'status' => 1]);
+    } 
+    
+    $index = 0;
+    
     foreach ($projects as $project)
     {
         if ($project['status'] == $status)
@@ -7106,7 +7144,7 @@ function get_project_tabs($status)
             $name = $project['name'];
 
             // If unassigned risks
-            if ($i == null)
+            if (!$id)
             {
                 $delete = '';
                 $no_sort = 'id = "no-sort"';
@@ -7114,6 +7152,7 @@ function get_project_tabs($status)
 
                 // Get risks for this project
                 $risks = get_risks_unassigned_project();
+                $priority = "";
             }
             // If project ID was defined
             else
@@ -7123,15 +7162,17 @@ function get_project_tabs($status)
                 $name = $escaper->escapeHtml($name);
 
                 // Get risks for this project
-                $risks = get_risk_for_project($id);
+                $risks = get_risks_by_project_id($id);
+                $index++;
+                $priority = $index;
             }
-
+            
             // Get count of risks for this project
             $count = count($risks);
 
             echo '<div class="project-block clearfix" '.$no_sort.'>';
                 echo '<div class="project-block--header clearfix" data-project="'.$escaper->escapeHtml($id).'">
-                <div class="project-block--priority pull-left">'.$escaper->escapeHtml($i).'</div>
+                <div class="project-block--priority pull-left">'.$escaper->escapeHtml($priority).'</div>
                 <div class="project-block--name pull-left">'. $name .'</div>
                 <div class="project-block--risks pull-left"><span>'.$count.'</span><a href="#" class="view--risks">'.$escaper->escapeHtml($lang['ViewRisk']).'</a>'.$delete.'</div>
                 </div>';
@@ -7157,7 +7198,6 @@ function get_project_tabs($status)
                 echo "</div>\n";
 
             echo "</div>\n";
-            $i++;
         }
     }
 
@@ -7193,8 +7233,8 @@ function count_by_status($status)
  **************************/
 function get_projects($order="order")
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
     // If the order is by status
     if ($order == "status")
@@ -7204,14 +7244,14 @@ function get_projects($order="order")
     // If the order is by order
     else
     {
-            // Query the database
-            $stmt = $db->prepare("SELECT * FROM projects ORDER BY `order` ASC");
+        // Query the database
+        $stmt = $db->prepare("SELECT * FROM projects ORDER BY `order` ASC");
     }
 
-        $stmt->execute();
+    $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
     // For each project
     foreach ($array as $key => $project)
@@ -7220,10 +7260,10 @@ function get_projects($order="order")
         $array[$key]['name'] = try_decrypt($project['name']);
     }
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        return $array;
+    return $array;
 }
 
 /*******************************
@@ -7525,9 +7565,7 @@ function management_review($risk_id, $mgmt_review, $next_review)
     {
         $value = "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview\">". $escaper->escapeHtml($lang['No']) ."</a>";
     }else{
-        $d = DateTime::createFromFormat('Y-m-d', $next_review);
-
-        if($d && $d->format('Y-m-d') === $next_review ){
+        if($next_review != $lang['PASTDUE'] ){
             // If review doensn't past due.
             $value = "<a class=\"management yes\" href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview\">".$escaper->escapeHtml($lang['Yes']).'</a>';
         }else{
@@ -7584,7 +7622,7 @@ function get_name_by_value($table, $value, $default = "")
     if (isset($array[0]['name']))
     {
         // Try decrypt if necessary
-        if (in_array($table, array("frameworks")))
+        if (in_array($table, array("frameworks", "projects")))
             return try_decrypt($array[0]['name']);
 
         // Return that value
@@ -7594,9 +7632,9 @@ function get_name_by_value($table, $value, $default = "")
     else return $default;
 }
 
-/*******************************
- * FUNCTION: GET NAME BY VALUE *
- *******************************/
+/***************************************
+ * FUNCTION: GET NAMEs BY MULTI VALUES *
+ ***************************************/
 function get_names_by_multi_values($table, $values)
 {
 
@@ -8196,13 +8234,17 @@ function get_comments($id)
  *****************************/
 function get_audit_trail($id = NULL, $days = 7, $log_type=NULL)
 {
-    global $escaper;
-
     // If the ID is greater than 1000 or NULL
     if ($id > 1000 || $id === NULL)
     {
         // Open the database connection
         $db = db_open();
+        
+        $query = " 
+            SELECT t1.timestamp, t1.message, t1.log_type, t1.user_id, t2.name user_fullname 
+            FROM audit_log t1
+                LEFT JOIN user t2 ON t1.user_id=t2.value
+        ";
 
         // If the ID is greater than 1000
         if ($id > 1000)
@@ -8210,20 +8252,40 @@ function get_audit_trail($id = NULL, $days = 7, $log_type=NULL)
             // Subtract 1000 from id
             $id = (int)$id - 1000;
 
-            // Get the comments for this specific ID
-            $stmt = $db->prepare("SELECT timestamp, message FROM audit_log WHERE risk_id=:risk_id AND (`timestamp` > CURDATE()-INTERVAL :days DAY) AND log_type=:log_type ORDER BY timestamp DESC");
+            // If log_type is NULL, shows all logs
+            if($log_type === NULL){
+                $query .= " WHERE risk_id=:risk_id AND (`timestamp` > CURDATE()-INTERVAL :days DAY) ORDER BY timestamp DESC;";
+                // Get the full audit trail
+                $stmt = $db->prepare($query);
+            }
+            else
+            {
+                if(is_array($log_type))
+                {
+                    $log_type_array = $log_type;
+                }
+                else
+                {
+                    $log_type_array = array($log_type);
+                }
+
+                $query .= " WHERE risk_id=:risk_id AND (`timestamp` > CURDATE()-INTERVAL :days DAY) AND log_type IN (:log_type) ORDER BY timestamp DESC;";
+                $stmt = $db->prepare($query);
+                $log_type_str = implode(",", $log_type_array);
+                $stmt->bindParam(":log_type", $log_type_str, PDO::PARAM_STR, 100);
+            }
 
             $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
             $stmt->bindParam(":days", $days, PDO::PARAM_INT);
-            $stmt->bindParam(":log_type", $log_type, PDO::PARAM_STR, 100);
         }
         // If the ID is NULL
         else if ($id === NULL)
         {
             // If log_type is NULL, shows all logs
             if($log_type === NULL){
+                $query .= " WHERE (`timestamp` > CURDATE()-INTERVAL :days DAY) ORDER BY timestamp DESC; ";
                 // Get the full audit trail
-                $stmt = $db->prepare("SELECT timestamp, message FROM audit_log WHERE (`timestamp` > CURDATE()-INTERVAL :days DAY) ORDER BY timestamp DESC");
+                $stmt = $db->prepare($query);
                 $stmt->bindParam(":days", $days, PDO::PARAM_INT);
             }
             else
@@ -8236,47 +8298,35 @@ function get_audit_trail($id = NULL, $days = 7, $log_type=NULL)
                 {
                     $log_type_array = array($log_type);
                 }
-                $log_type_condition_array = [];
-                foreach($log_type_array as $key => $val){
-                    $log_type_condition_array[] = "log_type=:log_type_{$key}";
-                }
 
-                $log_type_where = implode(" OR ", $log_type_condition_array);
-
-                // Get the full audit trail
-                $stmt = $db->prepare("SELECT timestamp, message, log_type FROM audit_log WHERE (`timestamp` > CURDATE()-INTERVAL :days DAY) AND ({$log_type_where}) ORDER BY timestamp DESC");
+                $query .= " WHERE (`timestamp` > CURDATE()-INTERVAL :days DAY) AND log_type IN ('".implode("','", $log_type_array)."') ORDER BY timestamp DESC; ";
+                $stmt = $db->prepare($query);
                 $stmt->bindParam(":days", $days, PDO::PARAM_INT);
-                foreach($log_type_array as $key => $val){
-                    $value = trim($val);
-                    $stmt->bindParam(":log_type_{$key}", $value, PDO::PARAM_STR, 100);
-                }
             }
         }
 
         $stmt->execute();
        // Store the list in the array
-        $logs = $stmt->fetchAll();
+        $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Close the database connection
         db_close($db);
-
-        foreach ($logs as $log)
+        
+        foreach ($logs as &$log)
         {
-            $text = try_decrypt($log['message']);
-            $date = date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp']));
-
-            echo "<p>" . $escaper->escapeHtml($date) . " > " . $escaper->escapeHtml($text) . "</p>\n";
+            $log['message'] = try_decrypt($log['message']);
         }
 
         // Return true
-        return true;
+        return $logs;
     }
     // Otherwise this is not a valid ID
     else
     {
         // Return false
-        return false;
+        return [];
     }
+    
 }
 
 /*******************************
@@ -8510,7 +8560,7 @@ function get_reviews($risk_id)
 
                     display_review_view($review['review']);
 
-                    display_next_step_view($review['next_step']);
+                    display_next_step_view($review['next_step'], $risk_id);
 
                     display_comments_view($comment);
                 echo "</div>";
@@ -8824,41 +8874,6 @@ function customization_extra()
           return true;
     }
     else return false;
-}
-
-/*************************************************
- *  FUNCTION: WRONG SPELLING GET SETTING BY NAME *
- *************************************************/
-function get_settting_by_name($name)
-{
-        // Call the proper function
-        get_setting_by_name($name);
-}
-
-/*****************************************
- * FUNCTION: GET SETTING VALUE BY NAME *
- *****************************************/
-function get_setting_by_name($name){
-    // Open the database connection
-    $db = db_open();
-
-    // See if the custom authentication extra is available
-    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = '{$name}'");
-    $stmt->execute();
-
-    // Get the results array
-    $array = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-    // If the array is empty
-    if (empty($array))
-    {
-        // Return false
-        return false;
-    }
-    else return $array[0]['value'];
 }
 
 /***********************************
@@ -10475,20 +10490,24 @@ function check_current_password_age($user_id = false)
 /****************************************
  * FUNCTION: GET LANGUAGES WITH VARIABLES *
  ****************************************/
-function _lang($key, $params=array()){
-    global $lang, $escaper;
+function _lang($__key, $__params=array(), $__escape=true){
+    global $lang;
 
-    foreach($params as &$param){
-        $param = $escaper->escapeHtml($param);
+    if ($__escape) {
+        global $escaper;
+
+        foreach($__params as &$__param){
+            $__param = $escaper->escapeHtml($__param);
+        }
     }
 
-    extract($params, EXTR_OVERWRITE);
+    extract($__params, EXTR_OVERWRITE);
 
-    $return = str_replace('"', '\"', $lang[$key]);
+    $__return = str_replace('"', '\"', $lang[$__key]);
 
-    eval("\$return = \"{$return}\";");
+    eval("\$__return = \"{$__return}\";");
 
-    return $return;
+    return $__return;
 }
 
 /****************************************
@@ -10728,7 +10747,8 @@ function is_submitted(){
  ****************************************/
 function is_process($name){
     $cmd = $name;
-    if(exec($cmd)){
+    exec($cmd, $output, $result);
+    if((int)$result !== 127){
         return true;
     }else{
         return false;
@@ -10979,17 +10999,19 @@ function get_technology_names($ids="")
 /********************************************
  * FUNCTION: GET STAKEHOLDER NAMES FROM IDS *
  ********************************************/
-function get_stakeholder_names($ids="", $limit=4)
+function get_stakeholder_names($ids="", $limit=4, $escape=true)
 {
+    global $escaper;
+
     if(!$ids){
         return "";
     }
 
-    if (is_array($ids)) 
+    if (is_array($ids))
         $idArray = $ids;
-    else   
+    else
         $idArray = explode(",", $ids);
-    
+
     foreach($idArray as &$id){
         $id = intval($id);
     }
@@ -11010,7 +11032,7 @@ function get_stakeholder_names($ids="", $limit=4)
     $names = array();
     $count = 0;
     foreach($users as $user){
-        $names[] = $user['name'];
+        $names[] = $escape ? $escaper->escapeHtml($user['name']) : $user['name'];
         $count += 1;
         if ($count == $limit)
             break;
@@ -11018,6 +11040,48 @@ function get_stakeholder_names($ids="", $limit=4)
 
     return implode(", ", $names) . (count($users) > $limit ? ", ...": "");
 }
+
+/*********************************
+ * FUNCTION: GET NAMES BY VALUES *
+ *********************************/
+function get_names_by_values($table, $values="", $limit=4, $escape=true)
+{
+    global $escaper;
+
+    if(!$values){
+        return "";
+    }
+
+    $valueArray = array_map('intval', is_array($values) ? $values : explode(",", $values));
+
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT name FROM $table WHERE value in (" . implode(",", $valueArray) . ");");
+    $stmt->execute();
+
+    // Store the list in the array
+    $results = $stmt->fetchAll();
+
+    // Close the database connection
+    db_close($db);
+
+    $names = array();
+    $should_decrypt = in_array($table, array("frameworks"));
+
+    foreach(array_slice($results, 0, $limit) as $result){
+        // Try decrypt if necessary
+        if ($should_decrypt)
+            $result['name'] = try_decrypt($result['name']);
+
+        $names[] = $escape ? $escaper->escapeHtml($result['name']) : $result['name'];
+    }
+
+    return implode(", ", $names) . (count($results) > $limit ? ", ...": "");
+}
+
+
+
 
 /*************************
  * FUNCTION: PING SERVER *
@@ -11263,7 +11327,7 @@ function update_family($value, $short_name){
     $stmt->execute();
 
     $risk_id = 1000;
-    $message = "A new family \"" . $name . "\" was updated by the \"" . $_SESSION['user'] . "\" user.";
+    $message = "A new family \"" . $short_name . "\" was updated by the \"" . $_SESSION['user'] . "\" user.";
     write_log($risk_id, $_SESSION['uid'], $message);
 
     // Close the database connection
@@ -12308,6 +12372,217 @@ function get_user_teams($user_id)
     return $teams;
 }
 
+/*******************************
+ * FUNCTION: GET USERS IN TEAM *
+ *******************************/
+function get_users_of_team($team)
+{
+    $team = ":{$team}:";
+
+    // Open the database connection
+    $db = db_open();
+
+    // Get the user information
+    $stmt = $db->prepare("SELECT * FROM user WHERE locate(:team, `teams`) > 0;");
+    $stmt->bindParam(":team", $team, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll();
+
+    // Close the database connection
+    db_close($db);
+
+    return $array;
+}
+
+/*******************************
+ * FUNCTION: SET USERS OF TEAM *
+ *******************************/
+function set_users_of_team($user_ids, $team)
+{
+    $team_ = ":{$team}:";
+
+    $db = db_open();
+
+    // Remove users from team
+    $stmt = $db->prepare("
+        UPDATE
+            `user`
+        SET
+            `teams`=replace(`teams`, :team, '')
+        WHERE
+            locate(:team, `teams`) > 0;");
+    $stmt->bindParam(":team", $team_, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+
+    add_users_to_team($user_ids, $team, false);
+
+    // Audit log
+    $user_names = get_names_by_values('user', $user_ids, 999, false);
+    $team_name = get_name_by_value('team', $team);
+    $message = _lang('SetUsersOfTeamAuditLog', array('team_name' => $team_name, 'user_names' => $user_names, 'username' => $_SESSION['user']));
+    write_log(1000, $_SESSION['uid'], $message);
+}
+
+
+/**************************************************************
+ * FUNCTION: UPDATE USER TEAMS                                *
+ * Updates the teams of a user without updating anything else *
+ **************************************************************/
+function update_user_teams($user_id, $teams) {
+
+    if (is_array($teams)) {
+        $teams = ':' . implode('::', $teams) . ':';
+    }
+
+    $db = db_open();
+
+    // Update the user
+    $stmt = $db->prepare("UPDATE `user` SET `teams`=:teams where `value`=:user_id");
+    $stmt->bindParam(":teams", $teams, PDO::PARAM_STR);
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/*********************************************
+ * FUNCTION: ADD USER TO TEAMS               *
+ * Adding user to multiple teams.            *
+ * First parameter is a user id,             *
+ * second parameter is an array of team ids. *
+ *********************************************/
+function add_user_to_teams($user_id, $team_ids) {
+    update_user_teams($user_id,
+        array_map('intval', //to force them being int, thus safe to add back to the db
+            array_values( //to make it a non-associative array
+                array_unique( //to remove duplicates
+                    array_filter( //to remove empty values
+                        array_merge( //to merge the existing and new teams
+                            explode(':', get_user_teams($user_id)),
+                            $team_ids
+                        )
+                    )
+                )
+            )
+        )
+    );
+
+    // Audit log
+    $team_names = get_names_by_values('team', $team_ids, 999, false);
+    $user_name = get_name_by_value('user', $user_id);
+    $message = _lang('AddUserToTeamsAuditLog', array('team_names' => $team_names, 'user_name' => $user_name, 'username' => $_SESSION['user']));
+    write_log(1000, $_SESSION['uid'], $message);
+}
+
+/*********************************************
+ * FUNCTION: REMOVE USER FROM TEAMS          *
+ * Removing user from multiple teams.        *
+ * First parameter is a user id,             *
+ * second parameter is an array of team ids. *
+ *********************************************/
+function remove_user_from_teams($user_id, $team_ids) {
+    update_user_teams($user_id,
+        array_map('intval', //to force them being int, thus safe to add back to the db
+            array_values( //to make it a non-associative array
+                array_unique( //to remove duplicates
+                    array_filter( //to remove empty values
+                        array_diff( //to remove the teams from the existing
+                            explode(':', get_user_teams($user_id)),
+                            $team_ids
+                        )
+                    )
+                )
+            )
+        )
+    );
+
+    // Audit log
+    $team_names = get_names_by_values('team', $team_ids, 999, false);
+    $user_name = get_name_by_value('user', $user_id);
+    $message = _lang('RemoveUserFromTeamsAuditLog', array('team_names' => $team_names, 'user_name' => $user_name, 'username' => $_SESSION['user']));
+    write_log(1000, $_SESSION['uid'], $message);
+}
+
+/********************************************
+ * FUNCTION: ADD USERS TO TEAM              *
+ * Adding multiple users to a team.         *
+ * First parameter is an array of user ids, *
+ * second parameter is the id of the team.  *
+ ********************************************/
+function add_users_to_team($user_ids, $team, $audit_log=true) {
+
+    // array_map used to make sure the array only contains int values
+    // to make sure it's safe to just add it to the query string
+    $user_ids_ = "'" . implode("','", array_map('intval', $user_ids)) . "'";
+    $team_ = ":{$team}:";
+
+    $db = db_open();
+
+    // Update the user
+    $stmt = $db->prepare("
+        UPDATE
+            `user`
+        SET
+            `teams`=concat(`teams`, :team)
+        WHERE
+            `value` IN ({$user_ids_}) and locate(:team, `teams`) = 0;");
+    $stmt->bindParam(":team", $team_, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+
+    if ($audit_log) {
+        // Audit log
+        $user_names = get_names_by_values('user', $user_ids, 999, false);
+        $team_name = get_name_by_value('team', $team);
+        $message = _lang('AddUsersToTeamAuditLog', array('team_name' => $team_name, 'user_names' => $user_names, 'username' => $_SESSION['user']));
+        write_log(1000, $_SESSION['uid'], $message);
+    }
+}
+
+/********************************************
+ * FUNCTION: REMOVE USERS FROM TEAM         *
+ * Removing multiple users from a team.     *
+ * First parameter is an array of user ids, *
+ * second parameter is the id of the team.  *
+ ********************************************/
+function remove_users_from_team($user_ids, $team) {
+
+    // array_map used to make sure the array only contains int values
+    // to make sure it's safe to just add it to the query string
+    $user_ids_ = "'" . implode("','", array_map('intval', $user_ids)) . "'";
+    $team_ = ":{$team}:";
+
+    $db = db_open();
+
+    // Update the user
+    $stmt = $db->prepare("
+        UPDATE
+            `user`
+        SET
+            `teams`=replace(`teams`, :team, '')
+        WHERE
+            `value` IN ({$user_ids_}) and locate(:team, `teams`) > 0;");
+    $stmt->bindParam(":team", $team_, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+
+    // Audit log
+    $user_names = get_names_by_values('user', $user_ids, 999, false);
+    $team_name = get_name_by_value('team', $team);
+    $message = _lang('RemoveUsersFromTeamAuditLog', array('team_name' => $team_name, 'user_names' => $user_names, 'username' => $_SESSION['user']));
+    write_log(1000, $_SESSION['uid'], $message);
+}
+
 /***************************
  * FUNCTION: GET ALL TEAMS *
  ***************************/
@@ -12900,10 +13175,11 @@ function get_contributing_impacts_by_subjectimpact_values($subject_impact_values
 function get_contributing_impacts_by_key_from_multi($AllContributingImpacts, $key)
 {
     $ContributingImpacts = [];
-    foreach($AllContributingImpacts as $contributing_risk_id => $AllContributingImpact){
-        $ContributingImpacts[$contributing_risk_id] = $AllContributingImpact[$key];
+    if (!empty($AllContributingImpacts)) {
+        foreach($AllContributingImpacts as $contributing_risk_id => $AllContributingImpact){
+            $ContributingImpacts[$contributing_risk_id] = $AllContributingImpact[$key];
+        }
     }
-    
     return $ContributingImpacts;
 }
 
@@ -12916,31 +13192,16 @@ function localized_yes_no($val)
     return boolval($val) ? $lang['Yes'] : $lang['No'];
 }
 
-/*********************************************************************************
- * FUNCTION: GET FORMATTED DATE                                                  *
- *                                                                               *
- * Use it only on dates got from the database, as strtotime is not suited to be  *
- * used on user input since it can't handle all the date formats we support.     *
- *                                                                               *
- * On user input use the `get_standard_date_from_default_format` function before *
- * writing into the database                                                     *
- *********************************************************************************/
-function format_date($date, $default = "")
-{
-    // If the date is not 0000-00-00
-    if ($date && $date != "0000-00-00")
-    {
-        // Set it to the proper format
-        return strtotime($date) ? date(get_default_date_format(), strtotime($date)) : "";
-    }
-    else return $default;
-}
-
 /**************************
  * FUNCTION: TABLE EXISTS *
  **************************/
 function table_exists($table)
 {
+    $global_table_exist_key = $table."_table_exists";
+    if(isset($GLOBALS[$global_table_exist_key])){
+        return $GLOBALS[$global_table_exist_key];
+    }
+    
     // Open the database connection
     $db = db_open();
 
@@ -12960,9 +13221,15 @@ function table_exists($table)
     // If we have any results
     if (count($results) > 0)
     {
+        $GLOBALS[$global_table_exist_key] = true;
         return true;
     }
-    else return false;
+    else
+    {
+        $GLOBALS[$global_table_exist_key] = false;
+    } 
+    
+    return $GLOBALS[$global_table_exist_key];
 }
 
 /***********************************
@@ -13219,6 +13486,384 @@ function getTypeOfColumn($table, $column) {
     db_close($db);
 
     return $result?$result['DATA_TYPE']:"";
+}
+
+/********************************
+ * FUNCTION: GET TAGS OF TAGGEE *
+ ********************************/
+function getTagsOfTaggee($taggee_id, $type) {
+
+    if (!$taggee_id || ($type !== "risk" && $type !== "asset"))
+        return;
+
+    $db = db_open();
+
+    //Load tags currently assigned to the taggee
+    $stmt = $db->prepare("
+        SELECT
+            `t`.`tag`
+        FROM
+            `tags` t
+            INNER JOIN `tags_taggees` tt ON `tt`.`tag_id` = `t`.`id`
+        WHERE
+            `tt`.`taggee_id` = :taggee_id and `tt`.`type` = :type;
+    ");
+    $stmt->bindParam(":taggee_id", $taggee_id, PDO::PARAM_STR);
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->execute();
+    $result = $stmt->fetchAll();
+
+    db_close($db);
+
+    //Get the actual tag values(the $result array contains other info as well)
+    return array_column($result, 'tag');
+}
+
+/**********************
+ * FUNCTION: HAS TAGS *
+ **********************/
+function hasTags($taggee_id, $type) {
+
+    if (!$taggee_id || ($type !== "risk" && $type !== "asset"))
+        return;
+
+    $db = db_open();
+
+    //Load tags currently assigned to the taggee
+    $stmt = $db->prepare("
+        SELECT
+            distinct(5)
+        FROM
+            `tags_taggees` tt
+        WHERE
+            `tt`.`taggee_id` = :taggee_id and `tt`.`type` = :type;
+    ");
+    $stmt->bindParam(":taggee_id", $taggee_id, PDO::PARAM_STR);
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->execute();
+    $result = $stmt->fetch();
+
+    db_close($db);
+
+    return !empty($result);
+}
+
+/****************************************************************************
+ * FUNCTION: UPDATE TAGS OF TYPE                                            *
+ * Gets an id and a type to decide what the tag is assigned to(referenced   *
+ * as `taggee`) and updates its tags. Type can be either `risk` or `asset`. *
+ * Third parameter is an array. If the array is empty, all the tags will be *
+ * removed from the taggee                                                  *
+ ****************************************************************************/
+function updateTagsOfType($taggee_id, $type, $tags) {
+
+    if (!$taggee_id || ($type !== "risk" && $type !== "asset") || !is_array($tags))
+        return false;
+
+    //Get the actual tag values(the $result array contains other info as well)
+    $tags_current = getTagsOfTaggee($taggee_id, $type);
+
+    $db = db_open();
+
+    // Clever usage of array_diffs to calculate what tags are removed from the taggee
+    // and what tags are added
+    $tags_to_remove = array_diff($tags_current, $tags);
+    $tags_to_add = array_diff($tags, $tags_current);
+
+    // If there're tags to remove
+    if ($tags_to_remove) {
+
+        //building an array of parameters to bind
+        $params = array(":taggee_id" => $taggee_id, ":type" => $type);
+
+        // building the list of strings to be used in the `in` part of the sql
+        // to be able to bind the params
+        // We need this to be able to delete all the connections to the removed
+        // tags in one go, instead of using a loop
+        $tags_to_remove_in = [];
+        foreach ($tags_to_remove as $i => $tag)
+        {
+            $key = ":id".$i;
+            $tags_to_remove_in[] = $key;
+            $params[$key] = $tag;
+        }
+
+        // making the comma separated list to be included in the sql
+        $tags_to_remove_in = implode(", ", $tags_to_remove_in);
+
+        // Remove the entries from the junction table that connected the deleted tags to the taggee
+        $stmt = $db->prepare("
+            delete
+                `tt`
+            from
+                `tags` t
+                inner join `tags_taggees` tt on `tt`.`tag_id` = `t`.`id`
+            where
+                `tt`.`taggee_id` = :taggee_id and
+                `tt`.`type` = :type and
+                `t`.`tag` in ({$tags_to_remove_in});
+        ");
+        $stmt->execute($params);
+
+        // Clean up every tags that aren't referenced by the junction table
+        $stmt = $db->prepare("
+            delete
+                `t`
+            from
+                `tags` `t`
+                left join `tags_taggees` `tt` on `tt`.`tag_id` = `t`.`id`
+            where
+                `tt`.`taggee_id` is null;
+        ");
+        $stmt->execute();
+    }
+
+    //If there're tags to add
+    if ($tags_to_add) {
+        //Sadly we can't do this in a single sql so we have to resort to looping
+        foreach ($tags_to_add as $tag) {
+
+            // Get the id of the tag (to either use it or to know that it's not
+            // in the database yet)
+            $stmt = $db->prepare("
+                SELECT
+                    `id`
+                FROM
+                    `tags` `t`
+                WHERE `t`.`tag` = :tag;
+            ");
+            $stmt->bindParam(":tag", $tag, PDO::PARAM_STR);
+            $stmt->execute();
+
+            $tag_id = $stmt->fetchAll();
+
+            if ($tag_id) {
+                $tag_id = $tag_id[0];
+                // If the tag is already in the database we just use the id to create
+                // the connection between the taggee and the tag in the junction table
+                $stmt = $db->prepare("
+                    INSERT INTO
+                        `tags_taggees` (`tag_id`, `taggee_id`, `type`)
+                    VALUES
+                        (:tag_id, :taggee_id, :type);
+                ");
+                $stmt->bindParam(":tag_id", $tag_id[0], PDO::PARAM_STR);
+                $stmt->bindParam(":taggee_id", $taggee_id, PDO::PARAM_STR);
+                $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+                $stmt->execute();
+            } else {
+                // If the tag isn't in the database yet, we have to create it and
+                // using its id to create the connection to the taggee
+                $stmt = $db->prepare("
+                    INSERT INTO
+                        `tags`(`tag`)
+                    VALUES(:tag);
+                    INSERT INTO
+                        `tags_taggees` (`tag_id`, `taggee_id`, `type`)
+                    VALUES
+                        (LAST_INSERT_ID(), :taggee_id, :type);
+                ");
+                $stmt->bindParam(":tag", $tag, PDO::PARAM_STR);
+                $stmt->bindParam(":taggee_id", $taggee_id, PDO::PARAM_STR);
+                $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+                $stmt->execute();
+                $stmt->closeCursor();
+            }
+        }
+    }
+
+    db_close($db);
+
+    // No audit logging is needed if nothing changed
+    if ($tags_to_add || $tags_to_remove) {
+        global $lang;
+
+        $tag_changes = [];
+        if ($tags_to_add)
+            $tag_changes[] = _lang('TagUpdateAuditLogAdded', array('tags_added' => implode(", ", $tags_to_add)), false);
+        if ($tags_to_remove)
+            $tag_changes[] = _lang('TagUpdateAuditLogRemoved', array('tags_removed' => implode(", ", $tags_to_remove)), false);
+
+        $message = _lang('TagUpdateAuditLog', array(
+                'user' => $_SESSION['user'],
+                'type' => $lang['TagType_' . $type],
+                'id' => $taggee_id + 1000,
+                'tags_from' => implode(", ", $tags_current),
+                'tags_to' => implode(", ", $tags),
+                'tag_changes' => implode(", ", $tag_changes)
+            ), false
+        );
+
+        write_log($taggee_id + 1000, $_SESSION['uid'], $message, $type);
+    }
+
+    return true;
+}
+
+/*******************************************
+ * FUNCTION: GET TAGS OF TYPE              *
+ * Gets tags assigned to a type of taggee. *
+ * Type can be either `risk` or `asset`.   *
+ *******************************************/
+function getTagsOfType($type) {
+
+    if ($type !== "risk" && $type !== "asset")
+        return false;
+
+    $db = db_open();
+
+    //Load tags currently assigned to a type of taggee
+    $stmt = $db->prepare("
+        SELECT
+            DISTINCT(`t`.`tag`)
+        FROM
+            `tags` t
+            INNER JOIN `tags_taggees` tt ON `tt`.`tag_id` = `t`.`id`
+        WHERE
+            `tt`.`type` = :type
+        ORDER BY `t`.`tag` ASC;
+    ");
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->execute();
+    $result = $stmt->fetchAll();
+
+    //Get the actual tag values(the $result array contains other info as well)
+    $tags = array_column($result, 'tag');
+
+    db_close($db);
+
+    return $tags;
+}
+
+/*********************************************
+ * FUNCTION: ARE TAGS EQUAL                  *
+ * Gets tags assigned to a type of taggee    *
+ * and compares them to the $tags parameter. *
+ * Type can be either `risk` or `asset`.     *
+ *********************************************/
+function areTagsEqual($taggee_id, $type, $tags) {
+
+    if (!$taggee_id || ($type !== "risk" && $type !== "asset") || !is_array($tags))
+        return false;
+
+    $db = db_open();
+
+    //Load tags currently assigned to the taggee
+    $stmt = $db->prepare("
+        SELECT
+            `t`.`tag`
+        FROM
+            `tags` t
+            INNER JOIN `tags_taggees` tt ON `tt`.`tag_id` = `t`.`id`
+        WHERE
+            `tt`.`taggee_id` = :taggee_id and `tt`.`type` = :type;
+    ");
+    $stmt->bindParam(":taggee_id", $taggee_id, PDO::PARAM_STR);
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->execute();
+    $result = $stmt->fetchAll();
+
+    $tags_current = array_column($result, 'tag');
+
+    db_close($db);
+
+    return array_diff($tags_current, $tags) && array_diff($tags, $tags_current);
+}
+
+/*********************************
+ * FUNCTION: REMOVE TAGS OF TYPE *
+ *********************************/
+function removeTagsOfTaggee($taggee_id, $type) {
+
+    if (!$taggee_id
+        || ($type !== "risk" && $type !== "asset")
+        || !hasTags($taggee_id, $type))
+        return;
+
+    $db = db_open();
+
+    // Remove the entries from the junction table that connected to the taggee
+    $stmt = $db->prepare("
+        delete
+            `tt`
+        from
+            `tags` t
+            inner join `tags_taggees` tt on `tt`.`tag_id` = `t`.`id`
+        where
+            `tt`.`taggee_id` = :taggee_id and
+            `tt`.`type` = :type;
+    ");
+    $stmt->bindParam(":taggee_id", $taggee_id, PDO::PARAM_STR);
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->execute();
+
+
+    // Clean up every tags that aren't referenced by the junction table
+    $stmt = $db->prepare("
+        delete
+            `t`
+        from
+            `tags` `t`
+            left join `tags_taggees` `tt` on `tt`.`tag_id` = `t`.`id`
+        where
+            `tt`.`taggee_id` is null;
+    ");
+    $stmt->execute();
+
+    db_close($db);
+}
+
+/*******************************
+ * FUNCTION: UPDATE RISK LEVEL *
+ *******************************/
+function update_risk_level($field, $value, $name) {
+    $db = db_open();
+
+    // Update the risk level
+    $stmt = $db->prepare("UPDATE `risk_levels` SET {$field}=:{$field} WHERE name=:name");
+    $stmt->bindParam(":{$field}", $value, PDO::PARAM_STR);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/*********************************
+ * FUNCTION: INCLUDE CSRF MAGIC  *
+ * Make sure to call this after  *
+ * the session is properly setup *
+ *********************************/
+function include_csrf_magic() {
+
+    function csrf_startup() {
+        csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+    }
+
+    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+}
+
+function startsWith($haystack, $needle) {
+    $length = strlen($needle);
+    return (substr($haystack, 0, $length) === $needle);
+}
+
+function endsWith($haystack, $needle) {
+    $length = strlen($needle);
+    if ($length == 0) {
+        return true;
+    }
+
+    return (substr($haystack, -$length) === $needle);
+}
+
+/***************************************
+ * FUNCTION: GET SETTING VALUE BY NAME *
+ ***************************************/
+function get_setting_by_name($name)
+{
+    return get_setting($name);
 }
 
 ?>

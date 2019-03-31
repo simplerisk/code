@@ -44,52 +44,52 @@ function get_mail_settings()
 /**********************************
  * FUNCTION: UPDATE MAIL SETTINGS *
  **********************************/
-function update_mail_settings($transport, $from_email, $from_name, $replyto_email, $replyto_name, $host, $smtpautotls, $smtpauth, $username, $password, $encryption, $port)
+function update_mail_settings($transport, $from_email, $from_name, $replyto_email, $replyto_name, $host, $smtpautotls, $smtpauth, $username, $password, $encryption, $port, $prepend)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // If the transport is sendmail or smtp
-        if ($transport == "sendmail" || $transport == "smtp")
-        {
-                // Update the transport
-                $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_transport'");
-                $stmt->bindParam(":value", $transport, PDO::PARAM_STR, 200);
-                $stmt->execute();
-        }
+    // If the transport is sendmail or smtp
+    if ($transport == "sendmail" || $transport == "smtp")
+    {
+        // Update the transport
+        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_transport'");
+        $stmt->bindParam(":value", $transport, PDO::PARAM_STR, 200);
+        $stmt->execute();
+    }
 
 	// If the from_email is valid
 	if (preg_match("/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/", $from_email))
 	{
-        	// Update the from_email
-        	$stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_from_email'");
-        	$stmt->bindParam(":value", $from_email, PDO::PARAM_STR, 200);
-        	$stmt->execute();
+        // Update the from_email
+        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_from_email'");
+        $stmt->bindParam(":value", $from_email, PDO::PARAM_STR, 200);
+        $stmt->execute();
 	}
 
-        // Update the from_name
-        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_from_name'");
-        $stmt->bindParam(":value", $from_name, PDO::PARAM_STR, 200);
-        $stmt->execute();
+    // Update the from_name
+    $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_from_name'");
+    $stmt->bindParam(":value", $from_name, PDO::PARAM_STR, 200);
+    $stmt->execute();
 
         // If the replyto_email is valid
 	if (preg_match("/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/", $replyto_email))
-        {
-        	// Update the replyto_email
-        	$stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_replyto_email'");
-        	$stmt->bindParam(":value", $replyto_email, PDO::PARAM_STR, 200);
-        	$stmt->execute();
+    {
+        // Update the replyto_email
+        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_replyto_email'");
+        $stmt->bindParam(":value", $replyto_email, PDO::PARAM_STR, 200);
+        $stmt->execute();
 	}
 
-        // Update the replyto_name
-        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_replyto_name'");
-        $stmt->bindParam(":value", $replyto_name, PDO::PARAM_STR, 200);
-        $stmt->execute();
+    // Update the replyto_name
+    $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_replyto_name'");
+    $stmt->bindParam(":value", $replyto_name, PDO::PARAM_STR, 200);
+    $stmt->execute();
 
-        // Update the host 
-        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_host'");
-        $stmt->bindParam(":value", $host, PDO::PARAM_STR, 200);
-        $stmt->execute();
+    // Update the host
+    $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_host'");
+    $stmt->bindParam(":value", $host, PDO::PARAM_STR, 200);
+    $stmt->execute();
 
 	// If the SMTP Auto TLS is either true or false
 	if ($smtpautotls == "true" || $smtpautotls == "false")
@@ -109,40 +109,45 @@ function update_mail_settings($transport, $from_email, $from_name, $replyto_emai
 		$stmt->execute();
 	}
 
-        // Update the username 
-        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_username'");
-        $stmt->bindParam(":value", $username, PDO::PARAM_STR, 200);
+    // Update the username
+    $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_username'");
+    $stmt->bindParam(":value", $username, PDO::PARAM_STR, 200);
+    $stmt->execute();
+
+    // If the password is not empty
+    if ($password != "")
+    {
+        // Update the value
+        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_password'");
+        $stmt->bindParam(":value", $password, PDO::PARAM_STR, 200);
         $stmt->execute();
+    }
 
-        // If the password is not empty
-        if ($password != "")
-        {
-                // Update the value
-                $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_password'");
-                $stmt->bindParam(":value", $password, PDO::PARAM_STR, 200);
-                $stmt->execute();
-        }
+    // If the encryption is none or tls or ssl
+    if ($encryption == "none" || $encryption == "tls" || $encryption == "ssl")
+    {
+        // Update the encryption
+        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_smtpsecure'");
+        $stmt->bindParam(":value", $encryption, PDO::PARAM_STR, 200);
+        $stmt->execute();
+    }
 
-        // If the encryption is none or tls or ssl
-        if ($encryption == "none" || $encryption == "tls" || $encryption == "ssl")
-        {
-                // Update the encryption
-                $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_smtpsecure'");
-                $stmt->bindParam(":value", $encryption, PDO::PARAM_STR, 200);
-                $stmt->execute();
-        }
+    // If the port is an integer value
+    if (is_numeric($port))
+    {
+        // Update the port
+        $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_port'");
+        $stmt->bindParam(":value", $port, PDO::PARAM_STR, 200);
+        $stmt->execute();
+    }
 
-        // If the port is an integer value
-        if (is_numeric($port))
-        {
-                // Update the port
-                $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_port'");
-                $stmt->bindParam(":value", $port, PDO::PARAM_STR, 200);
-                $stmt->execute();
-        }
+    // Update the prepend
+    $stmt = $db->prepare("UPDATE `settings` SET value=:value WHERE name='phpmailer_prepend'");
+    $stmt->bindParam(":value", $prepend, PDO::PARAM_STR);
+    $stmt->execute();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 }
 
 /************************
@@ -152,18 +157,19 @@ function send_email($name, $email, $subject, $body)
 {
 	// Get the mail settings
 	$mail = get_mail_settings();
-        $transport = $mail['phpmailer_transport'];
-        $from_email = $mail['phpmailer_from_email'];
-        $from_name = $mail['phpmailer_from_name'];
-        $replyto_email = $mail['phpmailer_replyto_email'];
-        $replyto_name = $mail['phpmailer_replyto_name'];
-        $host = $mail['phpmailer_host'];
+    $transport = $mail['phpmailer_transport'];
+    $from_email = $mail['phpmailer_from_email'];
+    $from_name = $mail['phpmailer_from_name'];
+    $replyto_email = $mail['phpmailer_replyto_email'];
+    $replyto_name = $mail['phpmailer_replyto_name'];
+    $prepend = $mail['phpmailer_prepend'];
+    $host = $mail['phpmailer_host'];
 	$smtpautotls = $mail['phpmailer_smtpautotls'];
 	$smtpauth = $mail['phpmailer_smtpauth'];
-        $username = $mail['phpmailer_username'];
-        $password = $mail['phpmailer_password'];
-        $encryption = $mail['phpmailer_smtpsecure'];
-        $port = $mail['phpmailer_port'];
+    $username = $mail['phpmailer_username'];
+    $password = $mail['phpmailer_password'];
+    $encryption = $mail['phpmailer_smtpsecure'];
+    $port = $mail['phpmailer_port'];
 
 	// Load the PHPMailer library
 	require_once(realpath(__DIR__ . '/PHPMailer/src/PHPMailer.php'));
@@ -199,7 +205,7 @@ function send_email($name, $email, $subject, $body)
 	// $mail->addBCC('bcc@example.com');
 
 	// Set the subject line
-	$mail->Subject = $subject;
+    $mail->Subject = ($prepend && strlen($prepend) > 0 ? $prepend . " " : "") . $subject;
 
 	// Set the email format to HTML
 	$mail->isHTML(true);

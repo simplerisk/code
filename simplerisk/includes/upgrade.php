@@ -2229,7 +2229,7 @@ function upgrade_from_20180104001($db){
 
     // Add audit statuses to the test status table
     echo "Adding audit statuses to the test status table.<br />\n";
-    $stmt = $db->prepare("INSERT INTO `test_status` (`value`, `name`) VALUES (1, \"Pending Evidence from Control Owner\"), (2, \"Evidence Submitted / Pending Review\"), (3, \"Passed Internal QA\"), (4, \"Remediation Required\"), (5, \"Closed\")");
+    $stmt = $db->prepare("INSERT INTO `test_status` (`value`, `name`) VALUES (1, \"Pending Evidence from Control Owner\"), (2, \"Evidence Submitted / Pending Review\"), (3, \"Passed Internal QA\"), (4, \"Remediation Required\"), (5, \"Closed\"); ");
     $stmt->execute();
 
     // Set a closed audit status to settings table
@@ -3232,6 +3232,187 @@ function upgrade_from_20190105001($db){
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20190210-001 *
+ ***************************************/
+function upgrade_from_20190210001($db){
+    // Database version to upgrade
+    $version_to_upgrade = '20190210-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20190331-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Only create and add the values if the table doesn't exist yet
+    // to make sure we only insert values once
+    if (!table_exists('test_results')) {
+        // Creating the test_results table.
+        echo "Creating the test_results table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `test_results` (
+              `value` INT(11) NOT NULL AUTO_INCREMENT,
+              `name` VARCHAR(20) NOT NULL,
+              `background_class` VARCHAR(100) NOT NULL,
+              PRIMARY KEY(value),
+              CONSTRAINT `name_unique` UNIQUE (`name`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+
+        echo "Adding possible test results to the test results table.<br />\n";
+        $stmt = $db->prepare("INSERT INTO `test_results` (`name`, `background_class`) VALUES ('Pass', 'green-background'), ('Inconclusive', 'white-background'), ('Fail', 'red-background');");
+        $stmt->execute();
+    } else echo "The test_results table already exists.<br />\n";
+
+    // Creating the tags table.
+    echo "Creating the tags table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `tags` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `tag` VARCHAR(50) NOT NULL,
+            PRIMARY KEY(`id`),
+            CONSTRAINT `tag_unique` UNIQUE (`tag`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+
+    // Creating the tags_taggees table.
+    echo "Creating the tags_taggees table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `tags_taggees` (
+            `tag_id` INT(11) NOT NULL,
+            `taggee_id` INT(11) NOT NULL,
+            `type` VARCHAR(20) NOT NULL,
+            CONSTRAINT `tag_taggee_unique` UNIQUE (`tag_id`, `taggee_id`, `type`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+
+    // Change the `framework_controls`.`control_number` field's type to 'varchar'.
+    echo "Change the `framework_controls`.`control_number` field's type to 'varchar'.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `framework_controls` CHANGE `control_number` `control_number` varchar(100);");
+    $stmt->execute();
+
+    // Create a setting for email prepend
+    echo "Setting the default email prepend.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `settings` (name, value) VALUES ('phpmailer_prepend', '[SIMPLERISK]');");
+    $stmt->execute();
+
+    // Removing the unneeded `SIMPLERISK_URL` setting
+    echo "Removing the unneeded `SIMPLERISK_URL` setting<br />\n";
+    delete_setting('SIMPLERISK_URL');
+
+    // Adding default setting for Risk Appetite if needed
+    if (!get_setting('risk_appetite')) {
+        echo "Adding default setting for Risk Appetite<br />\n";
+        add_setting("risk_appetite", 0);
+    }
+
+    // Creating the document_exceptions table.
+    echo "Creating the document_exceptions table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `document_exceptions` (
+            `value` INT(11) NOT NULL AUTO_INCREMENT,
+            `name` VARCHAR(100) NOT NULL,
+            `policy_document_id` INT(11),
+            `control_framework_id` INT(11),
+            `owner` INT(11),
+            `additional_stakeholders` VARCHAR(500) NOT NULL,
+            `creation_date` DATE NOT NULL DEFAULT '0000-00-00',
+            `review_frequency` int(11) NOT NULL DEFAULT '0',
+            `next_review_date` DATE NOT NULL DEFAULT '0000-00-00',
+            `approval_date` DATE NOT NULL DEFAULT '0000-00-00',
+            `approver` INT(11),
+            `approved` tinyint(1) NOT NULL DEFAULT '0',
+            `description` blob NOT NULL,
+            `justification` blob NOT NULL,
+            PRIMARY KEY(value)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+
+    // Adding Document Exception management related permissions to `user` table
+    echo "Adding Document Exception management related permissions to `user` table.<br />\n";
+    if (!field_exists_in_table('view_exception', 'user')) {
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `view_exception` TINYINT(1) NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+
+    if (!field_exists_in_table('create_exception', 'user')) {
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `create_exception` TINYINT(1) NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+
+    if (!field_exists_in_table('update_exception', 'user')) {
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `update_exception` TINYINT(1) NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+
+    if (!field_exists_in_table('delete_exception', 'user')) {
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `delete_exception` TINYINT(1) NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+
+    if (!field_exists_in_table('approve_exception', 'user')) {
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `approve_exception` TINYINT(1) NOT NULL DEFAULT '0';");
+        $stmt->execute();
+    }
+
+    // Assign administrator role to all users with access to configure menu.
+    $stmt = $db->prepare("
+        UPDATE `user`
+        SET `view_exception` = 1,
+            `create_exception` = 1,
+            `update_exception` = 1,
+            `delete_exception` = 1,
+            `approve_exception` = 1
+        WHERE admin=1;
+    ");
+
+    $stmt->execute();
+
+    // Delete Unassinged Risks project
+    echo "Deleting \"Unassinged Risks\" project.<br />\n";
+    $unassigned_risks_project_name = "Unassigned Risks";
+    $unassigned_risks_project_id = 0;
+    $projects = get_projects();
+    foreach($projects as $project){
+        if($project['name'] == $unassigned_risks_project_name){
+            $unassigned_risks_project_id = $project['value'];
+            break;
+        }
+    }
+    $stmt = $db->prepare("DELETE FROM `projects` WHERE value=:value; ");
+    $stmt->bindParam(":value", $unassigned_risks_project_id);
+    $stmt->execute();
+    
+    // Adding new field `control_ids` to `documents` table.
+    if (!field_exists_in_table('control_ids', 'documents')) {
+        echo "Adding new field `control_ids` to `documents` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `control_ids` VARCHAR(500) NOT NULL;");
+        $stmt->execute();
+    }
+
+    // Adding new field `framework_ids` to `documents` table.
+    if (!field_exists_in_table('framework_ids', 'documents')) {
+        echo "Adding new field `framework_ids` to `documents` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `framework_ids` VARCHAR(500) NOT NULL;");
+        $stmt->execute();
+    }
+
+    // Adding new field `valuation_level_name` to `asset_values` table
+    if (!field_exists_in_table('valuation_level_name', 'asset_values')) {
+        echo "Adding new field `valuation_level_name` to `asset_values` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `asset_values` ADD `valuation_level_name` VARCHAR(100) NOT NULL;");
+        $stmt->execute();
+    }
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -3391,6 +3572,10 @@ function upgrade_database()
                 break;
             case "20190105-001":
                 upgrade_from_20190105001($db);
+                upgrade_database();
+                break;
+            case "20190210-001":
+                upgrade_from_20190210001($db);
                 upgrade_database();
                 break;
             default:

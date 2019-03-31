@@ -16,29 +16,23 @@
     // Add various security headers
     add_security_headers();
 
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-	    session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-        // Start the session
-	session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
     if (!isset($_SESSION))
     {
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
+        {
+            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        }
+
+        // Start the session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
         session_name('SimpleRisk');
         session_start();
     }
 
     // Include the language file
     require_once(language_file());
-
-    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-    function csrf_startup() {
-        csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
-    }
 
     // Check for session timeout or renegotiation
     session_check();
@@ -57,6 +51,10 @@
 		header("Location: ../index.php");
 		exit(0);
 	}
+
+    // Include the CSRF-magic library
+    // Make sure it's called after the session is properly setup
+    include_csrf_magic();
 
     $customAddFunction_team = function($name) {
         // Insert a new team
@@ -329,6 +327,16 @@
                 </div>
                 <div class="span9">
                     <div class="row-fluid">
+                        <b><?php echo $escaper->escapeHtml($lang['Select']) ?>: </b>
+                        <select id="table-sections">
+                            <?php
+                                foreach($tableConfig as $table => $config){
+                                    echo "<option value='".$table."'>". $escaper->escapeHtml($lang[$config['headerKey']]) ."</option>\n";
+                                }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="row-fluid">
                         <div id="crud-wrapper" class="span12">
                             <?php
                                 $text_change = $escaper->escapeHtml($lang['Change']);
@@ -340,8 +348,16 @@
                                 $text_addItem = $escaper->escapeHtml($lang['AddNewItemNamed']);
 
                                 foreach ($tableConfig as $table => $config) {
+                                    if($table == "review")
+                                    {
+                                        $display = "display: block;";
+                                    }
+                                    else
+                                    {
+                                        $display = "display: none;";
+                                    }
                                     echo "
-                                    <div class='hero-unit' data-table_name='" . $table . "'>\n
+                                    <div class='hero-unit' data-table_name='" . $table . "' style='{$display}'>\n
                                         <p>\n
                                             <h4>" . $escaper->escapeHtml($lang[$config['headerKey']]) . ":</h4>\n
                                             " . $text_addItem . ":&nbsp;&nbsp;<input id='" . $table . "_new' type='text' maxlength='" . $config['lengthLimit'] . "' size='20' />&nbsp;&nbsp;<input type='submit' value=" .  $text_add . " data-action='add' /><br />\n
@@ -377,39 +393,37 @@
             }
 
             function crudAction() {
-                console.log($(this));
+
                 var div = $(this).closest('div');
                 if (div) {
-                    console.log(div);
                     var tableName = div.data('table_name');
                     var action = $(this).data('action');
-                    console.log(tableName + " - " + action);
-                    if (tableName && action) {
-                        var formData = new FormData();
-                        formData.append('table_name', tableName);
-                        formData.append('action', action);
-                        switch(action) {
-                            case "add":
-                                formData.append('name', div.find('#' + tableName + '_new').val());
-                                break;
-                            case "update":
-                                formData.append('id', div.find('#' + tableName + '_update_from').val());
-                                formData.append('name', div.find('#' + tableName + '_update_to').val());
-                                break;
-                            case "delete":
-                                formData.append('id', div.find('#' + tableName + '_delete').val());
-                                break;
-                        }
 
+                    if (tableName && action) {
                         $.ajax({
                             type: "POST",
                             url: window.location.href,
-                            data : formData,
-                            processData:false,
-                            contentType: false,
-                            headers: {
-                                'CSRF-TOKEN': csrfMagicToken
-                            },
+                            data: (function() {
+                                var d = new Object();
+                                d.table_name = tableName;
+                                d.action = action;
+
+                                switch(action) {
+                                    case "add":
+                                        d.name = div.find('#' + tableName + '_new').val();
+                                        break;
+                                    case "update":
+                                        d.id = div.find('#' + tableName + '_update_from').val();
+                                        d.name = div.find('#' + tableName + '_update_to').val();
+                                        break;
+                                    case "delete":
+                                        d.id = div.find('#' + tableName + '_delete').val();
+                                        break;
+                                }
+
+                                return d;
+                            })(),
+
                             success: function(data){
                                 if(data.status_message){
                                     showAlertsFromArray(data.status_message);
@@ -438,6 +452,11 @@
 
             $(document).ready(function() {
                 $('#crud-wrapper input[type="submit"]').click(crudAction);
+                
+                $('#table-sections').change(function(){
+                    $("#crud-wrapper > .hero-unit").fadeOut(100);
+                    $("#crud-wrapper > [data-table_name='"+$(this).val()+"']").fadeIn(1000);
+                })
             });
 
         </script>

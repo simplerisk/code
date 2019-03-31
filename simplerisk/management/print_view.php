@@ -16,17 +16,17 @@
     // Add various security headers
     add_security_headers();
 
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
     if (!isset($_SESSION))
     {
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
+        {
+            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        }
+
+        // Start the session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
         session_name('SimpleRisk');
         session_start();
     }
@@ -94,6 +94,7 @@
             $assessment = $risk[0]['assessment'];
             $notes = $risk[0]['notes'];
             $submission_date = $risk[0]['submission_date'];
+            $tags = $risk[0]['risk_tags'];
             $mitigation_id = $risk[0]['mitigation_id'];
             $mgmt_review = $risk[0]['mgmt_review'];
             $calculated_risk = $risk[0]['calculated_risk'];
@@ -171,6 +172,7 @@
             $assessment = "";
             $notes = "";
             $submission_date = "";
+            $tags = "";
 
             $mitigation_id = "";
             $mgmt_review = "";
@@ -331,7 +333,7 @@
           </div>
           <div class="row-fluid">
             <div class="well">
-              <?php view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes); ?>
+              <?php view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $tags); ?>
             </div>
           </div>
           <div class="row-fluid">
@@ -358,7 +360,7 @@
           <div class="row-fluid">
             <div class="well">
               <h4><?php echo $lang['AuditTrail']; ?></h4>
-              <?php get_audit_trail($id,36500,'risk'); ?>
+              <?php get_audit_trail_html($id,36500,'risk'); ?>
             </div>
           </div>
         </div>

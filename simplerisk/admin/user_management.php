@@ -17,17 +17,17 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-// Session handler is database
-if (USE_DATABASE_FOR_SESSIONS == "true")
-{
-    session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-}
-
-// Start the session
-session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
 if (!isset($_SESSION))
 {
+    // Session handler is database
+    if (USE_DATABASE_FOR_SESSIONS == "true")
+    {
+        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+    }
+
+    // Start the session
+    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
     session_name('SimpleRisk');
     session_start();
 }
@@ -97,6 +97,12 @@ if (isset($_POST['add_user']))
     $comment_risk_management = (int)(isset($_POST['comment_risk_management']) ? 1 : 0);
     $comment_compliance = (int)(isset($_POST['comment_compliance']) ? 1 : 0);
     
+    $view_exception           = isset($_POST['view_exception']) ? 1 : 0;
+    $create_exception         = isset($_POST['create_exception']) ? 1 : 0;
+    $update_exception         = isset($_POST['update_exception']) ? 1 : 0;
+    $delete_exception         = isset($_POST['delete_exception']) ? 1 : 0;
+    $approve_exception        = isset($_POST['approve_exception']) ? 1 : 0;
+
     // If the type is 1
     if ($type == "1")
     {
@@ -189,6 +195,11 @@ if (isset($_POST['add_user']))
                     "delete_documentation" => $delete_documentation,
                     "comment_risk_management" => $comment_risk_management,
                     "comment_compliance" => $comment_compliance,
+                    "view_exception" => $view_exception,
+                    "create_exception" => $create_exception,
+                    "update_exception" => $update_exception,
+                    "delete_exception" => $delete_exception,
+                    "approve_exception" => $approve_exception,
                 ];
 
                 // Insert a new user
@@ -475,6 +486,11 @@ if (isset($_POST['password_policy_update']))
             document.getElementsByName("add_documentation")[0].checked = true;
             document.getElementsByName("modify_documentation")[0].checked = true;
             document.getElementsByName("delete_documentation")[0].checked = true;
+            document.getElementsByName("view_exception")[0].checked = true;
+            document.getElementsByName("create_exception")[0].checked = true;
+            document.getElementsByName("update_exception")[0].checked = true;
+            document.getElementsByName("delete_exception")[0].checked = true;
+            document.getElementsByName("approve_exception")[0].checked = true;
         }
         else {
             document.getElementsByName("governance")[0].checked = false;
@@ -487,6 +503,11 @@ if (isset($_POST['password_policy_update']))
             document.getElementsByName("add_documentation")[0].checked = false;
             document.getElementsByName("modify_documentation")[0].checked = false;
             document.getElementsByName("delete_documentation")[0].checked = false;
+            document.getElementsByName("view_exception")[0].checked = false;
+            document.getElementsByName("create_exception")[0].checked = false;
+            document.getElementsByName("update_exception")[0].checked = false;
+            document.getElementsByName("delete_exception")[0].checked = false;
+            document.getElementsByName("approve_exception")[0].checked = false;
         }
     }
 
@@ -635,6 +656,11 @@ if (isset($_POST['password_policy_update']))
                                                     <li><input class="hidden-checkbox" id="add_documentation" name="add_documentation" type="checkbox" /> <label for="add_documentation"><?php echo $escaper->escapeHtml($lang['AbleToAddDocumentation']); ?></label></li>
                                                     <li><input class="hidden-checkbox" id="modify_documentation" name="modify_documentation" type="checkbox" /> <label for="modify_documentation"><?php echo $escaper->escapeHtml($lang['AbleToModifyDocumentation']); ?></label></li>
                                                     <li><input class="hidden-checkbox" id="delete_documentation" name="delete_documentation" type="checkbox" /> <label for="delete_documentation"><?php echo $escaper->escapeHtml($lang['AbleToDeleteDocumentation']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="view_exception" name="view_exception" type="checkbox" /> <label for="view_exception"><?php echo $escaper->escapeHtml($lang['AbleToViewDocumentException']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="create_exception" name="create_exception" type="checkbox" /> <label for="create_exception"><?php echo $escaper->escapeHtml($lang['AbleToCreateDocumentException']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="update_exception" name="update_exception" type="checkbox" /> <label for="update_exception"><?php echo $escaper->escapeHtml($lang['AbleToUpdateDocumentException']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="delete_exception" name="delete_exception" type="checkbox" /> <label for="delete_exception"><?php echo $escaper->escapeHtml($lang['AbleToDeleteDocumentException']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="approve_exception" name="approve_exception" type="checkbox" /> <label for="approve_exception"><?php echo $escaper->escapeHtml($lang['AbleToApproveDocumentException']); ?></label></li>
                                                 </ul>
                                             </li>
                                         </ul>

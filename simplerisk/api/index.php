@@ -14,17 +14,17 @@
     // Add various security headers
     add_security_headers();
 
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
     if (!isset($_SESSION))
     {
+        // Session handler is database
+        if (USE_DATABASE_FOR_SESSIONS == "true")
+        {
+            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+        }
+
+        // Start the session
+        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
         session_name('SimpleRisk');
         session_start();
     }
@@ -133,7 +133,7 @@
         getRoute()->get('/compliance/initiate_audits', 'getInitiateTestAuditsResponse');
         getRoute()->get('/compliance/active_audits', 'getActiveTestAuditsResponse');
         getRoute()->post('/compliance/save_audit_comment', 'saveTestAuditCommentResponse');
-        getRoute()->get('/compliance/past_audits', 'getPastTestAuditsResponse');
+        getRoute()->post('/compliance/past_audits', 'getPastTestAuditsResponse');
         getRoute()->post('/compliance/reopen_audit', 'reopenTestAuditResponse');
         getRoute()->post('/compliance/audit_initiation/initiate', 'initiateFrameworkControlTestsResponse');
         getRoute()->get('/compliance/audit_timeline', 'auditTimelineResponse');
@@ -151,12 +151,19 @@
         getRoute()->get('/assessment/questionnaire/template_questions/dynamic', 'assessment_extra_questionnaireTemplateQuestionsDynamicAPI');
         /******************************************************************************/
 
+        /******************************* Audit Log API **********************************/
+        getRoute()->get('/audit_logs', 'get_audit_logs_api');
+        /****************************************** *************************************/
+        
         /******************************* Assets API *************************************/
-        getRoute()->post('/assets/verify_asset', 'assets_verify_asset');
-        getRoute()->post('/assets/discard_asset', 'assets_discard_asset');
-        getRoute()->post('/assets/delete_asset', 'assets_delete_asset');
+        getRoute()->get('/assets/verify_asset', 'assets_verify_asset');
+        getRoute()->get('/assets/discard_asset', 'assets_discard_asset');
+        getRoute()->get('/assets/delete_asset', 'assets_delete_asset');
         getRoute()->post('/assets/update_asset', 'assets_update_asset');
         getRoute()->get('/assets/verified_asset_body', 'assets_verified_asset_table_body');
+        getRoute()->post('/assets/verify_assets', 'assets_verify_assets');
+        getRoute()->post('/assets/discard_assets', 'assets_discard_assets');
+        getRoute()->post('/assets/delete_assets', 'assets_delete_assets');
         /********************************************************************************/
 
         /********************* Authentication API **************************/
@@ -177,6 +184,24 @@
         getRoute()->post('/riskformula/update_impact_name', 'update_impact_name_api');
         getRoute()->post('/riskformula/update_likelihood_name', 'update_likelihood_name_api');
         /******************************************************************/
+
+        /********************* RISK LEVEL API **************************/
+        getRoute()->post('/risklevel/update', 'update_risk_level_API');
+        /***************************************************************/
+
+        /***************** DOCUMENT EXCEPTIONS API *****************/
+        getRoute()->post('/exceptions/create', 'create_exception_api');
+        getRoute()->post('/exceptions/update', 'update_exception_api');
+        getRoute()->post('/exceptions/delete', 'delete_exception_api');
+        getRoute()->post('/exceptions/approve', 'approve_exception_api');
+        getRoute()->post('/exceptions/batch-delete', 'batch_delete_exception_api');
+        getRoute()->get('/exceptions/tree', 'get_exceptions_as_treegrid_api');
+        getRoute()->get('/exceptions/exception', 'get_exception_api');
+        getRoute()->get('/exceptions/info', 'get_exception_for_display_api');
+        getRoute()->get('/exceptions/audit_log', 'get_exceptions_audit_log_api');
+        /***********************************************************/
+
+        getRoute()->get('/management/tag_options_of_type', 'getTagOptionsOfType');
 
         // Return scoring histories
         getRoute()->get('/management/risk/scoring_history', 'scoringHistory');

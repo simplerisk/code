@@ -72,3 +72,24 @@
   margin: 30px 0px 20px 0;
   display:block;
 }
+
+span.editable {
+    cursor: pointer;
+
+
+    &:after {
+        margin-left: 5px;
+        content: "\f040";
+        font-family: FontAwesome;
+    }
+}
+
+input.editable {
+    min-width:50px !important;
+    max-width:99.99% !important;
+    transition: width 0.25s;
+    text-align:center;
+    font-family: monospace;
+    max-height: 1.2em;
+    padding: 10px 5px;
+}

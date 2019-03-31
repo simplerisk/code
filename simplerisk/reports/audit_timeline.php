@@ -16,17 +16,17 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-// Session handler is database
-if (USE_DATABASE_FOR_SESSIONS == "true")
-{
-    session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-}
-
-// Start the session
-session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
 if (!isset($_SESSION))
 {
+    // Session handler is database
+    if (USE_DATABASE_FOR_SESSIONS == "true")
+    {
+        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+    }
+
+    // Start the session
+    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+
     session_name('SimpleRisk');
     session_start();
 }
@@ -43,6 +43,13 @@ session_check();
 if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 {
     set_unauthenticated_redirect();
+    header("Location: ../index.php");
+    exit(0);
+}
+
+// If User has no access permission for complicance menu, enforce to main page.
+if(empty($_SESSION['compliance']))
+{
     header("Location: ../index.php");
     exit(0);
 }
@@ -65,11 +72,20 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    
+    <?php
+        setup_alert_requirements("..");
+    ?>
 </head>
 
 <body>
 
-    <?php view_top_menu("Reporting"); ?>
+    <?php 
+        view_top_menu("Reporting"); 
+
+        // Get any alert messages
+        get_alert();
+    ?>
 
     <div class="container-fluid">
         <div class="row-fluid">
