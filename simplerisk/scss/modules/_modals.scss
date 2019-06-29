@@ -1,0 +1,27 @@
+/*--------------------------------------------------------------
+ ## Styles for modal popups
+ --------------------------------------------------------------*/
+.modal-body {
+    &::-webkit-scrollbar {
+        background: yellow;
+        width: 10px;
+    }
+    &::-webkit-scrollbar-track {
+        background: $scrollbar-track-color;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: $scrollbar-thumb-color;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: $scrollbar-thumb-hover-color;
+    }
+}
+
+.modal-header {
+    border-bottom: 1px solid $scrollbar-thumb-color;
+    color: $modal-text-color;
+}
+
+.modal-footer {
+    padding: 10px !important;
+}

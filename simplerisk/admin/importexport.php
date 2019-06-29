@@ -68,15 +68,15 @@
         // If the user wants to activate the extra
         if (isset($_POST['activate']))
         {
-                // Enable the Import Export Extra
-                enable_import_export_extra();
+            // Enable the Import Export Extra
+            enable_import_export_extra();
         }
 
         // If the user wants to deactivate the extra
         if (isset($_POST['deactivate']))
         {
-                // Disable the Import Export Extra
-                disable_import_export_extra();
+            // Disable the Import Export Extra
+            disable_import_export_extra();
         }
 
         // If the user selected to import a CSV
@@ -96,22 +96,22 @@
         // If the user selected to do a combined export
         if (isset($_POST['risks_export']))
         {
-                // Export the CSV file
-                export_csv("risks");
+            // Export the CSV file
+            export_csv("risks");
         }
 
         // If the user selected to do a combined export
         if (isset($_POST['mitigations_export']))
         {
-                // Export the CSV file
-                export_csv("mitigations");
+            // Export the CSV file
+            export_csv("mitigations");
         }
 
         // If the user selected to do a combined export
         if (isset($_POST['reviews_export']))
         {
-                // Export the CSV file
-                export_csv("reviews");
+            // Export the CSV file
+            export_csv("reviews");
         }
 
         // If the user selected to do a combined export
@@ -126,6 +126,20 @@
         {
             // Export the CSV file
             export_csv("assets");
+        }
+
+        // If the user selected to do an asset group export
+        if (isset($_POST['asset_groups_export']))
+        {
+            // Export the CSV file
+            export_csv("asset_groups");
+        }
+
+        // If the user selected to do a control export
+        if (isset($_POST['controls_export']))
+        {
+            // Export the CSV file
+            export_csv("controls");
         }
     }
 
@@ -164,7 +178,7 @@
 
                 display_import_export();
 
-		display_import_export_selector();
+                display_import_export_selector();
             }
         }
         // Otherwise, the Extra does not exist

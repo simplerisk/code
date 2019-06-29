@@ -67,6 +67,7 @@
           $type             = $_POST['type'];
           $name             = $_POST['name'];
           $email            = $_POST['email'];
+          $manager          = $_POST['manager'];
           $teams            = isset($_POST['team']) ? $_POST['team'] : array('none');
           $role_id          = (int)$_POST['role'];
           $language         = get_name_by_value("languages", (int)$_POST['languages']);
@@ -162,6 +163,7 @@
                 "update_exception" => $update_exception,
                 "delete_exception" => $delete_exception,
                 "approve_exception" => $approve_exception,
+                "manager" =>          $manager
             ];
 
           // Update the user
@@ -192,6 +194,7 @@
       $teams = $user_info['teams'];
       $role_id = $user_info['role_id'];
       $admin = $user_info['admin'];
+      $manager = $user_info['manager'];
                 
       $governance = $user_info['governance'];
       $riskmanagement = $user_info['riskmanagement'];
@@ -246,6 +249,7 @@
       $teams      = "none";
       $role_id    = "";
       $admin      = false;
+      $manager      = false;
                   
       $governance = false;
       $riskmanagement = false;
@@ -561,6 +565,11 @@
                                         <td><?php create_dropdown("languages", get_value_by_name("languages", $language)); ?></td>
                                     </tr>
                                 </table>
+
+                                <h6>
+                                    <u><?php echo $escaper->escapeHtml($lang['Manager']); ?></u>
+                                </h6>
+                                <?php create_dropdown("user", $manager, "manager"); ?>
 
                                 <h6>
                                     <u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u>

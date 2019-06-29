@@ -90,20 +90,24 @@ $pie_array = get_pie_array(null, $teams);
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
   <script type="">
+    function submitForm() {
+        var brands = $('#teams option:selected');
+        var selected = [];
+        $(brands).each(function(index, brand){
+            selected.push($(this).val());
+        });
+        
+        $("#team_options").val(selected.join(","));
+        $("#risks_dashboard_form").submit();
+    }
+  
     $(function(){
         $("#teams").multiselect({
             allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllTeams']); ?>',
             includeSelectAllOption: true,
-            onChange: function(element, checked){
-                var brands = $('#teams option:selected');
-                var selected = [];
-                $(brands).each(function(index, brand){
-                    selected.push($(this).val());
-                });
-                
-                $("#team_options").val(selected.join(","));
-                $("#risks_dashboard_form").submit();
-            }
+            onChange: submitForm,
+            onSelectAll: submitForm,
+            onDeselectAll: submitForm,
         });
     });
   

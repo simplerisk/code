@@ -74,7 +74,7 @@ if (isset($_POST['submit']))
         ping_server();
 
         // Set the user permissions
-        set_user_permissions($user, $pass);
+        set_user_permissions($user);
 
         // Get base url
         $base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['SCRIPT_NAME']}";
@@ -177,7 +177,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
   <script src="js/jquery.min.js"></script>
   
   <?php
-      setup_alert_requirements("..");
+      setup_alert_requirements();
   ?>  
 </head>
 <body ng-controller="MainCtrl" class="login--page">

@@ -188,6 +188,10 @@
 }
 
 td {
+    
+    &.vcenter {
+        vertical-align: middle;
+    }
 
 	&.risk-cell{
 		position: relative;

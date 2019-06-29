@@ -94,7 +94,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   $manager = (int)$_POST['manager'];
   $assessment = $_POST['assessment'];
   $notes = $_POST['notes'];
-  $assets = $_POST['assets'];
+  $assets_asset_groups = is_array($_POST['assets_asset_groups']) ? $_POST['assets_asset_groups'] : [];
   $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
   $risk_tags = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
 
@@ -173,8 +173,9 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   // Submit risk scoring
   submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
 
-  // Tag assets to risk
-  tag_assets_to_risk($last_insert_id, $assets);
+  // Process the data from the Affected Assets widget
+  if (!empty($assets_asset_groups))
+    process_selected_assets_asset_groups_of_type($last_insert_id, $assets_asset_groups, 'risk');
 
   //Add tags
   updateTagsOfType($last_insert_id, 'risk', $risk_tags);
@@ -263,8 +264,12 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
             }
             
         </script>
-        <script src="../js/jquery.min.js"></script>
-        <script src="../js/jquery-ui.min.js"></script>
+        <!--script src="../js/jquery.min.js"></script>
+        <script src="../js/jquery-ui.min.js"></script -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" ></script>
+
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
         <script src="../js/bootstrap.min.js"></script>
         <script src="../js/jquery.dataTables.js"></script>
         <script src="../js/cve_lookup.js?<?php echo time() ?>"></script>
@@ -273,6 +278,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <script src="../js/pages/risk.js?<?php echo time() ?>"></script>
         <script src="../js/highcharts/code/highcharts.js"></script>
         <script src="../js/bootstrap-multiselect.js"></script>
+        <script src="../js/jquery.blockUI.min.js"></script>
 
         <title>SimpleRisk: Enterprise Risk Management Simplified</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -296,7 +302,6 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <?php
             setup_alert_requirements("..");
         ?>
-        <?php display_asset_autocomplete_script(get_verified_assets()); ?>
     </head>
 
     <body>
@@ -362,6 +367,8 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <script>
             $(document).ready(function() {
                 
+                setupAssetsAssetGroupsWidget($('#tab-container select.assets-asset-groups-select'));
+                
                 window.onbeforeunload = function() {
                     if ($('#subject:enabled').val() != ''){
                         return "Are you sure you want to procced without saving the risk?";
@@ -394,7 +401,8 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                         "<div class='tab-data' id='tab-container"+num_tabs+"'>"+form+"</div>"
                     );
 
-                    focus_add_css_class("#AffectedAssetsTitle", "#assets", $("#tab-container" + num_tabs));
+                    setupAssetsAssetGroupsWidget($('#tab-container'+num_tabs+' select.assets-asset-groups-select'));
+                    
                     focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container" + num_tabs));
                     focus_add_css_class("#NotesTitle", "#notes", $("#tab-container" + num_tabs));
 
@@ -407,46 +415,6 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                         .attr('id', 'file_upload'+num_tabs)
                         .prev('label').attr('for', 'file_upload'+num_tabs);
                     
-
-                    $( "#tab-container"+num_tabs +" .assets" )
-                        .bind( "keydown", function( event ) {
-                            if ( event.keyCode === $.ui.keyCode.TAB && $( this ).autocomplete( "instance" ).menu.active ) {
-                                event.preventDefault();
-                            }
-                        })
-                        .autocomplete({
-                            minLength: 0,
-                            source: function( request, response ) {
-                                // delegate back to autocomplete, but extract the last term
-                                response( $.ui.autocomplete.filter(
-                                availableAssets, extractLast( request.term ) ) );
-                            },
-                            focus: function() {
-                                // prevent value inserted on focus
-                                return false;
-                            },
-                            select: function( event, ui ) {
-                                var terms = split( this.value );
-                                // remove the current input
-                                terms.pop();
-                                // add the selected item
-                                terms.push( ui.item.value );
-                                // add placeholder to get the comma-and-space at the end
-                                terms.push( "" );
-                                terms = terms.reverse().filter(function (e, i, arr) {
-                                    return arr.indexOf(e, i+1) === -1;
-                                }).reverse();
-
-                                this.value = terms.join( ", " );
-                                return false;
-                            }
-                        })
-                        .focus(function(){
-                            var self = $(this);
-                            window.setTimeout(function(){
-                                self.autocomplete("search", "");
-                            }, 1000)
-                        });
                         
                     // Add multiple selctets
                     $('.multiselect', "#tab-container"+num_tabs).multiselect({buttonWidth: '100%'});
@@ -457,12 +425,6 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     }
                 });
 
-
-                function sleep(ms) {
-                    return new Promise(resolve => setTimeout(resolve, ms));
-                }
-
-                focus_add_css_class("#AffectedAssetsTitle", "#assets", $("#tab-container"));
                 focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container"));
                 focus_add_css_class("#NotesTitle", "#notes", $("#tab-container"));
                 

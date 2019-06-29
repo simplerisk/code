@@ -73,7 +73,7 @@ if (isset($_POST['password_reset']))
     <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="css/theme.css">
     <?php
-        setup_alert_requirements("..");
+        setup_alert_requirements();
     ?>  
 
 </head>

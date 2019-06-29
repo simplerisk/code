@@ -215,6 +215,19 @@ function asset_exists_exact($ip, $name, $value, $location, $team, $details, $ver
     }
 }
 
+
+/********************************************************
+ * FUNCTION: ADD ASSET BY NAME WITH FORCED VERIFICATION *
+ * Used for adding an asset while defining its verified *
+ * status, but without specifying the default values    *
+ ********************************************************/
+function add_asset_by_name_with_forced_verification($name, $verified = false) {
+    // !!!!!!Update the values if the add_asset's default values change!!!!!!
+    // $imported is set as true to prevent the `auto_verify_new_assets` setting
+    // to turn our false to true
+    return add_asset('', $name, 5, 0, 0, "", "", $verified, true);
+}
+
 /***********************
  * FUNCTION: ADD ASSET *
  ***********************/
@@ -223,19 +236,20 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "", $t
     global $lang;
 
     // If the asset does not already exist
-    if (!asset_exists($name))
-    {
-
+    if (!asset_exists($name)) {
         // Trim whitespace from the name, ip, and value
         $name = trim($name);
         $ip = trim($ip);
         $value = trim($value);
+        
+        if (!$name)
+            return false;
 
         // See if we need to encrypt values
         $ip = try_encrypt($ip);
         $name = try_encrypt($name);
         $details = try_encrypt($details);
-        
+
         $auto_verify_new_assets = get_setting("auto_verify_new_assets");
 
         if (!$verified && $auto_verify_new_assets && !$imported) {
@@ -370,10 +384,20 @@ function delete_asset($asset_id)
     $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
     $return = $stmt->execute();
 
-    // Delete the risks_to_assets entry
-    $stmt = $db->prepare("DELETE FROM `risks_to_assets` WHERE `asset_id`=:id;");
-    $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
-    $return = $stmt->execute();
+    // Remove junction table entries for the Asset
+    foreach(['assets_asset_groups',
+        'risks_to_assets',
+        'assessment_answers_to_assets',
+        'questionnaire_answers_to_assets'] as $junction_name) {
+        $stmt = $db->prepare("
+            delete from
+                `$junction_name`
+            where
+                `asset_id`=:id;
+        ");
+        $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
 
     $message = "An asset named \"" . $name . "\" was deleted by username \"" . $_SESSION['user'] . "\".";
     write_log($asset_id , $_SESSION['uid'], $message, "asset");
@@ -538,7 +562,7 @@ function display_asset_table()
 
         $active_fields = get_active_fields("asset");
 
-        display_main_detail_asset_feilds_th($active_fields);
+        display_main_detail_asset_fields_th($active_fields);
     }
     // If the customization extra is disabled, Show default main fields
     else
@@ -604,7 +628,7 @@ function display_asset_table_body()
         // If the customization extra, set custom values
         if($active_fields)
         {
-            display_main_detail_asset_feilds_td_view($active_fields, $asset);        
+            display_main_detail_asset_fields_td_view($active_fields, $asset);        
         }
         else
         {
@@ -646,7 +670,7 @@ function display_unverified_asset_table()
 
         $active_fields = get_active_fields("asset");
 
-        display_main_detail_asset_feilds_th($active_fields);
+        display_main_detail_asset_fields_th($active_fields);
     }
     // If the customization extra is disabled, Show default main fields
     else
@@ -688,7 +712,7 @@ function display_unverified_asset_table()
         // If the customization extra, set custom values
         if($active_fields)
         {
-            display_main_detail_asset_feilds_td_view($active_fields, $asset);
+            display_main_detail_asset_fields_td_view($active_fields, $asset);
         }
         else
         {
@@ -860,12 +884,7 @@ function tag_assets_to_risk($risk_id, $assets, $entered_assets=false)
         {
             $asset_id = false;
             foreach($entered_assets as $entered_asset){
-
-                $entered_asset['ip'] = try_decrypt($entered_asset['ip']);
-                $entered_asset['name'] = try_decrypt($entered_asset['name']);
-                $entered_asset['details'] = try_decrypt($entered_asset['details']);
-
-                if(in_array($asset, $entered_asset)){
+                if($asset == try_decrypt($entered_asset['name'])){
                     $asset_id = $entered_asset['id'];
                     break;
                 }
@@ -911,35 +930,6 @@ function get_assets_for_risk($risk_id)
 
     // Return the assets array
     return $assets;
-}
-
-/********************************
- * FUNCTION: GET LIST OF ASSETS *
- ********************************/
-function get_list_of_assets($risk_id, $trailing_comma = true)
-{
-    // Set the string to empty to start
-    $string = "";
-
-    $id = (int)$risk_id - 1000;
-    
-    // Get the assets for the risk
-    $assets = get_assets_for_risk($id);
-
-    // For each asset
-    foreach ($assets as $asset)
-    {
-        $string .= try_decrypt($asset['asset']) . ", ";
-    }
-
-    // If we don't want a trailing comma
-    if (!$trailing_comma)
-    {
-        $string = mb_substr($string, 0, -2);
-    }
-
-    // Return the string of assets
-    return $string;
 }
 
 /**********************************
@@ -990,7 +980,7 @@ function display_edit_asset_table()
 
         $active_fields = get_active_fields("asset");
 
-        display_main_detail_asset_feilds_th($active_fields);
+        display_main_detail_asset_fields_th($active_fields);
     }
     // If the customization extra is disabled, Show default main fields
     else
@@ -1041,7 +1031,7 @@ function display_edit_asset_table()
         // If the customization extra, set custom values
         if($active_fields)
         {
-            display_main_detail_asset_feilds_td_edit($active_fields, $asset);        
+            display_main_detail_asset_fields_td_edit($active_fields, $asset);        
         }
         else
         {
@@ -1638,33 +1628,68 @@ function assets_for_risk_id($risk_id)
  *****************************************/
 function asset_valuation_for_risk_id($risk_id)
 {
-    // Get the asset valuation array
-    $asset_valuation_array = get_asset_valuation_array();
+    $db = db_open();
 
-    // Get the assets for the risk
-    $assets = assets_for_risk_id($risk_id);
+    $stmt = $db->prepare("
+        SELECT
+            (SELECT
+                COALESCE(sum(`av`.`max_value`), 0)
+            FROM
+                `risks_to_asset_groups` rtag
+                INNER JOIN `assets_asset_groups` aag ON `rtag`.`asset_group_id` = `aag`.`asset_group_id`
+                INNER JOIN `assets` a ON `aag`.`asset_id` = `a`.`id`
+                INNER JOIN `asset_values` av ON `a`.`value` = `av`.`id`
+            WHERE
+                `rtag`.`risk_id`=:risk_id)
+            +
+            (SELECT
+                COALESCE(sum(`av`.`max_value`), 0)
+            FROM
+                `risks_to_assets` rta
+                INNER JOIN `assets` a ON `rta`.`asset_id` = `a`.`id`
+                INNER JOIN `asset_values` av ON `a`.`value` = `av`.`id`
+            WHERE
+                `rta`.`risk_id`=:risk_id)
+        FROM dual;
+    ");
+    $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+    $stmt->execute();
 
-    // Initialize the totals
-    //$min_total = 0;
-    $max_total = 0;
+    $value = $stmt->fetch()[0];
 
-    // For each asset
-    foreach ($assets as $asset)
-    {
-        // Get the asset value id
-        $value = (int)$asset['value'];
-
-        // Calculate the new total
-        //$min_value = $asset_valuation_array[($value-1)]['min_value'];
-        $max_value = $asset_valuation_array[($value-1)]['max_value'];
-        //$min_total = $min_total + $min_value;
-        $max_total = $max_total + $max_value;
-    }
-
-    // Return the asset valuation
-    //return "$" . number_format($min_total) . " to $" . number_format($max_total);
-    return $max_total;
+    db_close($db);
+    
+    return $value;   
 }
+
+
+/*********************************************
+ * FUNCTION: ASSET VALUATION FOR ASSET GROUP *
+ *********************************************/
+function asset_valuation_for_asset_group($asset_group_id)
+{
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT
+            SUM(`av`.`max_value`)
+        FROM
+            `assets_asset_groups` aag
+            INNER JOIN `assets` a ON `aag`.`asset_id` = `a`.`id`
+            INNER JOIN `asset_values` av ON `a`.`value` = `av`.`id`
+        WHERE
+            `aag`.`asset_group_id` = :asset_group_id;
+    ");
+    $stmt->bindParam(":asset_group_id", $asset_group_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $value = $stmt->fetch()[0];
+
+    db_close($db);
+    
+    return $value;   
+}
+
 
 /************************************
  * FUNCTION: DISPLAY ADD ASSET FORM *
@@ -1682,8 +1707,8 @@ function display_add_asset()
         $active_fields = get_active_fields("asset");
         $inactive_fields = get_inactive_fields("asset");
 
-        display_main_detail_asset_feilds_add($active_fields);
-        display_main_detail_asset_feilds_add($inactive_fields);
+        display_main_detail_asset_fields_add($active_fields);
+        display_main_detail_asset_fields_add($inactive_fields);
     }
     // If the customization extra is disabled, shows fields by default fields
     else
@@ -1710,6 +1735,952 @@ function display_add_asset()
             }
         </style>
     ";
+}
+
+
+/*********************************************************
+ * FUNCTION: CREATE ASSET GROUP                          *
+ * $name: name of the asset group                        *
+ * $selected_assets: The assets associated to the group  * 
+ *********************************************************/
+function create_asset_group($name, $selected_assets=false) {
+
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        INSERT INTO
+            `asset_groups` (`name`)
+        VALUES
+            (:name);"
+    );
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $id = $db->lastInsertId();
+
+    db_close($db);
+
+    update_assets_of_asset_group($selected_assets, $id, $name, true);
+
+    return $id;
+}
+
+/*********************************************************
+ * FUNCTION: UPDATE ASSET GROUP                          *
+ * $id: id of the asset group                            *
+ * $name: name of the asset group                        *
+ * $selected_assets: The assets associated to the group  *
+ *********************************************************/
+function update_asset_group($id, $name, $selected_assets) {
+
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        UPDATE
+            `asset_groups`
+        SET
+            `name`=:name
+        WHERE
+            `id`=:id;"
+    );
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    update_assets_of_asset_group($selected_assets, $id, $name);
+
+    db_close($db);
+}
+
+/********************************************
+ * FUNCTION: DELETE ASSET GROUP             *
+ * $asset_group_id: id of the asset group   *
+ ********************************************/
+function delete_asset_group($asset_group_id) {
+
+    $name = get_name_by_value('asset_groups', $asset_group_id, false, true);
+
+    if (!$name)
+        return false;
+
+    $db = db_open();
+
+    // Remove junction table entries for the Asset Group
+    foreach(['assets_asset_groups',
+        'risks_to_asset_groups',
+        'assessment_answers_to_asset_groups',
+        'questionnaire_answers_to_asset_groups'] as $junction_name) {
+        $stmt = $db->prepare("
+            delete from
+                `$junction_name`
+            where
+                `asset_group_id`=:id;
+        ");    
+        $stmt->bindParam(":id", $asset_group_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    // Delete the group
+    $stmt = $db->prepare("
+        DELETE FROM
+            `asset_groups`
+        WHERE
+            `id`=:id;"
+    );
+    $stmt->bindParam(":id", $asset_group_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    db_close($db);
+
+    $message = _lang('AssetGroupDeleteAuditLog', array(
+            'user' => $_SESSION['user'],
+            'group_name' => $name,
+            'id' => $asset_group_id
+        ), false
+    );
+
+    write_log($asset_group_id + 1000, $_SESSION['uid'], $message, 'asset_group');
+
+    return true;
+}
+
+
+/************************************************
+ * FUNCTION: REMOVE ASSET FROM ASSET GROUP      *
+ * $asset_id: id of the asset we want to remove *
+ *            from the asset group              *
+ * $asset_group_id: id of the asset group       *
+ ************************************************/
+function remove_asset_from_asset_group($asset_id, $asset_group_id) {
+
+    $asset_group_name = get_name_by_value('asset_groups', $asset_group_id, false, true);
+    $asset_name = get_name_by_value('assets', $asset_id, false, true);
+
+    if (!$asset_group_name || !$asset_name)
+        return false;
+
+    $db = db_open();
+
+    // Remove asset from the group
+    $stmt = $db->prepare("
+        DELETE FROM
+            `assets_asset_groups`
+        WHERE
+            `asset_id`=:asset_id AND
+            `asset_group_id`=:asset_group_id;"
+    );
+    $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+    $stmt->bindParam(":asset_group_id", $asset_group_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    db_close($db);
+
+    $message = _lang('AssetGroupRemoveAssetAuditLog', array(
+            'user' => $_SESSION['user'],
+            'asset_name' => $asset_name,
+            'asset_id' => $asset_id,
+            'group_name' => $asset_group_name,
+            'group_id' => $asset_group_id
+        ), false
+    );
+
+    write_log($asset_group_id + 1000, $_SESSION['uid'], $message, 'asset_group');
+
+    return true;
+}
+
+/*****************************
+ * FUNCTION: GET ASSET GROUP *
+ *****************************/
+function get_asset_group($asset_group_id) {
+
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT
+            *
+        FROM
+            `asset_groups`
+        WHERE
+            `id` = :asset_group_id;
+    ");
+    $stmt->bindParam(":asset_group_id", $asset_group_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (empty($result))
+        return [];
+
+    $result = $result[0];
+
+    // Load assets currently assigned to the group
+    $stmt = $db->prepare("
+        SELECT
+            `a`.id, `a`.`name`
+        FROM
+            `assets` a
+            INNER JOIN `assets_asset_groups` aag ON `aag`.`asset_id` = `a`.`id` AND `aag`.`asset_group_id` = :asset_group_id;
+    ");
+    $stmt->bindParam(":asset_group_id", $asset_group_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $result['selected_assets'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmt = $db->prepare("
+        SELECT
+            `a`.id, `a`.`name`
+        FROM
+            `assets` a
+            LEFT OUTER JOIN `assets_asset_groups` aag ON `aag`.`asset_id` = `a`.`id` AND `aag`.`asset_group_id` = :asset_group_id
+        WHERE
+            `aag`.`asset_id` IS NULL;
+    ");
+    $stmt->bindParam(":asset_group_id", $asset_group_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $result['available_assets'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+
+    foreach($result['selected_assets'] as &$asset)
+        $asset['name'] = try_decrypt($asset['name']);
+    
+    foreach($result['available_assets'] as &$asset)
+        $asset['name'] = try_decrypt($asset['name']);
+    
+    return $result;
+}
+
+
+/***************************************
+ * FUNCTION: GET ASSETS OF ASSET GROUP *
+ ***************************************/
+function get_assets_of_asset_group($asset_group_id) {
+
+    $db = db_open();
+
+    // Load assets currently assigned to the group
+    $stmt = $db->prepare("
+        SELECT
+            `a`.*
+        FROM
+            `assets` a
+            INNER JOIN `assets_asset_groups` aag ON `aag`.`asset_id` = `a`.`id`
+        WHERE
+            `aag`.`asset_group_id` = :asset_group_id;
+    ");
+    $stmt->bindParam(":asset_group_id", $asset_group_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+    
+    foreach($result as &$asset) {
+        $asset['name'] = try_decrypt($asset['name']);
+        $asset['ip'] = try_decrypt($asset['ip']);
+        $asset['details'] = try_decrypt($asset['details']);
+    }
+
+    return $result;
+}
+
+/*****************************************************************
+ * FUNCTION: UPDATE ASSETS OF ASSET GROUP                        *
+ * $assets: id list of the assets that are in the group          *
+ * $asset_group_id: id of the asset group                        *
+ * $asset_group_name: name of the asset group(for the audit log) *
+ * $create: info on whether it was called on create or update.   *
+ * If called for create it won't check what changed, won't       *
+ * try to disassociate removed assets, just adds the new ones.   *
+ *****************************************************************/
+function update_assets_of_asset_group($assets, $asset_group_id, $asset_group_name, $create=false) {
+
+    $db = db_open();
+
+    if (!$create) {
+        //Get the current assets
+        $assets_current = array_column(get_assets_of_asset_group($asset_group_id), 'id');
+
+        // Clever usage of array_diffs to calculate what assets are removed from the group
+        // and what assets are added
+        $assets_to_remove = array_diff($assets_current, $assets);
+        $assets_to_add = array_diff($assets, $assets_current);
+
+        // If there're assets to remove
+        if ($assets_to_remove) {
+
+            //building an array of parameters to bind
+            $params = array(":asset_group_id" => $asset_group_id);
+
+            // building the list of strings to be used in the `in` part of the sql
+            // to be able to bind the params
+            // We need this to be able to delete all the connections to the removed
+            // assets in one go, instead of using a loop
+            $assets_to_remove_in = [];
+            foreach ($assets_to_remove as $i => $asset_id)
+            {
+                $key = ":id".$i;
+                $assets_to_remove_in[] = $key;
+                $params[$key] = $asset_id;
+            }
+
+            // making the comma separated list to be included in the sql
+            $assets_to_remove_in = implode(", ", $assets_to_remove_in);
+
+            // Remove the entries from the junction table that connected the deleted assets to the group
+            $stmt = $db->prepare("
+                delete
+                    `aag`
+                from
+                    `assets` a
+                    INNER JOIN `assets_asset_groups` aag ON `aag`.`asset_id` = `a`.`id`
+                where
+                    `aag`.`asset_group_id` = :asset_group_id and
+                    `a`.`id` in ({$assets_to_remove_in});
+            ");
+            $stmt->execute($params);
+        }
+    } else {
+        $assets_to_add = $assets;
+    }
+
+    //If there're assets to add
+    if ($assets_to_add) {
+        //building an array of parameters to bind
+        $params = array(":asset_group_id" => $asset_group_id);
+
+        // building the list of strings to be used in the `in` part of the sql
+        // to be able to bind the params
+        // We need this to be able to delete all the connections to the removed
+        // assets in one go, instead of using a loop
+        $assets_to_add_values = [];
+        foreach ($assets_to_add as $i => $asset_id)
+        {
+            $key = ":id".$i;
+            $assets_to_add_values[] = "({$key}, :asset_group_id)";
+            $params[$key] = $asset_id;
+        }
+
+        // making the comma separated list to be included in the sql
+        $assets_to_add_values = implode(", ", $assets_to_add_values);
+
+        // Remove the entries from the junction table that connected the deleted assets to the group
+        $stmt = $db->prepare("
+            INSERT INTO
+                `assets_asset_groups` (`asset_id`, `asset_group_id`)
+            VALUES
+                {$assets_to_add_values};
+        ");
+        $stmt->execute($params);
+    }
+
+    db_close($db);
+
+    // No audit logging is needed if nothing changed
+    if ($create || $assets_to_add || $assets_to_remove) {
+        global $lang;
+
+        $asset_changes = [];
+
+        $assets = get_names_by_values('assets', $assets, false, false, true);
+        $assets_to_add = get_names_by_values('assets', $assets_to_add, false, false, true);
+
+        if ($assets_to_add)
+            $asset_changes[] = _lang('AssetGroupUpdateAuditLogAdded', array('assets_added' => $assets_to_add), false);
+
+        if (!$create) {
+            $assets_to_remove = get_names_by_values('assets', $assets_to_remove, false, false, true);
+            if ($assets_to_remove)
+                $asset_changes[] = _lang('AssetGroupUpdateAuditLogRemoved', array('assets_removed' => $assets_to_remove), false);
+
+            $assets_current = get_names_by_values('assets', $assets_current, false, false, true);
+
+            $message = _lang('AssetGroupUpdateAuditLog', array(
+                    'user' => $_SESSION['user'],
+                    'group_name' => $asset_group_name,
+                    'id' => $asset_group_id,
+                    'assets_from' => $assets_current,
+                    'assets_to' => $assets,
+                    'asset_changes' => implode(", ", $asset_changes)
+                ), false
+            );
+        } else {
+            $message = _lang('AssetGroupCreateAuditLog', array(
+                    'user' => $_SESSION['user'],
+                    'group_name' => $asset_group_name,
+                    'id' => $asset_group_id,
+                    'assets_to' => $assets
+                ), false
+            );
+        }
+
+        write_log($asset_group_id + 1000, $_SESSION['uid'], $message, 'asset_group');
+    }
+}
+
+/**********************************************************
+ * FUNCTION: PROCESS SELECTED ASSETS ASSET GROUPS OF TYPE *
+ * Processing the data coming from the widget used        *
+ * for selecting assets and asset groups.                 *
+ * $type_id: Id of the item we want to associate the      *
+ * assets and asset groups with                           *
+ * $assets_and_groups: data from the widget. Can          *
+ * contain asset/asset group ids or names of new assets   *
+ **********************************************************/
+function process_selected_assets_asset_groups_of_type($type_id, $assets_and_groups, $type) {
+
+    // Open the database connection
+    $db = db_open();
+
+    switch($type) {
+        case 'risk':
+            $assets_junction_name = 'risks_to_assets';
+            $asset_groups_junction_name = 'risks_to_asset_groups';
+            $junction_id_name = 'risk_id';
+            $forced_asset_verification_state = null;
+        break;
+        case 'assessment_answer':
+            $assets_junction_name = 'assessment_answers_to_assets';
+            $asset_groups_junction_name = 'assessment_answers_to_asset_groups';
+            $junction_id_name = 'assessment_answer_id';
+            $forced_asset_verification_state = true;
+        break;
+        case 'questionnaire_answer':
+            $assets_junction_name = 'questionnaire_answers_to_assets';
+            $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
+            $junction_id_name = 'questionnaire_answer_id';
+            $forced_asset_verification_state = true;
+        break;
+        
+        default:
+            return;
+    }
+
+    // Clear any current assets for this type
+    $stmt = $db->prepare("DELETE FROM `$assets_junction_name` WHERE $junction_id_name = :$junction_id_name");
+    $stmt->bindParam(":$junction_id_name", $type_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $stmt = $db->prepare("DELETE FROM `$asset_groups_junction_name` WHERE $junction_id_name = :$junction_id_name");
+    $stmt->bindParam(":$junction_id_name", $type_id, PDO::PARAM_INT);
+    $stmt->execute();    
+    
+    // For each asset or group
+    foreach ($assets_and_groups as $value)
+    {
+        // Trim whitespaces
+        $value = trim($value);
+        
+        // Selected an existing asset or group
+        if (preg_match('/^([\d]+)_(group|asset)$/', $value, $matches)) {
+            list(, $id, $type) = $matches;
+        } elseif (preg_match('/^new_asset_(.*)$/', $value, $matches)) { // Entered the name of a new asset
+            $name = trim($matches[1]);
+            // Check if the asset already exists, but not verified(since it didnt show up in the widget)
+            $id = asset_exists($name);
+
+            if ($id) {
+                set_alert(true, "bad", _lang('ErrorAssetAlreadyExistsAsVerified', array('asset_name' => $name)));
+                continue;
+            }
+
+            if ($forced_asset_verification_state === null) {
+                $id = add_asset('', $name);
+            } else {
+                $id = add_asset_by_name_with_forced_verification($name, $forced_asset_verification_state);
+            }
+            $type = 'asset';                
+        } else {
+            //Invalid input
+            continue;
+        }
+        
+        if ($type=='asset') {
+            // Add the new asset for this type
+            $stmt = $db->prepare("INSERT INTO `$assets_junction_name` (`$junction_id_name`, `asset_id`) VALUES (:$junction_id_name, :asset_id)");
+            $stmt->bindParam(":asset_id", $id, PDO::PARAM_INT);
+        } elseif ($type=='group') {
+            // Add the new group for this type
+            $stmt = $db->prepare("INSERT INTO `$asset_groups_junction_name` (`$junction_id_name`, `asset_group_id`) VALUES (:$junction_id_name, :asset_group_id)");
+            $stmt->bindParam(":asset_group_id", $id, PDO::PARAM_INT);
+        }
+
+        $stmt->bindParam(":$junction_id_name", $type_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    // Close the database connection
+    db_close($db);    
+}
+
+/***************************************************
+ * FUNCTION: IMPORT SELECTED ASSETS ASSET GROUPS   *
+ * Processing the data coming from the import      *
+ * $type_id: Id of the risk                        *
+ * $asset_and_group_names: data from the import.   *
+ * Can contain asset/asset group names.            *
+ * Group names are marked by being wrapped in      *
+ * square brackets. For example: [group name 1]    *
+ * $type: The type of the association              *
+ ***************************************************/
+function import_assets_asset_groups_for_type($type_id, $asset_and_group_names, $type) {
+
+    // Open the database connection
+    $db = db_open();
+
+    switch($type) {
+        case 'risk':
+            $assets_junction_name = 'risks_to_assets';
+            $asset_groups_junction_name = 'risks_to_asset_groups';
+            $junction_id_name = 'risk_id';
+            $forced_asset_verification_state = null;
+        break;
+        case 'questionnaire_answer':
+            $assets_junction_name = 'questionnaire_answers_to_assets';
+            $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
+            $junction_id_name = 'questionnaire_answer_id';
+            $forced_asset_verification_state = true;
+        break;
+        
+        default:
+            return;
+    }
+
+    // Clear any current assets for this type
+    $stmt = $db->prepare("DELETE FROM `$assets_junction_name` WHERE $junction_id_name = :$junction_id_name");
+    $stmt->bindParam(":$junction_id_name", $type_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $stmt = $db->prepare("DELETE FROM `$asset_groups_junction_name` WHERE $junction_id_name = :$junction_id_name");
+    $stmt->bindParam(":$junction_id_name", $type_id, PDO::PARAM_INT);
+    $stmt->execute();    
+
+    // For each asset or group
+    foreach (explode(',', $asset_and_group_names) as $name)
+    {
+        // Trim whitespaces
+        $name = trim($name);
+
+        if (preg_match('/^\[(.+)\]$/', $name, $matches)) {
+            $name = trim($matches[1]);
+            $type = 'group';
+        } else $type = 'asset';
+
+        if ($type=='asset') {
+            $id = asset_exists($name);
+
+            if (!$id)
+                $id = add_asset('', $name);
+
+        } elseif ($type=='group') {
+            $id = get_value_by_name('asset_groups', $name);
+
+            if (!$id)
+                $id = create_asset_group($name);
+        }
+
+        if ($type=='asset') {
+            // Add the new asset for this type
+            $stmt = $db->prepare("INSERT INTO `$assets_junction_name` (`$junction_id_name`, `asset_id`) VALUES (:$junction_id_name, :asset_id)");
+            $stmt->bindParam(":asset_id", $id, PDO::PARAM_INT);
+        } elseif ($type=='group') {
+            // Add the new group for this type
+            $stmt = $db->prepare("INSERT INTO `$asset_groups_junction_name` (`$junction_id_name`, `asset_group_id`) VALUES (:$junction_id_name, :asset_group_id)");
+            $stmt->bindParam(":asset_group_id", $id, PDO::PARAM_INT);
+        }
+
+        $stmt->bindParam(":$junction_id_name", $type_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    // Close the database connection
+    db_close($db);    
+}
+
+function get_asset_groups_table()
+{
+    global $lang, $escaper;
+
+    echo "<table id='asset-groups-table' class='easyui-treegrid asset-groups-table'
+            data-options=\"
+                iconCls: 'icon-ok',
+                animate: false,
+                fitColumns: true,
+                nowrap: true,
+                pagination: true,
+                pageSize: 10,
+                pageList: [5,10,20,100],
+                url: '{$_SESSION['base_url']}/api/asset-group/tree',
+                method: 'GET',
+                idField: 'id',
+                treeField: 'name',
+                scrollbarSize: 0,
+                onLoadSuccess: function(row, data){
+                    //fixTreeGridCollapsableColumn();
+                    //It's there to be able to have it collapsed on load
+                    /*var tree = $('#asset-groups-table');
+                    tree.treegrid('collapseAll');
+                    tree.treegrid('options').animate = true;*/
+                    if (data && data.total)
+                        $('#asset-groups-count').text(data.total);
+                }
+            \">";
+    echo "<thead>";
+    
+        // If the customization extra is enabled, shows fields by asset customization
+    if (customization_extra())
+    {
+        // Load the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+        $active_fields = get_active_fields("asset");
+
+        display_main_detail_asset_fields_treegrid_th($active_fields);
+    }
+    // If the customization extra is disabled, Show default main fields
+    else
+    {
+        display_asset_name_treegrid_th();
+        display_asset_ip_address_treegrid_th();
+        display_asset_valuation_treegrid_th();
+        display_asset_site_location_treegrid_th();
+        display_asset_team_treegrid_th();
+        display_asset_details_treegrid_th();
+        display_asset_tags_treegrid_th();
+        display_asset_actions_treegrid_th();
+    }
+    
+    echo "</thead>\n";
+
+    echo "</table>";
+}
+
+function get_asset_groups_for_treegrid($offset, $rows) {
+
+    global $lang, $escaper;
+
+    $result = [];
+
+    $db = db_open();
+
+    $stmt = $db->prepare("select count(*) from `asset_groups`;");
+    $stmt->execute();
+    $result["total"] = $stmt->fetch()[0];
+
+    $stmt = $db->prepare("
+        SELECT
+            `ag`.*,
+            IF(`aag`.`asset_group_id` IS NULL, 'open', 'closed') as state
+        FROM
+            `asset_groups` ag
+            LEFT OUTER JOIN `assets_asset_groups` aag ON `aag`.`asset_group_id` = `ag`.`id`
+        GROUP BY
+            `ag`.`id`
+        ORDER BY
+            `ag`.`name`
+        LIMIT $offset,$rows;");
+    $stmt->execute();
+    $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $update_tooltip = $escaper->escapeHtml($lang['UpdateAssetGroupTooltip']);
+    $delete_tooltip = $escaper->escapeHtml($lang['DeleteAssetGroupTooltip']);
+
+    foreach($groups as &$group) {
+        $group['name'] = $escaper->escapeHtml($group['name']);
+        $group['actions'] = "
+            <div class='text-center actions-cell'>
+                <a title='{$update_tooltip}' class='asset-group--update' data-id='{$group['id']}'><i class='fa fa-pencil-square-o'></i></a>
+                <a title='{$delete_tooltip}' class='asset-group--delete' data-id='{$group['id']}'><i class='fa fa-trash'></i></a>
+            </div>";
+    }
+
+    $result["rows"] = $groups;
+
+    db_close($db);
+
+    return $result;
+}
+
+function get_assets_of_asset_group_for_treegrid($id){
+
+    global $lang, $escaper;
+
+    $result = [];
+
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT
+            a.*,
+            GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR ', ') as tags
+        FROM
+            `assets` a
+            INNER JOIN assets_asset_groups aag ON aag.asset_id = a.id and aag.asset_group_id = $id
+            LEFT JOIN tags_taggees tt ON tt.taggee_id = a.id AND tt.type = 'asset'
+            LEFT JOIN tags tg on tg.id = tt.tag_id
+        GROUP BY
+            a.id
+        ORDER BY
+            a.id;
+    ");
+
+    $stmt->execute();
+    $assets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $remove_tooltip = $escaper->escapeHtml($lang['RemoveAssetTooltip']);
+
+    // If the customization extra, set custom values
+    $customization_enabled = customization_extra();
+    if ($customization_enabled)
+    {
+        // Load the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        $active_fields = get_active_fields("asset");
+    }
+
+    foreach($assets as $asset) {
+        $asset['state'] = 'open';
+        $asset['parent'] = $id;
+
+        $asset['name'] = $escaper->escapeHtml(try_decrypt($asset['name']));
+
+        $asset['ip'] = try_decrypt($asset['ip']);
+        
+        if (!preg_match('/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/', $asset['ip']))
+        {
+            $asset['ip'] = "N/A";
+        }
+
+        $asset['location'] = $asset['location'] ? $escaper->escapeHtml(get_name_by_value("location", $asset['location'])) : "N/A";
+        $asset['team'] = $asset['team'] ? $escaper->escapeHtml(get_name_by_value("team", $asset['team'])) : "N/A";
+        $asset['value'] = $escaper->escapeHtml(get_asset_value_by_id($asset['value']));
+
+        $asset['details'] = $escaper->escapeHtml(try_decrypt($asset['details']));
+        $asset['tags'] = $escaper->escapeHtml($asset['tags']);
+
+        $asset['actions'] = "
+            <div class='text-center actions-cell'>
+                <a title='{$remove_tooltip}' class='asset--remove' data-asset-id='{$asset['id']}' data-asset-group-id='{$id}'><i class='fa fa-remove'></i></a>
+            </div>";
+
+        $asset['id'] = $asset['id'] . '-' . $id;
+
+        // If customization extra is enabled
+        if($customization_enabled)
+        {
+            $custom_values = getCustomFieldValuesByAssetId($asset['id']);
+            
+            foreach($active_fields as $field)
+            {
+                if($field['is_basic'] !== 1)
+                {
+                    $value = "";
+                    // Get value of custom field
+                    foreach($custom_values as $custom_value)
+                    {
+                        if($custom_value['field_id'] == $field['id']){
+                            $value = $custom_value['value'];
+                            break;
+                        }
+                    }
+
+                    if ($value) {
+                        $asset[$field['name']] = get_custom_field_name_by_value($field['id'], $field['type'], $value);
+                    }
+                }
+            }
+        }
+
+        $result[] = $asset;
+    }
+
+    db_close($db);
+
+    return $result;
+}
+
+function get_assets_and_asset_groups_for_dropdown($risk_id = false) {
+
+    $db = db_open();
+
+    if ($risk_id)
+        $risk_id -= 1000;
+    
+    $stmt = $db->prepare("
+        SELECT
+            *
+        FROM (
+            SELECT
+                `a`.`id`,
+                `a`.`name`,
+                'asset' as class" .
+    ($risk_id ? ",`rta`.`asset_id` IS NOT NULL as selected" : "") . "
+            FROM
+                `assets` a " .
+    ($risk_id ? "LEFT OUTER JOIN `risks_to_assets` rta ON `rta`.`asset_id` = `a`.`id` and `rta`.`risk_id` = :risk_id" : "") . "
+            WHERE
+                `a`.`verified` = 1" . ($risk_id ? " or `rta`.`asset_id` IS NOT NULL" : "") . "
+        UNION ALL
+            SELECT
+                `ag`.`id`,
+                `ag`.`name`,
+                'group' as class" .
+    ($risk_id ? ",`rtag`.`asset_group_id` IS NOT NULL as selected" : "") . "
+            FROM
+                `asset_groups` ag " .
+    ($risk_id ? "LEFT OUTER JOIN `risks_to_asset_groups` rtag ON `rtag`.`asset_group_id` = `ag`.`id` and `rtag`.`risk_id` = :risk_id" : "") . "
+        ) u GROUP BY
+            `u`.`class`, `u`.`id`
+        ORDER BY
+            `u`.`class` ASC, `u`.`id` ASC;
+        ;
+    ");
+
+    if ($risk_id)
+        $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+
+    $stmt->execute();
+
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+
+    foreach($data as &$item)
+        if ($item['class'] === 'asset')
+            $item['name'] = try_decrypt($item['name']);
+
+    return $data;
+}
+
+function get_assets_and_asset_groups_of_type_as_string($id, $type) {
+
+    switch($type) {
+        case 'assessment_answer':
+            $assets_junction_name = 'assessment_answers_to_assets';
+            $asset_groups_junction_name = 'assessment_answers_to_asset_groups';
+            $junction_id_name = 'assessment_answer_id';
+        break;
+        case 'questionnaire_answer':
+            $assets_junction_name = 'questionnaire_answers_to_assets';
+            $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
+            $junction_id_name = 'questionnaire_answer_id';
+        break;
+        default:
+            return;
+    }
+
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT
+            `a`.`name`,
+            'asset' as class
+        FROM
+            `$assets_junction_name` aata
+            INNER JOIN `assets` a ON `a`.`id` = `aata`.`asset_id`
+            and `aata`.`$junction_id_name` = :$junction_id_name
+        UNION ALL
+        SELECT
+            `ag`.`name`,
+            'group' as class
+        FROM
+            `$asset_groups_junction_name` aatag
+            INNER JOIN `asset_groups` ag ON `ag`.`id` = `aatag`.`asset_group_id`
+            and `aatag`.`$junction_id_name` = :$junction_id_name;"
+    );
+    $stmt->bindParam(":$junction_id_name", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if ($data) {
+        $affected_assets = [];
+        
+        foreach($data as $item) {
+            if ($item['class'] === 'asset')
+                $affected_assets[] = try_decrypt($item['name']);
+            else $affected_assets[] = "[{$item['name']}]";
+        }
+        
+        return implode(',', $affected_assets);
+    }
+
+    return "";
+}
+
+function get_assets_and_asset_groups_of_type($id, $type) {
+
+    switch($type) {
+        case 'risk':
+            $id = $id - 1000;
+            $assets_junction_name = 'risks_to_assets';
+            $asset_groups_junction_name = 'risks_to_asset_groups';
+            $junction_id_name = 'risk_id';
+        break;
+        case 'assessment_answer':
+            $assets_junction_name = 'assessment_answers_to_assets';
+            $asset_groups_junction_name = 'assessment_answers_to_asset_groups';
+            $junction_id_name = 'assessment_answer_id';
+        break;
+        case 'questionnaire_answer':
+            $assets_junction_name = 'questionnaire_answers_to_assets';
+            $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
+            $junction_id_name = 'questionnaire_answer_id';
+        break;
+        default:
+            return;
+    }
+
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT
+            *
+        FROM (
+            SELECT
+                `a`.`id`,
+                `a`.`name`,
+                'asset' as class,
+                `a`.`verified`
+            FROM
+                `assets` a
+                INNER JOIN `$assets_junction_name` aj ON `aj`.`asset_id` = `a`.`id` and `aj`.`$junction_id_name` = :$junction_id_name
+        UNION ALL
+            SELECT
+                `ag`.`id`,
+                `ag`.`name`,
+                'group' as class,
+                '1' as verified
+            FROM
+                `asset_groups` ag
+                INNER JOIN `$asset_groups_junction_name` agj ON `agj`.`asset_group_id` = `ag`.`id` and `agj`.`$junction_id_name` = :$junction_id_name
+        ) u
+        GROUP BY
+            `u`.`class`, `u`.`id`
+        ORDER BY
+            `u`.`class` ASC, `u`.`id` ASC;
+    ");
+
+    $stmt->bindParam(":$junction_id_name", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+
+    foreach($data as &$item)
+        if ($item['class'] === 'asset')
+            $item['name'] = try_decrypt($item['name']);
+
+    return $data;
+}
+
+function get_list_of_asset_and_asset_group_names($risk_id, $formatted = false) {
+    
+    global $escaper;
+
+    return array_map(function($item) use ($escaper, $formatted) {
+                if ($formatted)
+                    return "<span class='{$item['class']}'>" . $escaper->escapeHtml($item['name']) . "</span>";
+                return $escaper->escapeHtml($item['name']);
+            }, get_assets_and_asset_groups_of_type($risk_id, 'risk'));
+    
 }
 
 ?>

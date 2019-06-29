@@ -94,6 +94,7 @@ if (isset($_GET['mitigated']))
     <script src="../js/pages/risk.js?<?php echo time() ?>"></script>
     <script src="../js/highcharts/code/highcharts.js?<?php echo time() ?>"></script>
     <script src="../js/bootstrap-multiselect.js?<?php echo time() ?>"></script>
+    <script src="../js/jquery.blockUI.min.js"></script>
 
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -117,8 +118,7 @@ if (isset($_GET['mitigated']))
     <?php
         setup_alert_requirements("..");
     ?>    
-    
-	<?php display_asset_autocomplete_script(get_verified_assets()); ?>
+
 </head>
 
 <body>

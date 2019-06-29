@@ -281,7 +281,10 @@ if (isset($_POST['delete_document']))
             <label for=""><?php echo $escaper->escapeHtml($lang['Frameworks']); ?></label>
             <?php create_multiple_dropdown("frameworks", NULL, "framework_ids"); ?>
             <label for=""><?php echo $escaper->escapeHtml($lang['Controls']); ?></label>
-            <?php create_multiple_dropdown("framework_controls", NULL, "control_ids"); ?>
+            <?php  // create_multiple_dropdown("framework_controls", NULL, "control_ids"); ?>
+            
+            <select multiple="multiple" id="control_ids" name="control_ids[]"></select>
+            
             <label for=""><?php echo $escaper->escapeHtml($lang['CreationDate']); ?></label>
             <input type="text" class="form-control datepicker" name="creation_date" value="<?php echo $escaper->escapeHtml(date(get_default_date_format())); ?>">
             <label for=""><?php echo $escaper->escapeHtml($lang['ReviewDate']); ?></label>
@@ -334,8 +337,10 @@ if (isset($_POST['delete_document']))
             <input required="" type="text" name="document_name" id="document_name" value="" class="form-control" />
             <label for=""><?php echo $escaper->escapeHtml($lang['Frameworks']); ?></label>
             <?php create_multiple_dropdown("frameworks", NULL, "framework_ids"); ?>
+            <input type="hidden" value="" class="selected_control_values">
             <label for=""><?php echo $escaper->escapeHtml($lang['Controls']); ?></label>
-            <?php create_multiple_dropdown("framework_controls", NULL, "control_ids"); ?>
+            <?php // create_multiple_dropdown("framework_controls", NULL, "control_ids"); ?>
+            <select multiple="multiple" id="control_ids" name="control_ids[]"></select>
             <label for=""><?php echo $escaper->escapeHtml($lang['CreationDate']); ?></label>
             <input type="text" class="form-control datepicker" name="creation_date">
             <label for=""><?php echo $escaper->escapeHtml($lang['ReviewDate']); ?></label>
@@ -421,8 +426,53 @@ if (isset($_POST['delete_document']))
                 label.html("<?php echo $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize  + "kb");
             }
         }
+        
+        // Sets controls multiselect options by framework ids
+        function sets_controls_by_framework_ids($frameworks)
+        {
+            $parent = $frameworks.closest('.modal');
+            $controls = $parent.find("#control_ids");
+            var fids = $frameworks.val()
+            $.ajax({
+                url: BASE_URL + '/api/governance/related_controls_by_framework_ids?fids=' + fids.join(","),
+                type: 'GET',
+                success : function (res){
+                    var options = "";
+                    var selected_control_ids = $parent.find(".selected_control_values").length ?  $parent.find(".selected_control_values").val() : "";
+                    for(var key in res.data.control_ids){
+                        var control = res.data.control_ids[key];
+                        if(selected_control_ids && selected_control_ids.split(",").indexOf(control.value) !== -1){
+                            options += "<option value='"+ control.value +"' selected>"+ control.name +"</option>";
+                        }else{
+                            options += "<option value='"+ control.value +"'>"+ control.name +"</option>";
+                        }
+                    }
+                    $controls.html(options)
+                    $controls.multiselect("rebuild")
+                }
+            });
+        }
 
-        var fileAPISupported = typeof $("<input type='file'>").get(0).files != "undefined";
+        // Build multiselect
+        $(document).ready(function(){
+            $("[name='framework_ids[]'], [name='control_ids[]']").multiselect({
+                enableFiltering: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+//                dropUp: true,
+                onDropdownHide: function(event){
+                    // Get related select jquery obj
+                    $select = $(event.currentTarget).prev();
+                    
+                    // If framework is selected, sets control options
+                    if($select.attr('id') == "framework_ids"){
+                        sets_controls_by_framework_ids($select)
+                    }
+                }
+            });
+        })
+
 
         $(document).ready(function(){
             var $tabs = $( "#documents-tab-content" ).tabs({
@@ -484,8 +534,10 @@ if (isset($_POST['delete_document']))
                         $("#document-update-modal [name=document_id]").val(data.id);
                         $("#document-update-modal [name=document_type]").val(data.document_type);
                         $("#document-update-modal [name=document_name]").val(data.document_name);
-                        $("#document-update-modal [name='control_ids[]']").multiselect('select', data.control_ids);
+                        $("#document-update-modal .selected_control_values").val(data.control_ids);
+//                        $("#document-update-modal [name='control_ids[]']").multiselect('select', data.control_ids);
                         $("#document-update-modal [name='framework_ids[]']").multiselect('select', data.framework_ids);
+                        sets_controls_by_framework_ids($("#document-update-modal [name='framework_ids[]']"));
                         $("#document-update-modal [name=creation_date]").val(data.creation_date);
                         $("#document-update-modal [name=review_date]").val(data.review_date);
                         $("#document-update-modal [name=status]").val(data.status);
@@ -495,6 +547,8 @@ if (isset($_POST['delete_document']))
                 });
                         
             });
+
+            var fileAPISupported = typeof $("<input type='file'>").get(0).files != "undefined";
 
             if (fileAPISupported) {
                 $("input.readonly").on('keydown paste focus', function(e){

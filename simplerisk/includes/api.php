@@ -330,9 +330,10 @@ function disabledusers()
     }
 }
 
-/************************************
- * FUNCTION: REPORTS - DYNAMIC RISK *
- ************************************/
+/*******************************************
+ * FUNCTION: REPORTS - DYNAMIC RISK        *
+ * This function is called through the API *
+ *******************************************/
 function dynamicrisk()
 {
     global $escaper;
@@ -348,7 +349,25 @@ function dynamicrisk()
         $status = $_GET['status'];
         $sort = $_GET['sort'];
         $group = $_GET['group'];
-        $affected_asset = isset($_GET['affected_asset']) ? $_GET['affected_asset'] : 0;
+        
+        $affected_assets_filter = empty($_GET['affected_assets_filter']) ? [] : $_GET['affected_assets_filter'];
+
+        if($affected_assets_filter)
+        {
+            $processed_affected_assets_filter = array('group'=>[], 'asset'=>[]);
+            foreach($affected_assets_filter as $asset_filter) {
+                if (preg_match('/^([\d]+)_(group|asset)$/', $asset_filter, $matches)) {
+                    list(, $id, $type) = $matches;
+                    
+                    array_push($processed_affected_assets_filter[$type], (int)$id);
+                }
+            }
+        }
+        else
+        {
+            $processed_affected_assets_filter = [];
+        }
+
         $tags_filter = isset($_GET['tags_filter']) ? array_map('intval', $_GET['tags_filter']) : [];
         $start = (isset($_GET['start']) && $_GET['start']) ? $_GET['start'] : 0;
         $length = (isset($_GET['length']) && $_GET['length']) ? $_GET['length'] : 10;
@@ -357,7 +376,7 @@ function dynamicrisk()
         $review_levels = get_review_levels();
 
         // Query the risks
-        $data = risks_query($status, $sort, $group, $affected_asset, $tags_filter, $rowCount, $start, $length);
+        $data = risks_query($status, $sort, $group, $processed_affected_assets_filter, $tags_filter, $rowCount, $start, $length);
         $rows = array();
         foreach($data as $risk){
             $row = array(
@@ -388,7 +407,7 @@ function dynamicrisk()
                 "days_open"             => $escaper->escapeHtml($risk['days_open']),
                 "next_review_date"      => $risk['next_review_date'],
                 "next_step"             => $escaper->escapeHtml($risk['next_step']),
-                "affected_assets"       => $escaper->escapeHtml($risk['affected_assets']),
+                "affected_assets"       => $risk['affected_assets'],
                 "risk_assessment"       => $escaper->escapeHtml($risk['risk_assessment']),
                 "additional_notes"      => $escaper->escapeHtml($risk['additional_notes']),
                 "current_solution"      => $escaper->escapeHtml($risk['current_solution']),
@@ -401,6 +420,8 @@ function dynamicrisk()
                 "mitigation_owner"      => $escaper->escapeHtml($risk['mitigation_owner']),
                 "mitigation_team"       => $escaper->escapeHtml($risk['mitigation_team']),
                 "closure_date"          => $escaper->escapeHtml($risk['closure_date']),
+                "mitigation_date"       => $escaper->escapeHtml($risk['mitigation_date']),
+                "mitigation_control_names" => $escaper->escapeHtml($risk['mitigation_control_names']),
                 "risk_tags"             => $escaper->escapeHtml($risk['risk_tags']),
             );
             $rows[] = $row;
@@ -449,7 +470,8 @@ function viewrisk()
             $manager = get_name_by_value("user", $risk[0]['manager']);
             $assessment = try_decrypt($risk[0]['assessment']);
             $notes = try_decrypt($risk[0]['notes']);
-            $assets = get_list_of_assets($id, false);
+            $assets = array_map(function($item) { return array('name'=>$item['name'], 'type'=>$item['class']); }, get_assets_and_asset_groups_of_type($id, 'risk'));
+            $tags = $risk[0]['risk_tags'];
             $submission_date = $risk[0]['submission_date'];
             $mitigation_id = $risk[0]['mitigation_id'];
             $mgmt_review = $risk[0]['mgmt_review'];
@@ -524,7 +546,7 @@ function viewrisk()
                 "manager" => $manager,
                 "assessment" => $assessment,
                 "notes" => $notes,
-                "assets" => $assets,
+                "affected_assets" => $assets,
                 "submission_date" => $submission_date,
                 "mitigation_id" => $mitigation_id,
                 "mgmt_review" => $mgmt_review,
@@ -533,6 +555,7 @@ function viewrisk()
                 "color" => $color,
                 "scoring_method" => $scoring_method,
                 "calculated_risk" => $calculated_risk,
+                "tags" => $tags,
                 "CLASSIC_likelihood" => $CLASSIC_likelihood,
                 "CLASSIC_impact" => $CLASSIC_impact,
                 "CVSS_AccessVector" => $CVSS_AccessVector,
@@ -744,7 +767,26 @@ function dynamicriskForm()
         $status = isset($_POST['status']) ? $_POST['status'] : 0;
         $sort   = isset($_POST['sort']) ? $_POST['sort'] : 0;
         $group  = isset($_POST['group']) ? $_POST['group'] : 0;
-        $affected_asset  = isset($_POST['affected_asset']) ? $_POST['affected_asset'] : 0;
+        
+        $affected_assets_filter = empty($_POST['affected_assets_filter']) ? [] : $_POST['affected_assets_filter'];
+        
+
+        if (!empty($affected_assets_filter)) 
+        {
+            $processed_affected_assets_filter = array('group'=>[], 'asset'=>[]);
+            foreach($affected_assets_filter as $asset_filter) {
+                if (preg_match('/^([\d]+)_(group|asset)$/', $asset_filter, $matches)) {
+                    list(, $id, $type) = $matches;
+
+                    array_push($processed_affected_assets_filter[$type], (int)$id);
+                }
+            }
+        }
+        else
+        {
+            $processed_affected_assets_filter = [];
+        }
+
         $tags_filter = isset($_POST['tags_filter']) ? array_map ('intval', $_POST['tags_filter']) : [];
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
@@ -758,10 +800,10 @@ function dynamicriskForm()
         $teams = isset($_POST['teams']) ? $_POST['teams'] : [];
         $owners = isset($_POST['owners']) ? $_POST['owners'] : [];
         $ownersmanagers = isset($_POST['ownersmanagers']) ? $_POST['ownersmanagers'] : [];
-        
+
         $rowCount = 0;
         // Query the risks
-        $risks = risks_query($status, $sort, $group, $affected_asset, $tags_filter, $rowCount, $start, $length, $group_value_from_db, "", [], $orderColumnName, $orderDir, $risks_by_team, $teams, $owners, $ownersmanagers);
+        $risks = risks_query($status, $sort, $group, $processed_affected_assets_filter, $tags_filter, $rowCount, $start, $length, $group_value_from_db, "", [], $orderColumnName, $orderDir, $risks_by_team, $teams, $owners, $ownersmanagers);
 
 //        $orderColumnIndex = $_POST['order'][0]['column'];
 //        $orderDir = $_POST['order'][0]['dir'];
@@ -828,7 +870,7 @@ function dynamicriskForm()
                 $escaper->escapeHtml($row['days_open']),
                 $row['next_review_date_html'],
                 $escaper->escapeHtml($row['next_step']),
-                $escaper->escapeHtml($row['affected_assets']),
+                "<div class='affected-asset-cell'>{$row['affected_assets']}</div>",
                 $escaper->escapeHtml($row['risk_assessment']),
                 $escaper->escapeHtml($row['additional_notes']),
                 $escaper->escapeHtml($row['current_solution']),
@@ -841,6 +883,7 @@ function dynamicriskForm()
                 $escaper->escapeHtml($row['mitigation_owner']),
                 $escaper->escapeHtml($row['mitigation_team']),
                 $escaper->escapeHtml($row['mitigation_date']),
+                $escaper->escapeHtml($row['mitigation_control_names']),
                 $escaper->escapeHtml($row['risk_tags']),
             );
 
@@ -1499,11 +1542,7 @@ function saveDetailsForm()
     if(isset($_SESSION["modify_risks"]) && $_SESSION["modify_risks"] == 1 && $access){
 
         $error = update_risk($id);
-
-        $tags = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
-        // Update tags
-        updateTagsOfType($id-1000, 'risk', $tags);
-
+        
         $risk = get_risk_by_id($id);
 
         /************************** Save Risk Score Method *********************************************/
@@ -2369,7 +2408,6 @@ function addRisk(){
         $manager = (int)get_param("POST", 'manager');
         $assessment = get_param("POST", 'assessment');
         $notes = get_param("POST", 'notes');
-        $assets = get_param("POST", 'assets');
         if(is_array(get_param("POST", 'additional_stakeholders'))){
             $additional_stakeholders = implode(",", get_param("POST", 'additional_stakeholders'));
         }else{
@@ -2445,7 +2483,7 @@ function addRisk(){
             // Load the extra
             require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-            create_subject_order($_SESSION['encrypted_pass']);
+            create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? $_SESSION['encrypted_pass'] : fetch_key());
         }
 
         if($scoring_method){
@@ -2457,8 +2495,13 @@ function addRisk(){
             submit_risk_scoring($last_insert_id);
         }
 
-        // Tag assets to risk
-        tag_assets_to_risk($last_insert_id, $assets);
+        $affected_assets = get_param("POST", 'affected_assets');
+
+        if ($affected_assets)
+            import_assets_asset_groups_for_type($last_insert_id, $affected_assets, 'risk');
+
+        //Add tags
+        updateTagsOfType($last_insert_id, 'risk', get_param("POST", 'tags', []));
 
         // If the notification extra is enabled
         if (notification_extra())
@@ -2730,7 +2773,7 @@ function deleteMapping(){
 function updateAssessment(){
     global $lang, $escaper;
 
-    $rows = $_POST['assessments'];
+    $rows = json_decode($_POST['assessments'], true);
     $assessment_id = (int)$_GET["assessment_id"];
     if(assessments_extra()){
         require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
@@ -2744,7 +2787,7 @@ function updateAssessment(){
         $risk_subject = [];
         $risk_score = [];
         $risk_owner = [];
-        $assets = [];
+        $assets_asset_groups = [];
         $assessment_scoring_ids = [];
 
         foreach($row['answers'] as $answerRow){
@@ -2754,7 +2797,7 @@ function updateAssessment(){
             $risk_subject[] = $answerRow['risk_subject'];
 //            $risk_score[]   = $answerRow['risk_score'];
             $risk_owner[]   = $answerRow['risk_owner'];
-            $assets[]       = $answerRow['assets'];
+            $assets_asset_groups[$answerRow['answer_id']] = isset($answerRow['assets_asset_groups']) ? $answerRow['assets_asset_groups'] : [];
 
             $data = array(
                 'scoring_method' => $answerRow['scoring_method'],
@@ -2815,7 +2858,7 @@ function updateAssessment(){
         }
 
 
-        update_assessment_question($assessment_id, $question_id, $question, $answer, $submit_risk, $answer_id, $risk_subject, $risk_score, $risk_owner, $assets, $assessment_scoring_ids);
+        update_assessment_question($assessment_id, $question_id, $question, $answer, $submit_risk, $answer_id, $risk_subject, $risk_score, $risk_owner, $assets_asset_groups, $assessment_scoring_ids);
     }
     $status = 200;
     $status_message = $lang['SavedSuccess'];
@@ -2918,6 +2961,10 @@ function getFrameworkControlsDatatable(){
         $html = "<div class='control-block item-block clearfix'>\n";
             $html .= "<div class='control-block--header clearfix' data-project=''>\n";
 
+                $html .= "<div class='checkbox-in-div'>\n";
+                    $html .= "<input type='checkbox' name='control_ids[]' value='".$escaper->escapeHtml($control['id'])."'>\n";
+                $html .= "</div>\n";
+                
                 $html .= "<div class='control-block--row text-right'>\n";
                     $html .= $delete.$clone.$edit;
                 $html .= "</div>\n";
@@ -3120,6 +3167,55 @@ function updateFrameworkStatusResponse()
     json_response(200, $status_message, []);
 }
 
+/****************************
+ * FUNCTION: UPDATE CONTROL *
+ ****************************/
+function updateControlResponse()
+{
+    global $lang, $escaper;
+
+  $control_id = (int)$_POST['control_id'];
+
+  // If user has no permission to modify controls
+  if(empty($_SESSION['modify_controls']))
+  {
+      // Display an alert
+      set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyControlPermission']));
+  }
+  // Verify value is an integer
+  elseif (is_int($control_id))
+  {
+      $control = array(
+        'short_name' => isset($_POST['short_name']) ? $_POST['short_name'] : "",
+        'long_name' => isset($_POST['long_name']) ? $_POST['long_name'] : "",
+        'description' => isset($_POST['description']) ? $_POST['description'] : "",
+        'supplemental_guidance' => isset($_POST['supplemental_guidance']) ? $_POST['supplemental_guidance'] : "",
+        'framework_ids' => isset($_POST['frameworks']) ? $_POST['frameworks'] : "",
+        'control_owner' => isset($_POST['control_owner']) ? (int)$_POST['control_owner'] : 0,
+        'control_class' => isset($_POST['control_class']) ? (int)$_POST['control_class'] : 0,
+        'control_phase' => isset($_POST['control_phase']) ? (int)$_POST['control_phase'] : 0,
+        'control_number' => isset($_POST['control_number']) ? $_POST['control_number'] : "",
+        'control_priority' => isset($_POST['control_priority']) ? (int)$_POST['control_priority'] : 0,
+        'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0,
+        'mitigation_percent' => (isset($_POST['mitigation_percent']) && $_POST['mitigation_percent'] >= 0 && $_POST['mitigation_percent'] <= 100) ? (int)$_POST['mitigation_percent'] : 0
+      );
+      // Update the control
+      update_framework_control($control_id, $control);
+
+      // Display an alert
+      set_alert(true, "good", "An existing control was updated successfully.");
+
+      json_response(200, get_alert(true), []);
+  }
+  // We should never get here as we bound the variable as an int
+  else
+  {
+      // Display an alert
+      set_alert(true, "bad", "The control ID was not a valid value.  Please try again.");
+      json_response(400, get_alert(true), []);
+  }
+}
+
 /*************************************
  * FUNCTION: UPDATE FRAMEWORK PARENT *
  *************************************/
@@ -3289,6 +3385,44 @@ function getSelectedParentDocumentsDropdownResponse()
     }
 }
 
+/***************************************************
+ * FUNCTION: GET RELATED CONTROLS BY FRAMEWORK IDS *
+ ***************************************************/
+function getRelatedControlsByFrameworkIdsResponse()
+{
+    global $lang, $escaper;
+    
+    // If the user has governance permissions
+    if (check_permission_governance())
+    {
+        $fids = get_param("get", "fids", "");
+        if($fids)
+        {
+            $fids_arr = explode(",", $fids);
+            $controls = get_framework_controls_by_filter("all", "all", "all", "all", $fids_arr);
+            
+            $control_ids = array_map(function($control) use ($escaper){
+                return array(
+                    'value' => $control['id'],
+                    'name' => $escaper->escapeHtml($control['short_name']),
+                );
+                
+            }, $controls);
+        }
+        // If fids is empty, returns empty
+        else
+        {
+            $control_ids = [];
+        }
+        
+        json_response(200, "Get framework control IDs by framework ids", ["control_ids" => $control_ids]);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForGovernance']), NULL);
+    }
+}
+
 /***************************************************************
  * FUNCTION: Initiate FRAMEWORK CONTROL TESTS AND GET RESPONSE *
  ***************************************************************/
@@ -3446,6 +3580,18 @@ function getDefineTestsResponse()
         $controls = get_framework_controls_by_filter("all", "all", "all", "all", $control_framework);
         $recordsTotal = count($controls);
 
+         // If team separation is enabled
+        if (team_separation_extra()) {
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+            // It means that either the user is an admin
+            // or everyone has access to the tests/audits.
+            // It means we can treat Team Separation like it is disabled        
+            $separation_enabled = !should_skip_test_and_audit_permission_check();
+        } else
+            $separation_enabled = false;
+        
         $data = array();
         foreach ($controls as $key=>$control)
         {
@@ -3512,6 +3658,11 @@ function getDefineTestsResponse()
                             ";
                             $html .= "<tbody>";
                                 foreach($tests as $test){
+                                    if ($separation_enabled) {
+                                        if (!is_user_allowed_to_access($_SESSION['uid'], $test['id'], 'test')) {
+                                            continue;
+                                        }
+                                    }
                                     
                                     $last_date = format_date($test['last_date']);
                                     $next_date = format_date($test['next_date']);
@@ -3527,8 +3678,8 @@ function getDefineTestsResponse()
                                             <td>".$escaper->escapeHtml($next_date)."</td>
                                             <td style='text-align:right'>".(int)$test['approximate_time']. " " .$escaper->escapeHtml($test['approximate_time'] > 1 ? $escaper->escapeHtml($lang['minutes']) : $escaper->escapeHtml($lang['minute']))."</td>
                                             <td class='text-center'>
-                                                <a href='#test--edit' data-id='".$escaper->escapeHtml($test['id'])."' class='edit-test' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;
-                                                <a href='#test--delete' class='delete-row' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-trash\"></i></a>
+                                                <a data-id='".$escaper->escapeHtml($test['id'])."' class='edit-test' data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;
+                                                <a class='delete-row' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-trash\"></i></a>
                                             </td>
                                         </tr>
                                     ";
@@ -3567,6 +3718,17 @@ function getTestResponse()
     // If the user has compliance permissions
     if (check_permission_compliance())
     {
+        // If team separation is enabled
+        if (team_separation_extra()) {
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            if (!is_user_allowed_to_access($_SESSION['uid'], $id, 'test')) {
+                set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForThisTest']));
+                json_response(400, get_alert(true), null);
+                return;
+            }
+        }
+
         $test = get_framework_control_test_by_id($id);
         if($test){
 
@@ -3604,12 +3766,32 @@ function getInitiateTestAuditsResponse()
 
         $results = array();
 
+        // If team separation is enabled
+        if (team_separation_extra()) {
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+            // It means that either the user is an admin
+            // or everyone has access to the tests/audits.
+            // It means we can treat Team Separation like it is disabled
+            if (should_skip_test_and_audit_permission_check()) {
+                $separation_enabled = false;
+            } else {
+                $separation_enabled = true;
+                $compliance_separation_access_info = get_compliance_separation_access_info();
+            }
+        } else
+            $separation_enabled = false;
+
         // If framework was loaded
         if(empty($_GET['id'])){
             // Get active frameworks
             $frameworks = get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control);
-    //        exit;
+            
             foreach($frameworks as $framework){
+                if ($separation_enabled && !in_array($framework['value'], $compliance_separation_access_info['frameworks']))
+                    continue;
+
                 $results[] = array(
                     'id' => 'framework_'.$framework['value'],
                     'state' => 'closed',
@@ -3627,6 +3809,9 @@ function getInitiateTestAuditsResponse()
             $framework_value = (int)str_replace("framework_", "", $_GET['id']);
             $framework_controls = get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_value);
             foreach($framework_controls as $framework_control){
+                if ($separation_enabled && !in_array($framework_control['id'], $compliance_separation_access_info['framework_controls']))
+                    continue;
+                
                 $results[] = array(
                     'id' => "control_".$framework_value."_".$framework_control['id'],
                     'state' => 'closed',
@@ -3647,6 +3832,9 @@ function getInitiateTestAuditsResponse()
 
             $framework_control_tests = get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id, $control_id);
             foreach($framework_control_tests as $framework_control_test){
+                if ($separation_enabled && !in_array($framework_control_test['id'], $compliance_separation_access_info['framework_control_tests']))
+                    continue;
+
                 $results[] = array(
                     'id' => "test_".$framework_and_control."_".$framework_control_test['id'],
                     'state' => 'open',
@@ -3787,6 +3975,7 @@ function getActiveTestAuditsResponse()
             "status",
             "last_date",
             "next_date",
+            "actions"
         );
 
         // Get active tests
@@ -3828,6 +4017,9 @@ function getActiveTestAuditsResponse()
                 "<div >".$escaper->escapeHtml($test['audit_status_name'])."</div>",
                 "<div >".$escaper->escapeHtml($last_date)."</div>",
                 "<div class='text-center '>".$escaper->escapeHtml($next_date)."</div>",
+                "<div class='text-center'>
+                    <button class='btn delete-btn' data-id='{$test['id']}' >".$escaper->escapeHtml($lang['Delete'])."</button>
+                </div>"
             ];
         }
         $result = array(
@@ -3856,6 +4048,18 @@ function saveTestAuditCommentResponse()
     if (check_permission_compliance())
     {
         $test_audit_id =  (int)$_POST['id'];
+
+        // If team separation is enabled
+        if (team_separation_extra()) {
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            if (!is_user_allowed_to_access($_SESSION['uid'], $test_audit_id, 'audit')) {
+                set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForThisAudit']));
+                json_response(400, get_alert(true), null);
+                return;
+            }
+        }
+
         $comment =  $_POST['comment'];
 
         // Save comment
@@ -3878,6 +4082,40 @@ function saveTestAuditCommentResponse()
 }
 
 /*******************************
+ * FUNCTION: DELETE TEST AUDIT *
+ *******************************/
+function deleteTestAuditResponse()
+{
+    global $lang, $escaper;
+
+    // If the user has compliance permissions
+    if (check_permission_compliance())
+    {
+        $audit_id = (int)$_POST['id'];
+
+        // If team separation is enabled
+        if (team_separation_extra()) {
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            if (!is_user_allowed_to_access($_SESSION['uid'], $audit_id, 'audit')) {
+                set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForThisAudit']));
+                json_response(400, get_alert(true), null);
+                return;
+            }
+        }
+
+        delete_test_audit($audit_id);
+
+        set_alert(true, "good", $escaper->escapeHtml($lang['TestAuditWasDeletedSuccessfully']));
+        json_response(200, get_alert(true), null);
+    }
+    else
+    {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForCompliance']), NULL);
+    }
+}
+
+/*******************************
  * FUNCTION: REOPEN TEST AUDIT *
  *******************************/
 function reopenTestAuditResponse()
@@ -3888,6 +4126,17 @@ function reopenTestAuditResponse()
     if (check_permission_compliance())
     {
         $audit_id = $_POST['id'];
+
+        // If team separation is enabled
+        if (team_separation_extra()) {
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            if (!is_user_allowed_to_access($_SESSION['uid'], $audit_id, 'audit')) {
+                set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForThisAudit']));
+                json_response(400, get_alert(true), null);
+                return;
+            }
+        }
 
         reopen_test_audit($audit_id);
 
@@ -4353,84 +4602,75 @@ function delete_likelihood_api(){
     json_response($status_code, $message);
 }
 
-/********************************
- * FUNCTION: UPDATE IMPACT NAME *
- ********************************/
-function update_impact_name_api(){
-    global $lang, $escaper;
-    
-    $value = (int)get_param("POST", "value");
-    $name = get_param("POST", "name");
-
-    if(strlen($name) > 50){
-        $status = "bad";
-        $message = $escaper->escapeHtml(_lang("ImpactHasMaxChars", ['length' => 50]));
-        $status_code = 400;
-    }
-    elseif($_SESSION['admin'] == 1)
-    {
-        // Update impact name
-        if(update_table("impact", $name, $value, 50)){
-            $status = "good";
-            $message = $escaper->escapeHtml($lang["SuccessUpdatingImpactName"]);
-            $status_code = 200;
-        }else{
-            $status = "bad";
-            $message = $escaper->escapeHtml($lang["FailUpdatingImpactName"]);
-            $status_code = 400;
-        }
-    }
-    else
-    {
-        $status = "bad";
-        $message = $escaper->escapeHtml($lang["AdminPermissionRequired"]);
-        $status_code = 400;
-    }
-
-    set_alert(true, $status, $message);
-    
-    // Return a JSON response
-    json_response($status_code, get_alert(true), ['message' => $message]);
-}
-
-/************************************
- * FUNCTION: UPDATE LIKELIHOOD NAME *
- ************************************/
-function update_likelihood_name_api(){
+/**********************************************
+ * FUNCTION: UPDATE IMPACT OR LIKELIHOOD NAME *
+ **********************************************/
+function update_impact_or_likelihood_name_api(){
     global $lang, $escaper;
 
     $value = (int)get_param("POST", "value");
     $name = get_param("POST", "name");
+    $type = get_param("POST", "type");
     
-    if(strlen($name) > 50){
-        $status = "bad";
-        $message = $escaper->escapeHtml(_lang("LikelihoodHasMaxChars", ['length' => 50]));
+    if (!in_array($type, ['impact', 'likelihood'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyATypeParameter']);
         $status_code = 400;
-    }
-    elseif($_SESSION['admin'] == 1)
-    {
-        // Update likelihood name
-        if(update_table("likelihood", $name, $value, 50)){
-            $status = "good";
-            $message = $escaper->escapeHtml($lang["SuccessUpdatingLikelihoodName"]);
-            $status_code = 200;
-        }else{
-            $status = "bad";
-            $message = $escaper->escapeHtml($lang["FailUpdatingLikelihoodName"]);
+    } elseif(strlen($name) > 50) {
+        set_alert(true, "bad", _lang(ucfirst($type) . "HasMaxChars", ['length' => 50]));
+        $status_code = 400;
+    } elseif($_SESSION['admin'] == 1) {
+        if(update_table($type, $name, $value, 50)) {
+            set_alert(true, "good", $lang["SuccessUpdating" . ucfirst($type) . "Name"]);
+            json_response(200, get_alert(true), ['confirmed_data' => $escaper->escapeHtml($name)]);
+            return;
+        } else {
+            set_alert(true, "bad", $lang["FailUpdating" . ucfirst($type) . "Name"]);
             $status_code = 400;
         }
-    }
-    else
-    {
-        $status = "bad";
-        $message = $escaper->escapeHtml($lang["AdminPermissionRequired"]);
+    } else {
+        set_alert(true, "bad", $lang["AdminPermissionRequired"]);
         $status_code = 400;
     }
 
-    set_alert(true, $status, $message);
     // Return a JSON response
-    json_response($status_code, get_alert(true), ['message' => $message]);
+    json_response($status_code, get_alert(true), null);
 }
+
+/*********************************
+ * FUNCTION: UPDATE CUSTOM SCORE *
+ *********************************/
+function update_custom_score_api(){
+    global $lang, $escaper;
+
+    $impact = (int)get_param("POST", "impact");
+    $likelihood = (int)get_param("POST", "likelihood");
+    $score = (float)get_param("POST", "score");
+
+    if($_SESSION['admin'] == 1) {
+        if (is_valid_impact_and_likelihood($impact, $likelihood)) {
+            if (0 <= $score && $score <= 10.0) {
+                set_stored_risk_score($impact, $likelihood, $score, true);
+                set_alert(true, "good", $lang["SuccessUpdatingCustomScore"]);
+                $confirmed_score = round(get_stored_risk_score($impact, $likelihood), 1);
+                $color = get_risk_color($confirmed_score);
+                json_response(200, get_alert(true), [
+                    'confirmed_data' => $escaper->escapeHtml($confirmed_score),
+                    'color' => $escaper->escapeHtml($color)
+                ]);
+            } else {
+                set_alert(true, "bad", $lang["RiskScoreIsOutOfRange"]);
+                json_response(400, get_alert(true), null);
+            }
+        } else {
+            set_alert(true, "bad", $lang["InvalidImpactOrLikelihood"]);
+            json_response(400, get_alert(true), null);
+        }
+    } else {
+        set_alert(true, "bad", $lang["AdminPermissionRequired"]);
+        json_response(400, get_alert(true), null);
+    }
+}
+
 
 /**********************************************
  * FUNCTION: GET DATA FOR DOCUMENTS DATATABLE *
@@ -5476,7 +5716,7 @@ function get_exception_api()
 
     $exception = get_exception((int)$_GET['id']);
 
-    $exception['additional_stakeholders'] = explode(',', $exception['additional_stakeholders']);
+    $exception['additional_stakeholders'] = $exception['additional_stakeholders'] ? explode(',', $exception['additional_stakeholders']) : [];
     $exception['creation_date'] = format_date($exception['creation_date']);
     $exception['next_review_date'] = format_date($exception['next_review_date']);
     $exception['approval_date'] = format_date($exception['approval_date']);
@@ -5575,8 +5815,8 @@ function create_exception_api() {
         return;
     }
 
-    $policy = ctype_digit($_POST['policy']) ? (int)$_POST['policy'] : false;
-    $control = ctype_digit($_POST['control']) ? (int)$_POST['control'] : false;
+    $policy = isset($_POST['policy']) && ctype_digit($_POST['policy']) ? (int)$_POST['policy'] : false;
+    $control = isset($_POST['control']) && ctype_digit($_POST['control']) ? (int)$_POST['control'] : false;
 
     //You have to choose a policy or a control, you can't choose both
     if (!($policy xor $control)) {
@@ -5712,8 +5952,8 @@ function update_exception_api() {
         return;
     }
 
-    $policy = ctype_digit($_POST['policy']) ? (int)$_POST['policy'] : false;
-    $control = ctype_digit($_POST['control']) ? (int)$_POST['control'] : false;
+    $policy = isset($_POST['policy']) && ctype_digit($_POST['policy']) ? (int)$_POST['policy'] : false;
+    $control = isset($_POST['control']) && ctype_digit($_POST['control']) ? (int)$_POST['control'] : false;
 
     //You have to choose a policy or a control, you can't choose both
     if (!($policy xor $control)) {
@@ -5997,12 +6237,311 @@ function get_audit_logs_api()
     } 
     else
     {
-        set_alert(true, "bad", $escaper->escapeHtml($escaper->escapeHtml($lang['AdminPermissionRequired'])));
+        set_alert(true, "bad", $escaper->escapeHtml($lang['AdminPermissionRequired']));
         json_response(400, get_alert(true), NULL);
         return;
     }
 
 }
 
+function get_asset_options() {
+
+    global $lang;
+
+    if (check_permission_asset())
+    {
+        $data = get_entered_assets(!isset($_GET['verified']) ? null : boolval($_GET['verified']));
+
+        // To get the id and name from the assets
+        $data = array_map(
+            function($element){
+                global $escaper;
+                return array(
+                    'id' => $element['id'],
+                    'name' => $escaper->escapeHtml(try_decrypt($element['name']))
+                );
+            }, $data
+        );
+        json_response(200, null, $data);
+    }
+    else
+    {
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+}
+
+function asset_group_tree() {
+
+    global $lang, $escaper;
+
+    if (!check_permission_asset()) {
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }elseif (!isset($_GET['page']) || !isset($_GET['rows'])) {
+        set_alert(true, "bad", $lang['TreegridMissingRequiredParameters']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $id = isset($_GET['id']) && !empty($_GET['id']) && ctype_digit($_GET['id']) ? (int)$_GET['id'] : false;
+
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $rows = isset($_GET['rows']) ? (int)$_GET['rows'] : 10;
+    $offset = ($page-1)*$rows;
+
+    // Parent items
+    if ($id === false) {
+        echo json_encode(get_asset_groups_for_treegrid($offset, $rows));
+    } else { // The children
+        echo json_encode(get_assets_of_asset_group_for_treegrid($id));
+    }
+}
+
+function asset_group_info()
+{
+    global $lang, $escaper;
+
+    if (!check_permission_asset()) {
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }elseif (empty($_GET['id']) || !ctype_digit($_GET['id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    
+    try {
+        $group = get_asset_group((int)$_GET['id']);
+        $group['name'] = $escaper->escapeHtml($group['name']);
+        
+        foreach ($group['selected_assets'] as &$selected_asset)
+        {
+            $selected_asset['name'] = $escaper->escapeHtml($selected_asset['name']);
+        }
+
+        foreach ($group['available_assets'] as &$available_asset)
+        {
+            $available_asset['name'] = $escaper->escapeHtml($available_asset['name']);
+        }
+
+        json_response(200, null, $group);
+        return;
+    } catch(Exception $e) {
+        error_log($e);
+        set_alert(true, "bad", $lang['ThereWasAProblemGettingTheAssetGroup']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+}
+
+function asset_group_create()
+{
+    global $lang;
+
+    if (!check_permission_asset()) {
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (empty($_POST['name'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyANameParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $name = $_POST['name'];
+    $selected_assets = empty($_POST['selected_assets']) ? [] : $_POST['selected_assets'];
+
+    if (get_value_by_name('asset_groups', $name)) {
+        set_alert(true, "bad", $lang['AssetGroupNameAlreadyInUse']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    
+    try {
+        $id = create_asset_group($name, $selected_assets);
+    } catch(Exception $e) {
+        error_log($e);
+        $id = false;
+    }
+
+    if ($id) {
+        set_alert(true, "good", $lang['AssetGroupCreatedSuccessfully']);
+        json_response(200, get_alert(true), null);
+        return;
+    } else {
+        set_alert(true, "bad", $lang['ThereWasAProblemCreatingTheAssetGroup']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+}
+
+function asset_group_update()
+{
+    global $lang;
+
+    if (!check_permission_asset()) {
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (empty($_POST['asset_group_id']) || !ctype_digit($_POST['asset_group_id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (empty($_POST['name'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyANameParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    $id = (int)$_POST['asset_group_id'];
+    $name = $_POST['name'];
+    $selected_assets = empty($_POST['selected_assets']) ? [] : $_POST['selected_assets'];
+
+    $id_check = get_value_by_name('asset_groups', $name);
+    if ($id_check != $id && $id_check !== null) {
+        set_alert(true, "bad", $lang['AssetGroupNameAlreadyInUse']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    
+    try {
+        update_asset_group($id, $name, $selected_assets);
+    } catch(Exception $e) {
+        error_log($e);
+        set_alert(true, "bad", $lang['ThereWasAProblemUpdatingTheAssetGroup']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    set_alert(true, "good", $lang['AssetGroupUpdatedSuccessfully']);
+    json_response(200, get_alert(true), null);
+}
+
+function asset_group_delete()
+{
+    global $lang;
+
+    if (!check_permission_asset()) {
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (empty($_POST['asset_group_id']) || !ctype_digit($_POST['asset_group_id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    try {
+        $deleted = delete_asset_group((int)$_POST['asset_group_id']);
+    } catch(Exception $e) {
+        error_log($e);
+        $deleted = false;
+    }
+
+    if (!$deleted) {
+        set_alert(true, "bad", $lang['ThereWasAProblemDeletingTheAssetGroup']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    
+    set_alert(true, "good", $lang['AssetGroupDeletedSuccessfully']);
+    json_response(200, get_alert(true), null);
+}
+
+function asset_group_remove_asset()
+{
+    global $lang;
+
+    if (!check_permission_asset()) {
+        set_alert(true, "bad", $lang['NoPermissionForAsset']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    } elseif (empty($_POST['asset_group_id']) || !ctype_digit($_POST['asset_group_id'])
+            || empty($_POST['asset_id']) || !ctype_digit($_POST['asset_id'])) {
+        set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    try {
+        $removed = remove_asset_from_asset_group((int)$_POST['asset_id'], (int)$_POST['asset_group_id']);
+    } catch(Exception $e) {
+        error_log($e);
+        $removed = false;
+    }
+
+    if (!$removed) {
+        set_alert(true, "bad", $lang['ThereWasAProblemRemovingTheAssetFromAssetGroup']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    
+    set_alert(true, "good", $lang['AssetRemovedFromAssetGroupSuccessfully']);
+    json_response(200, get_alert(true), null);
+}
+
+function get_asset_group_options() {
+
+    global $lang;
+
+    if (check_permission_asset() || check_permission_assessments() || check_permission_riskmanagement())
+    {
+        $risk_id = isset($_GET['risk_id']) && ctype_digit($_GET['risk_id']) ? (int)$_GET['risk_id'] : false;
+        json_response(200, null, get_assets_and_asset_groups_for_dropdown($risk_id));
+    }
+    else
+    {
+        set_alert(true, "bad", $lang['NoPermissionForAssetAssetGroupList']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+}
+
+/***************************************
+ * FUNCTION: GET MANAGER ID BY USER ID *
+ ***************************************/
+function getManagerByUserAPI()
+{
+    $user_id = get_param("get", 'id');
+    $user = get_user_by_id($user_id);
+    
+    set_alert(true, "good", "success");
+    
+    json_response(200, get_alert(true), array("manager" => $user["manager"]));
+}
+
+
+
+/****************************************************************
+ * FUNCTION: ADVANCED SEARCH                                    *
+ * Params(GET)                                                  *
+ *  'q': The query string                                       *
+ *  'highlight': Whether the query string                       *
+ *  should be highlighted in the results(0 or 1, default is 1)  *
+ ****************************************************************/
+function advanced_search_api(){
+
+    global $lang;
+
+    if (is_dir(realpath(__DIR__ . '/../extras/advanced_search')) && advanced_search_extra()) {
+        
+        // Include the Import-Export Extra
+        require_once(realpath(__DIR__ . '/../extras/advanced_search/index.php'));
+
+        $highlight = !isset($_GET['highlight']) || (isset($_GET['highlight']) && boolval($_GET['highlight']));
+        $teaser_size = isset($_GET['teaser_size']) && $_GET['teaser_size'] ? (int)$_GET['teaser_size'] : 100;
+        $escape_type = isset($_GET['escape_type']) && $_GET['escape_type'] && in_array($_GET['escape_type'], ['html', 'js']) ? $_GET['escape_type'] : 'html';
+        
+        return json_response(200, null, do_advanced_search($_GET['q'], $teaser_size, $highlight, $escape_type));
+    }
+
+    set_alert(true, "bad", $lang['ActivateTheAdvancedSearchExtra']);
+    return json_response(400, get_alert(true), array("manager" => $user["manager"]));
+
+}
 
 ?>

@@ -66,14 +66,14 @@ if(isset($_POST['download_audit_log']))
             require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
             download_audit_logs(get_param('post', 'days', 7), 'exception', $escaper->escapeHtml($lang['ExeptionAuditTrailReport']));
         }else{
-            set_alert(true, "bad", $escaper->escapeHtml($escaper->escapeHtml($lang['YouCantDownloadBecauseImportExportExtraDisabled'])));
+            set_alert(true, "bad", $escaper->escapeHtml($lang['YouCantDownloadBecauseImportExportExtraDisabled']));
             refresh();
         }
     }
     // If this is not admin user, disable download
     else
     {
-        set_alert(true, "bad", $escaper->escapeHtml($escaper->escapeHtml($lang['AdminPermissionRequired'])));
+        set_alert(true, "bad", $escaper->escapeHtml($lang['AdminPermissionRequired']));
         refresh();
     }
 }
@@ -156,39 +156,9 @@ function display($display = "")
                 padding: 0px;
             }
 
-            .modal-header {
-                border-bottom: 1px solid #888;
-            }
-
-            .modal-footer {
-                padding: 10px !important;
-            }
-
             .exception-data {
                 padding-left: 10px;
             }
-
-            /* width */
-            .modal-body::-webkit-scrollbar {
-                background: yellow;
-                width: 10px;
-            }
-
-            /* Track */
-            .modal-body::-webkit-scrollbar-track {
-                background: #f1f1f1; 
-            }
-
-            /* Handle */
-            .modal-body::-webkit-scrollbar-thumb {
-                background: #888; 
-            }
-
-            /* Handle on hover */
-            .modal-body::-webkit-scrollbar-thumb:hover {
-                background: #555; 
-            }
-
         </style>
         <script>
         
@@ -197,20 +167,29 @@ function display($display = "")
                 //Edit
                 $("#"+ tab + "-exceptions .exception--edit").click(function(){
                     var exception_id = $(this).data("id");
+                    var type = $(this).data("type");
+
                     $.ajax({
                         url: BASE_URL + '/api/exceptions/exception?id=' + exception_id,
                         type: 'GET',
                         success : function (res){
                             var data = res.data;
 
+                            $("#exception-update-form [name=type]").val(type);
+
                             $("#exception-update-form [name=exception_id]").val(exception_id);
                             $("#exception-update-form [name=name]").val(data.name);
                             $("#exception-update-form [name=policy]").val(data.policy_document_id);
                             $("#exception-update-form [name=control]").val(data.control_framework_id);
                             $("#exception-update-form [name=owner]").val(data.owner);
-                            if (data.additional_stakeholders && data.additional_stakeholders instanceof Array) {
+                            if (Array.isArray(data.additional_stakeholders) && data.additional_stakeholders.length) {
                                 $("#exception-update-form [name='additional_stakeholders[]']").multiselect('select', data.additional_stakeholders);
+                            } else {
+                                $("#exception-update-form [name='additional_stakeholders[]']").multiselect('deselectAll', false);
                             }
+
+                            $("#exception-update-form [name='additional_stakeholders[]']").multiselect('updateButtonText');
+
                             $("#exception-update-form [name=creation_date]").val(data.creation_date);
                             $("#exception-update-form [name=review_frequency]").val(data.review_frequency);
                             $("#exception-update-form [name=next_review_date]").val(data.next_review_date);
@@ -219,6 +198,8 @@ function display($display = "")
                             $("#exception-update-form [name=approved_original]").prop('checked', data.approved);
                             $("#exception-update-form [name=description]").val(data.description);
                             $("#exception-update-form [name=justification]").val(data.justification);
+
+                            refresh_type_selects_display($('#exception--update'));
 
                             $("#exception--update").modal();
                         }
@@ -335,6 +316,25 @@ function display($display = "")
                 });
             }
 
+            function refresh_type_selects_display(root) {
+
+                var policy = root.find('#policy');
+                var control = root.find('#control');
+
+                if ((policy.val() && policy.val() > 0) || (control.val() && control.val() > 0)) {
+                    if ((policy.val() && policy.val() > 0)) {
+                        policy.prop("disabled", false);
+                        control.prop("disabled", true);
+                    } else {
+                        control.prop("disabled", false);
+                        policy.prop("disabled", true);
+                    }
+                } else {
+                    policy.prop("disabled", false);
+                    control.prop("disabled", false);
+                }
+            }
+
             $(document).ready(function(){
                 var $tabs = $( "#exceptions-tab-content" ).tabs({
                     activate: function(event, ui){
@@ -390,6 +390,8 @@ function display($display = "")
                 $("#exception-update-form").submit(function(event) {
                     event.preventDefault();
 
+                    var old_type = $("#exception-update-form [name=type]").val();
+
                     $.ajax({
                         type: "POST",
                         url: BASE_URL + "/api/exceptions/update",
@@ -409,9 +411,17 @@ function display($display = "")
                             var tree = $('#exception-table-' + data.data.type);
                             tree.treegrid('options').animate = false;
                             tree.treegrid('reload');
+
                             // If exception_update_resets_approval we have to refresh after an update
                             if (<?php if (get_setting('exception_update_resets_approval')) echo "true || ";  ?>!data.data.approved) {
                                 var tree = $('#exception-table-unapproved');
+                                tree.treegrid('options').animate = false;
+                                tree.treegrid('reload');
+                            }
+
+                            // If type is changed we have to refresh the tab of the old type as well
+                            if (data.data.type !== old_type) {
+                                var tree = $('#exception-table-' + old_type);
                                 tree.treegrid('options').animate = false;
                                 tree.treegrid('reload');
                             }
@@ -552,12 +562,16 @@ function display($display = "")
                         }
                     });
                     return false;
-                });               
-               
+                });
+
+                $('#exception--add').find('#policy, #control').change(function() {refresh_type_selects_display($('#exception--add'));});
+
+                $('#exception--update').find('#policy, #control').change(function() {refresh_type_selects_display($('#exception--update'));});
+
                 $(".exception-table").treegrid('resize');
 
                 $("[name='additional_stakeholders[]']").multiselect();
-               
+
                 $("[name='approval_date']").datepicker({maxDate: new Date});
                 $("[name='creation_date']").datepicker({maxDate: new Date});
                 $("[name='next_review_date']").datepicker({minDate: new Date});
@@ -565,6 +579,7 @@ function display($display = "")
                 //Have to remove the 'fade' class for the shown event to work for modals
                 $('#exception--add, #exception--update, #exception--view').on('shown.bs.modal', function() {
                     $(this).find('.modal-body').scrollTop(0);
+                    refresh_type_selects_display($(this));
                 });
 
                 $('.collapsible--toggle span').click(function(event) {
@@ -684,10 +699,10 @@ function display($display = "")
                             <label for=""><?php echo $escaper->escapeHtml($lang['ExceptionName']); ?></label>
                             <input type="text" required name="name" value="" class="form-control" autocomplete="off">
 
-                            <label for=""><?php echo $escaper->escapeHtml($lang['Policy']); ?></label>
+                            <label id="label_for_policy" for=""><?php echo $escaper->escapeHtml($lang['Policy']); ?></label>
                             <?php create_dropdown("policies", NULL, "policy", true); ?>
 
-                            <label for=""><?php echo $escaper->escapeHtml($lang['Control']); ?></label>
+                            <label id="label_for_control" for=""><?php echo $escaper->escapeHtml($lang['Control']); ?></label>
                             <?php create_dropdown("framework_controls", NULL, "control", true); ?>
 
                             <label for=""><?php echo $escaper->escapeHtml($lang['ExceptionOwner']); ?></label>
@@ -735,6 +750,7 @@ function display($display = "")
                         <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['ExceptionUpdate']); ?></h4>
                     </div>
                     <input type="hidden" class="exception_id" name="exception_id" value="">
+                    <input type="hidden" name="type" value="">
                     <input type="checkbox" name="approved_original" style="display:none;" />
 
                     <div class="modal-body">
@@ -742,10 +758,10 @@ function display($display = "")
                             <label for=""><?php echo $escaper->escapeHtml($lang['ExceptionName']); ?></label>
                             <input type="text" required name="name" value="" class="form-control" autocomplete="off">
 
-                            <label for=""><?php echo $escaper->escapeHtml($lang['Policy']); ?></label>
+                            <label id="label_for_policy" for=""><?php echo $escaper->escapeHtml($lang['Policy']); ?></label>
                             <?php create_dropdown("policies", NULL, "policy", true, false, false, "", "--", "0"); ?>
 
-                            <label for=""><?php echo $escaper->escapeHtml($lang['Control']); ?></label>
+                            <label id="label_for_control" for=""><?php echo $escaper->escapeHtml($lang['Control']); ?></label>
                             <?php create_dropdown("framework_controls", NULL, "control", true, false, false, "", "--", "0"); ?>
 
                             <label for=""><?php echo $escaper->escapeHtml($lang['ExceptionOwner']); ?></label>

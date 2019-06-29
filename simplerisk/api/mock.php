@@ -75,7 +75,7 @@
           "reference_id": "",
           "regulation": "3",
           "control_number": "",
-          "assets": "credit card data, google-public-dns-a.google.com, ",
+          "affected_assets": "Asset Name 1,Asset Name 2,[Asset Group Name 1],Asset Name 3,[Asset Group Name 2]",
           "technology": "8",
           "team": [3],
           "additional_stakeholders": [1,17,16,15],
@@ -123,6 +123,7 @@
           "Custom": "",
           "assessment": "Assessment",
           "notes": "Additional notes",
+          "tags": [Tag1,Tag2,Tag3],
           "custom_field": {
               "21":"Custom first",
               "41":"Custom value"
@@ -281,7 +282,24 @@
                     "manager": "",
                     "assessment": "",
                     "notes": "",
-                    "assets": "",
+                    "affected_assets": [
+                        {
+                            "name": "Asset Group 1",
+                            "type": "group"
+                        },
+                        {
+                            "name": "Asset Group 2",
+                            "type": "group"
+                        },
+                        {
+                            "name": "Asset 1",
+                            "type": "asset"
+                        },
+                        {
+                            "name": "Asset 2",
+                            "type": "asset"
+                        }
+                    ],
                     "submission_date": "2018-06-06 11:01:20",
                     "mitigation_id": "0",
                     "mgmt_review": "0",
@@ -326,6 +344,7 @@
                     "OWASP_ReputationDamage": "10",
                     "OWASP_NonCompliance": "10",
                     "OWASP_PrivacyViolation": "10",
+                    "tags": "Tag1,Tag2,Tag3",
                     "Custom": "10",
                     "ContributingLikelihood": "2",
                     "ContributingImpacts": {
@@ -487,7 +506,7 @@
           "reference_id": "",
           "regulation": "3",
           "control_number": "",
-          "assets": "credit card data, google-public-dns-a.google.com, ",
+          "affected_assets": "Asset Name 1,Asset Name 2,[Asset Group Name 1],Asset Name 3,[Asset Group Name 2]",
           "technology": "8",
           "team": "3",
           "additional_stakeholders": "1,17,16,15",
@@ -535,6 +554,7 @@
           "Custom": "",
           "assessment": "Assessment",
           "notes": "Additional notes",
+          "tags": [Tag1, Tag2, Tag3],
           "custom_field": {
               "21":"Custom first",
               "41":"Custom value"

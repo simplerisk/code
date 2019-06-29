@@ -119,6 +119,32 @@ function enforce_permission_asset()
         }
 }
 
+/******************************************
+ * FUNCTION: CHECK PERMISSION ASSESSMENTS *
+ ******************************************/
+function check_permission_assessments()
+{
+    // Check if assessments is authorized
+    if (!isset($_SESSION["assessments"]) || $_SESSION["assessments"] != 1)
+    {
+        return false;
+    }
+    else return true;
+}
+
+/********************************************
+ * FUNCTION: ENFORCE PERMISSION ASSESSMENTS *
+ ********************************************/
+function enforce_permission_assessments()
+{
+    // If asset is not authorized
+    if (!check_permission_assessments())
+    {
+        header("Location: ../index.php");
+        exit(0);
+    }
+}
+
 /*************************************
  * FUNCTION: CHECK PERMISSION ASSET *
  *************************************/

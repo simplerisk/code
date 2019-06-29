@@ -49,13 +49,13 @@ CsrfMagic.prototype = {
         if(!this.csrf_contentType) this.csrf_contentType = "";
         if(data === null){
             data = new FormData();
-            data.set(csrfMagicName, csrfMagicToken);
+            data.append(csrfMagicName, csrfMagicToken);
             return this.csrf_send(data);
         }
         else if(typeof data == "string" && this.csrf_contentType.toLowerCase().indexOf("application/json") == -1){
             return this.csrf_send(prepend + data);
         } else if(data instanceof FormData){
-            data.set(csrfMagicName, csrfMagicToken);
+            data.append(csrfMagicName, csrfMagicToken);
             return this.csrf_send(data);
         } else {
             return this.csrf_send(data);
@@ -226,3 +226,23 @@ function retryCSRF(xhr, self)
     }
 }
 
+
+/**
+Need this function to be able to re-send the datatable's request when it's failing
+because of an expired csrf magic token
+**/
+function retryDatatableCSRF(xhr, api) {
+    var obj = $('<div/>').html(xhr.responseText);
+    var token = obj.find('input[name=\"__csrf_magic\"]').val();
+    if(token)
+    {
+        $('input[name=\"__csrf_magic\"]').val(token);
+        csrfMagicToken = token;
+        api.ajax.reload();
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}

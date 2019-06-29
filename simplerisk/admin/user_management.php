@@ -63,6 +63,8 @@ if (isset($_POST['add_user']))
     $email = $_POST['email'];
     $user = $_POST['new_user'];
     $pass = $_POST['password'];
+    $manager = $_POST['manager'];
+
     $repeat_pass = $_POST['repeat_password'];
     $teams = isset($_POST['team']) ? $_POST['team'] : array('none');
     $role_id = (int)$_POST['role'];
@@ -200,6 +202,7 @@ if (isset($_POST['add_user']))
                     "update_exception" => $update_exception,
                     "delete_exception" => $delete_exception,
                     "approve_exception" => $approve_exception,
+                    "manager" => $manager,
                 ];
 
                 // Insert a new user
@@ -628,6 +631,11 @@ if (isset($_POST['password_policy_update']))
                                 <input name="change_password" id="change_password" <?php if(isset($change_password) && $change_password == 1) echo "checked"; ?> class="hidden-checkbox" type="checkbox" value="1" />  <label for="change_password">  &nbsp;&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['RequirePasswordChangeOnLogin']); ?> </label> 
                             </div>
 
+                            <h6>
+                                <u><?php echo $escaper->escapeHtml($lang['Manager']); ?></u>
+                            </h6>
+                            <?php create_dropdown("user", "", "manager"); ?>
+
                             <h6><u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u></h6>
                             <?php create_multiple_dropdown("team"); ?>
 
@@ -749,7 +757,7 @@ if (isset($_POST['password_policy_update']))
                         <form name="select_user" method="post" action="view_user_details.php">
                             <p>
                                 <h4><?php echo $escaper->escapeHtml($lang['ViewDetailsForUser']); ?>:</h4>
-                                <?php echo $escaper->escapeHtml($lang['DetailsForUser']); ?> <?php create_dropdown("user"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Select']); ?>" name="select_user" />
+                                <?php echo $escaper->escapeHtml($lang['DetailsForUser']); ?> <?php create_dropdown('enabled_users', null, 'user'); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Select']); ?>" name="select_user" />
                             </p>
                         </form>
                     </div>

@@ -45,10 +45,31 @@ function get_assessment($assessment_id)
         $db = db_open();
 
         // Get the assessment questions and answers
-        $stmt = $db->prepare("SELECT a.name AS assessment_name, b.question, b.id AS question_id, b.order AS question_order, c.answer, c.id AS answer_id, c.submit_risk, c.risk_subject, c.risk_score, c.risk_owner, c.assets, c.order AS answer_order
-        FROM `assessments` a LEFT JOIN `assessment_questions` b ON a.id=b.assessment_id 
-            INNER JOIN `assessment_answers` c ON b.id=c.question_id 
-        WHERE a.id=:assessment_id ORDER BY question_order, b.id, answer_order, c.id;");
+        $stmt = $db->prepare("
+            SELECT
+                a.name AS assessment_name,
+                b.question,
+                b.id AS question_id,
+                b.order AS question_order,
+                c.answer,
+                c.id AS answer_id,
+                c.submit_risk,
+                c.risk_subject,
+                c.risk_score,
+                c.risk_owner,
+                c.order AS answer_order
+            FROM
+                `assessments` a
+                LEFT JOIN `assessment_questions` b ON a.id=b.assessment_id
+                INNER JOIN `assessment_answers` c ON b.id=c.question_id
+            WHERE
+                a.id=:assessment_id
+            ORDER BY
+                question_order,
+                b.id,
+                answer_order,
+                c.id;
+        ");
         $stmt->bindParam(":assessment_id", $assessment_id, PDO::PARAM_INT);
         $stmt->execute();
 
@@ -76,6 +97,8 @@ function process_assessment($redirect = true)
     // Get the assessment
     $assessment = get_assessment($assessment_id);
 
+    $assets_asset_groups = isset($_POST['assets_asset_groups']) ? implode(',', $_POST['assets_asset_groups']) : "";
+
     // For each row in the assessment
     foreach ($assessment as $key=>$row)
     {
@@ -90,18 +113,18 @@ function process_assessment($redirect = true)
                 $subject = $row['risk_subject'];
                 $score = $row['risk_score'];
                 $owner = $row['risk_owner'];
-                $assets = $row['assets'];
                 $comment = $_POST['comment'][$row['question_id']];
 
-                // If an asset was specified in the assessment
-                if ($asset != "")
-                {
-                    // Set assets to the specified value
-                    $assets = $asset;
+                // If an asset was specified in the processed assessment
+                // then we use those affected assets and not those on the answer
+                if (!$assets_asset_groups) {
+                    $affected_assets = get_assets_and_asset_groups_of_type_as_string($assessment_answer_id, 'assessment_answer');
+                } else {
+                    $affected_assets = $assets_asset_groups;
                 }
 
                 // Add the pending risk
-                add_pending_risk($assessment_id, $assessment_answer_id, $subject, $score, $owner, $assets, $comment);
+                add_pending_risk($assessment_id, $assessment_answer_id, $subject, $score, $owner, $affected_assets, $comment);
             }
         }
     }
@@ -121,21 +144,25 @@ function process_assessment($redirect = true)
 }
 
 /******************************
- * FUNCTION: ADD PENDING RISK *
+ * FUNCTION: ADD PENDING RISK 
+ * $affected_assets: string of assets and asset groups listed, separated by ','
+ * and asset group names wrapped in square brackets.
+ * Example: Asset 1,Asset 2,[Asset Group 1],Asset 3,[Asset Group 2]
+ 
  ******************************/
-function add_pending_risk($assessment_id, $assessment_answer_id, $subject, $score, $owner, $asset, $comment)
+function add_pending_risk($assessment_id, $assessment_answer_id, $subject, $score, $owner, $affected_assets, $comment)
 {
     // Open the database connection
     $db = db_open();
 
     // Get the assessment questions and answers
-    $stmt = $db->prepare("INSERT INTO `pending_risks` (`assessment_id`, `assessment_answer_id`, `subject`, `score`, `owner`, `asset`, `comment`) VALUES (:assessment_id, :assessment_answer_id, :subject, :score, :owner, :asset, :comment);");
+    $stmt = $db->prepare("INSERT INTO `pending_risks` (`assessment_id`, `assessment_answer_id`, `subject`, `score`, `owner`, `affected_assets`, `comment`) VALUES (:assessment_id, :assessment_answer_id, :subject, :score, :owner, :affected_assets, :comment);");
     $stmt->bindParam(":assessment_id", $assessment_id, PDO::PARAM_INT);
     $stmt->bindParam(":assessment_answer_id", $assessment_answer_id, PDO::PARAM_INT);
     $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":score", $score, PDO::PARAM_STR);
     $stmt->bindParam(":owner", $owner, PDO::PARAM_INT);
-    $stmt->bindParam(":asset", $asset, PDO::PARAM_STR, 200);
+    $stmt->bindParam(":affected_assets", $affected_assets, PDO::PARAM_STR, 200);
     $stmt->bindParam(":comment", $comment, PDO::PARAM_STR, 500);
     $stmt->execute();
 
@@ -175,32 +202,44 @@ function get_pending_risks()
  *********************************/
 function delete_pending_risk($pending_risk_id)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Delete the pending risk
-        $stmt = $db->prepare("DELETE FROM `pending_risks` WHERE id=:pending_risk_id;");
-        $stmt->bindParam(":pending_risk_id", $pending_risk_id, PDO::PARAM_INT);
-        $stmt->execute();
+    // Delete the pending risk
+    $stmt = $db->prepare("DELETE FROM `pending_risks` WHERE id=:pending_risk_id;");
+    $stmt->bindParam(":pending_risk_id", $pending_risk_id, PDO::PARAM_INT);
+    $stmt->execute();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 }
 
 /*******************************
  * FUNCTION: PUSH PENDING RISK *
  *******************************/
-function push_pending_risk()
-{
+function push_pending_risk() {
+
+    global $lang;
+
+    $subject = $_POST['subject'];
+
+    if (!$subject) {
+        set_alert(true, "bad", $lang['SubjectRiskCannotBeEmpty']);
+        return;
+    }
+    if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1) {
+        set_alert(true, "bad", $lang['RiskAddPermissionMessage']);
+        return;
+    }
+
     // Get the risk id to push
     $pending_risk_id = (int)$_POST['pending_risk_id'];
 
     // Get the posted risk values
     $submission_date = $_POST['submission_date'];
-    $subject = $_POST['subject'];
     $owner = (int)$_POST['owner'];
     $notes = $_POST['note'];
-    $assets = $_POST['asset'];
+    $assets_asset_groups = isset($_POST['assets_asset_groups']) ? implode(',',$_POST['assets_asset_groups']) : "";
 
     // Set the other risk values
     $status = "New";
@@ -226,8 +265,6 @@ function push_pending_risk()
 
         create_subject_order($_SESSION['encrypted_pass']);
     }
-    
-    
 
     if(isset($_POST['scoring_method'][0]) && $_POST['scoring_method'][0]){
         // Get first element from POST data
@@ -291,8 +328,10 @@ function push_pending_risk()
         submit_risk_scoring($last_insert_id);
     }
 
-    // Tag assets to risk
-    tag_assets_to_risk($last_insert_id, $assets);
+    // We're using the same function that's used for import as we're used the
+    // same format in the pending_risks table's affected_assets field
+    if ($assets_asset_groups)
+        import_assets_asset_groups_for_type($last_insert_id, $assets_asset_groups, 'risk');
 
     // If a file was submitted
     if (!empty($_FILES))

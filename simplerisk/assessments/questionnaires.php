@@ -106,6 +106,11 @@ if($result = process_assessment_questionnaires()){
     <?php
         setup_alert_requirements("..");
     ?>
+    <style>
+        .btn[disabled] {
+            background-color: #3a3a3a !important;
+        }
+    </style>
 </head>
 
 <body>

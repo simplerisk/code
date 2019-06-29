@@ -78,6 +78,7 @@
     $username = $user_info['username'];
     $name = $user_info['name'];
     $email = $user_info['email'];
+    $manager = $user_info['manager'];
     $last_login = format_date($user_info['last_login']);
     $teams = $user_info['teams'];
     $language = $user_info['lang'];
@@ -149,22 +150,11 @@
                     // Add the old data to the pass_history table
                     add_last_password_history($_SESSION["uid"], $old_data["salt"], $old_data["password"]);
 
-
                     // Update the password
                     update_password($user, $hash);
 
-                    // If the encryption extra is enabled
-                    if (encryption_extra())
-                    {
-                        // Load the extra
-                        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-
-                        // Set the new encrypted password
-                        set_enc_pass($user, $new_pass, $_SESSION['encrypted_pass']);
-                    }
-
                     // Display an alert
-		    set_alert(true, "good", $lang['PasswordUpdated']);
+                    set_alert(true, "good", $lang['PasswordUpdated']);
                 }else{
                     set_alert(true, "bad", $lang['PasswordNoLongerUse']);
                 }
@@ -178,7 +168,7 @@
         else
         {
             // Display an alert
-	    set_alert(true, "bad", $lang['PasswordIncorrect']);
+            set_alert(true, "bad", $lang['PasswordIncorrect']);
         }
     }
     
@@ -318,6 +308,11 @@
                     <input name="reset_custom_display_settings" value="<?php echo $lang['ResetCustomDisplaySettings']; ?>" type="submit">
                 </form>
                 
+                <h6>
+                    <u><?php echo $escaper->escapeHtml($lang['Manager']); ?></u>
+                </h6>
+                <?php create_dropdown("user", $manager, "manager"); ?>
+
                 <h6><u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u></h6>
                 <?php create_multiple_dropdown("team", $teams); ?>
                 

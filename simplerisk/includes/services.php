@@ -197,41 +197,41 @@ function download_extra($name)
  * FUNCTION: RECURSE COPY *
  **************************/
 function recurse_copy($src, $dst) {
-        // Get the source directory
-        $dir = opendir($src);
-        $result = ($dir === false ? false : true);
+    // Get the source directory
+    $dir = opendir($src);
+    $result = ($dir === false ? false : true);
 
-        // If the source exists
-        if ($result !== false){
-                // If the destination does not exist
-                if (!is_dir($dst))
-                {
-                        // Create the destination
-                        $result = @mkdir($dst);
-                }
-
-                // If the destination exists
-                if ($result === true){
-                        // Iterate through the source directory
-                        while(false !== ( $file = readdir($dir)) ) {
-                                if (( $file != '.' ) && ( $file != '..' ) && $result) {
-                                        // If it is a directory
-                                        if ( is_dir($src . '/' . $file) ) {
-                                                // Recursive copy the files in it
-                                                $result = recurse_copy($src . '/' . $file,$dst . '/' . $file);
-                                        }
-                                        // Otherwise, just copy the files
-                                        else {
-                                                $result = copy($src . '/' . $file,$dst . '/' . $file);
-                                        }
-                                }
-                        }
-                        // Close the directory
-                        closedir($dir);
-                }
+    // If the source exists
+    if ($result !== false){
+        // If the destination does not exist
+        if (!is_dir($dst))
+        {
+            // Create the destination
+            $result = @mkdir($dst);
         }
-        // Return a success or failure
-        return $result;
+
+        // If the destination exists
+        if ($result === true){
+            // Iterate through the source directory
+            while(false !== ( $file = readdir($dir)) ) {
+                if (( $file != '.' ) && ( $file != '..' ) && $result) {
+                    // If it is a directory
+                    if ( is_dir($src . '/' . $file) ) {
+                        // Recursive copy the files in it
+                        $result = recurse_copy($src . '/' . $file,$dst . '/' . $file);
+                    }
+                    // Otherwise, just copy the files
+                    else {
+                        $result = copy($src . '/' . $file,$dst . '/' . $file);
+                    }
+                }
+            }
+            // Close the directory
+            closedir($dir);
+        }
+    }
+    // Return a success or failure
+    return $result;
 }
 
 /***************************

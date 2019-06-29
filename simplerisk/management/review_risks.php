@@ -87,6 +87,7 @@
     <script src="../js/pages/risk.js"></script>
     <script src="../js/highcharts/code/highcharts.js"></script>
     <script src="../js/bootstrap-multiselect.js"></script>
+    <script src="../js/jquery.blockUI.min.js"></script>
 
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
@@ -106,8 +107,7 @@
     <?php
         setup_alert_requirements("..");
     ?>        
-    
-    <?php display_asset_autocomplete_script(get_verified_assets()); ?>
+
 </head>
 
 <body>

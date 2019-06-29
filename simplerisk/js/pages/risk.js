@@ -119,59 +119,16 @@ function addRisk($this){
         
         // if file upload button exists, set the unique ID
         if($(".hidden-file-upload.active", tabContainer).length){
-            $(".hidden-file-upload.active", tabContainer).attr('id', 'file-upload' + tabIndex)
-            $("[for=file-upload]", tabContainer).attr('for', 'file-upload' + tabIndex)
+            $(".hidden-file-upload.active", tabContainer).attr('id', 'file-upload' + tabIndex);
+            $("[for=file-upload]", tabContainer).attr('for', 'file-upload' + tabIndex);
         }
-        
-        /**
-        * Build tab container
-        * 
-        */
-        $(".assets", tabContainer)
-          .bind( "keydown", function( event ) {
-            if ( event.keyCode === $.ui.keyCode.TAB && $( this ).autocomplete( "instance" ).menu.active ) {
-              event.preventDefault();
-            }
-          })
-          .autocomplete({
-                minLength: 0,
-                source: function( request, response ) {
-                // delegate back to autocomplete, but extract the last term
-                response( $.ui.autocomplete.filter(
-                availableAssets, extractLast( request.term ) ) );
-              },
-              focus: function() {
-                // prevent value inserted on focus
-                return false;
-              },
-              select: function( event, ui ) {
-                var terms = split( this.value );
-                // remove the current input
-                terms.pop();
-                // add the selected item
-                terms.push( ui.item.value );
-                // add placeholder to get the comma-and-space at the end
-                terms.push( "" );
 
-                terms = terms.reverse().filter(function (e, i, arr) {
-                    return arr.indexOf(e, i+1) === -1;
-                }).reverse();
+        setupAssetsAssetGroupsWidget($('select.assets-asset-groups-select', tabContainer), riskID);
+        setupAssetsAssetGroupsViewWidget($('select.assets-asset-groups-select-disabled', tabContainer));
 
-                this.value = terms.join( ", " );
-                return false;
-              }
-          })
-        .focus(function(){
-            var self = $(this);
-            window.setTimeout(function(){
-                self.autocomplete("search", "");
-            }, 1000)
-        });
-          
         /**
         * Set background on focus of textarea
         */
-        focus_add_css_class("#AffectedAssetsTitle", "#assets", tabContainer);
         focus_add_css_class("#RiskAssessmentTitle", "#assessment", tabContainer);
         focus_add_css_class("#NotesTitle", "#notes", tabContainer);
         focus_add_css_class("#SecurityRequirementsTitle", "#security_requirements", tabContainer);
@@ -181,13 +138,109 @@ function addRisk($this){
         /**
         * Set Risk Scoring Method dropdown and show/hide the sub views
         */
-        handleSelection($("[name=scoring_method]", tabContainer).val(), tabContainer)
+        handleSelection($("[name=scoring_method]", tabContainer).val(), tabContainer);
         
         /**
         * Build multiselect box
         */
         $(".multiselect", tabContainer).multiselect({buttonWidth: '100%'});
     }
+    
+    
+    function setupAssetsAssetGroupsWidget(select_tag, risk_id) {
+
+        // Giving a default value here because IE can't handle
+        // function parameter default values...
+        risk_id = risk_id || 0;
+        
+        if (!select_tag.length)
+            return;
+        
+        var select = select_tag.selectize({
+            sortField: 'text',
+            plugins: ['optgroup_columns', 'remove_button', 'restore_on_backspace'],
+            delimiter: ',',
+            create: function (input){
+                return { id:'new_asset_' + input, name:input };
+            },
+            persist: false,
+            valueField: 'id',
+            labelField: 'name',
+            searchField: 'name',
+            sortField: 'name',
+            optgroups: [
+                {class: 'asset', name: 'Standard Assets'},
+                {class: 'group', name: 'Asset Groups'}
+            ],
+            optgroupField: 'class',
+            optgroupLabelField: 'name',
+            optgroupValueField: 'class',
+            preload: true,
+            render: {
+                item: function(item, escape) {
+                    return '<div class="' + item.class + '">' + escape(item.name) + '</div>';
+                }
+            },
+            onInitialize: function() {
+                if (risk_id != 0)
+                    select_tag.parent().find('.selectize-control div').block({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>'});
+            },
+            load: function(query, callback) {
+                if (query.length) return callback();
+                $.ajax({
+                    url: '/api/asset-group/options?risk_id=' + risk_id,
+                    type: 'GET',
+                    dataType: 'json',
+                    error: function() {
+                        callback();
+                    },
+                    success: function(res) {
+                        var data = res.data;
+                        var control = select[0].selectize;
+                        var selected_ids = [];
+                        // Have to do it this way, because addition with simple addOption() will
+                        // bug out when we deselect an option(it wouldn't be added back to the
+                        // list of selectable items)
+                        len = data.length;
+                        for (var i = 0; i < len; i++) {
+                            var item = data[i];
+                            item.id += '_' + item.class;
+                            control.registerOption(item);
+                            if (item.selected == '1') {
+                                selected_ids.push(item.id);
+                            }
+                        }
+                        if (selected_ids.length)
+                            control.setValue(selected_ids);
+                    },
+                    complete: function() {
+                        select_tag.parent().find('.selectize-control div').unblock({message:null});
+                    }
+                });
+            }
+        });        
+    }
+    
+    
+    function setupAssetsAssetGroupsViewWidget(select_tag) {
+        
+        if (!select_tag.length)
+            return;
+        
+        var select = select_tag.selectize({
+            sortField: 'text',
+            disabled: true,
+            render: {
+                item: function(item, escape) {
+                    return '<div class="' + item.class + '">' + escape(item.text) + '</div>';
+                }
+            }
+        });
+        
+        select[0].selectize.disable();
+        select_tag.parent().find('.selectize-control div').removeClass('disabled');
+    }    
+    
     
     /*
     * Function to add the css class for textarea title and make it popup.
@@ -281,6 +334,17 @@ $(document).ready(function(){
         }                
     }
 
+    if($.blockUI !== undefined){
+        $.blockUI.defaults.css = {
+            padding: 0,
+            margin: 0,
+            width: '30%',
+            top: '40%',
+            left: '35%',
+            textAlign: 'center',
+            cursor: 'wait'
+        };
+    }
     /**
     * Open new risk
     * 
@@ -1289,6 +1353,26 @@ $(document).ready(function(){
             })
         }
         
+    })
+    
+    /**
+    * Event when change risk owner
+    */
+    $('body').on('change', '[name=owner]', function(e){
+        var form = $(this).closest("form");
+        $.ajax({
+            type: "GET",
+            url: BASE_URL + "/api/user/manager",
+            data: {
+                id: $(this).val()
+            },
+            success: function(res){
+                var data = res.data;
+                if(data.manager){
+                    $("[name=manager]", form).val(data.manager)
+                }
+            }
+        })
     })
     
 })

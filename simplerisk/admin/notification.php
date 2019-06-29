@@ -178,11 +178,20 @@ function display($display = "")
             $("#cron_period").change(function(){
                 var period = $(this).val();
                 
-                $(".specified_time_holder").hide();
-                $("input, select", ".specified_time_holder").prop('disabled', true);
+                $(".specified_time_holder", "#past-due-container").hide();
+                $("input, select", "#past-due-container .specified_time_holder").prop('disabled', true);
                 
-                $("#specified_" + period).show();
-                $("input, select", "#specified_" + period).prop('disabled', false);
+                $("#specified_" + period, "#past-due-container").show();
+                $("input, select", "#past-due-container #specified_" + period).prop('disabled', false);
+            })
+            $("#cron_non_mitigation_period").change(function(){
+                var period = $(this).val();
+                
+                $(".specified_time_holder", "#non-mitigation-container").hide();
+                $("input, select", "#non-mitigation-container .specified_time_holder").prop('disabled', true);
+                
+                $("#specified_" + period, "#non-mitigation-container").show();
+                $("input, select", "#non-mitigation-container #specified_" + period).prop('disabled', false);
             })
         });
 

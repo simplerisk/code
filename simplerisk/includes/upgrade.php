@@ -3209,7 +3209,7 @@ function upgrade_from_20190105001($db){
         }
     }
 
-    if (!get_setting('simplerisk_base_url') && isset($_SERVER) and array_key_exists('SERVER_NAME', $_SERVER)) {
+    if (!get_setting('simplerisk_base_url') && isset($_SERVER) && array_key_exists('SERVER_NAME', $_SERVER)) {
         echo "Setting the default value for the SimpleRisk Base URL.<br />\n";
 
         $url = get_current_url();
@@ -3408,6 +3408,230 @@ function upgrade_from_20190210001($db){
         $stmt->execute();
     }
 
+    echo "Setting the default value for the SimpleRisk Base URL.<br />\n";
+    $url = get_current_url();
+    // Remove the admin path from the URL
+    $url = preg_replace('/\/admin\/.*/', '', $url);
+    add_setting('simplerisk_base_url', $url);
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20190331-001 *
+ ***************************************/
+function upgrade_from_20190331001($db){
+    // Database version to upgrade
+    $version_to_upgrade = '20190331-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20190630-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Creating the asset_groups table.
+    if (!table_exists('asset_groups')) {
+        echo "Creating the asset_groups table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `asset_groups` (
+                `id` INT(11) NOT NULL AUTO_INCREMENT,
+                `name` VARCHAR(100) NOT NULL,
+                PRIMARY KEY(id),
+                CONSTRAINT `name_unique` UNIQUE (`name`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+
+    // Creating the assets_asset_groups table.
+    if (!table_exists('assets_asset_groups')) {
+        echo "Creating the assets_asset_groups table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `assets_asset_groups` (
+                `asset_id` INT(11) NOT NULL,
+                `asset_group_id` INT(11) NOT NULL,
+                CONSTRAINT `asset_asset_group_unique` UNIQUE (`asset_id`, `asset_group_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+
+    if (!table_exists('risks_to_asset_groups')) {
+        echo "Creating the risks_to_asset_groups table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `risks_to_asset_groups` (
+                `risk_id` INT(11) NOT NULL,
+                `asset_group_id` INT(11) NOT NULL,
+                CONSTRAINT `risk_asset_group_unique` UNIQUE (`risk_id`, `asset_group_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+
+    // Add support for the Mongolian language
+    if (!get_value_by_name('languages', 'mn')) {
+        echo "Add support for the Mongolian language.<br />\n";
+        $stmt = $db->prepare("INSERT INTO languages (`name`, `full`) VALUES ('mn', 'Mongolian');");
+        $stmt->execute();
+    }
+
+    if (!field_exists_in_table('manager', 'user')) {
+        // Add manager field to user table
+        echo "Adding manager field to user table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `manager` INT NULL; ");
+        $stmt->execute();
+    }
+
+    if (!table_exists('assessment_answers_to_assets')) {
+        echo "Creating the assessment_answers_to_assets table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `assessment_answers_to_assets` (
+                `assessment_answer_id` INT(11) NOT NULL,
+                `asset_id` INT(11) NOT NULL,
+                CONSTRAINT `assessment_answer_asset_unique` UNIQUE (`assessment_answer_id`, `asset_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+
+    if (!table_exists('assessment_answers_to_asset_groups')) {
+        echo "Creating the assessment_answers_to_asset_groups table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `assessment_answers_to_asset_groups` (
+                `assessment_answer_id` INT(11) NOT NULL,
+                `asset_group_id` INT(11) NOT NULL,
+                CONSTRAINT `assessment_answer_asset_group_unique` UNIQUE (`assessment_answer_id`, `asset_group_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+    
+    if (field_exists_in_table('assets', 'assessment_answers')
+        && table_exists('assessment_answers_to_asset_groups')
+        && table_exists('assessment_answers_to_assets')) {
+
+        // Get any answers that have assets setup        
+        $stmt = $db->prepare("SELECT id, assets FROM assessment_answers WHERE TRIM(assets) != '' AND assets IS NOT NULL;");
+        $stmt->execute();
+        $answers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($answers) {
+            echo "Migrating Assessment Answers to to the new database structure.<br />\n";
+
+            // Iterate through the answers
+            foreach($answers as $answer) {
+
+                $answer_id = $answer['id'];
+                $asset_names = explode(',', $answer['assets']);
+
+                // Iterate through the asset names
+                foreach($asset_names as $asset_name) {
+
+                    if (!$asset_name)
+                        continue;
+
+                    // Get the asset id if it exists
+                    $asset_id = asset_exists($asset_name);
+
+                    // If it doesn't yet
+                    if (!$asset_id)
+                        // Then create it
+                        $asset_id = add_asset_by_name_with_forced_verification($asset_name, true);
+
+                    if (!$asset_id)
+                        continue;
+
+                    // Add the new asset for this assessment answer
+                    $stmt = $db->prepare("INSERT INTO `assessment_answers_to_assets` (`assessment_answer_id`, `asset_id`) VALUES (:assessment_answer_id, :asset_id)");
+                    $stmt->bindParam(":assessment_answer_id", $answer_id, PDO::PARAM_INT);
+                    $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+                    $stmt->execute();
+                }
+            }
+        }
+
+        // Drop the assets column of the assessment_answers table
+        echo "Dropping the assets column of the assessment_answers table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `assessment_answers` DROP COLUMN `assets`;");
+        $stmt->execute();
+    }
+
+    // Updated `pending_risks` table's `asset` field to text type
+    if (getTypeOfColumn('pending_risks', 'asset') == 'varchar') {
+        echo "Updated `pending_risks` table's `asset` field to text type.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `pending_risks` CHANGE `asset` `affected_assets` TEXT;");
+        $stmt->execute();
+    }
+
+    // Creating the items_to_teams table.
+    if (!table_exists('items_to_teams')) {
+        echo "Creating the `items_to_teams` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `items_to_teams` (
+                `item_id` INT(11) NOT NULL,
+                `team_id` INT(11) NOT NULL,
+                `type` VARCHAR(20) NOT NULL,
+                CONSTRAINT `item_team_unique` UNIQUE (`item_id`, `team_id`, `type`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+
+    // Add a new risk model to the `risk_models` table
+    if (get_name_by_value('risk_models', 6, false) === false) {
+        echo "Adding a new risk model (called 'Custom') to the `risk_models` table.<br />\n";
+        $stmt = $db->prepare("INSERT INTO `risk_models` (`value`, `name`) VALUES (6, 'Custom');");
+        $stmt->execute();
+    }
+
+    // Creating the custom_risk_model_values table.
+    if (!table_exists('custom_risk_model_values')) {
+        echo "Creating the `custom_risk_model_values` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `custom_risk_model_values` (
+                `impact` INT(11) NOT NULL,
+                `likelihood` INT(11) NOT NULL,
+                `value` DOUBLE(3,1) NOT NULL,
+                CONSTRAINT `impact_likelihood_unique` UNIQUE (`impact`, `likelihood`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+        
+        echo "Pre-populating the `custom_risk_model_values` table based on the currently selected 'Risk Model'.<br />\n";
+        $GLOBALS['count_of_impacts']        = $count_of_impacts     = count(get_table("impact"));
+        $GLOBALS['count_of_likelihoods']    = $count_of_likelihoods = count(get_table("likelihood"));
+
+        foreach (range(1, $count_of_impacts) as $impact) {
+            foreach (range(1, $count_of_likelihoods) as $likelihood) {
+                set_stored_risk_score($impact, $likelihood, calculate_risk($impact, $likelihood));
+            }
+        }
+    }
+
+    // If the SimpleRisk instance is registered
+    if (get_setting('registration_registered') != 0)
+    {
+        // Get the current registration values
+        $name = get_setting('registration_name');
+        $company = get_setting('registration_company');
+        $title = get_setting('registration_title');
+        $phone = get_setting('registration_phone');
+        $email = get_setting('registration_email');
+
+        // Split the name into two parts using the first space
+        $array = explode(' ', $name, 2);
+        $fname = (isset($array[0]) ? $array[0] : "");
+	$lname = (isset($array[1]) ? $array[1] : "");
+
+	// Add the new first and last name settings
+	add_setting("registration_fname", $fname);
+	add_setting("registration_lname", $lname);
+
+        update_registration($name="", $company="", $title="", $phone="", $email="", $fname="", $lname="");
+    }
+
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
@@ -3578,6 +3802,10 @@ function upgrade_database()
                 upgrade_from_20190210001($db);
                 upgrade_database();
                 break;
+            case "20190331-001":
+                upgrade_from_20190331001($db);
+                upgrade_database();
+                break;                
             default:
                 echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
         }
@@ -3590,6 +3818,17 @@ function upgrade_database()
 
     // Disconnect from the database
     db_close($db);
+}
+
+/*****************************************
+ * FUNCTION: DISPLAY CACHE CLEAR WARNING *
+ *****************************************/
+function display_cache_clear_warning()
+{
+	global $lang;
+	global $escaper;
+
+	echo "<image src=\"../images/exclamation_warning.png\" width=\"30\" height=\"30\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['CacheClearWarning']);
 }
 
 ?>

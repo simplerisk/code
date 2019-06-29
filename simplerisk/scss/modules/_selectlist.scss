@@ -1,0 +1,46 @@
+/*--------------------------------------------------------------
+ ## Styles for select lists
+ --------------------------------------------------------------*/
+.select-list-wrapper {
+    padding-top: 10px;
+
+    .select-list-selected,
+    .select-list-available {
+        float: left;
+        width: 45%;
+
+        select {
+            height: 200px;
+            padding: 0;
+            option {
+                padding: 4px 10px 4px 10px;
+            }
+            option:hover {
+                background: #EEEEEE;
+            }
+            &::-webkit-scrollbar {
+                background: yellow;
+                width: 10px;
+            }
+            &::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+            &::-webkit-scrollbar-thumb {
+                background: #888;
+            }
+            &::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+        }
+    }
+    .select-list-arrows {
+        float: left;
+        width: 10%;
+        margin-top: 30px;
+        input {
+            width: 70%;
+            margin-bottom: 5px;
+            padding: 5px 0px;
+        }
+    }
+}

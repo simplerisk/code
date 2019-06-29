@@ -119,26 +119,30 @@ else
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
 <head>
-  <script src="../js/jquery.min.js"></script>
-  <script src="../js/jquery-ui.min.js"></script>
-  <script src="../js/bootstrap.min.js"></script>
-  <script src="../js/pages/assessment.js"></script>
-  <script src="../js/common.js"></script>
-  <script src="../js/cve_lookup.js"></script>
-  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <meta name="google" content="notranslate">
-  <link rel="stylesheet" href="../css/bootstrap.css">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-  <link rel="stylesheet" href="../css/jquery-ui.min.css">
-
-  <link rel="stylesheet" href="../css/divshot-util.css">
-  <link rel="stylesheet" href="../css/divshot-canvas.css">
-  <link rel="stylesheet" href="../css/display.css">
-  <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="../css/theme.css">
-
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/jquery-ui.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/pages/assessment.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/cve_lookup.js"></script>
+    <script src="../js/jquery.blockUI.min.js"></script>
+    
+    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <meta name="google" content="notranslate">
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="../css/jquery-ui.min.css">
+    
+    <link rel="stylesheet" href="../css/divshot-util.css">
+    <link rel="stylesheet" href="../css/divshot-canvas.css">
+    <link rel="stylesheet" href="../css/display.css">
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
+  
+    <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
+    <script src="../js/selectize.min.js"></script>
   
   <?php
       setup_alert_requirements("..");

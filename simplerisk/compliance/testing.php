@@ -55,6 +55,19 @@ include_csrf_magic();
 // Enforce that the user has access to compliance
 enforce_permission_compliance();
 
+// If team separation is enabled
+if (team_separation_extra()) {
+    //Include the team separation extra
+    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    
+    $test_audit_id  = (int)$_GET['id'];
+    
+    if (!is_user_allowed_to_access($_SESSION['uid'], $test_audit_id, 'audit')) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForThisAudit']));
+        refresh($_SESSION['base_url']."/compliance/active_audits.php");
+    }
+}
+
 // Check if a framework was updated
 if (isset($_POST['submit_test_result']))
 {

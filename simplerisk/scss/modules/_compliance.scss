@@ -57,7 +57,7 @@
 
     .grey-background{
         background-color: #ebe7e7 !important;
-        }
+    }
 
     .red-background{
         background-color: pink !important;
@@ -66,5 +66,30 @@
     .green-background{
         background-color: lightgreen !important;
     }
+}
+.control-block--header{
+    position: relative;
+    .checkbox-in-div{
+        text-align: center;
+        width: 25px;
+        float: left;
+        position: absolute;
+        top: 50%;
+        margin-top: -10px;
+        cursor: pointer;
+    }    
+}
+
+.control-block--header.selected-background{
+    background-color: #f0ebe7;
+    table tbody tr{
+        background-color: #f0ebe7;
+    }
+}
+
+#delete-controls-btn{
+    position: absolute;
+    right: 0px;
+    top: 5px;
 }
 

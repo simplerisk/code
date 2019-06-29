@@ -47,7 +47,6 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
     header("Location: ../index.php");
     exit(0);
 }
-
 ?>
 <!doctype html>
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">

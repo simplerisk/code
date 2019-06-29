@@ -127,6 +127,9 @@
         getRoute()->get('/governance/documents', 'getDocumentsResponse');
         getRoute()->get('/governance/document', 'getDocumentResponse');
         getRoute()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
+        getRoute()->get('/governance/related_controls_by_framework_ids', 'getRelatedControlsByFrameworkIdsResponse');
+        
+        getRoute()->post('/governance/update_control', 'updateControlResponse');
         
         getRoute()->get('/compliance/define_tests', 'getDefineTestsResponse');
         getRoute()->get('/compliance/test', 'getTestResponse');
@@ -137,6 +140,7 @@
         getRoute()->post('/compliance/reopen_audit', 'reopenTestAuditResponse');
         getRoute()->post('/compliance/audit_initiation/initiate', 'initiateFrameworkControlTestsResponse');
         getRoute()->get('/compliance/audit_timeline', 'auditTimelineResponse');
+        getRoute()->post('/compliance/delete_audit', 'deleteTestAuditResponse');
         /*************************************************************************/
 
         /***************************** Assessment API *********************************/
@@ -164,6 +168,14 @@
         getRoute()->post('/assets/verify_assets', 'assets_verify_assets');
         getRoute()->post('/assets/discard_assets', 'assets_discard_assets');
         getRoute()->post('/assets/delete_assets', 'assets_delete_assets');
+        getRoute()->get('/assets/options', 'get_asset_options');
+        getRoute()->post('/asset-group/create', 'asset_group_create');
+        getRoute()->post('/asset-group/update', 'asset_group_update');
+        getRoute()->post('/asset-group/delete', 'asset_group_delete');
+        getRoute()->post('/asset-group/remove_asset', 'asset_group_remove_asset');
+        getRoute()->get('/asset-group/tree', 'asset_group_tree');
+        getRoute()->get('/asset-group/info', 'asset_group_info');
+        getRoute()->get('/asset-group/options', 'get_asset_group_options');
         /********************************************************************************/
 
         /********************* Authentication API **************************/
@@ -181,8 +193,8 @@
         getRoute()->post('/riskformula/delete_impact', 'delete_impact_api');
         getRoute()->post('/riskformula/add_likelihood', 'add_likelihood_api');
         getRoute()->post('/riskformula/delete_likelihood', 'delete_likelihood_api');
-        getRoute()->post('/riskformula/update_impact_name', 'update_impact_name_api');
-        getRoute()->post('/riskformula/update_likelihood_name', 'update_likelihood_name_api');
+        getRoute()->post('/riskformula/update_impact_or_likelihood_name', 'update_impact_or_likelihood_name_api');
+        getRoute()->post('/riskformula/update_custom_score', 'update_custom_score_api');
         /******************************************************************/
 
         /********************* RISK LEVEL API **************************/
@@ -201,11 +213,18 @@
         getRoute()->get('/exceptions/audit_log', 'get_exceptions_audit_log_api');
         /***********************************************************/
 
+        /******************************* Advanced Search API **********************************/
+        getRoute()->get('/advanced_search', 'advanced_search_api');
+        /**************************************************************************************/
+
         getRoute()->get('/management/tag_options_of_type', 'getTagOptionsOfType');
 
         // Return scoring histories
         getRoute()->get('/management/risk/scoring_history', 'scoringHistory');
         getRoute()->get('/management/risk/residual_scoring_history', 'residualScoringHistory');
+        
+        // Get manager by owner
+        getRoute()->get('/user/manager', 'getManagerByUserAPI');
 
         // Interal api for ajax
         getRoute()->post('/set_custom_display', 'setCustomDisplay');

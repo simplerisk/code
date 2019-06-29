@@ -191,14 +191,14 @@ function add_risk_details(){
             echo "<div class=\"row-fluid\">\n";
                 // Left Panel
                 echo "<div class=\"span5 left-panel\">\n";
-                    display_main_detail_feilds_by_panel_add('left', $active_fields);
-                    display_main_detail_feilds_by_panel_add('left', $inactive_fields);
+                    display_main_detail_fields_by_panel_add('left', $active_fields);
+                    display_main_detail_fields_by_panel_add('left', $inactive_fields);
                     echo "&nbsp;";
                 echo "</div>\n";
 
                 // Right Panel
                 echo "<div class=\"span5 right-panel\">\n";
-                    display_main_detail_feilds_by_panel_add('right', $active_fields);
+                    display_main_detail_fields_by_panel_add('right', $active_fields);
                     echo "&nbsp;";
                 echo "</div>\n";
             echo "</div>\n";
@@ -206,7 +206,7 @@ function add_risk_details(){
             // Bottom panel
             echo "<div class=\"row-fluid\">\n";
                 echo "<div class=\"span12 bottom-panel\">\n";
-                    display_main_detail_feilds_by_panel_add('bottom', $active_fields);
+                    display_main_detail_fields_by_panel_add('bottom', $active_fields);
                     echo "&nbsp;";
                 echo "</div>\n";
             echo "</div>\n";
@@ -316,14 +316,14 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5 left-panel\">\n";
-                display_main_detail_feilds_by_panel_view('left', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags);
-                display_main_detail_feilds_by_panel_view('left', $inactive_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags);
+                display_main_detail_fields_by_panel_view('left', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags);
+                display_main_detail_fields_by_panel_view('left', $inactive_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags);
                 echo "&nbsp;";
             echo "</div>";
 
             // Right Panel
             echo "<div class=\"span5 right-panel\">\n";
-                display_main_detail_feilds_by_panel_view('right', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags);
+                display_main_detail_fields_by_panel_view('right', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -331,7 +331,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
         // Bottom panel
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"span12 bottom-panel\">";
-                display_main_detail_feilds_by_panel_view('bottom', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags);
+                display_main_detail_fields_by_panel_view('bottom', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -477,7 +477,9 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
 
     echo "<tr>\n";
     echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AffectedAssets']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_list_of_assets($id, false)) . "</td>\n";
+    echo "<td>" . $escaper->escapeHtml(implode(',', array_map(function($item) use ($escaper) {
+                return $item['class'] === 'group' ? "[{$item['name']}]" : $item['name'];
+            }, get_assets_and_asset_groups_of_type($id, 'risk')))) . "</td>\n";
     echo "</tr>\n";
 
     echo "<tr>\n";
@@ -665,14 +667,14 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5 left-panel\">\n";
-                display_main_detail_feilds_by_panel_edit('left', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags);
-                display_main_detail_feilds_by_panel_edit('left', $inactive_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags);
+                display_main_detail_fields_by_panel_edit('left', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags);
+                display_main_detail_fields_by_panel_edit('left', $inactive_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags);
                 echo "&nbsp;";
             echo "</div>";
 
             // Right Panel
             echo "<div class=\"span5 right-panel\">\n";
-                display_main_detail_feilds_by_panel_edit('right', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags);
+                display_main_detail_fields_by_panel_edit('right', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -680,7 +682,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
         // Bottom panel
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"row-fluid bottom-panel\">\n";
-                display_main_detail_feilds_by_panel_edit('bottom', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags);
+                display_main_detail_fields_by_panel_edit('bottom', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -690,7 +692,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"span5 left-panel\">\n";
 
-                display_sumission_date_edit($submission_date);
+                display_submission_date_edit($submission_date);
 
                 display_category_edit($category);
 
@@ -770,14 +772,14 @@ function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5 left-panel\">\n";
-                display_main_mitigation_feilds_by_panel_view('left', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
-                display_main_mitigation_feilds_by_panel_view('left', $inactive_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
+                display_main_mitigation_fields_by_panel_view('left', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
+                display_main_mitigation_fields_by_panel_view('left', $inactive_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
                 echo "&nbsp;";
             echo "</div>";
 
             // Right Panel
             echo "<div class=\"span5 right-panel\">\n";
-                display_main_mitigation_feilds_by_panel_view('right', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
+                display_main_mitigation_fields_by_panel_view('right', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -785,7 +787,7 @@ function view_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
         // Bottom panel
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"span12 bottom-panel\">";
-                display_main_mitigation_feilds_by_panel_view('bottom', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
+                display_main_mitigation_fields_by_panel_view('bottom', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -1016,14 +1018,14 @@ function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5 left-panel\">\n";
-                display_main_mitigation_feilds_by_panel_edit('left', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
-                display_main_mitigation_feilds_by_panel_edit('left', $inactive_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
+                display_main_mitigation_fields_by_panel_edit('left', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
+                display_main_mitigation_fields_by_panel_edit('left', $inactive_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
                 echo "&nbsp;";
             echo "</div>";
 
             // Right Panel
             echo "<div class=\"span5 right-panel\">\n";
-                display_main_mitigation_feilds_by_panel_edit('right', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
+                display_main_mitigation_fields_by_panel_edit('right', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -1031,7 +1033,7 @@ function edit_mitigation_details($risk_id, $mitigation_date, $planning_strategy,
         // Bottom panel
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"row-fluid bottom-panel\">\n";
-                display_main_mitigation_feilds_by_panel_edit('bottom', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
+                display_main_mitigation_fields_by_panel_edit('bottom', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -1314,13 +1316,13 @@ function view_review_details($id, $review_id, $review_date, $reviewer, $review, 
             echo "<div class=\"row-fluid\">\n";
                 // Left Panel
                 echo "<div class=\"span5 left-panel\">\n";
-                    display_main_review_feilds_by_panel_view('left', $active_fields, $id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment);
+                    display_main_review_fields_by_panel_view('left', $active_fields, $id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment);
                     echo "&nbsp;";
                 echo "</div>";
 
                 // Right Panel
                 echo "<div class=\"span5 right-panel\">\n";
-                    display_main_review_feilds_by_panel_view('right', $active_fields, $id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment);
+                    display_main_review_fields_by_panel_view('right', $active_fields, $id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment);
                     echo "&nbsp;";
                 echo "</div>";
             echo "</div>";
@@ -1328,7 +1330,7 @@ function view_review_details($id, $review_id, $review_date, $reviewer, $review, 
             // Bottom panel
             echo "<div class=\"row-fluid\">\n";
                 echo "<div class=\"span12 bottom-panel\">";
-                    display_main_review_feilds_by_panel_view('bottom', $active_fields, $id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment);
+                    display_main_review_fields_by_panel_view('bottom', $active_fields, $id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment);
                     echo "&nbsp;";
                 echo "</div>";
             echo "</div>";
@@ -1466,14 +1468,14 @@ function edit_review_submission($id, $review_id, $review, $next_step, $next_revi
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5 left-panel\">\n";
-                display_main_review_feilds_by_panel_edit('left', $active_fields, $id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review);
-                display_main_review_feilds_by_panel_edit('left', $inactive_fields, $id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review);
+                display_main_review_fields_by_panel_edit('left', $active_fields, $id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review);
+                display_main_review_fields_by_panel_edit('left', $inactive_fields, $id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review);
                 echo "&nbsp;";
             echo "</div>";
 
             // Right Panel
             echo "<div class=\"span5 right-panel\">\n";
-                display_main_review_feilds_by_panel_edit('right', $active_fields, $id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review);
+                display_main_review_fields_by_panel_edit('right', $active_fields, $id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -1481,7 +1483,7 @@ function edit_review_submission($id, $review_id, $review, $next_step, $next_revi
         // Bottom panel
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"span12 bottom-panel\">";
-                display_main_review_feilds_by_panel_edit('bottom', $active_fields, $id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review);
+                display_main_review_fields_by_panel_edit('bottom', $active_fields, $id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -3606,29 +3608,169 @@ function view_top_menu($active)
             echo "</ul>\n";
             echo "</div>\n";
 
-            echo "<div class=\"pull-right search-risks\">\n";
-            echo "<a id=\"show-search-pop\"><i class=\"fa fa-search\"></i></a>";
-            echo "<div class=\"search-popup\">";
-            echo "<form name=\"search\" action=\"../management/view.php\" method=\"get\">\n";
-            echo "<span class=\"search--wrapper\">";
-            echo "<input type=\"text\" size=\"6\" name=\"id\" placeholder=\"ID#\" onClick=\"this.setSelectionRange(0, this.value.length)\" />\n";
-            echo "<a href=\"javascript:document.search.submit()\"><i class=\"fa fa-search\"></i></a>\n";
-            echo "</span>";
-            echo "</form>\n";
-            echo "</div>";
-            echo "</div>\n";
+            if (!advanced_search_extra()) {
+                echo "
+                    <div class='pull-right search-risks'>
+                        <a id='show-search-pop'><i class='fa fa-search'></i></a>
+                        <div class='search-popup'>
+                            <form name='search' action='../management/view.php' method='get'>
+                                <span class='search--wrapper'>
+                                    <input type='text' size='6' name='id' placeholder='ID#' onClick='this.setSelectionRange(0, this.value.length)' />
+                                    <a href='javascript:document.search.submit()'><i class='fa fa-search'></i></a>
+                                </span>
+                            </form>
+                        </div>
+                    </div>
 
-            echo "<script type=\"text/javascript\">\n";
-            echo "$(document).click(function() {\n";
-            echo "$(\".search-popup\").hide();";
-              echo "});\n";
-            echo "$(\"#show-search-pop, .search-popup\").click(function(event) {\n";
-            echo "event.stopPropagation();\n";
-            echo "event.preventDefault()\n";
-            echo "$(\".search-popup\").show();\n";
-            echo "$(\".search-popup .search--wrapper input[type=text]\").focus();\n";
-            echo "});\n";
-            echo "</script>\n";
+                    <script type='text/javascript'>
+                        $(document).click(function() {
+                            $('.search-popup').hide();
+                        });
+
+                        $('#show-search-pop, .search-popup').click(function(event) {
+                            event.stopPropagation();
+                            event.preventDefault();
+                            $('.search-popup').show();
+                            $('.search-popup .search--wrapper input[type=text]').focus();
+                        });
+                    </script>\n";
+            } else {
+                
+                require_once(realpath(__DIR__ . '/../extras/advanced_search/index.php'));
+                
+                echo "
+                    <div class='pull-right search-risks'>
+                        <a id='show-search-pop'><i class='fa fa-search'></i></a>
+                        <div class='search-popup'>
+                            <form id='header-search-form' action='' method='GET' autocomplete='off'>
+                                <span class='search--wrapper'>
+                                    <input type='text' size='6' name='q' placeholder='" . $escaper->escapeHtml($lang['RiskSearch']) . "' onClick='this.setSelectionRange(0, this.value.length)' autocomplete='off'/>
+                                    <a href='#'><i class='fa fa-search'></i></a>
+                                </span>
+                            </form>
+                            <div id='result-template' style='display: none;'>
+                                <div class='control-block item-block clearfix'>
+                                    <div class='control-block--header clearfix'>
+                                        <div class='control-block--row'>
+                                            <table width='100%'>
+                                                <tbody>
+                                                    <tr>
+                                                        <td colspan='2'><a class='result-url' href='!id!'>(!id!) !subject!</a></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td width='13%'><strong class='category_field_name'>!category_field_name!</strong>:</td>
+                                                        <td class='field_value'>!field_value!</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id='advanced-search-results-table-wrapper' style='display: none;'>
+                                <table id='advanced-search-results-table' width='100%'>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id='advanced-search-no-results-message' style='display: none;'>" . $escaper->escapeHtml($lang['NoSearchResults']) . "</div>
+                        </div>
+                    </div>
+
+                    <script type='text/javascript'>
+
+                        $(document).click(function() {
+                            $('.search-popup').hide();
+                        });
+
+                        $(document).on('click', '#show-search-pop, .search-popup, .result-url', function(event) {
+                            if ($(this).hasClass('result-url')) {
+                                event.stopPropagation();
+                            }
+                            else {
+                                event.stopPropagation();
+                                event.preventDefault();
+                                $('.search-popup').show();
+                                $('.search-popup .search--wrapper input[type=text]').focus();
+                            }
+                        });
+
+                        $('.search--wrapper a').click(function(event) {
+                            event.stopPropagation();
+                            event.preventDefault();
+                            $('#header-search-form').submit();
+                        });
+
+                        $('#header-search-form').submit(function(event) {
+                            event.preventDefault();
+                            
+                            var q = $(this).find('input[name=\'q\']').val();
+
+                            if (q.length >= 1) {
+
+                                $.ajax({
+                                    type: 'GET',
+                                    url: BASE_URL + '/api/advanced_search?q=' + q,
+                                    async: true,
+                                    cache: false,
+                                    contentType: false,
+                                    processData: false,
+                                    success: function(response){
+                                        if(response.status_message) {
+                                            showAlertsFromArray(response.status_message);
+                                        }
+
+                                        var data = response.data;
+
+                                        if (data && data instanceof Array && data.length) {
+
+                                            if (data[0]['category_field_name'] == 'id') {
+                                                window.location.href = '/management/view.php?id=' + data[0]['id'];
+                                            } else {
+                                                $('#advanced-search-no-results-message').hide();
+                                                $('#advanced-search-results-table-wrapper').show();
+                                                var results_table = $('#advanced-search-results-table tbody');
+                                                results_table.html('');
+                                                var length = data.length;
+                                                for (var i = 0; i < length; i++) {
+                                                    var item = data[i];
+
+                                                    var template = $('#result-template').children().clone();
+
+                                                    result_url = template.find('.result-url');
+                                                    result_url.attr('href', '/management/view.php?id=' + item['id']);
+                                                    result_url.html('(' + item['id'] + ') ' + item['subject']);
+
+                                                    category_field_name = template.find('.category_field_name');
+                                                    category_field_name.html(item['category_field_name']);
+
+                                                    field_value = template.find('.field_value');
+                                                    field_value.html(item['field_value']);
+
+                                                    template = $('<tr></tr>').append($('<td></td>').append(template));
+                                                    results_table.append(template);
+                                                }
+                                            }
+                                        } else {
+                                            $('#advanced-search-results-table-wrapper').hide();
+                                            $('#advanced-search-no-results-message').show();
+                                        }
+                                    },
+
+                                    error: function(xhr,status,error) {
+                                        if(!retryCSRF(xhr, this)) {
+                                            if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                                                showAlertsFromArray(xhr.responseJSON.status_message);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+
+                            return false;
+                        });
+                    </script>";
+            }
         }
     }
 
@@ -3636,7 +3778,6 @@ function view_top_menu($active)
     echo "</div>\n";
     echo "</div>\n";
     echo "</header>\n";
-
 }
 
 /*********************************
@@ -3728,11 +3869,15 @@ function view_asset_management_menu($active)
     echo ($active == "AddDeleteAssets" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"adddeleteassets.php\"> <span>2</span>" . $escaper->escapeHtml($lang['AddDeleteAssets']) . "</a>\n";
     echo "</li>\n";
-    if (has_assets()) {
+    $has_assets = has_assets();
+    if ($has_assets) {
         echo ($active == "EditAssets" ? "<li id=\"EditAssets\" class=\"active\">\n" : "<li id=\"EditAssets\">\n");
         echo "<a href=\"edit.php\"> <span>3</span> " . $escaper->escapeHtml($lang['EditAssets']) . "</a>\n";
         echo "</li>\n";
     }
+    echo ($active == "ManageAssetGroups" ? "<li class=\"active\">\n" : "<li>\n");
+    echo "<a href=\"manage_asset_groups.php\"> <span>" . ($has_assets?"4":"3") . "</span>" . $escaper->escapeHtml($lang['ManageAssetGroups']) . "</a>\n";
+    echo "</li>\n";    
     echo "</ul>\n";
 }
 
@@ -3980,12 +4125,12 @@ function view_risks_and_assets_selections($report)
 /******************************************
 * FUNCTION: VIEW GET RISKS BY SELECTIONS *
 ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_asset=0, $tags_filter=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $custom_values=[])
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_assets_filter=0, $tags_filter=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $custom_values=[])
 {
     global $lang;
     global $escaper;
 
-    echo "<form id=\"get_risks_by\" name=\"get_risks_by\" target=\"_blank\" method=\"post\" action=\"dynamic_risk_report.php\">\n";
+    echo "<form id=\"get_risks_by\" name=\"get_risks_by\" method=\"post\" action=\"dynamic_risk_report.php\">\n";
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span12\">\n";
     echo "<a href=\"javascript:;\" onclick=\"javascript: closeSearchBox()\"><img src=\"../images/X-100.png\" width=\"10\" height=\"10\" align=\"right\" /></a>\n";
@@ -4009,13 +4154,38 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_as
     echo "<div class=\"span3\">\n";
     echo "<div class=\"well\">\n";
     echo "<h4>" . $escaper->escapeHtml($lang['FilterByAffectedAsset']) . ":</h4>\n";
-    echo "<select id=\"affected_asset\" name=\"affected_asset\" onchange=\"javascript: submit()\">\n";
-    echo "<option value=\"0\"" . ($affected_asset == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ALL']) . "</option>\n";
-    foreach(get_entered_assets() as $row){
-        echo "<option value=\"{$row['id']}\"" . (($row['id'] == $affected_asset) ? " selected" : "") . ">" . $escaper->escapeHtml(try_decrypt($row['name'])) . "</option>\n";
+    echo "<select multiple='multiple' id=\"affected_assets_filter\" name=\"affected_assets_filter[]\">\n";
+    foreach(get_assets_and_asset_groups_for_dropdown() as $row){
+        $id = "{$row['id']}_{$row['class']}";
+        echo "<option value='$id'" . (in_array($id, $affected_assets_filter) ? " selected" : "") . " data-class='{$row['class']}'>" . $escaper->escapeHtml($row['name']) . "</option>\n";
     }
 
     echo "</select>\n";
+    echo "
+        <script>
+            function throttledFormSubmit() {
+                clearTimeout(changeTimer);
+                changeTimer = setTimeout(function(){
+                    $('#get_risks_by').submit();
+                }, 2000);
+            }
+        
+            var changeTimer;
+            $(document).ready(function() {
+                $('#affected_assets_filter').multiselect({
+                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
+                    maxHeight: 250,
+                    buttonWidth: '100%',
+                    includeSelectAllOption: true,
+                    onChange: throttledFormSubmit,
+                    onSelectAll: throttledFormSubmit,
+                    onDeselectAll: throttledFormSubmit,
+                    optionClass: function(element) {
+                        return $(element).data('class');
+                    }
+                });
+            });
+        </script>";
     echo "</div>\n";
     echo "</div>\n";
 
@@ -4067,25 +4237,21 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_as
     echo "</div>\n";
     echo "</div>\n";
     echo "  <script>
-                var changeTimer;
                 $('#tags_filter').multiselect({
-                    allSelectedText: 'ALL',
+                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
                     maxHeight: 250,
                     buttonWidth: '100%',
                     includeSelectAllOption: true,
-                    onChange: function(element, checked){
-                        clearTimeout(changeTimer);
-                        changeTimer = setTimeout(function(){
-                            $('#get_risks_by').submit();
-                        }, 2000);
-                    }
+                    onChange: throttledFormSubmit,
+                    onSelectAll: throttledFormSubmit,
+                    onDeselectAll: throttledFormSubmit,
                 });
             </script>";
 
     echo "</div>\n";
 
     // Risk columns
-        echo display_risk_columns( $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $custom_values);
+        echo display_risk_columns( $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $custom_values);
 
 
 
@@ -4095,7 +4261,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_as
 /*********************************
 * FUNCTION: DISPLAY RISK COLUMNS *
 **********************************/
-function display_risk_columns( $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $custom_values=[]){
+function display_risk_columns( $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $custom_values=[]){
     global $escaper, $lang;
     echo "<div class=\"row-fluid\">\n";
 
@@ -4577,6 +4743,12 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
         </tr>\n";
         echo "<tr>
         <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_controls\" id=\"checkbox_mitigation_controls\"" . ($mitigation_controls == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_mitigation_controls\">". $escaper->escapeHtml($lang['MitigationControls']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
         <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"current_solution\" id=\"CurrentSolution\"" . ($current_solution == true ? " checked=\"yes\"" : "") . " />
         <label for=\"CurrentSolution\">". $escaper->escapeHtml($lang['CurrentSolution']) ."</label>
         </td>
@@ -4772,6 +4944,11 @@ function get_dynamic_names_by_main_field_name($field_name)
             [
                 'name' => "mitigation_date",
                 'text' => $escaper->escapeHtml($lang['MitigationDate']),
+            ],
+        'MitigationControls' => 
+            [
+                'name' => "mitigation_controls",
+                'text' => $escaper->escapeHtml($lang['MitigationControls']),
             ],
 //        'MitigationPercent' => 
 //            [
@@ -4984,15 +5161,19 @@ function display_asset_autocomplete_script($assets)
 /*********************************************
 * FUNCTION: DISPLAY REGISTRATION TABLE EDIT *
 *********************************************/
-function display_registration_table_edit($name="", $company="", $title="", $phone="", $email="")
+function display_registration_table_edit($name="", $company="", $title="", $phone="", $email="", $fname="", $lname="")
 {
     global $escaper;
     global $lang;
 
     echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
     echo "  <tr>\n";
-    echo "    <td>" . $escaper->escapeHtml($lang['FullName']) . ":&nbsp;</td>\n";
-    echo "    <td><input type=\"text\" name=\"name\" id=\"name\" value=\"" . $escaper->escapeHtml($name) . "\" /></td>\n";
+    echo "    <td>" . $escaper->escapeHtml($lang['FirstName']) . ":&nbsp;</td>\n";
+    echo "    <td><input type=\"text\" name=\"fname\" id=\"fname\" value=\"" . $escaper->escapeHtml($fname) . "\" /></td>\n";
+    echo "  </tr>\n";
+    echo "  <tr>\n";
+    echo "    <td>" . $escaper->escapeHtml($lang['LastName']) . ":&nbsp;</td>\n";
+    echo "    <td><input type=\"text\" name=\"lname\" id=\"lname\" value=\"" . $escaper->escapeHtml($lname) . "\" /></td>\n";
     echo "  </tr>\n";
     echo "  <tr>\n";
     echo "    <td>" . $escaper->escapeHtml($lang['Company']) . ":&nbsp;</td>\n";
@@ -5019,15 +5200,19 @@ function display_registration_table_edit($name="", $company="", $title="", $phon
 /****************************************
 * FUNCTION: DISPLAY REGISTRATION TABLE *
 ****************************************/
-function display_registration_table($name="", $company="", $title="", $phone="", $email="")
+function display_registration_table($name="", $company="", $title="", $phone="", $email="", $fname="", $lname="")
 {
     global $escaper;
     global $lang;
 
     echo "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
     echo "  <tr>\n";
-    echo "    <td>" . $escaper->escapeHtml($lang['FullName']) . ":&nbsp;</td>\n";
-    echo "    <td><input type=\"text\" name=\"name\" id=\"name\" value=\"" . $escaper->escapeHtml($name) . "\" title=\"" . $escaper->escapeHtml($name) . "\" disabled=\"disabled\" /></td>\n";
+    echo "    <td>" . $escaper->escapeHtml($lang['FirstName']) . ":&nbsp;</td>\n";
+    echo "    <td><input type=\"text\" name=\"fname\" id=\"fname\" value=\"" . $escaper->escapeHtml($fname) . "\" title=\"" . $escaper->escapeHtml($fname) . "\" disabled=\"disabled\" /></td>\n";
+    echo "  </tr>\n";
+    echo "  <tr>\n";
+    echo "    <td>" . $escaper->escapeHtml($lang['LastName']) . ":&nbsp;</td>\n";
+    echo "    <td><input type=\"text\" name=\"lname\" id=\"lname\" value=\"" . $escaper->escapeHtml($lname) . "\" title=\"" . $escaper->escapeHtml($lname) . "\" disabled=\"disabled\" /></td>\n";
     echo "  </tr>\n";
     echo "  <tr>\n";
     echo "    <td>" . $escaper->escapeHtml($lang['Company']) . ":&nbsp;</td>\n";
@@ -5151,12 +5336,6 @@ function display_view_assessment_questions($assessment_id = NULL)
     global $escaper;
     global $lang;
 
-    // if available assets on assessments
-    if(get_setting("ASSESSMENT_ASSET_SHOW_AVAILABLE")){
-        // Script to display assets
-        display_asset_autocomplete_script(get_verified_assets());
-    }
-
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span12\">\n";
     echo "<div class=\"hero-unit\">\n";
@@ -5184,11 +5363,56 @@ function display_view_assessment_questions($assessment_id = NULL)
     // Get the assessment name
     $assessment = get_assessment_names($assessment_id);
     $assessment_name = $assessment['name'];
+    $show_autocomplete = get_setting("ASSESSMENT_ASSET_SHOW_AVAILABLE");
+
+    if ($show_autocomplete)
+        $AffectedAssetsWidgetPlaceholder = $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']);
+    else
+        $AffectedAssetsWidgetPlaceholder = $escaper->escapeHtml($lang['AffectedAssetsWidgetNoDropdownPlaceholder']);
+
     echo "<center><h3>" . $escaper->escapeHtml($assessment_name) . "</h3></center>\n";
     echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
     echo "<tr>\n";
-    echo "<th align=\"left\" width=\"200px\">" . $escaper->escapeHtml($lang['AssetName']) . ":&nbsp;&nbsp;</th>\n";
-    echo "<th align=\"left\"><input type=\"text\" class=\"assets large-control\" name=\"asset\" /></th>\n";
+    echo "<td align=\"left\" width=\"200px\"><h4>" . $escaper->escapeHtml($lang['AssetName']) . ":</h4></td>\n";
+    echo "<td align=\"left\">
+            <select class='assets-asset-groups-select' name='assets_asset_groups[]' multiple placeholder='$AffectedAssetsWidgetPlaceholder'></select>
+
+            <script>
+                var assets_and_asset_groups = [];
+
+                $(document).ready(function(){";
+
+    if ($show_autocomplete)
+        echo "
+                    $.ajax({
+                        url: '/api/asset-group/options',
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function(res) {
+                            var data = res.data;
+                            var len = data.length;
+                            for (var i = 0; i < len; i++) {
+                                var item = data[i];
+                                if (item.class == 'group')
+                                    item.id = '[' + item.name + ']';
+                                else
+                                    item.id = item.name;
+                                
+                                assets_and_asset_groups.push(item);
+                            }";
+
+    echo "
+                            selectize_pending_risk_affected_assets_widget($('select.assets-asset-groups-select'), assets_and_asset_groups);";
+
+    if ($show_autocomplete)
+        echo "
+                        }
+                    });";
+
+    echo "
+                });
+            </script>
+          </td>\n";
     echo "</tr>\n";
     echo "</table>\n";
     // Get the assessment
@@ -5259,7 +5483,8 @@ function display_pending_risks()
 
     // Get the pending risks
     $risks = get_pending_risks();
-
+    $affected_assets_placeholder = $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']);
+    
     // For each pending risk
     foreach($risks as $risk)
     {
@@ -5291,8 +5516,25 @@ function display_pending_risks()
         echo "</td>\n";
         echo "</tr>\n";
         echo "<tr>\n";
-        echo "<td style=\"white-space: nowrap;\">".$lang['AssetName'] . ":&nbsp;&nbsp;</td>\n";
-        echo "<td width=\"99%\"><input type=\"text\" style=\"width: 97%;\" name=\"asset\" value=\"" . $escaper->escapeHtml($risk['asset']) . "\" /></td>\n";
+        echo "<td style=\"white-space: nowrap;\">".$lang['AffectedAssets'] . ":&nbsp;&nbsp;</td>\n";
+        echo "<td width=\"99%\">
+                <select class='assets-asset-groups-select' name='assets_asset_groups[]' multiple placeholder='$affected_assets_placeholder'>";
+
+            if ($risk['affected_assets']){
+            foreach(explode(',', $risk['affected_assets']) as $value) {
+
+                $value = $name = trim($value);
+
+                if (preg_match('/^\[(.+)\]$/', $name, $matches)) {
+                    $name = trim($matches[1]);
+                    $type = 'group';
+                } else $type = 'asset';
+
+                echo "<option value='" . $escaper->escapeHtml($value) . "' selected data-class='$type'>" . $escaper->escapeHtml($name) . "</option>";
+            }
+        }
+
+        echo "</select></td>\n";
         echo "</tr>\n";
         echo "<tr>\n";
         echo "<td style=\"white-space: nowrap;\">".$lang['AdditionalNotes'] . ":&nbsp;&nbsp;</td>\n";
@@ -5300,16 +5542,66 @@ function display_pending_risks()
         echo "</tr>\n";
         echo "</table>\n";
         echo "<div class=\"form-actions\">\n";
-        echo "<button type=\"submit\" name=\"add\" class=\"btn btn-danger\">" . $escaper->escapeHtml($lang['Add']) . "</button>\n";
-        echo "<button type=\"submit\" name=\"delete\" class=\"btn\">" . $escaper->escapehtml($lang['Delete']) . "</button>\n";
+        if (isset($_SESSION["submit_risks"]) && $_SESSION["submit_risks"] == 1) {
+            echo "<button type=\"submit\" name=\"add\" class=\"btn btn-danger\">" . $escaper->escapeHtml($lang['Add']) . "</button>\n";
+            echo "<button type=\"submit\" name=\"delete\" class=\"btn\">" . $escaper->escapehtml($lang['Delete']) . "</button>\n";
+        }
         echo "</div>\n";
         echo "</form>\n";
         echo "</div>\n";
     }
 
+    //echo "</div>\n";
     echo "</div>\n";
     echo "</div>\n";
-    echo "</div>\n";
+    echo "
+        <script>
+            var assets_and_asset_groups = [];
+            $(document).ready(function(){
+                $.ajax({
+                    url: '/api/asset-group/options',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(res) {
+                        var data = res.data;
+                        var len = data.length;
+                        for (var i = 0; i < len; i++) {
+                            var item = data[i];
+                            if (item.class == 'group')
+                                item.id = '[' + item.name + ']';
+                            else
+                                item.id = item.name;
+                            
+                            assets_and_asset_groups.push(item);
+                        }
+
+                        $('select.assets-asset-groups-select').each(function() {
+
+                            // Need the .slice to force create a new array, 
+                            // so we're not adding the items to the original
+                            var combined_assets_and_asset_groups = assets_and_asset_groups.slice();
+                            // Have to add the selected assets to the list of options,
+                            // but only for THIS widget
+                            $(this).find('option').each(function() {
+
+                                combined_assets_and_asset_groups.push({
+                                    id: $(this).val(),
+                                    name: $(this).text(),
+                                    class: $(this).data('class')
+                                });
+                            });
+
+                            selectize_pending_risk_affected_assets_widget($(this), combined_assets_and_asset_groups);
+                            
+                            //Need it to make it as wide as the textbox below
+                            $(this).parent().find('.selectize-control>div').css('width', '97%');
+
+                        });
+                    }
+                });
+            });
+        </script>
+    ";
 }
 
 /******************************************
@@ -5907,9 +6199,10 @@ function create_risk_formula_table()
         $risk_levels_by_color[$risk_level['name']] = $risk_level;
     }
 
+    $risk_model = get_setting("risk_model");
     echo "<h4>".$escaper->escapeHtml($lang['MyClassicRiskFormulaIs']).":</h4>";
     echo "<form name=\"risk_levels\" method=\"post\" action=\"\">";
-    echo "<p>". $escaper->escapeHtml($lang['RISK']) ." = "; create_dropdown("risk_models", get_setting("risk_model"), null, false); echo "</p>";
+    echo "<p>". $escaper->escapeHtml($lang['RISK']) ." = "; create_dropdown("risk_models", $risk_model, null, false); echo "</p>";
     echo "<input type=\"submit\" value=\"". $escaper->escapeHtml($lang['Update']) ."\" name=\"update_risk_formula\" />";
     echo "</form>";
     echo "<br>";
@@ -5962,10 +6255,17 @@ function create_risk_formula_table()
         {
             echo "<td rowspan=\"".count($impacts)."\"><div class=\"text-rotation\"><b>". $escaper->escapeHtml($lang['Impact']) ."</b></div></td>\n";
         }
-
+        $impact_name = $impacts[$i]['name'] ? $escaper->escapeHtml($impacts[$i]['name']) : "--";
+        $impact_value = $escaper->escapeHtml($impacts[$i]['value']);
         // Add the y-axis values
-            echo "<td bgcolor=\"silver\" height=\"50px\" width=\"100px\"><span class='label-for-edit'>" . ($impacts[$i]['name'] ? $escaper->escapeHtml($impacts[$i]['name']) : "--") . "&nbsp;&nbsp;<i class=\"fa fa-pencil\"></i></span> <input class='input-for-edit' maxlength='50' type='text' style='width:200px; display: none' data-type='impact' data-value='". $escaper->escapeHtml($impacts[$i]['value']) ."' value='" . $escaper->escapeHtml($impacts[$i]['name']) . "'></td>\n";
-            echo "<td bgcolor=\"silver\" align=\"center\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($impacts[$i]['value']) . "</td>\n";
+        echo "
+            <td bgcolor=\"silver\" height=\"50px\" width=\"200px\">
+                <span>
+                    <span class='editable'>$impact_name</span>
+                    <input type='text' class='editable' value='$impact_name' style='display: none;' data-type='impact' data-id='$impact_value'>
+                </span>                    
+            </td>\n";
+        echo "<td bgcolor=\"silver\" align=\"center\" height=\"50px\" width=\"50px\">" . $escaper->escapeHtml($impacts[$i]['value']) . "</td>\n";
 
         // For each likelihood level
         foreach($likelihoods as $j => $likelihood)
@@ -5975,33 +6275,71 @@ function create_risk_formula_table()
 
             // Get the risk color
             $color = get_risk_color($risk);
+            $value = $escaper->escapeHtml($risk);
 
-            echo "<td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($risk) . "</td>\n";
+            echo "
+                <td align=\"center\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" height=\"50px\" width=\"150px\">
+                    <span>";
+
+            if ($risk_model == 6) {
+                echo "
+                        <span class='editable'>$value</span>
+                        <input type='text' class='editable' value='$value' style='display: none;' data-type='score' data-impact='{$impact['value']}' data-likelihood='{$likelihood['value']}'>";
+            } else {
+                echo $value;
+            }
+
+            echo "
+                    </span>
+                </td>\n";
         }
         echo "<td>&nbsp;</td>";
 
         echo "</tr>\n";
     }
 
-        echo "<tr>\n";
+    echo "<tr>\n";
     echo "<td>&nbsp;</td>\n";
     echo "<td>&nbsp;</td>\n";
     echo "<td>&nbsp;</td>\n";
 
     // Add the x-axis values
-    foreach($likelihoods as $likelihood)
-    {
-        echo "<td align=\"center\" bgcolor=\"silver\" height=\"50px\" width=\"100px\">" . $escaper->escapeHtml($likelihood['value']) . "<br /><span class='label-for-edit'>" . ($likelihood['name'] ? $escaper->escapeHtml($likelihood['name']) : "--") . "&nbsp;&nbsp;<i class=\"fa fa-pencil\"></i></span><input maxlength='50' class='input-for-edit' type='text' style='width:100px; display: none' data-type='likelihood' data-value='". $escaper->escapeHtml($likelihood['value']) ."' value='" . $escaper->escapeHtml($likelihood['name']) . "'></td>\n";
+    foreach(range(1, count($likelihoods)) as $likelihood_value) {
+        echo "
+            <td align=\"center\" bgcolor=\"silver\">
+                $likelihood_value
+            </td>\n";
     }
 
     echo "</tr>\n";
+
+    echo "<tr>\n";
+    echo "<td>&nbsp;</td>\n";
+    echo "<td>&nbsp;</td>\n";
+    echo "<td>&nbsp;</td>\n";
+
+    // Add the x-axis names
+    foreach($likelihoods as $likelihood) {
+        $likelihood_name = $likelihood['name'] ? $escaper->escapeHtml($likelihood['name']) : "--";
+        $likelihood_value = $escaper->escapeHtml($likelihood['value']);
+
+        echo "
+            <td align=\"center\" bgcolor=\"silver\" height=\"50px\" width=\"100px\">
+                <span>
+                    <span class='editable'>$likelihood_name</span>
+                    <input type='text' class='editable' value='$likelihood_name' style='display: none;' data-type='likelihood' data-id='$likelihood_value'>
+                </span> 
+            </td>\n";
+    }
+
+    echo "</tr>\n";
+
     echo "<tr>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "<td colspan=\"".count($likelihoods)."\" align=\"center\"><b>". $escaper->escapeHtml($lang['Likelihood']) ."</b></td>\n";
-        echo "<td align=\"center\">
-            </td>";
+        echo "<td align=\"center\"></td>";
     echo "</tr>\n";
     echo "</table>\n";
 
@@ -6016,42 +6354,57 @@ function create_risk_formula_table()
     "
         <script>
             $(document).ready(function(){
-                $('.label-for-edit').click(function(){
-                    $(this).hide();
-                    $(this).parent().find('.input-for-edit').show().select();
-                })
-                
-                $('.input-for-edit').blur(function(){
-                    var labelContainer = $(this).parent();
-                    labelContainer.find('.input-for-edit').hide();
-                    labelContainer.find('.label-for-edit').show();
-                })
-                $('.input-for-edit').change(function(){
-                    var labelContainer = $(this).parent();
+
+                // To save the original value
+                $('#classic-risk-formula input.editable').on('focusin', function(){
+                    $(this).data('original-value', $(this).val());
+                });
+
+                $('#classic-risk-formula input.editable').change(function(){
+
+                    var container = $(this).parent();
                     var type = $(this).data('type');
-                    var value = $(this).data('value');
-                    var name = $(this).val();
-                    if(type == 'impact'){
-                        var url = BASE_URL + \"/api/riskformula/update_impact_name\";    
-                    }else{
-                        var url = BASE_URL + \"/api/riskformula/update_likelihood_name\";
+                    var original_value = $(this).data('original-value');
+
+                    switch(type) {
+                        case 'impact':
+                        case 'likelihood':
+                            url = BASE_URL + '/api/riskformula/update_impact_or_likelihood_name';
+                            var value = $(this).data('id');
+                            var name = $(this).val();
+                            var data = {
+                                value: value,
+                                name: name,
+                                type: type
+                            };
+                        break;
+                        case 'score':
+                            var url = BASE_URL + '/api/riskformula/update_custom_score';
+                            var impact = $(this).data('impact');
+                            var likelihood = $(this).data('likelihood');
+                            var score = $(this).val();
+                            var data = {
+                                impact: impact,
+                                likelihood: likelihood,
+                                score: score
+                            };
+                        break;
                     }
-                    
-                    
+
                     $.ajax({
-                        type: \"POST\",
+                        type: 'POST',
                         url: url,
-                        data: {
-                            value: value,
-                            name: name
-                        },
-                        success: function(data){
-                            labelContainer.find('.input-for-edit').hide();
-                            labelContainer.find('.label-for-edit').html(name ? name : '--').show();
-                            showAlertsFromArray(data.status_message);
+                        data: data,
+                        success: function(response){
+                            container.find('span.editable').text(response.data.confirmed_data ? response.data.confirmed_data : '--');
+                            if (response.data.color) {
+                                container.closest('td').css('background-color', response.data.color);
+                            }
+                            showAlertsFromArray(response.status_message);
                         },
                         error: function(xhr,status,error){
                             if(!retryCSRF(xhr, this)){
+                                container.find('span.editable').text(original_value);
                                 if(xhr.responseJSON && xhr.responseJSON.status_message){
                                     showAlertsFromArray(xhr.responseJSON.status_message);
                                 }

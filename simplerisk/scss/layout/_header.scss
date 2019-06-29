@@ -150,6 +150,14 @@
             color: #fff;
             line-height: 33px;
         }
+        
+        input[name='q'] {
+            float: right;
+        }
+    }
+    
+    #advanced-search-no-results-message {
+        color: $text-color;
     }
 }
 .search-risks .search-popup {
@@ -159,7 +167,8 @@
     position: absolute;
     top: 0;
     right: 0;
-    width: auto;
+    width: max-content;
+    max-width: 800px;
     background: #6F6F6F;
     border-radius: 6px;
     vertical-align: middle;
@@ -177,7 +186,6 @@
    .search-risks textarea,
     .search-risks textarea.form-control{
       width: 214px;
-      hesight: 40px;
       padding: 10px;
       background-color: white !important;
       border: none;
@@ -217,3 +225,41 @@
         margin-right: 5px;
     }
 }
+
+#advanced-search-results-table-wrapper {
+
+    width: 100%;
+    max-height: 500px;
+    overflow-y: auto;
+    margin-top: 5px;
+    float: right;
+    
+    &::-webkit-scrollbar {
+        background: yellow;
+        width: 10px;
+    }
+    &::-webkit-scrollbar-track {
+        background: $scrollbar-track-color;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: $scrollbar-thumb-color;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: $scrollbar-thumb-hover-color;
+    }
+    
+    #advanced-search-results-table {
+
+        color: $text-color;
+
+        span.highlighted {
+            background-color: yellow;
+        }
+        
+        td {
+            padding: 1px 0px;
+        }
+        
+    }
+}
+

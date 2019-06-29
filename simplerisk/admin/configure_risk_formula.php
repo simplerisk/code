@@ -65,7 +65,7 @@
         if (is_int($risk_model))
         {
             // Risk model should be between 1 and 5
-            if ((1 <= $risk_model) && ($risk_model <= 5))
+            if ((1 <= $risk_model) && ($risk_model <= 6))
             {
                 // Update the risk model
                 update_risk_model($risk_model);
@@ -176,7 +176,6 @@
     <link rel="stylesheet" media="screen" type="text/css" href="../css/colorpicker.css" />
     <link rel="stylesheet" href="../css/settings_tabs.css">
     
-    <style type="text../css">.text-rotation {display: block; -webkit-transform: rotate(-90deg); -moz-transform: rotate(-90deg);}</style>
 
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
@@ -184,7 +183,23 @@
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
-    
+
+    <style type="text/css">
+        .text-rotation {
+            display: block;
+            -webkit-transform: rotate(90deg);
+            -moz-transform: rotate(90deg);
+        }
+        
+        span.editable {
+            line-height: 2.5;
+        }
+        
+        td {
+            padding: 2px 10px;
+        }
+    </style>
+
     <?php
         setup_alert_requirements("..");
     ?>    
@@ -281,7 +296,7 @@
         }
 
         function resizable (el, factor) {
-            var int = Number(factor) || 7.7;
+            var int = Number(factor) || 7.6;
             function resize() {el.width((el.val().length + 1) * int);}
             var e = ['keyup', 'keypress', 'focus', 'blur', 'change'];
             for (var i in e)
@@ -306,7 +321,7 @@
                 label.show();
             });
 
-            $('input.editable').change(function(){
+            $('#risk-levels input.editable').change(function(){
                 //saving it so it can be referenced from the AJAX callbacks
                 var _this = $(this);
                 var level = _this.parent().data('level');

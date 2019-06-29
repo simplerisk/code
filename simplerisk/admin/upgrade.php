@@ -48,7 +48,7 @@
         if (is_valid_user($user, $pass, true))
         {
             // Set the user permissions
-            set_user_permissions($user, $pass, true);
+            set_user_permissions($user, true);
             
             // Check if the user is an admin
             if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
@@ -88,6 +88,8 @@
   <head>
       <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
       <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+      <script src="../js/jquery.min.js"></script>
+
       <!-- build:css vendor/vendor.min.css -->
       <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" media="screen" />
       <!-- endbuild -->
@@ -160,12 +162,19 @@
             echo "<div class=\"span9\">\n";
             echo "<div class=\"well\">\n";
 
-                        // Upgrade the database
-                        upgrade_database();
+            // Upgrade the database
+            upgrade_database();
+
             // Convert tables to InnoDB
             convert_tables_to_innodb();
+
             // Convert tables to utf8_general_ci
             convert_tables_to_utf8();
+
+            // Display the clear cache warning
+            display_cache_clear_warning();
+
+            echo "<br /><br />!-- " . $escaper->escapeHtml($lang['UPGRADECOMPLETED']) . " --!\n";
 
             echo "</div>\n";
             echo "</div>\n";

@@ -98,14 +98,16 @@
 		if (isset($_POST['register']))
 		{
 			// Get the posted values
-			$name = $_POST['name'];
+			$name = (isset($_POST['name']) ? $_POST['name'] : "");
+			$fname = (isset($_POST['fname']) ? $_POST['fname'] : "");
+			$lname = (isset($_POST['lname']) ? $_POST['lname'] : "");
 			$company = $_POST['company'];
 			$title = $_POST['title'];
 			$phone = $_POST['phone'];
 			$email = $_POST['email'];
 
 			// Add the registration
-			$result = add_registration($name, $company, $title, $phone, $email);
+			$result = add_registration($name, $company, $title, $phone, $email, $fname, $lname);
 
 			// If the registration failed
 			if ($result == 0)
@@ -133,35 +135,39 @@
 		if (isset($_POST['register']))
 		{
 			// Get the posted values
-			$name = $_POST['name'];
+			$name = (isset($_POST['name']) ? $_POST['name'] : "");
+			$fname = (isset($_POST['fname']) ? $_POST['fname'] : "");
+			$lname = (isset($_POST['lname']) ? $_POST['lname'] : "");
 			$company = $_POST['company'];
 			$title = $_POST['title'];
 			$phone = $_POST['phone'];
 			$email = $_POST['email'];
 
 			// Update the registration
-			$result = update_registration($name, $company, $title, $phone, $email);
+			$result = update_registration($name, $company, $title, $phone, $email, $fname, $lname);
 
-            // If the registration failed
-            if ($result == 0)
-            {
-	            // Display an alert
-	            set_alert(true, "bad", "There was a problem updating your SimpleRisk instance.");
-            }
-            else
-            {
-	            // Display an alert
-	            set_alert(true, "good", "SimpleRisk instance updated successfully.");
-            }
+			// If the registration failed
+			if ($result == 0)
+			{
+				// Display an alert
+				set_alert(true, "bad", "There was a problem updating your SimpleRisk instance.");
+			}
+			else
+			{
+				// Display an alert
+				set_alert(true, "good", "SimpleRisk instance updated successfully.");
+			}
 		}
 		// Otherwise get the registration values from the database
 		else
 		{
-            $name = get_setting("registration_name");
-            $company = get_setting("registration_company");
-            $title = get_setting("registration_title");
-            $phone = get_setting("registration_phone");
-            $email = get_setting("registration_email");
+			$name = get_setting("registration_name");
+			$fname = get_setting("registration_fname");
+			$lname = get_setting("registration_lname");
+			$company = get_setting("registration_company");
+			$title = get_setting("registration_title");
+			$phone = get_setting("registration_phone");
+			$email = get_setting("registration_email");
 		}
 
 		// If the user wants to install the Upgrade Extra
@@ -234,6 +240,12 @@
         {
             // Download the extra
             $result = download_extra("customization");
+        }
+        // If the user wants to install the Advanced Search Extra
+        else if (isset($_POST['get_advanced_search_extra']))
+        {
+            // Download the extra
+            $result = download_extra("advanced_search");
         }
 	}
 ?>
@@ -342,12 +354,12 @@
 				                if (isset($_POST['update']))
 				                {
 					                // Display the editable registration table
-					                display_registration_table_edit($name, $company, $title, $phone, $email);
+					                display_registration_table_edit($name, $company, $title, $phone, $email, $fname, $lname);
 				                }
 				                else
 				                {
 					                // Display the registration table
-					                display_registration_table($name, $company, $title, $phone, $email);
+					                display_registration_table($name, $company, $title, $phone, $email, $fname, $lname);
 				                }
 			                }
 		                ?>

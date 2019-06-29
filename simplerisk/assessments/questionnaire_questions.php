@@ -101,6 +101,8 @@ if(process_assessment_questionnaire_questions()){
     <link rel="stylesheet" href="../css/display.css">
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
+    <script src="../js/selectize.min.js"></script>    
     <?php
         setup_alert_requirements("..");
     ?>

@@ -56,83 +56,34 @@ if (isset($_POST['change_password']))
         // If the password is valid
         if ($error_code == 1)
         {    
-            // Get user old data
-            $old_data = get_salt_and_password_by_user_id($_SESSION['uid']);
+            // Generate the salt
+            $salt = generateSalt($user);
 
-            // Add the old data to the pass_history table
-            add_last_password_history($_SESSION["uid"], $old_data["salt"], $old_data["password"]);
-
-            if(get_setting("password_policy_min_age") != 0)
+            // Generate the password hash
+            $hash = generateHash($salt, $new_pass);
+            
+            // If it is possible to reuse password
+            if(check_add_password_reuse_history($_SESSION["uid"], $hash))
             {
-                // If the current password is older than the minimum age
-                if(current_password_age_valid())
-                {
-                    echo "Password can be changed";
-
-                }
-                $old_salt = generateSalt($user);
-
-                // Check if password can be used or user should type a new one
-                if(check_password_can_be_used($_SESSION['uid'], $new_pass, $old_salt) == TRUE)
-                {
-                    // Generate the salt
-                    $salt = generateSalt($user);
-
-                    // Generate the password hash
-                    $hash = generateHash($salt, $new_pass);
-
-                    // Update the password
-                    update_password($user, $hash);
-
-                    // If the encryption extra is enabled
-                    if (encryption_extra())
-                    {
-                          // Load the extra
-                        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-
-                        // Set the new encrypted password
-                        set_enc_pass($user, $new_pass, $_SESSION['encrypted_pass']);
-                    }
-
-                    // Display an alert
-                    set_alert(true, "good", "Your password has been updated successfully!");
-
-                    // Redirect to the reports page
-                    header("Location: ../reports");
-                }
-                else
-                {
-                    // Display an alert
-                    set_alert(true, "bad", "Your password hasn't been updated due a password policy restrictions!");
-                }
-            }
-            else
-            {
-               // Generate the salt
-                $salt = generateSalt($user);
-
-                // Generate the password hash
-                $hash = generateHash($salt, $new_pass);
+                // Get user old data
+                $old_data = get_salt_and_password_by_user_id($_SESSION['uid']);
 
                 // Update the password
                 update_password($user, $hash);
 
-                // If the encryption extra is enabled
-                if (encryption_extra())
-                {
-                    // Load the extra
-                    require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-
-                    // Set the new encrypted password
-                    set_enc_pass($user, $new_pass, $_SESSION['encrypted_pass']);
-                }
+                // Add the old data to the pass_history table
+                add_last_password_history($_SESSION["uid"], $old_data["salt"], $old_data["password"]);
 
                 // Display an alert
-                set_alert(true, "good", "Your password has been updated successfully!");
+                set_alert(true, "good", $lang['PasswordUpdated']);
 
-                // Redirect to the reports
+                // Redirect to the reports page
                 header("Location: ../reports");
-           }
+            }
+            else
+            {
+                set_alert(true, "bad", $lang['PasswordNoLongerUse']);                
+            }
 
         }
         else

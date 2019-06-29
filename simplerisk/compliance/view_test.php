@@ -19,7 +19,6 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-
 if (!isset($_SESSION))
 {
     // Session handler is database
@@ -35,9 +34,6 @@ if (!isset($_SESSION))
     session_start();
 }
 
-// Load CSRF Magic
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
 // Include the language file
 require_once(language_file());
 
@@ -52,15 +48,23 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
     exit(0);
 }
 
+// Include the CSRF-magic library
+// Make sure it's called after the session is properly setup
+include_csrf_magic();
+
 // Enforce that the user has access to compliance
 enforce_permission_compliance();
 
-// Check if a framework was updated
-if (isset($_POST['submit_test_result']))
-{
-    // Process submitting test result
-    if(submit_test_result()){
-        refresh();
+// If team separation is enabled
+if (team_separation_extra()) {
+    //Include the team separation extra
+    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    
+    $test_audit_id  = (int)$_GET['id'];
+    
+    if (!is_user_allowed_to_access($_SESSION['uid'], $test_audit_id, 'audit')) {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForThisAudit']));
+        refresh($_SESSION['base_url']."/compliance/past_audits.php");
     }
 }
 

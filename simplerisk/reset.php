@@ -45,13 +45,13 @@ if (isset($_POST['send_reset_email']))
 {
     if (isset($_SERVER) && array_key_exists('SERVER_NAME', $_SERVER) && (get_setting('simplerisk_base_url') === preg_replace('/\/reset\.php.*/', '', get_current_url()))) {
 
-	$username = $_POST['user'];
+        $username = $_POST['user'];
 
-	// Try to generate a password reset token
-	password_reset_by_username($username);
+        // Try to generate a password reset token
+        password_reset_by_username($username);
 
-	// Display an alert
-	set_alert(true, "good", $lang['PassworResetEmailSent']);
+        // Display an alert
+        set_alert(true, "good", $lang['PassworResetEmailSent']);
     } else {
         set_alert(true, "bad", $lang['PassworResetRequestFailed']);
     }
@@ -119,7 +119,7 @@ if (isset($_POST['password_reset']))
     <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="css/theme.css">
     <?php
-        setup_alert_requirements("..");
+        setup_alert_requirements();
     ?>  
 
 </head>

@@ -97,8 +97,15 @@ function setup_alert_requirements($path_to_root = "")
 {
     global $escaper;
 
-    echo "<script src=\"" . $escaper->escapeHtml($path_to_root) . "/js/alerts/toastr.min.js\"></script>\n";
-    echo "<script src=\"" . $escaper->escapeHtml($path_to_root) . "/js/alerts/alert-helper.js\"></script>\n";
+    if ($path_to_root) {
+        if($path_to_root[strlen($path_to_root)-1] !== '/') {
+            $path_to_root .= '/';
+        }
+        $path_to_root = $escaper->escapeHtml($path_to_root);
+    }
+
+    echo "<script src='{$path_to_root}js/alerts/toastr.min.js'></script>\n";
+    echo "<script src='{$path_to_root}js/alerts/alert-helper.js'></script>\n";
     $timeOut = get_setting("alert_timeout");
     if ($timeOut || $timeOut === "0") {
         $timeOut = (int)$timeOut;
@@ -109,7 +116,8 @@ function setup_alert_requirements($path_to_root = "")
         }
         echo "</script>\n";
     }
-    echo "<link rel=\"stylesheet\" href=\"" . $escaper->escapeHtml($path_to_root) . "/css/toastr.min.css\" />\n";
+
+    echo "<link rel='stylesheet' href='{$path_to_root}css/toastr.min.css' />\n";
     echo "<style>\n";
     echo "    .toast-top-right {\n";
     echo "        top: 75px;\n";

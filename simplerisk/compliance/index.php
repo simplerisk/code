@@ -36,9 +36,6 @@ if (!isset($_SESSION))
     session_start();
 }
 
-// Load CSRF Magic
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
 // Include the language file
 require_once(language_file());
 
@@ -52,6 +49,10 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../index.php");
   exit(0);
 }
+
+// Include the CSRF-magic library
+// Make sure it's called after the session is properly setup
+include_csrf_magic();
 
 // Enforce that the user has access to compliance
 enforce_permission_compliance();
@@ -68,6 +69,7 @@ if(isset($_POST['add_test'])){
     $approximate_time           = !empty($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
     $expected_results           = $_POST['expected_results'];
     $framework_control_id       = (int)$_POST['framework_control_id'];
+    $teams                      = isset($_POST['team']) ? $_POST['team'] : [];
 
     if (!$last_date)
         $last_date = "0000-00-00";
@@ -89,7 +91,7 @@ if(isset($_POST['add_test'])){
     }
 
     // Add a framework control test
-    add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders, $last_date);
+    add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders, $last_date, false, $teams);
     
     set_alert(true, "good", $lang['TestSuccessCreated']);
     
@@ -99,9 +101,22 @@ if(isset($_POST['add_test'])){
 
 // Check if editing test
 if(isset($_POST['update_test'])){
-    $today_dt                   = strtotime(date('Ymd'));
+    
     $test_id                    = (int)$_POST['test_id'];
+
+    // If team separation is enabled
+    if (team_separation_extra()) {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        if (!is_user_allowed_to_access($_SESSION['uid'], $test_id, 'test')) {
+            set_alert(true, "bad", $lang['NoPermissionForThisTest']);
+            refresh();
+        }
+    }
+    
+    $today_dt                   = strtotime(date('Ymd'));
     $tester                     = (int)$_POST['tester'];
+    $teams                      = isset($_POST['team']) ? $_POST['team'] : [];
     $additional_stakeholders    = empty($_POST['additional_stakeholders_edit']) ? "" : implode(",", $_POST['additional_stakeholders_edit']);
     $test_frequency             = (int)$_POST['test_frequency'];
     $last_date                  = get_standard_date_from_default_format($_POST['last_date']);
@@ -152,7 +167,7 @@ if(isset($_POST['update_test'])){
     }
 
     // Update a framework control test
-    update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders);
+    update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams);
     
     set_alert(true, "good", $lang['TestSuccessUpdated']);
     
@@ -163,7 +178,17 @@ if(isset($_POST['update_test'])){
 // Check if deleting test
 if(isset($_POST['delete_test'])){
     $test_id = (int)$_POST['test_id'];
-    
+
+    // If team separation is enabled
+    if (team_separation_extra()) {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        if (!is_user_allowed_to_access($_SESSION['uid'], $test_id, 'test')) {
+            set_alert(true, "bad", $lang['NoPermissionForThisTest']);
+            refresh();
+        }
+    }
+
     // Add a framework control
     delete_framework_control_test($test_id);
     
@@ -199,7 +224,15 @@ if(isset($_POST['delete_test'])){
     <?php
         setup_alert_requirements("..");
     ?>    
-    
+    <style>
+        #test--add .modal-header, #test--edit .modal-header {
+            color: #ffffff;
+        }
+        
+        .delete-row, .edit-test {
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
@@ -241,9 +274,13 @@ if(isset($_POST['delete_test'])){
     </div>
     
     <!-- MODEL WINDOW FOR ADDING TEST -->
-    <div id="test--add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="test--add" aria-hidden="true">
-      <div class="modal-body">
-        <form class="" id="test-new-form" method="post" autocomplete="off">
+    <div id="test--add" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="test--add" aria-hidden="true">
+      <form class="" id="test-new-form" method="post" autocomplete="off">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['TestAddHeader']); ?></h4>
+        </div>
+        <div class="modal-body">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['TestName']); ?></label>
             <input type="text" name="name" required="" value="" class="form-control">
@@ -253,6 +290,9 @@ if(isset($_POST['delete_test'])){
             
             <label for=""><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?></label>
             <?php create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders_add"); ?>
+
+            <label for=""><?php echo $escaper->escapeHtml($lang['Teams']); ?></label>
+            <?php create_multiple_dropdown("team"); ?>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?></label>
             <input type="number" min="0" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
@@ -275,20 +315,22 @@ if(isset($_POST['delete_test'])){
             <input type="hidden" name="framework_control_id" value="">
 
           </div>
-          
-          <div class="form-group text-right">
-            <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-            <button type="submit" name="add_test" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
-          </div>
-        </form>
-
-      </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
+          <button type="submit" name="add_test" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
+        </div>
+      </form>
     </div>
     
     <!-- MODEL WINDOW FOR EDITING TEST -->
-    <div id="test--edit" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
-      <div class="modal-body">
-        <form class="" id="test-edit-form" method="post" autocomplete="off">
+    <div id="test--edit" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
+      <form class="" id="test-edit-form" method="post" autocomplete="off">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['TestEditHeader']); ?></h4>
+        </div>
+        <div class="modal-body">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['TestName']); ?></label>
             <input type="text" name="name" required="" value="" class="form-control">
@@ -298,7 +340,10 @@ if(isset($_POST['delete_test'])){
 
             <label for=""><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?></label>
             <?php create_multiple_dropdown("enabled_users", NULL, "additional_stakeholders_edit"); ?>
-            
+
+            <label for=""><?php echo $escaper->escapeHtml($lang['Teams']); ?></label>
+            <?php create_multiple_dropdown("team"); ?>
+
             <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?></label>
             <input type="number" min="0" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
             
@@ -323,14 +368,12 @@ if(isset($_POST['delete_test'])){
             <input type="hidden" name="test_id" value="">
 
           </div>
-          
-          <div class="form-group text-right">
-            <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
-            <button type="submit" name="update_test" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
-          </div>
-        </form>
-
-      </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
+          <button type="submit" name="update_test" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
+        </div>
+      </form>
     </div>
     
     <!-- MODEL WINDOW FOR PROJECT DELETE CONFIRM -->
@@ -356,6 +399,12 @@ if(isset($_POST['delete_test'])){
         $( document ).ready(function() {
             $("#additional_stakeholders_add").multiselect();
             $("#additional_stakeholders_edit").multiselect();
+            $("[name='team[]']").multiselect();
+
+            //Have to remove the 'fade' class for the shown event to work for modals
+            $('#test--add, #test--edit').on('shown.bs.modal', function() {
+                $(this).find('.modal-body').scrollTop(0);
+            });
         });
     </script>
 

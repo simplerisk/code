@@ -6,8 +6,8 @@
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-require_once(realpath(__DIR__ . '/../includes/display.php'));
-require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/../includes/display.php'));
+    require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 
     // Include Zend Escaper for HTML Output Encoding
     require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -21,7 +21,7 @@ require_once(realpath(__DIR__ . '/../includes/alerts.php'));
         // Session handler is database
         if (USE_DATABASE_FOR_SESSIONS == "true")
         {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
         }
 
         // Start the session
@@ -42,16 +42,16 @@ require_once(realpath(__DIR__ . '/../includes/alerts.php'));
     // Check if access is authorized
     if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
     {
-    set_unauthenticated_redirect();
-            header("Location: ../index.php");
-            exit(0);
+        set_unauthenticated_redirect();
+        header("Location: ../index.php");
+        exit(0);
     }
 
     // Check if access is authorized
     if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
     {
-            header("Location: ../index.php");
-            exit(0);
+        header("Location: ../index.php");
+        exit(0);
     }
 ?>
 
@@ -107,6 +107,11 @@ get_alert();
             </tr>
             </thead>
             <tbody>
+            <tr>
+              <td width="155px"><b>Advanced Search</b></td>
+              <td>Expands the functionality of the topbar's search box to be able to find risks by doing textual search in risk data.</td>
+              <td width="60px"><?php echo (advanced_search_extra() ? '<a href="advanced_search.php">Yes</a>' : '<a href="advanced_search.php">No</a>'); ?></td>
+            </tr>
             <tr>
               <td width="155px"><b>API</b></td>
               <td>Enables an API for integration of SimpleRisk with other tools and automation tasks.</td>

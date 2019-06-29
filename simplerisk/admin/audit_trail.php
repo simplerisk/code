@@ -74,14 +74,14 @@
             
                 download_audit_logs($days);
             }else{
-                set_alert(true, "bad", $escaper->escapeHtml($escaper->escapeHtml($lang['YouCantDownloadBecauseImportExportExtraDisabled'])));
+                set_alert(true, "bad", $escaper->escapeHtml($lang['YouCantDownloadBecauseImportExportExtraDisabled']));
                 refresh();
             }
         }
         // If this is not admin user, disable download
         else
         {
-            set_alert(true, "bad", $escaper->escapeHtml($escaper->escapeHtml($lang['AdminPermissionRequired'])));
+            set_alert(true, "bad", $escaper->escapeHtml($lang['AdminPermissionRequired']));
             refresh();
         }
     }

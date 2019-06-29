@@ -80,14 +80,14 @@ if(isset($_POST['download_audit_log']))
         
             download_audit_logs($days, ['contact', 'questionnaire_question', 'questionnaire_template', 'questionnaire', 'questionnaire_tracking', 'questionnaire_template', 'questionnaire_question'], $escaper->escapeHtml($lang['QuestionnaireAuditTrailReport']));
         }else{
-            set_alert(true, "bad", $escaper->escapeHtml($escaper->escapeHtml($lang['YouCantDownloadBecauseImportExportExtraDisabled'])));
+            set_alert(true, "bad", $escaper->escapeHtml($lang['YouCantDownloadBecauseImportExportExtraDisabled']));
             refresh();
         }
     }
     // If this is not admin user, disable download
     else
     {
-        set_alert(true, "bad", $escaper->escapeHtml($escaper->escapeHtml($lang['AdminPermissionRequired'])));
+        set_alert(true, "bad", $escaper->escapeHtml($lang['AdminPermissionRequired']));
         refresh();
     }
 }

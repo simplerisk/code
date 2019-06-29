@@ -123,7 +123,7 @@
         $status = get_name_by_value("status", $status_id);
 
         // Display an alert
-                set_alert(true, "good", "Your risk status has been successfully changed.");
+        set_alert(true, "good", "Your risk status has been successfully changed.");
 
         // Check that the id is a numeric value
         if (is_numeric($id))
@@ -146,7 +146,20 @@
         <?php
             echo $escaper->escapeHtml($lang['SetRiskStatusTo']);
             echo "&nbsp;&nbsp;";
-            create_dropdown("status");
+
+            $options = get_options_from_table('status');
+            array_unshift($options, ['value'=>'', 'name'=>'--']);
+
+            echo "<select id='status' name='status' class='form-field' style='width:auto;'>\n";
+            foreach ($options as $key => $option)
+            {
+                if (!(isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1) && $option['name'] === "Closed")
+                    continue;
+
+                echo "<option value='" . $escaper->escapeHtml($option['value']) . "'>" . $escaper->escapeHtml($option['name']) . "</option>\n";
+            }
+            echo "</select>";
+
             echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Update']) . "\" name=\"update_status\" />\n";
         ?>
       </form>

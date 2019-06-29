@@ -20,6 +20,15 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Set the simplerisk timezone for any datetime functions
 set_simplerisk_timezone();
 
+
+/*
+    A list of tables where the `name` field is encrypted AND used in
+    functions that are getting name(s) by value(s). When querying the names of
+    these tables the results should be ran through the 'try_decrypt()' function.
+*/
+$tables_where_name_is_encrypted = array('frameworks', 'projects');
+
+
 /******************************
  * FUNCTION: DATABASE CONNECT *
  ******************************/
@@ -848,7 +857,7 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $opti
         // If the user belongs to the team or all was selected
         if ($selected == "all" ||
            ($is_selected_array && in_array($option['value'], $selected)) ||
-           (!$selected && !$option['value']) ||
+           ($selected === null && !$option['value']) ||
            (!$is_selected_array && preg_match($regex_pattern, $selected, $matches)))
         {
             $text = " selected";
@@ -915,7 +924,7 @@ function calculate_risk($impact, $likelihood)
         $GLOBALS['count_of_impacts'] = count(get_table("impact"));
         $GLOBALS['count_of_likelihoods'] = count(get_table("likelihood"));
     }
-    
+
     // If the impact or likelihood is valid
     if(!empty($GLOBALS['count_of_impacts']) && !empty($GLOBALS['count_of_likelihoods']) && in_array($impact, range(1, $GLOBALS['count_of_impacts'])) && in_array($likelihood, range(1,$GLOBALS['count_of_likelihoods'])))
     {
@@ -952,6 +961,11 @@ function calculate_risk($impact, $likelihood)
             // $max_risk = 35;
             $max_risk = ($GLOBALS['count_of_likelihoods'] * $GLOBALS['count_of_impacts']) + (2 * $GLOBALS['count_of_likelihoods']);
             $risk = ($likelihood * $impact) + (2 * $likelihood);
+        }
+        else if ($risk_model == 6)
+        {
+            $max_risk = 10;
+            $risk = get_stored_risk_score($impact, $likelihood);
         }
 
         // This puts it on a 1 to 10 scale similar to CVSS
@@ -1140,7 +1154,7 @@ function update_risk_model($risk_model)
         {
             // Update the value in the DB
             $stmt = $db->prepare("UPDATE risk_scoring SET calculated_risk = :calculated_risk WHERE id = :id");
-            $stmt->bindParam(":calculated_risk", $calculated_risk, PDO::PARAM_INT);
+            $stmt->bindParam(":calculated_risk", $calculated_risk, PDO::PARAM_STR);
             $stmt->bindParam(":id", $risk['id'], PDO::PARAM_INT);
             $stmt->execute();
 
@@ -1154,18 +1168,19 @@ function update_risk_model($risk_model)
     }
 
     $status = [
-        '1' => 'as Likelihood x Impact + 2(Impact)',
-        '2' => 'as Likelihood x Impact + Impact',
-        '3' => 'as Likelihood x Impact',
-        '4' => 'as Likelihood x Impact + Likelihood',
-        '5' => 'as Likelihood x Impact + 2(Likelihood)'
+        '1' => 'Likelihood x Impact + 2(Impact)',
+        '2' => 'Likelihood x Impact + Impact',
+        '3' => 'Likelihood x Impact',
+        '4' => 'Likelihood x Impact + Likelihood',
+        '5' => 'Likelihood x Impact + 2(Likelihood)',
+        '6' => 'Custom',
     ];
 
     // Audit log
     $risk_id = 1000;
     if ($current_risk_model[0]['value'] != $risk_model) {
-        $message = "The risk formula was modified " . $status[$risk_model] . "by the \"" . $_SESSION['user'] . "\" user.";
-    write_log($risk_id, $_SESSION['uid'], $message);
+        $message = "The risk formula was modified from '" . $status[$current_risk_model[0]['value']] . "' to '" . $status[$risk_model] . "' by user \"" . $_SESSION['user'] . "\".";
+        write_log($risk_id, $_SESSION['uid'], $message);
     }
 
     // Close the database connection
@@ -1297,7 +1312,7 @@ function get_setting($setting, $default=false)
     if ($array)
     {
         // Set the value to the array value
-        $value = $array[0]['value'];
+        $value = trim($array[0]['value']);
     }
     else $value = false;
 
@@ -1309,6 +1324,62 @@ function get_setting($setting, $default=false)
     {
         return $value;
     }
+}
+
+/************************************************************
+ * FUNCTION: GET SETTINGS                                   *
+ * Gets a list of settings and returns it as an associative *
+ * array where the key is the name of the setting and       *
+ * the value is the actual value of said setting            *
+ ************************************************************/
+function get_settings($settings) {
+
+    if (!is_array($settings)) {
+        $settings = explode(',', $settings);
+    }
+
+    $settings_in = [];
+    foreach ($settings as $i => $setting)
+    {
+        $key = ":param".$i;
+        $settings_in[] = $key;
+        $params[$key] = $setting;
+    }
+
+    // making the comma separated list to be included in the sql
+    $settings_in = implode(", ", $settings_in);
+
+    // Open the database connection
+    $db = db_open();
+
+    // Get the risk levels
+    $stmt = $db->prepare("
+        SELECT
+            `name`,
+            `value`
+        FROM
+            `settings`
+        WHERE
+            `name` IN ({$settings_in});
+    ");
+    $stmt->execute($params);
+
+    // Store the list in the array
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    // If the array isn't empty
+    if ($array)
+    {
+        $results = [];
+        foreach($array as $setting) {
+            $results[$setting['name']] = $setting['value'];
+        }
+        return $results;
+    }
+    else return [];
 }
 
 /*******************************************************
@@ -1573,102 +1644,102 @@ function delete_value($table, $value)
     // Get the name to be deleted
     $name = get_name_by_value($table, $value);
 
-        // Delete the table value
-        $stmt = $db->prepare("DELETE FROM $table WHERE value=:value");
-        $stmt->bindParam(":value", $value, PDO::PARAM_INT);
-        $stmt->execute();
+    // Delete the table value
+    $stmt = $db->prepare("DELETE FROM $table WHERE value=:value");
+    $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+    $stmt->execute();
 
-        // Audit log
-        switch ($table)
-        {
-            case "projects":
-                $risk_id = 1000;
-                $message = "The existing project \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "user":
-                $risk_id = 1000;
-                $message = "The existing user \"" . $name . "\" was deleted by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "category":
-                $risk_id = 1000;
-                $message = "The existing category \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "team":
-                $risk_id = 1000;
-                $message = "The existing team \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "technology":
-                $risk_id = 1000;
-                $message = "The existing technology \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "location":
-                $risk_id = 1000;
-                $message = "The existing location \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "source":
-                $risk_id = 1000;
-                $message = "The existing source \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "regulation":
-                $risk_id = 1000;
-                $message = "The existing control regulation \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "planning_strategy":
-                $risk_id = 1000;
-                $message = "The existing planning strategy \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "close_reason":
-                $risk_id = 1000;
-                $message = "The existing close reason \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "file_types":
-                $risk_id = 1000;
-                $message = "The existing upload file type \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "file_type_extensions":
-                $risk_id = 1000;
-                $message = "The existing upload extension \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "frameworks":
-                $risk_id = 1000;
-                $message = "The existing framework \"" . try_decrypt($name) . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
-                break;
-            case "test_status":
-                $test_status_ids = get_test_status_ids();
-                $query = "UPDATE `framework_control_test_audits` SET `framework_control_test_audits`.`status` = '0' WHERE ";
-                for ($i=0; $i < sizeof($test_status_ids) ; $i++) {
-                    $query .= "`framework_control_test_audits`.`status` !='" . $test_status_ids[$i]['value'] . "' AND ";
-                }
-                $query .= " 1 ;" ;
-                $stmt = $db->prepare($query);
-                $stmt->execute();
+    // Audit log
+    switch ($table)
+    {
+        case "projects":
+            $risk_id = 1000;
+            $message = "The existing project \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "user":
+            $risk_id = 1000;
+            $message = "The existing user \"" . $name . "\" was deleted by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "category":
+            $risk_id = 1000;
+            $message = "The existing category \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "team":
+            $risk_id = 1000;
+            $message = "The existing team \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "technology":
+            $risk_id = 1000;
+            $message = "The existing technology \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "location":
+            $risk_id = 1000;
+            $message = "The existing location \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "source":
+            $risk_id = 1000;
+            $message = "The existing source \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "regulation":
+            $risk_id = 1000;
+            $message = "The existing control regulation \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "planning_strategy":
+            $risk_id = 1000;
+            $message = "The existing planning strategy \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "close_reason":
+            $risk_id = 1000;
+            $message = "The existing close reason \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "file_types":
+            $risk_id = 1000;
+            $message = "The existing upload file type \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "file_type_extensions":
+            $risk_id = 1000;
+            $message = "The existing upload extension \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "frameworks":
+            $risk_id = 1000;
+            $message = "The existing framework \"" . try_decrypt($name) . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
+            break;
+        case "test_status":
+            $test_status_ids = get_test_status_ids();
+            $query = "UPDATE `framework_control_test_audits` SET `framework_control_test_audits`.`status` = '0' WHERE ";
+            for ($i=0; $i < sizeof($test_status_ids) ; $i++) {
+                $query .= "`framework_control_test_audits`.`status` !='" . $test_status_ids[$i]['value'] . "' AND ";
+            }
+            $query .= " 1 ;" ;
+            $stmt = $db->prepare($query);
+            $stmt->execute();
 
-                $risk_id = 1000;
-                $message = "The existing test status \"" . try_decrypt($name) . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
-                write_log($risk_id, $_SESSION['uid'], $message);
+            $risk_id = 1000;
+            $message = "The existing test status \"" . try_decrypt($name) . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
 
-                break;
-            default:
-                break;
-        }
+            break;
+        default:
+            break;
+    }
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        return true;
+    return true;
 }
 
 /******************************************************
@@ -2263,8 +2334,16 @@ function get_id_by_user($user)
     // Open the database connection
     $db = db_open();
 
-    // Get the user information
-    $stmt = $db->prepare("SELECT * FROM user WHERE username = :user");
+    // If strict user validation is disabled
+    if (get_setting('strict_user_validation') == 0)
+    {
+        // Get the user information
+        $stmt = $db->prepare("SELECT * FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user)");
+    }
+    else
+    {
+        $stmt = $db->prepare("SELECT * FROM user WHERE username = :user");
+    }
     $stmt->bindParam(":user", $user, PDO::PARAM_STR);
     $stmt->execute();
 
@@ -2274,7 +2353,7 @@ function get_id_by_user($user)
     // Close the database connection
     db_close($db);
 
-    return $array['value'];
+    return isset($array['value']) ? $array['value'] : 0;
 }
 
 /*******************************
@@ -3757,7 +3836,7 @@ function update_risk($risk_id, $is_api = false)
     if($notes !== false){
         $notes = try_encrypt($notes);
     }
-    $assets                 = get_param("post", "assets", false);
+
     $submission_date        = get_param("post", "submission_date", false);
     if($submission_date !== false){
         $submission_date        =  get_standard_date_from_default_format($submission_date);
@@ -3805,8 +3884,26 @@ function update_risk($risk_id, $is_api = false)
         unset($value);
     }
 
-
     $stmt->execute();
+    
+    $tags = empty($_POST['tags']) ? array() : $_POST['tags'];
+    if (!is_array($tags))
+        $tags = explode(",", $tags);
+    // Update tags
+    updateTagsOfType($id, 'risk', $tags);
+
+    if($is_api === false){
+        if (isset($_POST['assets_asset_groups'])) {
+            $assets_asset_groups = is_array($_POST['assets_asset_groups']) ? $_POST['assets_asset_groups'] : [];
+            // Update affected assets and asset groups
+            process_selected_assets_asset_groups_of_type($id, $assets_asset_groups, 'risk');
+        }
+    } else {
+        $affected_assets = get_param("POST", 'affected_assets');
+
+        if ($affected_assets)
+            import_assets_asset_groups_for_type($id, $affected_assets, 'risk');
+    }
 
     // If notification is enabled
     if (notification_extra())
@@ -3824,9 +3921,6 @@ function update_risk($risk_id, $is_api = false)
 
     // Close the database connection
     db_close($db);
-
-    // Tag the assets to the risk id
-    tag_assets_to_risk($id, $assets);
 
     // If the delete value exists
     if (!empty($_POST['delete']))
@@ -3879,7 +3973,7 @@ function update_risk($risk_id, $is_api = false)
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-        create_subject_order($_SESSION['encrypted_pass']);
+        create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? $_SESSION['encrypted_pass'] : fetch_key());
     }
 
     return $success;
@@ -3902,7 +3996,7 @@ function get_residual_risk($risk_id)
         FROM risks t1
             LEFT JOIN risk_scoring t2 ON t1.id=t2.id
             LEFT JOIN mitigations t3 ON t1.id=t3.risk_id
-            LEFT JOIN framework_controls t4 ON FIND_IN_SET(t4.id, t3.mitigation_controls)
+            LEFT JOIN framework_controls t4 ON FIND_IN_SET(t4.id, t3.mitigation_controls) AND t4.deleted=0
         WHERE t1.id=:risk_id
         GROUP BY t1.id;
     ");
@@ -3953,7 +4047,7 @@ function update_risk_subject($risk_id, $subject)
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-        create_subject_order($_SESSION['encrypted_pass']);
+        create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? $_SESSION['encrypted_pass'] : fetch_key());
     }
 
     // If notification is enabled
@@ -4054,7 +4148,7 @@ function get_risk_by_id($id)
             INNER JOIN risks b on a.id = b.id
             LEFT JOIN mgmt_reviews c on b.mgmt_review = c.id
             LEFT JOIN mitigations mg ON b.id = mg.risk_id
-            LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+            LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
             LEFT JOIN risk_scoring_contributing_impacts rsci ON a.id=rsci.risk_scoring_id
             LEFT JOIN tags_taggees tt ON tt.taggee_id = b.id and tt.type = 'risk'
             LEFT JOIN tags t on t.id = tt.tag_id
@@ -4081,7 +4175,7 @@ function get_risk_by_id($id)
                 GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR ',') as risk_tags
             FROM risk_scoring a INNER JOIN risks b on a.id = b.id LEFT JOIN mgmt_reviews c on b.mgmt_review = c.id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 LEFT JOIN risk_scoring_contributing_impacts rsci ON a.id=rsci.risk_scoring_id
                 LEFT JOIN tags_taggees tt ON tt.taggee_id = b.id and tt.type = 'risk'
                 LEFT JOIN tags t on t.id = tt.tag_id
@@ -5123,7 +5217,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE
                     b.status != \"Closed\"
                 GROUP BY b.id
@@ -5148,7 +5242,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE
                     b.status != \"Closed\"  " . $separation_query . "
                 GROUP BY b.id
@@ -5183,7 +5277,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE
                     b.mitigation_id = 0 and b.status != \"Closed\"
                 GROUP BY b.id
@@ -5208,7 +5302,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE
                     b.mitigation_id = 0 and b.status != \"Closed\"  " . $separation_query . "
                 GROUP BY b.id
@@ -5243,7 +5337,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE
                     b.mgmt_review = 0 and b.status != \"Closed\"
                 GROUP BY
@@ -5269,7 +5363,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE
                     b.mgmt_review = 0 and b.status != \"Closed\"  {$separation_query}
                 GROUP BY
@@ -5303,7 +5397,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN mgmt_reviews c ON b.mgmt_review = c.id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE b.status != \"Closed\"
                 GROUP BY b.id
                 {$sort_query}
@@ -5322,7 +5416,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
                 FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id LEFT JOIN mgmt_reviews c ON b.mgmt_review = c.id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE b.status != \"Closed\" " . $separation_query . "
                 GROUP BY b.id
                 {$sort_query}
@@ -5350,7 +5444,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE
                     b.status = \"Closed\"
                 GROUP BY b.id
@@ -5378,7 +5472,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE
                     b.status = \"Closed\"  {$separation_query}
                 GROUP BY b.id
@@ -5406,7 +5500,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             $stmt = $db->prepare("SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
             FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
             WHERE b.status != \"Closed\"
             GROUP BY b.id
             ORDER BY calculated_risk DESC");
@@ -5423,7 +5517,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             $stmt = $db->prepare("SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
             FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
             WHERE b.status != \"Closed\" " . $separation_query . "
             GROUP BY b.id
             ORDER BY calculated_risk DESC");
@@ -5447,7 +5541,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 LEFT JOIN risks b ON a.id = b.id
                 RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
             WHERE b.status != \"Closed\"
             GROUP BY b.id
             ORDER BY calculated_risk DESC");
@@ -5466,7 +5560,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 LEFT JOIN risks b ON a.id = b.id
                 RIGHT JOIN (SELECT c1.risk_id, c1.next_review, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 1) AS c ON a.id = c.risk_id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
             WHERE b.status != \"Closed\" " . $separation_query . "
             GROUP BY b.id
             ORDER BY calculated_risk DESC");
@@ -5488,7 +5582,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             $stmt = $db->prepare("SELECT a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
             FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, c1.next_review, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 3) AS c ON a.id = c.risk_id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
             WHERE b.status != \"Closed\"
             GROUP BY b.id
             ORDER BY calculated_risk DESC; ");
@@ -5506,7 +5600,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             FROM risk_scoring a
                 LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, c1.next_review , next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 3) AS c ON a.id = c.risk_id
                 LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
             WHERE b.status != \"Closed\" " . $separation_query . "
             GROUP BY b.id
             ORDER BY calculated_risk DESC; ");
@@ -5531,7 +5625,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE
                     b.status != \"Closed\" AND (owner = :uid OR manager = :uid)
                 GROUP BY b.id
@@ -5553,7 +5647,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE
                     b.status != \"Closed\" AND (owner = :uid OR manager = :uid) " . $separation_query . "
                 GROUP BY b.id
@@ -5886,7 +5980,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE
                     b.status != \"Closed\" AND a.calculated_risk >= :high
                 GROUP BY
@@ -5908,7 +6002,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
                     LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls)
+                    LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
                 WHERE
                     b.status != \"Closed\" AND a.calculated_risk >= :high " . $separation_query . "
                 GROUP BY
@@ -7601,13 +7695,15 @@ function planned_mitigation($risk_id, $mitigation_id)
 /*******************************
  * FUNCTION: GET NAME BY VALUE *
  *******************************/
-function get_name_by_value($table, $value, $default = "")
+function get_name_by_value($table, $value, $default = "", $use_id = false)
 {
+    global $tables_where_name_is_encrypted;
+    
     // Open the database connection
     $db = db_open();
 
     // Query the database
-    $stmt = $db->prepare("SELECT name FROM $table WHERE value=:value LIMIT 1");
+    $stmt = $db->prepare("SELECT name FROM $table WHERE " .($use_id ? "id" : "value") . "=:value LIMIT 1");
     $stmt->bindParam(":value", $value, PDO::PARAM_INT);
 
     $stmt->execute();
@@ -7622,7 +7718,7 @@ function get_name_by_value($table, $value, $default = "")
     if (isset($array[0]['name']))
     {
         // Try decrypt if necessary
-        if (in_array($table, array("frameworks", "projects")))
+        if (in_array($table, $tables_where_name_is_encrypted))
             return try_decrypt($array[0]['name']);
 
         // Return that value
@@ -7635,14 +7731,16 @@ function get_name_by_value($table, $value, $default = "")
 /***************************************
  * FUNCTION: GET NAMEs BY MULTI VALUES *
  ***************************************/
-function get_names_by_multi_values($table, $values)
-{
+function get_names_by_multi_values($table, $values, $return_array=false) {
+
+    if (is_array($values))
+        $values = implode(',', $values);
 
     // Open the database connection
     $db = db_open();
 
     // Query the database
-    $stmt = $db->prepare("SELECT name FROM $table WHERE FIND_IN_SET(value, :values) ;");
+    $stmt = $db->prepare("SELECT name FROM $table WHERE FIND_IN_SET(value, :values);");
     $stmt->bindParam(":values", $values, PDO::PARAM_STR);
 
     $stmt->execute();
@@ -7654,13 +7752,23 @@ function get_names_by_multi_values($table, $values)
     db_close($db);
 
     // If we get a value back from the query
-    if ($array)
-    {
+    if ($array) {
+        global $tables_where_name_is_encrypted;
+        // Try decrypt if necessary
+        if (in_array($table, $tables_where_name_is_encrypted)) {
+
+            // For each entry
+            foreach ($array as &$entry) {
+                // Try to decrypt it
+                $entry = try_decrypt($entry);
+            }
+        }
+
         // Return that value
-        return implode(", ", $array);
+        return $return_array ? $array : implode(", ", $array);
     }
-    // Otherwise, return an empty string
-    else return "";
+    // Otherwise, return an empty string/array
+    else return $return_array ? [] : "";
 }
 
 /*****************************
@@ -8531,13 +8639,13 @@ function get_reviews($risk_id)
             echo "<div class=\"row-fluid\">\n";
                 // Left Panel
                 echo "<div class=\"span5 left-panel\">\n";
-                    display_main_review_feilds_by_panel_view('left', $active_fields, $risk_id, $review['id'], $review_date, $review['reviewer'], $review['review'], $review['next_step'], "", $comment);
+                    display_main_review_fields_by_panel_view('left', $active_fields, $risk_id, $review['id'], $review_date, $review['reviewer'], $review['review'], $review['next_step'], "", $comment);
                     echo "&nbsp;";
                 echo "</div>";
 
                 // Right Panel
                 echo "<div class=\"span5 right-panel\">\n";
-                    display_main_review_feilds_by_panel_view('right', $active_fields, $risk_id, $review['id'], $review_date, $review['reviewer'], $review['review'], $review['next_step'], "", $comment);
+                    display_main_review_fields_by_panel_view('right', $active_fields, $risk_id, $review['id'], $review_date, $review['reviewer'], $review['review'], $review['next_step'], "", $comment);
                     echo "&nbsp;";
                 echo "</div>";
             echo "</div>";
@@ -8545,7 +8653,7 @@ function get_reviews($risk_id)
             // Bottom panel
             echo "<div class=\"row-fluid\">\n";
                 echo "<div class=\"span12 bottom-panel\">";
-                    display_main_review_feilds_by_panel_view('bottom', $active_fields, $risk_id, $review['id'], $review_date, $review['reviewer'], $review['review'], $review['next_step'], "", $comment);
+                    display_main_review_fields_by_panel_view('bottom', $active_fields, $risk_id, $review['id'], $review_date, $review['reviewer'], $review['review'], $review['next_step'], "", $comment);
                     echo "&nbsp;";
                 echo "</div>";
             echo "</div>";
@@ -8631,13 +8739,19 @@ function latest_version($param)
     {
         $regex_pattern = "/<customization>(.*)<\/customization>/";
     }
+    else if ($param == "advanced_search")
+    {
+        $regex_pattern = "/<advanced_search>(.*)<\/advanced_search>/";
+    }
+
+    $latest_version = "";
 
     foreach ($version_page as $line)
     {
-            if (preg_match($regex_pattern, $line, $matches))
-            {
-                    $latest_version = $matches[1];
-            }
+        if (preg_match($regex_pattern, $line, $matches))
+        {
+            $latest_version = $matches[1];
+        }
     }
 
     // Return the latest version
@@ -8689,6 +8803,8 @@ function write_log($risk_id, $user_id, $message, $log_type="risk")
     {
         $user_id = 0;
     }
+    
+    $user_id = (int)$user_id;
 
     $current_time = date("Y-m-d H:i:s");
 
@@ -9121,6 +9237,14 @@ function governance_extra()
         return true;
     }
     else return false;
+}
+
+
+/***********************************
+ * FUNCTION: ADVANCED SEARCH EXTRA *
+ ***********************************/
+function advanced_search_extra() {
+    return get_setting('advanced_search');
 }
 
 /****************************************
@@ -9777,7 +9901,7 @@ function write_debug_log($value)
 /******************************
  * FUNCTION: ADD REGISTRATION *
  ******************************/
-function add_registration($name, $company, $title, $phone, $email)
+function add_registration($name="", $company="", $title="", $phone="", $email="", $fname="", $lname="")
 {
     global $lang;
 
@@ -9793,6 +9917,8 @@ function add_registration($name, $company, $title, $phone, $email)
         'title' => $title,
         'phone' => $phone,
         'email' => $email,
+	'fname' => $fname,
+	'lname' => $lname,
     );
 
     // Register instance with the web service
@@ -9815,17 +9941,19 @@ function add_registration($name, $company, $title, $phone, $email)
             $db = db_open();
 
             // Add the registration
-            $stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('registration_name', :name), ('registration_company', :company), ('registration_title', :title), ('registration_phone', :phone), ('registration_email', :email), ('services_api_key', :services_api_key)");
+            $stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('registration_name', :name), ('registration_company', :company), ('registration_title', :title), ('registration_phone', :phone), ('registration_email', :email), ('registration_fname', :fname), ('registration_lname', :lname), ('services_api_key', :services_api_key)");
             $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
             $stmt->bindParam(":company", $company, PDO::PARAM_STR, 200);
             $stmt->bindParam(":title", $title, PDO::PARAM_STR, 200);
             $stmt->bindParam(":phone", $phone, PDO::PARAM_STR, 200);
             $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
+            $stmt->bindParam(":fname", $fname, PDO::PARAM_STR, 200);
+            $stmt->bindParam(":lname", $lname, PDO::PARAM_STR, 200);
             $stmt->bindParam(":services_api_key", $services_api_key, PDO::PARAM_STR, 50);
             $stmt->execute();
 
             // Mark the instance as registered
-            $stmt = $db->prepare("UPDATE `settings` SET value=1 WHERE name='registration_registered';");
+            $stmt = $db->prepare("INSERT INTO `settings` VALUES ('registration_registered', '1') ON DUPLICATE KEY UPDATE value='1';");
             $stmt->execute();
 
             // Download the upgrade extra
@@ -9890,7 +10018,7 @@ function add_registration($name, $company, $title, $phone, $email)
 /*********************************
  * FUNCTION: UPDATE REGISTRATION *
  *********************************/
-function update_registration($name, $company, $title, $phone, $email)
+function update_registration($name="", $company="", $title="", $phone="", $email="", $fname="", $lname="")
 {
     global $lang;
 
@@ -9910,6 +10038,8 @@ function update_registration($name, $company, $title, $phone, $email)
         'title' => $title,
         'phone' => $phone,
         'email' => $email,
+	'fname' => $fname,
+	'lname' => $lname,
     );
 
     // Register instance with the web service
@@ -9984,6 +10114,14 @@ function update_registration($name, $company, $title, $phone, $email)
             $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
             $stmt->execute();
 
+            $stmt = $db->prepare("UPDATE `settings` SET value=:fname WHERE name='registration_fname'");
+            $stmt->bindParam(":fname", $fname, PDO::PARAM_STR, 200);
+            $stmt->execute();
+
+            $stmt = $db->prepare("UPDATE `settings` SET value=:lname WHERE name='registration_lname'");
+            $stmt->bindParam(":lname", $lname, PDO::PARAM_STR, 200);
+            $stmt->execute();
+
             // Download the update extra
             $result = download_extra("upgrade");
 
@@ -10016,53 +10154,60 @@ function update_risk_status($risk_id, $status)
 
     // Update the status
     if( $status == "Closed" && check_risk_by_id($risk_id)){
-        // Get current datetime for last_update
-        $current_datetime = date('Y-m-d H:i:s');
-        $reviewer   = $_SESSION['uid'];
-        $review     = 0;
-        $next_step  = 0;
-        $next_review = "0000-00-00";
-        $try_encrypt = try_encrypt("--");
-        
-        $stmt = $db->prepare("INSERT INTO mgmt_reviews (`risk_id`, `review`, `reviewer`, `next_step`, `comments`, `next_review`, `submission_date`) VALUES (:risk_id, :review, :reviewer, :next_step, :comments, :next_review, :submission_date)");
-        
-        $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
-        $stmt->bindParam(":review", $review, PDO::PARAM_INT);
-        $stmt->bindParam(":reviewer", $reviewer, PDO::PARAM_INT);
-        $stmt->bindParam(":next_step", $next_step, PDO::PARAM_INT);
-        $stmt->bindParam(":comments", $try_encrypt, PDO::PARAM_STR);
-        $stmt->bindParam(":next_review", $next_review, PDO::PARAM_STR, 10);
-        $stmt->bindParam(":submission_date", $current_datetime, PDO::PARAM_STR, 20);
-        
-        
-        $stmt->execute();
-        
-        // Get the new mitigation id
-        $review_id = get_review_id($id);
 
-        // If customization extra is enabled
-        if(customization_extra())
-        {
-            // Include the extra
-            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-            
-            // Save custom fields
-            save_risk_custom_field_values($risk_id, $review_id);
+        if (isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1) {
+            // Get current datetime for last_update
+            $current_datetime = date('Y-m-d H:i:s');
+            $reviewer   = $_SESSION['uid'];
+            $review     = 0;
+            $next_step  = 0;
+            $next_review = "0000-00-00";
+            $try_encrypt = try_encrypt("--");
+
+            $stmt = $db->prepare("INSERT INTO mgmt_reviews (`risk_id`, `review`, `reviewer`, `next_step`, `comments`, `next_review`, `submission_date`) VALUES (:risk_id, :review, :reviewer, :next_step, :comments, :next_review, :submission_date)");
+
+            $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+            $stmt->bindParam(":review", $review, PDO::PARAM_INT);
+            $stmt->bindParam(":reviewer", $reviewer, PDO::PARAM_INT);
+            $stmt->bindParam(":next_step", $next_step, PDO::PARAM_INT);
+            $stmt->bindParam(":comments", $try_encrypt, PDO::PARAM_STR);
+            $stmt->bindParam(":next_review", $next_review, PDO::PARAM_STR, 10);
+            $stmt->bindParam(":submission_date", $current_datetime, PDO::PARAM_STR, 20);
+
+            $stmt->execute();
+
+            // Get the new mitigation id
+            $review_id = get_review_id($id);
+
+            // If customization extra is enabled
+            if(customization_extra())
+            {
+                // Include the extra
+                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+                // Save custom fields
+                save_risk_custom_field_values($risk_id, $review_id);
+            }
+
+            // Update the risk status and last_update
+            $stmt = $db->prepare("UPDATE risks SET status=:status, last_update=:last_update, review_date=:review_date, mgmt_review=:mgmt_review WHERE id = :risk_id");
+            $stmt->bindParam(":status", $status, PDO::PARAM_STR, 20);
+            $stmt->bindParam(":last_update", $current_datetime, PDO::PARAM_STR, 20);
+            $stmt->bindParam(":review_date", $current_datetime, PDO::PARAM_STR, 20);
+            $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+            $stmt->bindParam(":mgmt_review", $review_id, PDO::PARAM_INT);
+
+            $stmt->execute();
+            $close_reason = 2; // default vaule is 2: System Retired.
+            $note = "--";
+            // Close the risk
+            close_risk($risk_id, $reviewer, $status, $close_reason, $note);
+        } else {
+            global $lang;
+
+            set_alert(true, "bad", $lang['NoPermissionForClosingRisks']);
+            return;
         }
-       
-        // Update the risk status and last_update
-        $stmt = $db->prepare("UPDATE risks SET status=:status, last_update=:last_update, review_date=:review_date, mgmt_review=:mgmt_review WHERE id = :risk_id");
-        $stmt->bindParam(":status", $status, PDO::PARAM_STR, 20);
-        $stmt->bindParam(":last_update", $current_datetime, PDO::PARAM_STR, 20);
-        $stmt->bindParam(":review_date", $current_datetime, PDO::PARAM_STR, 20);
-        $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
-        $stmt->bindParam(":mgmt_review", $review_id, PDO::PARAM_INT);
-
-        $stmt->execute();
-        $close_reason = 2; // default vaule is 2: System Retired.
-        $note = "--";
-        // Close the risk
-        close_risk($risk_id, $reviewer, $status, $close_reason, $note);
         
     } else {
         $stmt = $db->prepare("UPDATE risks SET `status`=:status WHERE `id`=:id");
@@ -10125,22 +10270,27 @@ function try_decrypt($value)
 function try_encrypt($value)
 {
     // If the encryption extra is enabled
-    if (encryption_extra())
-    {
+    if (encryption_extra()) {
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-        // If the encrypted password is set
-        if (isset($_SESSION['encrypted_pass']))
-        {
+        if(!isset($_SESSION['encrypted_pass']) || !$_SESSION['encrypted_pass']){
+            // If there's no session, try to get the password from the init.php
+            $password = fetch_key();
+
+            if ($password) {
+                // If we could, then use it
+                $encrypted_value = encrypt($password, $value);
+            } else {
+                $encrypted_value = $value;
+            }
+        }
+        else{
             // Encrypt the value
             $encrypted_value = encrypt($_SESSION['encrypted_pass'], $value);
-
-            // Return the encrypted value
-            return $encrypted_value;
         }
-        // Otherwise return the value
-        else return $value;
+
+        return $encrypted_value;
     }
     // Otherwise return the value
     else return $value;
@@ -10398,45 +10548,6 @@ function get_salt_and_password_by_user_id($user_id){
     $res = array("salt" => $result[0]["salt"], "password" => $result[0]["password"]);
     db_close($db);
     return $res;
-}
-
-/*******************************************
- * FUNCTION: CHECK IF PASSWORD CAN BE USED *
- *******************************************/
-function check_password_can_be_used($user_id, $new_password, $user_salt){
-    $db = db_open();
-    //Get all user history
-    $stmt = $db->prepare("SELECT salt, password, add_date FROM user_pass_history WHERE user_id=:user_id;");
-    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
-    $stmt->execute();
-    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $pass_exists = false;
-    $password_min_time = get_setting("pass_policy_min_age");
-    foreach($data as $single_data){
-        // For comparing
-        $new_password_hash = generateHash($user_salt, $new_password);
-        // Iterate over again with new password with use of old salt
-        foreach($data as $single_data_2){
-            echo "checking if " . $new_password_hash . " equals to " . $single_data_2["password"] . "<br />";
-            if($new_password_hash == $single_data_2["password"]){
-                $pass_exists = True;
-                if((int)calculate_date_diff($single_data_2['add_date'], date("Y-m-d h:i:s"), "%d") > (int)$password_min_time){
-                        // We can use the password
-                        return True;
-                }else{
-                    echo "Password cannot be used.1";
-                    return False;
-                }
-            }
-        }
-
-    }
-    if($pass_exists == True){
-        return False;
-    }else{
-        return True;
-    }
-    db_close();
 }
 
 /****************************************
@@ -11041,10 +11152,17 @@ function get_stakeholder_names($ids="", $limit=4, $escape=true)
     return implode(", ", $names) . (count($users) > $limit ? ", ...": "");
 }
 
-/*********************************
- * FUNCTION: GET NAMES BY VALUES *
- *********************************/
-function get_names_by_values($table, $values="", $limit=4, $escape=true)
+/***********************************************************************
+ * FUNCTION: GET NAMES BY VALUES                                       *
+ * Gets the names from the specified $table for the specified $values. *
+ * If there're more results than the the $limit it'll only display     *
+ * $limit number of results and append "..." at the end.               *
+ * Pass 0 or false as the limit to display every names.                *
+ * You can also skip escaping in case it's going into the DB           *
+ * or will be escaped down the line(to prevent double-escaping)        *
+ * Set $force_id to true if the $table has `id` instead of `value`     *
+ ***********************************************************************/
+function get_names_by_values($table, $values, $limit=4, $escape=true, $force_id=false)
 {
     global $escaper;
 
@@ -11057,7 +11175,7 @@ function get_names_by_values($table, $values="", $limit=4, $escape=true)
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT name FROM $table WHERE value in (" . implode(",", $valueArray) . ");");
+    $stmt = $db->prepare("SELECT name FROM $table WHERE " . ($force_id ? "id" : "value") . " in (" . implode(",", $valueArray) . ");");
     $stmt->execute();
 
     // Store the list in the array
@@ -11067,9 +11185,12 @@ function get_names_by_values($table, $values="", $limit=4, $escape=true)
     db_close($db);
 
     $names = array();
-    $should_decrypt = in_array($table, array("frameworks"));
+    global $tables_where_name_is_encrypted;
+    $should_decrypt = in_array($table, $tables_where_name_is_encrypted);
 
-    foreach(array_slice($results, 0, $limit) as $result){
+    $results_to_display = $limit ? array_slice($results, 0, $limit) : $results;
+    
+    foreach($results_to_display as $result){
         // Try decrypt if necessary
         if ($should_decrypt)
             $result['name'] = try_decrypt($result['name']);
@@ -11077,11 +11198,8 @@ function get_names_by_values($table, $values="", $limit=4, $escape=true)
         $names[] = $escape ? $escaper->escapeHtml($result['name']) : $result['name'];
     }
 
-    return implode(", ", $names) . (count($results) > $limit ? ", ...": "");
+    return implode(", ", $names) . ($limit && count($results) > $limit ? ", ...": "");
 }
-
-
-
 
 /*************************
  * FUNCTION: PING SERVER *
@@ -11145,6 +11263,40 @@ function ping_server()
 
     // Close the database connection
     db_close($db);
+
+    // If the instance is registered
+    if (get_setting('registration_registered') != 0)
+    {
+        // Load the upgrade.php file
+        require_once(realpath(__DIR__ . '/../extras/upgrade/index.php'));
+        $path .= "&email_notification_installed=" . is_installed("notification");
+	$path .= "&email_notification_enabled=" . notification_extra();
+	$path .= "&email_notification_version=" . notification_extra_version();
+        $path .= "&import_export_installed=" . is_installed("import-export");
+        $path .= "&import_export_enabled=" . import_export_extra();
+        $path .= "&import_export_version=" . importexport_extra_version();
+        $path .= "&risk_assessment_installed=" . is_installed("assessments");
+        $path .= "&risk_assessment_enabled=" . assessments_extra();
+        $path .= "&risk_assessment_version=" . assessments_extra_version();
+        $path .= "&team_separation_installed=" . is_installed("separation");
+        $path .= "&team_separation_enabled=" . team_separation_extra();
+        $path .= "&team_separation_version=" . separation_extra_version();
+        $path .= "&custom_authentication_installed=" . is_installed("authentication");
+        $path .= "&custom_authentication_enabled=" . custom_authentication_extra();
+        $path .= "&custom_authentication_version=" . authentication_extra_version();
+        $path .= "&customization_installed=" . is_installed("customization");
+        $path .= "&customization_enabled=" . customization_extra();
+        $path .= "&customization_version=" . customization_extra_version();
+        $path .= "&api_installed=" . is_installed("api");
+        $path .= "&api_enabled=" . api_extra();
+        $path .= "&api_version=" . api_extra_version();
+        $path .= "&encryption_installed=" . is_installed("encryption");
+        $path .= "&encryption_enabled=" . encryption_extra();
+        $path .= "&encryption_version=" . encryption_extra_version();
+        $path .= "&complianceforgescf_installed=" . is_installed("complianceforgescf");
+        $path .= "&complianceforgescf_enabled=" . complianceforge_scf_extra();
+        $path .= "&complianceforgescf_version=" . complianceforge_scf_extra_version();
+    }
 
     // Make the https request
     $fp = fsockopen("ssl://ping.simplerisk.com", 443, $errno, $errstr, 30);
@@ -11749,11 +11901,86 @@ function set_unauthenticated_redirect()
     $_SESSION['requested_url'] = $requested_url;
 }
 
+/**************************************************************
+ * FUNCTION: GET UPDATED ROLES BY ROLE ID AND NEW PERMISSIONS *
+ **************************************************************/
+function get_updated_roles($role_id, $new_responsibility_names)
+{
+    $old_responsibility_names = get_responsibilites_by_role_id($role_id);
+    
+    // Get added roles
+    $added_permissions = [];
+    foreach($new_responsibility_names as $new_responsibility_name){
+        // if this permission is new, save this permission to added array
+        if(!in_array($new_responsibility_name, $old_responsibility_names)){
+            $added_permissions[] = $new_responsibility_name;
+        }
+    }
+    
+    // Get deleted roles
+    $deleted_permissions = [];
+    foreach($old_responsibility_names as $old_responsibility_name){
+        // if this permission no exists in new permission names, save this permission to deleted array
+        if(!in_array($old_responsibility_name, $new_responsibility_names)){
+            $deleted_permissions[] = $old_responsibility_name;
+        }
+    }
+    
+    return array($added_permissions, $deleted_permissions);
+}
+
+/***************************
+ * FUNCTION: DELETE A ROLE *
+ ***************************/
+function delete_role($role_id)
+{
+    $old_responsibility_names = get_responsibilites_by_role_id($role_id);
+    
+    // Open the database connection
+    $db = db_open();
+
+    // Get the name to be deleted
+    $name = get_name_by_value('role', $role_id);
+
+    // Delete the table value
+    $stmt = $db->prepare("DELETE FROM `role` WHERE value=:value; ");
+    $stmt->bindParam(":value", $role_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $risk_id = 1000;
+    $message = "The existing role \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+    write_log($risk_id, $_SESSION['uid'], $message);
+
+    // If this role had permissions, remove permissions that this role had from users with this role 
+    if($old_responsibility_names){
+        $sql = "UPDATE `USER` SET ";
+        foreach($old_responsibility_names as $index => $old_responsibility_name){
+            if($index == count($old_responsibility_names)-1){
+                $sql .= "`{$old_responsibility_name}`=0 ";
+            }else{
+                $sql .= "`{$old_responsibility_name}`=0, ";
+            }
+        }
+        $sql .= " WHERE role_id=:role_id AND admin<>1; ";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    
+    // Close the database connection
+    db_close($db);
+
+    return true;
+}
+
 /*******************************************
  * FUNCTION: SAVE ROLE AND RESPONSIBILITES *
  *******************************************/
 function save_role_responsibilities($role_id, $responsibility_names)
 {
+    // Get added and deleted permissions
+    list($added_permissions, $deleted_permissions) = get_updated_roles($role_id, $responsibility_names);
+    
     // Open the database connection
     $db = db_open();
 
@@ -11767,6 +11994,46 @@ function save_role_responsibilities($role_id, $responsibility_names)
         $stmt = $db->prepare("INSERT INTO `role_responsibilities`(`role_id`, `responsibility_name`) VALUES(:role_id, :responsibility_name);");
         $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
         $stmt->bindParam(":responsibility_name", $responsibility_name, PDO::PARAM_STR, 100);
+        $stmt->execute();
+    }
+    
+    // Set added permissions to users with this role if there are added permissions
+    if($added_permissions){
+        $sql = "UPDATE `USER` SET ";
+        foreach($added_permissions as $index => $added_permission){
+            if($index == count($added_permissions)-1){
+                $sql .= "`{$added_permission}`=1 ";
+            }else{
+                $sql .= "`{$added_permission}`=1, ";
+            }
+        }
+        $sql .= " WHERE role_id=:role_id; ";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
+        $stmt->execute();
+    } 
+
+    // Remove deleted permissions from users with this role if there are deleted permissions
+    if($deleted_permissions){
+        $sql = "UPDATE `USER` SET ";
+        foreach($deleted_permissions as $index => $deleted_permission){
+            if($index == count($deleted_permissions)-1){
+                $sql .= "`{$deleted_permission}`=0 ";
+            }else{
+                $sql .= "`{$deleted_permission}`=0, ";
+            }
+        }
+        $sql .= " WHERE role_id=:role_id ";
+        if(!in_array("admin", $deleted_permissions))
+        {
+            $sql .= " AND admin<>1; ";
+        }
+        else
+        {
+            $sql .= ";";
+        }
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
         $stmt->execute();
     }
 
@@ -11814,6 +12081,9 @@ function accept_mitigation_by_risk_id($risk_id, $accept)
         $today = date("Y-m-d H:i:s");
         $stmt->bindParam(":created_at", $today, PDO::PARAM_STR);
         $stmt->execute();
+
+        $message = "Mitigation for risk ID ". convert_id($risk_id) ." accepted by \"" . $_SESSION['user'] . "\" user.";
+        write_log(convert_id($risk_id), $_SESSION['uid'], $message);
     }
     // If decline mitigation, delete a record
     else
@@ -11822,6 +12092,9 @@ function accept_mitigation_by_risk_id($risk_id, $accept)
         $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
         $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
         $stmt->execute();
+
+        $message = "Mitigation for risk ID ". convert_id($risk_id) ." rejected by \"" . $_SESSION['user'] . "\" user.";
+        write_log(convert_id($risk_id), $_SESSION['uid'], $message);
     }
     // Close the database connection
     db_close($db);
@@ -12714,19 +12987,14 @@ function restricted_extra($extra_name)
         {
             case 'trial':
                 return trial_extra($extra_name);
-                break;
             case 'small':
                 return small_extra($extra_name);
-                break;
             case 'medium':
                 return medium_extra($extra_name);
-                break;
             case 'large':
                 return large_extra($extra_name);
-                break;
             default:
                 return true;
-                break;
         }
     }
 }
@@ -12742,39 +13010,33 @@ function trial_extra($extra_name)
         case 'api':
             // Allow
             return false;
-                        break;
         case 'complianceforgescf':
             // Allow
             return false;
-                        break;
         case 'customauth':
             // Allow
             return false;
-                        break;
         case 'customization':
             // Allow
             return false;
-                        break;
         case 'encryption':
             // Don't Allow
             return true;
-                        break;
         case 'importexport':
             // Allow
             return false;
-                        break;
         case 'notification':
             // Allow
             return false;
-                        break;
         case 'riskassessment':
             // Allow
             return false;
-                        break;
         case 'separation':
             // Allow
             return false;
-            break;
+        case 'advanced_search':
+            // Allow
+            return false;
     }
 }
 
@@ -12783,46 +13045,40 @@ function trial_extra($extra_name)
  *************************/
 function small_extra($extra_name)
 {
-        // Check the Extra permission
-        switch($extra_name)
-        {
-                case 'api':
+    // Check the Extra permission
+    switch($extra_name)
+    {
+        case 'api':
             // Don't Allow
-                        return true;
-                        break;
-                case 'complianceforgescf':
+            return true;
+        case 'complianceforgescf':
             // Allow
-                        return false;
-                        break;
-                case 'customauth':
+            return false;
+        case 'customauth':
             // Don't Allow
-                        return true;
-                        break;
-                case 'customization':
+            return true;
+        case 'customization':
             // Don't Allow
-                        return true;
-                        break;
-                case 'encryption':
-                        // Don't Allow
-                        return true;
-                        break;
-                case 'importexport':
-            // Allow
-                        return false;
-                        break;
-                case 'notification':
-            // Allow
-                        return false;
-                        break;
-                case 'riskassessment':
-            // Allow
-                        return false;
-                        break;
-                case 'separation':
+            return true;
+        case 'encryption':
             // Don't Allow
-                        return true;
-                        break;
-        }
+            return true;
+        case 'importexport':
+            // Allow
+            return false;
+        case 'notification':
+            // Allow
+            return false;
+        case 'riskassessment':
+            // Allow
+            return false;
+        case 'separation':
+            // Don't Allow
+            return true;
+        case 'advanced_search':
+            // Don't Allow
+            return true;
+    }
 }
 
 /**************************
@@ -12830,46 +13086,40 @@ function small_extra($extra_name)
  **************************/
 function medium_extra($extra_name)
 {
-        // Check the Extra permission
-        switch($extra_name)
-        {
-                case 'api':
-                        // Don't Allow
-                        return true;
-                        break;
-                case 'complianceforgescf':
-                        // Allow
-                        return false;
-                        break;
-                case 'customauth':
-                        // Don't Allow
-                        return true;
-                        break;
-                case 'customization':
-                        // Don't Allow
-                        return true;
-                        break;
-                case 'encryption':
-                        // Don't Allow
-                        return true;
-                        break;
-                case 'importexport':
-                        // Allow
-                        return false;
-                        break;
-                case 'notification':
-                        // Allow
-                        return false;
-                        break;
-                case 'riskassessment':
-                        // Allow
-                        return false;
-                        break;
-                case 'separation':
-                        // Allow
-                        return false;
-                        break;
-        }
+    // Check the Extra permission
+    switch($extra_name)
+    {
+        case 'api':
+            // Don't Allow
+            return true;
+        case 'complianceforgescf':
+            // Allow
+            return false;
+        case 'customauth':
+            // Don't Allow
+            return true;
+        case 'customization':
+            // Don't Allow
+            return true;
+        case 'encryption':
+            // Don't Allow
+            return true;
+        case 'importexport':
+            // Allow
+            return false;
+        case 'notification':
+            // Allow
+            return false;
+        case 'riskassessment':
+            // Allow
+            return false;
+        case 'separation':
+            // Allow
+            return false;
+        case 'advanced_search':
+            // Don't Allow
+            return true;
+    }
 }
 
 /*************************
@@ -12877,46 +13127,40 @@ function medium_extra($extra_name)
  *************************/
 function large_extra($extra_name)
 {
-        // Check the Extra permission
-        switch($extra_name)
-        {
-                case 'api':
-                        // Allow
-                        return false;
-                        break;
-                case 'complianceforgescf':
-                        // Allow
-                        return false;
-                        break;
-                case 'customauth':
-                        // Allow
-                        return false;
-                        break;
-                case 'customization':
-                        // Allow
-                        return false;
-                        break;
-                case 'encryption':
-                        // Allow
-                        return false;
-                        break;
-                case 'importexport':
-                        // Allow
-                        return false;
-                        break;
-                case 'notification':
-                        // Allow
-                        return false;
-                        break;
-                case 'riskassessment':
-                        // Allow
-                        return false;
-                        break;
-                case 'separation':
-                        // Allow
-                        return false;
-                        break;
-        }
+    // Check the Extra permission
+    switch($extra_name)
+    {
+        case 'api':
+            // Allow
+            return false;
+        case 'complianceforgescf':
+            // Allow
+            return false;
+        case 'customauth':
+            // Allow
+            return false;
+        case 'customization':
+            // Allow
+            return false;
+        case 'encryption':
+            // Allow
+            return false;
+        case 'importexport':
+            // Allow
+            return false;
+        case 'notification':
+            // Allow
+            return false;
+        case 'riskassessment':
+            // Allow
+            return false;
+        case 'separation':
+            // Allow
+            return false;
+        case 'advanced_search':
+            // Allow
+            return false;
+    }
 }
 
 /***************************
@@ -13195,13 +13439,8 @@ function localized_yes_no($val)
 /**************************
  * FUNCTION: TABLE EXISTS *
  **************************/
-function table_exists($table)
-{
-    $global_table_exist_key = $table."_table_exists";
-    if(isset($GLOBALS[$global_table_exist_key])){
-        return $GLOBALS[$global_table_exist_key];
-    }
-    
+function table_exists($table) {
+
     // Open the database connection
     $db = db_open();
 
@@ -13218,18 +13457,7 @@ function table_exists($table)
     // Close the database connection
     db_close($db);
 
-    // If we have any results
-    if (count($results) > 0)
-    {
-        $GLOBALS[$global_table_exist_key] = true;
-        return true;
-    }
-    else
-    {
-        $GLOBALS[$global_table_exist_key] = false;
-    } 
-    
-    return $GLOBALS[$global_table_exist_key];
+    return count($results) > 0;
 }
 
 /***********************************
@@ -13406,6 +13634,7 @@ function prevent_extra_double_submit($extra, $is_enable) {
         ($extra == "assessments" && (assessments_extra() == $is_enable)) ||
         ($extra == "complianceforge" && (complianceforge_extra() == $is_enable)) ||
         ($extra == "complianceforge_scf" && (complianceforge_scf_extra() == $is_enable)) ||
+        ($extra == "advanced_search" && (advanced_search_extra() == $is_enable)) ||
         ($extra == "governance" && (governance_extra() == $is_enable));
 
     if ($interrupt) {
@@ -13529,7 +13758,7 @@ function hasTags($taggee_id, $type) {
 
     $db = db_open();
 
-    //Load tags currently assigned to the taggee
+    //Check if there're tags currently assigned to the taggee
     $stmt = $db->prepare("
         SELECT
             distinct(5)
@@ -13667,6 +13896,7 @@ function updateTagsOfType($taggee_id, $type, $tags) {
                 $stmt->bindParam(":taggee_id", $taggee_id, PDO::PARAM_STR);
                 $stmt->bindParam(":type", $type, PDO::PARAM_STR);
                 $stmt->execute();
+                // We have to use it because of the LAST_INSERT_ID() in the previous query
                 $stmt->closeCursor();
             }
         }
@@ -13687,7 +13917,7 @@ function updateTagsOfType($taggee_id, $type, $tags) {
         $message = _lang('TagUpdateAuditLog', array(
                 'user' => $_SESSION['user'],
                 'type' => $lang['TagType_' . $type],
-                'id' => $taggee_id + 1000,
+                'id' => $taggee_id + ($type == 'risk' ? 1000 : 0),
                 'tags_from' => implode(", ", $tags_current),
                 'tags_to' => implode(", ", $tags),
                 'tag_changes' => implode(", ", $tag_changes)
@@ -13767,7 +13997,7 @@ function areTagsEqual($taggee_id, $type, $tags) {
 
     db_close($db);
 
-    return array_diff($tags_current, $tags) && array_diff($tags, $tags_current);
+    return array_diff($tags_current, $tags) == array_diff($tags, $tags_current);
 }
 
 /*********************************
@@ -13858,12 +14088,340 @@ function endsWith($haystack, $needle) {
     return (substr($haystack, -$length) === $needle);
 }
 
-/***************************************
- * FUNCTION: GET SETTING VALUE BY NAME *
- ***************************************/
+/*********************************
+ * FUNCTION: GET SETTING BY NAME *
+ *********************************/
 function get_setting_by_name($name)
 {
     return get_setting($name);
 }
 
+/**********************************
+ * FUNCTION: GET SETTTING BY NAME *
+ **********************************/
+function get_settting_by_name($name)
+{
+    return get_setting($name);
+}
+
+/********************************************
+ * FUNCTION: CHECK IF THIS IS BASE64 STRING *
+ ********************************************/
+function check_base64_string($string)
+{
+    if(trim(base64_encode(base64_decode($string)), "=") == trim($string, "="))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/********************************************
+ * FUNCTION: RETURN ALL CHILDS BY PARENT ID *
+ ********************************************/
+function get_all_childs($rows, $parent_id, &$childs=[], $id_key="id")
+{
+    foreach($rows as $row)
+    {
+        if($row['parent'] == $parent_id)
+        {
+//            print_r($row[$id_key]);exit;
+            array_push($childs, $row);
+            get_all_childs($rows, $row[$id_key], $childs, $id_key);
+        }
+    }
+}
+
+/******************************************************
+ * FUNCTION: GET TEAMS OF ITEM                        *
+ * Return the teams assigned to the item.             *
+ * If $names is false it'll only return the values,   *
+ * otherwise it returns both the values and the names *
+ ******************************************************/
+function getTeamsOfItem($item_id, $type, $names=false) {
+
+    if (!$item_id || ($type !== "test" && $type !== "audit"))
+        return;
+
+    $db = db_open();
+
+    //Load teams currently assigned to the item
+    $stmt = $db->prepare("
+        SELECT
+            `t`." . ($names ? "*" : "`value`") . "
+        FROM
+            `team` t
+            INNER JOIN `items_to_teams` itt ON `itt`.`team_id` = `t`.`value`
+        WHERE
+            `itt`.`item_id` = :item_id and `itt`.`type` = :type;
+    ");
+    $stmt->bindParam(":item_id", $item_id, PDO::PARAM_STR);
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->execute();
+    if ($names)
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    else
+        $result = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+    
+    db_close($db);
+
+    return $result;
+}
+
+/*************************************************
+ * FUNCTION: HAS TEAMS                           *
+ * Checks if there're teams assigned to the item *
+ *************************************************/
+function hasTeams($item_id, $type) {
+
+    if (!$item_id || ($type !== "test" && $type !== "audit"))
+        return;
+
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT
+            distinct(5)
+        FROM
+            `items_to_teams` itt
+        WHERE
+            `itt`.`item_id` = :item_id and `itt`.`type` = :type;
+    ");
+    $stmt->bindParam(":item_id", $item_id, PDO::PARAM_STR);
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->execute();
+    $result = $stmt->fetch();
+
+    db_close($db);
+
+    return !empty($result);
+}
+
+/****************************************************************
+ * FUNCTION: UPDATE TEAMS OF TYPE                               *
+ * Gets an id and a type to decide what the item is assigned to *
+ * and updates its teams. Type can be either `test` or `audit`. *
+ * Third parameter is an array. If the array is empty,          *
+ * all the teams will be removed from the item.                 *
+ ****************************************************************/
+function updateTeamsOfType($item_id, $type, $teams) {
+
+    if (!$item_id || ($type !== "test" && $type !== "audit") || !is_array($teams))
+        return false;
+
+    $teams_current = getTeamsOfItem($item_id, $type);
+
+    $db = db_open();
+
+    // Clever usage of array_diffs to calculate what teams are removed from the item
+    // and what teams are added
+    $teams_to_remove = array_diff($teams_current, $teams);
+    $teams_to_add = array_diff($teams, $teams_current);
+
+    // If there're teams to remove
+    if ($teams_to_remove) {
+
+        //building an array of parameters to bind
+        $params = array(":item_id" => $item_id, ":type" => $type);
+
+        // building the list of strings to be used in the `in` part of the sql
+        // to be able to bind the params
+        // We need this to be able to delete all the connections to the removed
+        // teams in one go, instead of using a loop
+        $teams_to_remove_in = [];
+        foreach ($teams_to_remove as $i => $team)
+        {
+            $key = ":id".$i;
+            $teams_to_remove_in[] = $key;
+            $params[$key] = $team;
+        }
+
+        // making the comma separated list to be included in the sql
+        $teams_to_remove_in = implode(", ", $teams_to_remove_in);
+
+        // Remove the entries from the junction table that connected the teams to the item
+        $stmt = $db->prepare("
+            DELETE
+                `itt`
+            FROM
+                `team` t
+                INNER JOIN `items_to_teams` itt ON
+                    `itt`.`team_id` = `t`.`value` AND
+                    `itt`.`item_id` = :item_id AND
+                    `itt`.`type` = :type
+            WHERE
+                `t`.`value` in ({$teams_to_remove_in});
+        ");
+        $stmt->execute($params);
+    }
+
+    //If there're teams to add
+    if ($teams_to_add) {
+        //Sadly we can't do this in a single sql so we have to resort to looping
+        foreach ($teams_to_add as $team_id) {
+
+            // We just use the id to create
+            // the connection between the item and the team in the junction table
+            $stmt = $db->prepare("
+                INSERT INTO
+                    `items_to_teams` (`team_id`, `item_id`, `type`)
+                VALUES
+                    (:team_id, :item_id, :type);
+            ");
+            $stmt->bindParam(":team_id", $team_id, PDO::PARAM_STR);
+            $stmt->bindParam(":item_id", $item_id, PDO::PARAM_STR);
+            $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+            $stmt->execute();
+        }
+    }
+
+    db_close($db);
+
+    // No audit logging is needed if nothing changed
+    if ($teams_to_add || $teams_to_remove) {
+        global $lang;
+
+        $team_changes = [];
+        if ($teams_to_add)
+            $team_changes[] = _lang('TeamUpdateAuditLogAdded', array('teams_added' => implode(", ", get_names_by_multi_values('team', $teams_to_add, true))), false);
+        if ($teams_to_remove)
+            $team_changes[] = _lang('TeamUpdateAuditLogRemoved', array('teams_removed' => implode(", ", get_names_by_multi_values('team', $teams_to_remove, true))), false);
+
+        $message = _lang('TeamUpdateAuditLog', array(
+                'user' => $_SESSION['user'],
+                'type' => $lang['TeamType_' . $type],
+                'id' => $item_id,
+                'teams_from' => implode(", ", get_names_by_multi_values('team', $teams_current, true)),
+                'teams_to' => implode(", ", get_names_by_multi_values('team', $teams, true)),
+                'team_changes' => implode(", ", $team_changes)
+            ), false
+        );
+
+        // In case it has to be something different than the $type
+        switch($type) {
+            case "audit":
+                $audit_type = 'test_audit';
+                break;
+            default:
+                $audit_type = $type;
+                break;
+        }
+
+        write_log((int)$item_id + 1000, $_SESSION['uid'], $message, $audit_type);
+    }
+
+    return true;
+}
+
+
+function is_valid_impact_and_likelihood($impact, $likelihood) {
+    
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT
+            1
+        FROM
+            dual
+        WHERE
+            :impact BETWEEN 1 AND (SELECT MAX(`value`) FROM `impact`)
+            AND
+            :likelihood BETWEEN 1 AND (SELECT MAX(`value`) FROM `likelihood`);
+    ");
+    $stmt->bindParam(":impact", $impact, PDO::PARAM_INT);
+    $stmt->bindParam(":likelihood", $likelihood, PDO::PARAM_INT);
+    $stmt->execute();
+    
+    $result = $stmt->fetch(PDO::FETCH_COLUMN, 0);
+    
+    db_close($db);
+    
+    return boolval($result);
+}
+
+function set_stored_risk_score($impact, $likelihood, $value, $update_risks = false) {
+
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        INSERT INTO
+            `custom_risk_model_values`
+                (`impact`, `likelihood`, `value`)
+        VALUES
+            (:impact, :likelihood, :value)
+        ON DUPLICATE KEY UPDATE
+            value=:value;
+    ");
+    $stmt->bindParam(":impact", $impact, PDO::PARAM_INT);
+    $stmt->bindParam(":likelihood", $likelihood, PDO::PARAM_INT);
+    $stmt->bindParam(":value", $value, PDO::PARAM_STR);
+    $stmt->execute();
+    
+    if ($update_risks) {
+        // Get the list of all risks using the classic formula
+        $stmt = $db->prepare("
+            SELECT
+                id
+            FROM
+                risk_scoring
+            WHERE
+                scoring_method = 1
+                AND calculated_risk <> :value
+                AND CLASSIC_impact = :impact
+                AND CLASSIC_likelihood = :likelihood;
+        ");
+        $stmt->bindParam(":value", $value, PDO::PARAM_STR);
+        $stmt->bindParam(":impact", $impact, PDO::PARAM_INT);
+        $stmt->bindParam(":likelihood", $likelihood, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Store the list in the risk_ids array
+        $risk_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+
+        // For each risk using the classic formula
+        foreach ($risk_ids as $risk_id)
+        {
+            // Update the value in the DB
+            $stmt = $db->prepare("UPDATE risk_scoring SET calculated_risk = :calculated_risk WHERE id = :id");
+            $stmt->bindParam(":calculated_risk", $value, PDO::PARAM_STR);
+            $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
+            $stmt->execute();
+
+            // Add risk scoring history
+            add_risk_scoring_history($risk_id, $value);
+
+            // Add residual risk scoring history
+            $residual_risk = get_residual_risk($risk_id+1000);
+            add_residual_risk_scoring_history($risk_id, $residual_risk);
+        }
+    }
+    db_close($db);
+}
+
+function get_stored_risk_score($impact, $likelihood) {
+
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT
+            `value`
+        FROM
+            `custom_risk_model_values`
+        WHERE
+            `impact` = :impact AND
+            `likelihood` = :likelihood;
+    ");
+    $stmt->bindParam(":impact", $impact, PDO::PARAM_INT);
+    $stmt->bindParam(":likelihood", $likelihood, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $result = $stmt->fetch(PDO::FETCH_COLUMN, 0);
+
+    db_close($db);
+
+    return $result ? $result : 0;
+}
 ?>

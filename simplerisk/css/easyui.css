@@ -204,26 +204,26 @@
 .datagrid-sort .datagrid-sort-icon {
   display: inline;
   padding: 0 13px 0 0;
-  background: url('images/datagrid_icons.png') no-repeat -64px center;
+  background: url('/css/images/datagrid_icons.png') no-repeat -64px center;
 }
 .datagrid-sort-desc .datagrid-sort-icon {
   display: inline;
   padding: 0 13px 0 0;
-  background: url('images/datagrid_icons.png') no-repeat -16px center;
+  background: url('/css/images/datagrid_icons.png') no-repeat -16px center;
 }
 .datagrid-sort-asc .datagrid-sort-icon {
   display: inline;
   padding: 0 13px 0 0;
-  background: url('images/datagrid_icons.png') no-repeat 0px center;
+  background: url('/css/images/datagrid_icons.png') no-repeat 0px center;
 }
 .datagrid-row-collapse {
-  background: url('images/datagrid_icons.png') no-repeat -48px center;
+  background: url('/css/images/datagrid_icons.png') no-repeat -48px center;
 }
 .datagrid-row-expand {
-  background: url('images/datagrid_icons.png') no-repeat -32px center;
+  background: url('/css/images/datagrid_icons.png') no-repeat -32px center;
 }
 .datagrid-mask-msg {
-  background: #ffffff url('images/loading.gif') no-repeat scroll 5px center;
+  background: #ffffff url('/css/images/loading.gif') no-repeat scroll 5px center;
 }
 .datagrid-header,
 .datagrid-td-rownumber {
@@ -412,6 +412,7 @@
 }
 .pagination {
   zoom: 1;
+  padding: 2px;
 }
 .pagination table {
   float: left;
@@ -460,22 +461,22 @@
   margin: 0;
 }
 .pagination-first {
-  background: url('images/pagination_icons.png') no-repeat 0 center;
+  background: url('/css/images/pagination_icons.png') no-repeat 0 center;
 }
 .pagination-prev {
-  background: url('images/pagination_icons.png') no-repeat -16px center;
+  background: url('/css/images/pagination_icons.png') no-repeat -16px center;
 }
 .pagination-next {
-  background: url('images/pagination_icons.png') no-repeat -32px center;
+  background: url('/css/images/pagination_icons.png') no-repeat -32px center;
 }
 .pagination-last {
-  background: url('images/pagination_icons.png') no-repeat -48px center;
+  background: url('/css/images/pagination_icons.png') no-repeat -48px center;
 }
 .pagination-load {
-  background: url('images/pagination_icons.png') no-repeat -64px center;
+  background: url('/css/images/pagination_icons.png') no-repeat -64px center;
 }
 .pagination-loading {
-  background: url('images/loading.gif') no-repeat center center;
+  background: url('/css/images/loading.gif') no-repeat center center;
 }
 .pagination-page-list,
 .pagination .pagination-num {
@@ -539,19 +540,19 @@
 }
 .calendar-prevmonth {
   left: 20px;
-  background: url('images/calendar_arrows.png') no-repeat -18px -2px;
+  background: url('/css/images/calendar_arrows.png') no-repeat -18px -2px;
 }
 .calendar-nextmonth {
   right: 20px;
-  background: url('images/calendar_arrows.png') no-repeat -34px -2px;
+  background: url('/css/images/calendar_arrows.png') no-repeat -34px -2px;
 }
 .calendar-prevyear {
   left: 3px;
-  background: url('images/calendar_arrows.png') no-repeat -1px -2px;
+  background: url('/css/images/calendar_arrows.png') no-repeat -1px -2px;
 }
 .calendar-nextyear {
   right: 3px;
-  background: url('images/calendar_arrows.png') no-repeat -49px -2px;
+  background: url('/css/images/calendar_arrows.png') no-repeat -49px -2px;
 }
 .calendar-body {
   position: relative;
@@ -620,11 +621,11 @@
 }
 .calendar-menu-prev {
   margin-right: 10px;
-  background: url('images/calendar_arrows.png') no-repeat 2px 2px;
+  background: url('/css/images/calendar_arrows.png') no-repeat 2px 2px;
 }
 .calendar-menu-next {
   margin-left: 10px;
-  background: url('images/calendar_arrows.png') no-repeat -45px 2px;
+  background: url('/css/images/calendar_arrows.png') no-repeat -45px 2px;
 }
 .calendar-menu-month {
   text-align: center;
@@ -710,7 +711,7 @@
   float: right;
 }
 .datebox .combo-arrow {
-  background-image: url('images/datebox_arrow.png');
+  background-image: url('/css/images/datebox_arrow.png');
   background-position: center center;
 }
 .datebox-button {
@@ -766,16 +767,16 @@
   filter: alpha(opacity=60);
 }
 .spinner-arrow-up {
-  background: url('images/spinner_arrows.png') no-repeat 1px center;
+  background: url('/css/images/spinner_arrows.png') no-repeat 1px center;
 }
 .spinner-arrow-down {
-  background: url('images/spinner_arrows.png') no-repeat -15px center;
+  background: url('/css/images/spinner_arrows.png') no-repeat -15px center;
 }
 .spinner-button-up {
-  background: url('images/spinner_arrows.png') no-repeat -32px center;
+  background: url('/css/images/spinner_arrows.png') no-repeat -32px center;
 }
 .spinner-button-down {
-  background: url('images/spinner_arrows.png') no-repeat -48px center;
+  background: url('/css/images/spinner_arrows.png') no-repeat -48px center;
 }
 .progressbar {
   border-width: 1px;
@@ -860,7 +861,7 @@
   border-width: 0 1px 0 0;
 }
 .searchbox-button {
-  background: url('images/searchbox_button.png') no-repeat center center;
+  background: url('/css/images/searchbox_button.png') no-repeat center center;
 }
 .searchbox .l-btn-plain {
   background: #E0ECFF;
@@ -959,7 +960,7 @@
   left: 23px;
 }
 .slider-handle {
-  background: url('images/slider_handle.png') no-repeat;
+  background: url('/css/images/slider_handle.png') no-repeat;
 }
 .slider-inner {
   border-color: #95B8E7;
@@ -1058,7 +1059,7 @@
   filter: progid:DXImageTransform.Microsoft.Blur(pixelRadius=2,MakeShadow=false,ShadowOpacity=0.2);
 }
 .menu-rightarrow {
-  background: url('images/menu_arrows.png') no-repeat -32px center;
+  background: url('/css/images/menu_arrows.png') no-repeat -32px center;
 }
 .menu-line {
   border-left: 1px solid #ccc;
@@ -1176,7 +1177,7 @@
 }
 .m-btn-downarrow,
 .s-btn-downarrow {
-  background: url('images/menu_arrows.png') no-repeat 0 center;
+  background: url('/css/images/menu_arrows.png') no-repeat 0 center;
 }
 .m-btn-plain-active,
 .s-btn-plain-active {
@@ -1214,16 +1215,16 @@
   margin: 0 10px 10px 0;
 }
 .messager-error {
-  background: url('images/messager_icons.png') no-repeat scroll -64px 0;
+  background: url('/css/images/messager_icons.png') no-repeat scroll -64px 0;
 }
 .messager-info {
-  background: url('images/messager_icons.png') no-repeat scroll 0 0;
+  background: url('/css/images/messager_icons.png') no-repeat scroll 0 0;
 }
 .messager-question {
-  background: url('images/messager_icons.png') no-repeat scroll -32px 0;
+  background: url('/css/images/messager_icons.png') no-repeat scroll -32px 0;
 }
 .messager-warning {
-  background: url('images/messager_icons.png') no-repeat scroll -96px 0;
+  background: url('/css/images/messager_icons.png') no-repeat scroll -96px 0;
 }
 .messager-progress {
   padding: 10px;
@@ -1274,62 +1275,62 @@
   overflow: hidden;
 }
 .tree-expanded {
-  background: url('images/tree_icons.png') no-repeat -18px 0px;
+  background: url('/css/images/tree_icons.png') no-repeat -18px 0px;
 }
 .tree-expanded-hover {
-  background: url('images/tree_icons.png') no-repeat -50px 0px;
+  background: url('/css/images/tree_icons.png') no-repeat -50px 0px;
 }
 .tree-collapsed {
-  background: url('images/tree_icons.png') no-repeat 0px 0px;
+  background: url('/css/images/tree_icons.png') no-repeat 0px 0px;
 }
 .tree-collapsed-hover {
-  background: url('images/tree_icons.png') no-repeat -32px 0px;
+  background: url('/css/images/tree_icons.png') no-repeat -32px 0px;
 }
 .tree-lines .tree-expanded,
 .tree-lines .tree-root-first .tree-expanded {
-  background: url('images/tree_icons.png') no-repeat -144px 0;
+  background: url('/css/images/tree_icons.png') no-repeat -144px 0;
 }
 .tree-lines .tree-collapsed,
 .tree-lines .tree-root-first .tree-collapsed {
-  background: url('images/tree_icons.png') no-repeat -128px 0;
+  background: url('/css/images/tree_icons.png') no-repeat -128px 0;
 }
 .tree-lines .tree-node-last .tree-expanded,
 .tree-lines .tree-root-one .tree-expanded {
-  background: url('images/tree_icons.png') no-repeat -80px 0;
+  background: url('/css/images/tree_icons.png') no-repeat -80px 0;
 }
 .tree-lines .tree-node-last .tree-collapsed,
 .tree-lines .tree-root-one .tree-collapsed {
-  background: url('images/tree_icons.png') no-repeat -64px 0;
+  background: url('/css/images/tree_icons.png') no-repeat -64px 0;
 }
 .tree-line {
-  background: url('images/tree_icons.png') no-repeat -176px 0;
+  background: url('/css/images/tree_icons.png') no-repeat -176px 0;
 }
 .tree-join {
-  background: url('images/tree_icons.png') no-repeat -192px 0;
+  background: url('/css/images/tree_icons.png') no-repeat -192px 0;
 }
 .tree-joinbottom {
-  background: url('images/tree_icons.png') no-repeat -160px 0;
+  background: url('/css/images/tree_icons.png') no-repeat -160px 0;
 }
 .tree-folder {
-  background: url('images/tree_icons.png') no-repeat -208px 0;
+  background: url('/css/images/tree_icons.png') no-repeat -208px 0;
 }
 .tree-folder-open {
-  background: url('images/tree_icons.png') no-repeat -224px 0;
+  background: url('/css/images/tree_icons.png') no-repeat -224px 0;
 }
 .tree-file {
-  background: url('images/tree_icons.png') no-repeat -240px 0;
+  background: url('/css/images/tree_icons.png') no-repeat -240px 0;
 }
 .tree-loading {
-  background: url('images/loading.gif') no-repeat center center;
+  background: url('/css/images/loading.gif') no-repeat center center;
 }
 .tree-checkbox0 {
-  background: url('images/tree_icons.png') no-repeat -208px -18px;
+  background: url('/css/images/tree_icons.png') no-repeat -208px -18px;
 }
 .tree-checkbox1 {
-  background: url('images/tree_icons.png') no-repeat -224px -18px;
+  background: url('/css/images/tree_icons.png') no-repeat -224px -18px;
 }
 .tree-checkbox2 {
-  background: url('images/tree_icons.png') no-repeat -240px -18px;
+  background: url('/css/images/tree_icons.png') no-repeat -240px -18px;
 }
 .tree-title {
   font-size: 12px;
@@ -1359,10 +1360,10 @@
   margin-top: -9px;
 }
 .tree-dnd-yes {
-  background: url('images/tree_icons.png') no-repeat -256px 0;
+  background: url('/css/images/tree_icons.png') no-repeat -256px 0;
 }
 .tree-dnd-no {
-  background: url('images/tree_icons.png') no-repeat -256px -18px;
+  background: url('/css/images/tree_icons.png') no-repeat -256px -18px;
 }
 .tree-node-top {
   border-top: 1px dotted red;
@@ -1585,4 +1586,208 @@
 .switchbutton-disabled,
 .switchbutton-readonly {
   cursor: default;
+}
+
+.l-btn {
+  text-decoration: none;
+  display: inline-block;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+  text-align: center;
+  vertical-align: middle;
+  line-height: normal;
+}
+.l-btn-plain {
+  border-width: 0;
+  padding: 1px;
+}
+.l-btn-left {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  vertical-align: top;
+}
+.l-btn-text {
+  display: inline-block;
+  vertical-align: top;
+  width: auto;
+  line-height: 28px;
+  font-size: 14px;
+  padding: 0;
+  margin: 0 6px;
+}
+.l-btn-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  position: absolute;
+  top: 50%;
+  margin-top: -8px;
+  font-size: 1px;
+}
+.l-btn span span .l-btn-empty {
+  display: inline-block;
+  margin: 0;
+  width: 16px;
+  height: 24px;
+  font-size: 1px;
+  vertical-align: top;
+}
+.l-btn span .l-btn-icon-left {
+  padding: 0 0 0 20px;
+  background-position: left center;
+}
+.l-btn span .l-btn-icon-right {
+  padding: 0 20px 0 0;
+  background-position: right center;
+}
+.l-btn-icon-left .l-btn-text {
+  margin: 0 6px 0 26px;
+}
+.l-btn-icon-left .l-btn-icon {
+  left: 6px;
+}
+.l-btn-icon-right .l-btn-text {
+  margin: 0 26px 0 6px;
+}
+.l-btn-icon-right .l-btn-icon {
+  right: 6px;
+}
+.l-btn-icon-top .l-btn-text {
+  margin: 20px 4px 0 4px;
+}
+.l-btn-icon-top .l-btn-icon {
+  top: 4px;
+  left: 50%;
+  margin: 0 0 0 -8px;
+}
+.l-btn-icon-bottom .l-btn-text {
+  margin: 0 4px 20px 4px;
+}
+.l-btn-icon-bottom .l-btn-icon {
+  top: auto;
+  bottom: 4px;
+  left: 50%;
+  margin: 0 0 0 -8px;
+}
+.l-btn-left .l-btn-empty {
+  margin: 0 6px;
+  width: 16px;
+}
+.l-btn-plain:hover {
+  padding: 0;
+}
+.l-btn-focus {
+  outline: #0000FF dotted thin;
+}
+.l-btn-large .l-btn-text {
+  line-height: 44px;
+}
+.l-btn-large .l-btn-icon {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  margin-top: -16px;
+}
+.l-btn-large .l-btn-icon-left .l-btn-text {
+  margin-left: 40px;
+}
+.l-btn-large .l-btn-icon-right .l-btn-text {
+  margin-right: 40px;
+}
+.l-btn-large .l-btn-icon-top .l-btn-text {
+  margin-top: 36px;
+  line-height: 24px;
+  min-width: 32px;
+}
+.l-btn-large .l-btn-icon-top .l-btn-icon {
+  margin: 0 0 0 -16px;
+}
+.l-btn-large .l-btn-icon-bottom .l-btn-text {
+  margin-bottom: 36px;
+  line-height: 24px;
+  min-width: 32px;
+}
+.l-btn-large .l-btn-icon-bottom .l-btn-icon {
+  margin: 0 0 0 -16px;
+}
+.l-btn-large .l-btn-left .l-btn-empty {
+  margin: 0 6px;
+  width: 32px;
+}
+.l-btn {
+  color: #444;
+  background: #fafafa;
+  background-repeat: repeat-x;
+  border: 1px solid #bbb;
+  background: -webkit-linear-gradient(top,#ffffff 0,#eeeeee 100%);
+  background: -moz-linear-gradient(top,#ffffff 0,#eeeeee 100%);
+  background: -o-linear-gradient(top,#ffffff 0,#eeeeee 100%);
+  background: linear-gradient(to bottom,#ffffff 0,#eeeeee 100%);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ffffff,endColorstr=#eeeeee,GradientType=0);
+  -moz-border-radius: 5px 5px 5px 5px;
+  -webkit-border-radius: 5px 5px 5px 5px;
+  border-radius: 5px 5px 5px 5px;
+}
+.l-btn:hover {
+  background: #eaf2ff;
+  color: #000000;
+  border: 1px solid #b7d2ff;
+  filter: none;
+}
+.l-btn-plain {
+  background: transparent;
+  border-width: 0;
+  filter: none;
+}
+.l-btn-outline {
+  border-width: 1px;
+  border-color: #b7d2ff;
+  padding: 0;
+}
+.l-btn-plain:hover {
+  background: #eaf2ff;
+  color: #000000;
+  border: 1px solid #b7d2ff;
+  -moz-border-radius: 5px 5px 5px 5px;
+  -webkit-border-radius: 5px 5px 5px 5px;
+  border-radius: 5px 5px 5px 5px;
+}
+.l-btn-disabled,
+.l-btn-disabled:hover {
+  opacity: 0.5;
+  cursor: default;
+  background: #fafafa;
+  color: #444;
+  background: -webkit-linear-gradient(top,#ffffff 0,#eeeeee 100%);
+  background: -moz-linear-gradient(top,#ffffff 0,#eeeeee 100%);
+  background: -o-linear-gradient(top,#ffffff 0,#eeeeee 100%);
+  background: linear-gradient(to bottom,#ffffff 0,#eeeeee 100%);
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#ffffff,endColorstr=#eeeeee,GradientType=0);
+}
+.l-btn-disabled .l-btn-text,
+.l-btn-disabled .l-btn-icon {
+  filter: alpha(opacity=50);
+}
+.l-btn-plain-disabled,
+.l-btn-plain-disabled:hover {
+  background: transparent;
+  filter: alpha(opacity=50);
+}
+.l-btn-selected,
+.l-btn-selected:hover {
+  background: #ddd;
+  filter: none;
+}
+.l-btn-plain-selected,
+.l-btn-plain-selected:hover {
+  background: #ddd;
 }

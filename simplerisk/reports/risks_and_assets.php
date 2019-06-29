@@ -76,6 +76,25 @@ else $report = 0;
 
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+
+    <style>
+        .group-name-row {
+            cursor: pointer;
+        }
+        td.group-name > i {
+            margin-right: 10px;
+            width: 10px;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+            $('.group-name-row').click(function() {
+                var id = $(this).data('group-name-row-id');
+                $("[data-group-id='" + id + "']").toggle();
+                $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
+            });
+        });
+    </script>
 </head>
 
 <body>

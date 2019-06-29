@@ -86,6 +86,7 @@ if (isset($_POST['delete']))
   <script src="../js/pages/assessment.js"></script>
   <script src="../js/common.js"></script>
   <script src="../js/cve_lookup.js"></script>
+  <script src="../js/jquery.blockUI.min.js"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -97,6 +98,8 @@ if (isset($_POST['delete']))
   <link rel="stylesheet" href="../css/display.css">
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
+  <script src="../js/selectize.min.js"></script>
   <?php
       setup_alert_requirements("..");
   ?>

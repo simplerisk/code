@@ -134,12 +134,12 @@ function get_framework($framework_id){
 /***************************************************
  * FUNCTION: GET PARENT FRAMEWORKS BY FRAMEWORK ID *
  ***************************************************/
-function get_parent_frameworks($frameworks, $parent, &$news){
-    if($parent == 0){
+function get_parent_frameworks($frameworks, $framework_id, &$news){
+    if($framework_id == 0){
         return;
     }
     foreach($frameworks as $framework){
-        if($framework['value'] == $parent){
+        if($framework['value'] == $framework_id){
             array_unshift($news, $framework);
             get_parent_frameworks($frameworks, $framework['parent'], $news);
             break;
@@ -419,6 +419,7 @@ function get_framework_controls($control_ids=false)
     {
         $sql .= " AND FIND_IN_SET(t1.id, '{$control_ids}') ";
     }
+    $sql .= " GROUP BY t1.id; ";
     $stmt = $db->prepare($sql);
     $stmt->execute();
     
@@ -782,15 +783,24 @@ function update_framework($framework_id, $name, $description=false, $parent=fals
 /***********************************************
  * FUNCTION: GET CHILD FRAMEWORKS BY PARENT ID *
  ***********************************************/
-function get_child_frameworks($parent_id)
+function get_child_frameworks($parent_id, $status="all")
 {
     // Open the database connection
     $db = db_open();
 
-    $sql = "SELECT t1.* FROM `frameworks` t1 WHERE t1.parent=:parent_id;";
+    $sql = "SELECT t1.* FROM `frameworks` t1 WHERE t1.parent=:parent_id ";
+    
+    if($status != "all"){
+        $sql .= " AND status=:status; ";
+    }else{
+        $sql .= ";";
+    }
     
     $stmt = $db->prepare($sql);
     $stmt->bindParam(":parent_id", $parent_id, PDO::PARAM_INT);
+    if($status != "all"){
+        $stmt->bindParam(":status", $status, PDO::PARAM_INT);
+    }
     $stmt->execute();
 
     $results = $stmt->fetchAll();
@@ -799,6 +809,18 @@ function get_child_frameworks($parent_id)
     db_close($db);
     
     return $results;
+}
+
+/***************************************************
+ * FUNCTION: GET ALL CHILD FRAMEWORKS BY PARENT ID *
+ ***************************************************/
+function get_all_child_frameworks($parent_id, $status=false)
+{
+    $frameworks = get_frameworks($status);
+    $child_frameworks = [];
+    get_all_childs($frameworks, $parent_id, $child_frameworks, "value");
+    
+    return $child_frameworks;
 }
 
 /********************************************
@@ -1059,7 +1081,7 @@ function getAvailableControlClassList(){
         SELECT t2.*
         FROM `framework_controls` t1 
             LEFT JOIN `control_class` t2 on t1.control_class=t2.value
-        WHERE t2.value is not null
+        WHERE t2.value is not null AND t1.deleted=0
         GROUP BY
             t2.value
     ";
@@ -1087,7 +1109,7 @@ function getAvailableControlPhaseList(){
         SELECT t2.*
         FROM `framework_controls` t1 
             LEFT JOIN `control_phase` t2 on t1.control_phase=t2.value
-        WHERE t2.value is not null
+        WHERE t2.value is not null AND t1.deleted=0
         GROUP BY
             t2.value
     ";
@@ -1115,7 +1137,7 @@ function getAvailableControlOwnerList(){
         SELECT t2.*
         FROM `framework_controls` t1 
             LEFT JOIN `user` t2 on t1.control_owner=t2.value
-        WHERE t2.value is not null
+        WHERE t2.value is not null AND t1.deleted=0
         GROUP BY
             t2.value
     ";
@@ -1143,7 +1165,7 @@ function getAvailableControlFamilyList(){
         SELECT t2.*
         FROM `framework_controls` t1 
             LEFT JOIN `family` t2 on t1.family=t2.value
-        WHERE t2.value is not null
+        WHERE t2.value is not null AND t1.deleted=0
         GROUP BY
             t2.value
     ";
@@ -1168,42 +1190,111 @@ function getAvailableControlFrameworkList(){
     $db = db_open();
     
     $sql = "
-        SELECT t1.framework_ids
-        FROM `framework_controls` t1 
+        SELECT t1.*
+        FROM `frameworks` t1
+            LEFT JOIN `framework_controls` t2 ON FIND_IN_SET(t1.value, t2.framework_ids) AND t2.deleted=0
+        WHERE t2.id IS NOT NULL AND t1.`status`=1 
+        GROUP BY t1.value
+        ;
     ";
-    
-    // Get available control framework id list
+
+    // Get available framework list
     $stmt = $db->prepare($sql);
     
     $stmt->execute();
 
-    $idStrings = $stmt->fetchAll();
+    $frameworks = $stmt->fetchAll();
     
-    $framework_ids = array();
-    foreach($idStrings as $idsString){
-        $ids = explode(",", $idsString['framework_ids']);
-        foreach($ids as $id){
-            if($id && !in_array($id, $framework_ids)){
-                $framework_ids[] = (int)$id;
-            }
+    // Try decrypt
+//    foreach($results as &$result){
+//        $result['name'] = try_decrypt($result['name']);
+//        $result['description'] = try_decrypt($result['description']);
+//    }
+    
+    // Close the database connection
+    db_close($db);
+    
+    $all_frameworks = get_frameworks(1);
+    $all_parent_frameworks = array();
+    foreach($frameworks as $framework)
+    {
+        $parent_frameworks = array();
+        get_parent_frameworks($all_frameworks, $framework['value'], $parent_frameworks);
+        $all_parent_frameworks = array_merge($all_parent_frameworks, $parent_frameworks);
+    }
+    
+    $results = array();
+    $ids = array();
+    // Get unique array
+    foreach($all_parent_frameworks as $result){
+        if(!in_array($result['value'], $ids))
+        {
+            $results[] = $result;
+            $ids[] = $result['value'];
         }
     }
-    if($framework_ids){
-        $sql = "
-            SELECT *
-            FROM `frameworks` 
-            WHERE value in (". implode(",", $framework_ids) .") AND `status`=1 ;
-        ";
 
-        // Get available framework list
-        $stmt = $db->prepare($sql);
-        
-        $stmt->execute();
+    return $results;
+}
 
-        $results = $stmt->fetchAll();
-    }else{
-        $results = [];
-    }
+/*******************************************************
+ * FUNCTION: GET HAS BEEN AUDIT FRAMEWORK CONTROL LIST *
+ *******************************************************/
+function getHasBeenAuditFrameworkControlList()
+{
+    // Open the database connection
+    $db = db_open();
+    
+    $sql = "
+        SELECT t1.id value, t1.short_name name
+        FROM 
+            `framework_controls` t1 
+            LEFT JOIN `framework_control_test_audits` t2 ON t1.id=t2.framework_control_id
+        WHERE
+             t2.id IS NOT NULL
+        GROUP BY 
+            t1.id
+        ;
+    ";
+
+    // Get available framework list
+    $stmt = $db->prepare($sql);
+    
+    $stmt->execute();
+
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+
+    return $results;
+}
+
+/***********************************************
+ * FUNCTION: GET HAS BEEN AUDIT FRAMEWORK LIST *
+ ***********************************************/
+function getHasBeenAuditFrameworkList(){
+    // Open the database connection
+    $db = db_open();
+    
+    $sql = "
+        SELECT t1.value, t1.name, t1.description
+        FROM `frameworks` t1
+            LEFT JOIN `framework_controls` t2 ON FIND_IN_SET(t1.value, t2.framework_ids)
+            LEFT JOIN `framework_control_test_audits` t3 ON t2.id=t3.framework_control_id
+        WHERE
+             t3.id IS NOT NULL
+        GROUP BY 
+            t1.value
+        ;
+    ";
+
+    // Get available framework list
+    $stmt = $db->prepare($sql);
+    
+    $stmt->execute();
+
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Try decrypt
     foreach($results as &$result){
@@ -1227,8 +1318,8 @@ function getAvailableControlPriorityList(){
     $sql = "
         SELECT t2.*
         FROM `framework_controls` t1 
-            LEFT JOIN `control_priority` t2 on t1.control_priority=t2.value
-        WHERE t2.value is not null
+            LEFT JOIN `control_priority` t2 on t1.control_priority=t2.value 
+        WHERE t2.value is not null AND t1.deleted=0
         GROUP BY
             t2.value
     ORDER BY

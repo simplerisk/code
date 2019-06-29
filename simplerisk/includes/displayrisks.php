@@ -124,7 +124,17 @@ function display_affected_assets_view($risk_id)
     echo $escaper->escapeHtml($lang['AffectedAssets']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<textarea style=\"cursor: default;\" type=\"text\" name=\"assets\" class=\"assets\" id=\"assets\" size=\"50\" cols=\"50\" rows=\"3\" title=\"" . $escaper->escapeHtml(get_list_of_assets($risk_id, false)) . "\" disabled=\"disabled\">". $escaper->escapeHtml(get_list_of_assets($risk_id, false)) ."</textarea>\n";
+    $data = get_assets_and_asset_groups_of_type($risk_id, 'risk');
+    
+    if ($data) {
+        echo "<select class='assets-asset-groups-select-disabled' multiple >\n";
+
+        foreach($data as $item) {
+            echo "<option data-data='" . json_encode(array('class' => $item['class'])) . "' selected>" . $escaper->escapeHtml($item['name']) . "</option>";
+        }
+
+        echo "</select>\n";
+    }
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -339,7 +349,7 @@ function display_supporting_documentation_view($risk_id, $view_type)
 /*********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS VIEW *
 **********************************************************/
-function display_main_detail_feilds_by_panel_view($panel_name, $fields, $risk_id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags)
+function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags)
 {
 
     foreach($fields as $field)
@@ -456,7 +466,7 @@ function display_main_detail_feilds_by_panel_view($panel_name, $fields, $risk_id
 /*****************************************
 * FUNCTION: DISPLAY SUBMISSION DATE EDIT *
 ******************************************/
-function display_sumission_date_edit($submission_date)
+function display_submission_date_edit($submission_date)
 {
     global $lang, $escaper;
 
@@ -561,13 +571,16 @@ function display_control_number_edit($control_number)
 function display_affected_assets_edit($risk_id)
 {
     global $lang, $escaper;
+    $selected_ids = [];
     
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span5 text-right\" id=\"AffectedAssetsTitle\">\n";
     echo $escaper->escapeHtml($lang['AffectedAssets']) .": \n";
     echo "</div>\n";
-    echo "<div class=\"span7\">\n";
-        echo "<textarea name=\"assets\" class=\"active-textfield assets\" cols=\"50\" rows=\"3\" id=\"assets\">".$escaper->escapeHtml(get_list_of_assets($risk_id)) . "</textarea>\n";
+    echo "<div class=\"span7 affected-assets\">\n";
+    echo "<select class='assets-asset-groups-select' name='assets_asset_groups[]' multiple placeholder='" . $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']) . "'>";
+    echo "</select>\n";
+    echo "<span class='affected-assets-instructions'>" . $escaper->escapeHtml($lang['AffectedAssetsWidgetInstructions']) . "</span>";
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -731,7 +744,7 @@ function display_supporting_documentation_edit($risk_id, $view_type)
 /*********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS EDIT *
 **********************************************************/
-function display_main_detail_feilds_by_panel_edit($panel_name, $fields, $risk_id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags)
+function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags)
 {
     foreach($fields as $field)
     {
@@ -747,7 +760,7 @@ function display_main_detail_feilds_by_panel_edit($panel_name, $fields, $risk_id
                 
                 switch($field['name']){
                     case 'SubmissionDate':
-                        display_sumission_date_edit($submission_date);
+                        display_submission_date_edit($submission_date);
                     break;
             
                     case 'Category':
@@ -1159,7 +1172,7 @@ function display_security_recommendations_view($security_recommendations)
 /************************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN MITIGATION VIEW *
 *************************************************************/
-function display_main_mitigation_feilds_by_panel_view($panel_name, $fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls)
+function display_main_mitigation_fields_by_panel_view($panel_name, $fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls)
 {
 
     foreach($fields as $field)
@@ -1516,7 +1529,7 @@ function display_security_recommendations_edit($security_recommendations)
 /************************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN MITIGATION EDIT *
 *************************************************************/
-function display_main_mitigation_feilds_by_panel_edit($panel_name, $fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls)
+function display_main_mitigation_fields_by_panel_edit($panel_name, $fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls)
 {
 
     foreach($fields as $field)
@@ -1742,7 +1755,7 @@ function display_comments_view($comment)
 /********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN REVIEW VIEW *
 *********************************************************/
-function display_main_review_feilds_by_panel_view($panel_name, $fields, $risk_id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment)
+function display_main_review_fields_by_panel_view($panel_name, $fields, $risk_id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment)
 {
 
     foreach($fields as $field)
@@ -1970,7 +1983,7 @@ function display_set_next_review_date_edit($default_next_review)
 /********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN REVIEW EDIT *
 *********************************************************/
-function display_main_review_feilds_by_panel_edit($panel_name, $fields, $risk_id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review)
+function display_main_review_fields_by_panel_edit($panel_name, $fields, $risk_id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review)
 {
 
     foreach($fields as $field)
@@ -2138,7 +2151,7 @@ function display_risk_tags_view($tags)
 /********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS ADD *
 *********************************************************/
-function display_main_detail_feilds_by_panel_add($panel_name, $fields)
+function display_main_detail_fields_by_panel_add($panel_name, $fields)
 {
     foreach($fields as $field)
     {

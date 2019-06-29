@@ -458,3 +458,57 @@ div.doc-link {
   }
 }
 
+/*------------------------------------------------------------
+## Affected Assets widget related styles
+------------------------------------------------------------*/
+.affected-asset-cell span {
+    cursor: pointer;
+    margin: 0 3px 3px 0;
+    padding: 1px 3px;
+    color: #333333;
+    border: 0 solid rgba(0, 0, 0, 0) !important;
+    border-radius: 2px;
+    display: inline-block;
+
+    &.asset {
+        background: $asset-option-color !important;
+    }
+
+    &.group {
+        background-color: $asset-group-option-color !important;
+    }
+}
+
+.assets-asset-groups-select-disabled .asset, .assets-asset-groups-select .asset {
+    background-color: $asset-option-color !important;
+}
+
+.assets-asset-groups-select-disabled .group, .assets-asset-groups-select .group {
+    background-color: $asset-group-option-color !important;
+}
+
+.selectize-input.locked, .selectize-input.locked * {
+    cursor: default !important
+}
+
+.affected-assets .selectize-dropdown {
+    width: 180% !important;
+}
+
+.affected-assets-instructions {
+    display: inline-block;
+    font-size: 0.8em;
+    color: red;
+    position: relative;
+    top: -5px;
+    line-height: 1.2;
+    padding-bottom: 15px;
+}
+
+.download-by-group{
+    float: right;
+    font-size: 28px;
+    color: #c1b4b4;
+    cursor: pointer;
+    margin-left: 15px;
+}

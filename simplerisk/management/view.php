@@ -347,6 +347,7 @@ if (isset($_GET['id']))
         <script src="../js/common.js"></script>
         <script src="../js/pages/risk.js"></script>
         <script src="../js/bootstrap-multiselect.js"></script>
+        <script src="../js/jquery.blockUI.min.js"></script>
 
         <link rel="stylesheet" href="../css/bootstrap.css">
         <link rel="stylesheet" href="../css/bootstrap-responsive.css">
@@ -386,8 +387,6 @@ if (isset($_GET['id']))
       <?php
           setup_alert_requirements("..");
       ?>    
-        
-      <?php display_asset_autocomplete_script(get_verified_assets()); ?>
     </head>
 
     <body>
@@ -464,13 +463,13 @@ if (isset($_GET['id']))
                 });
             }
             $(document).ready(function() {
-                focus_add_css_class("#AffectedAssetsTitle", "#assets");
                 focus_add_css_class("#RiskAssessmentTitle", "#assessment");
                 focus_add_css_class("#NotesTitle", "#notes");
                 focus_add_css_class("#SecurityRequirementsTitle", "#security_requirements");
                 focus_add_css_class("#CurrentSolutionTitle", "#current_solution");
                 focus_add_css_class("#SecurityRecommendationsTitle", "#security_recommendations");
                 
+                setupAssetsAssetGroupsViewWidget($('select.assets-asset-groups-select-disabled'));
                 
                 /**
                 * Change Event of Risk Scoring Method

@@ -151,13 +151,13 @@ function is_valid_user($user, $pass, $upgrade = false)
                 $type = "ldap";
 
                 // Check for a valid Active Directory user
-                list($valid_ad, $dn) = is_valid_ad_user($user, $pass);
+                list($valid_ad, $dn, $attributes) = is_valid_ad_user($user, $pass);
 
                 // If the user is a valid AD user
                 if ($valid_ad)
                 {
                     // Add the new user
-                    $user_id = authentication_add_new_user($type, $user);
+                    $user_id = authentication_add_new_user($type, $user, $attributes);
 
                     // Add the new team by AD group
                     set_team_to_ldap_user($user_id, $dn, $pass);
@@ -186,7 +186,7 @@ function is_valid_user($user, $pass, $upgrade = false)
             require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
 
             // Check for a valid Active Directory user
-            list($valid_ad, $dn)= is_valid_ad_user($user, $pass);
+            list($valid_ad, $dn, $attributes)= is_valid_ad_user($user, $pass);
         }
     }
     // If the type is saml
@@ -204,11 +204,7 @@ function is_valid_user($user, $pass, $upgrade = false)
     }
 
     // If either the SAML, AD, or SimpleRisk user are valid
-    if ($valid_saml || $valid_ad || $valid_simplerisk)
-    {
-        // Set the user permissions
-//        set_user_permissions($user, $pass, $upgrade);
-
+    if ($valid_saml || $valid_ad || $valid_simplerisk) {
         return true;
     }
     else return false;
@@ -217,7 +213,7 @@ function is_valid_user($user, $pass, $upgrade = false)
 /**********************************
  * FUNCTION: SET USER PERMISSIONS *
  **********************************/
-function set_user_permissions($user, $pass, $upgrade = false)
+function set_user_permissions($user, $upgrade = false)
 {
     $possible_permissions = [
         'governance',
@@ -1229,15 +1225,6 @@ function reset_password($user_id, $current_password, $new_password, $confirm_pas
 				// Update the password
 				update_password($username, $hash);
 
-				// If the encryption extra is enabled
-				if (encryption_extra())
-				{
-					// Load the extra
-					require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-
-					// Set the new encrypted password
-					set_enc_pass($username, $new_password, $_SESSION['encrypted_pass']);
-				}
             
 				// Display an alert
 				set_alert(true, "good", "Your password has been updated successfully!");
@@ -1249,7 +1236,7 @@ function reset_password($user_id, $current_password, $new_password, $confirm_pas
 				}
             
 				// Set the user permissions
-				set_user_permissions($username, $new_password);
+				set_user_permissions($username);
 
 				// Get base URL
 				$base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['SCRIPT_NAME']}";

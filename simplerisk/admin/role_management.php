@@ -94,7 +94,7 @@ elseif(isset($_POST['delete_role']))
     }
     else
     {
-        delete_value("role", $role_id);
+        delete_role($role_id);
         set_alert(true, "good", $escaper->escapeHtml($lang['DeletedSuccess']));
         refresh();
     }

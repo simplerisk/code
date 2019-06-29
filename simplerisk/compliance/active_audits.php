@@ -35,9 +35,6 @@ if (!isset($_SESSION))
     session_start();
 }
 
-// Load CSRF Magic
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
 // Include the language file
 require_once(language_file());
 
@@ -51,6 +48,10 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../index.php");
   exit(0);
 }
+
+// Include the CSRF-magic library
+// Make sure it's called after the session is properly setup
+include_csrf_magic();
 
 // Enforce that the user has access to compliance
 enforce_permission_compliance();

@@ -137,6 +137,7 @@ include_csrf_magic();
       });
     });
   </script>
+  <?php display_set_default_date_format_script(); ?>
 </body>
 
 </html>
