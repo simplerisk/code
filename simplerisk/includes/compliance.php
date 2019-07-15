@@ -1833,7 +1833,7 @@ function download_compliance_file($unique_name)
     {
         header("Content-length: " . $array['size']);
         header("Content-type: " . $array['type']);
-        header("Content-Disposition: attachment; filename=\"" . $array['name'] ."\"");
+	header("Content-Disposition: attachment; filename=" . $escaper->escapeUrl($array['name']));
         echo $array['content'];
         exit;
     }
