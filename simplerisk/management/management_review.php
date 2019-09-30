@@ -92,6 +92,7 @@ if (isset($_GET['mitigated']))
     <script src="../js/common.js"></script>
     <script src="../js/pages/risk.js"></script>
     <script src="../js/highcharts/code/highcharts.js"></script>
+    <script src="../js/moment.min.js"></script>
     <script src="../js/bootstrap-multiselect.js"></script>
     <script src="../js/jquery.blockUI.min.js"></script>
 

@@ -102,7 +102,7 @@ function get_table($name)
     $db = db_open();
 
     // If this is the team table
-    if ($name == "team"){
+    if ($name == "team" || $name == "dynamic_saved_selections"){
         // Order by name
         $stmt = $db->prepare("SELECT * FROM `{$name}` ORDER BY name");
     }
@@ -128,24 +128,87 @@ function get_table($name)
     return $array;
 }
 
+/*************************************
+ * FUNCTION: SAVE DYNAMIC SELECTIONS *
+ *************************************/
+function save_dynamic_selections($type, $name, $custom_display_settings)
+{
+    $custom_display_settings = json_encode($custom_display_settings);
+    
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("INSERT INTO `dynamic_saved_selections` (`user_id`,`type`,`name`, `custom_display_settings`) VALUES (:user_id, :type, :name, :custom_display_settings); ");
+    
+    $stmt->bindParam(":user_id", $_SESSION['uid'], PDO::PARAM_INT);
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+    $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+    
+    return $db->lastInsertId();
+}
+
+/********************************************
+ * FUNCTION: DELETE DYNAMIC SELECTION BY ID *
+ ********************************************/
+function delete_dynamic_selection($id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("DELETE FROM `dynamic_saved_selections` WHERE value=:value; ");
+    
+    $stmt->bindParam(":value", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+}
+
+/***************************************************
+ * FUNCTION: CHECK EXISTING DYNAMIC SELECTION NAME *
+ ***************************************************/
+function check_exisiting_dynamic_selection_name($user_id, $name)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT * FROM `dynamic_saved_selections` WHERE name=:name AND (type='private' AND user_id=:user_id || type='public');");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+    
+    return $array ? true: false;
+}
+
 /****************************
  * FUNCTION: GET FULL TABLE *
  ****************************/
 function get_full_table($name)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        $stmt = $db->prepare("SELECT * FROM `{$name}`");
-        $stmt->execute();
+    $stmt = $db->prepare("SELECT * FROM `{$name}`");
+    $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
-        // Close the database connection
+    // Close the database connection
     db_close($db);
 
-        return $array;
+    return $array;
 }
 
 /***************************************
@@ -727,7 +790,7 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
 /****************************************
  * FUNCTION: CREATE MULTIUSERS DROPDOWN *
  ****************************************/
-function create_multiusers_dropdown($name, $selected = ""){
+function create_multiusers_dropdown($name, $selected = "", $custom_html = ""){
     global $escaper;
 
     // Make selected to array
@@ -737,7 +800,7 @@ function create_multiusers_dropdown($name, $selected = ""){
     }
 
     $options = get_options_from_table("enabled_users");
-    $str = "<select class=\"multiselect\" id=\"{$name}\" name=\"{$name}[]\" multiple class=\"form-field form-control\" style=\"width:auto;\">\n";
+    $str = "<select class=\"multiselect\" id=\"{$name}\" {$custom_html} name=\"{$name}[]\" multiple class=\"form-field form-control\" style=\"width:auto;\">\n";
     // For each option
     foreach ($options as $option)
     {
@@ -1417,7 +1480,7 @@ function get_default_datetime_format($time_format="H:i:s")
 }
 
 /*********************************************************************************
- * FUNCTION: GET FORMATTED DATE                                                  *
+ * FUNCTION: GET FORMATTED DATE/DATETIME                                         *
  *                                                                               *
  * Use it only on dates got from the database, as strtotime is not suited to be  *
  * used on user input since it can't handle all the date formats we support.     *
@@ -1435,7 +1498,16 @@ function format_date($date, $default = "")
     }
     else return $default;
 }
-
+function format_datetime($date, $default = "")
+{
+    // If the date is not 0000-00-00
+    if ($date && $date != "0000-00-00")
+    {
+        // Set it to the proper format
+        return strtotime($date) ? date(get_default_datetime_format(), strtotime($date)) : "";
+    }
+    else return $default;
+}
 /****************************************************************************
  * FUNCTION: GET STANDARD DATE FROM STRING FORMATTED BY DEFAULT DATE FORMAT *
  ****************************************************************************/
@@ -1509,16 +1581,16 @@ function update_setting($name, $value)
  ****************************/
 function delete_setting($name)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Update the setting
-        $stmt = $db->prepare("DELETE FROM `settings` WHERE name=:name;");
-        $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
-        $stmt->execute();
+    // Update the setting
+    $stmt = $db->prepare("DELETE FROM `settings` WHERE name=:name;");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
+    $stmt->execute();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 }
 
 /**********************
@@ -1614,6 +1686,65 @@ function add_name($table, $name, $size=20)
     db_close($db);
 
     return $insertedId;
+}
+
+/********************************
+ * FUNCTION: GET TAG ID BY TEXT *
+ ********************************/
+function get_tag_id_by_text($tag)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT `id` FROM `tags` where `tag`=:tag; ");
+    $stmt->bindParam(":tag", $tag, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $tag_id = $stmt->fetch(PDO::FETCH_COLUMN);
+
+    // closed the database connection
+    db_close($db);
+    return $tag_id;
+}
+
+/**********************
+ * FUNCTION: ADD TAG *
+ **********************/
+function add_tag($tag, $type="risk")
+{
+    if(!$tag){
+        return false;
+    }
+
+    // Open the database connection
+    $db = db_open();
+    
+    
+    if($tag_id = get_tag_id_by_text($tag))
+    {
+    }
+    else
+    {
+        // Get the risk levels
+        $stmt = $db->prepare("INSERT INTO `tags` (`tag`) VALUES (:tag); ");
+        $stmt->bindParam(":tag", $tag, PDO::PARAM_STR);
+
+        $stmt->execute();
+        $tag_id = $db->lastInsertId();
+
+        $stmt = $db->prepare("INSERT INTO `tags_taggees` (`tag_id`, `taggee_id`, `type`) VALUES (:tag_id, -1, :type); ");
+        $stmt->bindParam(":tag_id", $tag, PDO::PARAM_INT);
+        $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+
+        $risk_id = 1000;
+        $message = "A new tag \"" . $tag . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+        write_log($risk_id, $_SESSION['uid'], $message);
+
+        // Close the database connection
+        db_close($db);
+    }
+
+    return $tag_id;
 }
 
 /**********************************
@@ -2497,11 +2628,13 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
 {
     $submitted_by || ($submitted_by = $_SESSION['uid']);
 
+    $owner || $owner = 0;
+    
     // Open the database connection
     $db = db_open();
 
     // Set numeric null to 0
-    if ($location == NULL) $location = 0;
+    if ($location == NULL) $location = "";
 
     // Add the risk
     if($submission_date !== false){
@@ -2520,7 +2653,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $stmt->bindParam(":reference_id", $reference_id, PDO::PARAM_STR, 20);
     $stmt->bindParam(":regulation", $regulation, PDO::PARAM_INT);
     $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR, 20);
-    $stmt->bindParam(":location", $location, PDO::PARAM_INT);
+    $stmt->bindParam(":location", $location, PDO::PARAM_STR);
     $stmt->bindParam(":source", $source, PDO::PARAM_INT);
     $stmt->bindParam(":category", $category, PDO::PARAM_INT);
     $stmt->bindParam(":team", $team, PDO::PARAM_STR);
@@ -2542,11 +2675,6 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
 
     // Audit log
     $risk_id = (int)$last_insert_id + 1000;
-    $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $_SESSION['user'] . "\".";
-    write_log($risk_id, $submitted_by, $message);
-
-    // Close the database connection
-    db_close($db);
 
     // If customization extra is enabled
     if(customization_extra())
@@ -2554,9 +2682,20 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-        // Save custom fields
-        save_risk_custom_field_values($risk_id);
+        // If there is error in saving custom risk values, delete added risk and return false
+        if(!save_risk_custom_field_values($risk_id))
+        {
+            // Delete just inserted risk
+            delete_risk($last_insert_id);
+            return false;
+        }
     }
+
+    $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $_SESSION['user'] . "\".";
+    write_log($risk_id, $submitted_by, $message);
+
+    // Close the database connection
+    db_close($db);
 
     return $last_insert_id;
 }
@@ -2566,8 +2705,8 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
  ************************************/
 function get_cvss_numeric_value($abrv_metric_name, $abrv_metric_value)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
     // Find the numeric value for the submitted metric
     $stmt = $db->prepare("SELECT numeric_value FROM CVSS_scoring WHERE abrv_metric_name = :abrv_metric_name AND abrv_metric_value = :abrv_metric_value");
@@ -2575,11 +2714,11 @@ function get_cvss_numeric_value($abrv_metric_name, $abrv_metric_value)
     $stmt->bindParam(":abrv_metric_value", $abrv_metric_value, PDO::PARAM_STR, 3);
     $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
     // Return the numeric value found
     return $array[0]['numeric_value'];
@@ -3778,10 +3917,9 @@ function update_risk($risk_id, $is_api = false)
         $regulation = (int)$regulation;
     }
     $control_number         = get_param("post", "control_number", false);
-    $location               = get_param("post", "location", false);
-    if($location !== false){
-        $location = (int)$location;
-    }
+    $location               = get_param("post", "location", []);
+    $location               = implode(",", $location);
+    
     $source                 = get_param("post", "source", false);
     if($source !== false){
         $source = (int)$source;
@@ -4196,6 +4334,40 @@ function get_risk_by_id($id)
     db_close($db);
 
     return $array && $array[0]['id'] ? $array : [];
+}
+
+/********************************
+ * FUNCTION: GET RISK TEAMS     *
+ * Getting the teams of a risk  *
+ ********************************/
+function get_risk_teams($id) {
+
+    // Open the database connection
+    $db = db_open();
+
+    // Subtract 1000 from the id
+    $id = (int)$id - 1000;
+
+    // Query the database
+    $stmt = $db->prepare("
+    SELECT
+        `team`
+    FROM
+        `risks`
+    WHERE
+        `id` = :id;
+    ");
+
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Store the list in the array
+    $result = $stmt->fetch(PDO::FETCH_COLUMN, 0);
+
+    // Close the database connection
+    db_close($db);
+
+    return $result && $result[0] ? explode(',', $result) : [];
 }
 
 /**********************************
@@ -7703,7 +7875,7 @@ function get_name_by_value($table, $value, $default = "", $use_id = false)
     $db = db_open();
 
     // Query the database
-    $stmt = $db->prepare("SELECT name FROM $table WHERE " .($use_id ? "id" : "value") . "=:value LIMIT 1");
+    $stmt = $db->prepare("SELECT name FROM {$table} WHERE " .($use_id ? "id" : "value") . "=:value LIMIT 1");
     $stmt->bindParam(":value", $value, PDO::PARAM_INT);
 
     $stmt->execute();
@@ -7731,16 +7903,16 @@ function get_name_by_value($table, $value, $default = "", $use_id = false)
 /***************************************
  * FUNCTION: GET NAMEs BY MULTI VALUES *
  ***************************************/
-function get_names_by_multi_values($table, $values, $return_array=false) {
+function get_names_by_multi_values($table, $values, $return_array=false, $sep=", ") {
 
     if (is_array($values))
-        $values = implode(',', $values);
+        $values = implode(",", $values);
 
     // Open the database connection
     $db = db_open();
 
     // Query the database
-    $stmt = $db->prepare("SELECT name FROM $table WHERE FIND_IN_SET(value, :values);");
+    $stmt = $db->prepare("SELECT name FROM {$table} WHERE FIND_IN_SET(value, :values);");
     $stmt->bindParam(":values", $values, PDO::PARAM_STR);
 
     $stmt->execute();
@@ -7765,7 +7937,7 @@ function get_names_by_multi_values($table, $values, $return_array=false) {
         }
 
         // Return that value
-        return $return_array ? $array : implode(", ", $array);
+        return $return_array ? $array : implode($sep, $array);
     }
     // Otherwise, return an empty string/array
     else return $return_array ? [] : "";
@@ -8703,7 +8875,7 @@ function latest_version($param)
     {
         $regex_pattern = "/<encryption>(.*)<\/encryption>/";
     }
-    else if ($param == "importexport")
+    else if ($param == "importexport" || $param == "import-export")
     {
         $regex_pattern = "/<importexport>(.*)<\/importexport>/";
     }
@@ -9789,6 +9961,13 @@ function delete_risk($risk_id)
     $stmt = $db->prepare("DELETE FROM `residual_risk_scoring_history` WHERE `risk_id`=:id;");
     $stmt->bindParam(":id", $risk_id, PDO::PARAM_INT);
     $return = $stmt->execute();
+    
+    // If customization extra is enabled, delete custom_risk_data related with risk ID
+    if(customization_extra())
+    {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        delete_custom_data_by_risk_id($risk_id);
+    }
 
     // Close the database connection
     db_close($db);
@@ -10388,7 +10567,7 @@ function registration_redirect()
                 else
                 {
                     // Redirect to the reports index
-                    header("Location: reports");
+                    header("Location: reports/index.php");
                 }
             }
         }
@@ -10412,7 +10591,7 @@ function registration_redirect()
             else
             {
                 // Redirect to the reports index
-                header("Location: reports");
+                header("Location: reports/index.php");
             }
         }
     }
@@ -10436,7 +10615,7 @@ function registration_redirect()
         else
         {
             // Redirect to the reports index
-            header("Location: reports");
+            header("Location: reports/index.php");
         }
     }
 }
@@ -11953,7 +12132,7 @@ function delete_role($role_id)
 
     // If this role had permissions, remove permissions that this role had from users with this role 
     if($old_responsibility_names){
-        $sql = "UPDATE `USER` SET ";
+        $sql = "UPDATE `user` SET ";
         foreach($old_responsibility_names as $index => $old_responsibility_name){
             if($index == count($old_responsibility_names)-1){
                 $sql .= "`{$old_responsibility_name}`=0 ";
@@ -11999,7 +12178,7 @@ function save_role_responsibilities($role_id, $responsibility_names)
     
     // Set added permissions to users with this role if there are added permissions
     if($added_permissions){
-        $sql = "UPDATE `USER` SET ";
+        $sql = "UPDATE `user` SET ";
         foreach($added_permissions as $index => $added_permission){
             if($index == count($added_permissions)-1){
                 $sql .= "`{$added_permission}`=1 ";
@@ -12015,7 +12194,7 @@ function save_role_responsibilities($role_id, $responsibility_names)
 
     // Remove deleted permissions from users with this role if there are deleted permissions
     if($deleted_permissions){
-        $sql = "UPDATE `USER` SET ";
+        $sql = "UPDATE `user` SET ";
         foreach($deleted_permissions as $index => $deleted_permission){
             if($index == count($deleted_permissions)-1){
                 $sql .= "`{$deleted_permission}`=0 ";
@@ -12475,14 +12654,24 @@ function delete_likelihood()
 /**********************
  * FUNCTION: IS ADMIN *
  **********************/
-function is_admin()
+function is_admin($id = false)
 {
-    // If the user is not logged in as an administrator
-    if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
-    {
-        return false;
+    // If there's no user id provided it will work the way it did before
+    if ($id === false) {
+        // If the user is not logged in as an administrator
+        if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
+        {
+            return false;
+        }
+        else return true;
+    } else {
+        $user = get_user_by_id($id);
+        // If couldn't find the user by the id
+        if (!$user)
+            return false;
+        
+        return $user['admin'];
     }
-    else return true;
 }
 
 /*************************************
@@ -12641,6 +12830,10 @@ function get_user_teams($user_id)
 
     // Close the database connection
     db_close($db);
+
+    if($teams == "all" || is_admin()){
+        $teams = get_all_teams();
+    }
 
     return $teams;
 }
@@ -13938,27 +14131,26 @@ function updateTagsOfType($taggee_id, $type, $tags) {
 function getTagsOfType($type) {
 
     if ($type !== "risk" && $type !== "asset")
-        return false;
+        return [];
 
     $db = db_open();
 
     //Load tags currently assigned to a type of taggee
     $stmt = $db->prepare("
         SELECT
-            DISTINCT(`t`.`tag`)
+            `t`.`tag`, t.id
         FROM
             `tags` t
             INNER JOIN `tags_taggees` tt ON `tt`.`tag_id` = `t`.`id`
         WHERE
             `tt`.`type` = :type
+        GROUP BY 
+            t.id
         ORDER BY `t`.`tag` ASC;
     ");
     $stmt->bindParam(":type", $type, PDO::PARAM_STR);
     $stmt->execute();
-    $result = $stmt->fetchAll();
-
-    //Get the actual tag values(the $result array contains other info as well)
-    $tags = array_column($result, 'tag');
+    $tags = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     db_close($db);
 
@@ -14424,4 +14616,92 @@ function get_stored_risk_score($impact, $likelihood) {
 
     return $result ? $result : 0;
 }
+
+/******************************************
+ * FUNCTION: GET DYNAMIC SAVED SELECTIONS *
+ ******************************************/
+function get_dynamic_saved_selections($user_id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT value, name, type, custom_display_settings FROM `dynamic_saved_selections` WHERE `type`='public' OR (`type`='private' AND user_id=:user_id) ;");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Get dynamic saved selections
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    return $array;
+}
+
+/**************************************************
+ * FUNCTION: GET DYNAMIC SAVED SELECTION BY VALUE *
+ **************************************************/
+function get_dynamic_saved_selection($value)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT user_id, name, type, custom_display_settings FROM `dynamic_saved_selections` WHERE `value`=:value;");
+    $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Get dynamic saved selections
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+
+    return $row;
+}
+
+/********************************************************************************
+ * FUNCTION: TRUNCATE TO (LENGTH)                                               *
+ * Truncates $string to be $length long(including the ... appended to the end)  *
+ ********************************************************************************/
+function truncate_to($string, $length, $append='...') {
+    return mb_strimwidth($string, 0, $length, $append);
+}
+
+/*************************************
+ * FUNCTION: CHECK CLOSED RISK BY ID *
+ *************************************/
+function check_closed_risk_by_id($id)
+{
+    // Subtract 1000 from the id
+    $id = (int)$id - 1000;
+
+    // Open the database connection
+    $db = db_open();
+
+    // Query the database
+    $stmt = $db->prepare("
+    SELECT
+        *
+    FROM
+        `risks`
+    WHERE
+        `id` = :id AND `status` = 'Closed';
+    ");
+
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Store the list in the array
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+    
+    if($result){
+        return true;
+    }else{
+        return false;
+    }
+}
+
 ?>

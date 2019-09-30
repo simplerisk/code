@@ -225,14 +225,13 @@
             }
         }
 
-        /* Commented until the rest of the functionality is implemented
         // Update the Risk Appetite
         $risk_appetite = $_POST['risk_appetite'];
         if ($risk_appetite != get_setting("risk_appetite") && $risk_appetite != "")
         {
             // Update the Risk Appetite
             update_setting("risk_appetite", $risk_appetite);
-        }*/
+        }
 
         // If all setting values were saved successfully
         if (!$error)
@@ -732,21 +731,20 @@
                               <td><?php echo $escaper->escapeHtml($lang['SimpleriskBaseUrl']) ?>:</td>
                               <td><input type="text" name="simplerisk_base_url" value="<?php echo $escaper->escapeHtml(get_setting("simplerisk_base_url")); ?>" /></td>
                             </tr>
-                            <!-- It is hidden until the rest of the functionality is implemented -->
-                            <!-- tr> 
-                              <td><?php #echo $escaper->escapeHtml($lang['RiskAppetite']) ?>:</td>
+                            <tr> 
+                              <td><?php echo $escaper->escapeHtml($lang['RiskAppetite']) ?>:</td>
                               <td class="risk-cell sorting_1">
-                                <?php #$risk_appetite = get_setting("risk_appetite", 0);?>
+                                <?php $risk_appetite = get_setting("risk_appetite", 0);?>
                                 <div>
-                                    <span id="risk_appetite_display" style="border:0; font-weight:bold;"><?php #echo $risk_appetite; ?></span>
+                                    <span id="risk_appetite_display" style="border:0; font-weight:bold;"><?php echo $risk_appetite; ?></span>
                                     <span id="risk_appetite_color" class="risk-color" style="background-color:#ff0000"></span>
                                 </div>
                               </td>
                             </tr>
                             <tr>
                               <td colspan="2">
-                                <input type="hidden" id="risk_appetite" name="risk_appetite" value="<?php #echo $risk_appetite; ?>">
-                                <?php /*
+                                <input type="hidden" id="risk_appetite" name="risk_appetite" value="<?php echo $risk_appetite; ?>">
+                                <?php
                                     $risk_levels = get_risk_levels();
 
                                     if ((int)$risk_levels[0]['value'] > 0) {
@@ -771,10 +769,10 @@
                                             $slider_bg_grad .= ", {$range['color']} " . ($ranges[$key - 1]['range'][1] * 10) . "%, {$range['color']} " . ($range['range'][1] * 10) . "%";
                                         }
                                     }
-                                */ ?>
-                                <div id="slider" style="margin-top: 10px; background-image: linear-gradient(90deg, <?php #echo $slider_bg_grad; ?>); background-size: 100% 100%;"></div>
+                                ?>
+                                <div id="slider" style="margin-top: 10px; background-image: linear-gradient(90deg, <?php echo $slider_bg_grad; ?>); background-size: 100% 100%;"></div>
                                   <script>
-                                    <?php #echo "var ranges = " . json_encode($ranges) . ";"; ?>
+                                    <?php echo "var ranges = " . json_encode($ranges) . ";"; ?>
 
                                     function handleValueInRange(value) {
                                         var index, len;
@@ -791,7 +789,7 @@
 
                                     $(document).ready(function() {
                                       $("#slider").slider({
-                                        value:<?php #echo $risk_appetite * 10; ?>,
+                                        value:<?php echo $risk_appetite * 10; ?>,
                                         min: 0,
                                         max: 100,
                                         step: 1,
@@ -805,7 +803,7 @@
                                     });
                                 </script>
                               </td>
-                            </tr-->
+                            </tr>
                           </tbody>
                         </table>
                       </td>

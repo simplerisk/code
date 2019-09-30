@@ -98,10 +98,10 @@ include_csrf_magic();
     $(document).ready(function() {
         $('#edit-assets-table select').change(updateAsset);
         var oldValue = "";
-        $('#edit-assets-table textarea').bind('focusin', function(){
+        $('#edit-assets-table textarea, #edit-assets-table input').bind('focusin', function(){
             oldValue = $(this).val();
         })
-        $('#edit-assets-table textarea').bind('focusout', function(){
+        $('#edit-assets-table textarea, #edit-assets-table input').bind('focusout', function(){
             var newValue = $(this).val();
             if(oldValue !== newValue){
                 updateAsset(null, $(this));
@@ -120,7 +120,10 @@ include_csrf_magic();
           <div class="span12">
             <div class="hero-unit">
               <h4><?php echo $escaper->escapeHtml($lang['EditAssets']); ?></h4><br>
-                <?php display_edit_asset_table(); ?>
+                <div class="asset-table-container">
+                    <?php display_edit_asset_table(); ?>
+                </div>
+                    
             </div>
           </div>
         </div>

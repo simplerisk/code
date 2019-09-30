@@ -72,10 +72,14 @@
         getRoute()->get('/risk_levels', 'risk_levels');
 
         // RISK API from form
+        getRoute()->get('/reports/appetite', 'appetite_report_api');
+
         getRoute()->post('/management/risk/reopen', 'reopenForm');
         getRoute()->get('/management/risk/overview', 'overviewForm');
 
         getRoute()->post('/reports/dynamic', 'dynamicriskForm');
+        getRoute()->post('/reports/save-dynamic-selections', 'saveDynamicSelectionsForm');
+        getRoute()->post('/reports/delete-dynamic-selection', 'deleteDynamicSelectionForm');
         getRoute()->get('/management/risk/viewhtml', 'viewriskHtmlForm');
 
         getRoute()->get('/management/risk/closerisk', 'closeriskHtmlForm');
@@ -146,6 +150,7 @@
         /***************************** Assessment API *********************************/
         getRoute()->get('/assessment/contacts', 'assessment_extra_getAssessmentContacts');
         getRoute()->post('/assessment/questionnaire/copy', 'assessment_extra_copyQuestionnaireAPI');
+        getRoute()->post('/assessment/template/copy', 'assessment_extra_copyTemplateAPI');
         getRoute()->get('/assessment/questionnaire_questions', 'assessment_extra_getAssessmentQuestionnaireQuestions');
         getRoute()->get('/assessment/questionnaire/template/dynamic', 'assessment_extra_questionnaireTemplateDynamicAPI');
         getRoute()->get('/assessment/questionnaire/dynamic', 'assessment_extra_questionnaireDynamicAPI');
@@ -153,6 +158,11 @@
         getRoute()->post('/assessment/questionnaire/save_result_comment', 'assessment_extra_saveQuestionnaireResultCommentAPI');
         getRoute()->post('/assessment/questionnaire/pending_risks', 'assessment_extra_createRisksFromQuestionnairePendingRisksAPI');
         getRoute()->get('/assessment/questionnaire/template_questions/dynamic', 'assessment_extra_questionnaireTemplateQuestionsDynamicAPI');
+        getRoute()->post('/assessment/send_questionnaire', 'assessment_extra_sendQuestionnaireAPI');
+        getRoute()->post('/assessment/questionnaire/result/approve', 'assessment_extra_approveResultAPI');
+        getRoute()->post('/assessment/questionnaire/result/reject', 'assessment_extra_rejectResultAPI');
+        getRoute()->post('/assessment/questionnaire/result/audit_log', 'get_questionnaire_result_audit_log_api');
+        getRoute()->get('/assessment/questionnaire/analysis/dynamic', 'assessment_extra_questionnaireAnalysisDynamicAPI');
         /******************************************************************************/
 
         /******************************* Audit Log API **********************************/
@@ -160,9 +170,9 @@
         /****************************************** *************************************/
         
         /******************************* Assets API *************************************/
-        getRoute()->get('/assets/verify_asset', 'assets_verify_asset');
-        getRoute()->get('/assets/discard_asset', 'assets_discard_asset');
-        getRoute()->get('/assets/delete_asset', 'assets_delete_asset');
+        getRoute()->post('/assets/verify_asset', 'assets_verify_asset');
+        getRoute()->post('/assets/discard_asset', 'assets_discard_asset');
+        getRoute()->post('/assets/delete_asset', 'assets_delete_asset');
         getRoute()->post('/assets/update_asset', 'assets_update_asset');
         getRoute()->get('/assets/verified_asset_body', 'assets_verified_asset_table_body');
         getRoute()->post('/assets/verify_assets', 'assets_verify_assets');
@@ -240,7 +250,28 @@
 
         // Get Tooltip Info
         getRoute()->post('/likelihood_impact_chart/tooltip', 'get_tooltip_api');
-       
+
+        getRoute()->get('/one_click_upgrade', 'one_click_upgrade');
+
+        // Run epiphany
+        getRoute()->run();
+    } elseif(check_questionnaire_get_token()) {
+        // Here's a separate section for when the request is not authenticated,
+        // but has a valid questionnaire token.
+        // This won't create an authenticated session, but allows questionnaires to
+        // serve some data to unauthenticated contacts
+
+        // Set the base path for epiphany
+        Epi::setPath('base', realpath(__DIR__ . '/../includes/epiphany/src'));
+
+        // Initialize the epiphany api
+        Epi::init('api', 'route', 'session');
+
+        // Disable exceptions
+        Epi::setSetting('exceptions', true);
+
+        getRoute()->get('/asset-group/options', 'get_asset_group_options_noauth');
+
         // Run epiphany
         getRoute()->run();
     }

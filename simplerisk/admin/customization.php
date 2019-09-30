@@ -89,15 +89,35 @@
             refresh();
         }
 
+        // If user wants to update custom field
+        elseif (isset($_POST['update-custom-field']))
+        {
+            $id = get_param("POST", "id");
+            $name = get_param("POST", "name");
+            $required = get_param("POST", "required", 0);
+            $encryption = get_param("POST", "encryption", 0);
+            
+            if(!$id || !$name){
+                // Display an alert
+                set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameFieldIsRequired']));
+            }else{
+                update_custom_field($id, $name, $required, $encryption);
+                set_alert(true, "good", $escaper->escapeHtml($lang['SuccessfullyUpdatedCustomField']));
+            }
+            refresh();
+        }
+
         // Check if creating field was submitted
         elseif (isset($_POST['create_field']))
         {
             $fgroup = $_POST['fgroup'];
             $name = $_POST['name'];
             $type = $_POST['type'];
+            $required = isset($_POST['required']) ? 1 : 0;
+            $encryption = isset($_POST['encryption']) ? 1 : 0;
 
             // Create the new field
-            if ($field_id = create_field($fgroup, $name, $type))
+            if ($field_id = create_field($fgroup, $name, $type, $required, $encryption))
             {
                 // Set field_id as Session variable for auto select of custom fields dropdown
                 $_SESSION['custom_field_id'] = $field_id;

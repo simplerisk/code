@@ -1,40 +1,50 @@
 /**
- * @license Highcharts JS v5.0.13 (2017-07-27)
+ * @license Highcharts JS v7.1.2 (2019-06-03)
  *
- * (c) 2009-2017 Torstein Honsi
+ * (c) 2009-2019 Torstein Honsi
  *
  * License: www.highcharts.com/license
  */
 'use strict';
-(function(factory) {
+(function (factory) {
     if (typeof module === 'object' && module.exports) {
+        factory['default'] = factory;
         module.exports = factory;
+    } else if (typeof define === 'function' && define.amd) {
+        define('highcharts/themes/gray', ['highcharts'], function (Highcharts) {
+            factory(Highcharts);
+            factory.Highcharts = Highcharts;
+            return factory;
+        });
     } else {
-        factory(Highcharts);
+        factory(typeof Highcharts !== 'undefined' ? Highcharts : undefined);
     }
-}(function(Highcharts) {
-    (function(Highcharts) {
-        /**
-         * (c) 2010-2017 Torstein Honsi
+}(function (Highcharts) {
+    var _modules = Highcharts ? Highcharts._modules : {};
+    function _registerModule(obj, path, args, fn) {
+        if (!obj.hasOwnProperty(path)) {
+            obj[path] = fn.apply(null, args);
+        }
+    }
+    _registerModule(_modules, 'themes/gray.js', [_modules['parts/Globals.js']], function (Highcharts) {
+        /* *
          *
-         * License: www.highcharts.com/license
-         * 
-         * Gray theme for Highcharts JS
-         * @author Torstein Honsi
-         */
+         *  (c) 2010-2019 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  Gray theme for Highcharts JS
+         *
+         * */
+
+
 
         Highcharts.theme = {
-            colors: ['#DDDF0D', '#7798BF', '#55BF3B', '#DF5353', '#aaeeee', '#ff0066', '#eeaaee',
-                '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'
-            ],
+            colors: ['#DDDF0D', '#7798BF', '#55BF3B', '#DF5353', '#aaeeee',
+                '#ff0066', '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
             chart: {
                 backgroundColor: {
-                    linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1
-                    },
+                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
                     stops: [
                         [0, 'rgb(96, 96, 96)'],
                         [1, 'rgb(16, 16, 16)']
@@ -49,13 +59,15 @@
             title: {
                 style: {
                     color: '#FFF',
-                    font: '16px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+                    font: '16px Lucida Grande, Lucida Sans Unicode,' +
+                        ' Verdana, Arial, Helvetica, sans-serif'
                 }
             },
             subtitle: {
                 style: {
                     color: '#DDD',
-                    font: '12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+                    font: '12px Lucida Grande, Lucida Sans Unicode,' +
+                        ' Verdana, Arial, Helvetica, sans-serif'
                 }
             },
             xAxis: {
@@ -71,7 +83,8 @@
                 title: {
                     style: {
                         color: '#AAA',
-                        font: 'bold 12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+                        font: 'bold 12px Lucida Grande, Lucida Sans Unicode,' +
+                        ' Verdana, Arial, Helvetica, sans-serif'
                     }
                 }
             },
@@ -91,7 +104,8 @@
                 title: {
                     style: {
                         color: '#AAA',
-                        font: 'bold 12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+                        font: 'bold 12px Lucida Grande, Lucida Sans Unicode,' +
+                        ' Verdana, Arial, Helvetica, sans-serif'
                     }
                 }
             },
@@ -113,12 +127,7 @@
             },
             tooltip: {
                 backgroundColor: {
-                    linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1
-                    },
+                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
                     stops: [
                         [0, 'rgba(96, 96, 96, .8)'],
                         [1, 'rgba(16, 16, 16, .8)']
@@ -170,12 +179,7 @@
                     hoverSymbolStroke: '#FFFFFF',
                     theme: {
                         fill: {
-                            linearGradient: {
-                                x1: 0,
-                                y1: 0,
-                                x2: 0,
-                                y2: 1
-                            },
+                            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
                             stops: [
                                 [0.4, '#606060'],
                                 [0.6, '#333333']
@@ -190,12 +194,7 @@
             rangeSelector: {
                 buttonTheme: {
                     fill: {
-                        linearGradient: {
-                            x1: 0,
-                            y1: 0,
-                            x2: 0,
-                            y2: 1
-                        },
+                        linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
                         stops: [
                             [0.4, '#888'],
                             [0.6, '#555']
@@ -209,12 +208,7 @@
                     states: {
                         hover: {
                             fill: {
-                                linearGradient: {
-                                    x1: 0,
-                                    y1: 0,
-                                    x2: 0,
-                                    y2: 1
-                                },
+                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
                                 stops: [
                                     [0.4, '#BBB'],
                                     [0.6, '#888']
@@ -227,12 +221,7 @@
                         },
                         select: {
                             fill: {
-                                linearGradient: {
-                                    x1: 0,
-                                    y1: 0,
-                                    x2: 0,
-                                    y2: 1
-                                },
+                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
                                 stops: [
                                     [0.1, '#000'],
                                     [0.3, '#333']
@@ -269,12 +258,7 @@
 
             scrollbar: {
                 barBackgroundColor: {
-                    linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1
-                    },
+                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
                     stops: [
                         [0.4, '#888'],
                         [0.6, '#555']
@@ -283,12 +267,7 @@
                 barBorderColor: '#CCC',
                 buttonArrowColor: '#CCC',
                 buttonBackgroundColor: {
-                    linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1
-                    },
+                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
                     stops: [
                         [0.4, '#888'],
                         [0.6, '#555']
@@ -297,12 +276,7 @@
                 buttonBorderColor: '#CCC',
                 rifleColor: '#FFF',
                 trackBackgroundColor: {
-                    linearGradient: {
-                        x1: 0,
-                        y1: 0,
-                        x2: 0,
-                        y2: 1
-                    },
+                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
                     stops: [
                         [0, '#000'],
                         [1, '#333']
@@ -322,5 +296,9 @@
         // Apply the theme
         Highcharts.setOptions(Highcharts.theme);
 
-    }(Highcharts));
+    });
+    _registerModule(_modules, 'masters/themes/gray.src.js', [], function () {
+
+
+    });
 }));

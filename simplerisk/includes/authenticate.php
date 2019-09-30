@@ -10,6 +10,45 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/messages.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 
+
+
+
+$possible_permissions = [
+    'governance',
+    'riskmanagement',
+    'compliance',
+    'assessments',
+    'asset',
+    'admin',
+    'review_veryhigh',
+    'accept_mitigation',
+    'review_high',
+    'review_medium',
+    'review_low',
+    'review_insignificant',
+    'submit_risks',
+    'modify_risks',
+    'plan_mitigations',
+    'close_risks',
+    'add_new_frameworks',
+    'modify_frameworks',
+    'delete_frameworks',
+    'add_new_controls',
+    'modify_controls',
+    'delete_controls',
+    'add_documentation',
+    'modify_documentation',
+    'delete_documentation',
+    'comment_risk_management',
+    'comment_compliance',
+    'view_exception',
+    'create_exception',
+    'update_exception',
+    'delete_exception',
+    'approve_exception'
+];
+
+
 /*******************************
  * FUNCTION: OLD GENERATE SALT *
  *******************************/
@@ -93,11 +132,11 @@ function get_user_type($user, $upgrade = false)
         else $stmt = $db->prepare("SELECT type FROM user WHERE enabled = 1 AND lockout = 0 AND username = :user");
     }
 
-        $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
-        $stmt->execute();
+    $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
+    $stmt->execute();
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
     // If the user does not exist
     if (empty($array))
@@ -113,8 +152,8 @@ function get_user_type($user, $upgrade = false)
         $type = "DNE";
     }
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
     return $type;
 }
@@ -215,40 +254,7 @@ function is_valid_user($user, $pass, $upgrade = false)
  **********************************/
 function set_user_permissions($user, $upgrade = false)
 {
-    $possible_permissions = [
-        'governance',
-        'riskmanagement',
-        'compliance',
-        'assessments',
-        'asset',
-        'admin',
-        'review_veryhigh',
-        'accept_mitigation',
-        'review_high',
-        'review_medium',
-        'review_low',
-        'review_insignificant',
-        'submit_risks',
-        'modify_risks',
-        'plan_mitigations',
-        'close_risks',
-        'add_new_frameworks',
-        'modify_frameworks',
-        'delete_frameworks',
-        'add_new_controls',
-        'modify_controls',
-        'delete_controls',
-        'add_documentation',
-        'modify_documentation',
-        'delete_documentation',
-        'comment_risk_management',
-        'comment_compliance',
-        'view_exception',
-        'create_exception',
-        'update_exception',
-        'delete_exception',
-        'approve_exception'
-    ];
+    global $possible_permissions;
 
     // Open the database connection
     $db = db_open();
@@ -454,22 +460,22 @@ function is_simplerisk_user($username)
  ****************************/
 function generate_token($size)
 {               
-        $token = "";
-        $values = array_merge(range(0, 9), range('a', 'z'), range('A', 'Z'));
+    $token = "";
+    $values = array_merge(range(0, 9), range('a', 'z'), range('A', 'Z'));
 	$values_count = count($values);
         
-        for ($i = 0; $i < $size; $i++)
+    for ($i = 0; $i < $size; $i++)
+    {
+        // If the random int function exists (PHP 7)
+        if (function_exists('random_int'))
         {
-                // If the random int function exists (PHP 7)
-                if (function_exists('random_int'))
-                {
-                        // Generate the token using the random_int function
-                        $token .= $values[random_int(0, $values_count-1)];
-                }
-                else $token .= $values[array_rand($values)];
+            // Generate the token using the random_int function
+            $token .= $values[random_int(0, $values_count-1)];
         }
- 
-        return $token;
+        else $token .= $values[array_rand($values)];
+    }
+
+    return $token;
 }
 
 /****************************************
@@ -1202,7 +1208,7 @@ function reset_password($user_id, $current_password, $new_password, $confirm_pas
 	if (is_valid_user($username, $current_password))
 	{
 		// Check if the new password is valid
-    		$error_code = valid_password($new_password, $confirm_password, $user_id);
+        $error_code = valid_password($new_password, $confirm_password, $user_id);
 
 		// If the new password is valid
 		if ($error_code == 1)

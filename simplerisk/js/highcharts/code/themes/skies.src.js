@@ -1,35 +1,52 @@
 /**
- * @license Highcharts JS v5.0.13 (2017-07-27)
+ * @license Highcharts JS v7.1.2 (2019-06-03)
  *
- * (c) 2009-2017 Torstein Honsi
+ * (c) 2009-2019 Torstein Honsi
  *
  * License: www.highcharts.com/license
  */
 'use strict';
-(function(factory) {
+(function (factory) {
     if (typeof module === 'object' && module.exports) {
+        factory['default'] = factory;
         module.exports = factory;
+    } else if (typeof define === 'function' && define.amd) {
+        define('highcharts/themes/skies', ['highcharts'], function (Highcharts) {
+            factory(Highcharts);
+            factory.Highcharts = Highcharts;
+            return factory;
+        });
     } else {
-        factory(Highcharts);
+        factory(typeof Highcharts !== 'undefined' ? Highcharts : undefined);
     }
-}(function(Highcharts) {
-    (function(Highcharts) {
-        /**
-         * (c) 2010-2017 Torstein Honsi
+}(function (Highcharts) {
+    var _modules = Highcharts ? Highcharts._modules : {};
+    function _registerModule(obj, path, args, fn) {
+        if (!obj.hasOwnProperty(path)) {
+            obj[path] = fn.apply(null, args);
+        }
+    }
+    _registerModule(_modules, 'themes/skies.js', [_modules['parts/Globals.js']], function (Highcharts) {
+        /* *
          *
-         * License: www.highcharts.com/license
-         * 
-         * Skies theme for Highcharts JS
-         * @author Torstein Honsi
-         */
+         *  (c) 2010-2019 Torstein Honsi
+         *
+         *  License: www.highcharts.com/license
+         *
+         *  Skies theme for Highcharts JS
+         *
+         * */
+
+
 
         Highcharts.theme = {
-            colors: ['#514F78', '#42A07B', '#9B5E4A', '#72727F', '#1F949A', '#82914E', '#86777F', '#42A07B'],
+            colors: ['#514F78', '#42A07B', '#9B5E4A', '#72727F', '#1F949A',
+                '#82914E', '#86777F', '#42A07B'],
             chart: {
                 className: 'skies',
                 borderWidth: 0,
                 plotShadow: true,
-                plotBackgroundImage: 'http://www.highcharts.com/demo/gfx/skies.jpg',
+                plotBackgroundImage: 'https://www.highcharts.com/demo/gfx/skies.jpg',
                 plotBackgroundColor: {
                     linearGradient: [0, 0, 250, 500],
                     stops: [
@@ -42,13 +59,15 @@
             title: {
                 style: {
                     color: '#3E576F',
-                    font: '16px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+                    font: '16px Lucida Grande, Lucida Sans Unicode,' +
+                        ' Verdana, Arial, Helvetica, sans-serif'
                 }
             },
             subtitle: {
                 style: {
                     color: '#6D869F',
-                    font: '12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+                    font: '12px Lucida Grande, Lucida Sans Unicode,' +
+                        ' Verdana, Arial, Helvetica, sans-serif'
                 }
             },
             xAxis: {
@@ -64,7 +83,8 @@
                 title: {
                     style: {
                         color: '#666',
-                        font: '12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+                        font: '12px Lucida Grande, Lucida Sans Unicode,' +
+                        ' Verdana, Arial, Helvetica, sans-serif'
                     }
                 }
             },
@@ -82,7 +102,8 @@
                 title: {
                     style: {
                         color: '#666',
-                        font: '12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+                        font: '12px Lucida Grande, Lucida Sans Unicode,' +
+                        ' Verdana, Arial, Helvetica, sans-serif'
                     }
                 }
             },
@@ -108,5 +129,9 @@
         // Apply the theme
         Highcharts.setOptions(Highcharts.theme);
 
-    }(Highcharts));
+    });
+    _registerModule(_modules, 'masters/themes/skies.src.js', [], function () {
+
+
+    });
 }));

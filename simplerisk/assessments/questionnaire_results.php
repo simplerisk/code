@@ -57,6 +57,28 @@ if (!isset($_SESSION["assessments"]) || $_SESSION["assessments"] != "1")
 // Make sure it's called after the session is properly setup
 include_csrf_magic();
 
+if(isset($_POST['download_audit_log']))
+{
+    if(is_admin())
+    {
+        // If extra is activated, download audit logs
+        if (import_export_extra()) {
+            $tracking_id = (int)$_POST['tracking_id'];
+            require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+            download_audit_logs(get_param('post', 'days', 7), 'questionnaire_tracking', $escaper->escapeHtml($lang['QuestionnaireResultAuditTrailReport']), $tracking_id + 1000);
+        } else {
+            set_alert(true, "bad", $lang['YouCantDownloadBecauseImportExportExtraDisabled']);
+            refresh();
+        }
+    }
+    // If this is not admin user, disable download
+    else
+    {
+        set_alert(true, "bad", $lang['AdminPermissionRequired']);
+        refresh();
+    }
+}
+
 // Check if assessment extra is enabled
 if(assessments_extra())
 {

@@ -6,8 +6,9 @@ function verify_discard_or_delete_asset(action, _this) {
     if (id) {
         $.blockUI({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>'});
         $.ajax({
-            type: "GET",
-            url: BASE_URL + "/api/assets/" + action + "_asset?id=" + id,
+            type: "POST",
+            url: BASE_URL + "/api/assets/" + action + "_asset",
+            data: {id: id},
             success: function(data){
                 if (action == "verify") {
                     verifyMessage = data.status_message

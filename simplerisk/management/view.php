@@ -344,6 +344,7 @@ if (isset($_GET['id']))
         <script src="../js/cve_lookup.js"></script>
         <script src="../js/basescript.js"></script>
         <script src="../js/highcharts/code/highcharts.js"></script>
+        <script src="../js/moment.min.js"></script>
         <script src="../js/common.js"></script>
         <script src="../js/pages/risk.js"></script>
         <script src="../js/bootstrap-multiselect.js"></script>

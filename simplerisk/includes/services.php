@@ -12,6 +12,20 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
+$available_extras = array(
+    'upgrade',
+    'complianceforgescf',
+    'authentication',
+    'customization',
+    'encryption',
+    'import-export',
+    'notification',
+    'separation',
+    'assessments',
+    'api',
+    'advanced_search'
+);
+
 /*************************************
  * FUNCTION: SIMPLERISK SERVICE CALL *
  *************************************/
@@ -36,8 +50,22 @@ function simplerisk_service_call($data)
 /****************************
  * FUNCTION: DOWNLOAD EXTRA *
  ****************************/
-function download_extra($name)
-{
+function download_extra($name, $streamed_response = false) {
+
+    global $available_extras;
+    
+    if (!in_array($name, $available_extras)) {
+
+        $message = _lang('UpdateExtraInvalidName', array('name' => $name));
+        if ($streamed_response) {
+            stream_write_error($message);
+        } else {
+            set_alert(true, "bad", $message);
+        }
+        // Return a failure
+        return 0;
+    }
+
 	global $escaper, $lang;
 
 	// SimpleRisk directory
@@ -53,20 +81,27 @@ function download_extra($name)
 	if (!is_dir($extras_dir))
 	{
 		// If the simplerisk directory is not writeable
-		if (!is_writeable($simplerisk_dir))
-		{
-			// Display an alert
-			set_alert(true, "bad", "The " . $escaper->escapeHtml($simplerisk_dir) . " directory is not writeable by the web user.");
+		if (!is_writeable($simplerisk_dir)) {
 
+            $message = _lang('UpdateExtraNoPermissionForSimpleriskDirectory', array('simplerisk_dir' => $simplerisk_dir));
+			if ($streamed_response) {
+                stream_write_error($message);
+            } else {
+                set_alert(true, "bad", $message);
+            }
 			// Return a failure
 			return 0;
 		}
 
 		// If the extras directory can not be created
-		if (!mkdir($extras_dir))
-		{
-			set_alert(true, "bad", "Unable to create the " . $escaper->escapeHtml($extras_dir) . " directory.");
-
+		if (!mkdir($extras_dir)) {
+            
+            $message = _lang('UpdateExtraNoPermissionForExtrasDirectory', array('extras_dir' => $extras_dir));
+			if ($streamed_response) {
+                stream_write_error($message);
+            } else {
+                set_alert(true, "bad", $message);
+            }
 			// Return a failure
 			return 0;
 		}
@@ -89,7 +124,12 @@ function download_extra($name)
 	$result = simplerisk_service_call($data);
 
     if (!$result || !is_array($result)) {
-        set_alert(true, "bad", $lang['FailedToDownloadExtra']);
+        
+        if ($streamed_response) {
+            stream_write_error($lang['FailedToDownloadExtra']);
+        } else {
+            set_alert(true, "bad", $lang['FailedToDownloadExtra']);
+        }
 
         // Return a failure
         return 0;
@@ -98,43 +138,61 @@ function download_extra($name)
     if (preg_match("/<result>(.*)<\/result>/", $result[0], $matches)) {
         switch($matches[1]) {
             case "Not Purchased":
-                // Display an alert
-                set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
+                if ($streamed_response) {
+                    stream_write_error($lang['RequestedExtraIsNotPurchased']);
+                } else {
+                    set_alert(true, "bad", $lang['RequestedExtraIsNotPurchased']);
+                }
 
                 // Return a failure
                 return 0;
 
             case "Invalid Extra Name":
-                // Display an alert
-                set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
+                if ($streamed_response) {
+                    stream_write_error($lang['RequestedExtraDoesNotExist']);
+                } else {
+                    set_alert(true, "bad", $lang['RequestedExtraDoesNotExist']);
+                }
 
                 // Return a failure
                 return 0;
 
             case "Unmatched IP Address":
-                // Display an alert
-                set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
+                if ($streamed_response) {
+                    stream_write_error($lang['InstanceWasRegisteredWithDifferentIp']);
+                } else {
+                    set_alert(true, "bad", $lang['InstanceWasRegisteredWithDifferentIp']);
+                }
 
                 // Return a failure
                 return 0;
 
             case "Instance Disabled":
-                // Display an alert
-                set_alert(true, "bad", $lang['InstanceIsDisabled']);
+                if ($streamed_response) {
+                    stream_write_error($lang['InstanceIsDisabled']);
+                } else {
+                    set_alert(true, "bad", $lang['InstanceIsDisabled']);
+                }
 
                 // Return a failure
                 return 0;
 
             case "Invalid Instance or Key":
-                // Display an alert
-                set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
+                if ($streamed_response) {
+                    stream_write_error($lang['InvalidInstanceIdOrKey']);
+                } else {
+                    set_alert(true, "bad", $lang['InvalidInstanceIdOrKey']);
+                }
 
                 // Return a failure
                 return 0;
 
             default:
-                // Display an alert
-                set_alert(true, "bad", $lang['FailedToDownloadExtra']);
+                if ($streamed_response) {
+                    stream_write_error($lang['FailedToDownloadExtra']);
+                } else {
+                    set_alert(true, "bad", $lang['FailedToDownloadExtra']);
+                }
 
                 // Return a failure
                 return 0;
@@ -148,8 +206,11 @@ function download_extra($name)
 
         //Check if we succeeded
         if (file_exists($extra_file)) {
-            // Display an alert
-            set_alert(true, "bad", $lang['FailedToCleanupExtraFiles']);
+            if ($streamed_response) {
+                stream_write_error($lang['FailedToCleanupExtraFiles']);
+            } else {
+                set_alert(true, "bad", $lang['FailedToCleanupExtraFiles']);
+            }
 
             // Return a failure
             return 0;
@@ -185,8 +246,11 @@ function download_extra($name)
         delete_file($file);
         delete_dir($source);
 
-        // Display an alert
-        set_alert(true, "good", $lang['ExtraInstalledSuccessfully']);
+        if ($streamed_response) {
+            stream_write($lang['ExtraInstalledSuccessfully']);
+        } else {
+            set_alert(true, "good", $lang['ExtraInstalledSuccessfully']);
+        }
 
         // Return a success
         return 1;

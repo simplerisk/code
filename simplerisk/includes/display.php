@@ -177,7 +177,7 @@ function add_risk_details(){
     echo "<form name=\"submit_risk\" method=\"post\" action=\"\" enctype=\"multipart/form-data\" id=\"risk-submit-form\">\n";
         echo "<div class=\"row-fluid padded-bottom subject-field\">\n";
             echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['Subject']).":</div>\n";
-            echo "<div class=\"span8\"><input maxlength=\"300\" name=\"subject\" id=\"subject\" class=\"form-control\" type=\"text\"></div>\n";
+            echo "<div class=\"span8\"><input maxlength=\"300\" title=\"".$escaper->escapeHtml($lang['Subject'])."\" required name=\"subject\" id=\"subject\" class=\"form-control\" type=\"text\"></div>\n";
         echo "</div>\n";
 
         // If customization extra is enabled
@@ -437,7 +437,7 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
 
     echo "<tr>\n";
     echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("location", $location)) . "</td>\n";
+    echo "<td>" . $escaper->escapeHtml(get_names_by_multi_values("location", $location, false, "; ")) . "</td>\n";
     echo "</tr>\n";
 
     echo "<tr>\n";
@@ -1104,7 +1104,7 @@ function mitigation_controls_dropdown($selected_control_ids_string = "")
 
     $eID = "mitigation_controls_".generate_token(10);
 
-    echo  "<select id=\"".$eID."\" name=\"mitigation_controls[]\" class=\"mitigation_controls\" multiple=\"multiple\">";
+    echo  "<select id=\"".$eID."\" name=\"mitigation_controls[]\" title=\"".$escaper->escapeHtml($lang['MitigationControls'])."\" class=\"mitigation_controls\" multiple=\"multiple\">";
         foreach($controls as $control){
             if(in_array($control['id'], $selected_control_ids)){
                 echo "<option value='".$control['id']."' selected title='".$escaper->escapeHtml($control['long_name'])."'>".$escaper->escapeHtml($control['short_name'])."</option>";
@@ -1178,7 +1178,7 @@ function print_mitigation_controls_table($control_ids){
                     url: BASE_URL + '/api/datatable/mitigation_controls',
                     data: function(d){
                         var form = $('#{$tableID}').parents('form');
-                        console.log($('.mitigation_controls', form).length)
+
                         if($('.mitigation_controls', form).length){
                             d.control_ids = $('.mitigation_controls', form).val().join(',');
                         }
@@ -3436,23 +3436,23 @@ function view_dread_help()
 ***************************/
 function view_top_menu($active)
 {
-    global $lang;
-    global $escaper;
+    global $lang, $escaper;
 
     echo "<script>\n";
     echo "var BASE_URL = '". (isset($_SESSION['base_url']) ? $_SESSION['base_url'] : "") ."'; \n";
+    echo "var field_required_lang = '". $escaper->escapeHtml($lang['FieldIsRequired']) ."'; \n";
     echo "</script>\n";
 
     // If the page is in the root directory
     if ($active == "Home")
     {
-    echo "<header class=\"l-header\">\n";
-    echo "<div class=\"navbar\">\n";
-    echo "<div class=\"navbar-inner\">\n";
-    echo "<div class=\"container-fluid\">\n";
-                                                echo "<a class=\"brand\" href=\"https://www.simplerisk.com/\"><img src='images/logo@2x.png' alt='SimpleRisk Logo' /></a>\n";
-    echo "<div class=\"navbar-content\">\n";
-    echo "<ul class=\"nav\">\n";
+        echo "<header class=\"l-header\">\n";
+        echo "<div class=\"navbar\">\n";
+        echo "<div class=\"navbar-inner\">\n";
+        echo "<div class=\"container-fluid\">\n";
+            echo "<a class=\"brand\" href=\"https://www.simplerisk.com/\"><img src='images/logo@2x.png' alt='SimpleRisk Logo' /></a>\n";
+        echo "<div class=\"navbar-content\">\n";
+        echo "<ul class=\"nav\">\n";
         // If the user has asset management permissions
         if (isset($_SESSION["asset"]) && $_SESSION["asset"] == "1")
         {
@@ -3925,6 +3925,9 @@ function view_reporting_menu($active)
     echo ($active == "RiskDashboard" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"dashboard.php\">" . $escaper->escapeHtml($lang['RiskDashboard']) . "</a>\n";
     echo "</li>\n";
+    echo ($active == "RiskAppetiteReport" ? "<li class=\"active\">\n" : "<li>\n");
+    echo "<a href=\"risk_appetite.php\">" . $escaper->escapeHtml($lang['RiskAppetiteReport']) . "</a>\n";
+    echo "</li>\n";
     echo ($active == "RiskTrend" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"trend.php\">" . $escaper->escapeHtml($lang['RiskTrend']) . "</a>\n";
     echo "</li>\n";
@@ -4125,12 +4128,11 @@ function view_risks_and_assets_selections($report)
 /******************************************
 * FUNCTION: VIEW GET RISKS BY SELECTIONS *
 ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_assets_filter=0, $tags_filter=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $custom_values=[])
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_assets_filter=0, $tags_filter=0, $locations_filter="", $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_accepted=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $custom_values=[])
 {
-    global $lang;
-    global $escaper;
-
-    echo "<form id=\"get_risks_by\" name=\"get_risks_by\" method=\"post\" action=\"dynamic_risk_report.php\">\n";
+    global $lang, $escaper;
+    
+    echo "<form id=\"get_risks_by\" name=\"get_risks_by\" method=\"post\" action=\"".$_SESSION['base_url'].$_SERVER['REQUEST_URI']."\">\n";
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span12\">\n";
     echo "<a href=\"javascript:;\" onclick=\"javascript: closeSearchBox()\"><img src=\"../images/X-100.png\" width=\"10\" height=\"10\" align=\"right\" /></a>\n";
@@ -4175,6 +4177,9 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_as
                 $('#affected_assets_filter').multiselect({
                     allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
                     maxHeight: 250,
+                    enableFiltering: true,
+                    enableCaseInsensitiveFiltering: true,
+                    filterPlaceholder: '".$escaper->escapeHtml($lang['SelectForAffectedAssets'])."',
                     buttonWidth: '100%',
                     includeSelectAllOption: true,
                     onChange: throttledFormSubmit,
@@ -4206,7 +4211,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_as
     echo "<option value=\"10\"" . ($group == 10 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskScoringMethod']) . "</option>\n";
     echo "<option value=\"4\"" . ($group == 4 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RiskSource']) . "</option>\n";
     echo "<option value=\"2\"" . ($group == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Status']) . "</option>\n";
-    echo "<option value=\"3\"" . ($group == 3 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['SiteLocation']) . "</option>\n";
+//    echo "<option value=\"3\"" . ($group == 3 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['SiteLocation']) . "</option>\n";
     echo "<option value=\"6\"" . ($group == 6 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Team']) . "</option>\n";
     echo "<option value=\"7\"" . ($group == 7 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Technology']) . "</option>\n";
     echo "</select>\n";
@@ -4248,20 +4253,238 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_as
                 });
             </script>";
 
+    // Site/Locations Selection
+    echo "<div class=\"span3\">\n";
+    echo "<div class=\"well\">\n";
+    echo "<h4>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</h4>\n";
+    create_multiple_dropdown("location", $locations_filter, "locations_filter", NULL, true, $escaper->escapeHtml($lang['Unassigned']));
+    echo "</div>\n";
+    echo "</div>\n";
+    echo "  <script>
+                $('#locations_filter').multiselect({
+                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
+                    maxHeight: 250,
+                    buttonWidth: '100%',
+                    includeSelectAllOption: true,
+                    onChange: throttledFormSubmit,
+                    onSelectAll: throttledFormSubmit,
+                    onDeselectAll: throttledFormSubmit,
+                });
+            </script>";
     echo "</div>\n";
 
     // Risk columns
-        echo display_risk_columns( $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $custom_values);
-
-
-
+    echo display_risk_columns( $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $custom_values);
+    
     echo "</form>\n";
+
+}
+
+/****************************************************
+* FUNCTION: CREATE DYNAMIC RISK SELECTIONS DROPDOWN *
+*****************************************************/
+function create_dynamic_saved_selections_dropdown()
+{
+    global $lang, $escaper;
+    
+    if(!empty($_GET['selection']))
+    {
+        $selection_id = (int)$_GET['selection'];
+    }
+    else
+    {
+        $selection_id = "";
+    }
+    
+    $options = get_dynamic_saved_selections($_SESSION['uid']);
+    
+    echo "<select required id='saved_selections'>";
+        echo "<option value=''>--</option>";
+        foreach($options as $option)
+        {
+            if($option['value'] == $selection_id){
+                $selected = "selected";
+            }else{
+                $selected = "";
+            }
+            
+            if($option['type'] == "private"){
+                echo "<option {$selected} value='{$option['value']}'>". $escaper->escapeHtml($option['name']). " -- ".$escaper->escapeHtml($lang['Private']) ."</option>";
+            }else{
+                echo "<option {$selected} value='{$option['value']}'>". $escaper->escapeHtml($option['name']) ."</option>";
+            }
+                
+        }
+    echo "</select>";
+    
+    // Delete button
+    if($selection_id)
+    {
+        $selection = get_dynamic_saved_selection($selection_id);
+        if($selection['user_id'] != $_SESSION['uid']){
+            $style = "display: none;";
+        }else{
+            $style = "";
+        }
+    }else{
+        $style = "display: none;";
+    }
+    echo "&nbsp;&nbsp;&nbsp;
+    <button class='btn' id='delete_saved_selection' style='{$style}'>".$escaper->escapeHtml($lang['Delete'])."</button>";    
+    
+    echo "<script>
+        $(document).ready(function(){
+            $('#delete_saved_selection').click(function(e){
+                e.preventDefault();
+                confirm(\"".$escaper->escapeHtml($lang["AreYouSureYouWantToDeleteSelction"])."\", \"delete_saved_selection()\");
+            })
+        })
+        function delete_saved_selection()
+        {
+            var id = $('#saved_selections').val();
+            $.ajax({
+                type: 'POST',
+                url: BASE_URL + '/api/reports/delete-dynamic-selection',
+                data:{
+                    id: id,
+                },
+                success: function(res){
+                    document.location.href = BASE_URL + '/reports/dynamic_risk_report.php';
+                },
+                error: function(xhr,status,error){
+                    if(!retryCSRF(xhr, this)){
+                        if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                            showAlertsFromArray(xhr.responseJSON.status_message);
+                        }
+                    }
+                }
+            });
+        }
+    </script>";
+}
+
+/*************************************************
+* FUNCTION: DISPLAY SAVE DYNAMIC RISK SELECTIONS *
+**************************************************/
+function display_save_dynamic_risk_selections()
+{
+    global $lang, $escaper;
+    
+        echo "<div class='row-fluid'>";
+            echo "
+                <form method='post' >
+                    <span>".$escaper->escapeHtml($lang['SavedSelections']).": &nbsp;&nbsp;&nbsp;</span>";
+                    create_dynamic_saved_selections_dropdown();
+            echo "</form>";
+        echo "</div>";
+        echo "
+        
+            <div class=\"well\" id='save-selections-container'>
+              <h4 class=\"collapsible--toggle clearfix\">
+                  <span><i class=\"fa fa-caret-right\"></i>".$escaper->escapeHtml($lang['SaveSelections'])."</span>
+              </h4>
+
+              <div class=\"collapsible\" style=\"display: none;\">";
+                echo "<form method='post' id='save-selections-form'>";        
+                    echo "<table width='100%'>";
+                        echo "<tr>";
+                            echo "<td width='150px' align='right'>";
+                                echo $escaper->escapeHtml($lang['Type']).":&nbsp;&nbsp;&nbsp;";
+                            echo "</td>";
+                            echo "
+                                <td width='30%'>
+                                    <select required id='saved-selection-type' name='type' title='". $escaper->escapeHtml($lang['PleaseSelectTypeForSaving']) ."'>
+                                        <option value=''>--</option>
+                                        <option value='public'>Public</option>
+                                        <option value='private'>Private</option>
+                                    </select>
+                                </td>
+                            ";
+                            echo "<td width='150px' align='right'>";
+                                echo $escaper->escapeHtml($lang['Name']).":&nbsp;&nbsp;&nbsp;";
+                            echo "</td>";
+                            echo "<td width='30%'>";
+                                echo "<input name='name' required type='text' placeholder='".$escaper->escapeHtml($lang['Name'])."' title='".$escaper->escapeHtml($lang['Name'])."'>";
+                            echo "</td>";
+                            echo "<td width='20%'>";
+                                echo "<button class='btn' >".$escaper->escapeHtml($lang['Save'])."</button>";
+                            echo "</td>";
+                        echo "</tr>";
+                    echo "</table>";
+                echo "</form>";
+              echo "</div>
+            </div>
+        ";
+    
+    echo "<script>";
+        echo "
+            $(document).ready(function(){
+                \$('#save-selections-container').on('click', '.collapsible--toggle span', function(event) {
+                    event.preventDefault();
+                    \$(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
+                    \$(this).find('i').toggleClass('fa-caret-right fa-caret-down');
+                });
+                
+                $('#save-selections-form').submit(function(){
+                    var self = $(this);
+                    var type = $('#saved-selection-type', self).val();
+                    var name = $('input[name=name]', self).val();
+                    
+                    var checkBoxes = $(\"form[name='get_risks_by'] .hidden-checkbox\");
+                    var viewColumns = [];
+                    checkBoxes.each(function(){
+                        if($(this).is(':checked'))
+                            viewColumns.push($(this).attr('name'));
+                    })
+
+                    var test = $.ajax({
+                        type: 'POST',
+                        url: BASE_URL + '/api/reports/save-dynamic-selections',
+                        data:{
+                            type: type,
+                            name: name,
+                            columns: viewColumns
+                        },
+                        success: function(res){
+                            var value = res.data.value;
+                            var name = res.data.name;
+                            if(value)
+                            {
+                                $('#saved_selections').append('<option value='+value+'>'+name+'</option>');
+                                self[0].reset();
+                            }
+                            showAlertsFromArray(res.status_message);
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this)){
+                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                            }
+                        }
+                    });
+                    
+                    return false;
+                })
+                
+                $('#saved_selections').change(function(){
+                    var selection = $(this).val();
+                    if(selection)
+                        $('#get_risks_by').attr('action', BASE_URL + '/reports/dynamic_risk_report.php?selection=' + selection)
+                    else
+                        $('#get_risks_by').attr('action', BASE_URL + '/reports/dynamic_risk_report.php')
+
+                    $('#get_risks_by').submit();
+                })
+            })
+        ";
+    echo "</script>";
 }
 
 /*********************************
 * FUNCTION: DISPLAY RISK COLUMNS *
 **********************************/
-function display_risk_columns( $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $custom_values=[]){
+function display_risk_columns( $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_accepted=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $custom_values=[]){
     global $escaper, $lang;
     echo "<div class=\"row-fluid\">\n";
 
@@ -4737,6 +4960,12 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
         </tr>\n";
         echo "<tr>
         <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_accepted\" id=\"checkbox_mitigation_accepted\"" . ($mitigation_accepted == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_mitigation_accepted\">". $escaper->escapeHtml($lang['MitigationAccepted']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
         <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_date\" id=\"checkbox_mitigation_date\"" . ($mitigation_date == true ? " checked=\"yes\"" : "") . " />
         <label for=\"checkbox_mitigation_date\">". $escaper->escapeHtml($lang['MitigationDate']) ."</label>
         </td>
@@ -4955,11 +5184,11 @@ function get_dynamic_names_by_main_field_name($field_name)
 //                'name' => "submission_date",
 //                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
 //            ],
-//        'AcceptMitigation' => 
-//            [
-//                'name' => "submission_date",
-//                'text' => $escaper->escapeHtml($lang['SubmissionDate']),
-//            ],
+        'AcceptMitigation' => 
+            [
+                'name' => "mitigation_accepted",
+                'text' => $escaper->escapeHtml($lang['MitigationAccepted']),
+            ],
         'CurrentSolution' => 
             [
                 'name' => "current_solution",
@@ -6070,7 +6299,7 @@ function display_score_html_from_pending_risk($scoring_method="5", $custom=false
         $scoring_method = 5;
 
     $html = "
-        <tbody class='risk-scoring-container'>&nbsp;
+        <tbody class='risk-scoring-container'>
             <tr>
                 <td style=\"white-space: nowrap;\">". $escaper->escapeHtml($lang['RiskScoringMethod']) .": &nbsp;</td>
                 <td >
@@ -7170,11 +7399,11 @@ function display_review_date_issues()
                                 datatableInstance.ajax.reload(null, false);
                             },
                             error: function(xhr,status,error){
-                                if(xhr.responseJSON && xhr.responseJSON.status_message){
-                                    showAlertsFromArray(xhr.responseJSON.status_message);
-                                }
                                 if(!retryCSRF(xhr, this))
                                 {
+                                    if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                        showAlertsFromArray(xhr.responseJSON.status_message);
+                                    }
                                 }
                             }
                         });

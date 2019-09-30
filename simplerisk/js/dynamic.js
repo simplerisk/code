@@ -48,7 +48,6 @@ $(document).ready(function(){
                         d.status                    = $("#status").val();
                         d.group                     = $("#group").val();
                         d.sort                      = $("#sort").val();
-                        d.affected_assets_filter    = $("#affected_assets_filter").val();
                         d.group_value               = $this.data('group');
                         
                         // Set params in risks_by_teams page
@@ -59,6 +58,8 @@ $(document).ready(function(){
                             d.ownersmanagers    = $("#ownersmanagers").val();
                         } else {
                             d.tags_filter    = $("#tags_filter").val();
+                            d.locations_filter    = $("#locations_filter").val();
+                            d.affected_assets_filter    = $("#affected_assets_filter").val();
                         }
                     }
                 },
@@ -88,9 +89,9 @@ $(document).ready(function(){
                         * 28: additional_notes
                         * 29: current_solution
                         * 30: security_recommendations
-                        * 40: risk_tags
+                        * 41: risk_tags
                         */
-                        "targets" : [21, 22, 23, 26, 27, 28, 29, 30, 40],
+                        "targets" : [21, 22, 23, 26, 27, 28, 29, 30, 41],
                         "orderable" : false,
                     },
                 ]

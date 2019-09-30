@@ -91,6 +91,7 @@ if($result = process_assessment_questionnaires()){
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/bootstrap-multiselect.js"></script>
     <script src="../js/jquery.dataTables.js"></script>
+    <script src="../js/common.js"></script>
     <script src="../js/pages/assessment.js"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>

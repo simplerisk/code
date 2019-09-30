@@ -56,7 +56,7 @@ function display_site_location_view($location)
     echo $escaper->escapeHtml($lang['SiteLocation']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<input style=\"cursor: default;\" type=\"text\" name=\"location\" id=\"location\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("location", $location)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("location", $location)) . "\" disabled=\"disabled\" />\n";
+    echo "<div style=\"cursor: default;\" type=\"text\" name=\"location\" id=\"location\" size=\"50\" title=\"" . $escaper->escapeHtml(get_names_by_multi_values("location", $location, false, "; ")) . "\" disabled=\"disabled\" >" . $escaper->escapeHtml(get_names_by_multi_values("location", $location, false, "; ")) . "</div>\n";
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -509,7 +509,18 @@ function display_location_edit($location)
     echo $escaper->escapeHtml($lang['SiteLocation']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    create_dropdown("location", $location);
+//    create_dropdown("location", $location);
+    if($location)
+    {
+        $locations = explode(",", $location);
+    }
+    else
+    {
+        $locations = [];
+    }
+    
+    
+    create_multiple_dropdown("location", $locations, NULL, NULL, false, "", "", true, " class='multiselect' ");
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -1290,7 +1301,7 @@ function display_custom_field_print($field, $custom_values, $review_id=0)
         echo "<td >\n";
             echo "<b>". $escaper->escapeHtml($field['name']) .":</td>\n";
         echo "<td>\n";
-            echo get_custom_field_name_by_value($field['id'], $field['type'], $value);
+            echo get_custom_field_name_by_value($field['id'], $field['type'], $field['encryption'], $value);
         echo "</td>\n";
     echo "</tr>";
     
@@ -1309,7 +1320,7 @@ function display_mitigation_submission_date_edit($mitigation_date)
                 .$escaper->escapeHtml($lang['MitigationDate']) .": \n
             </div>
             <div class=\"span7\">
-                <input style=\"cursor: default;\" type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $escaper->escapeHtml($mitigation_date) . "\" title=\"" . $escaper->escapeHtml($mitigation_date) . "\" disabled=\"disabled\" />
+                <input title=\"".$escaper->escapeHtml($lang['MitigationDate']) ."\" style=\"cursor: default;\" type=\"text\" name=\"mitigation_date\" id=\"mitigation_date\" size=\"50\" value=\"" . $escaper->escapeHtml($mitigation_date) . "\" title=\"" . $escaper->escapeHtml($mitigation_date) . "\" disabled=\"disabled\" />
             </div>
         </div>
     ";
@@ -1328,7 +1339,7 @@ function display_mitigation_planning_date_edit($planning_date)
                 .$escaper->escapeHtml($lang['MitigationPlanning']) .": \n
             </div>
             <div class=\"span7\">
-                <input type=\"text\" name=\"planning_date\"  size=\"50\" value=\"" . $escaper->escapeHtml($planning_date) . "\" class='datepicker active-textfield' />
+                <input title=\"".$escaper->escapeHtml($lang['MitigationPlanning']) ."\" type=\"text\" name=\"planning_date\"  size=\"50\" value=\"" . $escaper->escapeHtml($planning_date) . "\" class='datepicker active-textfield' />
             </div>
         </div>
     ";
@@ -1347,7 +1358,7 @@ function display_mitigation_planning_strategy_edit($planning_strategy)
                 .$escaper->escapeHtml($lang['PlanningStrategy']) .": \n
             </div>
             <div class=\"span7\">";
-                create_dropdown("planning_strategy", $planning_strategy);
+                create_dropdown("planning_strategy", $planning_strategy, NULL, true, false, false, $customHtml="title='" .$escaper->escapeHtml($lang['PlanningStrategy']) ."'");
             echo "</div>
         </div>
     ";
@@ -1366,7 +1377,7 @@ function display_mitigation_effort_edit($mitigation_effort)
                 .$escaper->escapeHtml($lang['MitigationEffort']) .": 
             </div>
             <div class=\"span7\">";
-                create_dropdown("mitigation_effort", $mitigation_effort);
+                create_dropdown("mitigation_effort", $mitigation_effort, NULL, true, false, false, $customHtml="title='" .$escaper->escapeHtml($lang['MitigationEffort']) ."'");
         echo "</div>
         </div>
     ";
@@ -1385,7 +1396,7 @@ function display_mitigation_cost_edit($mitigation_cost)
                 .$escaper->escapeHtml($lang['MitigationCost']) .": 
             </div>
             <div class=\"span7\">";
-                echo create_asset_valuation_dropdown("mitigation_cost", $mitigation_cost);
+                echo create_asset_valuation_dropdown("mitigation_cost", $mitigation_cost, NULL, "title='".$escaper->escapeHtml($lang['MitigationCost']) ."'");
         echo "</div>
         </div>
     ";
@@ -1404,7 +1415,7 @@ function display_mitigation_owner_edit($mitigation_owner)
                 .$escaper->escapeHtml($lang['MitigationOwner']) .": 
             </div>
             <div class=\"span7\">";
-                create_dropdown("enabled_users", $mitigation_owner, "mitigation_owner", true);
+                create_dropdown("enabled_users", $mitigation_owner, "mitigation_owner", true, $help = false, $returnHtml=false, $customHtml="title='".$escaper->escapeHtml($lang['MitigationOwner']) ."'");
         echo "</div>
         </div>
     ";
@@ -1444,7 +1455,7 @@ function display_mitigation_percent_edit($mitigation_percent)
                 .$escaper->escapeHtml($lang['MitigationPercent']) .": 
             </div>
             <div class=\"span7\">";
-                echo "<input type=\"number\" min=\"0\" max=\"100\" name=\"mitigation_percent\" id=\"mitigation_percent\" size=\"50\" value=\"" . $escaper->escapeHtml($mitigation_percent) . "\" class='percent active-textfield' />";
+                echo "<input type=\"number\" min=\"0\" max=\"100\" name=\"mitigation_percent\" title=\"".$escaper->escapeHtml($lang['MitigationPercent']) ."\" id=\"mitigation_percent\" size=\"50\" value=\"" . $escaper->escapeHtml($mitigation_percent) . "\" class='percent active-textfield' />";
             echo "</div>
         </div>
     ";
@@ -1482,7 +1493,7 @@ function display_current_solution_edit($current_solution)
                 .$escaper->escapeHtml($lang['CurrentSolution']) .": 
             </div>
             <div class=\"span7\">
-                <textarea  class=\"active-textfield\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" tabindex=\"1\">" . $escaper->escapeHtml($current_solution) . "</textarea>
+                <textarea  class=\"active-textfield\" title=\"".$escaper->escapeHtml($lang['CurrentSolution']) ."\" name=\"current_solution\" cols=\"50\" rows=\"3\" id=\"current_solution\" tabindex=\"1\">" . $escaper->escapeHtml($current_solution) . "</textarea>
             </div>
         </div>
     ";
@@ -1501,7 +1512,7 @@ function display_security_requirements_edit($security_requirements)
                 .$escaper->escapeHtml($lang['SecurityRequirements']) .": 
             </div>
             <div class=\"span7\">
-                <textarea class=\"active-textfield\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" tabindex=\"1\">" . $escaper->escapeHtml($security_requirements) . "</textarea>
+                <textarea class=\"active-textfield\" title=\"".$escaper->escapeHtml($lang['SecurityRequirements']) ."\" name=\"security_requirements\" cols=\"50\" rows=\"3\" id=\"security_requirements\" tabindex=\"1\">" . $escaper->escapeHtml($security_requirements) . "</textarea>
             </div>
         </div>
     ";
@@ -1520,7 +1531,7 @@ function display_security_recommendations_edit($security_recommendations)
                 .$escaper->escapeHtml($lang['SecurityRecommendations']) .": 
             </div>
             <div class=\"span7\">
-                <textarea class=\"active-textfield\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" tabindex=\"1\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>
+                <textarea class=\"active-textfield\" title=\"".$escaper->escapeHtml($lang['SecurityRecommendations']) ."\" name=\"security_recommendations\" cols=\"50\" rows=\"3\" id=\"security_recommendations\" tabindex=\"1\">" . $escaper->escapeHtml($security_recommendations) . "</textarea>
             </div>
         </div>
     ";

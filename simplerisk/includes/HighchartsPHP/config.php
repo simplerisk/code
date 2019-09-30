@@ -5,7 +5,7 @@
  */
 $jsFiles = array(
     'jQuery' => array(
-        'name' => 'jquery-2.1.3.min.js',
+        'name' => 'jquery-3.4.1.min.js',
         'path' => '//code.jquery.com/'
     ),
 

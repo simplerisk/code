@@ -88,22 +88,29 @@ if (isset($_POST['submit']))
         // Set login status
         login($user, $pass);
 
-      }
-      // If the user is not a valid user
-      else
-      {
-          $_SESSION["access"] = "denied";
+    }
+    // If the user is not a valid user
+    else {
+        // In case the login attempt fails we're checking the cause.
+        // If it's because the user 'Does Not Exist' we're doing a dummy
+        // validation to make sure we're using the same time on a non-existant
+        // user than we'd use on an existing
+        if (get_user_type($user, false) === "DNE") {
+            is_valid_simplerisk_user("admin", generate_token(40));
+        }
 
-          // Display an alert
-          set_alert(true, "bad", "Invalid username or password.");
+        $_SESSION["access"] = "denied";
 
-          // If the password attempt lockout is enabled
-          if(get_setting("pass_policy_attempt_lockout") != 0)
-          {
-              // Add the login attempt and block if necessary
-              add_login_attempt_and_block($user);
-          }
-      }
+        // Display an alert
+        set_alert(true, "bad", "Invalid username or password.");
+
+        // If the password attempt lockout is enabled
+        if(get_setting("pass_policy_attempt_lockout") != 0)
+        {
+            // Add the login attempt and block if necessary
+            add_login_attempt_and_block($user);
+        }
+    }
 }
 
 if (isset($_SESSION["access"]) && ($_SESSION["access"] == "granted"))

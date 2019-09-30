@@ -60,13 +60,13 @@
     // Check if an asset was added
     if ((isset($_POST['add_asset'])) && $manage_assets)
     {
-        $name = $_POST['asset_name'];
-        $ip = $_POST['ip'];
-        $value = $_POST['value'];
-        $location = $_POST['location'];
-        $team = $_POST['team'];
-        $details = $_POST['details'];
-        $tags = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
+        $name       = $_POST['asset_name'];
+        $ip         = $_POST['ip'];
+        $value      = $_POST['value'];
+        $location   = (int)$_POST['location'];
+        $team       = (int)$_POST['team'];
+        $details    = $_POST['details'];
+        $tags       = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
         
         if($name)
         {
@@ -81,8 +81,16 @@
             }
             else
             {
+                // Get alert text
+                $alert_message = get_alert(false, true);
+                
+                if(!$alert_message)
+                {
+                    $alert_message = $escaper->escapeHtml($lang['ThereWasAProblemAddingTheAsset']);
+                }
+
                 // Display an alert
-                set_alert(true, "bad", $escaper->escapeHtml($lang['ThereWasAProblemAddingTheAsset']));
+                set_alert(true, "bad", $alert_message);
             }
         }
         else

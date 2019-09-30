@@ -123,12 +123,7 @@ if(process_assessment_questionnaire_questions()){
             </div>
             <div class="span9">
                 <?php if(isset($_GET['action']) && $_GET['action']=="questions_list"){ ?>
-                    <div class="row-fluid text-right content-navbar-container">
-                        <a class="btn" href="questionnaire_questions.php?action=add_question"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
-                    </div>
-                    <div class="row-fluid">
                         <?php display_questionnaire_questions(); ?>
-                    </div>
                 <?php }elseif(isset($_GET['action']) && $_GET['action']=="add_question"){ ?>
                     <div class="hero-unit">
                         <?php display_questionnaire_question_add(); ?>

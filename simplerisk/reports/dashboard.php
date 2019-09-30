@@ -69,6 +69,9 @@ if(isset($_GET['teams'])){
 // Get the risk pie array
 $pie_array = get_pie_array(null, $teams);
 
+// Get the risk location pie array
+$pie_location_array = get_pie_array("location", $teams);
+
 ?>
 
 <!doctype html>
@@ -151,7 +154,7 @@ $pie_array = get_pie_array(null, $teams);
           </div>
           <div class="span4">
             <div class="well">
-              <?php open_risk_location_pie($pie_array, js_string_escape($lang['SiteLocation'])); ?>
+              <?php open_risk_location_pie($pie_location_array, js_string_escape($lang['SiteLocation'])); ?>
             </div>
           </div>
         </div>

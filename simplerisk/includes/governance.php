@@ -2186,7 +2186,7 @@ function approve_exception($id) {
 
     $db = db_open();
 
-    $stmt = $db->prepare("select name, value from `document_exceptions` where `value`=:id;");
+    $stmt = $db->prepare("select name, value, next_review_date, review_frequency from `document_exceptions` where `value`=:id;");
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -2194,9 +2194,15 @@ function approve_exception($id) {
 
     $approver = (int)$_SESSION['uid'];
 
+    // Calculate next review date: today's date + review_frequency
+    $today = time();
+    $next_review_date = strtotime("+{$approved_exception['review_frequency']} day", $today);
+    $next_review_date = date("Y-m-d", $next_review_date);
+    
     // approve the exception
-    $stmt = $db->prepare("UPDATE `document_exceptions` SET `approved`=1, `approval_date`=CURDATE(), `approver`=:approver where `value`=:id;");
+    $stmt = $db->prepare("UPDATE `document_exceptions` SET `approved`=1, `approval_date`=CURDATE(), `approver`=:approver, `next_review_date`=:next_review_date where `value`=:id;");
     $stmt->bindParam(":approver", $approver, PDO::PARAM_INT);
+    $stmt->bindParam(":next_review_date", $next_review_date, PDO::PARAM_STR);
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 

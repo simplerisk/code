@@ -316,6 +316,40 @@ function confirm(message, callback){
     $("#" + modal_container_id).modal('show');
 }
 
+function checkAndSetValidation(container)
+{
+    var issue_els = [];
+    $("input, select, textarea", container).each(function(){
+        if($(this).prop('required') && (!$(this).val() || (Array.isArray($(this).val()) && $(this).val().length==0) ) ){
+            issue_els.push($(this));
+        }
+    })
+    // If issue elements exist, stop progress
+    if(issue_els.length > 0)
+    {
+        var error_messages = [];
+        issue_els.reverse();
+        for(var key in issue_els){
+            var issue_el = issue_els[key];
+            
+            if(issue_el.parent().hasClass("multiselect-native-select")){
+                issue_el.parent().find("button.multiselect").addClass("error")
+                issue_el.parent().find("button.multiselect").focus()
+            }else{
+                issue_el.addClass("error");
+                issue_el.focus()
+            }
+            var message = field_required_lang.replace("_XXX_", issue_el.attr("title"))
+            showAlertFromMessage(message, false)
+        }
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
 $(document).ready(function(){
     if(jQuery.ui !== undefined){
         jQuery.ui.autocomplete.prototype._resizeMenu = function () {
@@ -341,7 +375,6 @@ $(document).ready(function(){
     })
     
     $(document).on('change', '.hidden-file-upload.active', function(event) {
-//        event.preventDefault();
         var $parent = $(this).parents('.file-uploader');
         $(this).removeClass("active")
         var currentButtonId = $(this).attr('id');

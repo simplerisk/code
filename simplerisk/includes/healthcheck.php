@@ -53,6 +53,9 @@ function simplerisk_health_check()
 
 	echo "<br /><b><u>MySQL</u></b><br />";
 
+	// Check the current database size and free space
+	check_mysql_size();
+
 	// Check if MySQL STRICT SQL mode is enabled
 	//check_strict_sql_mode();
 
@@ -197,7 +200,7 @@ function check_web_connectivity()
 function check_php_extensions()
 {
 	// List of extensions to check for
-	$extensions = array("pdo", "pdo_mysql", "mcrypt", "json", "phar", "zlib", "mbstring", "ldap", "dom");
+	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom");
 
 	// For each extension
 	foreach ($extensions as $extension)
@@ -313,6 +316,30 @@ function check_no_zero_date()
         {       
                 health_check_good("Verified that NO_ZERO_DATE is not enabled for MySQL.");
         }
+}
+
+/******************************
+ * FUNCTION: CHECK MYSQL SIZE *
+ ******************************/
+function check_mysql_size()
+{
+	// Open a database connection
+	$db = db_open();
+
+	 // Query for the size and free space
+	$stmt = $db->prepare("SELECT table_schema, sum( data_length + index_length ) / 1024 / 1024 size, sum( data_free )/ 1024 / 1024 free FROM information_schema.TABLES WHERE table_schema='".DB_DATABASE."';");
+	$stmt->execute();
+	$array = $stmt->fetch();
+	$size = $array['size'];
+	$free = $array['free'];
+
+	// Close the database connection
+	db_close($db);
+
+	// Get the percent remaining
+	//$remaining_percent = $free / $size;
+
+	health_check_good("SimpleRisk is using " . round($size, 2) . " MB of disk space.");
 }
 
 /**************************************

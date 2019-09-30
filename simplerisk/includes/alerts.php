@@ -37,14 +37,28 @@ function set_alert($alert = false, $type = "good", $message = "")
 /***********************
  * FUNCTION: GET ALERT *
  ***********************/
-function get_alert($returnHtml = false)
+function get_alert($returnHtml = false, $plainText = false)
 {
     global $escaper;
 
     if (isset($_SESSION['alerts']) && is_array($_SESSION['alerts']))
     {
         // If it has to return the alert data...
-        if($returnHtml){
+        if($plainText)
+        {
+            $result = array();
+            
+            // ...we build the array with the required format(also, escaping the messages)...
+            foreach($_SESSION['alerts'] as $alert) {
+                array_push($result, $escaper->escapeHtml($alert['alert_message']));
+            }
+            
+            clear_alert();
+            // ...and return it as a JSON string.
+            return implode(", ", $result);           
+        }
+        elseif($returnHtml)
+        {
             
             $result = array();
             

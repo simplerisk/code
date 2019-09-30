@@ -82,46 +82,46 @@
         }
     }
 
-/*********************
- * FUNCTION: DISPLAY *
- *********************/
-function display($display = "")
-{
-    global $lang;
-    global $escaper;
-
-    // If the extra directory exists
-    if (is_dir(realpath(__DIR__ . '/../extras/notification')))
+    /*********************
+     * FUNCTION: DISPLAY *
+     *********************/
+    function display($display = "")
     {
-        // But the extra is not activated
-        if (!notification_extra())
+        global $lang;
+        global $escaper;
+
+        // If the extra directory exists
+        if (is_dir(realpath(__DIR__ . '/../extras/notification')))
         {
-            // If the extra is not restricted based on the install type
-            if (!restricted_extra("notification"))
+            // But the extra is not activated
+            if (!notification_extra())
             {
-                echo "<form name=\"activate\" method=\"post\" action=\"\">\n";
-                echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
-                echo "</form>\n";
-                echo "</div>\n";
+                // If the extra is not restricted based on the install type
+                if (!restricted_extra("notification"))
+                {
+                    echo "<form name=\"activate\" method=\"post\" action=\"\">\n";
+                    echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
+                    echo "</form>\n";
+                    echo "</div>\n";
+                }
+                // The extra is restricted
+                else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
             }
-            // The extra is restricted
-            else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
+            // Once it has been activated
+            else
+            {
+                // Include the Notification Extra
+                require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+
+                display_notification();
+            }
         }
-        // Once it has been activated
+        // Otherwise, the Extra does not exist
         else
         {
-            // Include the Notification Extra
-            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-            display_notification();
+            echo "<a href=\"https://www.simplerisk.com/extras\" target=\"_blank\">Purchase the Extra</a>\n";
         }
     }
-    // Otherwise, the Extra does not exist
-    else
-    {
-        echo "<a href=\"https://www.simplerisk.com/extras\" target=\"_blank\">Purchase the Extra</a>\n";
-    }
-}
 
 ?>
 
@@ -175,23 +175,16 @@ function display($display = "")
     </div>
     <script>
         $(document).ready(function(){
-            $("#cron_period").change(function(){
+            $(".period-dropdown").change(function(){
                 var period = $(this).val();
                 
-                $(".specified_time_holder", "#past-due-container").hide();
-                $("input, select", "#past-due-container .specified_time_holder").prop('disabled', true);
+                var container = $(this).closest("table");
+                $(".specified_time_holder", container).hide();
+                $(".specified_time_holder input, .specified_time_holder select", container).prop('disabled', true);
                 
-                $("#specified_" + period, "#past-due-container").show();
-                $("input, select", "#past-due-container #specified_" + period).prop('disabled', false);
-            })
-            $("#cron_non_mitigation_period").change(function(){
-                var period = $(this).val();
+                $("#specified_" + period, container).show();
+                $("#specified_" + period + " input," + "#specified_" + period + " select", container).prop('disabled', false);
                 
-                $(".specified_time_holder", "#non-mitigation-container").hide();
-                $("input, select", "#non-mitigation-container .specified_time_holder").prop('disabled', true);
-                
-                $("#specified_" + period, "#non-mitigation-container").show();
-                $("input, select", "#non-mitigation-container #specified_" + period).prop('disabled', false);
             })
         });
 

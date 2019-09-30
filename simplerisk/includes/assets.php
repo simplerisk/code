@@ -238,9 +238,11 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "", $t
     // If the asset does not already exist
     if (!asset_exists($name)) {
         // Trim whitespace from the name, ip, and value
-        $name = trim($name);
-        $ip = trim($ip);
-        $value = trim($value);
+        $name   = trim($name);
+        $ip     = trim($ip);
+        $value  = trim($value);
+        $location = (int)$location;
+        $team   = (int)$team;
         
         if (!$name)
             return false;
@@ -295,20 +297,30 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "", $t
         // Close the database connection
         db_close($db);
 
-        if ($asset_id != 0) {
-            updateTagsOfType($asset_id, 'asset', $tags);
-        }
-
         // If customization extra is enabled
         if(customization_extra())
         {
             // Include the extra
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-            // Save asset custom data
-            save_asset_custom_field_values($asset_id);
+            // If there is error in saving custom asset values, return false
+            if(!save_asset_custom_field_values($asset_id))
+            {
+                delete_asset($asset_id);
+                return false;
+            }
         }
-        
+
+        if ($asset_id != 0) {
+            updateTagsOfType($asset_id, 'asset', $tags);
+        }
+
+        // If the encryption extra is enabled, updates order_by_name
+        if (encryption_extra()) {
+            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+            create_asset_name_order($_SESSION['encrypted_pass']);
+        }
+
         $message = "An asset named \"" . try_decrypt($name) . "\" was added by username \"" . $_SESSION['user'] . "\".";
         write_log($asset_id , $_SESSION['uid'], $message, "asset");
     
@@ -399,6 +411,13 @@ function delete_asset($asset_id)
         $stmt->execute();
     }
 
+    // If customization extra is enabled, delete custom_asset_data related with asset ID
+    if(customization_extra())
+    {
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        delete_custom_data_by_asset_id($asset_id);
+    }
+    
     $message = "An asset named \"" . $name . "\" was deleted by username \"" . $_SESSION['user'] . "\".";
     write_log($asset_id , $_SESSION['uid'], $message, "asset");
 
@@ -789,6 +808,10 @@ function get_entered_assets($verified=null)
         $verified_check = "";
     }
 
+    if (encryption_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+    }
+
     $stmt = $db->prepare("
         SELECT
             a.*,
@@ -801,7 +824,8 @@ function get_entered_assets($verified=null)
         GROUP BY
             a.id
         ORDER BY
-            a.name;");
+            " . (encryption_extra() ? "a.order_by_name" : "a.name") . "
+    ;");
     $stmt->execute($params);
 
     // Store the list in the assets array
@@ -907,29 +931,6 @@ function tag_assets_to_risk($risk_id, $assets, $entered_assets=false)
 
     // Close the database connection
     db_close($db);
-}
-
-/*********************************
- * FUNCTION: GET ASSETS FOR RISK *
- *********************************/
-function get_assets_for_risk($risk_id)
-{
-    // Open the database connection
-    $db = db_open();
-
-    // Get the assets
-    $stmt = $db->prepare("SELECT b.name as asset FROM `risks_to_assets` a JOIN `assets` b ON a.asset_id = b.id WHERE risk_id = :risk_id ORDER BY b.name");
-    $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Store the list in the assets array
-    $assets = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the assets array
-    return $assets;
 }
 
 /**********************************
@@ -1133,11 +1134,13 @@ function update_asset_field_value_by_field_name($id, $fieldName, $fieldValue)
 function import_asset($ip, $name, $value, $location, $team, $details, $tags, $verified)
 {
     // Trim whitespace from the name, ip, and value
-    $name = trim($name);
-    $ip = trim($ip);
-    $value = trim($value);
+    $name       = trim($name);
+    $ip         = trim($ip);
+    $value      = trim($value);
+    $location   = (int)$location;
+    $team       = (int)$team;
 
-    $asset_id = asset_exists($name);
+    $asset_id   = asset_exists($name);
 
     if (!$asset_id)
         return add_asset($ip, $name, $value, $location, $team, $details, $tags, $verified, true);
@@ -1378,7 +1381,7 @@ function display_asset_valuation_table()
 /*********************************************
  * FUNCTION: CREATE ASSET VALUATION DROPDOWN *
  *********************************************/
-function create_asset_valuation_dropdown($name, $selected = NULL, $id = NULL)
+function create_asset_valuation_dropdown($name, $selected = NULL, $id = NULL, $customHtml="")
 {
     global $escaper;
 
@@ -1393,7 +1396,7 @@ function create_asset_valuation_dropdown($name, $selected = NULL, $id = NULL)
         $stmt->execute();
         $values = $stmt->fetchAll();
         
-    echo "<select id=\"" . $escaper->escapeHtml($id) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\" >\n";
+    echo "<select id=\"" . $escaper->escapeHtml($id) . "\" name=\"" . $escaper->escapeHtml($name) . "\" {$customHtml} class=\"form-field\" style=\"width:auto;\" >\n";
 
         // For each asset value
         foreach ($values as $value)
@@ -1599,28 +1602,6 @@ function get_asset_valuation_array()
 
     // Return the array
     return $asset_valuation_array;
-}
-
-/*********************************
- * FUNCTION : ASSETS FOR RISK ID *
- *********************************/
-function assets_for_risk_id($risk_id)
-{
-    // Open the database connection
-    $db = db_open();
-
-    // Update the default asset valuation
-    $stmt = $db->prepare("SELECT a.id, a.ip, a.name, a.value, a.location, a.team, a.created, a.verified FROM `assets` a LEFT JOIN `risks_to_assets` b ON a.id = b.asset_id WHERE b.risk_id=:risk_id; ");
-    $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT, 11);
-    $stmt->execute();
-
-    $assets = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-    // Return the assets array
-    return $assets;
 }
 
 /*****************************************
@@ -1896,6 +1877,10 @@ function get_asset_group($asset_group_id) {
 
     $db = db_open();
 
+    if (encryption_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+    }
+
     $stmt = $db->prepare("
         SELECT
             *
@@ -1919,7 +1904,9 @@ function get_asset_group($asset_group_id) {
             `a`.id, `a`.`name`
         FROM
             `assets` a
-            INNER JOIN `assets_asset_groups` aag ON `aag`.`asset_id` = `a`.`id` AND `aag`.`asset_group_id` = :asset_group_id;
+            INNER JOIN `assets_asset_groups` aag ON `aag`.`asset_id` = `a`.`id` AND `aag`.`asset_group_id` = :asset_group_id
+        ORDER BY
+            " . (encryption_extra() ? "a.order_by_name" : "a.name") . ";
     ");
     $stmt->bindParam(":asset_group_id", $asset_group_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -1932,7 +1919,9 @@ function get_asset_group($asset_group_id) {
             `assets` a
             LEFT OUTER JOIN `assets_asset_groups` aag ON `aag`.`asset_id` = `a`.`id` AND `aag`.`asset_group_id` = :asset_group_id
         WHERE
-            `aag`.`asset_id` IS NULL;
+            `aag`.`asset_id` IS NULL
+        ORDER BY
+            " . (encryption_extra() ? "a.order_by_name" : "a.name") . ";
     ");
     $stmt->bindParam(":asset_group_id", $asset_group_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -1957,6 +1946,10 @@ function get_assets_of_asset_group($asset_group_id) {
 
     $db = db_open();
 
+    if (encryption_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+    }
+
     // Load assets currently assigned to the group
     $stmt = $db->prepare("
         SELECT
@@ -1965,7 +1958,9 @@ function get_assets_of_asset_group($asset_group_id) {
             `assets` a
             INNER JOIN `assets_asset_groups` aag ON `aag`.`asset_id` = `a`.`id`
         WHERE
-            `aag`.`asset_group_id` = :asset_group_id;
+            `aag`.`asset_group_id` = :asset_group_id
+        ORDER BY
+            " . (encryption_extra() ? "a.order_by_name" : "a.name") . ";
     ");
     $stmt->bindParam(":asset_group_id", $asset_group_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -2254,7 +2249,7 @@ function import_assets_asset_groups_for_type($type_id, $asset_and_group_names, $
     $stmt->execute();    
 
     // For each asset or group
-    foreach (explode(',', $asset_and_group_names) as $name)
+    foreach (array_unique(explode(',', $asset_and_group_names)) as $name)
     {
         // Trim whitespaces
         $name = trim($name);
@@ -2405,6 +2400,10 @@ function get_assets_of_asset_group_for_treegrid($id){
 
     $result = [];
 
+    if (encryption_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+    }
+
     $db = db_open();
 
     $stmt = $db->prepare("
@@ -2419,7 +2418,7 @@ function get_assets_of_asset_group_for_treegrid($id){
         GROUP BY
             a.id
         ORDER BY
-            a.id;
+            " . (encryption_extra() ? "a.order_by_name" : "a.name") . ";
     ");
 
     $stmt->execute();
@@ -2483,7 +2482,7 @@ function get_assets_of_asset_group_for_treegrid($id){
                     }
 
                     if ($value) {
-                        $asset[$field['name']] = get_custom_field_name_by_value($field['id'], $field['type'], $value);
+                        $asset[$field['name']] = get_custom_field_name_by_value($field['id'], $field['type'], $field['encryption'], $value);
                     }
                 }
             }
@@ -2501,17 +2500,22 @@ function get_assets_and_asset_groups_for_dropdown($risk_id = false) {
 
     $db = db_open();
 
+    if (encryption_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+    }
+
     if ($risk_id)
         $risk_id -= 1000;
     
-    $stmt = $db->prepare("
+    $sql = "
         SELECT
             *
         FROM (
             SELECT
                 `a`.`id`,
                 `a`.`name`,
-                'asset' as class" .
+                'asset' as class,
+                " . (encryption_extra() ? "`a`.`order_by_name`" : "`a`.`name`") . " as ordr" .
     ($risk_id ? ",`rta`.`asset_id` IS NOT NULL as selected" : "") . "
             FROM
                 `assets` a " .
@@ -2522,17 +2526,25 @@ function get_assets_and_asset_groups_for_dropdown($risk_id = false) {
             SELECT
                 `ag`.`id`,
                 `ag`.`name`,
-                'group' as class" .
+                'group' as class,
+                " . (encryption_extra() ? "@rownum := @rownum + 1" : "`ag`.`name`") . " as ordr" .
     ($risk_id ? ",`rtag`.`asset_group_id` IS NOT NULL as selected" : "") . "
             FROM
                 `asset_groups` ag " .
-    ($risk_id ? "LEFT OUTER JOIN `risks_to_asset_groups` rtag ON `rtag`.`asset_group_id` = `ag`.`id` and `rtag`.`risk_id` = :risk_id" : "") . "
-        ) u GROUP BY
-            `u`.`class`, `u`.`id`
+    ($risk_id ? "LEFT OUTER JOIN `risks_to_asset_groups` rtag ON `rtag`.`asset_group_id` = `ag`.`id` and `rtag`.`risk_id` = :risk_id " : "") . 
+    (encryption_extra() ? "JOIN (SELECT @rownum := 0) rn" : "") . "
+        ) u
         ORDER BY
-            `u`.`class` ASC, `u`.`id` ASC;
+            `u`.`class`, `u`.`ordr`
         ;
-    ");
+    ";
+    /*
+        We have to play with the values in the ordr column as the type have to match so it works properly when ordering.
+        If some are int and some are string, even the ints will be sorted as strings.
+    
+    */
+
+    $stmt = $db->prepare($sql);
 
     if ($risk_id)
         $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
@@ -2630,6 +2642,10 @@ function get_assets_and_asset_groups_of_type($id, $type) {
 
     $db = db_open();
 
+    if (encryption_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+    }
+
     $stmt = $db->prepare("
         SELECT
             *
@@ -2638,6 +2654,7 @@ function get_assets_and_asset_groups_of_type($id, $type) {
                 `a`.`id`,
                 `a`.`name`,
                 'asset' as class,
+                " . (encryption_extra() ? "`a`.`order_by_name`" : "`a`.`name`") . " as ordr,
                 `a`.`verified`
             FROM
                 `assets` a
@@ -2647,15 +2664,17 @@ function get_assets_and_asset_groups_of_type($id, $type) {
                 `ag`.`id`,
                 `ag`.`name`,
                 'group' as class,
+                " . (encryption_extra() ? "@rownum := @rownum + 1" : "`ag`.`name`") . " as ordr,
                 '1' as verified
             FROM
                 `asset_groups` ag
                 INNER JOIN `$asset_groups_junction_name` agj ON `agj`.`asset_group_id` = `ag`.`id` and `agj`.`$junction_id_name` = :$junction_id_name
+                " . (encryption_extra() ? "JOIN (SELECT @rownum := 0) rn" : "") . "
         ) u
         GROUP BY
             `u`.`class`, `u`.`id`
         ORDER BY
-            `u`.`class` ASC, `u`.`id` ASC;
+            `u`.`class` ASC, `u`.`ordr` ASC;
     ");
 
     $stmt->bindParam(":$junction_id_name", $id, PDO::PARAM_INT);
@@ -2681,6 +2700,72 @@ function get_list_of_asset_and_asset_group_names($risk_id, $formatted = false) {
                 return $escaper->escapeHtml($item['name']);
             }, get_assets_and_asset_groups_of_type($risk_id, 'risk'));
     
+}
+
+
+
+/****************************************
+ * FUNCTION : ASSETS FOR RISK ID        *
+ * THIS FUNCTION IS OBSOLETE!!          *
+ * No usage found as of v20190331-001   *
+ ****************************************/
+function assets_for_risk_id($risk_id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Update the default asset valuation
+    $stmt = $db->prepare("
+        SELECT
+            a.id,
+            a.ip,
+            a.name,
+            a.value,
+            a.location,
+            a.team,
+            a.created,
+            a.verified
+        FROM
+            `assets` a
+        LEFT JOIN `risks_to_assets` b ON a.id = b.asset_id
+        WHERE
+            b.risk_id=:risk_id;
+    ");
+    $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT, 11);
+    $stmt->execute();
+
+    $assets = $stmt->fetchAll();
+
+    // Close the database connection
+    db_close($db);
+
+    // Return the assets array
+    return $assets;
+}
+
+/****************************************
+ * FUNCTION: GET ASSETS FOR RISK        *
+ * THIS FUNCTION IS OBSOLETE!!          *
+ * No usage found as of v20190331-001   *
+ ****************************************/
+function get_assets_for_risk($risk_id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Get the assets
+    $stmt = $db->prepare("SELECT b.name as asset FROM `risks_to_assets` a JOIN `assets` b ON a.asset_id = b.id WHERE risk_id = :risk_id ORDER BY b.name");
+    $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Store the list in the assets array
+    $assets = $stmt->fetchAll();
+
+    // Close the database connection
+    db_close($db);
+
+    // Return the assets array
+    return $assets;
 }
 
 ?>

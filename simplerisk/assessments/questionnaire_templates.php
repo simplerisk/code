@@ -35,7 +35,6 @@ if (!isset($_SESSION))
 // Include the language file
 require_once(language_file());
 
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
 // Check for session timeout or renegotiation
 session_check();
@@ -54,6 +53,10 @@ if (!isset($_SESSION["assessments"]) || $_SESSION["assessments"] != "1")
     header("Location: ../index.php");
     exit(0);
 }
+
+// Include the CSRF-magic library
+// Make sure it's called after the session is properly setup
+include_csrf_magic();
 
 // Check if assessment extra is enabled
 if(assessments_extra())

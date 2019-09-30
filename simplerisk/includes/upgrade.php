@@ -40,8 +40,8 @@ function get_api_key()
     // If the array is empty
     if (empty($array))
     {
-            // Return false
-            return false;
+        // Return false
+        return false;
     }
     else return $array[0]['value'];
 }
@@ -49,14 +49,15 @@ function get_api_key()
 /*****************************
  * FUNCTION: CHECK VALID KEY *
  *****************************/
-function check_valid_key($key)
-{
-    //If the key is correct
-    if ($key == get_api_key())
-    {
+function check_valid_key($key) {
+    
+    $db_api_key = get_api_key();
+    //If the key is set and correct
+    if ($db_api_key && $key == $db_api_key) {
         return true;
     }
-    else return false;
+    
+    return false;
 }
 
 /****************************
@@ -373,65 +374,65 @@ function upgrade_from_20140728001($db)
         $stmt->execute();
     }
 
-        // Strip slashes from comments table entries
-        echo "Stripping slashes from the comments table entries.<br />\n";
-        $stmt = $db->prepare("SELECT id, comment FROM comments");
+    // Strip slashes from comments table entries
+    echo "Stripping slashes from the comments table entries.<br />\n";
+    $stmt = $db->prepare("SELECT id, comment FROM comments");
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+    foreach ($array as $value)
+    {        
+        $comments = stripslashes($value['comment']);
+
+        $stmt = $db->prepare("UPDATE comments SET comment=:comment WHERE id=:id");
+        $stmt->bindParam(":id", $value['id']);
+        $stmt->bindParam(":comment", $comments);
         $stmt->execute();
-        $array = $stmt->fetchAll();
-        foreach ($array as $value)
-        {        
-                $comments = stripslashes($value['comment']);
+    }
 
-                $stmt = $db->prepare("UPDATE comments SET comment=:comment WHERE id=:id");
-                $stmt->bindParam(":id", $value['id']);
-                $stmt->bindParam(":comment", $comments);
-                $stmt->execute();
-        }
+    // Strip slashes from mitigations table entries
+    echo "Stripping slashes from the mitigations table entries.<br />\n";
+    $stmt = $db->prepare("SELECT id, planning_strategy, mitigation_effort, current_solution, security_requirements, security_recommendations FROM mitigations");
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+    foreach ($array as $value)
+    {
+        $planning_strategy    = stripslashes($value['planning_strategy']);
+        $mitigation_effort    = stripslashes($value['mitigation_effort']);
+        $current_solution    = stripslashes($value['current_solution']);
+        $security_requirements = stripslashes($value['security_requirements']);
+        $security_recommendations = stripslashes($value['security_recommendations']);
 
-        // Strip slashes from mitigations table entries
-        echo "Stripping slashes from the mitigations table entries.<br />\n";
-        $stmt = $db->prepare("SELECT id, planning_strategy, mitigation_effort, current_solution, security_requirements, security_recommendations FROM mitigations");
+        $stmt = $db->prepare("UPDATE mitigations SET planning_strategy=:planning_strategy, mitigation_effort=:mitigation_effort, current_solution=:current_solution, security_requirements=:security_requirements, security_recommendations=:security_recommendations WHERE id=:id");
+        $stmt->bindParam(":id", $value['id']);
+        $stmt->bindParam(":planning_strategy", $planning_strategy);
+        $stmt->bindParam(":mitigation_effort", $mitigation_effort);
+        $stmt->bindParam(":current_solution", $current_solution);
+        $stmt->bindParam(":security_requirements", $security_requirements);
+        $stmt->bindParam(":security_recommendations", $security_recommendations);
         $stmt->execute();
-        $array = $stmt->fetchAll();
-        foreach ($array as $value)
-        {
-                $planning_strategy    = stripslashes($value['planning_strategy']);
-                $mitigation_effort    = stripslashes($value['mitigation_effort']);
-                $current_solution    = stripslashes($value['current_solution']);
-                $security_requirements = stripslashes($value['security_requirements']);
-                $security_recommendations = stripslashes($value['security_recommendations']);
+    }
 
-                $stmt = $db->prepare("UPDATE mitigations SET planning_strategy=:planning_strategy, mitigation_effort=:mitigation_effort, current_solution=:current_solution, security_requirements=:security_requirements, security_recommendations=:security_recommendations WHERE id=:id");
-                $stmt->bindParam(":id", $value['id']);
-                $stmt->bindParam(":planning_strategy", $planning_strategy);
-                $stmt->bindParam(":mitigation_effort", $mitigation_effort);
-                $stmt->bindParam(":current_solution", $current_solution);
-                $stmt->bindParam(":security_requirements", $security_requirements);
-                $stmt->bindParam(":security_recommendations", $security_recommendations);
-                $stmt->execute();
-        }
-
-        // Strip slashes from mgmt_reviews table entries
-        echo "Stripping slashes from the mgmt_reviews table entries.<br />\n";
-        $stmt = $db->prepare("SELECT id, review, next_step, comments FROM mgmt_reviews");
-        $stmt->execute();
-        $array = $stmt->fetchAll();
-        foreach ($array as $value)
-        {
-                $review        = stripslashes($value['review']);
-                $next_step    = stripslashes($value['next_step']);
-                $comments    = stripslashes($value['comments']);
+    // Strip slashes from mgmt_reviews table entries
+    echo "Stripping slashes from the mgmt_reviews table entries.<br />\n";
+    $stmt = $db->prepare("SELECT id, review, next_step, comments FROM mgmt_reviews");
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+    foreach ($array as $value)
+    {
+        $review        = stripslashes($value['review']);
+        $next_step    = stripslashes($value['next_step']);
+        $comments    = stripslashes($value['comments']);
 
         $stmt = $db->prepare("UPDATE mgmt_reviews SET review=:review, next_step=:next_step, comments=:comments WHERE id=:id");
-                $stmt->bindParam(":id", $value['id']);
-                $stmt->bindParam(":review", $review);
-                $stmt->bindParam(":next_step", $next_step);
-                $stmt->bindParam(":comments", $comments);
-                $stmt->execute();
-        }   
+        $stmt->bindParam(":id", $value['id']);
+        $stmt->bindParam(":review", $review);
+        $stmt->bindParam(":next_step", $next_step);
+        $stmt->bindParam(":comments", $comments);
+        $stmt->execute();
+    }   
 
-        // Update the database version
-        update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
 
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
@@ -3637,6 +3638,45 @@ function upgrade_from_20190331001($db){
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20190630-001 *
+ ***************************************/
+function upgrade_from_20190630001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20190630-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20190930-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    echo "Creating dynamic_saved_selections table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `dynamic_saved_selections` (
+          `value` int(11) NOT NULL AUTO_INCREMENT,
+          `user_id` int(11) NOT NULL,
+          `type` enum('private','public') NOT NULL,
+          `name` varchar(100) NOT NULL,
+          `custom_display_settings` varchar(1000) DEFAULT NULL,
+          PRIMARY KEY(value)
+        )  ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+
+    echo "Updating location field type to string.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `risks` CHANGE `location` `location` VARCHAR(500) NULL; ");
+    $stmt->execute();
+
+    echo "Updating unassigned values from 0 to empty string for location field.<br />\n";
+    $stmt = $db->prepare("UPDATE `risks` SET location='' WHERE location='0' or location IS NULL; ");
+    $stmt->execute();
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -3804,6 +3844,10 @@ function upgrade_database()
                 break;
             case "20190331-001":
                 upgrade_from_20190331001($db);
+                upgrade_database();
+                break;                
+            case "20190630-001":
+                upgrade_from_20190630001($db);
                 upgrade_database();
                 break;                
             default:

@@ -252,7 +252,14 @@ function display_main_detail_asset_fields_th($fields)
             {
                 // Include the extra
                 require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                echo "<th>". $escaper->escapeHtml($field['name']) ."</th>";
+                if($field['required'] == "1")
+                {
+                    echo "<th>". $escaper->escapeHtml($field['name']) ." *</th>";
+                }
+                else
+                {
+                    echo "<th>". $escaper->escapeHtml($field['name']) ."</th>";
+                }
             }
         }
     }

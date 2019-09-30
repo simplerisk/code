@@ -484,7 +484,7 @@ function get_risk_pyramid($title = null)
                 'data' => $data);
     }
 
-    $chart->printScripts();
+//    $chart->printScripts();
     echo "<div id=\"risk_pyramid_chart\"></div>\n";
     echo "<script type=\"text/javascript\">";
     echo $chart->render("risk_pyramid_chart");
@@ -822,50 +822,64 @@ function closed_risk_reason_pie($title = null, $teams = false)
  ************************************/
 function open_risk_location_pie($array, $title = null)
 {
-        $chart = new Highchart();
+    global $escaper, $lang;
+    
+    $chart = new Highchart();
 
-        $chart->chart->renderTo = "open_risk_location_pie";
-        $chart->chart->plotBackgroundColor = null;
-        $chart->chart->plotBorderWidth = null;
-        $chart->chart->plotShadow = false;
-        $chart->title->text = $title;
+    $chart->chart->renderTo = "open_risk_location_pie";
+    $chart->chart->plotBackgroundColor = null;
+    $chart->chart->plotBorderWidth = null;
+    $chart->chart->plotShadow = false;
+    $chart->title->text = $title;
 
-        $chart->tooltip->formatter = new HighchartJsExpr("function() {
-        return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
+    $chart->tooltip->formatter = new HighchartJsExpr("function() {
+    return '<b>'+ this.point.name +'</b>: '+ this.point.y; }");
 
-        $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function() {
-        location.href = 'dynamic_risk_report.php?status=0&group=3&sort=0'; }");
+    $chart->plotOptions->pie->point->events->click = new HighchartJsExpr("function(e) {
+    location.href = 'dynamic_risk_report.php?status=0&sort=0&locations_filter[]=' + e.point.options.value; }");
 
-        $chart->plotOptions->pie->allowPointSelect = 1;
-        $chart->plotOptions->pie->cursor = "pointer";
-        $chart->plotOptions->pie->dataLabels->enabled = false;
-        $chart->plotOptions->pie->showInLegend = 1;
-        $chart->credits->enabled = false;
+    $chart->plotOptions->pie->allowPointSelect = 1;
+    $chart->plotOptions->pie->cursor = "pointer";
+    $chart->plotOptions->pie->dataLabels->enabled = false;
+    $chart->plotOptions->pie->showInLegend = 1;
+    $chart->credits->enabled = false;
 
-        // If the array is empty
-        if (empty($array))
+    // If the array is empty
+    if (empty($array))
+    {
+            $data[] = array("No Data Available", 0);
+    }
+    // Otherwise
+    else
+    {
+        // Set the sort value
+        $sort = "location";
+
+        // Sort the array
+        $array = sort_array($array, $sort);
+
+        // Count the array by status
+        $rows = count_array_values($array, $sort);
+        
+        $data = [];
+        foreach($rows as $nameAndCountArr)
         {
-                $data[] = array("No Data Available", 0);
+            $value = get_value_by_name("location", $nameAndCountArr[0], "");
+            $value || $value="";
+            $data[] = array(
+                "name" => $escaper->escapeHtml($nameAndCountArr[0]),
+                "y" => $nameAndCountArr[1],
+                "value" => $value,
+            );
         }
-        // Otherwise
-        else
-        {
-                // Set the sort value
-                $sort = "location";
 
-                // Sort the array
-                $array = sort_array($array, $sort);
-
-                // Count the array by status
-                $data = count_array_values($array, $sort);
-
-        $data = encode_data_before_display($data);
-
-                // Create the pie chart
-                $chart->series[] = array('type' => "pie",
-                        'name' => $sort,
-                        'data' => $data);
-        }
+        // Create the pie chart
+        $chart->series[] = array(
+            'type' => "pie",
+            'name' => $sort,
+            'data' => $data
+        );
+    }
 
     echo "<div id=\"open_risk_location_pie\"></div>\n";
     echo "<script type=\"text/javascript\">";
@@ -1983,11 +1997,16 @@ function risks_and_assets_table($report)
         $rows = $stmt->fetchAll(PDO::FETCH_GROUP);    
 
         if ($separation) {
-            // Since the result is grouped we have an associative array
-            // where the risk id is the key, so we have to filter by key
-            $rows = array_filter($rows, function($risk_id) {
-                return extra_grant_access($_SESSION['uid'], (int)$risk_id + 1000);
-            }, ARRAY_FILTER_USE_KEY);
+
+            $rows_with_access = [];
+
+            foreach($rows as $risk_id => $group) {
+                error_log($risk_id . " -> " . json_encode($group));
+                if (extra_grant_access($_SESSION['uid'], (int)$risk_id + 1000))
+                    $rows_with_access[$risk_id] = $group;
+            }
+
+            $rows = $rows_with_access;
         }
 
         foreach($rows as $risk_id => $group){
@@ -2075,14 +2094,14 @@ function risks_and_assets_table($report)
     }
 
     // Close the database
-        db_close($db);
+    db_close($db);
 }
 
 
 /********************************
  * FUNCTION: GET RISKS BY TABLE *
  ********************************/
-function get_risks_by_table($status, $group, $sort, $affected_assets_filter, $tags_filter, $column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_additional_stakeholders=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_residual_risk=true, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_planning_date=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_team=false, $column_mitigation_date=false, $column_mitigation_controls=false, $column_risk_assessment=false, $column_additional_notes=false, $column_current_solution=false, $column_security_recommendations=false, $column_security_requirements=false, $column_risk_tags=false)
+function get_risks_by_table($status, $group, $sort, $affected_assets_filter, $tags_filter, $locations_filter, $column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_additional_stakeholders=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_residual_risk=true, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_planning_date=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_team=false, $column_mitigation_accepted=false, $column_mitigation_date=false, $column_mitigation_controls=false, $column_risk_assessment=false, $column_additional_notes=false, $column_current_solution=false, $column_security_recommendations=false, $column_security_requirements=false, $column_risk_tags=false)
 {
     global $lang;
     global $escaper;
@@ -2214,10 +2233,35 @@ function get_risks_by_table($status, $group, $sort, $affected_assets_filter, $ta
             break;
     }
 
-    $tags_filter_query = "";
+    $filter_query = "";
     if(count($tags_filter) > 0){
         //$tags_filter_query = " AND a.id in (select taggee_id from tags_taggees where tag_id IN (".implode(",", $tags_filter).")) ";
-        $tags_filter_query = " AND ttf.tag_id IN (".implode(",", $tags_filter).") ";
+        $filter_query .= " AND ttf.tag_id IN (".implode(",", $tags_filter).") ";
+    }
+
+    if(count($locations_filter) > 0){
+        if(in_array("0", $locations_filter))
+        {
+            $filter_query .= " AND (FIND_IN_SET(c_for_filter.value, '". implode(",", $locations_filter) ."') OR a.location='' OR a.location is null ) ";
+        }
+        else
+        {
+            $filter_query .= " AND FIND_IN_SET(c_for_filter.value, '". implode(",", $locations_filter) ."') ";
+        }
+    }
+
+    if (!empty($affected_assets_filter)) {
+
+        $affected_assets_query_parts = [];
+
+        if ($affected_assets_filter['asset']) {
+            $affected_assets_query_parts[] = "rtaf.asset_id IN (".implode(",", $affected_assets_filter['asset']).")";
+        }
+        if ($affected_assets_filter['group']) {
+            $affected_assets_query_parts[] = "rtag.asset_group_id IN (".implode(",", $affected_assets_filter['group']).")";
+        }
+
+        $filter_query .= " and (".implode(" OR ", $affected_assets_query_parts).") ";
     }
 
     // If the team separation extra is not enabled
@@ -2229,7 +2273,7 @@ function get_risks_by_table($status, $group, $sort, $affected_assets_filter, $ta
                 a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date,
                 a.mitigation_id, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk,
                 ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100), 2) as residual_risk,
-                c.name AS location, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology,
+                GROUP_CONCAT(DISTINCT c.name separator '; ') AS location, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology,
                 g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step,
                 GROUP_CONCAT(DISTINCT n.asset_id SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, p.planning_date AS planning_date,
                 r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, s.valuation_level_name, t.name AS mitigation_owner,
@@ -2238,7 +2282,8 @@ function get_risks_by_table($status, $group, $sort, $affected_assets_filter, $ta
             FROM
                 risks a
                 LEFT JOIN risk_scoring b ON a.id = b.id
-                LEFT JOIN location c ON a.location = c.value
+                LEFT JOIN location c ON FIND_IN_SET(c.value, a.location)
+                LEFT JOIN location c_for_filter ON FIND_IN_SET(c_for_filter.value, a.location) 
                 LEFT JOIN category d ON a.category = d.value
                 LEFT JOIN team e ON FIND_IN_SET(e.value, a.team)
                 LEFT JOIN technology f ON FIND_IN_SET(f.value, a.technology)
@@ -2264,7 +2309,7 @@ function get_risks_by_table($status, $group, $sort, $affected_assets_filter, $ta
                 LEFT JOIN tags_taggees ttf ON ttf.taggee_id = a.id and ttf.type = 'risk'
                 LEFT JOIN tags tgf on tgf.id = ttf.tag_id
             WHERE 1=1
-            " . $tags_filter_query . $status_query . $order_query;
+            " . $filter_query . $status_query . $order_query;
     }
     // Otherwise
     else
@@ -2281,7 +2326,7 @@ function get_risks_by_table($status, $group, $sort, $affected_assets_filter, $ta
                 a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date,
                 a.mitigation_id, a.mgmt_review, a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk,
                 ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100), 2) as residual_risk,
-                c.name AS location, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology,
+                GROUP_CONCAT(DISTINCT c.name separator '; ') AS location, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology,
                 g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project, l.next_review, m.name AS next_step,
                 GROUP_CONCAT(DISTINCT n.asset_id SEPARATOR ', ') AS affected_assets, o.closure_date, q.name AS planning_strategy, p.planning_date AS planning_date,
                 r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, s.valuation_level_name, t.name AS mitigation_owner,
@@ -2290,7 +2335,8 @@ function get_risks_by_table($status, $group, $sort, $affected_assets_filter, $ta
             FROM
                 risks a
                 LEFT JOIN risk_scoring b ON a.id = b.id
-                LEFT JOIN location c ON a.location = c.value
+                LEFT JOIN location c ON FIND_IN_SET(c.value, a.location)
+                LEFT JOIN location c_for_filter ON FIND_IN_SET(c_for_filter.value, a.location) 
                 LEFT JOIN category d ON a.category = d.value
                 LEFT JOIN team e ON FIND_IN_SET(e.value, a.team)
                 LEFT JOIN technology f ON FIND_IN_SET(f.value, a.technology)
@@ -2316,7 +2362,7 @@ function get_risks_by_table($status, $group, $sort, $affected_assets_filter, $ta
                 LEFT JOIN tags_taggees ttf ON ttf.taggee_id = a.id and ttf.type = 'risk'
                 LEFT JOIN tags tgf on tgf.id = ttf.tag_id
             WHERE 1=1
-            " . $tags_filter_query . $status_query . $separation_query . $order_query;
+            " . $filter_query . $status_query . $separation_query . $order_query;
     }
     // You might notice, that in the above query, tags are joined twice. It's because we have to filter on the tags and return them too.
     // If we only join the tags once and we filter on them, we're only able to return those tags that matched the filter.
@@ -2359,7 +2405,7 @@ function get_risks_by_table($status, $group, $sort, $affected_assets_filter, $ta
         echo "<tr class='main'>\n";
 
         // Header columns go here
-        get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags);
+        get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags);
 
         echo "</tr>\n";
         echo "</thead>\n";
@@ -2513,7 +2559,7 @@ function get_risks_by_table($status, $group, $sort, $affected_assets_filter, $ta
                 echo "<tr class='main'>\n";
 
                 // Header columns go here
-                get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags);
+                get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags);
 
                 echo "</tr>\n";
                 echo "</thead>\n";
@@ -2535,7 +2581,7 @@ function get_risks_by_table($status, $group, $sort, $affected_assets_filter, $ta
 /********************************
  * FUNCTION: GET HEADER COLUMNS *
  ********************************/
-function get_header_columns($hide, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $custom_columns=[])
+function get_header_columns($hide, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $custom_columns=[])
 {
     global $lang;
     global $escaper;
@@ -2584,6 +2630,7 @@ function get_header_columns($hide, $id, $risk_status, $subject, $reference_id, $
     echo "<th class=\"mitigation_cost\" data-name='mitigation_cost' " . ($mitigation_cost== true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationCost']) ."</th>\n";
     echo "<th class=\"mitigation_owner\" data-name='mitigation_owner' " . ($mitigation_owner== true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationOwner']) ."</th>\n";
     echo "<th class=\"mitigation_team\" data-name='mitigation_team' " . ($mitigation_team == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</th>\n";
+    echo "<th class=\"mitigation_accepted\" data-name='mitigation_accepted' " . ($mitigation_accepted == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationAccepted']) ."</th>\n";
     echo "<th class=\"mitigation_date\" data-name='mitigation_date' " . ($mitigation_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['MitigationDate']) ."</th>\n";
     echo "<th class=\"mitigation_controls\" data-name='mitigation_controls' " . ($mitigation_controls == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"300px\">". $escaper->escapeHtml($lang['MitigationControls']) ."</th>\n";
     echo "<th class=\"risk_tags\" data-name='risk_tags' " . ($risk_tags == true ? "" : "style=\"{$display}\" ") . "align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Tags']) ."</th>\n";
@@ -2745,7 +2792,7 @@ function get_risk_columns($risk, $column_id, $column_status, $column_subject, $c
 /**********************************
  * FUNCTION: TABLE OF RISK BY TEAM *
  *********************************/
-function risk_table_open_by_team($column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_additional_stakeholders=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_residual_risk=false, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_planning_date=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_team=false, $column_mitigation_date=false, $column_mitigation_controls=false, $column_risk_assessment=false, $column_additional_notes=false, $column_current_solution=false, $column_security_recommendations=false, $column_security_requirements=false, $column_risk_tags=false, $column_custom_values=[]){
+function risk_table_open_by_team($column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_additional_stakeholders=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_residual_risk=false, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_planning_date=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_team=false, $column_mitigation_accepted=false, $column_mitigation_date=false, $column_mitigation_controls=false, $column_risk_assessment=false, $column_additional_notes=false, $column_current_solution=false, $column_security_recommendations=false, $column_security_requirements=false, $column_risk_tags=false, $column_custom_values=[]){
 
     global $lang;
     global $escaper;
@@ -2756,7 +2803,7 @@ function risk_table_open_by_team($column_id=true, $column_status=false, $column_
     echo "<tr class='main'>\n";
 
     // Header columns go here
-    get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags);
+    get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags);
 
     echo "</tr>\n";
     echo "</thead>\n";
@@ -2922,7 +2969,7 @@ function risks_by_month_table()
 /*************************
  * FUNCTION: RISKS QUERY *
  *************************/
-function risks_query($status, $sort, $group, $affected_assets_filter, $tags_filter, &$rowCount, $start=0, $length=10, $group_value_from_db="", $custom_query="", $custom_params=array(), $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
+function risks_query($status, $sort, $group, $affected_assets_filter, $tags_filter, $locations_filter, &$rowCount, $start=0, $length=10, $group_value_from_db="", $custom_query="", $custom_params=array(), $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
 {
     global $lang;
 
@@ -3006,10 +3053,39 @@ function risks_query($status, $sort, $group, $affected_assets_filter, $tags_filt
         $status_query .= $custom_query;
     }
 
-    $tags_filter_query = "";
+    $filter_query = "";
     if(count($tags_filter) > 0){
         //$tags_filter_query = " AND a.id in (select taggee_id from tags_taggees where tag_id IN (".implode(",", $tags_filter).")) ";
-        $tags_filter_query = " AND FIND_IN_SET(ttf.tag_id, '".implode(",", $tags_filter)."') ";
+        $filter_query .= " AND FIND_IN_SET(ttf.tag_id, '".implode(",", $tags_filter)."') ";
+    }
+    
+    if(count($locations_filter) > 0){
+        
+        if(in_array("0", $locations_filter))
+        {
+            $filter_query .= " AND (FIND_IN_SET(c_for_filter.value, '". implode(",", $locations_filter) ."') OR a.location='' OR a.location is null ) ";
+        }
+        else
+        {
+            $filter_query .= " AND FIND_IN_SET(c_for_filter.value, '". implode(",", $locations_filter) ."') ";
+        }
+    }
+
+    // Filter by affected_assets
+    if (!empty($affected_assets_filter)) {
+        
+        $affected_assets_query_parts = [];
+        
+        if ($affected_assets_filter['asset']) {
+            $affected_assets_query_parts[] = "FIND_IN_SET(rta.asset_id, '".implode(",", $affected_assets_filter['asset'])."') ";
+        }
+        if ($affected_assets_filter['group']) {
+            $affected_assets_query_parts[] = "FIND_IN_SET(rtag.asset_group_id, '".implode(",", $affected_assets_filter['group'])."')";
+        }
+        
+        if($affected_assets_query_parts){
+            $filter_query .= " and (".implode(" OR ", $affected_assets_query_parts).") ";
+        }
     }
 
     // Check the sort
@@ -3236,23 +3312,6 @@ function risks_query($status, $sort, $group, $affected_assets_filter, $tags_filt
                 break;
     }
 
-    // Filter by affected_assets
-    $affected_assets_query = "";
-    if (!empty($affected_assets_filter)) {
-        
-        $affected_assets_query_parts = [];
-        
-        if ($affected_assets_filter['asset']) {
-            $affected_assets_query_parts[] = "FIND_IN_SET(rta.asset_id, '".implode(",", $affected_assets_filter['asset'])."') ";
-        }
-        if ($affected_assets_filter['group']) {
-            $affected_assets_query_parts[] = "FIND_IN_SET(rtag.asset_group_id, '".implode(",", $affected_assets_filter['group'])."')";
-        }
-        
-        if($affected_assets_query_parts){
-            $affected_assets_query .= " and (".implode(" OR ", $affected_assets_query_parts).") ";
-        }
-    }
 
     $whereQuery = " where 1 ";
     
@@ -3280,19 +3339,20 @@ function risks_query($status, $sort, $group, $affected_assets_filter, $tags_filt
             a.id, a.status, a.subject, a.reference_id, a.control_number, a.submission_date, a.last_update, a.review_date, a.mgmt_review,
             a.assessment as risk_assessment, a.notes as additional_notes, b.scoring_method, b.calculated_risk, p.mitigation_percent,
             ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2) as residual_risk,
-            c.name AS location, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT adsh.name, ', ') additional_stakeholders,
+            GROUP_CONCAT(DISTINCT c.name separator '; ') AS location, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT adsh.name, ', ') additional_stakeholders,
             GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology, g.name AS owner, h.name AS manager, i.name AS submitted_by, j.name AS regulation, k.name AS project,
             l.next_review, m.name AS next_step, GROUP_CONCAT(DISTINCT rta.asset_id SEPARATOR ', ') AS affected_assets,
             GROUP_CONCAT(DISTINCT rtag.asset_group_id SEPARATOR ', ') AS affected_asset_groups, o.closure_date, q.name AS planning_strategy,
             p.planning_date, r.name AS mitigation_effort, s.min_value AS mitigation_min_cost, s.max_value AS mitigation_max_cost, s.valuation_level_name, t.name AS mitigation_owner,
-            group_concat(distinct u.name) AS mitigation_team, p.submission_date AS mitigation_date, GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ') mitigation_control_names, v.name AS source, p.id mitigation_id, p.current_solution,
+            group_concat(distinct u.name) AS mitigation_team, not(isnull(mau.id)) mitigation_accepted, p.submission_date AS mitigation_date, GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ') mitigation_control_names, v.name AS source, p.id mitigation_id, p.current_solution,
             p.security_recommendations, p.security_requirements, 
             ifnull((SELECT name FROM `risk_levels` WHERE value-b.calculated_risk<=0.00001 ORDER BY value DESC LIMIT 1), '{$lang['Insignificant']}') as risk_level_name,
             rta.asset_id, GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR ', ') as risk_tags
     FROM
         risks a
         LEFT JOIN risk_scoring b ON a.id = b.id
-        LEFT JOIN location c ON a.location = c.value
+        LEFT JOIN location c ON FIND_IN_SET(c.value, a.location)
+        LEFT JOIN location c_for_filter ON FIND_IN_SET(c_for_filter.value, a.location) 
         LEFT JOIN category d ON a.category = d.value
         LEFT JOIN team e ON FIND_IN_SET(e.value, a.team)
         LEFT JOIN technology f ON FIND_IN_SET(f.value, a.technology)
@@ -3313,13 +3373,14 @@ function risks_query($status, $sort, $group, $affected_assets_filter, $tags_filt
         LEFT JOIN asset_values s ON p.mitigation_cost = s.id
         LEFT JOIN user t ON p.mitigation_owner = t.value
         LEFT JOIN team u ON FIND_IN_SET(u.value, p.mitigation_team)
+        LEFT JOIN mitigation_accept_users mau ON a.id=mau.risk_id
         LEFT JOIN source v ON a.source = v.value
         LEFT JOIN user adsh ON FIND_IN_SET(adsh.value, a.additional_stakeholders)
         LEFT JOIN tags_taggees tt ON tt.taggee_id = a.id and tt.type = 'risk'
         LEFT JOIN tags tg on tg.id = tt.tag_id
         LEFT JOIN tags_taggees ttf ON ttf.taggee_id = a.id and ttf.type = 'risk'
         LEFT JOIN tags tgf on tgf.id = ttf.tag_id
-    WHERE 1=1 " . $tags_filter_query . $status_query . $affected_assets_query;
+    WHERE 1=1 " . $filter_query . $status_query;
     // You might notice, that in the above query, tags are joined twice. It's because we have to filter on the tags and return them too.
     // If we only join the tags once and we filter on them, we're only able to return those tags that matched the filter.
     // Problem is, that we want to return all tags that are assigned to the risks, not just those that we're filtering by.
@@ -3361,6 +3422,7 @@ function risks_query($status, $sort, $group, $affected_assets_filter, $tags_filt
         {$whereQuery}
         {$limitQuery}
     ";
+
     // Query the database
     $db = db_open();
 
@@ -3479,6 +3541,7 @@ function risks_query($status, $sort, $group, $affected_assets_filter, $tags_filt
         $mitigation_max_cost = $risk['mitigation_max_cost'];
         $mitigation_owner = $risk['mitigation_owner'];
         $mitigation_team = $risk['mitigation_team'];
+        $mitigation_accepted = $risk['mitigation_accepted'] ? $lang['Yes'] : $lang['No'];
         $mitigation_date = format_date($risk['mitigation_date']);
         $mitigation_control_names = $risk['mitigation_control_names'];
         $closure_date = $risk['closure_date'];
@@ -3510,7 +3573,7 @@ function risks_query($status, $sort, $group, $affected_assets_filter, $tags_filt
         else $group_value = $group_name;
 
         // Create the new data array
-        $data[] = array("id" => $risk_id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "control_number" => $control_number, "submission_date" => $submission_date, "last_update" => $last_update, "review_date" => $review_date, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "residual_risk" => $residual_risk, "color" => $color, "residual_color" => $residual_color, "risk_level" => $risk_level, "residual_risk_level" => $residual_risk_level, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "additional_stakeholders" => $additional_stakeholders, "technology" => $technology, "owner" => $owner, "manager" => $manager, "submitted_by" => $submitted_by, "regulation" => $regulation, "project" => $project, "mgmt_review" => $mgmt_review, "days_open" => $days_open, "next_review_date" => $next_review_date, "next_review_date_html" => $next_review_date_html, "next_step" => $next_step, "affected_assets" => $affected_assets, "risk_assessment" => $risk_assessment, "additional_notes" => $additional_notes, "current_solution" => $current_solution, "security_recommendations" => $security_recommendations, "security_requirements" => $security_requirements, "month_submitted" => $month_submitted, "planning_strategy" => $planning_strategy, "mitigation_id" => $mitigation_id, "planning_date" => $planning_date, "mitigation_effort" => $mitigation_effort, "mitigation_min_cost" => $mitigation_min_cost, "mitigation_max_cost" => $mitigation_max_cost, "mitigation_cost" => $mitigation_cost, "mitigation_owner" => $mitigation_owner, "mitigation_team" => $mitigation_team, "mitigation_date" => $mitigation_date, "mitigation_control_names" => $mitigation_control_names, "group_name" => $group_name, "group_value" => $group_value, 'closure_date' => $closure_date, 'risk_tags' => $risk_tags);
+        $data[] = array("id" => $risk_id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "control_number" => $control_number, "submission_date" => $submission_date, "last_update" => $last_update, "review_date" => $review_date, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "residual_risk" => $residual_risk, "color" => $color, "residual_color" => $residual_color, "risk_level" => $risk_level, "residual_risk_level" => $residual_risk_level, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "additional_stakeholders" => $additional_stakeholders, "technology" => $technology, "owner" => $owner, "manager" => $manager, "submitted_by" => $submitted_by, "regulation" => $regulation, "project" => $project, "mgmt_review" => $mgmt_review, "days_open" => $days_open, "next_review_date" => $next_review_date, "next_review_date_html" => $next_review_date_html, "next_step" => $next_step, "affected_assets" => $affected_assets, "risk_assessment" => $risk_assessment, "additional_notes" => $additional_notes, "current_solution" => $current_solution, "security_recommendations" => $security_recommendations, "security_requirements" => $security_requirements, "month_submitted" => $month_submitted, "planning_strategy" => $planning_strategy, "mitigation_id" => $mitigation_id, "planning_date" => $planning_date, "mitigation_effort" => $mitigation_effort, "mitigation_min_cost" => $mitigation_min_cost, "mitigation_max_cost" => $mitigation_max_cost, "mitigation_cost" => $mitigation_cost, "mitigation_owner" => $mitigation_owner, "mitigation_team" => $mitigation_team, "mitigation_accepted" => $mitigation_accepted, "mitigation_date" => $mitigation_date, "mitigation_control_names" => $mitigation_control_names, "group_name" => $group_name, "group_value" => $group_value, 'closure_date' => $closure_date, 'risk_tags' => $risk_tags);
     }
 
     // Return the data array
@@ -3536,99 +3599,101 @@ function get_pie_array($filter = null, $teams = false)
     }else{
         $teams_query = "";
     }
-
+    
+    
     // Open the database connection
     $db = db_open();
 
     // Check the filter for the query to use
     switch($filter)
     {
-               case 'status':
-                        $field = "status";
-                        $stmt = $db->prepare("SELECT a.id, a.status FROM `risks` a WHERE a.status != \"Closed\" {$teams_query} ORDER BY a.status DESC");
-                        $stmt->execute();
-                        break;
-                case 'location':
-                        $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `location` b ON a.location = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
-                        $stmt->execute();
-                        break;
-                case 'source':
-                        $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `source` b ON a.source = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
-                        $stmt->execute();
-                        break;
-                case 'category':
-                        $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `category` b ON a.category = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
-                        $stmt->execute();
-                        break;
-                case 'team':
-                        $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `team` b ON a.team = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
-                        $stmt->execute();
-                        break;
-                case 'technology':
-                        $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `technology` b ON a.technology = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
-                        $stmt->execute();
-                        break;
-                case 'owner':
-                        $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `user` b ON a.owner = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
-                        $stmt->execute();
-                        break;
-                case 'manager':
-                        $field = "name";
-                        $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `user` b ON a.manager = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
-                        $stmt->execute();
-                        break;
-                case 'scoring_method':
-                        $field = "name";
-                        $stmt = $db->prepare("SELECT a.id, CASE WHEN scoring_method = 5 THEN 'Custom' WHEN scoring_method = 4 THEN 'OWASP' WHEN scoring_method = 3 THEN 'DREAD' WHEN scoring_method = 2 THEN 'CVSS' WHEN scoring_method = 1 THEN 'Classic' END AS name, COUNT(*) AS num FROM `risks` a LEFT JOIN `risk_scoring` b ON a.id = b.id WHERE status != \"Closed\" ORDER BY b.scoring_method DESC");
-                        $stmt->execute();
-                        break;
-                case 'close_reason':
-                        if($teams !== false){
-                            if($teams == ""){
-                                $teams_query = " AND 0 ";
-                            }else{
-                                $options = explode(",", $teams);
-                                $teams_query = generate_or_query($options, 'team', 'c');
-                                if(in_array("0", $options)){
-                                    $teams_query .= " OR c.team='' ";
-                                }
-                                $teams_query = " AND ( {$teams_query} ) ";
-                            }
-                        }else{
-                            $teams_query = "";
+       case 'status':
+                $field = "status";
+                $stmt = $db->prepare("SELECT a.id, a.status FROM `risks` a WHERE a.status != \"Closed\" {$teams_query} ORDER BY a.status DESC");
+                $stmt->execute();
+                break;
+        case 'location':
+                $field = "name";
+//                $stmt = $db->prepare("SELECT id, GROUP_CONCAT(b.name separator '; ') name FROM `risks` a LEFT JOIN `location` b ON FIND_IN_SET(b.value, a.location) WHERE status != \"Closed\" {$teams_query} GROUP BY a.id ORDER BY b.name DESC");
+                $stmt = $db->prepare("SELECT id, b.name location FROM `risks` a LEFT JOIN `location` b ON FIND_IN_SET(b.value, a.location) WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
+                $stmt->execute();
+                break;
+        case 'source':
+                $field = "name";
+                $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `source` b ON a.source = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
+                $stmt->execute();
+                break;
+        case 'category':
+                $field = "name";
+                $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `category` b ON a.category = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
+                $stmt->execute();
+                break;
+        case 'team':
+                $field = "name";
+                $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `team` b ON a.team = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
+                $stmt->execute();
+                break;
+        case 'technology':
+                $field = "name";
+                $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `technology` b ON a.technology = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
+                $stmt->execute();
+                break;
+        case 'owner':
+                $field = "name";
+                $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `user` b ON a.owner = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
+                $stmt->execute();
+                break;
+        case 'manager':
+                $field = "name";
+                $stmt = $db->prepare("SELECT id, b.name FROM `risks` a LEFT JOIN `user` b ON a.manager = b.value WHERE status != \"Closed\" {$teams_query} ORDER BY b.name DESC");
+                $stmt->execute();
+                break;
+        case 'scoring_method':
+                $field = "name";
+                $stmt = $db->prepare("SELECT a.id, CASE WHEN scoring_method = 5 THEN 'Custom' WHEN scoring_method = 4 THEN 'OWASP' WHEN scoring_method = 3 THEN 'DREAD' WHEN scoring_method = 2 THEN 'CVSS' WHEN scoring_method = 1 THEN 'Classic' END AS name, COUNT(*) AS num FROM `risks` a LEFT JOIN `risk_scoring` b ON a.id = b.id WHERE status != \"Closed\" ORDER BY b.scoring_method DESC");
+                $stmt->execute();
+                break;
+        case 'close_reason':
+                if($teams !== false){
+                    if($teams == ""){
+                        $teams_query = " AND 0 ";
+                    }else{
+                        $options = explode(",", $teams);
+                        $teams_query = generate_or_query($options, 'team', 'c');
+                        if(in_array("0", $options)){
+                            $teams_query .= " OR c.team='' ";
                         }
+                        $teams_query = " AND ( {$teams_query} ) ";
+                    }
+                }else{
+                    $teams_query = "";
+                }
 
-                        $field = "name";
-                        $stmt = $db->prepare("SELECT a.close_reason, a.risk_id as id, b.name, MAX(closure_date) FROM `closures` a JOIN `close_reason` b ON a.close_reason = b.value JOIN `risks` c ON a.risk_id = c.id WHERE c.status = \"Closed\" {$teams_query} GROUP BY risk_id ORDER BY name DESC;");
-                        $stmt->execute();
-                        break;
-                default:
-                        $stmt = $db->prepare("SELECT a.id, a.status, b.name AS location, c.name AS source, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology, g.name AS owner, h.name AS manager, CASE WHEN scoring_method = 5 THEN 'Custom' WHEN scoring_method = 4 THEN 'OWASP' WHEN scoring_method = 3 THEN 'DREAD' WHEN scoring_method = 2 THEN 'CVSS' WHEN scoring_method = 1 THEN 'Classic' END AS scoring_method FROM `risks` a LEFT JOIN `location` b ON a.location = b.value LEFT JOIN `source` c ON a.source = c.value LEFT JOIN `category` d ON a.category = d.value LEFT JOIN `team` e ON FIND_IN_SET(e.value, a.team) LEFT JOIN `technology` f ON FIND_IN_SET(f.value, a.technology) LEFT JOIN `user` g ON a.owner = g.value LEFT JOIN `user` h ON a.manager = h.value LEFT JOIN `risk_scoring` i ON a.id = i.id WHERE a.status != \"Closed\" {$teams_query} GROUP BY a.id; ");
-                        $stmt->execute();
-                        break;
+                $field = "name";
+                $stmt = $db->prepare("SELECT a.close_reason, a.risk_id as id, b.name, MAX(closure_date) FROM `closures` a JOIN `close_reason` b ON a.close_reason = b.value JOIN `risks` c ON a.risk_id = c.id WHERE c.status = \"Closed\" {$teams_query} GROUP BY risk_id ORDER BY name DESC;");
+                $stmt->execute();
+                break;
+        default:
+                $stmt = $db->prepare("SELECT a.id, a.status, GROUP_CONCAT(DISTINCT b.name separator '; ') AS location, c.name AS source, d.name AS category, GROUP_CONCAT(DISTINCT e.name SEPARATOR ', ') AS team, GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS technology, g.name AS owner, h.name AS manager, CASE WHEN scoring_method = 5 THEN 'Custom' WHEN scoring_method = 4 THEN 'OWASP' WHEN scoring_method = 3 THEN 'DREAD' WHEN scoring_method = 2 THEN 'CVSS' WHEN scoring_method = 1 THEN 'Classic' END AS scoring_method FROM `risks` a LEFT JOIN `location` b ON FIND_IN_SET(b.value, a.location) LEFT JOIN `source` c ON a.source = c.value LEFT JOIN `category` d ON a.category = d.value LEFT JOIN `team` e ON FIND_IN_SET(e.value, a.team) LEFT JOIN `technology` f ON FIND_IN_SET(f.value, a.technology) LEFT JOIN `user` g ON a.owner = g.value LEFT JOIN `user` h ON a.manager = h.value LEFT JOIN `risk_scoring` i ON a.id = i.id WHERE a.status != \"Closed\" {$teams_query} GROUP BY a.id; ");
+                $stmt->execute();
+                break;
     }
 
-        // Store the list in the array
-        $array = $stmt->fetchAll();
+    // Store the list in the array
+    $array = $stmt->fetchAll();
 
-        // Close the database connection
-        db_close($db);
+    // Close the database connection
+    db_close($db);
 
-        // If team separation is enabled
-        if (team_separation_extra())
-        {
-            //Include the team separation extra
-            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+    // If team separation is enabled
+    if (team_separation_extra())
+    {
+        //Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
-            // Strip out risks the user should not have access to
-            $array = strip_no_access_risks($array);
-        }
+        // Strip out risks the user should not have access to
+        $array = strip_no_access_risks($array);
+    }
 
     return $array;
 }
@@ -3657,7 +3722,7 @@ function sort_array($array, $sort)
             $sortArray[$key][] = $value;
         }
     }
-
+    
     // Sort the array based on the sort value provided
     array_multisort($sortArray[$sort],SORT_ASC,$array);
 
@@ -3672,48 +3737,47 @@ function count_array_values($array, $sort)
 {
     global $lang;
 
-        // Initialize the value and count
-        $value = "";
+    // Initialize the value and count
+    $value = "";
     $value_count = 1;
 
-        // Count the number of risks for each value
-        foreach ($array as $risk)
-        {
-                // Get the current value
-                $current_value = $risk[$sort];
+    // Count the number of risks for each value
+    foreach ($array as $risk)
+    {
+        // Get the current value
+        $current_value = $risk[$sort];
         if ($current_value == null) $current_value = $lang['Unassigned'];
 
-                // If the value is not new
-                if ($current_value == $value)
-                {
-                        $value_count++;
-                }
-                else
-                {
-                        // If the value is not empty
-                        if ($value != "")
-                        {
-                                // Add the previous value to the array
-                                $value_array[] = array($sort=>$value, 'num'=>$value_count);
-                        }
-
-                        // Set the new value and reset the count
-                        $value = $current_value;
-                        $value_count = 1;
-                }
-        }
-
-        // Update the final value
-        $value_array[] = array($sort=>$value, 'num'=>$value_count);
-
-        // Create the data array
-        foreach ($value_array as $row)
+        // If the value is not new
+        if ($current_value == $value)
         {
-            $data[] = array($row[$sort], (int)$row['num']);
+            $value_count++;
         }
+        else
+        {
+            // If the value is not empty
+            if ($value != "")
+            {
+                // Add the previous value to the array
+                $value_array[] = array($sort=>$value, 'num'=>$value_count);
+            }
 
-    // Return the data
-        return $data;
+            // Set the new value and reset the count
+            $value = $current_value;
+            $value_count = 1;
+        }
+    }
+
+    // Update the final value
+    $value_array[] = array($sort=>$value, 'num'=>$value_count);
+
+    // Create the data array
+    foreach ($value_array as $row)
+    {
+        $data[] = array($row[$sort], (int)$row['num']);
+    }
+
+    return $data;
 }
 
 /************************************
@@ -4063,7 +4127,7 @@ function risks_and_control_table($report)
             $color = $data[$i]['color'];
             $dayssince = $data[$i]['dayssince'];
 
-            $mitigation_control_location = (isset($data[$i]['location']) ? get_name_by_value("location",$data[$i]['location']) : "N/A");
+            $mitigation_control_location = (isset($data[$i]['location']) ? get_names_by_multi_values("location",$data[$i]['location'], false, "; ") : "N/A");
             $mitigation_control_location = ($mitigation_control_location != "" ? $mitigation_control_location : "N/A");
             $mitigation_control_team = (!empty($data[$i]['mitigation_team']) ? get_names_by_multi_values("team",$data[$i]['mitigation_team']) : "N/A");
             $mitigation_control_team = ($mitigation_control_team != "" ? $mitigation_control_team : "N/A");
@@ -4320,4 +4384,121 @@ function get_likelihoods_count()
 
     return $array[0]['count'];
 }
+
+function get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir) {
+
+    if (team_separation_extra()) {
+        // Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        $separation = true;
+    } else $separation = false;
+
+    $orderColumns = ['id', 'subject', 'calculated_risk', 'residual_risk'];
+    $orderColumn = $orderColumns[$orderColumn];
+
+    // Make the big query
+    $query = "
+        SELECT
+            a.id,
+            a.subject,
+            b.calculated_risk,
+            ROUND(b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100), 2) as residual_risk
+        FROM
+            risks a
+            LEFT JOIN risk_scoring b ON a.id = b.id
+            LEFT JOIN mitigations p ON a.id = p.risk_id
+            LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, p.mitigation_controls) AND fc.deleted=0
+        WHERE 1=1
+            " . ($separation ? get_user_teams_query("a", false, true) : "") . "
+        GROUP BY
+            id
+        HAVING
+            " . ($type === 'out' ? "residual_risk > :risk_appetite" : "residual_risk <= :risk_appetite") . "
+        ORDER BY
+           {$orderColumn} {$orderDir} 
+        ";
+
+    $limitQuery = $length == -1 ? "" : "Limit {$start}, {$length}";
+
+    $query = "
+        select SQL_CALC_FOUND_ROWS t1.*
+        from (
+            {$query}
+        ) t1
+        {$limitQuery}
+    ";
+
+    $risk_appetite = get_setting("risk_appetite", 0);
+
+    // Query the database
+    $db = db_open();
+
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(":risk_appetite", $risk_appetite, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Store the results in the risks array
+    $risks = $stmt->fetchAll();
+
+    $stmt = $db->prepare("SELECT FOUND_ROWS();");
+    $stmt->execute();
+    $rowCount = $stmt->fetchColumn();
+
+    db_close($db);
+    $risk_levels = get_risk_levels();
+
+    $data = array();
+    
+    foreach($risks as $risk){
+        $risk_id = (int)$risk['id'] + 1000;
+        $subject = try_decrypt($risk['subject']);
+        $calculated_risk = (float)$risk['calculated_risk'];
+        $residual_risk = (float)$risk['residual_risk'];
+
+        $color = get_risk_color_from_levels($risk['calculated_risk'], $risk_levels);
+        $residual_color = get_risk_color_from_levels($risk['residual_risk'], $risk_levels);
+
+        // Create the new data array
+        $data[] = array(
+            "id" => $risk_id,
+            "subject" => $subject,
+            "calculated_risk" => $calculated_risk,
+            "residual_risk" => $residual_risk,
+            "color" => $color,
+            "residual_color" => $residual_color,
+        );
+    }
+
+    // Return the data array
+    return array(
+        "data" => $data,
+        "recordsTotal" => $rowCount,
+        "recordsFiltered" => count($data),
+    );
+}
+
+function display_appetite_datatable($within=true) {
+
+    global $lang, $escaper;
+
+    $type = ($within ? "in" : "out");
+    $tableID = ($within ? "within" : "outside") . "-appetite-table";
+
+    echo "
+        <table id=\"{$tableID}\" width=\"100%\" data-type='$type' class=\"risk-datatable table table-bordered table-striped table-condensed\">
+            <thead>
+                <tr>
+                    <th data-name='id' align=\"left\" valign=\"top\">".$escaper->escapeHtml($lang['ID'])."</th>
+                    <th data-name='subject' align=\"left\" valign=\"top\">".$escaper->escapeHtml($lang['Subject'])."</th>
+                    <th data-name='calculated_risk' align=\"center\" valign=\"top\">".$escaper->escapeHtml($lang['InherentRisk'])."</th>
+                    <th data-name='residual_risk' align=\"center\" valign=\"top\">".$escaper->escapeHtml($lang['ResidualRisk'])."</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    ";
+}
+
 ?>

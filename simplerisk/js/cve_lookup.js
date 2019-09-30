@@ -16,15 +16,86 @@ function check_cve_id(fieldName, parent)
 		// Select the CVSS Scoring Method
 		select_cvss(parent);
 
+		// Get the NVD CVE info
+		get_nvd_cve_info(cve, parent);
+
 		// Get the CVE info
-		get_cve_info(cve, parent);
+		//get_cve_info(cve, parent);
 
 		// Get the CVSS info
-		get_cvss_info(cve, parent);
+		//get_cvss_info(cve, parent);
 
 		// Get the Nessus info
-		get_nessus_info(cve, parent);
+		//get_nessus_info(cve, parent);
 	}
+}
+
+/******************************
+ * FUNCTION: GET NVD CVE INFO *
+ ******************************/
+function get_nvd_cve_info(cve, parent)
+{
+    var url = 'https://olbat.github.io/nvdcve/'+cve.toUpperCase()+'.json';
+    $.ajax({
+        type:'GET',
+        url:url,
+        processData: true,
+        cache: true,
+        data: '',
+        dataType: 'json',
+        success: function (data) {
+		//console.log(data);
+                process_nvd_cve_info(data, parent);
+        }
+    });
+}
+
+/**********************************
+ * FUNCTION: PROCESS NVD CVE INFO *
+ **********************************/
+function process_nvd_cve_info(cve_info_json, parent)
+{
+    var reference_id = cve_info_json['cve']['CVE_data_meta']['ID'];
+    var assessment = cve_info_json['cve']['description']['description_data'][0]['value'];
+    
+    if (assessment.includes(". "))
+    {
+        var subject = assessment.substring(0, assessment.indexOf(". ")+1);
+    }
+    else var subject = assessment;
+
+    var notes = 'http://cve.mitre.org/cgi-bin/cvename.cgi?name='+reference_id;
+    var CVSS_v2_vector = cve_info_json['impact']['baseMetricV2']['cvssV2']['vectorString'];
+    var CVSS_v2_vector_array = CVSS_v2_vector.split("/");
+
+    for (var i=0; i < CVSS_v2_vector_array.length; i++)
+    {
+        CVSS_v2 = CVSS_v2_vector_array[i].split(":");
+        var name = CVSS_v2[0];
+        var value = CVSS_v2[1];
+        this[name] = value;
+    }
+
+    if (reference_id) {
+       $("[name=reference_id]", parent).val(reference_id);
+    }
+    if (subject) {
+        $("[name=subject]", parent).val(subject);
+    }
+    if (assessment) {
+        $("[name=assessment]", parent).val(assessment);
+    }
+    if (notes) {
+        $("[name=notes]", parent).val(notes);
+    }
+
+    $("[name=AccessVector]", parent).val(AV);
+    $("[name=AccessComplexity]", parent).val(AC);
+    $("[name=Authentication]", parent).val(Au);
+    $("[name=ConfImpact]", parent).val(C);
+    $("[name=IntegImpact]", parent).val(I);
+    $("[name=AvailImpact]", parent).val(A);
+    
 }
 
 /**************************
@@ -34,7 +105,7 @@ function get_cve_info(cve, parent)
 {
 	$.ajax({
 	    type:'GET',
-	    url:'https://vfeed.simplerisk.com/?method=get_cve&id='+cve,
+	    url:'https://olbat.github.io/nvdcve/'+cve+'.json',
 	    processData: true,
 	    cache: true,
 	    data: {},
@@ -68,7 +139,7 @@ function get_cvss_info(cve, parent)
 {
     $.ajax({
         type:'GET',
-        url:'https://vfeed.simplerisk.com/?method=get_cvss&id='+cve,
+        url:'https://olbat.github.io/nvdcve/'+cve+'.json',
         processData: true,
         cache: true,
         data: {},
@@ -301,7 +372,7 @@ function get_nessus_info(cve, parent)
 {
     $.ajax({
         type:'GET',
-        url:'https://vfeed.simplerisk.com/?method=get_nessus&id='+cve,
+        url:'https://olbat.github.io/nvdcve/'+cve+'.json',
         processData: true,
         cache: true,
         data: {},

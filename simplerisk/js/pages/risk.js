@@ -18,10 +18,16 @@ function addRisk($this){
             form.append('file['+j+']', file);
         })
     });
+    
+    // Check valiation and stop if failed
+    if(!checkAndSetValidation(tabContainer))
+    {
+        return false;
+    }
 
     $.ajax({
         type: "POST",
-        url: "index.php",
+        url: BASE_URL + "/management/index.php",
         data: form,
         async: true,
         cache: false,
@@ -345,6 +351,10 @@ $(document).ready(function(){
             cursor: 'wait'
         };
     }
+    $('body').on("click", ".error", function(e){
+        $(this).removeClass("error")
+    });
+
     /**
     * Open new risk
     * 
@@ -622,7 +632,12 @@ $(document).ready(function(){
     function updateRisk($this){
         var tabContainer = $this.parents('.tab-data');
         var risk_id = $('.large-text', tabContainer).html();
-        
+
+        // Check valiation and stop if failed
+        if(!checkAndSetValidation(tabContainer))
+        {
+            return false;
+        }
         var getForm = $this.parents('form', tabContainer);
         var form = new FormData($(getForm)[0]);
         var scoring_method = $("[name=scoring_method]", tabContainer).val();
@@ -719,6 +734,12 @@ $(document).ready(function(){
         var tabContainer = $this.parents('.tab-data');
         var risk_id = $('.large-text', tabContainer).html();
         
+        // Check valiation and stop if failed
+        if(!checkAndSetValidation(tabContainer))
+        {
+            return false;
+        }
+
         var getForm = $this.parents('form', tabContainer);
         var form = new FormData($(getForm)[0]);
         $.each($("input[type=file]", tabContainer), function(i, obj) {
@@ -811,6 +832,13 @@ $(document).ready(function(){
         var tabContainer = $this.parents('.tab-data');
         var risk_id = $('.large-text', tabContainer).html();
         
+        // Check valiation and stop if failed
+        if(!checkAndSetValidation(tabContainer))
+        {
+            return false;
+        }
+
+        $('.save-review').prop('disabled', true);
         var getForm = $this.parents('form', tabContainer);
         var form = new FormData($(getForm)[0]);
         $.each($("input[type=file]", tabContainer), function(i, obj) {
@@ -849,7 +877,6 @@ $(document).ready(function(){
     
     $('body').on('click', '.save-review', function(e){
         e.preventDefault();
-        $('.save-review').prop('disabled', true)
         updateReview($(this));
     });
 

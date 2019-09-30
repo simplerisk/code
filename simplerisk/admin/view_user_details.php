@@ -67,7 +67,7 @@
           $type             = $_POST['type'];
           $name             = $_POST['name'];
           $email            = $_POST['email'];
-          $manager          = $_POST['manager'];
+          $manager          = (int)$_POST['manager'];
           $teams            = isset($_POST['team']) ? $_POST['team'] : array('none');
           $role_id          = (int)$_POST['role'];
           $language         = get_name_by_value("languages", (int)$_POST['languages']);

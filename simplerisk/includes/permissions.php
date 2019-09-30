@@ -166,4 +166,31 @@ function enforce_permission_exception($function)
         exit(0);
     }
 }
+
+/********************************************************************************
+ * FUNCTION: CHECK QUESTIONNAIRE GET TOKEN                                      *
+ * Checks if the 'GET' parameter 'token' is a valid questionnaire token.        *
+ * The function is built in a way to only check the database once per request   *
+ * to reduce response time.                                                     *
+ ********************************************************************************/
+function check_questionnaire_get_token() {
+
+    if (!isset($_GET['token']))
+        return false;
+
+    $global_var_name = 'is_valid_questionnaire_token_' . $_GET['token'];
+
+    if (isset($GLOBALS[$global_var_name]))
+        return $GLOBALS[$global_var_name];
+
+    if (assessments_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+        $GLOBALS[$global_var_name] = is_valid_questionnaire_token($_GET['token']);
+        return $GLOBALS[$global_var_name];
+    }
+
+    $GLOBALS[$global_var_name] = false;
+    return false;
+}
 ?>

@@ -74,7 +74,7 @@ if (isset($_POST['subject']) && $_POST['subject'] == "")
   $data = array("error" => true, "message" => $escaper->escapeHtml("The subject of a risk cannot be empty."));
   header('Content-type:application/json;charset=utf-8');
   echo json_encode($data);
-  return;  
+  exit;  
 }
 
 // Check if a new risk was submitted and the user has permissions to submit new risks
@@ -85,7 +85,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   $reference_id = $_POST['reference_id'];
   $regulation = (int)$_POST['regulation'];
   $control_number = $_POST['control_number'];
-  $location = (int)$_POST['location'];
+  $location = implode(",", $_POST['location']);
   $source = (int)$_POST['source'];
   $category = (int)$_POST['category'];
   $team = (empty($_POST['team'])) ? "" : implode(",", $_POST['team']);
@@ -94,7 +94,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   $manager = (int)$_POST['manager'];
   $assessment = $_POST['assessment'];
   $notes = $_POST['notes'];
-  $assets_asset_groups = is_array($_POST['assets_asset_groups']) ? $_POST['assets_asset_groups'] : [];
+  $assets_asset_groups = !empty($_POST['assets_asset_groups']) ? $_POST['assets_asset_groups'] : [];
   $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
   $risk_tags = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
 
@@ -158,8 +158,22 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
   $ContributingLikelihood = (int)$_POST["ContributingLikelihood"];
   $ContributingImpacts = $_POST["ContributingImpacts"];
 
-  // Submit risk and get back the id
-  $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders);
+    // Submit risk and get back the id
+    if($last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders)){}
+    else
+    {
+        // Display an alert
+        ob_end_clean();
+        if(!($alert_message = get_alert(false, true)))
+        {
+            $alert_message = $escaper->escapeHtml($lang["ThereAreUnexpectedProblems"]);
+        }
+        
+        $data = array("error" => true, "message" => $alert_message);
+        header('Content-type:application/json;charset=utf-8');
+        echo json_encode($data);
+        exit;
+    }
 
     // If the encryption extra is enabled, updates order_by_subject
     if (encryption_extra())
@@ -170,83 +184,83 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         create_subject_order($_SESSION['encrypted_pass']);
     }
 
-  // Submit risk scoring
-  submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
+    // Submit risk scoring
+    submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
 
-  // Process the data from the Affected Assets widget
-  if (!empty($assets_asset_groups))
-    process_selected_assets_asset_groups_of_type($last_insert_id, $assets_asset_groups, 'risk');
+    // Process the data from the Affected Assets widget
+    if (!empty($assets_asset_groups))
+        process_selected_assets_asset_groups_of_type($last_insert_id, $assets_asset_groups, 'risk');
 
-  //Add tags
-  updateTagsOfType($last_insert_id, 'risk', $risk_tags);
+    //Add tags
+    updateTagsOfType($last_insert_id, 'risk', $risk_tags);
 
-  $error = 1;
-  // If a file was submitted
-  if (!empty($_FILES))
-  {
-    for($i=0; $i<count($_FILES['file']['name']); $i++){
-        if($_FILES['file']['error'][$i] || $i==0){
-           continue; 
-        } 
-        $file = array(
-            'name'      => $_FILES['file']['name'][$i],
-            'type'      => $_FILES['file']['type'][$i],
-            'tmp_name'  => $_FILES['file']['tmp_name'][$i],
-            'size'      => $_FILES['file']['size'][$i],
-            'error'     => $_FILES['file']['error'][$i],
-        );
-        // Upload any file that is submitted
-        $error = upload_file($last_insert_id, $file, 1);
-        if($error != 1){
-            /**
-            * If error, stop uploading files;
-            */
-            break;
+    $error = 1;
+    // If a file was submitted
+    if (!empty($_FILES))
+    {
+        for($i=0; $i<count($_FILES['file']['name']); $i++){
+            if($_FILES['file']['error'][$i] || $i==0){
+               continue; 
+            } 
+            $file = array(
+                'name'      => $_FILES['file']['name'][$i],
+                'type'      => $_FILES['file']['type'][$i],
+                'tmp_name'  => $_FILES['file']['tmp_name'][$i],
+                'size'      => $_FILES['file']['size'][$i],
+                'error'     => $_FILES['file']['error'][$i],
+            );
+            // Upload any file that is submitted
+            $error = upload_file($last_insert_id, $file, 1);
+            if($error != 1){
+                /**
+                * If error, stop uploading files;
+                */
+                break;
+            }
+            
         }
-        
     }
-  }
-  // Otherwise, success
-  else $error = 1;
-  
-  // If there was an error in submitting.
-  if($error != 1)
-  {
-      // Delete risk
-      delete_risk($last_insert_id);
+    // Otherwise, success
+    else $error = 1;
 
-      // Display an alert
-      ob_end_clean();
-      $data = array("error" => true, "message" => $escaper->escapeHtml($error));
-      header('Content-type:application/json;charset=utf-8');
-      echo json_encode($data);
-      return;
-  }
-  else 
-  {
-      // If the notification extra is enabled
-      if (notification_extra())
-      {
-        // Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
+    // If there was an error in submitting.
+    if($error != 1)
+    {
+        // Delete risk
+        delete_risk($last_insert_id);
 
-        // Send the notification
-        notify_new_risk($last_insert_id, $subject);
-      }
+        // Display an alert
+        ob_end_clean();
+        $data = array("error" => true, "message" => $escaper->escapeHtml($error));
+        header('Content-type:application/json;charset=utf-8');
+        echo json_encode($data);
+        return;
+    }
+    else 
+    {
+        // If the notification extra is enabled
+        if (notification_extra())
+        {
+            // Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
 
-      // There is an alert message
-      $risk_id = (int)$last_insert_id + 1000;
+            // Send the notification
+            notify_new_risk($last_insert_id, $subject);
+        }
 
-      echo "<script> var global_risk_id = " . $risk_id . ";</script>";
-      
-      // Display an alert   
-      $RiskSubmitSuccess = _lang("RiskSubmitSuccess", ["subject" => $escaper->escapeHtml($subject)]);
-      ob_end_clean();
-      $data = array("risk_id" => $risk_id, "error" => false, "message" => $escaper->escapeHtml($RiskSubmitSuccess));
-      header('Content-type:application/json;charset=utf-8');
-      echo json_encode($data);
-      return;
-  }
+        // There is an alert message
+        $risk_id = (int)$last_insert_id + 1000;
+
+        echo "<script> var global_risk_id = " . $risk_id . ";</script>";
+
+        // Display an alert   
+        $RiskSubmitSuccess = _lang("RiskSubmitSuccess", ["subject" => $escaper->escapeHtml($subject)]);
+        ob_end_clean();
+        $data = array("risk_id" => $risk_id, "error" => false, "message" => $escaper->escapeHtml($RiskSubmitSuccess));
+        header('Content-type:application/json;charset=utf-8');
+        echo json_encode($data);
+        exit;
+    }
 
 }
 

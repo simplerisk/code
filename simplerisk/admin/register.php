@@ -274,6 +274,43 @@
     <?php
         setup_alert_requirements("..");
     ?>
+    
+    <style>
+    
+        .progress-wrapper {
+            background-color: #3a3a3a;
+            border-radius: 2px;
+            box-shadow: none;
+            border: none;
+            padding: 5px 0px;
+            margin-top: 5px;
+        }
+        .progress-window {
+            height: 220px;
+            max-height: 220px;
+            padding: 15px;
+            overflow-y: auto;
+            color: white;
+        }
+        
+        .progress-window .error_message{
+            color: orangered;
+        }
+        
+        .progress-window::-webkit-scrollbar {
+            background: yellow;
+            width: 10px;
+        }
+        .progress-window::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .progress-window::-webkit-scrollbar-thumb {
+            background: #888;
+        }
+        .progress-window::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
   </head>
 
   <body>
@@ -336,7 +373,7 @@
             <?php } ?>
             
             <div class="row-fluid">
-                <div class="span6">
+                <div id="register-panel" class="span6">
                   <div class="hero-unit">
                     <p><h4><?php echo $escaper->escapeHtml($lang['RegistrationInformation']); ?></h4></p>
                     <form name="register" method="post" action="">
@@ -366,7 +403,7 @@
                     </form>
                   </div>
                 </div>
-                <div class="span6">
+                <div id="upgrade-panel" class="span6">
                     <div class="hero-unit">
                         <p><h4><?php echo $escaper->escapeHtml($lang['UpgradeSimpleRisk']); ?></h4></p>
                         <?php
@@ -405,6 +442,54 @@
         </div>
       </div>
     </div>
+        <script type="text/javascript">
+            var last_response_len = false;
+            var $progress = $('.progress-window');
+            $('#app_upgrade').click(function() {
+                $progress.html("");
+                $('.progress-wrapper').show();
+                $('#upgrade-panel .hero-unit').height($('#register-panel .hero-unit').height());
+                
+                $.ajax(BASE_URL + '/api/one_click_upgrade', {
+                    xhrFields: {
+                        onprogress: function(e)
+                        {
+                            var this_response, response = e.currentTarget.response;
+                            if(last_response_len === false)
+                            {
+                                this_response = response;
+                                last_response_len = response.length;
+                            }
+                            
+                            else
+                            {
+                                this_response = response.substring(last_response_len);
+                                last_response_len = response.length;
+                            }
+                            $progress.append("<div style=''>" + this_response + "</div>");
+                            $progress.animate({ scrollTop: 9999 });
+                        }
+                    }
+                })
+                .done(function(data)
+                {
+                    /*$progress.append("<div style='color: limegreen'><?php echo $lang['UpdateSuccessful'] ?></div>");
+                    $progress.animate({ scrollTop: 9999 });*/
+                })
+                .fail(function(xhr, status, errorMessage)
+                {
+                    $progress.append("<div style='color: orangered'><?php echo $lang['UpdateFailed'] ?></div>");
+                    $progress.append("<div style='color: orangered'>" + status +  "(" + errorMessage + ")</div>");
+                    $progress.animate({ scrollTop: 9999 });
+                });
+
+            });
+
+            $(document).ready(function(){
+                
+            });
+
+        </script>   
   </body>
 
 </html>

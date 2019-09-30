@@ -39,6 +39,9 @@ function is_authenticated()
         // Return true
         return true;
     }
+    elseif(check_questionnaire_get_token()) {
+        return false;
+    }
     else unauthenticated_access();
 }
 
@@ -369,6 +372,7 @@ function dynamicrisk()
         }
 
         $tags_filter = isset($_GET['tags_filter']) ? array_map('intval', $_GET['tags_filter']) : [];
+        $locations_filter = isset($_GET['locations_filter']) ? array_map('intval', $_GET['locations_filter']) : [];
         $start = (isset($_GET['start']) && $_GET['start']) ? $_GET['start'] : 0;
         $length = (isset($_GET['length']) && $_GET['length']) ? $_GET['length'] : 10;
         $rowCount = "";
@@ -376,7 +380,7 @@ function dynamicrisk()
         $review_levels = get_review_levels();
 
         // Query the risks
-        $data = risks_query($status, $sort, $group, $processed_affected_assets_filter, $tags_filter, $rowCount, $start, $length);
+        $data = risks_query($status, $sort, $group, $processed_affected_assets_filter, $tags_filter, $locations_filter, $rowCount, $start, $length);
         $rows = array();
         foreach($data as $risk){
             $row = array(
@@ -419,6 +423,7 @@ function dynamicrisk()
                 "mitigation_cost"       => $escaper->escapeHtml($risk['mitigation_cost']),
                 "mitigation_owner"      => $escaper->escapeHtml($risk['mitigation_owner']),
                 "mitigation_team"       => $escaper->escapeHtml($risk['mitigation_team']),
+                "mitigation_accepted"   => $escaper->escapeHtml($risk['mitigation_accepted']),
                 "closure_date"          => $escaper->escapeHtml($risk['closure_date']),
                 "mitigation_date"       => $escaper->escapeHtml($risk['mitigation_date']),
                 "mitigation_control_names" => $escaper->escapeHtml($risk['mitigation_control_names']),
@@ -435,8 +440,14 @@ function dynamicrisk()
 /************************************
  * FUNCTION: MANAGEMENT - VIEW RISK *
  ************************************/
-function viewrisk()
-{
+function viewrisk() {
+
+    if (!check_permission_riskmanagement()) {
+        global $escaper, $lang;
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
+
     // If the id is not sent
     if (!isset($_GET['id']))
     {
@@ -461,7 +472,7 @@ function viewrisk()
             $reference_id = $risk[0]['reference_id'];
             $regulation = get_name_by_value("frameworks", $risk[0]['regulation']);
             $control_number = $risk[0]['control_number'];
-            $location = get_name_by_value("location", $risk[0]['location']);
+            $location = get_names_by_multi_values("location", $risk[0]['location'], false, "; ");
             $source = get_name_by_value("source", $risk[0]['source']);
             $category = get_name_by_value("category", $risk[0]['category']);
             $team = get_name_by_value("team", $risk[0]['team']);
@@ -625,9 +636,14 @@ function viewrisk()
 /******************************************
  * FUNCTION: MANAGEMENT - VIEW MITIGATION *
  ******************************************/
-function viewmitigation()
-{
+function viewmitigation() {
+    
     global $escaper, $lang;
+
+    if (!check_permission_riskmanagement()) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
 
     // If the id is not sent
     if (!isset($_GET['id']))
@@ -688,9 +704,14 @@ function viewmitigation()
 /**************************************
  * FUNCTION: MANAGEMENT - VIEW REVIEW *
  **************************************/
-function viewreview()
-{
+function viewreview() {
     global $escaper, $lang;
+
+    if (!check_permission_riskmanagement()) {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForRiskManagement']), NULL);
+        return;
+    }
+
     // If the id is not sent
     if (!isset($_GET['id']))
     {
@@ -788,6 +809,7 @@ function dynamicriskForm()
         }
 
         $tags_filter = isset($_POST['tags_filter']) ? array_map ('intval', $_POST['tags_filter']) : [];
+        $locations_filter = isset($_POST['locations_filter']) ? array_map ('intval', $_POST['locations_filter']) : [];
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
         $group_value_from_db = $_POST['group_value'] ? $_POST['group_value'] : "";
@@ -803,7 +825,7 @@ function dynamicriskForm()
 
         $rowCount = 0;
         // Query the risks
-        $risks = risks_query($status, $sort, $group, $processed_affected_assets_filter, $tags_filter, $rowCount, $start, $length, $group_value_from_db, "", [], $orderColumnName, $orderDir, $risks_by_team, $teams, $owners, $ownersmanagers);
+        $risks = risks_query($status, $sort, $group, $processed_affected_assets_filter, $tags_filter, $locations_filter, $rowCount, $start, $length, $group_value_from_db, "", [], $orderColumnName, $orderDir, $risks_by_team, $teams, $owners, $ownersmanagers);
 
 //        $orderColumnIndex = $_POST['order'][0]['column'];
 //        $orderDir = $_POST['order'][0]['dir'];
@@ -882,6 +904,7 @@ function dynamicriskForm()
                 $escaper->escapeHtml($row['mitigation_cost']),
                 $escaper->escapeHtml($row['mitigation_owner']),
                 $escaper->escapeHtml($row['mitigation_team']),
+                $escaper->escapeHtml($row['mitigation_accepted']),
                 $escaper->escapeHtml($row['mitigation_date']),
                 $escaper->escapeHtml($row['mitigation_control_names']),
                 $escaper->escapeHtml($row['risk_tags']),
@@ -911,7 +934,7 @@ function dynamicriskForm()
                         if($custom_value['field_id'] == $active_field['id']){
                             $value = $custom_value['value'];
                             
-                            $text = get_custom_field_name_by_value($active_field['id'], $custom_value['field_type'], $value);
+                            $text = get_custom_field_name_by_value($active_field['id'], $custom_value['field_type'], $custom_value['encryption'], $value);
                             
                             break;
                         }
@@ -1526,7 +1549,6 @@ function viewAllReviewsForm()
  *************************************/
 function saveDetailsForm()
 {
-
     // If the id is not sent
     if (!isset($_GET['id']))
     {
@@ -1552,7 +1574,6 @@ function saveDetailsForm()
         // 3 = DREAD
         // 4 = OWASP
         // 5 = Custom
-
 
         // Classic Risk Scoring Inputs
         $scoring_method = (int)$_POST['scoring_method'];
@@ -2391,7 +2412,8 @@ function addRisk(){
         $reference_id = get_param("POST", 'reference_id');
         $regulation = (int)get_param("POST", 'regulation');
         $control_number = get_param("POST", 'control_number');
-        $location = (int)get_param("POST", 'location');
+        $location = get_param("POST", 'location', []);
+        $location = implode(",", $location);
         $source = (int)get_param("POST", 'source');
         $category = (int)get_param("POST", 'category');
         if(is_array(get_param("POST", 'team'))){
@@ -4157,8 +4179,14 @@ function reopenTestAuditResponse()
  ********************************************************/
 function assessment_extra_getAssessmentContacts(){
 	// Check assessment extra is enabled
-	if (assessments_extra())
-	{
+	if (assessments_extra()) {
+        
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $escaper->escapeHtml($lang['NoPermissionForAssessments']), NULL);
+            return;
+        }
+        
 		// If the assessment extra file exists
 		if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
 		{
@@ -4176,8 +4204,14 @@ function assessment_extra_getAssessmentContacts(){
  **********************************************************************/
 function assessment_extra_getAssessmentQuestionnaireQuestions(){
     // Check assessment extra is enabled
-    if (assessments_extra())
-    {
+    if (assessments_extra()) {
+
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $escaper->escapeHtml($lang['NoPermissionForAssessments']), NULL);
+            return;
+        }
+
         // If the assessment extra file exists
         if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
         {
@@ -4195,8 +4229,14 @@ function assessment_extra_getAssessmentQuestionnaireQuestions(){
  *********************************************************************/
 function assessment_extra_questionnaireTemplateDynamicAPI(){
     // Check assessment extra is enabled
-    if (assessments_extra())
-    {
+    if (assessments_extra()) {
+
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $escaper->escapeHtml($lang['NoPermissionForAssessments']), NULL);
+            return;
+        }
+
         // If the assessment extra file exists
         if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
         {
@@ -4214,8 +4254,14 @@ function assessment_extra_questionnaireTemplateDynamicAPI(){
  ************************************************************/
 function assessment_extra_questionnaireDynamicAPI(){
     // Check assessment extra is enabled
-    if (assessments_extra())
-    {
+    if (assessments_extra()) {
+
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $escaper->escapeHtml($lang['NoPermissionForAssessments']), NULL);
+            return;
+        }
+
         // If the assessment extra file exists
         if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
         {
@@ -4228,13 +4274,42 @@ function assessment_extra_questionnaireDynamicAPI(){
     }
 }
 
+/*******************************
+ * FUNCTION: SEND QUESIONNAIRE *
+ *******************************/
+function assessment_extra_sendQuestionnaireAPI(){
+
+    if (assessments_extra()) {
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $lang['NoPermissionForAssessments'], null);
+            return;
+        }
+
+        // If the assessment extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php'))) {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+            // Call the sendQuestionnaireAPI function
+            sendQuestionnaireAPI();
+        }
+    }
+}
+
 /********************************************************************
  * FUNCTION: GET DATA FOR ASSESSMENT QUESIONNAIRE RESULTS DATATABLE *
  ********************************************************************/
 function assessment_extra_questionnaireResultsDynamicAPI(){
     // Check assessment extra is enabled
-    if (assessments_extra())
-    {
+    if (assessments_extra()) {
+
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $escaper->escapeHtml($lang['NoPermissionForAssessments']), NULL);
+            return;
+        }
+
         // If the assessment extra file exists
         if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
         {
@@ -4252,8 +4327,14 @@ function assessment_extra_questionnaireResultsDynamicAPI(){
  **********************************************/
 function assessment_extra_saveQuestionnaireResultCommentAPI(){
     // Check assessment extra is enabled
-    if (assessments_extra())
-    {
+    if (assessments_extra()) {
+
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $escaper->escapeHtml($lang['NoPermissionForAssessments']), NULL);
+            return;
+        }
+
         // If the assessment extra file exists
         if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
         {
@@ -4262,6 +4343,56 @@ function assessment_extra_saveQuestionnaireResultCommentAPI(){
 
             // Call the saveQuestionnaireResultCommentAPI function
             saveQuestionnaireResultCommentAPI();
+        }
+    }
+}
+
+/*****************************************
+ * FUNCTION: APPROVE QUESTIONNARE RESULT *
+ *****************************************/
+function assessment_extra_approveResultAPI(){
+    // Check assessment extra is enabled
+    if (assessments_extra()) {
+
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $escaper->escapeHtml($lang['NoPermissionForAssessments']), NULL);
+            return;
+        }
+
+        // If the assessment extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+            // Call the approveResultAPI function
+            approveResultAPI();
+        }
+    }
+}
+
+/****************************************
+ * FUNCTION: REJECT QUESTIONNARE RESULT *
+ ****************************************/
+function assessment_extra_rejectResultAPI(){
+    // Check assessment extra is enabled
+    if (assessments_extra()) {
+
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $escaper->escapeHtml($lang['NoPermissionForAssessments']), NULL);
+            return;
+        }
+
+        // If the assessment extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+            // Call the rejectResultAPI function
+            rejectResultAPI();
         }
     }
 }
@@ -4342,6 +4473,26 @@ function customization_extra_saveTemplate()
 
             // Save template and get response
             saveTemplateResponse();
+        }
+    }
+}
+
+/**************************************
+ * FUNCTION: COPY ASSESSMENT TEMPLATE *
+ **************************************/
+function assessment_extra_copyTemplateAPI()
+{
+    // Check assessment extra is enabled
+    if (assessments_extra())
+    {
+        // If the assessment extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+            // Call the copyTemplateAPI function
+            copyTemplateAPI();
         }
     }
 }
@@ -4433,8 +4584,14 @@ function customization_getCustomField()
  **********************************************************/
 function assessment_extra_createRisksFromQuestionnairePendingRisksAPI(){
     // Check assessment extra is enabled
-    if (assessments_extra())
-    {
+    if (assessments_extra()) {
+
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $escaper->escapeHtml($lang['NoPermissionForAssessments']), NULL);
+            return;
+        }
+
         // If the assessment extra file exists
         if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
         {
@@ -4448,12 +4605,43 @@ function assessment_extra_createRisksFromQuestionnairePendingRisksAPI(){
 }
 
 /**************************************************
+ * FUNCTION: GET QUESTIONNAIRE ANALYSIS JSON DATA *
+ **************************************************/
+function assessment_extra_questionnaireAnalysisDynamicAPI(){
+    // Check assessment extra is enabled
+    if (assessments_extra()) {
+
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $escaper->escapeHtml($lang['NoPermissionForAssessments']), NULL);
+            return;
+        }
+
+        // If the assessment extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+            // Call the questionnaireAanalysisDynamicAPI function
+            questionnaireAanalysisDynamicAPI();
+        }
+    }
+}
+
+/**************************************************
  * FUNCTION: GET QUESTIONNAIRE TEMPALTE QUESTIONS *
  **************************************************/
 function assessment_extra_questionnaireTemplateQuestionsDynamicAPI(){
     // Check assessment extra is enabled
-    if (assessments_extra())
-    {
+    if (assessments_extra()) {
+        
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $escaper->escapeHtml($lang['NoPermissionForAssessments']), NULL);
+            return;
+        }
+
         // If the assessment extra file exists
         if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
         {
@@ -5207,7 +5395,7 @@ function assets_verify_asset()
     global $lang, $escaper;
 
         // If the id is not sent
-    if (!isset($_GET['id']))
+    if (!isset($_POST['id']))
     {
         set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
 
@@ -5217,7 +5405,7 @@ function assets_verify_asset()
         // If the user has asset permissions
         if (check_permission_asset())
         {
-            $id = (int)$_GET['id'];
+            $id = (int)$_POST['id'];
             if (verify_asset($id)) {
                 set_alert(true, "good", $escaper->escapeHtml($lang['AssetWasVerifiedSuccessfully']));
                 json_response(200, get_alert(true), null);
@@ -5243,7 +5431,7 @@ function assets_delete_asset($discard = false)
     global $lang, $escaper;
 
         // If the id is not sent
-    if (!isset($_GET['id']))
+    if (!isset($_POST['id']))
     {
         set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
 
@@ -5253,7 +5441,7 @@ function assets_delete_asset($discard = false)
         // If the user has asset permissions
         if (check_permission_asset())
         {
-            $id = (int)$_GET['id'];
+            $id = (int)$_POST['id'];
             if (delete_asset($id)) {
                 set_alert(true, "good", $escaper->escapeHtml($discard? $lang['AssetWasDiscardedSuccessfully']: $lang['AssetWasDeletedSuccessfully']));
                 json_response(200, get_alert(true), null);
@@ -5362,7 +5550,9 @@ function assets_update_asset()
 
         // Return a JSON response
         json_response(400, get_alert(true), NULL);
-    } else {
+    } 
+    else 
+    {
         // If the user has asset permissions
         if (check_permission_asset())
         {
@@ -5405,7 +5595,7 @@ function assets_update_asset()
                 if ($fieldName == "tags") {
                     $options = [];
                     foreach(getTagsOfType('asset') as $tag) {
-                        $options[] = array('label' => $tag);
+                        $options[] = array('label' => $tag['tag'], 'value' => $tag['id']);
                     }
                     json_response(200, get_alert(true), $options);
                 } else {
@@ -5413,7 +5603,8 @@ function assets_update_asset()
                 }
             }
             // If failed for update
-            else{
+            else
+            {
                 set_alert(true, "bad", $escaper->escapeHtml($lang['ThereWasAProblemUpdatingTheAsset']));
                 json_response(400, get_alert(true), NULL);
             }
@@ -5573,7 +5764,7 @@ function getTagOptionsOfType() {
         } else {
             $options = [];
             foreach(getTagsOfType($type) as $tag) {
-                $options[] = array('label' => $tag);
+                $options[] = array('label' => $tag['tag'], 'value' => $tag['id']);
             }
 
             json_response(200, null, $options);
@@ -5625,6 +5816,12 @@ function update_risk_level_API() {
         }
     } elseif(strlen($value) > 20) {
         set_alert(true, "bad", $lang['RiskLevelTooLongValueParameter']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), $originalValue);
+        return;
+    } elseif($field === 'color' && !preg_match("/^#(?:[a-f0-9]{3}){1,2}$/i", $value)) {
+        set_alert(true, "bad", $lang['RiskLevelInvalidColorParameter']);
 
         // Return a JSON response
         json_response(400, get_alert(true), $originalValue);
@@ -6174,7 +6371,7 @@ function batch_delete_exception_api() {
 function get_exceptions_audit_log_api() 
 {
 
-    global $lang;
+    global $lang, $escaper;
 
     if (!check_permission_governance()) {
         set_alert(true, "bad", $lang['NoPermissionForGovernance']);
@@ -6191,15 +6388,44 @@ function get_exceptions_audit_log_api()
     if ($days < 0)
         $days = 7;
 
-    json_response(200, null, array_map(function($log) {
+    json_response(200, null, array_map(function($log) use ($escaper) {
             return array(
                 'timestamp' => date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp'])),
-                'message' => try_decrypt($log['message'])
+                'message' => $escaper->escapeHtml(try_decrypt($log['message']))
             );
         }, get_exceptions_audit_log($days))
     );
 }
 
+/************************************************
+ * FUNCTION: GET QUESTIONNAIRE RESULT AUDIT LOG *
+ ************************************************/
+function get_questionnaire_result_audit_log_api() {
+
+    global $lang, $escaper;
+
+    if (!check_permission_assessments()) {
+        set_alert(true, "bad", $lang['NoPermissionForAssessments']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+
+    require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+    $days = !empty($_POST['days']) && ctype_digit($_POST['days']) ? (int)$_POST['days'] : 7;
+    $tracking_id = (int)$_POST['tracking_id'];
+
+    if ($days < 0)
+        $days = 7;
+
+    json_response(200, null, array_map(function($log) use ($escaper){
+            return array(
+                'timestamp' => date(get_default_datetime_format("g:i A T"), strtotime($log['timestamp'])),
+                'message' => $escaper->escapeHtml(try_decrypt($log['message']))
+            );
+        }, get_questionnaire_result_audit_log($tracking_id, $days))
+    );
+}
 /*******************************
  * FUNCTION: GET AUDIT LOG API *
  *******************************/
@@ -6486,15 +6712,26 @@ function asset_group_remove_asset()
 
 function get_asset_group_options() {
 
-    global $lang;
-
-    if (check_permission_asset() || check_permission_assessments() || check_permission_riskmanagement())
-    {
+    if (check_permission_asset() || check_permission_assessments() || check_permission_riskmanagement()) {
         $risk_id = isset($_GET['risk_id']) && ctype_digit($_GET['risk_id']) ? (int)$_GET['risk_id'] : false;
         json_response(200, null, get_assets_and_asset_groups_for_dropdown($risk_id));
+    } else {
+        global $lang;
+
+        set_alert(true, "bad", $lang['NoPermissionForAssetAssetGroupList']);
+        json_response(400, get_alert(true), NULL);
+        return;
     }
-    else
-    {
+}
+
+function get_asset_group_options_noauth() {
+
+    if (get_setting("ASSESSMENT_ASSET_SHOW_AVAILABLE") && check_questionnaire_get_token()) {
+        $risk_id = isset($_GET['risk_id']) && ctype_digit($_GET['risk_id']) ? (int)$_GET['risk_id'] : false;
+        json_response(200, null, get_assets_and_asset_groups_for_dropdown($risk_id));
+    } else {
+        global $lang;
+
         set_alert(true, "bad", $lang['NoPermissionForAssetAssetGroupList']);
         json_response(400, get_alert(true), NULL);
         return;
@@ -6542,6 +6779,255 @@ function advanced_search_api(){
     set_alert(true, "bad", $lang['ActivateTheAdvancedSearchExtra']);
     return json_response(400, get_alert(true), array("manager" => $user["manager"]));
 
+}
+
+/*************************************
+ * FUNCTION: SAVE DYNAMIC SELECTIONS *
+ *************************************/
+function saveDynamicSelectionsForm()
+{
+    global $lang, $escaper;
+    
+    $type = get_param("post", "type");
+    $name = get_param("post", "name");
+
+    // If the id is not sent
+    if (!$type || !$name)
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['ThereAreRequiredFields']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+    
+    // Check if this name already existing
+    if(check_exisiting_dynamic_selection_name($_SESSION['uid'], $name))
+    {
+        set_alert(true, "bad", $lang['TheNameAlreadyExists']);
+        
+        json_response(200, get_alert(true), []);
+    }
+    else
+    {
+        $custom_display_settings = get_param("post", "columns");
+        $id = save_dynamic_selections($type, $name, $custom_display_settings);
+        
+        // Create the data array
+        $data = array("value" => $id, "name" => ($type=="private"? $name." -- ".$escaper->escapeHtml($lang['Private']) : $name) );
+        
+        set_alert(true, "good", $lang['SavedSuccess']);
+        
+        json_response(200, get_alert(true), $data);
+    }
+
+}
+
+/**************************************
+ * FUNCTION: DELETE DYNAMIC SELECTION *
+ **************************************/
+function deleteDynamicSelectionForm()
+{
+    global $lang, $escaper;
+    
+    $id = get_param("post", "id");
+
+    // If the id is not sent
+    if (!$id)
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['ThereAreRequiredFields']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+    
+    delete_dynamic_selection($id);
+    
+    // Create the data array
+    $data = array("value" => $id);
+    
+    set_alert(true, "good", $lang['DeletedSuccess']);
+    
+    json_response(200, "", $data);
+
+}
+
+/****************************************
+ * FUNCTION: REPORTS - RISK APPETITE    *
+ ****************************************/
+function appetite_report_api()
+{
+    global $lang, $escaper;
+    
+    // If the type are not sent
+    if (!isset($_GET['type'])) {
+        json_response(400, $lang['YouNeedToSpecifyATypeParameter'], NULL);
+    } else {
+        $type = $_GET['type'];
+
+        if (!in_array($type, ['in', 'out'])) {
+            json_response(400, $lang['YouNeedToSpecifyATypeParameter'], NULL);
+        } else {
+            $start = (isset($_GET['start']) && $_GET['start']) ? (int)$_GET['start'] : 0;
+            $length = (isset($_GET['length']) && $_GET['length']) ? (int)$_GET['length'] : 10;
+
+            $draw = $escaper->escapeHtml($_GET['draw']);
+
+            $orderColumn = (int)$_GET['order'][0]['column'];
+            $orderDir = strtolower($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
+
+            // Query the risks
+            $data = get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir);
+
+            $rows = array();
+            foreach($data['data'] as $risk){
+                $rows[] = array(
+                    "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($risk['id'])."</a>",
+                    $escaper->escapeHtml($risk['subject']),
+                    "<div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color ".$escaper->escapeHtml($risk['color'])."\" style=\"background-color:" . $escaper->escapeHtml($risk['color']) . "\"></span></div>",
+                    "<div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['residual_risk']) . "<span class=\"risk-color ".$escaper->escapeHtml($risk['residual_color'])."\" style=\"background-color:" . $escaper->escapeHtml($risk['residual_color']) . "\"></span></div>"
+                );
+            }
+
+            $result = array(
+                'draw' => $draw,
+                'data' => $rows,
+                'recordsTotal' => $data['recordsTotal'],
+                'recordsFiltered' => $data['recordsTotal'],
+            );
+
+            echo json_encode($result);
+            exit;
+        }
+    }
+}
+
+function one_click_upgrade() {
+    
+    // If the user is not an administrator
+    if (!is_admin()) {
+        unauthorized_access();
+        return;
+    }
+
+    global $escaper, $lang;
+
+    // If the upgrade extra exists
+    if (file_exists(realpath(__DIR__ . '/../extras/upgrade/index.php')))
+    {
+        // Require the upgrade extra file
+        require_once(realpath(__DIR__ . '/../extras/upgrade/index.php'));
+
+        header('Content-type: text/html; charset=utf-8');
+        // Turn off output buffering
+        ini_set('output_buffering', 'off');
+        // Turn off PHP output compression
+        ini_set('zlib.output_compression', false);
+        // Implicitly flush the buffer(s)
+        ini_set('implicit_flush', true);
+        ob_implicit_flush(true);
+        // Clear, and turn off output buffering
+        while (ob_get_level() > 0) {
+            // Get the curent level
+            $level = ob_get_level();
+            // End the buffering
+            ob_end_clean();
+            // If the current level has not changed, abort
+            if (ob_get_level() == $level) break;
+        }
+        // Disable apache output buffering/compression
+        if (function_exists('apache_setenv')) {
+            apache_setenv('no-gzip', '1');
+            apache_setenv('dont-vary', '1');
+        }
+
+        stream_write($lang['UpdateVersionCheck']);
+
+        $current_app_version = current_version("app");
+        $next_app_version = next_version($current_app_version);
+        $db_version = current_version("db");
+
+        $need_update_app = false;
+        $need_update_db = false;
+        $need_update_extras = false;
+        
+        // If the current version is not the latest
+        if ($next_app_version != "") {
+            stream_write(_lang('UpdateApplicationFilesOutOfDate',
+                array(
+                    'current' => $current_app_version,
+                    'latest' => $next_app_version
+                )
+            ));
+            $need_update_app = true;
+        } else {
+            stream_write($lang['UpdateApplicationFilesUpToDate']);
+        }
+        
+        // If the app version is not the same as the database version
+        if ($current_app_version != $db_version) {
+
+            stream_write(_lang('UpdateDatabaseOutOfDate',
+                array(
+                    'app_version' => $current_app_version,
+                    'db_version' => $db_version
+                )
+            ));
+            $need_update_db = true;
+        } elseif ($need_update_app && $next_app_version != $db_version) {
+            // If the app is getting updated and not to the same version the db is on
+            stream_write(_lang('UpdateDatabaseMustFollowAppVersion',
+                array(
+                    'app_version' => $next_app_version,
+                    'db_version' => $db_version
+                )
+            ));
+            $need_update_db = true;
+        } else {
+            stream_write($lang['UpdateDatabaseUpToDate']);
+        }
+        
+        $extra_upgrades = gather_extra_upgrades();
+        
+        if (count($extra_upgrades)) {
+            stream_write(_lang('UpdateInstalledExtrasOutOfDate', array('extrasToUpdate' => implode(', ', $extra_upgrades))));
+            $need_update_extras = true;
+        } else {
+            stream_write($lang['UpdateInstalledExtrasUpToDate']);
+        }
+
+        stream_write($lang['UpdateVersionCheckDone']);
+
+        if (!($need_update_app || $need_update_db || $need_update_extras)) {
+            stream_write($lang['UpdateNoUpdateRequired']);
+        } elseif (backup()) {
+            stream_write($lang['UpdateStart']);
+
+            if ($need_update_app) {
+                upgrade_application();
+            }
+            
+            if ($need_update_db) {
+                
+                require_once(realpath(__DIR__ . '/upgrade.php'));
+                
+                // Upgrade the database
+                upgrade_database();
+
+                // Convert tables to InnoDB
+                convert_tables_to_innodb();
+
+                // Convert tables to utf8_general_ci
+                convert_tables_to_utf8();
+            }
+            
+            if ($need_update_extras)
+                upgrade_extras($extra_upgrades);
+        
+            stream_write($lang['UpdateSuccessful']);            
+        } else {
+            stream_write_error($lang['BackupFailed']);
+        }
+    }
 }
 
 ?>
