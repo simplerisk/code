@@ -1799,7 +1799,7 @@ function risks_and_assets_table($report)
                     a.value AS asset_value,
                     av.max_value AS max_value,
                     a.location AS asset_location,
-                    a.team AS asset_team,
+                    a.teams AS asset_team,
                     r.status,
                     r.subject,
                     r.submission_date,
