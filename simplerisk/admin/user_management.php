@@ -63,7 +63,7 @@ if (isset($_POST['add_user']))
     $email = $_POST['email'];
     $user = $_POST['new_user'];
     $pass = $_POST['password'];
-    $manager = $_POST['manager'];
+    $manager = (int)$_POST['manager'];
 
     $repeat_pass = $_POST['repeat_password'];
     $teams = isset($_POST['team']) ? $_POST['team'] : array('none');

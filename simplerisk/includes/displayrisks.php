@@ -329,6 +329,35 @@ function display_additional_notes_view($notes)
     echo "</div>\n";
 }
 
+/******************************************
+* FUNCTION: DISPLAY ADDITIONAL NOTES VIEW *
+*******************************************/
+function display_jira_issue_key_view($jira_issue_key)
+{
+    // We're not displaying anything if the extra isn't turned on
+    if (!jira_extra())
+        return;
+
+    global $lang, $escaper;
+    if ($jira_issue_key) {
+        //At this point we don't even have to validate
+        preg_match('/^([A-Z][A-Z_0-9]+)-[0-9][0-9]*$/', $jira_issue_key, $matches);
+        $project_key = $matches[1];
+    }
+
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span5 text-right\">\n";
+    echo $escaper->escapeHtml($lang['JiraIssueKey']) .": \n";
+    echo "</div>\n";
+    echo "<div class='span7' style='margin-top: 5px;'>\n";
+    echo " <strong style='cursor: default;'>" . $escaper->escapeHtml($jira_issue_key) . "</strong>";
+    if ($jira_issue_key) {
+        echo " <a href='" . get_setting('JiraInstanceURL') . "projects/{$project_key}/issues/{$jira_issue_key}' target='_blank' class='btn btn-default btn-sm' style='margin-left: 10px;'>" . $escaper->escapeHtml($lang['Open']) . "</a>";
+    }
+    echo "</div>\n";
+    echo "</div>\n";
+}
+
 /**************************************************
 * FUNCTION: DISPLAY SUPPORTING DOCUMENTATION VIEW *
 ***************************************************/
@@ -349,7 +378,7 @@ function display_supporting_documentation_view($risk_id, $view_type)
 /*********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS VIEW *
 **********************************************************/
-function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags)
+function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key)
 {
 
     foreach($fields as $field)
@@ -432,7 +461,11 @@ function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id
                     case 'AdditionalNotes':
                         display_additional_notes_view($notes);
                     break;
-                        
+
+                    case 'JiraIssueKey':
+                        display_jira_issue_key_view($jira_issue_key);
+                    break;
+
                     case 'SupportingDocumentation':
                         display_supporting_documentation_view($risk_id, 1);
                     break;
@@ -735,6 +768,27 @@ function display_additional_notes_edit($notes)
     echo "</div>\n";
 }
 
+/****************************************
+* FUNCTION: DISPLAY JIRA ISSUE KEY EDIT *
+*****************************************/
+function display_jira_issue_key_edit($jira_issue_key) {
+
+    // We're not displaying anything if the extra isn't turned on
+    if (!jira_extra())
+        return;
+    
+    global $lang, $escaper;
+
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span5 text-right\">\n";
+    echo $escaper->escapeHtml($lang['JiraIssueKey']) .": \n";
+    echo "</div>\n";
+    echo "<div class=\"span7\">\n";
+    echo "<input type=\"text\" class=\"active-textfield\" name=\"jira_issue_key\" id=\"jira_issue_key\" size=\"20\" value=\"" . $escaper->escapeHtml($jira_issue_key) . "\" />\n";
+    echo "</div>\n";
+    echo "</div>\n";
+}
+
 /**************************************************
 * FUNCTION: DISPLAY SUPPORTING DOCUMENTATION EDIT *
 ***************************************************/
@@ -752,10 +806,12 @@ function display_supporting_documentation_edit($risk_id, $view_type)
     echo "</div>\n";
 }
 
+
+
 /*********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS EDIT *
 **********************************************************/
-function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags)
+function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key)
 {
     foreach($fields as $field)
     {
@@ -833,7 +889,11 @@ function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id
                     case 'AdditionalNotes':
                         display_additional_notes_edit($notes);
                     break;
-                        
+
+                    case 'JiraIssueKey':
+                        display_jira_issue_key_edit($jira_issue_key);
+                    break;
+
                     case 'SupportingDocumentation':
                         display_supporting_documentation_edit($risk_id, 1);  
                     break;
@@ -2089,6 +2149,7 @@ function display_supporting_documentation_add()
  ************************************/
 function display_risk_tags_edit($tags = "")
 {
+    
     global $lang, $escaper;
 
     echo "  <div class=\"row-fluid\">";
@@ -2098,16 +2159,35 @@ function display_risk_tags_edit($tags = "")
     echo "          </div>";
     echo "          <div class=\"row-fluid\">";
     echo "              <div class=\"span12\">";
-    echo "                  <input type=\"text\" readonly id=\"tags\" name=\"tags\" value=\"" . $escaper->escapeHtml($tags) . "\">
+    echo "                  <input type=\"text\" readonly id=\"tags\" name=\"tags\" value=\"\" data-selectize-value='{$tags}'>
                             <script>
                                 $('#tags').selectize({
                                     plugins: ['remove_button', 'restore_on_backspace'],
-                                    delimiter: ',',
-                                    create: true,
-                                    valueField: 'label',
+                                    delimiter: '+++',
+                                    create: function (input){
+                                        return {value: 'new_tag_' + input, label:input};
+                                    },
+                                    valueField: 'value',
                                     labelField: 'label',
                                     searchField: 'label',
                                     preload: true,
+                                    onInitialize: function() {
+                                        var json_string = this.\$input.attr('data-selectize-value');
+                                        if(!json_string)
+                                            return;
+                                        var existingOptions = JSON.parse(json_string);
+                                        var self = this;
+                                        if(Object.prototype.toString.call( existingOptions ) === \"[object Array]\") {
+                                            existingOptions.forEach( function (existingOption) {
+                                                self.addOption(existingOption);
+                                                self.addItem(existingOption[self.settings.valueField]);
+                                            });
+                                        }
+                                        else if (typeof existingOptions === 'object') {
+                                            self.addOption(existingOptions);
+                                            self.addItem(existingOptions[self.settings.valueField]);
+                                        }
+                                    },
                                     load: function(query, callback) {
                                         if (query.length) return callback();
                                         $.ajax({
@@ -2146,7 +2226,7 @@ function display_risk_tags_view($tags)
     echo "          <div class=\"row-fluid\">";
     echo "              <div class=\"span12\">";
     if ($tags) {
-        foreach(explode(",", $tags) as $tag) {
+        foreach(explode("+++", $tags) as $tag) {
             echo "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin-right:2px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
         }
     } else {
@@ -2235,6 +2315,10 @@ function display_main_detail_fields_by_panel_add($panel_name, $fields)
                         
                     case 'AdditionalNotes':
                         display_additional_notes_edit('');
+                    break;
+
+                    case 'JiraIssueKey':
+                        display_jira_issue_key_edit('');
                     break;
                         
                     case 'SupportingDocumentation':

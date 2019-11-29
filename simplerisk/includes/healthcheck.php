@@ -45,8 +45,8 @@ function simplerisk_health_check()
 
 	echo "<br /><b><u>PHP</u></b><br />";
 
-	// Check that this is PHP 5
-	//check_php_version();
+	// Check that this is PHP 7
+	check_php_version();
 	
 	// Check the necessary PHP extensions are installed
 	check_php_extensions();
@@ -383,14 +383,19 @@ function check_php_version()
 		define('PHP_VERSION_ID', ($version[0] * 10000 + $version[1] * 100 + $version[2]));
 	}
 
-	// If PHP is at least 5 and less than 6
-	if (PHP_VERSION_ID >= 50000 && PHP_VERSION_ID < 60000)
+	// If PHP is at least 7
+	if (PHP_VERSION_ID >= 70000)
 	{
-		health_check_good("SimpleRisk is running under PHP 5.x.");
+		health_check_good("SimpleRisk is running under PHP 7.");
+	}
+	// If this is PHP 5.x
+	else if (PHP_VERSION_ID >= 50000 && PHP_VERSION_ID < 60000)
+	{
+		health_check_bad("SimpleRisk will no longer run properly under PHP version 5.x.  Please upgrade to PHP 7.");
 	}
 	else
 	{
-		health_check_bad("SimpleRisk will not run properly under any version of PHP other than 5.x.");
+		health_check_bad("SimpleRisk requires PHP 7 to run properly.");
 	}
 }
 

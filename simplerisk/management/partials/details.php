@@ -60,9 +60,9 @@ enforce_permission_riskmanagement();
     <div id="tabs" class="risk-details">
       <div class="row-fluid tab-wrapper">
         <ul class="tabs-nav clearfix">
-          <li><a id="tab_details" href="#tabs1">Details</a></li>
-          <li><a id="tab_mitigation" href="#tabs2">Mitigation</a></li>
-          <li><a id="tab_review" class="tabList" href="#tabs3">Review</a></li>
+          <li><a id="tab_details" href="#tabs1"><?php echo $escaper->escapeHtml($lang['Details']); ?></a></li>
+          <li><a id="tab_mitigation" href="#tabs2"><?php echo $escaper->escapeHtml($lang['Mitigation']); ?></a></li>
+          <li><a id="tab_review" class="tabList" href="#tabs3"><?php echo $escaper->escapeHtml($lang['Review']); ?></a></li>
         </ul>
 
         <div class="row-fluid">
@@ -82,12 +82,12 @@ enforce_permission_riskmanagement();
                 // If the user has selected to edit the risk
                 if (isset($_POST['edit_details']) || (isset($action) && $action == 'editdetail'))
                 {
-                  edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $risk_tags);
+                  edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $risk_tags_for_edit, $jira_issue_key);
                 }
                 // Otherwise we are just viewing the risk
                 else
                 {
-                  view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_tags);
+                  view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_tags, $jira_issue_key);
                 }
                 ?>
                 <input type="hidden" class="risk_id" value="<?php echo $id; ?>">
@@ -173,7 +173,7 @@ enforce_permission_riskmanagement();
             <div class="collapsible">
               <div class="row-fluid">
                 <div class="span12 audit-trail">
-                  <?php get_audit_trail_html($id,36500,'risk'); ?>
+                  <?php get_audit_trail_html($id, 36500, ['risk', 'jira']); ?>
                 </div>
               </div>
             </div>

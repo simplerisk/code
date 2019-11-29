@@ -157,6 +157,12 @@ get_alert();
               <td width="60px"><?php echo (import_export_extra() ? '<a href="importexport.php">Yes</a>' : '<a href="importexport.php">No</a>'); ?></td>
             </tr>
             <tr>
+              <td width="155px"><b>Jira</b></td>
+              <td>Allows integration with your JIRA instance. Enables connecting risks to Jira issues, syncing their data, status and comments.</td>
+              <td width="60px"><?php echo (jira_extra() ? '<a href="jira.php">Yes</a>' : '<a href="jira.php">No</a>'); ?></td>
+            </tr>
+
+            <tr>
               <td width="155px"><b>Notification</b></td>
               <td>Sends email notifications when risks are submitted, updated, mitigated, or reviewed and may be run on a schedule to notify users of risks in the Unreviewed or Past Due state.</td>
               <td width="60px"><?php echo (notification_extra() ? '<a href="notification.php">Yes</a>' : '<a href="notification.php">No</a>'); ?></td>
@@ -170,6 +176,11 @@ get_alert();
               <td width="155px"><b>Team-Based Separation</b></td>
               <td>Restriction of risk viewing to team members the risk is categorized as.</td>
               <td width="60px"><?php echo (team_separation_extra() ? '<a href="separation.php">Yes</a>' : '<a href="separation.php">No</a>'); ?></td>
+            </tr>
+            <tr>
+              <td width="155px"><b>Unified Compliance Framework (UCF)</b></td>
+              <td>Enables the integration of the Unified Control Framework (UCF) controls and tests with SimpleRisk.</td>
+              <td width="60px"><?php echo (ucf_extra() ? '<a href="ucf.php">Yes</a>' : '<a href="ucf.php">No</a>'); ?></td>
             </tr>
             <tbody>
             </table>

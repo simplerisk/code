@@ -497,6 +497,8 @@ function display_initiate_audits()
 
             $('#filter_by_framework').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                enableFiltering: true,
+                maxHeight: 250,
                 includeSelectAllOption: true,
                 onDropdownHide: function(){
                     redraw();
@@ -610,7 +612,16 @@ function display_active_audits(){
                 <div class='span3'>
                     <div class='multiselect-content-container'>";
                         create_multiple_dropdown("enabled_users", "all", "filter_by_tester");
-    echo "          </div>
+                echo "</div>
+                </div>
+                <div class='span1' align='right' style='font-size: 15px'>
+                    <strong>".$escaper->escapeHtml($lang['TestName']).":</strong>
+                </div>
+                <div class='span3'>
+                    <div class='multiselect-content-container'>";
+                        $selected = isset($_GET['test_id']) ? array($_GET['test_id']) : 'all';
+                        create_multiple_dropdown("framework_control_tests", $selected, "filter_by_testname");
+                echo "</div>
                 </div>
             </div>
         </div>
@@ -666,6 +677,7 @@ function display_active_audits(){
                         d.filter_framework  = \$(\"#filter_by_framework\").val();
                         d.filter_status  = \$(\"#filter_by_status\").val();
                         d.filter_tester  = \$(\"#filter_by_tester\").val();
+                        d.filter_testname  = \$(\"#filter_by_testname\").val();
                     },
                     complete: function(response){
                     }
@@ -755,6 +767,13 @@ function display_active_audits(){
                 includeSelectAllOption: true
             });
 
+            $('#filter_by_testname').multiselect({
+                enableFiltering: true,
+                enableCaseInsensitiveFiltering: true,
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                includeSelectAllOption: true
+            });
+
             // Search filter event
             $('#filter_by_text').keyup(function(){
                 clearTimeout(typingTimer);
@@ -773,9 +792,11 @@ function display_active_audits(){
                 redrawActiveAudits();
             });
             
+            $('#filter_by_testname').change(function(){
+                redrawActiveAudits();
+            });
         </script>
     ";
-    
 }
 
 /************************************
@@ -1071,6 +1092,19 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
             }
             else
             {
+                $wheres[] = " 0 ";
+            }
+        }
+
+        if (isset($filters['filter_testname'])) {
+            if ($filters['filter_testname']) {
+                foreach ($filters['filter_testname'] as &$val) {
+                    $val = (int)$val;
+                }
+                unset($val);
+
+                $wheres[] = " t7.id IN (".implode(",", $filters['filter_testname']).") ";
+            } else {
                 $wheres[] = " 0 ";
             }
         }
@@ -1873,10 +1907,14 @@ function display_past_audits()
             </div>
             <div class='row-fluid'>
                 <div class='span2' align='right'>
-                    <strong>".$escaper->escapeHtml($lang['FilterByText']).":&nbsp;&nbsp;&nbsp;</strong>
+                    <strong>".$escaper->escapeHtml($lang['TestName']).":&nbsp;&nbsp;&nbsp;</strong>
                 </div>
                 <div class='span3'>
-                    <input type='text' id='filter_by_text' class='form-control'>
+                    <div class='multiselect-content-container'>";
+    $selected = isset($_GET['test_id']) ? array($_GET['test_id']) : 'all';
+    create_multiple_dropdown("framework_control_tests", $selected, "filter_by_testname");
+    echo "
+                    </div>
                 </div>
                 <div class='span2' align='right'>
                     <strong>".$escaper->escapeHtml($lang['Framework']).":&nbsp;&nbsp;&nbsp;</strong>
@@ -1892,6 +1930,14 @@ function display_past_audits()
                             }
                         echo "</select>
                     </div>
+                </div>
+            </div>
+            <div class='row-fluid'>
+                <div class='span2' align='right'>
+                    <strong>".$escaper->escapeHtml($lang['FilterByText']).":&nbsp;&nbsp;&nbsp;</strong>
+                </div>
+                <div class='span3'>
+                    <input type='text' id='filter_by_text' class='form-control'>
                 </div>
             </div>
             <div class='row-fluid'>
@@ -1947,6 +1993,13 @@ function display_past_audits()
                 includeSelectAllOption: true
             });
 
+            $('#filter_by_testname').multiselect({
+                enableFiltering: true,
+                enableCaseInsensitiveFiltering: true,
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                includeSelectAllOption: true
+            });
+
             var pageLength = 10;
             var form = $('#{$tableID}').parents('form');
             var datatableInstance = $('#{$tableID}').DataTable({
@@ -1964,6 +2017,13 @@ function display_past_audits()
                     var background = $('.background-class', $(row)).data('background');
                     $(row).find('td').addClass(background)
                 },
+                columnDefs : [
+                    {
+                        'targets' : [-1],
+                        'orderable': false,
+                        'className' : 'vcenter'
+                    }
+                ],
                 ajax: {
                     url: BASE_URL + '/api/compliance/past_audits',
                     type: 'POST',
@@ -1974,6 +2034,7 @@ function display_past_audits()
                         d.filter_framework  = \$(\"#filter_by_framework\").val();
                         d.filter_start_audit_date   = \$(\"#start_audit_date\").val();
                         d.filter_end_audit_date     = \$(\"#end_audit_date\").val();
+                        d.filter_testname = \$(\"#filter_by_testname\").val();
                     },
                     complete: function(response){
                     }
@@ -2053,6 +2114,9 @@ function display_past_audits()
                 redrawPastAudits();
             });
             $('#filter_by_control').change(function(){
+                redrawPastAudits();
+            });
+            $('#filter_by_testname').change(function(){
                 redrawPastAudits();
             });
             // Search filter event
@@ -2565,7 +2629,6 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
             INNER JOIN `framework_controls` t2 on FIND_IN_SET(t1.value, t2.framework_ids) AND t2.deleted=0
             INNER JOIN `framework_control_tests` t3 on t3.framework_control_id=t2.id
         WHERE
-            /* t1.status=1 AND t1.value=:framework_id AND t2.id=:control_id */
             t1.status=1 AND t2.id=:control_id
     ";
     
@@ -2660,8 +2723,8 @@ function get_audit_tests($order_field=false, $order_dir=false)
         FROM `framework_control_tests` t1
             INNER JOIN `framework_controls` t2 ON t1.framework_control_id=t2.id
             LEFT JOIN `frameworks` t3 ON FIND_IN_SET(t3.value, t2.framework_ids)
-        GROUP BY
-            t1.id
+        WHERE t3.status=1
+        GROUP BY t1.id
     ";
     
     switch($order_field)

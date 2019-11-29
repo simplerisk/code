@@ -3,6 +3,8 @@
   border-radius: 2px;
   box-shadow: none;
   border:none;
+  max-height: calc(100% - 94px);
+  overflow: auto;  
   padding-top: 20px;
   padding-bottom: 20px;
 

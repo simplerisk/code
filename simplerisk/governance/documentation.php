@@ -471,10 +471,7 @@ if (isset($_POST['delete_document']))
                     }
                 }
             });
-        })
 
-
-        $(document).ready(function(){
             var $tabs = $( "#documents-tab-content" ).tabs({
                 activate: function(event, ui){
                     $(".document-table").treegrid('resize');

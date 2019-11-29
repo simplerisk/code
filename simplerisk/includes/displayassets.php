@@ -48,7 +48,7 @@ function display_main_detail_asset_fields_add($fields)
                     display_asset_details_edit($display);
                 break;
                 case 'Tags':
-                    display_asset_tags_edit($display);
+                    display_asset_tags_add($display);
                 break;
             }
 
@@ -154,7 +154,7 @@ function display_asset_team_edit($display = true)
     echo "<div class=\"row-fluid\"{$displayString}>";
         echo "<div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['Team']).":</div>";
         echo "<div class=\"span10\">";
-            create_dropdown("team");
+            create_multiple_dropdown("team", NULL, NULL, NULL, false, "", "", true, " class='multiselect' ");
         echo "</div>";
     echo "</div>";
 }
@@ -179,7 +179,7 @@ function display_asset_details_edit($display = true)
 /************************************
  * FUNCTION: DISPLAY RISK TAGS EDIT *
  ************************************/
-function display_asset_tags_edit($display = true)
+function display_asset_tags_add($display = true)
 {
     global $lang, $escaper;
 
@@ -358,7 +358,7 @@ function display_main_detail_asset_fields_td_view($fields, $asset)
                     display_asset_site_location_td($asset['location']);
                 break;
                 case 'Team':
-                    display_asset_team_td($asset['team']);
+                    display_asset_team_td($asset['teams']);
                 break;
                 case 'AssetDetails':
                     display_asset_details_td($asset['details']);
@@ -451,7 +451,9 @@ function display_asset_team_td($asset_team)
     {
         $asset_team = "N/A";
     }
-    else $asset_team = get_name_by_value("team", $asset_team);
+    else {
+        $asset_team = get_names_by_multi_values("team", $asset_team);
+    }
 
     echo "<td align=\"left\">" . $escaper->escapeHtml($asset_team) . "</td>\n";
 }
@@ -473,7 +475,7 @@ function display_asset_tags_td($asset_tags)
 {
     global $lang, $escaper;
 
-    echo "<td align=\"left\">" . $escaper->escapeHtml(str_replace (",", ", ", $asset_tags)) . "</td>\n";
+    echo "<td align=\"left\">" . $escaper->escapeHtml(str_replace ([",", "+++"], ", ", $asset_tags)) . "</td>\n";
 }
 
 /*****************************************
@@ -499,7 +501,7 @@ function display_main_detail_asset_fields_td_edit($fields, $asset)
                     display_asset_site_location_td_edit($asset['id'], $asset['location']);
                 break;
                 case 'Team':
-                    display_asset_team_td_edit($asset['id'], $asset['team']);
+                    display_asset_team_td_edit($asset['id'], $asset['teams']);
                 break;
                 case 'AssetDetails':
                     display_asset_details_td_edit($asset['id'], $asset['details']);
@@ -557,9 +559,9 @@ function display_asset_site_location_td_edit($asset_id, $asset_site_location)
 function display_asset_team_td_edit($asset_id, $asset_team)
 {
     global $lang, $escaper;
-
     echo "<td>\n";
-        create_dropdown("team", $asset_team, "team-" . $escaper->escapeHtml($asset_id));
+        $asset_team_arr = explode(",", $asset_team);
+        create_multiple_dropdown("team", $asset_team_arr, "team-" . $escaper->escapeHtml($asset_id), NULL, false, "", "", true, " class='multiselect' ");
     echo "</td>\n";
 }
 
@@ -589,7 +591,7 @@ function display_asset_tags_td_edit($asset_id, $asset_tags)
             <script>
                 $('#{$id}').selectize({
                     plugins: ['remove_button', 'restore_on_backspace'],
-                    delimiter: ',',
+                    delimiter: '+++',
                     create: true,
                     valueField: 'label',
                     labelField: 'label',

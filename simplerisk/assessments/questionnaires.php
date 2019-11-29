@@ -122,6 +122,9 @@ if($result = process_assessment_questionnaires()){
         // Get any alerts
         get_alert();
     ?>
+    
+    <div id="load" style="display:none;"><?php echo $escaper->escapeHtml($lang['SendingPleaseWait']); ?></div>
+    
     <div class="container-fluid">
         <div class="row-fluid">
             <div class="span3">

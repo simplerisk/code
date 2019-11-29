@@ -78,6 +78,7 @@
         getRoute()->get('/management/risk/overview', 'overviewForm');
 
         getRoute()->post('/reports/dynamic', 'dynamicriskForm');
+        getRoute()->post('/reports/dynamic_unique_column_data', 'dynamicriskUniqueColumnDataAPI');
         getRoute()->post('/reports/save-dynamic-selections', 'saveDynamicSelectionsForm');
         getRoute()->post('/reports/delete-dynamic-selection', 'deleteDynamicSelectionForm');
         getRoute()->get('/management/risk/viewhtml', 'viewriskHtmlForm');
@@ -156,13 +157,19 @@
         getRoute()->get('/assessment/questionnaire/dynamic', 'assessment_extra_questionnaireDynamicAPI');
         getRoute()->get('/assessment/questionnaire/results/dynamic', 'assessment_extra_questionnaireResultsDynamicAPI');
         getRoute()->post('/assessment/questionnaire/save_result_comment', 'assessment_extra_saveQuestionnaireResultCommentAPI');
+        getRoute()->post('/assessment/questionnaire/pending_risk', 'assessment_extra_createARiskFromQuestionnairePendingRisksAPI');
         getRoute()->post('/assessment/questionnaire/pending_risks', 'assessment_extra_createRisksFromQuestionnairePendingRisksAPI');
+        getRoute()->post('/assessment/questionnaire/delete_pending_risk', 'assessment_extra_deleteRiskFromQuestionnairePendingRisksAPI');
         getRoute()->get('/assessment/questionnaire/template_questions/dynamic', 'assessment_extra_questionnaireTemplateQuestionsDynamicAPI');
         getRoute()->post('/assessment/send_questionnaire', 'assessment_extra_sendQuestionnaireAPI');
         getRoute()->post('/assessment/questionnaire/result/approve', 'assessment_extra_approveResultAPI');
         getRoute()->post('/assessment/questionnaire/result/reject', 'assessment_extra_rejectResultAPI');
         getRoute()->post('/assessment/questionnaire/result/audit_log', 'get_questionnaire_result_audit_log_api');
         getRoute()->get('/assessment/questionnaire/analysis/dynamic', 'assessment_extra_questionnaireAnalysisDynamicAPI');
+        /******************************************************************************/
+        
+        /**************************** Notification API ********************************/
+        getRoute()->post('/notification/save_settings', 'notification_extra_saveSettingsAPI');
         /******************************************************************************/
 
         /******************************* Audit Log API **********************************/
@@ -251,7 +258,7 @@
         // Get Tooltip Info
         getRoute()->post('/likelihood_impact_chart/tooltip', 'get_tooltip_api');
 
-        getRoute()->get('/one_click_upgrade', 'one_click_upgrade');
+        getRoute()->post('/one_click_upgrade', 'one_click_upgrade');
 
         // Run epiphany
         getRoute()->run();

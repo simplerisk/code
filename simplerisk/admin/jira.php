@@ -52,20 +52,32 @@
     include_csrf_magic();
 
     // If the extra directory exists
-    if (is_dir(realpath(__DIR__ . '/../extras/advanced_search'))) {
-        // Include the Advanced Search Extra
-        require_once(realpath(__DIR__ . '/../extras/advanced_search/index.php'));
+    if (is_dir(realpath(__DIR__ . '/../extras/jira'))) {
+        // Include the Jira Extra
+        require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
 
         // If the user wants to activate the extra
         if (isset($_POST['activate'])) {
-            // Enable the Advanced Search Extra
-            enable_advanced_search_extra();
+            // Enable the Jira Extra
+            enable_jira_extra();
         }
 
         // If the user wants to deactivate the extra
         if (isset($_POST['deactivate'])) {
-            // Disable the Advanced Search Extra
-            disable_advanced_search_extra();
+            // Disable the Jira Extra
+            disable_jira_extra();
+        }
+        
+        if (isset($_POST['update_connection_settings'])) {
+            jira_update_connection_settings();
+        }
+
+        if (isset($_POST['update_project_synchronization_settings'])) {
+            jira_update_project_synchronization_settings();
+        }
+
+        if (isset($_POST['update_general_synchronization_settings'])) {
+            jira_update_general_synchronization_settings();
         }
     }
 
@@ -77,11 +89,11 @@
         global $escaper;
 
         // If the extra directory exists
-        if (is_dir(realpath(__DIR__ . '/../extras/advanced_search'))) {
+        if (is_dir(realpath(__DIR__ . '/../extras/jira'))) {
             // But the extra is not activated
-            if (!advanced_search_extra()) {
+            if (!jira_extra()) {
                 // If the extra is not restricted based on the install type
-                if (!restricted_extra("advanced_search")) {
+                if (!restricted_extra("jira")) {
                     echo "<form name=\"activate_extra\" method=\"post\" action=\"\">\n";
                     echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />\n";
                     echo "</form>\n";
@@ -89,17 +101,19 @@
                     echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
             } else { // Once it has been activated
 
-                // Include the Advanced Search Extra
-                require_once(realpath(__DIR__ . '/../extras/advanced_search/index.php'));
+                // Include the Jira Extra
+                require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
 
                 echo "
                     <form name=\"deactivate\" method=\"post\">
                         <font color=\"green\">
                             <b>" . $escaper->escapeHtml($lang['Activated']) . "</b>
-                        </font> [" . advanced_search_version() . "]
+                        </font> [" . jira_version() . "]
                         &nbsp;&nbsp;
                         <input type=\"submit\" name=\"deactivate\" value=\"" . $escaper->escapeHtml($lang['Deactivate']) . "\" />
                     </form>\n";
+                    
+                display_jira_extra_options();
             }
         } else { // Otherwise, the Extra does not exist
             echo "<a href=\"https://www.simplerisk.com/extras\" target=\"_blank\">Purchase the Extra</a>\n";
@@ -126,6 +140,43 @@
 
         <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
+        <style>
+            .instructions {
+                display: inline-block;
+                font-size: 0.8em;
+                color: orangered;
+                position: relative;
+                top: -5px;
+                line-height: 1.2;
+            }
+
+            .sub-option.lv1 {
+                padding-left: 25px;
+            }
+
+            .sub-option.lv2 {
+                padding-left: 25px;
+            }
+            
+            .hidden-checkbox + label:before,
+            .hidden-radio + label:before {
+                top: 0px;
+            }
+            
+            .hidden-checkbox + label, .hidden-radio + label {
+                font-size: 16px;
+                font-weight: bold;
+            }
+            
+            .sub-option .hidden-checkbox + label, .sub-option .hidden-radio + label {
+                font-weight: normal;
+            }
+            
+            .checkbox-instructions {
+                padding-left: 25px;
+            }
+            
+        </style>
         <?php
             setup_alert_requirements("..");
         ?>    
@@ -135,9 +186,6 @@
 
         <?php
             view_top_menu("Configure");
-
-            // Get any alert messages
-            get_alert();
         ?>
         <div class="container-fluid">
             <div class="row-fluid">
@@ -148,7 +196,7 @@
                     <div class="row-fluid">
                         <div class="span12">
                             <div class="hero-unit">
-                                <h4><?php echo $escaper->escapeHtml($lang['AdvancedSearchExtra']); ?></h4>
+                                <h4><?php echo $escaper->escapeHtml($lang['JiraExtra']); ?></h4>
                                 <?php display(); ?>
                             </div>
                         </div>
@@ -159,5 +207,10 @@
         <script>
             <?php prevent_form_double_submit_script(); ?>
         </script>
+
+        <?php
+            // Get any alert messages
+            get_alert();
+        ?>
     </body>
 </html>

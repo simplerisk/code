@@ -19,7 +19,6 @@ $(document).ready(function(){
                 return;
             }
             columnNames.push(name);
-//            if($("form[name='get_risks_by'] input.hidden-checkbox[name='"+ name +"']").length > 0 &&  !$("form[name='get_risks_by'] input.hidden-checkbox[name='"+ name +"']").is(':checked')){
             if(!$("form[name='get_risks_by'] input.hidden-checkbox[name='"+ name +"']").is(':checked')){
                 columnOptions.push(index);
             }
@@ -27,6 +26,30 @@ $(document).ready(function(){
                 defaultSortColumnIndex = index;
             }
         })
+        
+        // Create multiselect of table column filter dropdowns
+        var createMultiSelectColumnFilter = function(selfTable, filterContainer){
+            filterContainer || (filterContainer = selfTable.table().container());
+            $('.dynamic-column-filter').multiselect({
+                enableFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableCaseInsensitiveFiltering: true,
+                onDropdownShown: function(){
+                    $('.dataTables_scrollFoot', selfTable.table().container()).css('height', '220px')
+                },
+                onDropdownHide: function(){
+                    $('.dataTables_scrollFoot', selfTable.table().container()).css('height', 'auto')
+                    selfTable.columns.adjust()
+                },
+                onChange: function(){
+                    selfTable.columns.adjust()
+                }
+                
+            })
+            selfTable.columns.adjust()
+            
+        }
 
         var riskDataTables = [];
         $(".risk-datatable").each(function(index){
@@ -44,21 +67,21 @@ $(document).ready(function(){
                 ajax: {
                     url: BASE_URL + '/api/reports/dynamic',
                     type: "post",
-                    data: function(d){
-                        d.status                    = $("#status").val();
-                        d.group                     = $("#group").val();
-                        d.sort                      = $("#sort").val();
-                        d.group_value               = $this.data('group');
+                    data: function(d) {
+                        d.status        = $("#status").val();
+                        d.group         = $("#group").val();
+                        d.sort          = $("#sort").val();
+                        d.group_value   = $this.data('group');
                         
                         // Set params in risks_by_teams page
-                        if($("#teams").length){
+                        if ($("#teams").length) {
                             d.risks_by_team     = 1;
                             d.teams             = $("#teams").val();
                             d.owners            = $("#owners").val();
                             d.ownersmanagers    = $("#ownersmanagers").val();
                         } else {
-                            d.tags_filter    = $("#tags_filter").val();
-                            d.locations_filter    = $("#locations_filter").val();
+                            d.tags_filter               = $("#tags_filter").val();
+                            d.locations_filter          = $("#locations_filter").val();
                             d.affected_assets_filter    = $("#affected_assets_filter").val();
                         }
                     }
@@ -94,8 +117,64 @@ $(document).ready(function(){
                         "targets" : [21, 22, 23, 26, 27, 28, 29, 30, 41],
                         "orderable" : false,
                     },
-                ]
+                ],
+                initComplete: function(){
+                    var params = {};
+                        params.status        = $("#status").val();
+                        params.group         = $("#group").val();
+                        params.sort          = $("#sort").val();
+                        params.group_value   = $this.data('group');
+                        
+                        // Set params in risks_by_teams page
+                        if ($("#teams").length) {
+                            params.risks_by_team     = 1;
+                            params.teams             = $("#teams").val();
+                            params.owners            = $("#owners").val();
+                            params.ownersmanagers    = $("#ownersmanagers").val();
+                        } else {
+                            params.tags_filter               = $("#tags_filter").val();
+                            params.locations_filter          = $("#locations_filter").val();
+                            params.affected_assets_filter    = $("#affected_assets_filter").val();
+                        }
+
+                    var self = this;
+                        
+                    $.ajax({
+                        type: "POST",
+                        url: BASE_URL + "/api/reports/dynamic_unique_column_data",
+                        data: params,
+                        dataType: 'json',
+                        success: function(data){
+                            
+                            /*
+                            self.api().columns().every( function () {
+                                var column = this;
+                                var columnName = $(column.footer()).data('name').toLowerCase();
+                                var options = data[columnName];
+                                if(options === undefined){
+                                    $(column.footer()).empty();
+                                    $('<div style="min-width: 150px">&nbsp;</div>').appendTo( $(column.footer()).empty() );
+                                }else{
+                                    var select = $('<select class="dynamic-column-filter" multiple></select>').appendTo( $(column.footer()).empty() );
+                                    options.forEach( function ( option ) {
+                                        select.append( '<option value="'+option.value+'">'+option.text+'</option>' )
+                                    });
+                                }
+                            });
+
+                            createMultiSelectColumnFilter(self.api());
+                            */
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this))
+                            {
+                            }
+                        }
+                    });
+                    
+                }
             });
+
             riskDatatable.on('draw', function(e, settings){
                 if(settings._iDisplayLength == -1){
                     $("#" + settings.sTableId + "_wrapper").find(".paginate_button.current").removeClass("current");
@@ -125,6 +204,7 @@ $(document).ready(function(){
                 var column = riskDataTables[key].column("th[data-name='"+ $(this).attr('name') +"']");
                 if($(this).is(':checked')){
                     column.visible(true);
+//                    createMultiSelectColumnFilter(riskDataTables[key], column.footer());
                 }else{
                     column.visible(false);
                 }
@@ -179,21 +259,21 @@ $(document).ready(function(){
         })
             
         $("body").on("click", '.download-by-group', function(){
-//            $("#get_risks_by").attr('target', '_blank');
+            // $("#get_risks_by").attr('target', '_blank');
             var group_value = $(this).closest('.dataTables_wrapper').find(".risk-datatable").data('group');
             document.get_risks_by.action += "?option=download-by-group&group_value=" + group_value;
             document.get_risks_by.submit();
             document.get_risks_by.action = "";
-//            $("#get_risks_by").attr('target', '');
+            // $("#get_risks_by").attr('target', '');
         })
     }
     
     $("#export-dynamic-risk-report").click(function(e){
-//        $("#get_risks_by").attr('target', '_blank');
+        // $("#get_risks_by").attr('target', '_blank');
         document.get_risks_by.action += "?option=download";
         document.get_risks_by.submit();
         document.get_risks_by.action = "";
-//        $("#get_risks_by").attr('target', '');
+        // $("#get_risks_by").attr('target', '');
     })
     
 })

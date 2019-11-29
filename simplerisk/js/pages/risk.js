@@ -20,11 +20,10 @@ function addRisk($this){
     });
     
     // Check valiation and stop if failed
-    if(!checkAndSetValidation(tabContainer))
-    {
+    if(!checkAndSetValidation(tabContainer)) {
         return false;
     }
-
+    loading.show('load');
     $.ajax({
         type: "POST",
         url: BASE_URL + "/management/index.php",
@@ -34,41 +33,40 @@ function addRisk($this){
         contentType: false,
         processData: false,
         success: function(data){
-            var message = data.message;
-            var risk_id = data.risk_id;
-            
-            if (!data.error){
-                toastr.success(data.message);
-
-                if (isNaN(index)){
-                    var subject = $('input[name="subject"]', getForm).val();
-                    var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-                    $('#tab span:eq(0)').html('<b>ID:'+risk_id+' </b>'+subject);
-                } else {
-                    var subject = $('input[name="subject"]', getForm).val();
-                    var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-                    $('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id+' </b>'+subject);
-                }
-                
-                $.ajax({
-                    type: "GET",
-                    url: BASE_URL + "/api/management/risk/viewhtml?id=" + risk_id,
-                    success: function(data){
-                        tabContainer.html(data.data);
-
-                        callbackAfterRefreshTab(tabContainer)
-                    },
-                    error: function(xhr,status,error){
-                        if(xhr.responseJSON && xhr.responseJSON.status_message){
-                            showAlertsFromArray(xhr.responseJSON.status_message);
-                        }
-                    }
-                })
-                $this.prop('disabled', true);
-            } else {
-                toastr.error(data.message);
-                $this.removeAttr('disabled');
+            if(data.status_message){
+                showAlertsFromArray(data.status_message);
             }
+            
+            var risk_id = data.data.risk_id;
+
+            if (isNaN(index)){
+                var subject = $('input[name="subject"]', getForm).val();
+                var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                $('#tab span:eq(0)').html('<b>ID:'+risk_id+' </b>'+subject);
+            } else {
+                var subject = $('input[name="subject"]', getForm).val();
+                var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                $('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id+' </b>'+subject);
+            }
+
+            $.ajax({
+                type: "GET",
+                url: BASE_URL + "/api/management/risk/viewhtml?id=" + risk_id,
+                success: function(data){
+                    tabContainer.html(data.data);
+
+                    callbackAfterRefreshTab(tabContainer)
+                },
+                error: function(xhr,status,error){
+                    if(xhr.responseJSON && xhr.responseJSON.status_message){
+                        showAlertsFromArray(xhr.responseJSON.status_message);
+                    }
+                }
+            });
+            $this.prop('disabled', true);
+        },
+        complete: function(){
+            loading.hide('load');
         }
     })
     .fail(function(xhr, textStatus){
@@ -78,7 +76,7 @@ function addRisk($this){
                 showAlertsFromArray(xhr.responseJSON.status_message);
             }
         }
-        
+        $this.removeAttr('disabled');
     });
   }
   

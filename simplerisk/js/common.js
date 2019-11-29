@@ -320,7 +320,7 @@ function checkAndSetValidation(container)
 {
     var issue_els = [];
     $("input, select, textarea", container).each(function(){
-        if($(this).prop('required') && (!$(this).val() || (Array.isArray($(this).val()) && $(this).val().length==0) ) ){
+        if($(this).prop('required') && (!$.trim($(this).val()) || (Array.isArray($(this).val()) && $(this).val().length==0) ) ){
             issue_els.push($(this));
         }
     })
@@ -347,6 +347,21 @@ function checkAndSetValidation(container)
     else
     {
         return true;
+    }
+}
+
+var loading={
+    show:function(el)
+    {
+        this.getID(el).style.display='';
+    },
+    hide:function(el)
+    {
+        this.getID(el).style.display='none';
+    },
+    getID:function(el)
+    {
+        return document.getElementById(el);
     }
 }
 
@@ -430,5 +445,5 @@ $(document).ready(function(){
     if($("#tab-container .multiselect").length){
         $("#tab-container .multiselect").multiselect({buttonWidth: '100%'});
     }
-
+    
 })

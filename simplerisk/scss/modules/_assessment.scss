@@ -79,6 +79,10 @@ textarea[name='reject_comment'] {
     }
 }
 
+#pending-risk-detail-modal .modal-body{
+    max-height: 90%;
+}
+
 #analysisform{
     display: none;
 }

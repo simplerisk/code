@@ -94,9 +94,9 @@ if (isset($_POST['submit']))
         // In case the login attempt fails we're checking the cause.
         // If it's because the user 'Does Not Exist' we're doing a dummy
         // validation to make sure we're using the same time on a non-existant
-        // user than we'd use on an existing
+        // user as we'd use on an existing
         if (get_user_type($user, false) === "DNE") {
-            is_valid_simplerisk_user("admin", generate_token(40));
+            fake_simplerisk_user_validity_check();
         }
 
         $_SESSION["access"] = "denied";

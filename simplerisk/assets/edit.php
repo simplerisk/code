@@ -96,7 +96,7 @@ include_csrf_magic();
   ?>
   <script>
     $(document).ready(function() {
-        $('#edit-assets-table select').change(updateAsset);
+//        $('#edit-assets-table select').change(updateAsset);
         var oldValue = "";
         $('#edit-assets-table textarea, #edit-assets-table input').bind('focusin', function(){
             oldValue = $(this).val();
@@ -132,7 +132,15 @@ include_csrf_magic();
   </div>
   <script>
     $(document).ready(function() {
-      $('.multiselect').multiselect();
+      $('.multiselect').multiselect({
+        buttonWidth: '200px', 
+        maxHeight: 250, 
+        enableFiltering: true,
+        onDropdownHide: function(event){
+            updateAsset(null, $(event.currentTarget).prev())
+        }
+      });
+      
       $('.datepicker').datepicker({
          onSelect: function(date, datepciker){
              updateAsset(null, $("#"+datepciker.id));

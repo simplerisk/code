@@ -149,7 +149,7 @@ $risk_appetite = get_setting("risk_appetite", 0);
                 });
             }
 
-            var riskDataTables = [];
+            var riskDataTables = ["outside-appetite-table"];
             $(document).ready(function(){
                 $('#within-appetite').show();
 
@@ -157,9 +157,10 @@ $risk_appetite = get_setting("risk_appetite", 0);
  
                 var $tabs = $("#appetite-tab-content").tabs({
                     activate: function(event, ui){
-                        datatableId = $('.risk-datatable', ui.newPanel).attr('id');
-                        if (!(datatableId in riskDataTables))
+                        datatableId = $(".table-container", ui.newPanel).data('id');
+                        if (!(datatableId in riskDataTables)){
                             activateDatatable(datatableId);
+                        }
                     }
                 });
 

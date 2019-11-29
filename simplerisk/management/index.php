@@ -55,108 +55,113 @@ require_once(language_file());
 enforce_permission_riskmanagement();
 
 // Check if the user has access to submit risks
-if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1)
-{
-  $submit_risks = false;
+if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1) {
+    $submit_risks = false;
 
-  // Display an alert
-  set_alert(true, "bad", "You do not have permission to submit new risks.  Any risks that you attempt to submit will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
+    // Display an alert
+    set_alert(true, "bad", "You do not have permission to submit new risks.  Any risks that you attempt to submit will not be recorded.  Please contact an Administrator if you feel that you have reached this message in error.");
 }
 else $submit_risks = true;
 
 // Check if the subject is null
-if (isset($_POST['subject']) && $_POST['subject'] == "")
+if (get_param("POST", 'subject', false) !== false && !trim(get_param("POST", 'subject', "")))
 {
   $submit_risks = false;
-
   // Display an alert
   ob_end_clean();
-  $data = array("error" => true, "message" => $escaper->escapeHtml("The subject of a risk cannot be empty."));
-  header('Content-type:application/json;charset=utf-8');
-  echo json_encode($data);
-  exit;  
+  set_alert(true, "bad", "The subject of a risk cannot be empty.");
+  json_response(400, get_alert(true), NULL);
+  exit;
 }
-
+    
 // Check if a new risk was submitted and the user has permissions to submit new risks
-if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' && $submit_risks)
-{
-  $status = "New";
-  $subject = $_POST['subject'];
-  $reference_id = $_POST['reference_id'];
-  $regulation = (int)$_POST['regulation'];
-  $control_number = $_POST['control_number'];
-  $location = implode(",", $_POST['location']);
-  $source = (int)$_POST['source'];
-  $category = (int)$_POST['category'];
-  $team = (empty($_POST['team'])) ? "" : implode(",", $_POST['team']);
-  $technology = (empty($_POST['technology'])) ? "" : implode(",", $_POST['technology']);
-  $owner = (int)$_POST['owner'];
-  $manager = (int)$_POST['manager'];
-  $assessment = $_POST['assessment'];
-  $notes = $_POST['notes'];
-  $assets_asset_groups = !empty($_POST['assets_asset_groups']) ? $_POST['assets_asset_groups'] : [];
-  $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
-  $risk_tags = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
+if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest' && $submit_risks) {
 
-  // Risk scoring method
-  // 1 = Classic
-  // 2 = CVSS
-  // 3 = DREAD
-  // 4 = OWASP
-  // 5 = Custom
-  $scoring_method = (int)$_POST['scoring_method'];
+    $status = "New";
+    $subject = get_param("POST", 'subject');
+    $reference_id = get_param("POST", 'reference_id');
+    $regulation = (int)get_param("POST", 'regulation');
+    $control_number = get_param("POST", 'control_number');
+    $location = implode(",", get_param("POST", "location", []));
+    $source = (int)get_param("POST", 'source');
+    $category = (int)get_param("POST", 'category');
+    $team = get_param("POST", 'team', "") ? implode(",", get_param("POST", 'team', "")) : "";
+    $technology = get_param("POST", 'technology') ? implode(",", get_param("POST", 'technology')) : "";
+    $owner = (int)get_param("POST", "owner");
+    $manager = (int)get_param("POST", "manager");
+    $assessment = get_param("POST", "assessment");
+    $notes = get_param("POST", "notes");
+    $assets_asset_groups = get_param("POST", "assets_asset_groups", []);
+    $additional_stakeholders =  get_param("POST", "additional_stakeholders", "") ? implode(",", get_param("POST", "additional_stakeholders", "")) : "";
+    $risk_tags = get_param("POST", "tags", "");
+    if (jira_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
+        $issue_key = strtoupper(trim($_POST['jira_issue_key']));
+        if ($issue_key && !jira_validate_issue_key($issue_key)) {
+            json_response(400, get_alert(true), NULL);
+            exit;
+        }
+    }
 
-  // Classic Risk Scoring Inputs
-  $CLASSIClikelihood = (int)$_POST['likelihood'];
-  $CLASSICimpact =(int) $_POST['impact'];
+    // Risk scoring method
+    // 1 = Classic
+    // 2 = CVSS
+    // 3 = DREAD
+    // 4 = OWASP
+    // 5 = Custom
+    $scoring_method = (int)get_param("POST", "scoring_method");
 
-  // CVSS Risk Scoring Inputs
-  $CVSSAccessVector = $_POST['AccessVector'];
-  $CVSSAccessComplexity = $_POST['AccessComplexity'];
-  $CVSSAuthentication = $_POST['Authentication'];
-  $CVSSConfImpact = $_POST['ConfImpact'];
-  $CVSSIntegImpact = $_POST['IntegImpact'];
-  $CVSSAvailImpact = $_POST['AvailImpact'];
-  $CVSSExploitability = $_POST['Exploitability'];
-  $CVSSRemediationLevel = $_POST['RemediationLevel'];
-  $CVSSReportConfidence = $_POST['ReportConfidence'];
-  $CVSSCollateralDamagePotential = $_POST['CollateralDamagePotential'];
-  $CVSSTargetDistribution = $_POST['TargetDistribution'];
-  $CVSSConfidentialityRequirement = $_POST['ConfidentialityRequirement'];
-  $CVSSIntegrityRequirement = $_POST['IntegrityRequirement'];
-  $CVSSAvailabilityRequirement = $_POST['AvailabilityRequirement'];
+    // Classic Risk Scoring Inputs
+    $CLASSIClikelihood = (int)get_param("POST", "likelihood");
+    $CLASSICimpact =(int) get_param("POST", "impact");
 
-  // DREAD Risk Scoring Inputs
-  $DREADDamage = (int)$_POST['DREADDamage'];
-  $DREADReproducibility = (int)$_POST['DREADReproducibility'];
-  $DREADExploitability = (int)$_POST['DREADExploitability'];
-  $DREADAffectedUsers = (int)$_POST['DREADAffectedUsers'];
-  $DREADDiscoverability = (int)$_POST['DREADDiscoverability'];
+    // CVSS Risk Scoring Inputs
+    $CVSSAccessVector = get_param("POST", "AccessVector");
+    $CVSSAccessComplexity = get_param("POST", "AccessComplexity");
+    $CVSSAuthentication = get_param("POST", "Authentication");
+    $CVSSConfImpact = get_param("POST", "ConfImpact");
+    $CVSSIntegImpact = get_param("POST", "IntegImpact");
+    $CVSSAvailImpact = get_param("POST", "AvailImpact");
+    $CVSSExploitability = get_param("POST", "Exploitability");
+    $CVSSRemediationLevel = get_param("POST", "RemediationLevel");
+    $CVSSReportConfidence = get_param("POST", "ReportConfidence");
+    $CVSSCollateralDamagePotential = get_param("POST", "CollateralDamagePotential");
+    $CVSSTargetDistribution = get_param("POST", "TargetDistribution");
+    $CVSSConfidentialityRequirement = get_param("POST", "ConfidentialityRequirement");
+    $CVSSIntegrityRequirement = get_param("POST", "IntegrityRequirement");
+    $CVSSAvailabilityRequirement = get_param("POST", "AvailabilityRequirement");
 
-  // OWASP Risk Scoring Inputs
-  $OWASPSkillLevel = (int)$_POST['OWASPSkillLevel'];
-  $OWASPMotive = (int)$_POST['OWASPMotive'];
-  $OWASPOpportunity = (int)$_POST['OWASPOpportunity'];
-  $OWASPSize = (int)$_POST['OWASPSize'];
-  $OWASPEaseOfDiscovery = (int)$_POST['OWASPEaseOfDiscovery'];
-  $OWASPEaseOfExploit = (int)$_POST['OWASPEaseOfExploit'];
-  $OWASPAwareness = (int)$_POST['OWASPAwareness'];
-  $OWASPIntrusionDetection = (int)$_POST['OWASPIntrusionDetection'];
-  $OWASPLossOfConfidentiality = (int)$_POST['OWASPLossOfConfidentiality'];
-  $OWASPLossOfIntegrity = (int)$_POST['OWASPLossOfIntegrity'];
-  $OWASPLossOfAvailability = (int)$_POST['OWASPLossOfAvailability'];
-  $OWASPLossOfAccountability = (int)$_POST['OWASPLossOfAccountability'];
-  $OWASPFinancialDamage = (int)$_POST['OWASPFinancialDamage'];
-  $OWASPReputationDamage = (int)$_POST['OWASPReputationDamage'];
-  $OWASPNonCompliance = (int)$_POST['OWASPNonCompliance'];
-  $OWASPPrivacyViolation = (int)$_POST['OWASPPrivacyViolation'];
+    // DREAD Risk Scoring Inputs
+    $DREADDamage = (int)get_param("POST", "DREADDamage");
+    $DREADReproducibility = (int)get_param("POST", "DREADReproducibility");
+    $DREADExploitability = (int)get_param("POST", "DREADExploitability");
+    $DREADAffectedUsers = (int)get_param("POST", "DREADAffectedUsers");
+    $DREADDiscoverability = (int)get_param("POST", "DREADDiscoverability");
 
-  // Custom Risk Scoring
-  $custom = (float)$_POST['Custom'];
-  
-  // Contributing Risk Scoring
-  $ContributingLikelihood = (int)$_POST["ContributingLikelihood"];
-  $ContributingImpacts = $_POST["ContributingImpacts"];
+    // OWASP Risk Scoring Inputs
+    $OWASPSkillLevel = (int)get_param("POST", "OWASPSkillLevel");
+    $OWASPMotive = (int)get_param("POST", "OWASPMotive");
+    $OWASPOpportunity = (int)get_param("POST", "OWASPOpportunity");
+    $OWASPSize = (int)get_param("POST", "OWASPSize");
+    $OWASPEaseOfDiscovery = (int)get_param("POST", "OWASPEaseOfDiscovery");
+    $OWASPEaseOfExploit = (int)get_param("POST", "OWASPEaseOfExploit");
+    $OWASPAwareness = (int)get_param("POST", "OWASPAwareness");
+    $OWASPIntrusionDetection = (int)get_param("POST", "OWASPIntrusionDetection");
+    $OWASPLossOfConfidentiality = (int)get_param("POST", "OWASPLossOfConfidentiality");
+    $OWASPLossOfIntegrity = (int)get_param("POST", "OWASPLossOfIntegrity");
+    $OWASPLossOfAvailability = (int)get_param("POST", "OWASPLossOfAvailability");
+    $OWASPLossOfAccountability = (int)get_param("POST", "OWASPLossOfAccountability");
+    $OWASPFinancialDamage = (int)get_param("POST", "OWASPFinancialDamage");
+    $OWASPReputationDamage = (int)get_param("POST", "OWASPReputationDamage");
+    $OWASPNonCompliance = (int)get_param("POST", "OWASPNonCompliance");
+    $OWASPPrivacyViolation = (int)get_param("POST", "OWASPPrivacyViolation");
+
+    // Custom Risk Scoring
+    $custom = (float)get_param("POST", "Custom");
+
+    // Contributing Risk Scoring
+    $ContributingLikelihood = (int)get_param("POST", "ContributingLikelihood");
+    $ContributingImpacts = get_param("POST", "ContributingImpacts");
 
     // Submit risk and get back the id
     if($last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders)){}
@@ -164,14 +169,8 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     {
         // Display an alert
         ob_end_clean();
-        if(!($alert_message = get_alert(false, true)))
-        {
-            $alert_message = $escaper->escapeHtml($lang["ThereAreUnexpectedProblems"]);
-        }
-        
-        $data = array("error" => true, "message" => $alert_message);
-        header('Content-type:application/json;charset=utf-8');
-        echo json_encode($data);
+        set_alert(true, "bad", $lang['ThereAreUnexpectedProblems']);
+        json_response(400, get_alert(true), NULL);
         exit;
     }
 
@@ -191,8 +190,17 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     if (!empty($assets_asset_groups))
         process_selected_assets_asset_groups_of_type($last_insert_id, $assets_asset_groups, 'risk');
 
-    //Add tags
-    updateTagsOfType($last_insert_id, 'risk', $risk_tags);
+    if (is_array($risk_tags))
+        $risk_tags = implode("+++", $risk_tags);
+    create_new_tag_from_string($risk_tags, "+++", "risk", $last_insert_id);
+//    if (!is_array($risk_tags))
+//        $risk_tags = explode(",", $risk_tags);
+//    add_tagges($risk_tags, $last_insert_id, 'risk');
+    
+    // Create the connection between the risk and the jira issue
+    if (jira_extra() && $issue_key && jira_update_risk_issue_connection($last_insert_id, $issue_key)) {
+        jira_push_changes($issue_key, $last_insert_id);
+    }
 
     $error = 1;
     // If a file was submitted
@@ -231,10 +239,9 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
         // Display an alert
         ob_end_clean();
-        $data = array("error" => true, "message" => $escaper->escapeHtml($error));
-        header('Content-type:application/json;charset=utf-8');
-        echo json_encode($data);
-        return;
+        set_alert(true, "bad", $error);
+        json_response(400, get_alert(true), NULL);
+        exit;
     }
     else 
     {
@@ -251,14 +258,21 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         // There is an alert message
         $risk_id = (int)$last_insert_id + 1000;
 
+        //// If the jira extra is enabled
+        //if (jira_extra())
+        //{
+        //    // Include the team jira extra
+        //    require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
+        //
+        //    jira_push_changes_of_risk((int)$last_insert_id);
+        //}
+
         echo "<script> var global_risk_id = " . $risk_id . ";</script>";
 
         // Display an alert   
-        $RiskSubmitSuccess = _lang("RiskSubmitSuccess", ["subject" => $escaper->escapeHtml($subject)]);
         ob_end_clean();
-        $data = array("risk_id" => $risk_id, "error" => false, "message" => $escaper->escapeHtml($RiskSubmitSuccess));
-        header('Content-type:application/json;charset=utf-8');
-        echo json_encode($data);
+        set_alert(true, "good", _lang("RiskSubmitSuccess", ["subject" => $subject]), false);
+        json_response(200, get_alert(true), array("risk_id" => $risk_id));
         exit;
     }
 

@@ -12,20 +12,6 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
-$available_extras = array(
-    'upgrade',
-    'complianceforgescf',
-    'authentication',
-    'customization',
-    'encryption',
-    'import-export',
-    'notification',
-    'separation',
-    'assessments',
-    'api',
-    'advanced_search'
-);
-
 /*************************************
  * FUNCTION: SIMPLERISK SERVICE CALL *
  *************************************/
@@ -52,7 +38,20 @@ function simplerisk_service_call($data)
  ****************************/
 function download_extra($name, $streamed_response = false) {
 
-    global $available_extras;
+    global $available_extras, $escaper, $lang;
+    
+    // If the upgrade extra exists
+    if (file_exists(realpath(__DIR__ . '/../extras/upgrade/index.php')))
+    {
+        // Require the upgrade extra file
+        require_once(realpath(__DIR__ . '/../extras/upgrade/index.php'));
+
+        if(!check_latest_version())
+        {
+            set_alert(true, "bad", $escaper->escapeHtml($lang['ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras']));
+            return;
+        }
+    }
     
     if (!in_array($name, $available_extras)) {
 
@@ -66,7 +65,6 @@ function download_extra($name, $streamed_response = false) {
         return 0;
     }
 
-	global $escaper, $lang;
 
 	// SimpleRisk directory
 	$simplerisk_dir = realpath(__DIR__ . '/../');

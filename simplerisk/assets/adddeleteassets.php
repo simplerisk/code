@@ -64,14 +64,14 @@
         $ip         = $_POST['ip'];
         $value      = $_POST['value'];
         $location   = (int)$_POST['location'];
-        $team       = (int)$_POST['team'];
+        $teams      = $_POST['team'];
         $details    = $_POST['details'];
         $tags       = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
         
         if($name)
         {
             // Add the asset
-            $success = add_asset($ip, $name, $value, $location, $team, $details, $tags, true);
+            $success = add_asset($ip, $name, $value, $location, $teams, $details, $tags, true);
 
             // If the asset add was successful
             if ($success)
@@ -187,7 +187,7 @@
                                     </form>
                                     <script>
                                         $(document).ready(function() {
-                                            $('.multiselect').multiselect({buttonWidth: '300px'});
+                                            $('.multiselect').multiselect({buttonWidth: '300px', enableFiltering: true});
                                             $('.datepicker').datepicker();
                                         });
                                     </script>

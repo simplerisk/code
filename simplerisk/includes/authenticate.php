@@ -369,6 +369,38 @@ function grant_access()
     write_log($risk_id, $_SESSION['uid'], $message);
 }
 
+/************************************************************************************
+ * FUNCTION: FAKE SIMPLERISK USER VALIDITY CHECK                                    *
+ * This function's only purpose to spend the same time we're using when             *
+ * checking an EXISTING user's credentials.                                         *
+ * It's to prevent an attacker gathering usernames using time based enumeration.    *
+ ************************************************************************************/
+function fake_simplerisk_user_validity_check() {
+
+    $db = db_open();
+
+    // Get a random username
+    $stmt = $db->prepare("
+        SELECT
+            `username`
+        FROM
+            `user`
+        ORDER BY
+            RAND()
+        LIMIT
+            1;
+    ");
+
+    $stmt->execute();
+
+    $username = $stmt->fetchColumn();
+
+    db_close($db);
+
+    // Do a validity check with a random password
+    is_valid_simplerisk_user($username, generate_token(40));
+}
+
 /**************************************
  * FUNCTION: IS VALID SIMPLERISK USER *
  **************************************/

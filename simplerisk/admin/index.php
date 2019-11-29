@@ -226,7 +226,7 @@
         }
 
         // Update the Risk Appetite
-        $risk_appetite = $_POST['risk_appetite'];
+        $risk_appetite = (float)$_POST['risk_appetite'];
         if ($risk_appetite != get_setting("risk_appetite") && $risk_appetite != "")
         {
             // Update the Risk Appetite
@@ -576,7 +576,7 @@
               <form name="settings" method="post" action="">
 
               <!-- General Setting Tab -->
-              <div id="general">
+              <div id="general" class="settings_tab">
                 <form name="general_settings" method="post" action="">
                   <table border="1" width="600" cellpadding="10px">
                     <tbody>
@@ -734,16 +734,16 @@
                             <tr> 
                               <td><?php echo $escaper->escapeHtml($lang['RiskAppetite']) ?>:</td>
                               <td class="risk-cell sorting_1">
-                                <?php $risk_appetite = get_setting("risk_appetite", 0);?>
+                                <?php $risk_appetite = (float)get_setting("risk_appetite", 0);?>
                                 <div>
-                                    <span id="risk_appetite_display" style="border:0; font-weight:bold;"><?php echo $risk_appetite; ?></span>
+                                    <span id="risk_appetite_display" style="border:0; font-weight:bold;"><?php echo $escaper->escapeHtml($risk_appetite); ?></span>
                                     <span id="risk_appetite_color" class="risk-color" style="background-color:#ff0000"></span>
                                 </div>
                               </td>
                             </tr>
                             <tr>
                               <td colspan="2">
-                                <input type="hidden" id="risk_appetite" name="risk_appetite" value="<?php echo $risk_appetite; ?>">
+                                <input type="hidden" id="risk_appetite" name="risk_appetite" value="<?php echo $escaper->escapeHtml($risk_appetite); ?>">
                                 <?php
                                     $risk_levels = get_risk_levels();
 
@@ -816,7 +816,7 @@
               </div>
 
               <!-- File Upload Setting Tab -->
-              <div id="files" style="display: none;">
+              <div id="files" style="display: none;" class="settings_tab">
                     <table border="1" width="600" cellpadding="10px">
                     <tbody>
                     <tr>
@@ -881,7 +881,7 @@
               </div>
 
               <!-- Mail Setting Tab -->
-              <div id="mail" style="display: none;">
+              <div id="mail" style="display: none;" class="settings_tab">
                 <form name="mail_settings" method="post" action="">
 		<?php
                 // Get the mail settings
@@ -1005,7 +1005,7 @@
               </div>
 
               <!-- Security Setting Tab -->
-              <div id="security" style="display: none;">
+              <div id="security" style="display: none;" class="settings_tab">
                 <form name="security_settings" method="post" action="">
                     <table border="1" width="600" cellpadding="10px">
                     <tbody>
@@ -1055,7 +1055,7 @@
               </div>
 
               <!-- Debug Setting Tab -->
-              <div id="debug" style="display: none;">
+              <div id="debug" style="display: none;" class="settings_tab">
                 <form name="debug_settings" method="post" action="">
                     <table border="1" width="600" cellpadding="10px">
                     <tbody>
@@ -1102,7 +1102,7 @@
                 var content = this.hash.replace('/','');
                 tabs.removeClass("active");
                 $(this).addClass("active");
-                $("#content").find('div').hide();
+                $("#content").find('.settings_tab').hide();
                 $(content).fadeIn(200);
         });
 

@@ -29,6 +29,22 @@ set_simplerisk_timezone();
 $tables_where_name_is_encrypted = array('frameworks', 'projects');
 
 
+$available_extras = array(
+    'advanced_search',
+    'api',
+    'assessments',
+    'complianceforgescf',
+    'authentication',
+    'customization',
+    'encryption',
+    'import-export',
+    'jira',
+    'notification',
+    'separation',
+    'ucf',
+    'upgrade',
+);
+
 /******************************
  * FUNCTION: DATABASE CONNECT *
  ******************************/
@@ -351,6 +367,11 @@ function get_custom_table($type)
     {
         $stmt = $db->prepare("SELECT `id` as value, `short_name` as name FROM `framework_controls` WHERE `deleted`=0 ORDER BY `short_name`;");
     }
+    // If we want the framework controls
+    else if ($type == "framework_control_tests")
+    {
+        $stmt = $db->prepare("SELECT `id` as value, `name` FROM `framework_control_tests` ORDER BY `name`;");
+    }
     // If we want the tags used on risks
     else if ($type == "risk_tags")
     {
@@ -445,7 +466,7 @@ function get_options_from_table($name)
         $options = get_table_ordered_by_name($name);
     }
     else if (in_array($name, array("enabled_users", "disabled_users", "languages", "family", "date_formats",
-            "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter", "policies"))) {
+            "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter", "policies", "framework_control_tests"))) {
         $options = get_custom_table($name);
     }
     // Otherwise
@@ -822,7 +843,7 @@ function create_multiusers_dropdown($name, $selected = "", $custom_html = ""){
 /*****************************
  * FUNCTION: CREATE DROPDOWN *
  *****************************/
-function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false, $customHtml="", $blankText="--", $blankValue="", $useValue=true)
+	function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false, $customHtml="", $blankText="--", $blankValue="", $useValue=true)
 {
 
     global $escaper;
@@ -850,12 +871,11 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 
     foreach ($options as $key => $option)
     {
-        // If the option is selected
-        if ($selected == $option['value'] || (!$selected && !$option['value'] && $option['value'] != 0) || $selected=='all')
-        {
+        if ($selected == $option['value']) {
             $text = " selected";
+        } else {
+            $text = "";
         }
-        else $text = "";
 
         // If ID is used for option's value
         if($useValue)
@@ -1498,16 +1518,34 @@ function format_date($date, $default = "")
     }
     else return $default;
 }
-function format_datetime($date, $default = "")
+function format_datetime($date, $default = "", $timeformat = "H:i:s")
 {
     // If the date is not 0000-00-00
     if ($date && $date != "0000-00-00")
     {
         // Set it to the proper format
-        return strtotime($date) ? date(get_default_datetime_format(), strtotime($date)) : "";
+        return strtotime($date) ? date(get_default_datetime_format($timeformat), strtotime($date)) : "";
     }
     else return $default;
 }
+
+/******************************************************
+ * FUNCTION: CONVERT EMPTY DATE VALUE TO EMTPY STRING *
+ ******************************************************/
+function trim_date($date, $default = "")
+{
+    // If the date is not 0000-00-00
+    if ($date && stripos($date, "0000-00") === false)
+    {
+        // Set it to the proper format
+        return $date;
+    }
+    else
+    {
+        return $default;
+    }
+}
+
 /****************************************************************************
  * FUNCTION: GET STANDARD DATE FROM STRING FORMATTED BY DEFAULT DATE FORMAT *
  ****************************************************************************/
@@ -1707,9 +1745,47 @@ function get_tag_id_by_text($tag)
     return $tag_id;
 }
 
-/**********************
+/*******************************************
+ * FUNCTION: ADD RELATION FOR TAG AND TYPE *
+ *******************************************/
+function add_tagges($tag_ids=[], $taggee_id, $type='risk')
+{
+//    if(!$tag_ids)
+//    {
+//        return false;
+//    }
+    
+    $tag_ids_string = implode(",", $tag_ids);
+    // Open the database connection
+    $db = db_open();
+
+    // Get the risk levels
+    $stmt = $db->prepare("DELETE FROM `tags_taggees` WHERE type=:type AND taggee_id=:taggee_id; ");
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->bindParam(":taggee_id", $taggee_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    foreach($tag_ids as $tag_id)
+    {
+        $stmt = $db->prepare("
+            INSERT INTO 
+                `tags_taggees` (`tag_id`, `taggee_id`, `type`)  
+            VALUES
+                (:tag_id, :taggee_id, :type);
+        ");
+        $stmt->bindParam(":tag_id", $tag_id, PDO::PARAM_INT);
+        $stmt->bindParam(":taggee_id", $taggee_id, PDO::PARAM_INT);
+        $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+        $stmt->execute();
+    }
+
+    // closed the database connection
+    db_close($db);
+}
+
+/*********************
  * FUNCTION: ADD TAG *
- **********************/
+ *********************/
 function add_tag($tag, $type="risk")
 {
     if(!$tag){
@@ -1719,30 +1795,31 @@ function add_tag($tag, $type="risk")
     // Open the database connection
     $db = db_open();
     
+    $tag = trim($tag);
     
-    if($tag_id = get_tag_id_by_text($tag))
-    {
-    }
-    else
+    $tag_id = get_tag_id_by_text($tag);
+    if(!$tag_id)
     {
         // Get the risk levels
         $stmt = $db->prepare("INSERT INTO `tags` (`tag`) VALUES (:tag); ");
         $stmt->bindParam(":tag", $tag, PDO::PARAM_STR);
-
         $stmt->execute();
         $tag_id = $db->lastInsertId();
 
-        $stmt = $db->prepare("INSERT INTO `tags_taggees` (`tag_id`, `taggee_id`, `type`) VALUES (:tag_id, -1, :type); ");
-        $stmt->bindParam(":tag_id", $tag, PDO::PARAM_INT);
-        $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+        if($type !== NULL)
+        {
+            $stmt = $db->prepare("INSERT INTO `tags_taggees` (`tag_id`, `taggee_id`, `type`) VALUES (:tag_id, -1, :type); ");
+            $stmt->bindParam(":tag_id", $tag, PDO::PARAM_INT);
+            $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+        }
 
         $risk_id = 1000;
         $message = "A new tag \"" . $tag . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
         write_log($risk_id, $_SESSION['uid'], $message);
 
-        // Close the database connection
-        db_close($db);
     }
+    // Close the database connection
+    db_close($db);
 
     return $tag_id;
 }
@@ -3672,6 +3749,7 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     $mitigation_date            = get_standard_date_from_default_format($mitigation_date, true);
 
     $mitigation_percent         = (isset($post['mitigation_percent']) && $post['mitigation_percent'] >= 0 && $post['mitigation_percent'] <= 100) ? $post['mitigation_percent'] : 0;
+    
     $mitigation_controls        = empty($post['mitigation_controls']) ? [] : $post['mitigation_controls'];
     $mitigation_controls        = is_array($mitigation_controls) ? implode(",", $mitigation_controls) : $mitigation_controls;
 
@@ -3690,6 +3768,12 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
 
     // Open the database connection
     $db = db_open();
+
+
+    // Delete existing mitigation by risk ID
+    $stmt = $db->prepare("DELETE FROM mitigations WHERE risk_id = :risk_id");
+    $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+    $stmt->execute();
 
     // Add the mitigation
     $stmt = $db->prepare("INSERT INTO mitigations (`risk_id`, `planning_strategy`, `mitigation_effort`, `mitigation_cost`, `mitigation_owner`, `mitigation_team`, `current_solution`, `security_requirements`, `security_recommendations`, `submitted_by`, `planning_date`, `submission_date`, `mitigation_percent`, `mitigation_controls`) VALUES (:risk_id, :planning_strategy, :mitigation_effort, :mitigation_cost, :mitigation_owner, :mitigation_team, :current_solution, :security_requirements, :security_recommendations, :submitted_by, :planning_date, :submission_date, :mitigation_percent, :mitigation_controls)");
@@ -3899,6 +3983,9 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
  *************************/
 function update_risk($risk_id, $is_api = false)
 {
+    // Subtract 1000 from risk_id
+    $id = (int)$risk_id - 1000;
+
     // If customization extra is enabled
     if(customization_extra())
     {
@@ -3909,8 +3996,6 @@ function update_risk($risk_id, $is_api = false)
         save_risk_custom_field_values($risk_id);
     }
 
-    // Subtract 1000 from risk_id
-    $id = (int)$risk_id - 1000;
     $reference_id           = get_param("post", 'reference_id', false);
     $regulation             = get_param("post", "regulation", false);
     if($regulation !== false){
@@ -4024,11 +4109,14 @@ function update_risk($risk_id, $is_api = false)
 
     $stmt->execute();
     
-    $tags = empty($_POST['tags']) ? array() : $_POST['tags'];
-    if (!is_array($tags))
-        $tags = explode(",", $tags);
-    // Update tags
-    updateTagsOfType($id, 'risk', $tags);
+//    $tags = empty($_POST['tags']) ? array() : $_POST['tags'];
+//    if (!is_array($tags))
+//        $tags = explode(",", $tags);
+//    add_tagges($tags, $id, 'risk');
+    $tags = get_param("POST", "tags", "");
+    if (is_array($tags))
+        $tags = implode("+++", $tags);
+    create_new_tag_from_string($tags, "+++", "risk", $id);
 
     if($is_api === false){
         if (isset($_POST['assets_asset_groups'])) {
@@ -4273,16 +4361,32 @@ function get_risk_by_id($id)
     // Subtract 1000 from the id
     $id = (int)$id - 1000;
 
-    // If the team separation extra is not enabled
-    if (!team_separation_extra())
-    {
-        // Query the database
-        $stmt = $db->prepare("
+    // If the team separation extra is enabled
+    if (team_separation_extra()) {
+        // Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        // Get the separation query string
+        $separation_query = get_user_teams_query("b", false, true);
+    } else
+        $separation_query = "";
+    
+    // Query the database
+    $stmt = $db->prepare("
         SELECT
-            a.*, group_concat(distinct CONCAT_WS('_', rsci.contributing_risk_id, rsci.impact)) as Contributing_Risks_Impacts, b.*, c.next_review,
+            a.*,
+            group_concat(distinct CONCAT_WS('_', rsci.contributing_risk_id, rsci.impact)) as Contributing_Risks_Impacts,
+            b.*,
+            c.next_review,
             ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
-            GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR ',') as risk_tags
-        FROM risk_scoring a
+            GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR '+++') as risk_tags,
+            GROUP_CONCAT(DISTINCT CONCAT(t.id, '---', t.tag) SEPARATOR '+++') risk_tag_string
+            " . (jira_extra() ?
+            ",ji.issue_key as jira_issue_key,
+            ji.last_sync as jira_last_sync,
+            ji.project_key as jira_project_key" : "") . "
+        FROM
+            risk_scoring a
             INNER JOIN risks b on a.id = b.id
             LEFT JOIN mgmt_reviews c on b.mgmt_review = c.id
             LEFT JOIN mitigations mg ON b.id = mg.risk_id
@@ -4290,39 +4394,14 @@ function get_risk_by_id($id)
             LEFT JOIN risk_scoring_contributing_impacts rsci ON a.id=rsci.risk_scoring_id
             LEFT JOIN tags_taggees tt ON tt.taggee_id = b.id and tt.type = 'risk'
             LEFT JOIN tags t on t.id = tt.tag_id
-        WHERE b.id=:id
+            " . (jira_extra() ? "LEFT JOIN jira_issues ji on ji.risk_id = b.id" : "") . "
+        WHERE
+            b.id=:id
+            " . $separation_query . "
         GROUP BY
             b.id
-        LIMIT 1; ");
-    }
-    // Otherwise
-    else
-    {
-
-        // Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-
-        // Get the separation query string
-        $separation_query = get_user_teams_query("b", false, true);
-
-        // Query the database
-        $stmt = $db->prepare("
-            SELECT
-                a.*, group_concat(distinct CONCAT_WS('_', rsci.contributing_risk_id, rsci.impact)) as Contributing_Risks_Impacts, b.*, c.next_review,
-                ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
-                GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR ',') as risk_tags
-            FROM risk_scoring a INNER JOIN risks b on a.id = b.id LEFT JOIN mgmt_reviews c on b.mgmt_review = c.id
-                LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, mg.mitigation_controls) AND fc.deleted=0
-                LEFT JOIN risk_scoring_contributing_impacts rsci ON a.id=rsci.risk_scoring_id
-                LEFT JOIN tags_taggees tt ON tt.taggee_id = b.id and tt.type = 'risk'
-                LEFT JOIN tags t on t.id = tt.tag_id
-            WHERE b.id=:id " . $separation_query . "
-            GROUP BY
-            b.id
-            LIMIT 1;
-        ");
-    }
+        LIMIT 1;
+    ");
 
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
@@ -5242,7 +5321,20 @@ function get_risks_unassigned_project()
 // If we only want to get risks reviewed as consider for project
     else
     {
-        $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" AND (b.project_id IS NULL or b.project_id=0) ORDER BY calculated_risk DESC");
+        $stmt = $db->prepare("
+            SELECT a.calculated_risk, b.* 
+            FROM risk_scoring a 
+                LEFT JOIN risks b ON a.id = b.id 
+                RIGHT JOIN (
+                    SELECT c1.risk_id, next_step, date 
+                    FROM mgmt_reviews c1 
+                        RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 
+                                ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date 
+                    WHERE next_step = 2
+                ) AS c ON a.id = c.risk_id 
+            WHERE status != \"Closed\" AND (b.project_id IS NULL or b.project_id=0) 
+            ORDER BY calculated_risk DESC;
+        ");
     }
     $stmt->execute();
 
@@ -5300,7 +5392,6 @@ function get_project_by_risk_id($risk_id)
 function get_risks_by_project_id($project_id)
 {
     $db = db_open();
-
     // If we want to get all risks
     if (get_setting('plan_projects_show_all') == 1)
     {
@@ -5309,7 +5400,20 @@ function get_risks_by_project_id($project_id)
     // If we only want to get risks reviewed as consider for project
     else
     {
-            $stmt = $db->prepare("SELECT a.calculated_risk, b.* FROM risk_scoring a LEFT JOIN risks b ON a.id = b.id RIGHT JOIN (SELECT c1.risk_id, next_step, date FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date WHERE next_step = 2) AS c ON a.id = c.risk_id WHERE status != \"Closed\" AND b.project_id = :project_id ORDER BY calculated_risk DESC");
+        $stmt = $db->prepare("
+            SELECT a.calculated_risk, b.* 
+            FROM risk_scoring a 
+                LEFT JOIN risks b ON a.id = b.id 
+                RIGHT JOIN (
+                    SELECT c1.risk_id, next_step, date 
+                    FROM mgmt_reviews c1 
+                        RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 
+                                        ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date 
+                    WHERE next_step = 2
+                ) AS c ON a.id = c.risk_id 
+            WHERE status != \"Closed\" AND b.project_id = :project_id 
+            ORDER BY calculated_risk DESC;
+        ");
     }
     $stmt->bindParam(":project_id", $project_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -7903,7 +8007,7 @@ function get_name_by_value($table, $value, $default = "", $use_id = false)
 /***************************************
  * FUNCTION: GET NAMEs BY MULTI VALUES *
  ***************************************/
-function get_names_by_multi_values($table, $values, $return_array=false, $sep=", ") {
+function get_names_by_multi_values($table, $values, $return_array=false, $impolode_separator=", ") {
 
     if (is_array($values))
         $values = implode(",", $values);
@@ -7937,7 +8041,7 @@ function get_names_by_multi_values($table, $values, $return_array=false, $sep=",
         }
 
         // Return that value
-        return $return_array ? $array : implode($sep, $array);
+        return $return_array ? $array : implode($impolode_separator, $array);
     }
     // Otherwise, return an empty string/array
     else return $return_array ? [] : "";
@@ -8549,10 +8653,10 @@ function get_audit_trail($id = NULL, $days = 7, $log_type=NULL)
                     $log_type_array = array($log_type);
                 }
 
-                $query .= " WHERE risk_id=:risk_id AND (`timestamp` > CURDATE()-INTERVAL :days DAY) AND log_type IN (:log_type) ORDER BY timestamp DESC;";
+                $query .= " WHERE risk_id=:risk_id AND (`timestamp` > CURDATE()-INTERVAL :days DAY) AND FIND_IN_SET(log_type, :log_type)  ORDER BY timestamp DESC;";
                 $stmt = $db->prepare($query);
                 $log_type_str = implode(",", $log_type_array);
-                $stmt->bindParam(":log_type", $log_type_str, PDO::PARAM_STR, 100);
+                $stmt->bindParam(":log_type", $log_type_str, PDO::PARAM_STR);
             }
 
             $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
@@ -8578,9 +8682,11 @@ function get_audit_trail($id = NULL, $days = 7, $log_type=NULL)
                 {
                     $log_type_array = array($log_type);
                 }
+                $query .= " WHERE (`timestamp` > CURDATE()-INTERVAL :days DAY) AND FIND_IN_SET(log_type, :log_type) ORDER BY timestamp DESC; ";
 
-                $query .= " WHERE (`timestamp` > CURDATE()-INTERVAL :days DAY) AND log_type IN ('".implode("','", $log_type_array)."') ORDER BY timestamp DESC; ";
                 $stmt = $db->prepare($query);
+                $log_type_str = implode(",", $log_type_array);
+                $stmt->bindParam(":log_type", $log_type_str, PDO::PARAM_STR);
                 $stmt->bindParam(":days", $days, PDO::PARAM_INT);
             }
         }
@@ -8915,7 +9021,11 @@ function latest_version($param)
     {
         $regex_pattern = "/<advanced_search>(.*)<\/advanced_search>/";
     }
-
+    else if ($param == "jira")
+    {
+        $regex_pattern = "/<jira>(.*)<\/jira>/";
+    }
+    
     $latest_version = "";
 
     foreach ($version_page as $line)
@@ -9053,11 +9163,11 @@ function get_announcements()
 /***************************
  * FUNCTION: LANGUAGE FILE *
  ***************************/
-function language_file()
+function language_file($force_default=false)
 {
     // If the session hasn't been defined yet
     // Making it fall through if called from the command line to load the default
-    if (!isset($_SESSION) && PHP_SAPI !== 'cli')
+    if (!isset($_SESSION) && PHP_SAPI !== 'cli' && !$force_default)
     {
         // Return an empty language file
         return realpath(__DIR__ . '/../languages/empty.php');
@@ -9417,6 +9527,30 @@ function governance_extra()
  ***********************************/
 function advanced_search_extra() {
     return get_setting('advanced_search');
+}
+
+/************************
+ * FUNCTION: JIRA EXTRA *
+ ************************/
+function jira_extra() {
+    if(isset($GLOBALS['jira_extra'])){
+        return $GLOBALS['jira_extra'];
+    }
+
+    $GLOBALS['jira_extra'] = get_setting('jira');
+    return $GLOBALS['jira_extra'];
+}
+
+/************************
+ * FUNCTION: UCF EXTRA *
+ ************************/
+function ucf_extra() {
+    if(isset($GLOBALS['ucf_extra'])){
+        return $GLOBALS['ucf_extra'];
+    }
+    
+    $GLOBALS['ucf_extra'] = get_setting('ucf');
+    return $GLOBALS['ucf_extra'];
 }
 
 /****************************************
@@ -10777,9 +10911,13 @@ function check_current_password_age($user_id = false)
     else return true;
 }
 
-/****************************************
- * FUNCTION: GET LANGUAGES WITH VARIABLES *
- ****************************************/
+/************************************************************************************************
+ * FUNCTION: GET LANGUAGES WITH VARIABLES                                                       *
+ * $key: Key of the localization                                                                *
+ * $params: Parameters that should be replaced into the localization string                     *
+ * $escape: Specify whether the params should be escaped.                                       *
+ * Should be false if the string will be escaped when displayed, to prevent double-escaping.    *
+ ************************************************************************************************/
 function _lang($__key, $__params=array(), $__escape=true){
     global $lang;
 
@@ -11509,8 +11647,8 @@ function create_simplerisk_instance_id()
         // Close the database connection
         db_close($db);
 
-    // Return the instance_id
-    return $instance_id;
+        // Return the instance_id
+        return $instance_id;
     }
     // Otherwise, return the instance_id
     else return $instance_id;
@@ -13230,6 +13368,9 @@ function trial_extra($extra_name)
         case 'advanced_search':
             // Allow
             return false;
+        case 'jira':
+            // Allow
+            return false;
     }
 }
 
@@ -13269,6 +13410,9 @@ function small_extra($extra_name)
             // Don't Allow
             return true;
         case 'advanced_search':
+            // Don't Allow
+            return true;
+        case 'jira':
             // Don't Allow
             return true;
     }
@@ -13312,6 +13456,9 @@ function medium_extra($extra_name)
         case 'advanced_search':
             // Don't Allow
             return true;
+        case 'jira':
+            // Don't Allow
+            return true;
     }
 }
 
@@ -13351,6 +13498,9 @@ function large_extra($extra_name)
             // Allow
             return false;
         case 'advanced_search':
+            // Allow
+            return false;
+        case 'jira':
             // Allow
             return false;
     }
@@ -13828,6 +13978,8 @@ function prevent_extra_double_submit($extra, $is_enable) {
         ($extra == "complianceforge" && (complianceforge_extra() == $is_enable)) ||
         ($extra == "complianceforge_scf" && (complianceforge_scf_extra() == $is_enable)) ||
         ($extra == "advanced_search" && (advanced_search_extra() == $is_enable)) ||
+        ($extra == "jira" && (jira_extra() == $is_enable)) ||
+	($extra == "ucf" && (ucf_extra() == $is_enable)) ||
         ($extra == "governance" && (governance_extra() == $is_enable));
 
     if ($interrupt) {
@@ -14702,6 +14854,59 @@ function check_closed_risk_by_id($id)
     }else{
         return false;
     }
+}
+
+/**************************************************************
+ * FUNCTION: CREATE NEW TAG FROM STRING SPLITTED BY DELIMITER *
+ **************************************************************/
+function create_new_tag_from_string($tags_string, $delimiter=",", $type=NULL, $taggee_id=NULL)
+{
+    if(!$tags_string)
+    {
+        add_tagges([], $taggee_id, $type);
+        return "";
+    }
+    $tags = explode($delimiter, $tags_string);
+    $new_tags = array_filter($tags, function($label){
+        if(stripos($label, "new_tag") !== false){
+            return true;
+        }else{
+            return false;
+        }
+    });
+    $old_tags = array_filter($tags, function($label){
+        if(stripos($label, "new_tag") !== false){
+            return false;
+        }else{
+            return true;
+        }
+    });
+    foreach($new_tags as $new_tag){
+        $new_tag = str_ireplace("new_tag_", "", $new_tag);
+        if($tag_id = add_tag($new_tag, $type)){
+            $old_tags[] = $tag_id;
+        }
+    }
+    $old_tags = array_unique($old_tags);
+    
+    if($type !== NULL && $taggee_id !== NULL)
+    {
+        add_tagges($old_tags, $taggee_id, $type);
+    }
+    
+    return implode(",", $old_tags);
+}
+
+/*
+    Checking if the extra is already installed
+*/
+function is_extra_installed($extra) {
+    global $available_extras;
+    
+    if (!in_array($extra, $available_extras))
+        false;
+
+    return file_exists(realpath(__DIR__ . "/../extras/$extra/index.php"));
 }
 
 ?>

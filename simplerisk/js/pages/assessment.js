@@ -252,7 +252,7 @@ function selectize_pending_risk_affected_assets_widget(select_tag, options) {
         }
     });
 }
-
+/*
 function setupAssetsAssetGroupsWidget(select_tag) {
    
     if (!select_tag.length)
@@ -312,3 +312,4 @@ function setupAssetsAssetGroupsWidget(select_tag) {
         }
     });
 }
+*/

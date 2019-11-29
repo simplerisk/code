@@ -34,7 +34,7 @@
     // Include the language file
     require_once(language_file());
 
-    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+//    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
 
     // Check for session timeout or renegotiation
     session_check();
@@ -53,7 +53,9 @@
         header("Location: ../index.php");
         exit(0);
     }
-    
+    // Include the CSRF-magic library
+    // Make sure it's called after the session is properly setup
+    include_csrf_magic();
     
     if(isset($_POST['submit_mysqlpath'])){
         update_setting('mysqldump_path', $_POST['mysqldump_path']);
@@ -246,6 +248,12 @@
         {
             // Download the extra
             $result = download_extra("advanced_search");
+        }
+        // If the user wants to install the Jira Extra
+        else if (isset($_POST['get_jira_extra']))
+        {
+            // Download the extra
+            $result = download_extra("jira");
         }
 	}
 ?>
@@ -451,10 +459,16 @@
                 $('#upgrade-panel .hero-unit').height($('#register-panel .hero-unit').height());
                 
                 $.ajax(BASE_URL + '/api/one_click_upgrade', {
+                    method: "POST",
+                    data: {data: 1},
                     xhrFields: {
                         onprogress: function(e)
                         {
                             var this_response, response = e.currentTarget.response;
+                            if(response.indexOf("__csrf_magic") > -1){
+                                return;
+                            }
+                            
                             if(last_response_len === false)
                             {
                                 this_response = response;
@@ -469,6 +483,15 @@
                             $progress.append("<div style=''>" + this_response + "</div>");
                             $progress.animate({ scrollTop: 9999 });
                         }
+                    },
+                    error: function(xhr,status,error){
+                        if(!retryCSRF(xhr, this))
+                        {
+                            if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                showAlertsFromArray(xhr.responseJSON.status_message);
+                            }
+                        }
+                        
                     }
                 })
                 .done(function(data)
@@ -478,9 +501,12 @@
                 })
                 .fail(function(xhr, status, errorMessage)
                 {
-                    $progress.append("<div style='color: orangered'><?php echo $lang['UpdateFailed'] ?></div>");
-                    $progress.append("<div style='color: orangered'>" + status +  "(" + errorMessage + ")</div>");
-                    $progress.animate({ scrollTop: 9999 });
+                    if(retryCSRFCount > 5){
+                        $progress.append("<div style='color: orangered'><?php echo $lang['UpdateFailed'] ?></div>");
+                        $progress.append("<div style='color: orangered'>" + status +  "(" + errorMessage + ")</div>");
+                        $progress.animate({ scrollTop: 9999 });
+                    }
+                    
                 });
 
             });

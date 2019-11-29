@@ -144,16 +144,12 @@ function display($display = "")
                 content: "\f05a";
             }
 
-            #exception--add .modal-header, #exception--update .modal-header, #exception--view {
+            #exception--view {
                 color: #ffffff;
             }
 
             #exception--view .modal-body h4 {
                 text-decoration: underline;
-            }
-
-            .no-padding {
-                padding: 0px;
             }
 
             .exception-data {

@@ -159,7 +159,7 @@ function asset_exists($name)
 /**********************************
  * FUNCTION: ASSET EXISTS (EXACT) *
  **********************************/
-function asset_exists_exact($ip, $name, $value, $location, $team, $details, $verified)
+function asset_exists_exact($ip, $name, $value, $location, $teams, $details, $verified)
 {
     global $escaper;
 
@@ -174,7 +174,7 @@ function asset_exists_exact($ip, $name, $value, $location, $team, $details, $ver
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
         // Call the encrypted asset exists function
-        $exists = encrypted_asset_exists_exact($ip, $name, $value, $location, $team, $details, $verified);
+        $exists = encrypted_asset_exists_exact($ip, $name, $value, $location, $teams, $details, $verified);
 
         // Return the result
         return $exists;
@@ -187,12 +187,12 @@ function asset_exists_exact($ip, $name, $value, $location, $team, $details, $ver
         $db = db_open();
 
         // Check if the asset is in the database
-        $stmt = $db->prepare("SELECT id FROM `assets` WHERE `name`=:name AND `ip`=:ip AND `value`=:value AND `location`=:location AND `team`=:team AND `details`=:details AND `verified`=:verified;");
+        $stmt = $db->prepare("SELECT id FROM `assets` WHERE `name`=:name AND `ip`=:ip AND `value`=:value AND `location`=:location AND `teams`=:teams AND `details`=:details AND `verified`=:verified;");
         $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 15);
         $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
         $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
         $stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
-        $stmt->bindParam(":team", $team, PDO::PARAM_INT, 2);
+        $stmt->bindParam(":teams", $teams, PDO::PARAM_INT, 2);
         $stmt->bindParam(":details", $details, PDO::PARAM_STR);
         $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
         $stmt->execute();
@@ -231,7 +231,7 @@ function add_asset_by_name_with_forced_verification($name, $verified = false) {
 /***********************
  * FUNCTION: ADD ASSET *
  ***********************/
-function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "", $tags = "", $verified = false, $imported = false)
+function add_asset($ip, $name, $value=5, $location=0, $teams=[], $details = "", $tags = "", $verified = false, $imported = false)
 {
     global $lang;
 
@@ -242,7 +242,7 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "", $t
         $ip     = trim($ip);
         $value  = trim($value);
         $location = (int)$location;
-        $team   = (int)$team;
+        $teams   = is_array($teams) ? implode(',', $teams) : "";
         
         if (!$name)
             return false;
@@ -261,12 +261,12 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "", $t
         // Open the database connection
         $db = db_open();
 
-        $stmt = $db->prepare("INSERT INTO `assets` (ip, name, value, location, team, details, verified) VALUES (:ip, :name, :value, :location, :team, :details, :verified) ON DUPLICATE KEY UPDATE `ip`=:ip, `value`=:value, `location`=:location, `team`=:team, `details`=:details, `verified`=:verified;");
+        $stmt = $db->prepare("INSERT INTO `assets` (ip, name, value, location, teams, details, verified) VALUES (:ip, :name, :value, :location, :teams, :details, :verified) ON DUPLICATE KEY UPDATE `ip`=:ip, `value`=:value, `location`=:location, `teams`=:teams, `details`=:details, `verified`=:verified;");
         $stmt->bindParam(":ip", $ip, PDO::PARAM_STR);
         $stmt->bindParam(":name", $name, PDO::PARAM_STR);
         $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
         $stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
-        $stmt->bindParam(":team", $team, PDO::PARAM_INT, 2);
+        $stmt->bindParam(":teams", $teams, PDO::PARAM_STR);
         $stmt->bindParam(":details", $details, PDO::PARAM_STR);
         $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
         $return = $stmt->execute();
@@ -278,12 +278,12 @@ function add_asset($ip, $name, $value=5, $location=0, $team=0, $details = "", $t
         }
         else
         {
-            $stmt = $db->prepare("SELECT id FROM `assets` WHERE `name`=:name AND `ip`=:ip AND `value`=:value AND `location`=:location AND `team`=:team AND `details`=:details AND `verified`=:verified;");
+            $stmt = $db->prepare("SELECT id FROM `assets` WHERE `name`=:name AND `ip`=:ip AND `value`=:value AND `location`=:location AND `teams`=:teams AND `details`=:details AND `verified`=:verified;");
             $stmt->bindParam(":ip", $ip, PDO::PARAM_STR, 15);
             $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
             $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
             $stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
-            $stmt->bindParam(":team", $team, PDO::PARAM_INT, 2);
+            $stmt->bindParam(":teams", $teams, PDO::PARAM_STR);
             $stmt->bindParam(":details", $details, PDO::PARAM_STR);
             $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
             $stmt->execute();
@@ -401,9 +401,26 @@ function delete_asset($asset_id)
         'risks_to_assets',
         'assessment_answers_to_assets',
         'questionnaire_answers_to_assets'] as $junction_name) {
+
+        if (!table_exists($junction_name))
+            continue;
+
         $stmt = $db->prepare("
             delete from
                 `$junction_name`
+            where
+                `asset_id`=:id;
+        ");
+        $stmt->bindParam(":id", $asset_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    
+    // If assessment extra is enabled and `questionnaire_answers_to_assets` table exists, remove entries for the Asset
+    if(assessments_extra() && table_exists("questionnaire_answers_to_assets"))
+    {
+        $stmt = $db->prepare("
+            delete from
+                `questionnaire_answers_to_assets`
             where
                 `asset_id`=:id;
         ");
@@ -504,11 +521,11 @@ function display_asset_detail($id)
         else $asset['location'] = get_name_by_value("location", $asset['location']);
 
         // If the team is unspecified
-        if ($asset['team'] == 0)
+        if (!$asset['teams'])
         {
-            $asset['team'] = "N/A";
+            $asset['teams'] = "N/A";
         }
-        else $asset['team'] = get_name_by_value("team", $asset['team']);
+        else $asset['teams'] = get_names_by_multi_values("team", $asset['teams']);
         
         $display = "
             <h4>". $escaper->escapeHtml($asset['name']) ."</h4>
@@ -542,7 +559,7 @@ function display_asset_detail($id)
                     ". $escaper->escapeHtml($lang['Team']) .":
                 </div>
                 <div class='span9'>
-                    ". $escaper->escapeHtml($asset['team']) ."
+                    ". $escaper->escapeHtml($asset['teams']) ."
                 </div>
             </div>
             <div class='row-fluid'>
@@ -655,7 +672,7 @@ function display_asset_table_body()
             display_asset_ip_address_td($asset['ip']);
             display_asset_valuation_td($asset['value']);
             display_asset_site_location_td($asset['location']);
-            display_asset_team_td($asset['team']);
+            display_asset_team_td($asset['teams']);
             display_asset_details_td($asset['details']);
             display_asset_tags_td($asset['tags']);
         }
@@ -739,7 +756,7 @@ function display_unverified_asset_table()
             display_asset_ip_address_td($asset['ip']);
             display_asset_valuation_td($asset['value']);
             display_asset_site_location_td($asset['location']);
-            display_asset_team_td($asset['team']);
+            display_asset_team_td($asset['teams']);
             display_asset_details_td($asset['details']);
             display_asset_tags_td($asset['tags']);
         }
@@ -815,7 +832,7 @@ function get_entered_assets($verified=null)
     $stmt = $db->prepare("
         SELECT
             a.*,
-            GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR ',') as tags
+            GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR '+++') as tags
         FROM
             `assets` a
             LEFT JOIN tags_taggees tt ON tt.taggee_id = a.id AND tt.type = 'asset'
@@ -1040,7 +1057,7 @@ function display_edit_asset_table()
             display_asset_ip_address_td($asset['ip']);
             display_asset_valuation_td_edit($asset['id'], $asset['value']);
             display_asset_site_location_td_edit($asset['id'], $asset['location']);
-            display_asset_team_td_edit($asset['id'], $asset['team']);
+            display_asset_team_td_edit($asset['id'], $asset['teams']);
             display_asset_details_td_edit($asset['id'], $asset['details']);
             display_asset_tags_td_edit($asset['id'], $asset['tags']);
         }
@@ -1093,14 +1110,15 @@ function update_asset_field_value_by_field_name($id, $fieldName, $fieldValue)
             $fieldName = "location";
         break;
         case "team":
-            $fieldName = "team";
+            $fieldName = "teams";
+            $fieldValue = is_array($fieldValue) ? implode(",", $fieldValue) : $fieldValue;
         break;
         case "details":
             $fieldName = "details";
             $fieldValue = try_encrypt($fieldValue);
         break;
         case "tags":
-            $tags = empty($fieldValue) ? [] : explode(",", $fieldValue);
+            $tags = empty($fieldValue) ? [] : explode("+++", $fieldValue);
             return updateTagsOfType($id, 'asset', $tags);
         break;
         default:
@@ -1128,24 +1146,25 @@ function update_asset_field_value_by_field_name($id, $fieldName, $fieldValue)
     return true;
 }
 
-/**************************
+/**********************************
  * FUNCTION: IMPORT ASSET *
- **************************/
-function import_asset($ip, $name, $value, $location, $team, $details, $tags, $verified)
+ * team: string splitted by comma
+ *********************************/
+function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified)
 {
     // Trim whitespace from the name, ip, and value
     $name       = trim($name);
     $ip         = trim($ip);
     $value      = trim($value);
     $location   = (int)$location;
-    $team       = (int)$team;
+    $teams       = $teams ? trim($teams) : "";
 
     $asset_id   = asset_exists($name);
 
     if (!$asset_id)
-        return add_asset($ip, $name, $value, $location, $team, $details, $tags, $verified, true);
+        return add_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, true);
 
-    if (asset_exists_exact($ip, $name, $value, $location, $team, $details, $verified)
+    if (asset_exists_exact($ip, $name, $value, $location, $teams, $details, $verified)
         && areTagsEqual($asset_id, 'asset', $tags)) {
         return "noop"; // To notify the caller that no operation was done
     }
@@ -1158,11 +1177,11 @@ function import_asset($ip, $name, $value, $location, $team, $details, $tags, $ve
     $enc_ip = try_encrypt($ip);
 
     // Update the asset
-    $stmt = $db->prepare("UPDATE assets SET ip = :ip, value = :value, location = :location, team = :team, details = :details, verified = :verified WHERE id = :asset_id");
+    $stmt = $db->prepare("UPDATE assets SET ip = :ip, value = :value, location = :location, teams = :teams, details = :details, verified = :verified WHERE id = :asset_id");
     $stmt->bindParam(":ip", $enc_ip, PDO::PARAM_STR);
     $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
     $stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
-    $stmt->bindParam(":team", $team, PDO::PARAM_INT, 2);
+    $stmt->bindParam(":teams", $teams, PDO::PARAM_INT, 2);
     $stmt->bindParam(":details", $enc_details, PDO::PARAM_STR);
     $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
     $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_STR);
@@ -1174,7 +1193,7 @@ function import_asset($ip, $name, $value, $location, $team, $details, $tags, $ve
     updateTagsOfType($asset_id, 'asset', $tags);
 
     // Check if we have updated the asset
-    if (asset_exists_exact($ip, $name, $value, $location, $team, $details, $verified)
+    if (asset_exists_exact($ip, $name, $value, $location, $teams, $details, $verified)
         && areTagsEqual($asset_id, 'asset', $tags)) {
         $message = "An asset named \"" . $name . "\" was modified by username \"" . $_SESSION['user'] . "\".";
         write_log($asset_id, $_SESSION['uid'], $message, "asset");
@@ -1706,7 +1725,7 @@ function display_add_asset()
 
         display_asset_details_edit();
 
-        display_asset_tags_edit();
+        display_asset_tags_add();
     }
     
     echo "
@@ -2139,6 +2158,10 @@ function process_selected_assets_asset_groups_of_type($type_id, $assets_and_grou
             $forced_asset_verification_state = true;
         break;
         case 'questionnaire_answer':
+            if(!assessments_extra() || !assessments_extra("questionnaire_answers_to_assets") || !assessments_extra("questionnaire_answers_to_asset_groups"))
+            {
+                return;
+            }
             $assets_junction_name = 'questionnaire_answers_to_assets';
             $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
             $junction_id_name = 'questionnaire_answer_id';
@@ -2148,14 +2171,14 @@ function process_selected_assets_asset_groups_of_type($type_id, $assets_and_grou
         default:
             return;
     }
-
+    
     // Clear any current assets for this type
-    $stmt = $db->prepare("DELETE FROM `$assets_junction_name` WHERE $junction_id_name = :$junction_id_name");
-    $stmt->bindParam(":$junction_id_name", $type_id, PDO::PARAM_INT);
+    $stmt = $db->prepare("DELETE FROM `{$assets_junction_name}` WHERE {$junction_id_name} = :{$junction_id_name}");
+    $stmt->bindParam(":{$junction_id_name}", $type_id, PDO::PARAM_INT);
     $stmt->execute();
 
-    $stmt = $db->prepare("DELETE FROM `$asset_groups_junction_name` WHERE $junction_id_name = :$junction_id_name");
-    $stmt->bindParam(":$junction_id_name", $type_id, PDO::PARAM_INT);
+    $stmt = $db->prepare("DELETE FROM `{$asset_groups_junction_name}` WHERE {$junction_id_name} = :{$junction_id_name}");
+    $stmt->bindParam(":{$junction_id_name}", $type_id, PDO::PARAM_INT);
     $stmt->execute();    
     
     // For each asset or group
@@ -2229,6 +2252,10 @@ function import_assets_asset_groups_for_type($type_id, $asset_and_group_names, $
             $forced_asset_verification_state = null;
         break;
         case 'questionnaire_answer':
+            if(!assessments_extra() || !assessments_extra("questionnaire_answers_to_assets") || !assessments_extra("questionnaire_answers_to_asset_groups"))
+            {
+                return;
+            }
             $assets_junction_name = 'questionnaire_answers_to_assets';
             $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
             $junction_id_name = 'questionnaire_answer_id';
@@ -2449,7 +2476,7 @@ function get_assets_of_asset_group_for_treegrid($id){
         }
 
         $asset['location'] = $asset['location'] ? $escaper->escapeHtml(get_name_by_value("location", $asset['location'])) : "N/A";
-        $asset['team'] = $asset['team'] ? $escaper->escapeHtml(get_name_by_value("team", $asset['team'])) : "N/A";
+        $asset['teams'] = $asset['teams'] ? $escaper->escapeHtml(get_name_by_value("team", $asset['teams'])) : "N/A";
         $asset['value'] = $escaper->escapeHtml(get_asset_value_by_id($asset['value']));
 
         $asset['details'] = $escaper->escapeHtml(try_decrypt($asset['details']));
@@ -2571,6 +2598,10 @@ function get_assets_and_asset_groups_of_type_as_string($id, $type) {
             $junction_id_name = 'assessment_answer_id';
         break;
         case 'questionnaire_answer':
+            if(!assessments_extra() || !assessments_extra("questionnaire_answers_to_assets") || !assessments_extra("questionnaire_answers_to_asset_groups"))
+            {
+                return;
+            }
             $assets_junction_name = 'questionnaire_answers_to_assets';
             $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
             $junction_id_name = 'questionnaire_answer_id';
@@ -2632,6 +2663,10 @@ function get_assets_and_asset_groups_of_type($id, $type) {
             $junction_id_name = 'assessment_answer_id';
         break;
         case 'questionnaire_answer':
+            if(!assessments_extra() || !assessments_extra("questionnaire_answers_to_assets") || !assessments_extra("questionnaire_answers_to_asset_groups"))
+            {
+                return;
+            }
             $assets_junction_name = 'questionnaire_answers_to_assets';
             $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
             $junction_id_name = 'questionnaire_answer_id';
@@ -2722,7 +2757,7 @@ function assets_for_risk_id($risk_id)
             a.name,
             a.value,
             a.location,
-            a.team,
+            a.teams,
             a.created,
             a.verified
         FROM

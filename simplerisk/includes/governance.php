@@ -1786,6 +1786,8 @@ function display_expandable_framework_names($framework_names_in, $cutoff) {
 
     global $lang, $escaper;
 
+    $framework_names_in = $escaper->escapeHtml($framework_names_in);
+    
     $framework_names = explode(",", $framework_names_in);
     if (count($framework_names) <= $cutoff)
         return $framework_names_in;
@@ -1984,7 +1986,19 @@ function get_exception_tabs($type)
                     /*var tree = $('#exception-table-{$type}');
                     tree.treegrid('collapseAll');
                     tree.treegrid('options').animate = true;*/
-                    var totalCount = (data && data.length) ? data.length : 0;
+                    
+                    var totalCount = 0;
+                    if((data && data.length))
+                    {
+                        for(parent of data)
+                        {
+                            if((parent.children && parent.children.length))
+                            {
+                                totalCount += parent.children.length;
+                            }
+                        }
+                    }
+                    
                     $('#{$type}-exceptions-count').text(totalCount);
 
                     if (typeof wireActionButtons === 'function') {

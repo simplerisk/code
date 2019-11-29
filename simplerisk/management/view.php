@@ -98,6 +98,7 @@ if (isset($_GET['id']))
         $manager = $risk[0]['manager'];
         $assessment = $risk[0]['assessment'];
         $notes = $risk[0]['notes'];
+        $jira_issue_key = jira_extra() ? $risk[0]['jira_issue_key'] : "";
         $submission_date = $risk[0]['submission_date'];
         $risk_tags = $risk[0]['risk_tags'];
         $mitigation_id = $risk[0]['mitigation_id'];
@@ -184,6 +185,7 @@ if (isset($_GET['id']))
         $manager = "";
         $assessment = "";
         $notes = "";
+        $jira_issue_key = "";
         $submission_date = "";
         $risk_tags = "";
         $mitigation_id = "";

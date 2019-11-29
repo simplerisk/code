@@ -274,7 +274,7 @@ function csrf_callback($tokens) {
     }
     
     // If request comes from other host, reject the request
-    if(stripos($_SESSION['base_url'], $referer_url) === false)
+    if(stripos($base_url, $referer_url) === false)
     {
         echo "<html><head><title>CSRF check failed</title></head>
             <body>
