@@ -83,7 +83,6 @@ function db_open()
     catch (PDOException $e)
     {
         printf("<br />SimpleRisk is unable to communicate with the database.  You should double-check your settings in the config.php file.  If the problem persists, you can try manually connecting to the database using the command '<i>mysql -h &lt;hostname&gt; -u &lt;username&gt; -p</i>' and specifying the password when prompted.  If the issue persists, contact support and provide a copy of any relevant messages from your web server's error log.<br />\n");
-        printf("<br />Database Connection Failed: " . $e->getMessage() . "<br />\n");
         //die("Database Connection Failed: " . $e->getMessage());
     }
 
