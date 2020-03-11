@@ -57,7 +57,7 @@ function db_open()
     try
     {
         $options = array(
-            PDO::MYSQL_ATTR_SSL_KEY => '/var/www/html/BaltimoreCyberTrustRoot.crt.pem'
+            PDO::MYSQL_ATTR_SSL_KEY => DB_SSL_CERTIFICATE_PATH
         );
         $GLOBALS['db'] = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, $options);
         $GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");

@@ -21,7 +21,5 @@ define('DB_DATABASE', 'simplerisk');
 // Use database for sessions
 define('USE_DATABASE_FOR_SESSIONS', 'true');
 
-// Use the Azure MySQL Cert for SSL connections
-define('DB_SSL_CERTIFICATE', '/var/www/simplerisk/BaltimoreCyberTrustRoot.crt.pem');
-
-?>
+// Path to the cert to be used for SSL connections to the database
+define('DB_SSL_CERTIFICATE_PATH', '');
