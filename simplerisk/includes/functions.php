@@ -56,9 +56,13 @@ function db_open()
     // Connect to the database
     try
     {
-        $GLOBALS['db'] = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+        $options = array(
+            PDO::MYSQL_ATTR_SSL_KEY => '/var/www/html/BaltimoreCyberTrustRoot.crt.pem'
+        );
+        $GLOBALS['db'] = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, $options);
         $GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
         $GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET CHARACTER SET utf8");
+        $GLOBALS['db']->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
 
         // Set the simplerisk timezone for any datetime functions
         set_simplerisk_timezone();
@@ -79,6 +83,7 @@ function db_open()
     catch (PDOException $e)
     {
         printf("<br />SimpleRisk is unable to communicate with the database.  You should double-check your settings in the config.php file.  If the problem persists, you can try manually connecting to the database using the command '<i>mysql -h &lt;hostname&gt; -u &lt;username&gt; -p</i>' and specifying the password when prompted.  If the issue persists, contact support and provide a copy of any relevant messages from your web server's error log.<br />\n");
+        printf("<br />Database Connection Failed: " . $e->getMessage() . "<br />\n");
         //die("Database Connection Failed: " . $e->getMessage());
     }
 
