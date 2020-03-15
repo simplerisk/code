@@ -56,13 +56,19 @@ function db_open()
     // Connect to the database
     try
     {
-        $options = array(
-            PDO::MYSQL_ATTR_SSL_KEY => DB_SSL_CERTIFICATE_PATH
-        );
+        if(DB_SSL_CERTIFICATE_PATH != '') {
+            $options = array(
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::MYSQL_ATTR_SSL_CA => DB_SSL_CERTIFICATE_PATH
+            );
+        } else {
+            $options = array(
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+            );
+        }
         $GLOBALS['db'] = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, $options);
         $GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
         $GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET CHARACTER SET utf8");
-        $GLOBALS['db']->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
 
         // Set the simplerisk timezone for any datetime functions
         set_simplerisk_timezone();
