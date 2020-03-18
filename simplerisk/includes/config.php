@@ -21,5 +21,7 @@ define('DB_DATABASE', 'simplerisk');
 // Use database for sessions
 define('USE_DATABASE_FOR_SESSIONS', 'true');
 
-// Path to the cert to be used for SSL connections to the database
+// Path to the certificate to be used for SSL connections to the database
 define('DB_SSL_CERTIFICATE_PATH', '');
+
+?>
