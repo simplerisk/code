@@ -10,9 +10,7 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/messages.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 
-
-
-
+// The list of currently existing permissions. If there's a new permission created, please add it here!
 $possible_permissions = [
     'governance',
     'riskmanagement',
@@ -47,7 +45,6 @@ $possible_permissions = [
     'delete_exception',
     'approve_exception'
 ];
-
 
 /*******************************
  * FUNCTION: OLD GENERATE SALT *
@@ -258,7 +255,15 @@ function set_user_permissions($user, $upgrade = false)
 
     // Open the database connection
     $db = db_open();
-    
+
+    // If user id is provided
+    if (is_int($user) || ctype_digit($user)) {
+        $stmt = $db->prepare("SELECT `username` FROM user WHERE value = :user_id;");
+        $stmt->bindParam(":user_id", $user, PDO::PARAM_INT);
+        $stmt->execute();
+        $user = $stmt->fetchColumn();
+    }
+
     // If we are not doing an upgrade
     if (!$upgrade)
     {
@@ -273,7 +278,7 @@ function set_user_permissions($user, $upgrade = false)
         else
         {
             // Query the DB for the users complete information
-            $stmt = $db->prepare("SELECT value, type, name, lang, custom_display_settings, " . implode(',', $possible_permissions) . " FROM user WHERE username = :user; ");
+            $stmt = $db->prepare("SELECT value, type, name, lang, custom_display_settings, " . implode(',', $possible_permissions) . " FROM user WHERE username = :user;");
         }
     }
     // If we are doing an upgrade
@@ -329,6 +334,9 @@ function set_user_permissions($user, $upgrade = false)
 //        }
     }
 
+    // Get the latest SimpleRisk version and add it to the session
+    $_SESSION['latest_version_app'] = latest_version('app');
+
     // If the users language is not null
     if (!is_null($array[0]['lang']))
     {
@@ -364,9 +372,8 @@ function grant_access()
     update_last_login($_SESSION['uid']);
 
     // Audit log
-    $risk_id = 1000;
     $message = "Username \"" . $_SESSION['user'] . "\" logged in successfully.";
-    write_log($risk_id, $_SESSION['uid'], $message);
+    write_log($_SESSION['uid'] + 1000, $_SESSION['uid'], $message, "user");
 }
 
 /************************************************************************************
@@ -581,9 +588,8 @@ function password_reset_by_userid($userid)
     }
 
     // Audit log
-    $risk_id = 1000;
     $message = "A password reset request was submitted for user \"" . $username . "\" by the \"" . $user . "\" user.";
-    write_log($risk_id, $uid, $message);
+    write_log($userid + 1000, $uid, $message, "user");
 }
 
 /******************************
@@ -618,15 +624,20 @@ function send_reset_email($username, $name, $email, $token)
         $body .= "</ul>\n";
     }
     
-    $base_url = get_current_url();
-    $pattern[0] = "/\/(\w)*\.php$/";
-    $pattern[1] = "/\/admin\/(\w)*\.php$/";
-    $base_url = preg_replace($pattern, "/reset.php", $base_url);
-    $base_url = $base_url . "?token=".$token."&username=".$username;
+    //$base_url = get_current_url();
+    //$pattern[0] = "/\/(\w)*\.php$/";
+    //$pattern[1] = "/\/admin\/(\w)*\.php$/";
+    //$base_url = preg_replace($pattern, "/reset.php", $base_url);
     
     $body .= "<b>Username:</b>&nbsp;&nbsp;".$username."<br/>\n";
     $body .= "<b>Reset Token:</b>&nbsp;&nbsp;".$token."<br/>\n";
-    $body .= "<p>You may now use the \"<a href='{$base_url}'>Forgot your password</a>\" link on the SimpleRisk log in page to reset your password.</p>";
+    if(get_setting('simplerisk_base_url') != false) {
+        $base_url = get_base_url() . "/reset.php";
+        $base_url = $base_url . "?token=".$token."&username=".$username;
+        $body .= "<p>You may now use the \"<a href='{$base_url}'>Forgot your password</a>\" link on the SimpleRisk log in page to reset your password.</p>";
+    } else {
+        $body .= "<p>Please visit the SimpleRisk log in page to reset your password.</p>";
+    }
     $body .= "<p>This is an automated message and responses will be ignored or rejected.</p>\n";
     $body .= "</body></html>\n";
     
@@ -674,6 +685,9 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
 
                 // Close the database connection
                 db_close($db);
+
+                // Clean up other sessions of the user and roll the current session's id
+                kill_other_sessions_of_current_user();
 
                 // Display an alert
                 set_alert(true, "good", "Your password has been reset successfully!");
@@ -1003,9 +1017,8 @@ function logout()
     $uid = $_SESSION['uid'];
 
     // Audit log
-    $risk_id = 1000;
     $message = "Username \"" . $username . "\" logged out successfully.";
-    write_log($risk_id, $uid, $message);
+    write_log($uid + 1000, $uid, $message, "user");
 
         // Deny access
         $_SESSION["access"] = "denied";
@@ -1084,9 +1097,9 @@ function add_login_attempt_and_block($user)
             // Block the user
             block_user($user_id);
 
-                   // Write to audit log
-                $message = 'Username "' . $user . '" has been blocked due to reaching maximum login attempt counter.';
-                write_log(1000, $user_id, $message);
+            // Write to audit log
+            $message = 'Username "' . $user . '" has been blocked due to reaching maximum login attempt counter.';
+            write_log($user_id + 1000, $user_id, $message, "user");
         }
     }
 }
@@ -1277,13 +1290,14 @@ function reset_password($user_id, $current_password, $new_password, $confirm_pas
 				set_user_permissions($username);
 
 				// Get base URL
-				$base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['SCRIPT_NAME']}";
-				$base_url = htmlspecialchars( $base_url, ENT_QUOTES, 'UTF-8' );
-				$base_url = pathinfo($base_url)['dirname'];
+				//$base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['SERVER_NAME']}{$_SERVER['SCRIPT_NAME']}";
+				//$base_url = htmlspecialchars( $base_url, ENT_QUOTES, 'UTF-8' );
+				//$base_url = pathinfo($base_url)['dirname'];
 
 				// Filter out authentication extra from the base url
-				$base_url = str_replace("/extras/authentication", "", $base_url);
-				$_SESSION['base_url'] = $base_url;
+				//$base_url = str_replace("/extras/authentication", "", $base_url);
+				//$_SESSION['base_url'] = $base_url;
+				$_SESSION['base_url'] = get_base_url();
 
 				// Set login status
 				login($username, $new_password);
@@ -1372,6 +1386,78 @@ function login($user, $pass){
         select_redirect();
     }
     return;
+}
+
+/****************************************************************************
+ * FUNCTION: KILL SESSIONS OF USER                                          *
+ * Used to kill off sessions of a user.                                     *
+ * Set $keep_current_session to true if the current session should be kept. *
+ ****************************************************************************/
+function kill_sessions_of_user($user_id, $keep_current_session = false) {
+
+    $sid = session_id();
+
+    $db = db_open();
+
+    if ($keep_current_session) {
+        // Get the session ids that are not THIS session
+        $stmt = $db->prepare("SELECT `id` FROM sessions where `id` <> :session_id and length(`data`) > 20;");
+        $stmt->bindParam(":session_id", $sid);
+    } else {
+        // Get the session ids including THIS session
+        $stmt = $db->prepare("SELECT `id` FROM sessions where length(`data`) > 20;");
+    }
+
+    $stmt->execute();
+    $session_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    if (!empty($session_ids)) {
+        // Force-write current session changes
+        session_write_close();
+
+        // Iterate through the session ids
+        foreach($session_ids as $session_id) {
+
+            // Activate our target session
+            session_id($session_id);
+            session_start();
+
+            // Kill session if the user id matches the current user
+            if (isset($_SESSION['uid']) && $_SESSION['uid'] == $user_id) {
+                // unset $_SESSION variable for the run-time
+                session_unset();
+
+                // destroy session data in storage
+                session_destroy();
+
+            }
+            // Force-write current session changes
+            session_write_close();
+        }
+
+        // Start our old session again
+        session_id($sid);
+        session_start();
+    }
+
+    db_close($db);
+}
+
+/********************************************************************
+ * FUNCTION: KILL OTHER SESSIONS OF CURRENT USER                    *
+ * Used to kill off possible other sessions of  the                 *
+ * logged in user and rolls session id of the                       *
+ * current one to make sure noone can re-use the session cookies.   *
+ ********************************************************************/
+function kill_other_sessions_of_current_user() {
+
+    if(isset($_SESSION['uid'])) kill_sessions_of_user($_SESSION['uid'], true);
+
+    // change session ID for the current session and invalidate old session ID
+    session_regenerate_id(true);
+
+    // update creation time
+    $_SESSION['CREATED'] = time();
 }
 
 ?>

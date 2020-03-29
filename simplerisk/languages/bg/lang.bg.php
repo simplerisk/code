@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Актуализиране на състоянието на проекта',
     'HighRiskReport'=>'Доклад с висок риск',
     'TotalOpenRisks'=>'Общо отворени рискове',
-    'TotalHighRisks'=>'Общо високи рискове',
-    'HighRiskPercentage'=>'Висок риск процент',
+    'NumberOfOpenRisks'=>'Общо отворени рискове: {$number}',
+    'RiskNumberOfRiskLevel'=>'Общ брой на {$display_name} Рискове: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Процент на риска: {$percentage}%',
+    'RiskScoreUsing'=>'Оценка на риска Използване:',
+    'HighRiskReport_ScoreWarning' => 'Моля, имайте предвид, че въпреки че докладът се показва с помощта на "{$score_used}" резултати, заради "{$next_review_date_uses_name}" настройка, ние изчисляваме "{$management_review_header}" стойностите на колоната с помощта на "{$next_review_date_uses_value}" резултати"',
     'UpdateClassicScore'=>'Актуализация класически резултат',
     'UpdateCVSSScore'=>'Актуализация CVSS резултат',
     'BaseScoreMetrics'=>'Базови показатели за оценка',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Искам да прегледам много висок риск на всеки',
     'AbleToReviewVeryHighRisks'=>'В състояние да преразгледа много висок риск',
     'AbleToReviewInsignificantRisks'=>'В състояние да преразгледа незначителните рискове',
-    'TotalVeryHighRisks'=>'Общо много високи рискове',
-    'VeryHighRiskPercentage'=>'Много висок риск процент',
     'AllTeams'=>'Всички отбори',
     'FileUploadSettings'=>'Настройки за качване на файлове',
     'AllowedFileTypes'=>'Разрешени файлови типове',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Използвайте запетая, за да се разделят множество имейли.',
     'RiskAssessmentQuestionnaire' => 'Въпросник за оценка на риска',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n Здравейте, \\n
-            <p> {$username} ви е поискал да попълните следния въпросник за оценка на риска:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>този  е автоматизирано съобщение и отговорите ще бъдат игнорирани или отхвърлени.</p>\\n
+        <html><body>
+            Здравейте
+            <p> {$username} ви е помолил да попълните следния въпросник за оценка на риска:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Това е автоматизирано съобщение и отговорите ще бъдат игнорирани или отхвърлени.</p>
         </body></html>',
     'FilterByText' => 'Филтриране по текст',
     'SelectMitigatingControls' => 'Изберете ограничаване на контрола (ите)',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Вашите отговори бяха успешно записани.',
     'QuestionnaireCompletedSuccess'=>'Завършихте успешно този въпросник.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body> \\ n Здравейте, \\n <p> {$conact_name} попълнен въпросник, <b>{$questionnaire_name}</b></p> \\ n <p>This е автоматизирано съобщение и отговорите ще бъдат игнорирани или отхвърлени. </p> \\ n
+        <html><body>
+            Здравейте
+            <p> {$conact_name} попълнен въпросник, <b>{$questionnaire_name}</b></p>
+            <p>Това е автоматизирано съобщение и отговорите ще бъдат игнорирани или отхвърлени.</p>
         </body></html>',
     'QuestionnaireResults'=>'Резултати от въпросника',
     'DateSent'=>'Дата на изпращане',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Нова рамка беше добавена успешно.',
     'FrameworkUpdated'=>'Рамката беше актуализирана успешно.',
     'FrameworkNameExist'=>'Името на рамката вече съществува.',
+    'FrameworkNameCantBeEmpty'=>'Името на рамката не може да е празно.',
+    'FrameworkCantBeItsOwnParent'=>'Рамката не може да бъде свой собствен родител.',
+    'FrameworkParentUpdated'=>'Родителят на рамката успешно актуализира.',
     'AttachmentFiles'=>'Прикачен файл',
     'QuestionnaireFiles'=>'Файлове с въпросници',
     'ContactEmailAlreadyInUse'=>'Имейлът за контакт вече се използва.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Активът е актуализиран успешно.',
     'ThereWasAProblemUpdatingTheAsset' => 'Възникна проблем при актуализирането на актива.',
     'ImportAssetAddSucceeded' => 'Добавя{$verified_or_unverified}"актив с име"{$asset_name}"с IP"{$asset_ip}"и стойност"{$asset_value}".',
-    'ImportAssetAddFailed' => 'Неуспешно добавяне на "{$verified_or_unverified"актив с име"{$asset_name}"с IP"{$asset_ip}"и стойност"{$asset_value}".',
+    'ImportAssetAddFailed' => 'Неуспешно добавяне на "{$verified_or_unverified}" актив с име "{$asset_name}" с IP "{$asset_ip}" и стойност "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Не е необходима операция на актив с име "{$asset_name}"както вече е в базата данни.',
     'ImportAssetUpdateSucceeded' => 'Актуализация{$verified_or_unverified}"актив с име"{$asset_name}"с IP"{$asset_ip}"и стойност"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Неуспешно актуализиране на "{$verified_or_unverified}"актив с име"{$asset_name}"с IP"{$asset_ip}"и стойност"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Актуализиране на тест',
     'ControlEditHeader' => 'Актуализиране на контролата',
     'FrameworkEditHeader' => 'Актуализиране на рамка',
+    'UserTeamUpdateAuditLog' => 'Потребител "{$user}" актуализирани екипи на потребител "{$username}" от "{$teams_from}" на "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Потребител{$user}"актуализираните екипи от {$type} ИД{$id}от{$teams_from}да{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Премахнати{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Добавя{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Потребител "{$user}" актуализирани елементи (тип: "{$type}" на екипа "{$team}" от "{$items_from}" на "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Премахната е "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Добавено "{$items_added}"',
     'TeamType_test' => 'Тест',
     'TeamType_audit' => 'Одит',
     'TestCreatedAuditLogMessage' => 'Тест{$test_name}"(ИД: {$test_id}) е създаден от потребителя "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Резултатът от въпросника е успешно одобрен.',
     'QuestionnaireResultRejectedSuccessfully' => 'Успешно отхвърлен резултат от въпросника. Уведомителния имейл се изпраща на контакта.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Здравейте\\n
-            <p> {$username} направи преоценка на следния въпросник за оценка на риска:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Коментари: {$reject_comment}</p>\\n
-            <p>Това е автоматизирано съобщение и отговорите ще бъдат игнорирани или отхвърлени.</p>\\n
+        <html><body>
+            Здравейте
+            <p> {$username} поиска от Вас да преоцените следния въпросник за оценка на риска:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Коментари: {$reject_comment}</p>
+            <p>Това е автоматизирано съобщение и отговорите ще бъдат игнорирани или отхвърлени.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Въпросника${questionnaire_name}"(изпратено до контакт"{$contact_name}на{$date}") резултатът е одобрен от потребителя"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Въпросника${questionnaire_name}"резултатът е отхвърлен и изпратен обратно на контакт"${contact_name}"за повторна оценка от страна на потребителя"${user_name}"с коментар"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Въпросник "{$questionnaire_name}"(изпратен да се свърже мaнaтa"{$contact_name}" на "{$date}") е одобрен от потребителя "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Въпросник "{$questionnaire_name}" резултатът е отхвърлен и изпратен обратно да се свърже с "{$contact_name}" за повторна оценка от потребителя "{$user_name}" с коментар "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Предварително попълване с отговори от последната оценка?',
-    'QuestionnaireResultApprovedAuditLog' => 'Въпросника${questionnaire_name}"(изпратено до контакт"{$contact_name}на{$date}") резултатът е одобрен от потребителя"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Въпросника${questionnaire_name}"резултатът е отхвърлен и изпратен обратно на контакт"${contact_name}"за повторна оценка от страна на потребителя"${user_name}"с коментар"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Въпросник "{$questionnaire_name}"(изпратен да се свърже мaнaтa"{$contact_name}" на "{$date}") е одобрен от потребителя "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Въпросник "{$questionnaire_name}" резултатът е отхвърлен и изпратен обратно да се свърже с "{$contact_name}" за повторна оценка от потребителя "{$user_name}" с коментар "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Потребител{$user_name}"Добави коментар за въпросника"{$questionnaire_name}"(изпратено до контакт"{$contact_name}на{$date}") резултат.',
     'QuestionnaireSentAuditLog' => 'Въпросника{$questionnaire_name}"беше изпратен да се свърже"{$contact_name}"от потребител"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Въпросника{$questionnaire_name}"е довело до създаване на висящ риск"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Чакащи рискове "{$subject}"от въпросника"${questionnaire_name}"(изпратено до контакт"{$contact_name}на{$date}") е добавен като риск (ID: {$risk_id}) от потребителя "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Чакащи рискове "{$subject}"от въпросника"${questionnaire_name}"(изпратено до контакт"{$contact_name}на{$date}") е изтрит от потребителя"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Чакащи рискове от въпросника "${questionnaire_name}"(изпратено до контакт"{$contact_name}на{$date}") бяха изтрити от потребителя"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Въпросника{$questionnaire_name}"беше завършена с контакт"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Въпросника{$questionnaire_name}"е записан като чернова чрез контакт"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Очакван риск "{$subject}" на въпросника "{$questionnaire_name}"(изпратен да се свърже мaнaтa"{$contact_name}" на "{$date}") е добавен като риск (ID: {$risk_id}) от потребителя "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Очакван риск "{$subject}" на въпросника "{$questionnaire_name}"(изпратен да се свърже мaнaтa"{$contact_name}" на "{$date}") е изтрит от потребителя "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Очакване на рисковете от въпросника "{$questionnaire_name}"(изпратен да се свърже мaнaтa"{$contact_name}" на "{$date}") са изтрити от потребителя "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Въпросник "{$questionnaire_name}" е завършен а от контакт "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Въпросник "{$questionnaire_name}" е запазенкато проект от контакт "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Справка за одитна пътека за резултати от въпросника',
     'SubTemplate' => 'Подшаблон',
     'MitigationAccepted' => 'Смекчаване на приетите',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Преглед на активните одити',
     'ViewPastAudits'=>'Преглед на минали одити',
     'Uninstall' => 'Деинсталирате',
+    'SimpleriskUsers' => 'Simplerisk Потребители',
+    'QuestionnaireCompletedAuditLogByUser' => 'Въпросник "{$questionnaire_name}" е завършен от потребител "{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Въпросник "{$questionnaire_name}" е запазенкато чернова от потребителя "{$contact_name}".',
+    'Internal' => 'Вътрешния',
+    'QuestionType' => 'Тип въпрос',
+    'MultipleChoice' => 'Множествен избор',
+    'FillInTheBlank' => 'Попълнете празното поле',
+    'Proxy' => 'Прокси',
+    'ProxyWebRequests' => 'Прокси уеб заявки',
+    'VerifySSLCertificate' => 'Проверка на SSL сертификат',
+    'ProxyHostname' => 'Прокси име на хост / IP',
+    'ProxyPort' => 'Порт за прокси сървър',
+    'AuthenticatedProxy' => 'Удостоверен прокси сървър',
+    'ProxyUsername' => 'Прокси потребителско име',
+    'ProxyPassword' => 'Прокси парола',
+    'SimpleRiskExtras' => 'Простиекспо-екстри',
+    'ColumnSelections' => 'Избор на колони',
+    'GroupAndFilteringSelections' => 'Избор на група и филтриране',
+    'Hyperlink' => 'Хипервръзка',
+    'URL' => 'Url',
+    'AssetTeams'=>'Екип(и) на активите',
+    'AssetSiteLocation'=>'Сайт/местоположение на актива',
+    'ActivatingSCFMessage' => 'Инсталиране на рамката на SCF за съответствието. Това може да отнеме няколко минути, за да завърши.',
+    'DeactivatingSCFMessage' => 'Деинсталиране на рамката на SCF за съответствие.',
+    'UpdatingSCFMessage' => 'Актуализиране на рамката на SCF за съответствието. Това може да отнеме няколко минути, за да завърши.',
+    'Processing' => 'Обработка...',
+    'AlphabeticalOrder'=>'Азбучен ред',
     '' => ''
 );
 

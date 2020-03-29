@@ -68,23 +68,19 @@
 
     $customDeleteFunction_team = function($name) {
         // If team separation is enabled
-        if (team_separation_extra())
-        {
+        if (team_separation_extra()) {
             // Check if a risk is assigned to the team
             $delete = empty(get_risks_by_team($name));
-        }
-        else
-        {
+        } else {
             $delete = true;
         }
 
         // If it is ok to delete the team
-        if ($delete)
-        {
-            return delete_value("team", $name);
-        }
-        else
-        {
+        if ($delete) {
+            $delete_result = delete_value("team", $name);
+            cleanup_after_delete("team");
+            return $delete_result;
+        } else {
             global $lang;
             // Display an alert
             set_alert(true, "bad", $lang['CantDeleteTeamItsInUseByARisk']);
@@ -92,20 +88,30 @@
         }
     };
 
+    $customDeleteFunction_technology = function($name) {
+        $delete_result = delete_value("technology", $name);
+        cleanup_after_delete("technology");
+        return $delete_result;
+    };
+
+    $customDeleteFunction_location = function($name) {
+        $delete_result = delete_value("location", $name);
+        cleanup_after_delete("location");
+        return $delete_result;
+    };
+
     $customDeleteFunction_test_status = function($id) {
 
         $closed_audit_status = get_setting("closed_audit_status");
         // If Closed status
-        if($id == $closed_audit_status)
-        {
+        if($id == $closed_audit_status) {
             global $lang;
             // Display an alert
             set_alert(true, "bad", $lang['TheClosedStatusCantBeDeleted']);
             return false;
         }
         // If status is not Closed
-        else
-        {
+        else {
             return delete_value("test_status", $id);
         }
     };
@@ -135,14 +141,12 @@
         'technology' => array(
             'headerKey' => 'Technology',
             'lengthLimit' => 50,
+            'customDeleteFunction' => $customDeleteFunction_technology,
         ),
         'location' => array(
             'headerKey' => 'SiteLocation',
             'lengthLimit' => 100,
-        ),
-        'regulation' => array(
-            'headerKey' => 'ControlRegulation',
-            'lengthLimit' => 50,
+            'customDeleteFunction' => $customDeleteFunction_location,
         ),
         'planning_strategy' => array(
             'headerKey' => 'RiskPlanningStrategy',

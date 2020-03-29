@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Aktualizácia projektu stavy',
     'HighRiskReport'=>'Vysoké riziko správa',
     'TotalOpenRisks'=>'Celková otvorená riziká',
-    'TotalHighRisks'=>'Celkom vysoké riziká',
-    'HighRiskPercentage'=>'Vysoké riziko percento',
+    'NumberOfOpenRisks'=>'Celkové otvorené riziká: {$number}',
+    'RiskNumberOfRiskLevel'=>'Celkový počet {$display_name} Riziká: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Percento rizika: {$percentage}%',
+    'RiskScoreUsing'=>'Skóre rizika pomocou:',
+    'HighRiskReport_ScoreWarning' => 'Vezmite prosím na vedomie, že aj keď je správa zobrazená pomocou "{$score_used}"skóre, pretože"{$next_review_date_uses_name}"nastavenie sme výpočet"{$management_review_header}"hodnoty stĺpca pomocou"{$next_review_date_uses_value}Skóre.',
     'UpdateClassicScore'=>'Aktualizácia Classic Skóre',
     'UpdateCVSSScore'=>'Aktualizácia skóre CVSS',
     'BaseScoreMetrics'=>'Základné skóre metriky',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Chcem skontrolovať veľmi vysoké riziko každej',
     'AbleToReviewVeryHighRisks'=>'Možnosť oboznámiť sa s veľmi vysokým rizikom',
     'AbleToReviewInsignificantRisks'=>'Schopný zanedbateľné riziká',
-    'TotalVeryHighRisks'=>'Celková veľmi vysoké riziká',
-    'VeryHighRiskPercentage'=>'Veľmi vysoké percento',
     'AllTeams'=>'Všetky tímy',
     'FileUploadSettings'=>'Nahrať súbor nastavenia',
     'AllowedFileTypes'=>'Povolené typy súborov',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Použitie čiarok na oddeľovanie viacerých e-maily.',
     'RiskAssessmentQuestionnaire' => 'Dotazník na posudzovanie rizík',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n Dobrý deň, \\n
-            <p> {$username} požiadal vás o dokončenie nasledujúceho dotazníka hodnotenia rizík:</p>n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>tento  je Automatická správa a odpovede budú ignorované alebo zamietnuté.</p>\\n
+        <html><body>
+            dobrý deň
+            <p> {$username} požiadal vás, aby ste dokončili nasledujúci dotazník na hodnotenie rizík:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Toto je Automatická správa a odpovede budú ignorované alebo zamietnuté.</p>
         </body></html>',
     'FilterByText' => 'Filtrovať podľa textu',
     'SelectMitigatingControls' => 'Vyberte zmierňovanie narásť',
@@ -779,7 +781,11 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Vaše odpovede boli úspešne uložené.',
     'QuestionnaireCompletedSuccess'=>'Ste úspešne dokončila tento dotazník.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body>\\n Hello, \\n <p> {$conact_name} vyplnený dotazník, <b>{$questionnaire_name}</b></p>\\n <p>Toto je Automatická správa a odpovede budú ignorované alebo zamietnutý.</p>\\n </body></html>',
+        <html><body>
+            dobrý deň
+            <p> {$conact_name} vyplnený dotazník, <b>{$questionnaire_name}</b></p>
+            <p>Toto je Automatická správa a odpovede budú ignorované alebo zamietnuté.</p>
+        </body></html>',
     'QuestionnaireResults'=>'Výsledky dotazníka',
     'DateSent'=>'Dátum poslal',
     'Contact'=>'Kontakt',
@@ -791,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Nový rámec bol úspešne pridaný.',
     'FrameworkUpdated'=>'Rámec bol úspešne aktualizovaný.',
     'FrameworkNameExist'=>'Rámec názov už existuje.',
+    'FrameworkNameCantBeEmpty'=>'Názov rámca nemôže byť prázdny.',
+    'FrameworkCantBeItsOwnParent'=>'Rámec nemôže byť jeho vlastný rodič.',
+    'FrameworkParentUpdated'=>'Rodič rámca úspešne aktualizovaný.',
     'AttachmentFiles'=>'Súborov príloh',
     'QuestionnaireFiles'=>'Dotazník súbory',
     'ContactEmailAlreadyInUse'=>'Kontaktný e-mail je už v prevádzke.',
@@ -1141,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Majetok bol úspešne aktualizovaný.',
     'ThereWasAProblemUpdatingTheAsset' => 'Vyskytol sa problém s aktualizáciou majetku.',
     'ImportAssetAddSucceeded' => 'Pridané{$verified_or_unverified}"majetok s názvom"{$asset_name}"s IP"{$asset_ip}"a hodnota"{$asset_value}".',
-    'ImportAssetAddFailed' => 'Nepodarilo sa pridať "{$verified_or_unverified"majetok s názvom"{$asset_name}"s IP"{$asset_ip}"a hodnota"{$asset_value}".',
+    'ImportAssetAddFailed' => 'Nepodarilo sa pridať "{$verified_or_unverified}"aktívum s názvom"{$asset_name}"s IP"{$asset_ip}"a hodnota"{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Na majetku s názvom sa nevyžaduje žiadna operácia.{$asset_name}", ako je to už v databáze.',
     'ImportAssetUpdateSucceeded' => 'Aktualizované{$verified_or_unverified}"majetok s názvom"{$asset_name}"s IP"{$asset_ip}"a hodnota"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Nepodarilo sa aktualizovať "{$verified_or_unverified}"majetok s názvom"{$asset_name}"s IP"{$asset_ip}"a hodnota"{$asset_value}".',
@@ -1393,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Test aktualizácie',
     'ControlEditHeader' => 'Ovládací prvok aktualizácie',
     'FrameworkEditHeader' => 'Aktualizácia rámca',
+    'UserTeamUpdateAuditLog' => 'Používateľa{$user}"aktualizované tímy užívateľov"{$username}z{$teams_from}na{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Používateľa{$user}"aktualizované tímy {$type} ID{$id}z{$teams_from}na{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Odstránený{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Pridané{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Používateľa{$user}"aktualizované položky (typ:"{$type}") tímu"{$team}z{$items_from}na{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Odstránený{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Pridané{$items_added}"',
     'TeamType_test' => 'Test',
     'TeamType_audit' => 'Audit',
     'TestCreatedAuditLogMessage' => 'Test{$test_name}"(ID: {$test_id}) bol vytvorený používateľom "{$user}".',
@@ -1501,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Výsledok dotazníka bol úspešne schválený.',
     'QuestionnaireResultRejectedSuccessfully' => 'Výsledok dotazníka bol úspešne zamietnutý. Do kontaktu sa odošle e-mailová notifikácia.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            dobrý deň\\n
-            <p> {$username} požiadal vás, aby ste prehodnotili nasledujúci dotazník na hodnotenie rizík:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Komentáre: {$reject_comment}</p>\\n
-            <p>Toto je Automatická správa a odpovede budú ignorované alebo zamietnuté.</p>\\n
+        <html><body>
+            dobrý deň
+            <p> {$username} požiadal vás, aby ste prehodnotili nasledujúci dotazník na hodnotenie rizík:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Komentáre: {$reject_comment}</p>
+            <p>Toto je Automatická správa a odpovede budú ignorované alebo zamietnuté.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Dotazník${questionnaire_name}"(odoslané do kontaktu"{$contact_name}na{$date}") výsledok bol schválený užívateľom"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Dotazník${questionnaire_name}"výsledok bol zamietnutý a poslaný späť do kontaktu"${contact_name}"pre opätovné hodnotenie používateľa"${user_name}"s komentárom"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Dotazník{$questionnaire_name}"(odoslané do kontaktu"{$contact_name}na{$date}") výsledok bol schválený užívateľom"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Dotazník{$questionnaire_name}"výsledok bol zamietnutý a poslaný späť do kontaktu"{$contact_name}"pre opätovné hodnotenie používateľa"{$user_name}"s komentárom"{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Pre-naplniť odpovede z posledného hodnotenia?',
-    'QuestionnaireResultApprovedAuditLog' => 'Dotazník${questionnaire_name}"(odoslané do kontaktu"{$contact_name}na{$date}") výsledok bol schválený užívateľom"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Dotazník${questionnaire_name}"výsledok bol zamietnutý a poslaný späť do kontaktu"${contact_name}"pre opätovné hodnotenie používateľa"${user_name}"s komentárom"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Dotazník{$questionnaire_name}"(odoslané do kontaktu"{$contact_name}na{$date}") výsledok bol schválený užívateľom"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Dotazník{$questionnaire_name}"výsledok bol zamietnutý a poslaný späť do kontaktu"{$contact_name}"pre opätovné hodnotenie používateľa"{$user_name}"s komentárom"{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Používateľa{$user_name}"pridaný komentár k dotazníku"{$questionnaire_name}"(odoslané do kontaktu"{$contact_name}na{$date}") výsledok.',
     'QuestionnaireSentAuditLog' => 'Dotazník{$questionnaire_name}"bol poslaný do kontaktu"{$contact_name}"podľa užívateľa"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Dotazník{$questionnaire_name}"dokončenie viedlo k vytvoreniu čakajúce riziko"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Až do rizika "{$subject}"dotazníka"${questionnaire_name}"(odoslané do kontaktu"{$contact_name}na{$date}") bol pridaný ako riziko (ID: {$risk_id}) podľa používateľa "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Až do rizika "{$subject}"dotazníka"${questionnaire_name}"(odoslané do kontaktu"{$contact_name}na{$date}") bol zmazaný užívateľom"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Neukončené riziká dotazníka "${questionnaire_name}"(odoslané do kontaktu"{$contact_name}na{$date}") boli vymazané užívateľom"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Dotazník{$questionnaire_name}"bol dokončený kontaktom"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Dotazník{$questionnaire_name}"bol uložený ako koncept kontaktom"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Až do rizika "{$subject}"dotazníka"{$questionnaire_name}"(odoslané do kontaktu"{$contact_name}na{$date}") bol pridaný ako riziko (ID: {$risk_id}) podľa používateľa "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Až do rizika "{$subject}"dotazníka"{$questionnaire_name}"(odoslané do kontaktu"{$contact_name}na{$date}") bol zmazaný užívateľom"{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Neukončené riziká dotazníka "{$questionnaire_name}"(odoslané do kontaktu"{$contact_name}na{$date}") boli vymazané užívateľom"{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Dotazník{$questionnaire_name}"bol dokončený kontaktom"{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Dotazník{$questionnaire_name}"bol uložený ako koncept kontaktom"{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Výsledok dotazníka audit trail Report',
     'SubTemplate' => 'Sub šablóna',
     'MitigationAccepted' => 'Prijaté zmiernenie',
@@ -1642,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Zobrazenie aktívnych auditov',
     'ViewPastAudits'=>'Zobrazenie minulých auditov',
     'Uninstall' => 'Odinštalovať',
+    'SimpleriskUsers' => 'Simplerisk užívatelia',
+    'QuestionnaireCompletedAuditLogByUser' => 'Dotazník{$questionnaire_name}"bol dokončený používateľ"{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Dotazník{$questionnaire_name}"bol uložený ako koncept podľa používateľa"{$contact_name}".',
+    'Internal' => 'Vnútorného',
+    'QuestionType' => 'Typ otázky',
+    'MultipleChoice' => 'Viacnásobný výber',
+    'FillInTheBlank' => 'Vyplňte prázdny',
+    'Proxy' => 'Proxy',
+    'ProxyWebRequests' => 'Proxy web požiadavky',
+    'VerifySSLCertificate' => 'Overenie certifikátu SSL',
+    'ProxyHostname' => 'Proxy hostname/IP',
+    'ProxyPort' => 'Proxy port',
+    'AuthenticatedProxy' => 'Overený server proxy',
+    'ProxyUsername' => 'Meno používateľa proxy',
+    'ProxyPassword' => 'Heslo servera proxy',
+    'SimpleRiskExtras' => 'SimpleRisk extras',
+    'ColumnSelections' => 'Výber stĺpcov',
+    'GroupAndFilteringSelections' => 'Zoskupenie a filtrovanie výberov',
+    'Hyperlink' => 'Hypertextové prepojenie',
+    'URL' => 'Url',
+    'AssetTeams'=>'Tím (y) aktív',
+    'AssetSiteLocation'=>'Lokalita/umiestnenie majetku',
+    'ActivatingSCFMessage' => 'Inštalácia ComplianceForge SCF rámca. Dokončenie môže trvať niekoľko minút.',
+    'DeactivatingSCFMessage' => 'Odinštalovanie rámca ComplianceForge SCF.',
+    'UpdatingSCFMessage' => 'Aktualizácia rámca ComplianceForge SCF. Dokončenie môže trvať niekoľko minút.',
+    'Processing' => 'Spracovanie...',
+    'AlphabeticalOrder'=>'Abecednom poradí',
     '' => ''
 );
 

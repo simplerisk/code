@@ -90,9 +90,11 @@ if($result = process_assessment_questionnaires()){
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/bootstrap-multiselect.js"></script>
+    <script src="../js/jquery.blockUI.min.js"></script>
     <script src="../js/jquery.dataTables.js"></script>
     <script src="../js/common.js"></script>
     <script src="../js/pages/assessment.js"></script>
+    <script src="../js/selectize.min.js"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -104,6 +106,9 @@ if($result = process_assessment_questionnaires()){
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+
+    <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
+
     <?php
         setup_alert_requirements("..");
     ?>
@@ -122,7 +127,6 @@ if($result = process_assessment_questionnaires()){
         // Get any alerts
         get_alert();
     ?>
-    
     <div id="load" style="display:none;"><?php echo $escaper->escapeHtml($lang['SendingPleaseWait']); ?></div>
     
     <div class="container-fluid">
@@ -146,6 +150,8 @@ if($result = process_assessment_questionnaires()){
             </div>
         </div>
     </div>
+    <input type="hidden" id="_lang_SimpleriskUsers" value="<?php echo $escaper->escapeHtml($lang['SimpleriskUsers']) ?>">
+    <input type="hidden" id="_lang_AssessmentContacts" value="<?php echo $escaper->escapeHtml($lang['AssessmentContacts']) ?>">
     <?php display_set_default_date_format_script(); ?>
 </body>
 

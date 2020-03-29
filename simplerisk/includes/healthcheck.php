@@ -6,6 +6,8 @@
 
 // Include required configuration files
 require_once(language_file());
+require_once(realpath(__DIR__ . '/functions.php'));
+require_once(realpath(__DIR__ . '/extras.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
@@ -31,6 +33,9 @@ function simplerisk_health_check()
 
 	// Check that the application and database versions are the same
 	check_same_app_and_db($current_app_version, $current_db_version);
+
+	// Check the Extra versions match the SimpleRisk version
+	check_extra_versions($current_app_version);
 
 	echo "<br /><b><u>Connectivity</u></b><br />";
 
@@ -64,6 +69,33 @@ function simplerisk_health_check()
 
 	// Check if MySQL ONLY_FULL_GROUP_BY mode is enabled
 	check_only_full_group_by();
+
+        // Check if SELECT permission is enabled
+        check_mysql_permission("SELECT");
+
+        // Check if INSERT permission is enabled
+        check_mysql_permission("INSERT");
+
+        // Check if UPDATE permission is enabled
+        check_mysql_permission("UPDATE");
+
+        // Check if DELETE permission is enabled
+        check_mysql_permission("DELETE");
+
+        // Check if CREATE permission is enabled
+        check_mysql_permission("CREATE");
+
+        // Check if DROP permission is enabled
+        check_mysql_permission("DROP");
+
+        // Check if REFERENCES permission is enabled
+        check_mysql_permission("REFERENCES");
+
+        // Check if INDEX permission is enabled
+        check_mysql_permission("INDEX");
+
+        // Check if ALTER permission is enabled
+        check_mysql_permission("ALTER");
 
 	echo "<br /><b><u>File and Directory Permissions</u></b><br />";
 
@@ -177,8 +209,13 @@ function check_simplerisk_directory_permissions()
  ************************************/
 function check_web_connectivity()
 {
+	// Configure the proxy server if one exists
+	$method = "GET";
+	$header = "content-type: Content-Type: application/x-www-form-urlencoded";
+	set_proxy_stream_context($method, $header);
+
 	// URLs to check
-	$urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://vfeed.simplerisk.com");
+	$urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io");
 
 	// Check the URLs 
 	foreach ($urls as $url)
@@ -192,6 +229,45 @@ function check_web_connectivity()
 			health_check_bad("SimpleRisk was unable to connect to " . $url . ".");
 		}
 	}
+}
+
+/************************************
+ * FUNCTION: CHECK MYSQL PERMISSION *
+ ************************************/
+function check_mysql_permission($permission)
+{       
+        global $escaper;
+        
+        // Open a database connection
+        $db = db_open();
+        
+        // Query for the permission
+        //$stmt = $db->prepare("SELECT " . $permission . " FROM mysql.db WHERE user='" . DB_USERNAME . "';");
+        $stmt = $db->prepare("SHOW GRANTS FOR CURRENT_USER;");
+        $stmt->execute();
+        $array = $stmt->fetchAll();
+        
+        // Set permission found to false
+        $permission_found = false;
+        
+        foreach ($array as $row)
+        {       
+                // If the row contains the permission
+                if (preg_match("/" . $permission . "/", $row[0]))
+                {       
+                        // The health check passed
+                        health_check_good("The '" . $escaper->escapeHtml($permission) . "' permssion has been set for the '" . $escaper->escapeHtml(DB_USERNAME) . "' user.");
+                        
+                        // Set the permission found to true
+                        $permission_found = true;
+                }
+        }
+        
+        // If we did not find the permission
+        if ($permission_found == false)
+        {       
+                health_check_bad("The '" . $escaper->escapeHtml($permission) . "' permssion is not set for the '" . $escaper->escapeHtml(DB_USERNAME) . "' user.");
+        }
 }
 
 /**********************************
@@ -396,6 +472,73 @@ function check_php_version()
 	else
 	{
 		health_check_bad("SimpleRisk requires PHP 7 to run properly.");
+	}
+}
+
+
+
+/*********************************
+ * FUNCTION: CHECK EXTRA VERSION *
+ *********************************/
+function check_extra_versions($current_app_version)
+{
+	global $escaper;
+
+        // If the instance is registered
+        if (get_setting('registration_registered') != 0)
+        {
+		// If the upgrade extra exists
+		if (file_exists(realpath(__DIR__ . '/../extras/upgrade/index.php')))
+		{
+			// Load the upgrade extra
+			require_once(realpath(__DIR__ . '/../extras/upgrade/index.php'));
+
+	                echo "<br /><b><u>SimpleRisk Extras</u></b><br />";
+
+			// Get the list of available SimpleRisk Extras
+			$extras = available_extras();
+
+			// For each available Extra
+			foreach ($extras as $extra)
+			{
+				// If the extra is purchased
+				if (core_is_purchased($extra['short_name']))
+				{
+					// If the extra is installed
+					if (core_is_installed($extra['short_name']))
+					{
+						health_check_good("The SimpleRisk " . $escaper->escapeHtml($extra['long_name']) . " has been purchased and installed.");
+
+						// If this extra is compatible with this version of SimpleRisk
+						if (extra_simplerisk_version_compatible($extra['short_name']))
+						{
+							health_check_good("The currently installed " . $escaper->escapeHtml($extra['long_name']) . " is compatible with this version of SimpleRisk.");
+						}
+						// This extra is not compatible
+						else
+						{
+							health_check_bad("The currently installed " . $escaper->escapeHtml($extra['long_name']) . " is not compatible with this version of SimpleRisk.");
+						}
+
+						// If we have the current version of the Extra
+						if (core_extra_current_version($extra['short_name']) == latest_version($extra['short_name']))
+						{
+							health_check_good("You are running the most recent version of the " . $escaper->escapeHtml($extra['long_name']) . ".");
+						}
+						// We do not have the current version of the Extra
+						else
+						{
+							health_check_bad("A newer version of the " . $escaper->escapeHtml($extra['long_name']) . " is available.");
+						}
+					}
+					// The extra is not installed
+					else
+					{
+						health_check_bad("The SimpleRisk " . $escaper->escapeHtml($extra['long_name']) . " has been purchased but is not installed.");	
+					}
+				}
+			}
+		}
 	}
 }
 

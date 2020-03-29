@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Update Project Statussen',
     'HighRiskReport'=>'Hoge risico\'s',
     'TotalOpenRisks'=>'Totaal',
-    'TotalHighRisks'=>'Totaal hoge risico\'s',
-    'HighRiskPercentage'=>'Hoog Risico Percentage',
+    'NumberOfOpenRisks'=>'Totale open risico\'s: {$number}',
+    'RiskNumberOfRiskLevel'=>'Totaal aantal {$display_name} Risico \'s: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Risicopercentage: {$percentage}%',
+    'RiskScoreUsing'=>'Risicoscore met behulp van:',
+    'HighRiskReport_ScoreWarning' => 'Houd er rekening mee dat, ook al wordt het rapport weergegeven met behulp van de "{$score_used}" scores, vanwege de "{$next_review_date_uses_name}" instelling we berekenen de "{$management_review_header}" kolomwaarden met behulp van de "{$next_review_date_uses_value}" scores.',
     'UpdateClassicScore'=>'Klassieke Score bijwerken',
     'UpdateCVSSScore'=>'CVSS Score bijwerken',
     'BaseScoreMetrics'=>'Base Score Statistieken',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Ik wil om te beoordelen voor het ZEER HOGE risico elke',
     'AbleToReviewVeryHighRisks'=>'In staat om te Beoordelen voor het Zeer Hoge Risico \' s',
     'AbleToReviewInsignificantRisks'=>'In staat om te Beoordelen voor het Verwaarlozen Risico \' s',
-    'TotalVeryHighRisks'=>'Totaal Zeer Hoge Risico \' S',
-    'VeryHighRiskPercentage'=>'Zeer Hoog Risico Op Een Percentage',
     'AllTeams'=>'Alle Teams',
     'FileUploadSettings'=>'File Upload-Instellingen',
     'AllowedFileTypes'=>'Toegestane Bestandstypen',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Gebruik komma\'s om meerdere e-mails te scheiden.',
     'RiskAssessmentQuestionnaire' => 'Risicobeoordeling vragenlijst',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n Hallo, \\n
-            <p> {$username} heeft u gevraagd om de volgende risicobeoordeling vragenlijst in te vullen:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Dit is een automatisch bericht en de antwoorden worden genegeerd of afgewezen.</p>\\n
+        <html><body>
+            Hallo
+            <p> {$username} heeft u gevraagd de volgende risicobeoordelingsvragenlijst in te vullen:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Dit is een geautomatiseerd bericht en reacties worden genegeerd of afgewezen.</p>
         </body></html>',
     'FilterByText' => 'Filteren op tekst',
     'SelectMitigatingControls' => 'Beperkende controle (s) selecteren',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Uw antwoorden zijn met succes opgeslagen.',
     'QuestionnaireCompletedSuccess'=>'U hebt deze vragenlijst met succes voltooid.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body> \\ n Hello, \\n <p> {$conact_name} een vragenlijst ingevuld, <b>{$questionnaire_name}</b></p> \\ n <p>This is een geautomatiseerd bericht en antwoorden zullen worden genegeerd of afgewezen. </p> \\ n
+        <html><body>
+            Hallo
+            <p> {$conact_name} een vragenlijst ingevuld, <b>{$questionnaire_name}</b></p>
+            <p>Dit is een geautomatiseerd bericht en reacties worden genegeerd of afgewezen.</p>
         </body></html>',
     'QuestionnaireResults'=>'Resultaten vragenlijst',
     'DateSent'=>'Datum verstuurd',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Er is een nieuw kader toegevoegd.',
     'FrameworkUpdated'=>'Een Framework is bijgewerkt.',
     'FrameworkNameExist'=>'De Framework naam bestaat al.',
+    'FrameworkNameCantBeEmpty'=>'De kadernaam kan niet leeg zijn.',
+    'FrameworkCantBeItsOwnParent'=>'Het kader kan niet zijn eigen ouder zijn.',
+    'FrameworkParentUpdated'=>'De bovenliggende van het framework is bijgewerkt.',
     'AttachmentFiles'=>'Bijlagebestanden',
     'QuestionnaireFiles'=>'Vragenlijst bestanden',
     'ContactEmailAlreadyInUse'=>'Het contact e-mail is al in gebruik.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Activum is bijgewerkt.',
     'ThereWasAProblemUpdatingTheAsset' => 'Er is een probleem opgetreden bij het bijwerken van het activum.',
     'ImportAssetAddSucceeded' => 'Toegevoegd{$verified_or_unverified}"Asset named"{$asset_name}"met IP"{$asset_ip}"en waarde"{$asset_value}".',
-    'ImportAssetAddFailed' => 'Niet toe te voegen "{$verified_or_unverified"Asset named"{$asset_name}"met IP"{$asset_ip}"en waarde"{$asset_value}".',
+    'ImportAssetAddFailed' => 'Kan niet worden toegevoegd "{$verified_or_unverified}" asset named "{$asset_name}" met IP "{$asset_ip}" en waarde "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Geen bewerking vereist voor Asset named "{$asset_name}"zoals het al in de database.',
     'ImportAssetUpdateSucceeded' => 'Bijgewerkt{$verified_or_unverified}"Asset named"{$asset_name}"met IP"{$asset_ip}"en waarde"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Mislukt bij te werken "{$verified_or_unverified}"Asset named"{$asset_name}"met IP"{$asset_ip}"en waarde"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Update test',
     'ControlEditHeader' => 'Besturingselement bijwerken',
     'FrameworkEditHeader' => 'Update Framework',
+    'UserTeamUpdateAuditLog' => 'Gebruiker "{$user}" bijgewerkte teams van gebruikers "{$username}" van " van "{$teams_from}" aan "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Gebruiker{$user}"bijgewerkte teams van {$type} ID{$id}van{$teams_from}te{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Verwijderd{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Toegevoegd{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Gebruiker "{$user}" bijgewerkte items (type:"{$type}") van team "{$team}" van " van "{$items_from}" aan "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Verwijderd "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Toegevoegd "{$items_added}"',
     'TeamType_test' => 'Test',
     'TeamType_audit' => 'Audit',
     'TestCreatedAuditLogMessage' => 'Test{$test_name}"(ID: {$test_id}) werd gemaakt door gebruiker "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Het resultaat van de vragenlijst is goedgekeurd.',
     'QuestionnaireResultRejectedSuccessfully' => 'Het resultaat van de vragenlijst is afgewezen. E-mail bericht wordt verzonden naar de contactpersoon.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Hallo\\n
-            <p> {$username} heeft u gevraagd om de volgende vragenlijst voor risicobeoordeling opnieuw te evalueren:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Opmerkingen: {$reject_comment}</p>\\n
-            <p>Dit is een geautomatiseerd bericht en antwoorden zullen worden genegeerd of geweigerd.</p>\\n
+        <html><body>
+            Hallo
+            <p> {$username} heeft u gevraagd de volgende risicobeoordelingsvragenlijst opnieuw te evalueren:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Opmerkingen: {$reject_comment}</p>
+            <p>Dit is een geautomatiseerd bericht en reacties worden genegeerd of afgewezen.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Vragenlijst${questionnaire_name}"(verzonden naar contactpersoon"{$contact_name}op{$date}") het resultaat is goedgekeurd door de gebruiker"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Vragenlijst${questionnaire_name}"resultaat werd afgewezen en teruggestuurd naar contact"${contact_name}"voor herevaluatie door gebruiker"${user_name}"met commentaar"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Vragenlijst "{$questionnaire_name}"(verzonden naar contact"{$contact_name}" op "{$date}") resultaat werd goedgekeurd door de gebruiker "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Vragenlijst "{$questionnaire_name}" resultaat werd afgewezen en teruggestuurd naar contact "{$contact_name}" voor herevaluatie door gebruiker "{$user_name}" met commentaar "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Vooraf invullen met antwoorden van de laatste beoordeling?',
-    'QuestionnaireResultApprovedAuditLog' => 'Vragenlijst${questionnaire_name}"(verzonden naar contactpersoon"{$contact_name}op{$date}") het resultaat is goedgekeurd door de gebruiker"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Vragenlijst${questionnaire_name}"resultaat werd afgewezen en teruggestuurd naar contact"${contact_name}"voor herevaluatie door gebruiker"${user_name}"met commentaar"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Vragenlijst "{$questionnaire_name}"(verzonden naar contact"{$contact_name}" op "{$date}") resultaat werd goedgekeurd door de gebruiker "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Vragenlijst "{$questionnaire_name}" resultaat werd afgewezen en teruggestuurd naar contact "{$contact_name}" voor herevaluatie door gebruiker "{$user_name}" met commentaar "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Gebruiker{$user_name}"een opmerking voor vragenlijst toegevoegd"{$questionnaire_name}"(verzonden naar contactpersoon"{$contact_name}op{$date}") resultaat.',
     'QuestionnaireSentAuditLog' => 'Vragenlijst{$questionnaire_name}"is verzonden naar contact"{$contact_name}"door gebruiker"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Vragenlijst{$questionnaire_name}"de voltooiing resulteerde in het creëren van wachtend risico"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Risico in behandeling "{$subject}"vragenlijst"${questionnaire_name}"(verzonden naar contactpersoon"{$contact_name}op{$date}") toegevoegd als risico (ID: {$risk_id}) door gebruiker "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Risico in behandeling "{$subject}"vragenlijst"${questionnaire_name}"(verzonden naar contactpersoon"{$contact_name}op{$date}") is verwijderd door de gebruiker"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Lopende Risico\'s van vragenlijst "${questionnaire_name}"(verzonden naar contactpersoon"{$contact_name}op{$date}") zijn verwijderd door de gebruiker"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Vragenlijst{$questionnaire_name}"werd voltooid door contact"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Vragenlijst{$questionnaire_name}"is opgeslagen als concept per contactpersoon"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'In behandeling risico "{$subject}" van de vragenlijst "{$questionnaire_name}"(verzonden naar contact"{$contact_name}" op "{$date}") is toegevoegd als Risico(ID: {$risk_id}) per gebruiker "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'In behandeling risico "{$subject}" van de vragenlijst "{$questionnaire_name}"(verzonden naar contact"{$contact_name}" op "{$date}") is verwijderd door de gebruiker "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'In behandeling van de risico\'s van de vragenlijst "{$questionnaire_name}"(verzonden naar contact"{$contact_name}" op "{$date}") zijn verwijderd door de gebruiker "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Vragenlijst "{$questionnaire_name}" werd voltooid door contact "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Vragenlijst "{$questionnaire_name}" werd opgeslagen als concept door contact "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Rapport resultaat audittrail van vragenlijst',
     'SubTemplate' => 'Sub-sjabloon',
     'MitigationAccepted' => 'Beperking geaccepteerd',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Actieve audits weergeven',
     'ViewPastAudits'=>'Eerdere audits weergeven',
     'Uninstall' => 'Verwijderen',
+    'SimpleriskUsers' => 'Gebruikers met eenvoudige risico\'s',
+    'QuestionnaireCompletedAuditLogByUser' => 'Vragenlijst "{$questionnaire_name}" werd voltooid door de gebruiker "{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Vragenlijst "{$questionnaire_name}" is opgeslagen als concept door de gebruiker "{$contact_name}".',
+    'Internal' => 'Interne',
+    'QuestionType' => 'Vraagtype',
+    'MultipleChoice' => 'Meerkeuze',
+    'FillInTheBlank' => 'Vul de lege',
+    'Proxy' => 'Proxy',
+    'ProxyWebRequests' => 'Proxywebaanvragen',
+    'VerifySSLCertificate' => 'SSL-certificaat verifiëren',
+    'ProxyHostname' => 'Proxyhostnaam / IP',
+    'ProxyPort' => 'Proxypoort',
+    'AuthenticatedProxy' => 'Geverifieerde proxy',
+    'ProxyUsername' => 'Proxygebruikersnaam',
+    'ProxyPassword' => 'Proxywachtwoord',
+    'SimpleRiskExtras' => 'SimpleRisk Extra\'s',
+    'ColumnSelections' => 'Kolomselecties',
+    'GroupAndFilteringSelections' => 'Selecties groeperen en filteren',
+    'Hyperlink' => 'Hyperlink',
+    'URL' => 'Url',
+    'AssetTeams'=>'Asset Team(s)',
+    'AssetSiteLocation'=>'Assetsite/locatie',
+    'ActivatingSCFMessage' => 'Het installeren van het ComplianceForge SCF framework. Dit kan enkele minuten duren.',
+    'DeactivatingSCFMessage' => 'Het installeren van het ComplianceForge SCF-framework verwijderen.',
+    'UpdatingSCFMessage' => 'Het ComplianceForge SCF-framework bijwerken. Dit kan enkele minuten duren.',
+    'Processing' => 'Verwerking...',
+    'AlphabeticalOrder'=>'Alfabetische volgorde',
     '' => ''
 );
 

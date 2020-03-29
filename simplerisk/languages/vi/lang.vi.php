@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Cập Nhật Dự Án Statuses',
     'HighRiskReport'=>'Cao Mạo Hiểm Báo Cáo',
     'TotalOpenRisks'=>'Tổng Mở Hiểm',
-    'TotalHighRisks'=>'Tổng Cao Sự Nguy Hiểm',
-    'HighRiskPercentage'=>'Cao Mạo Hiểm Phần Trăm',
+    'NumberOfOpenRisks'=>'Tổng số rủi ro mở: {$number}',
+    'RiskNumberOfRiskLevel'=>'Tổng số {$display_name} Rủi ro: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Tỷ lệ rủi ro: {$percentage}%',
+    'RiskScoreUsing'=>'Điểm rủi ro sử dụng:',
+    'HighRiskReport_ScoreWarning' => 'Xin lưu ý rằng mặc dù báo cáo được hiển thị bằng cách sử dụng "{$score_used}"điểm số, vì"{$next_review_date_uses_name}"thiết lập chúng tôi đang tính toán"{$management_review_header}"giá trị của cột bằng cách sử dụng"{$next_review_date_uses_value}điểm.',
     'UpdateClassicScore'=>'Cập Nhật điểm cổ điển',
     'UpdateCVSSScore'=>'Cập nhật CVSS Điểm',
     'BaseScoreMetrics'=>'Căn Cứ Điểm Mình',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Tôi muốn xem xét RẤT CAO liều mỗi',
     'AbleToReviewVeryHighRisks'=>'Có thể Xem qua Rất nhiều nguy Hiểm',
     'AbleToReviewInsignificantRisks'=>'Có thể kiểm tra vô nghĩa Hiểm',
-    'TotalVeryHighRisks'=>'Tổng Rất Nguy Hiểm',
-    'VeryHighRiskPercentage'=>'Rất Nguy Hiểm Phần Trăm',
     'AllTeams'=>'Tất Cả Các Đội',
     'FileUploadSettings'=>'Tập Tin Thiết Lập Quá Trình Tải Lên',
     'AllowedFileTypes'=>'Được Phép Kiểu Tập Tin',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Sử dụng dấu phẩy để phân tách nhiều email.',
     'RiskAssessmentQuestionnaire' => 'Bảng câu hỏi đánh giá rủi ro',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n Hello, \\n
-            <p> {$username} đã yêu cầu bạn để hoàn thành bảng câu hỏi đánh giá rủi ro sau:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>đây  là một thông điệp tự động và phản ứng sẽ được bỏ qua hoặc bị từ chối.</p>\\n
+        <html><body>
+            Xin chào
+            <p> {$username} đã yêu cầu quý vị hoàn tất bảng câu hỏi đánh giá rủi ro sau đây:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Đây là thông báo và phản hồi tự động sẽ bị bỏ qua hoặc bị từ chối.</p>
         </body></html>',
     'FilterByText' => 'Lọc theo văn bản',
     'SelectMitigatingControls' => 'Chọn giảm nhẹ Control(s)',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Câu trả lời của bạn đã được lưu thành công.',
     'QuestionnaireCompletedSuccess'=>'Bạn hoàn tất bảng câu hỏi này thành công.',
     'EmailTemplateCompleteQuestionnaire' => '
-        Xin chào <html><body>\\n, \\n <p> {$conact_name} hoàn thành một bảng câu hỏi, <b>{$questionnaire_name}</b></p>\\n <p>This là một thông điệp tự động và phản ứng sẽ bị bỏ qua hoặc rejected.</p>\\n
+        <html><body>
+            Xin chào
+            <p> {$conact_name} hoàn thành một bảng câu hỏi, <b>{$questionnaire_name}</b></p>
+            <p>Đây là thông báo và phản hồi tự động sẽ bị bỏ qua hoặc bị từ chối.</p>
         </body></html>',
     'QuestionnaireResults'=>'Bảng câu hỏi kết quả',
     'DateSent'=>'Ngày gửi',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Một khuôn khổ mới được thêm vào thành công.',
     'FrameworkUpdated'=>'Một khuôn khổ đã được cập nhật thành công.',
     'FrameworkNameExist'=>'Khung tên đã tồn tại.',
+    'FrameworkNameCantBeEmpty'=>'Tên khuôn khổ không thể trống.',
+    'FrameworkCantBeItsOwnParent'=>'Khung không thể là cha mẹ của chính mình.',
+    'FrameworkParentUpdated'=>'Cha mẹ của khuôn khổ Cập Nhật thành công.',
     'AttachmentFiles'=>'Tệp đính kèm',
     'QuestionnaireFiles'=>'Tập tin bảng câu hỏi',
     'ContactEmailAlreadyInUse'=>'Liên hệ email đang được sử dụng.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Tài sản đã được cập nhật thành công.',
     'ThereWasAProblemUpdatingTheAsset' => 'Có một vấn đề cập nhật các tài sản.',
     'ImportAssetAddSucceeded' => 'Thêm vào{$verified_or_unverified}"tài sản có tên"{$asset_name}"với IP"{$asset_ip}"và giá trị"{$asset_value}".',
-    'ImportAssetAddFailed' => 'Thất bại khi thêm "{$verified_or_unverified"tài sản có tên"{$asset_name}"với IP"{$asset_ip}"và giá trị"{$asset_value}".',
+    'ImportAssetAddFailed' => 'Không thể thêm "{$verified_or_unverified}"tài sản có tên"{$asset_name}"với IP"{$asset_ip}"và giá trị"{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Không có hoạt động yêu cầu trên tài sản có tên "{$asset_name}"như nó đã có trong cơ sở dữ liệu.',
     'ImportAssetUpdateSucceeded' => 'Cập Nhật{$verified_or_unverified}"tài sản có tên"{$asset_name}"với IP"{$asset_ip}"và giá trị"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Thất bại khi Cập Nhật "{$verified_or_unverified}"tài sản có tên"{$asset_name}"với IP"{$asset_ip}"và giá trị"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Cập Nhật thử nghiệm',
     'ControlEditHeader' => 'Kiểm soát Cập Nhật',
     'FrameworkEditHeader' => 'Cập Nhật khung',
+    'UserTeamUpdateAuditLog' => 'Người dùng{$user}"Cập nhật các nhóm người dùng"{$username}từ{$teams_from}để{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Người dùng{$user}"Cập nhật các đội {$type} ID{$id}từ{$teams_from}để{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Loại bỏ{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Thêm{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Người dùng{$user}"Cập Nhật mục (loại:"{$type}") của đội"{$team}từ{$items_from}để{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Loại bỏ{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Thêm{$items_added}"',
     'TeamType_test' => 'Thử nghiệm',
     'TeamType_audit' => 'Kiểm tra',
     'TestCreatedAuditLogMessage' => 'Thử nghiệm{$test_name}"(ID: {$test_id}) được tạo ra bởi người dùng "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Kết quả câu hỏi đã được phê duyệt thành công.',
     'QuestionnaireResultRejectedSuccessfully' => 'Kết quả câu hỏi thành công bị từ chối. Email thông báo được gửi đến người liên hệ.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Xin chào\\n
-            <p> {$username} đã yêu cầu bạn đánh giá lại bảng câu hỏi đánh giá rủi ro sau đây:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Ý kiến: {$reject_comment}</p>\\n
-            <p>Đây là thông báo và phản hồi tự động sẽ bị bỏ qua hoặc bị từ chối.</p>\\n
+        <html><body>
+            Xin chào
+            <p> {$username} đã yêu cầu bạn đánh giá lại bảng câu hỏi đánh giá rủi ro sau đây:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Ý kiến: {$reject_comment}</p>
+            <p>Đây là thông báo và phản hồi tự động sẽ bị bỏ qua hoặc bị từ chối.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Bảng câu hỏi${questionnaire_name}"(gửi đến liên hệ"{$contact_name}trên{$date}") kết quả đã được chấp thuận bởi người sử dụng"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Bảng câu hỏi${questionnaire_name}"kết quả đã bị từ chối và gửi lại cho liên hệ"${contact_name}"để tái đánh giá bởi người sử dụng"${user_name}"với bình luận"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Bảng câu hỏi{$questionnaire_name}"(gửi đến liên hệ"{$contact_name}trên{$date}") kết quả đã được chấp thuận bởi người sử dụng"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Bảng câu hỏi{$questionnaire_name}"kết quả đã bị từ chối và gửi lại cho liên hệ"{$contact_name}"để tái đánh giá bởi người sử dụng"{$user_name}"với bình luận"{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Pre-cư với câu trả lời từ đánh giá cuối?',
-    'QuestionnaireResultApprovedAuditLog' => 'Bảng câu hỏi${questionnaire_name}"(gửi đến liên hệ"{$contact_name}trên{$date}") kết quả đã được chấp thuận bởi người sử dụng"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Bảng câu hỏi${questionnaire_name}"kết quả đã bị từ chối và gửi lại cho liên hệ"${contact_name}"để tái đánh giá bởi người sử dụng"${user_name}"với bình luận"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Bảng câu hỏi{$questionnaire_name}"(gửi đến liên hệ"{$contact_name}trên{$date}") kết quả đã được chấp thuận bởi người sử dụng"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Bảng câu hỏi{$questionnaire_name}"kết quả đã bị từ chối và gửi lại cho liên hệ"{$contact_name}"để tái đánh giá bởi người sử dụng"{$user_name}"với bình luận"{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Người dùng{$user_name}"thêm một bình luận cho bảng câu hỏi"{$questionnaire_name}"(gửi đến liên hệ"{$contact_name}trên{$date}") kết quả.',
     'QuestionnaireSentAuditLog' => 'Bảng câu hỏi{$questionnaire_name}"được gửi đến liên hệ"{$contact_name}"của người dùng"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Bảng câu hỏi{$questionnaire_name}"hoàn thành việc tạo ra rủi ro đang chờ xử lý"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Đang chờ rủi ro "{$subject}"của bảng câu hỏi"${questionnaire_name}"(gửi đến liên hệ"{$contact_name}trên{$date}") đã được thêm vào như là rủi ro (ID: {$risk_id}) bởi người dùng "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Đang chờ rủi ro "{$subject}"của bảng câu hỏi"${questionnaire_name}"(gửi đến liên hệ"{$contact_name}trên{$date}") đã bị xóa bởi người dùng"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Đang chờ rủi ro của bảng câu hỏi "${questionnaire_name}"(gửi đến liên hệ"{$contact_name}trên{$date}") đã bị xóa bởi người dùng"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Bảng câu hỏi{$questionnaire_name}"được hoàn thành bằng liên hệ"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Bảng câu hỏi{$questionnaire_name}"đã được lưu dưới dạng bản nháp theo liên hệ"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Đang chờ rủi ro "{$subject}"của bảng câu hỏi"{$questionnaire_name}"(gửi đến liên hệ"{$contact_name}trên{$date}") đã được thêm vào như là rủi ro (ID: {$risk_id}) bởi người dùng "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Đang chờ rủi ro "{$subject}"của bảng câu hỏi"{$questionnaire_name}"(gửi đến liên hệ"{$contact_name}trên{$date}") đã bị xóa bởi người dùng"{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Đang chờ rủi ro của bảng câu hỏi "{$questionnaire_name}"(gửi đến liên hệ"{$contact_name}trên{$date}") đã bị xóa bởi người dùng"{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Bảng câu hỏi{$questionnaire_name}"được hoàn thành bằng liên hệ"{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Bảng câu hỏi{$questionnaire_name}"đã được lưu dưới dạng bản nháp theo liên hệ"{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Kết quả câu hỏi báo cáo đường mòn kiểm toán',
     'SubTemplate' => 'Mẫu phụ',
     'MitigationAccepted' => 'Giảm thiểu chấp nhận',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Xem kiểm toán tích cực',
     'ViewPastAudits'=>'Xem các kiểm toán trong quá khứ',
     'Uninstall' => 'Gỡ bỏ',
+    'SimpleriskUsers' => 'Người dùng simplerisk',
+    'QuestionnaireCompletedAuditLogByUser' => 'Bảng câu hỏi{$questionnaire_name}"được hoàn thành bởi người sử dụng"{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Bảng câu hỏi{$questionnaire_name}"đã được lưu dưới dạng bản nháp của người dùng"{$contact_name}".',
+    'Internal' => 'Nội',
+    'QuestionType' => 'Loại câu hỏi',
+    'MultipleChoice' => 'Nhiều lựa chọn',
+    'FillInTheBlank' => 'Điền vào Blank',
+    'Proxy' => 'Proxy',
+    'ProxyWebRequests' => 'Proxy web yêu cầu',
+    'VerifySSLCertificate' => 'Xác minh chứng chỉ SSL',
+    'ProxyHostname' => 'Tên máy chủ proxy/IP',
+    'ProxyPort' => 'Cổng proxy',
+    'AuthenticatedProxy' => 'Xác thực proxy',
+    'ProxyUsername' => 'Tên người dùng proxy',
+    'ProxyPassword' => 'Mật khẩu proxy',
+    'SimpleRiskExtras' => 'SimpleRisk Extras',
+    'ColumnSelections' => 'Lựa chọn cột',
+    'GroupAndFilteringSelections' => 'Nhóm và lọc lựa chọn',
+    'Hyperlink' => 'Liên kết',
+    'URL' => 'Url',
+    'AssetTeams'=>'(Các) nhóm tài sản',
+    'AssetSiteLocation'=>'Trang web nội dung/vị trí',
+    'ActivatingSCFMessage' => 'Cài đặt khuôn khổ ComplianceForge SCF. Việc này có thể mất vài phút để hoàn thành.',
+    'DeactivatingSCFMessage' => 'Dỡ cài đặt khuôn khổ ComplianceForge SCF.',
+    'UpdatingSCFMessage' => 'Cập Nhật khuôn khổ ComplianceForge SCF. Việc này có thể mất vài phút để hoàn thành.',
+    'Processing' => 'Xử lý...',
+    'AlphabeticalOrder'=>'Thứ tự chữ cái',
     '' => ''
 );
 

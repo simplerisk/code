@@ -164,7 +164,7 @@
                             <div class="hero-unit">
                                 <?php foreach($mass_update_options as $format_group=>$formats) { ?>
                                 <form action="" method="POST">
-                                    <input type="hidden" name="format_group" value="<?php echo $format_group; ?>">
+                                    <input type="hidden" name="format_group" value="<?php echo $escaper->escapeHtml($format_group); ?>">
                                     <?php echo $escaper->escapeHtml(_lang('NextReviewMassUpdateInfo', 
                                         array('format1' => convertDateFormatFromPHP($formats[0]), 
                                         'format2' => convertDateFormatFromPHP($formats[1]))));

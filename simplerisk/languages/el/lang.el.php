@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Ενημέρωση Έργου Καταστάσεις',
     'HighRiskReport'=>'Υψηλού Κινδύνου Έκθεση',
     'TotalOpenRisks'=>'Συνολικό Άνοιγμα Κινδύνους',
-    'TotalHighRisks'=>'Συνολικά Υψηλούς Κινδύνους',
-    'HighRiskPercentage'=>'Υψηλού Κινδύνου Το Ποσοστό',
+    'NumberOfOpenRisks'=>'Σύνολο ανοικτών κινδύνων: {$number}',
+    'RiskNumberOfRiskLevel'=>'Συνολικός αριθμός {$display_name} Κινδύνους: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Ποσοστό κινδύνου: {$percentage}%',
+    'RiskScoreUsing'=>'Βαθμολογία κινδύνου Χρησιμοποιώντας:',
+    'HighRiskReport_ScoreWarning' => 'Σημειώστε ότι, παρόλο που η αναφορά εμφανίζεται χρησιμοποιώντας το{$score_used}" βαθμολογίες, λόγω της "{$next_review_date_uses_name}" ρύθμιση υπολογίζουμε το "{$management_review_header}" τιμές της στήλης χρησιμοποιώντας το "{$next_review_date_uses_value}" αποτελέσματα.',
     'UpdateClassicScore'=>'Ενημέρωση κλασική φιλοξενούμενων',
     'UpdateCVSSScore'=>'Ενημέρωση CVSS Βαθμολογία',
     'BaseScoreMetrics'=>'Βασική Βαθμολογία Μετρήσεις',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Θέλω να επανεξετάσει ΠΟΛΎ ΥΨΗΛΟΎ κινδύνου για κάθε',
     'AbleToReviewVeryHighRisks'=>'Σε θέση να Επανεξετάσει Πολύ υψηλούς Κινδύνους',
     'AbleToReviewInsignificantRisks'=>'Σε θέση να Επανεξετάσει Ασήμαντο Κινδύνους',
-    'TotalVeryHighRisks'=>'Συνολικά Πολύ Υψηλούς Κινδύνους',
-    'VeryHighRiskPercentage'=>'Πολύ Υψηλό Κίνδυνο Ποσοστό',
     'AllTeams'=>'Όλες Οι Ομάδες',
     'FileUploadSettings'=>'Ανεβάστε Το Αρχείο Ρυθμίσεων',
     'AllowedFileTypes'=>'Επιτρέπεται Τύπους Αρχείων',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Χρησιμοποιήστε κόμματα για να διαχωρίσετε πολλαπλά μηνύματα ηλεκτρονικού ταχυδρομείου.',
     'RiskAssessmentQuestionnaire' => 'Ερωτηματολόγιο αξιολόγησης κινδύνου',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\ Γεια σας, \\ n
-            <p> {$username} σας ζήτησε να συμπληρώσετε το ακόλουθο ερωτηματολόγιο αξιολόγησης κινδύνου:</p>\\ \\
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\ n
-            <p>αυτό  είναι ένα αυτοματοποιημένο μήνυμα και οι απαντήσεις θα αγνοηθούν ή θα απορριφθούν.</p>\\
+        <html><body>
+            Γεια σου
+            <p> {$username} σας ζήτησε να συμπληρώσετε το ακόλουθο ερωτηματολόγιο εκτίμησης κινδύνου:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Αυτό είναι ένα αυτοματοποιημένο μήνυμα και οι απαντήσεις θα αγνοηθούν ή θα απορριφθούν.</p>
         </body></html>',
     'FilterByText' => 'Φιλτράρετε βάσει κειμένου',
     'SelectMitigatingControls' => 'Επιλέξτε ελαφρυντικές μαρτύρων',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Οι απαντήσεις σας αποθηκεύτηκαν με επιτυχία.',
     'QuestionnaireCompletedSuccess'=>'Ολοκληρώσατε με επιτυχία αυτό το ερωτηματολόγιο.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body>\\n Γεια σας, \\n <p> {$conact_name} ολοκλήρωσε ένα ερωτηματολόγιο, <b>{$questionnaire_name}</b></p>\\n <p>This είναι ένα αυτοματοποιημένο μήνυμα και οι απαντήσεις θα πρέπει να αγνοηθεί ή να rejected.</p>\\n
+        <html><body>
+            Γεια σου
+            <p> {$conact_name} συμπλήρωσε ερωτηματολόγιο, <b>{$questionnaire_name}</b></p>
+            <p>Αυτό είναι ένα αυτοματοποιημένο μήνυμα και οι απαντήσεις θα αγνοηθούν ή θα απορριφθούν.</p>
         </body></html>',
     'QuestionnaireResults'=>'Αποτελέσματα ερωτηματολογίου',
     'DateSent'=>'Ημερομηνία αποστολής',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Προστέθηκε με επιτυχία ένα νέο πλαίσιο.',
     'FrameworkUpdated'=>'Ένα πλαίσιο ενημερώθηκε με επιτυχία.',
     'FrameworkNameExist'=>'Το πλαίσιο όνομα υπάρχει ήδη.',
+    'FrameworkNameCantBeEmpty'=>'Το όνομα πλαισίου δεν μπορεί να είναι κενό.',
+    'FrameworkCantBeItsOwnParent'=>'Το πλαίσιο δεν μπορεί να είναι ο γονιός του.',
+    'FrameworkParentUpdated'=>'Ο γονέας του πλαισίου ενημερώθηκε με επιτυχία.',
     'AttachmentFiles'=>'Συνημμένα αρχεία',
     'QuestionnaireFiles'=>'Ερωτηματολόγιο αρχεία',
     'ContactEmailAlreadyInUse'=>'Το email επικοινωνίας είναι ήδη σε χρήση.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Το πάγιο Ενημερώθηκε με επιτυχία.',
     'ThereWasAProblemUpdatingTheAsset' => 'Παρουσιάστηκε πρόβλημα κατά την ενημέρωση του περιουσιακού στοιχείου.',
     'ImportAssetAddSucceeded' => 'Πρόσθεσε{$verified_or_unverified}"το περιουσιακό στοιχείο που ονομάζεται"{$asset_name}"με IP"{$asset_ip}"και αξία"{$asset_value}".',
-    'ImportAssetAddFailed' => 'Απέτυχε η προσθήκη "{$verified_or_unverified"το περιουσιακό στοιχείο που ονομάζεται"{$asset_name}"με IP"{$asset_ip}"και αξία"{$asset_value}".',
+    'ImportAssetAddFailed' => 'Απέτυχε η προσθήκη "{$verified_or_unverified}" περιουσιακό στοιχείο με το όνομα "{$asset_name}" με IP "{$asset_ip}" και την τιμή "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Δεν απαιτείται λειτουργία στο πάγιο με όνομα "{$asset_name}"όπως είναι ήδη στη βάση δεδομένων.',
     'ImportAssetUpdateSucceeded' => 'Ενημερωμένες{$verified_or_unverified}"το περιουσιακό στοιχείο που ονομάζεται"{$asset_name}"με IP"{$asset_ip}"και αξία"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Απέτυχε η ενημέρωση "{$verified_or_unverified}"το περιουσιακό στοιχείο που ονομάζεται"{$asset_name}"με IP"{$asset_ip}"και αξία"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Δοκιμή ενημέρωσης',
     'ControlEditHeader' => 'Ενημέρωση στοιχείου ελέγχου',
     'FrameworkEditHeader' => 'Ενημερωμένη έκδοση πλαισίου',
+    'UserTeamUpdateAuditLog' => 'Χρήστης "{$user}" ενημερωμένες ομάδες του χρήστη "{$username}" από "{$teams_from}" σε "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Χρήστη{$user}"ενημερωμένες ομάδες του {$type} Αναγνωριστικό{$id}από{$teams_from}να{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Αφαιρεθεί{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Πρόσθεσε{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Χρήστης "{$user}" ενημερωμένα στοιχεία (τύπος:"{$type}") της ομάδας "{$team}" από "{$items_from}" σε "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Καταργήθηκε "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Προστέθηκε "{$items_added}"',
     'TeamType_test' => 'Δοκιμή',
     'TeamType_audit' => 'Ελέγχου',
     'TestCreatedAuditLogMessage' => 'Δοκιμή{$test_name}"(ID: {$test_id}) δημιουργήθηκε από το χρήστη "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Το αποτέλεσμα του ερωτηματολογίου εγκρίθηκε επιτυχώς.',
     'QuestionnaireResultRejectedSuccessfully' => 'Το αποτέλεσμα του ερωτηματολογίου απορρίφθηκε επιτυχώς. Το μήνυμα ηλεκτρονικού ταχυδρομείου ειδοποίησης αποστέλλεται στην επαφή.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Γεια σου\\n
-            <p> {$username} σας ζήτησε να αξιολογήσετε εκ νέου το ακόλουθο ερωτηματολόγιο εκτίμησης κινδύνου:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Σχόλια: {$reject_comment}</p>\\n
-            <p>Αυτό είναι ένα αυτοματοποιημένο μήνυμα και οι αποκρίσεις θα παραβλεφθούν ή θα απορριφθούν.</p>\\n
+        <html><body>
+            Γεια σου
+            <p> {$username} σας ζήτησε να αξιολογήσετε εκ νέου το ακόλουθο ερωτηματολόγιο εκτίμησης κινδύνου:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Σχόλια: {$reject_comment}</p>
+            <p>Αυτό είναι ένα αυτοματοποιημένο μήνυμα και οι απαντήσεις θα αγνοηθούν ή θα απορριφθούν.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Ερωτηματολόγιο${questionnaire_name}"(αποστέλλεται σε επαφή"{$contact_name}στο{$date}") το αποτέλεσμα εγκρίθηκε από το χρήστη"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Ερωτηματολόγιο${questionnaire_name}"το αποτέλεσμα απορρίφθηκε και στάλθηκε πίσω στην επαφή"${contact_name}"για επαναξιολόγηση από τον χρήστη"${user_name}"με σχόλιο"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Ερωτηματολόγιο "{$questionnaire_name}"(στάλθηκε για επικοινωνία"{$contact_name}" στο "{$date}") το αποτέλεσμα εγκρίθηκε από το χρήστη "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Ερωτηματολόγιο "{$questionnaire_name}" το αποτέλεσμα απορρίφθηκε και στάλθηκε πίσω στην επαφή "{$contact_name}" για επαναξιολόγηση από το χρήστη "{$user_name}" με σχόλιο "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Προσυμπλήρωση με απαντήσεις από την τελευταία αξιολόγηση;',
-    'QuestionnaireResultApprovedAuditLog' => 'Ερωτηματολόγιο${questionnaire_name}"(αποστέλλεται σε επαφή"{$contact_name}στο{$date}") το αποτέλεσμα εγκρίθηκε από το χρήστη"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Ερωτηματολόγιο${questionnaire_name}"το αποτέλεσμα απορρίφθηκε και στάλθηκε πίσω στην επαφή"${contact_name}"για επαναξιολόγηση από τον χρήστη"${user_name}"με σχόλιο"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Ερωτηματολόγιο "{$questionnaire_name}"(στάλθηκε για επικοινωνία"{$contact_name}" στο "{$date}") το αποτέλεσμα εγκρίθηκε από το χρήστη "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Ερωτηματολόγιο "{$questionnaire_name}" το αποτέλεσμα απορρίφθηκε και στάλθηκε πίσω στην επαφή "{$contact_name}" για επαναξιολόγηση από το χρήστη "{$user_name}" με σχόλιο "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Χρήστη{$user_name}"προστέθηκε ένα σχόλιο για το ερωτηματολόγιο"{$questionnaire_name}"(αποστέλλεται σε επαφή"{$contact_name}στο{$date}").',
     'QuestionnaireSentAuditLog' => 'Ερωτηματολόγιο{$questionnaire_name}"στάλθηκε σε επαφή"{$contact_name}"από το χρήστη"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Ερωτηματολόγιο{$questionnaire_name}"η ολοκλήρωση του είχε ως αποτέλεσμα τη δημιουργία εκκρεμών κινδύνων"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Κίνδυνος σε εκκρεμότητα "{$subject}"του ερωτηματολογίου"${questionnaire_name}"(αποστέλλεται σε επαφή"{$contact_name}στο{$date}") προστέθηκε ως κίνδυνος (αναγνωριστικό: {$risk_id}) από τον χρήστη "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Κίνδυνος σε εκκρεμότητα "{$subject}"του ερωτηματολογίου"${questionnaire_name}"(αποστέλλεται σε επαφή"{$contact_name}στο{$date}") διαγράφηκε από το χρήστη"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Εκκρεμούσες κίνδυνοι του ερωτηματολογίου "${questionnaire_name}"(αποστέλλεται σε επαφή"{$contact_name}στο{$date}") διαγράφηκαν από το χρήστη"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Ερωτηματολόγιο{$questionnaire_name}"ολοκληρώθηκε με επαφή"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Ερωτηματολόγιο{$questionnaire_name}"αποθηκεύτηκε ως πρόχειρη από την επαφή"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Κίνδυνος σε εκκρεμότητα "{$subject}" του ερωτηματολογίου "{$questionnaire_name}"(στάλθηκε για επικοινωνία"{$contact_name}" στο "{$date}") προστέθηκε ως Κίνδυνος (ID: {$risk_id}) ανά χρήστη "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Κίνδυνος σε εκκρεμότητα "{$subject}" του ερωτηματολογίου "{$questionnaire_name}"(στάλθηκε για επικοινωνία"{$contact_name}" στο "{$date}") διαγράφηκε από το χρήστη "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Εν αναμονή κινδύνων του ερωτηματολογίου "{$questionnaire_name}"(στάλθηκε για επικοινωνία"{$contact_name}" στο "{$date}") διαγράφηκαν από το χρήστη "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Ερωτηματολόγιο "{$questionnaire_name}" ολοκληρώθηκε από την επαφή "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Ερωτηματολόγιο "{$questionnaire_name}" αποθηκεύτηκε ως πρόχειρο από την επαφή "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Αναφορά ίχνους ελέγχου αποτελεσμάτων ερωτηματολογίου',
     'SubTemplate' => 'Δευτερεύον πρότυπο',
     'MitigationAccepted' => 'Ελαχιστοποίηση μετριασμού',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Προβολή ενεργών ελέγχων',
     'ViewPastAudits'=>'Προβολή προηγούμενων λογιστικών ελέγχων',
     'Uninstall' => 'Απεγκαταστήσετε',
+    'SimpleriskUsers' => 'Χρήστες απλού κινδύνου',
+    'QuestionnaireCompletedAuditLogByUser' => 'Ερωτηματολόγιο "{$questionnaire_name}" ολοκληρώθηκε από το χρήστη "{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Ερωτηματολόγιο "{$questionnaire_name}" αποθηκεύτηκε ως πρόχειρο από το χρήστη "{$contact_name}".',
+    'Internal' => 'Εσωτερική',
+    'QuestionType' => 'Τύπος ερώτησης',
+    'MultipleChoice' => 'Πολλαπλές επιλογές',
+    'FillInTheBlank' => 'Συμπληρώστε το κενό',
+    'Proxy' => 'Διακομιστή μεσολάβησης',
+    'ProxyWebRequests' => 'Αιτήσεις Web διακομιστή μεσολάβησης',
+    'VerifySSLCertificate' => 'Επαλήθευση πιστοποιητικού SSL',
+    'ProxyHostname' => 'Όνομα κεντρικού υπολογιστή διακομιστή μεσολάβησης / IP',
+    'ProxyPort' => 'Θύρα διακομιστή μεσολάβησης',
+    'AuthenticatedProxy' => 'Διακομιστής μεσολάβησης με έλεγχο ταυτότητας',
+    'ProxyUsername' => 'Όνομα χρήστη διακομιστή μεσολάβησης',
+    'ProxyPassword' => 'Κωδικός πρόσβασης διακομιστή μεσολάβησης',
+    'SimpleRiskExtras' => 'Πρόσθετα απλού κινδύνου',
+    'ColumnSelections' => 'Επιλογές στηλών',
+    'GroupAndFilteringSelections' => 'Επιλογές ομάδων και φιλτραρίσματος',
+    'Hyperlink' => 'Υπερ - σύνδεση',
+    'URL' => 'Διεύθυνση url',
+    'AssetTeams'=>'Ομάδα περιουσιακών στοιχείων',
+    'AssetSiteLocation'=>'Τοποθεσία/Τοποθεσία περιουσιακού στοιχείου',
+    'ActivatingSCFMessage' => 'Εγκατάσταση του πλαισίου SCF της ComplianceForge. Αυτό μπορεί να διαρκέσει αρκετά λεπτά για να ολοκληρωθεί.',
+    'DeactivatingSCFMessage' => 'Κατάργηση εγκατάστασης του πλαισίου SCF του ComplianceForge.',
+    'UpdatingSCFMessage' => 'Ενημέρωση του πλαισίου Της Επιτροπής Αξιολόγησης της Συμμόρφωσης. Αυτό μπορεί να διαρκέσει αρκετά λεπτά για να ολοκληρωθεί.',
+    'Processing' => 'Επεξεργασία...',
+    'AlphabeticalOrder'=>'Αλφαβητική σειρά',
     '' => ''
 );
 

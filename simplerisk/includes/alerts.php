@@ -88,6 +88,9 @@ function get_alert($returnHtml = false, $plainText = false)
             echo "
                     });\n
                 </script>";
+            foreach($_SESSION['alerts'] as $alert){
+                echo "\n<div class='hide hidden-alert-message' data-type='" . ($alert['alert_type'] == "good"?"success":"error") . "'>". $escaper->escapeHtml($alert['alert_message']) ."</div>";
+            }
         }
     }
 

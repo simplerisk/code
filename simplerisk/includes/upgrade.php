@@ -19,6 +19,82 @@ require_once(language_file());
 require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
 $escaper = new Zend\Escaper\Escaper('utf-8');
 
+// These are here to make sure they're available when upgrading
+if (!function_exists('index_exists_on_table')) {
+    function index_exists_on_table($index_name, $table) {
+
+        // Open the database connection
+        $db = db_open();
+
+        $stmt = $db->prepare("SHOW INDEX FROM `{$table}` WHERE `Key_name` = '{$index_name}';");
+        $stmt->execute();
+
+        // Fetch the results
+        $results = $stmt->rowCount();
+
+        // Close the database connection
+        db_close($db);
+
+        return $results;
+    }
+}
+
+if (!function_exists('field_exists_in_table')) {
+    function field_exists_in_table($field, $table) {
+
+        // Open the database connection
+        $db = db_open();
+
+        // Query the field of the table
+        $stmt = $db->prepare("
+            SELECT
+                1
+            FROM
+                information_schema.columns
+            WHERE
+                table_schema = :database
+                AND table_name = :table
+                AND column_name = :field;
+        ");
+        $database = DB_DATABASE; //Have to make a variable as bindParam can't take parameter by reference
+        $stmt->bindParam(":database", $database, PDO::PARAM_STR);
+        $stmt->bindParam(":table", $table, PDO::PARAM_STR);
+        $stmt->bindParam(":field", $field, PDO::PARAM_STR);
+        $stmt->execute();
+
+        // Fetch the results
+        $results = $stmt->rowCount();
+
+        // Close the database connection
+        db_close($db);
+
+        return $results;
+    }
+}
+
+if (!function_exists('table_exists')) {
+    function table_exists($table) {
+
+        // Open the database connection
+        $db = db_open();
+
+        // Query the schema for the table
+        $database = DB_DATABASE; //Have to make a variable as bindParam can't take parameter by reference
+        $stmt = $db->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema = :database AND table_name = :table;");
+        $stmt->bindParam(":database", $database, PDO::PARAM_STR);
+        $stmt->bindParam(":table", $table, PDO::PARAM_STR);
+        $stmt->execute();
+
+        // Fetch the results
+        $results = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
+
+        return count($results) > 0;
+    }
+}
+
 /*************************
  * FUNCTION: GET API KEY *
  *************************/
@@ -3624,11 +3700,11 @@ function upgrade_from_20190331001($db){
         // Split the name into two parts using the first space
         $array = explode(' ', $name, 2);
         $fname = (isset($array[0]) ? $array[0] : "");
-	$lname = (isset($array[1]) ? $array[1] : "");
+        $lname = (isset($array[1]) ? $array[1] : "");
 
-	// Add the new first and last name settings
-	add_setting("registration_fname", $fname);
-	add_setting("registration_lname", $lname);
+        // Add the new first and last name settings
+        add_setting("registration_fname", $fname);
+        add_setting("registration_lname", $lname);
 
         update_registration($name="", $company="", $title="", $phone="", $email="", $fname="", $lname="");
     }
@@ -3690,9 +3766,11 @@ function upgrade_from_20190930001($db)
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
-    echo "Updating `team` field in `assets` table to string type.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `assets` CHANGE `team` `teams` VARCHAR(1000) NULL;  ");
-    $stmt->execute();
+    if (field_exists_in_table('team', 'assets')) {
+        echo "Updating `team` field in `assets` table to string type.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `assets` CHANGE `team` `teams` VARCHAR(1000) NULL;  ");
+        $stmt->execute();
+    }
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
@@ -3708,9 +3786,433 @@ function upgrade_from_20191130001($db)
     $version_to_upgrade = '20191130-001';
 
     // Database version upgrading to
-    $version_upgrading_to = '2019XXXX-001';
+    $version_upgrading_to = '20200328-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Creating junction table for mitigations <-> framework_controls and doing the migration
+    if (field_exists_in_table('mitigation_controls', 'mitigations')) {
+        if (!table_exists('mitigation_to_controls')) {
+            echo "Creating mitigation_to_controls table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `mitigation_to_controls` (
+                    `mitigation_id` int(11) NOT NULL,
+                    `control_id` int(11) NOT NULL,
+                    PRIMARY KEY(`mitigation_id`, `control_id`),
+                    INDEX(`control_id`, `mitigation_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating mitigation controls to new table.<br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT m.id mitigation_id, fc.id control_id FROM mitigations m, framework_controls fc WHERE FIND_IN_SET(fc.id, m.mitigation_controls);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        foreach($array as $mitigation_id => $controls) {
+            $sql = "INSERT INTO `mitigation_to_controls`(mitigation_id, control_id) values";
+            foreach($controls as $control) {
+                $sql .= "('{$mitigation_id}', '{$control['control_id']}'),";
+            }
+            $sql = trim($sql, ",");
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        }
+        echo "Deleting `mitigation_controls` field from the `mitigations table`.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigations` DROP `mitigation_controls`;");
+        $stmt->execute();
+    }
+
+    // Creating junction table for framework_controls <-> frameworks associations and doing the migration
+    if (field_exists_in_table('framework_ids', 'framework_controls')) {
+        if (!table_exists('framework_control_to_framework')) {
+            echo "Creating `framework_control_to_framework` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `framework_control_to_framework` (
+                    `control_id` int(11) NOT NULL,
+                    `framework_id` int(11) NOT NULL,
+                    PRIMARY KEY(`control_id`, `framework_id`),
+                    INDEX(`framework_id`, `control_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating framework_ids field in framework_controls table to new table.<br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT t1.id control_id, t2.value framework_id FROM `framework_controls` t1, frameworks t2 WHERE FIND_IN_SET(t2.value, t1.framework_ids);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        foreach($array as $control_id => $frameworks) {
+            $sql = "INSERT INTO `framework_control_to_framework`(control_id, framework_id) values";
+            foreach($frameworks as $framework) {
+                $sql .= "('{$control_id}', '{$framework['framework_id']}'),";
+            }
+            $sql = trim($sql, ",");
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        }
+        echo "Deleting `framework_ids` field from the `framework_controls` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_controls` DROP `framework_ids`;");
+        $stmt->execute();
+    }
+
+    // Creating junction table for risk <-> location associations and doing the migration
+    if (field_exists_in_table('location', 'risks')) {
+        if (!table_exists('risk_to_location')) {
+            echo "Creating `risk_to_location` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `risk_to_location` (
+                    `risk_id` int(11) NOT NULL,
+                    `location_id` int(11) NOT NULL,
+                    PRIMARY KEY(`risk_id`, `location_id`),
+                    INDEX(`location_id`, `risk_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating location field in risks table to new table.<br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT t1.id risk_id, t2.value location_id FROM `risks` t1, `location` t2 WHERE FIND_IN_SET(t2.value, t1.location);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        foreach($array as $risk_id => $locations) {
+            $sql = "INSERT INTO `risk_to_location`(risk_id, location_id) values";
+            foreach($locations as $location) {
+                $sql .= "('{$risk_id}', '{$location['location_id']}'),";
+            }
+            $sql = trim($sql, ",");
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        }
+
+        echo "Deleting `location` field from the `risks` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` DROP `location`; ");
+        $stmt->execute();
+    }
+
+    // Creating junction table for risk <-> team associations and doing the migration
+    if (field_exists_in_table('team', 'risks')) {
+        if (!table_exists('risk_to_team')) {
+            echo "Creating `risk_to_team` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `risk_to_team` (
+                    `risk_id` int(11) NOT NULL,
+                    `team_id` int(11) NOT NULL,
+                    PRIMARY KEY(`risk_id`, `team_id`),
+                    INDEX(`team_id`, `risk_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating team field in risks table to new table.<br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT t1.id risk_id, t2.value team_id FROM `risks` t1, `team` t2 WHERE FIND_IN_SET(t2.value, t1.team);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        foreach($array as $risk_id => $teams) {
+            $sql = "INSERT INTO `risk_to_team`(risk_id, team_id) values";
+            foreach($teams as $team) {
+                $sql .= "('{$risk_id}', '{$team['team_id']}'),";
+            }
+            $sql = trim($sql, ",");
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        }
+
+        echo "Deleting `team` field from the `risks` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` DROP `team`; ");
+        $stmt->execute();
+    }
+
+    // Creating junction table for risk <-> technology associations and doing the migration
+    if (field_exists_in_table('technology', 'risks')) {
+        if (!table_exists('risk_to_technology')) {
+            echo "Creating `risk_to_technology` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `risk_to_technology` (
+                    `risk_id` int(11) NOT NULL,
+                    `technology_id` int(11) NOT NULL,
+                    PRIMARY KEY(`risk_id`, `technology_id`),
+                    INDEX(`technology_id`, `risk_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating technology field in risks table to new table.<br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT t1.id risk_id, t2.value technology_id FROM `risks` t1, `technology` t2 WHERE FIND_IN_SET(t2.value, t1.technology);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        foreach($array as $risk_id => $technologies) {
+            $sql = "INSERT INTO `risk_to_technology`(risk_id, technology_id) values";
+            foreach($technologies as $technology) {
+                $sql .= "('{$risk_id}', '{$technology['technology_id']}'),";
+            }
+            $sql = trim($sql, ",");
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        }
+        
+        echo "Deleting `technology` field from the `risks` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` DROP `technology`; ");
+        $stmt->execute();
+    }
+
+    // Creating junction table for risk <-> additional stakeholder(i.e. user) associations and doing the migration
+    if (field_exists_in_table('additional_stakeholders', 'risks')) {
+        if (!table_exists('risk_to_additional_stakeholder')) {
+            echo "Creating `risk_to_additional_stakeholder` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `risk_to_additional_stakeholder` (
+                    `risk_id` int(11) NOT NULL,
+                    `user_id` int(11) NOT NULL,
+                    PRIMARY KEY(`risk_id`, `user_id`),
+                    INDEX(`user_id`, `risk_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating additional_stakeholders field in risks table to new table. <br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT t1.id risk_id, t2.value user_id FROM `risks` t1, `user` t2 WHERE FIND_IN_SET(t2.value, t1.additional_stakeholders);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        foreach($array as $risk_id => $additional_stakeholders) {
+            $sql = "INSERT INTO `risk_to_additional_stakeholder`(risk_id, user_id) values";
+            foreach($additional_stakeholders as $additional_stakeholder) {
+                $sql .= "('{$risk_id}', '{$additional_stakeholder['user_id']}'),";
+            }
+            $sql = trim($sql, ",");
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        }
+
+        echo "Deleting `additional_stakeholders` field from the `risks` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` DROP `additional_stakeholders`; ");
+        $stmt->execute();
+    }
+
+    // Creating junction table for mitigation <-> team associations and doing the migration
+    if (field_exists_in_table('mitigation_team', 'mitigations')) {
+        if (!table_exists('mitigation_to_team')) {
+            echo "Creating `mitigation_to_team` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `mitigation_to_team` (
+                    `mitigation_id` int(11) NOT NULL,
+                    `team_id` int(11) NOT NULL,
+                    PRIMARY KEY(`mitigation_id`, `team_id`),
+                    INDEX(`team_id`, `mitigation_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating mitigation_team field in mitigations table to new table<br />\n";
+        $stmt = $db->prepare("
+            SELECT DISTINCT t1.id mitigation_id, t2.value team_id FROM `mitigations` t1, `team` t2 WHERE FIND_IN_SET(t2.value, t1.mitigation_team);
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        foreach($array as $mitigation_id => $teams) {
+            $sql = "INSERT INTO `mitigation_to_team`(mitigation_id, team_id) values";
+            foreach($teams as $team) {
+                $sql .= "('{$mitigation_id}', '{$team['team_id']}'),";
+            }
+            $sql = trim($sql, ",");
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        }
+
+        echo "Deleting `mitigation_team` field from the `mitigations` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigations` DROP `mitigation_team`; ");
+        $stmt->execute();
+    }
+
+    // Creating junction table for user <-> team associations and doing the migration
+    if (field_exists_in_table('teams', 'user')) {
+
+        if (!table_exists('user_to_team')) {
+            echo "Creating `user_to_team` table.<br />\n";
+            $stmt = $db->prepare("
+                CREATE TABLE IF NOT EXISTS `user_to_team` (
+                    `user_id` int(11) NOT NULL,
+                    `team_id` int(11) NOT NULL,
+                    PRIMARY KEY(`user_id`, `team_id`),
+                    INDEX(`team_id`, `user_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+            ");
+            $stmt->execute();
+        }
+
+        echo "Migrating teams field in user table to a new table<br />\n";
+        $stmt = $db->prepare("
+            SELECT
+                DISTINCT u.value as user_id, t.value as team_id
+            FROM
+                `user` u, `team` t
+            WHERE
+                FIND_IN_SET(t.value, replace(u.teams, ':', ',')) OR u.teams = 'all' or u.admin=1;
+        ");
+        $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
+        foreach($array as $user_id => $teams) {
+            $sql = "INSERT INTO `user_to_team`(user_id, team_id) values";
+            foreach($teams as $team) {
+                $sql .= "('{$user_id}', '{$team['team_id']}'),";
+            }
+            $sql = trim($sql, ",");
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+        }
+
+        echo "Deleting `teams` field from the `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` DROP `teams`;");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('taggee_type', 'tags_taggees')) {
+        echo "Adding index 'taggee_type' to table 'tags_taggees'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `tags_taggees` ADD INDEX `taggee_type` (`taggee_id`, `type`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('risk_id', 'mitigations')) {
+        echo "Adding index 'risk_id' to table 'mitigations'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigations` ADD INDEX `risk_id` (`risk_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('calculated_risk', 'risk_scoring')) {
+        echo "Adding index 'calculated_risk' to table 'risk_scoring'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risk_scoring` ADD INDEX `calculated_risk` (`calculated_risk`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('risk_id', 'mitigation_accept_users')) {
+        echo "Adding index 'risk_id' to table 'mitigation_accept_users'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigation_accept_users` ADD INDEX `risk_id` (`risk_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('category', 'risks')) {
+        echo "Adding index 'category' to table 'risks'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD INDEX `category` (`category`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('close_id', 'risks')) {
+        echo "Adding index 'close_id' to table 'risks'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD INDEX `close_id` (`close_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('manager', 'risks')) {
+        echo "Adding index 'manager' to table 'risks'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD INDEX `manager` (`manager`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('mgmt_review', 'risks')) {
+        echo "Adding index 'mgmt_review' to table 'risks'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD INDEX `mgmt_review` (`mgmt_review`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('owner', 'risks')) {
+        echo "Adding index 'owner' to table 'risks'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD INDEX `owner` (`owner`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('project_id', 'risks')) {
+        echo "Adding index 'project_id' to table 'risks'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD INDEX `project_id` (`project_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('source', 'risks')) {
+        echo "Adding index 'source' to table 'risks'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD INDEX `source` (`source`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('status', 'risks')) {
+        echo "Adding index 'status' to table 'risks'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD INDEX `status` (`status`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('submitted_by', 'risks')) {
+        echo "Adding index 'submitted_by' to table 'risks'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD INDEX `submitted_by` (`submitted_by`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('regulation', 'risks')) {
+        echo "Adding index 'regulation' to table 'risks'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD INDEX `regulation` (`regulation`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('item_type', 'items_to_teams')) {
+        echo "Adding index 'item_type' to table 'items_to_teams'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `items_to_teams` ADD INDEX `item_type` (`item_id`, `type`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('team_type', 'items_to_teams')) {
+        echo "Adding index 'team_type' to table 'items_to_teams'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `items_to_teams` ADD INDEX `team_type` (`team_id`, `type`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('type', 'items_to_teams')) {
+        echo "Adding index 'type' to table 'items_to_teams'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `items_to_teams` ADD INDEX `type` (`type`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('asset_id', 'risks_to_assets')) {
+        echo "Adding index 'asset_id' to table 'risks_to_assets'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks_to_assets` ADD INDEX `asset_id` (`asset_id`, `risk_id`);");
+        $stmt->execute();
+    }
+
+    if (!index_exists_on_table('asset_group_id', 'risks_to_asset_groups')) {
+        echo "Adding index 'asset_group_id' to table 'risks_to_asset_groups'.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks_to_asset_groups` ADD INDEX `asset_group_id` (`asset_group_id`, `risk_id`);");
+        $stmt->execute();
+    }
+
+    if (!field_exists_in_table('custom_selection_settings', 'dynamic_saved_selections')) {
+        echo "Add `custom_selection_settings` field to `dynamic_saved_selections` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `dynamic_saved_selections` ADD `custom_selection_settings` VARCHAR(1000) NOT NULL AFTER `custom_display_settings`;");
+        $stmt->execute();
+    }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
 
     // Update the database version
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
@@ -3894,6 +4396,10 @@ function upgrade_database()
                 upgrade_from_20190930001($db);
                 upgrade_database();
                 break;                
+            case "20191130-001":
+                upgrade_from_20191130001($db);
+                upgrade_database();
+                break;                
             default:
                 echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
         }
@@ -3913,10 +4419,10 @@ function upgrade_database()
  *****************************************/
 function display_cache_clear_warning()
 {
-	global $lang;
-	global $escaper;
+    global $lang;
+    global $escaper;
 
-	echo "<image src=\"../images/exclamation_warning.png\" width=\"30\" height=\"30\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['CacheClearWarning']);
+    echo "<image src=\"../images/exclamation_warning.png\" width=\"30\" height=\"30\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['CacheClearWarning']);
 }
 
 ?>

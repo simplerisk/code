@@ -570,7 +570,7 @@ function display_external_reference_id_edit($reference_id)
     echo $escaper->escapeHtml($lang['ExternalReferenceId']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<input type=\"text\" name=\"reference_id\" id=\"reference_id\" class=\"active-textfield\" size=\"20\" value=\"" . $escaper->escapeHtml($reference_id) . "\" />\n";
+    echo "<input type=\"text\" name=\"reference_id\" id=\"reference_id\" class=\"active-textfield\" size=\"20\" value=\"" . $escaper->escapeHtml($reference_id) . "\" maxlength=\"20\"/>\n";
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -604,7 +604,7 @@ function display_control_number_edit($control_number)
     echo $escaper->escapeHtml($lang['ControlNumber']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<input type=\"text\" class=\"active-textfield\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $escaper->escapeHtml($control_number) . "\" />\n";
+    echo "<input type=\"text\" class=\"active-textfield\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $escaper->escapeHtml($control_number) . "\" maxlength=\"20\"/>\n";
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -2191,7 +2191,7 @@ function display_risk_tags_edit($tags = "")
                                     load: function(query, callback) {
                                         if (query.length) return callback();
                                         $.ajax({
-                                            url: '/api/management/tag_options_of_type?type=risk',
+                                            url: BASE_URL + '/api/management/tag_options_of_type?type=risk',
                                             type: 'GET',
                                             dataType: 'json',
                                             error: function() {

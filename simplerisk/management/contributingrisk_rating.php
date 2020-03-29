@@ -53,7 +53,7 @@
 
 <html>
 <head>
-<title>SimpleRisk OWASP Calculator</title>
+<title>SimpleRisk Contributing Risk Calculator</title>
 <link rel="stylesheet" type="text/css" href="../css/style.css">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link href="../css/front-style.css" rel="stylesheet" type="text/css">

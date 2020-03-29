@@ -72,5 +72,5 @@ enforce_permission_riskmanagement();
 
 
         <input type="hidden" id="_token_value" value="<?php echo csrf_get_tokens(); ?>">
-        <input type="hidden" id="_lang_reopen_risk" value="<?php echo $lang['ReopenRisk']; ?>">
-        <input type="hidden" id="_lang_close_risk" value="<?php echo $lang['CloseRisk']; ?>">
+        <input type="hidden" id="_lang_reopen_risk" value="<?php echo $escaper->escapeHtml($lang['ReopenRisk']); ?>">
+        <input type="hidden" id="_lang_close_risk" value="<?php echo $escaper->escapeHtml($lang['CloseRisk']); ?>">

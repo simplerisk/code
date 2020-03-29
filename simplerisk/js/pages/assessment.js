@@ -252,9 +252,28 @@ function selectize_pending_risk_affected_assets_widget(select_tag, options) {
         }
     });
 }
-/*
-function setupAssetsAssetGroupsWidget(select_tag) {
-   
+
+function setupQuestionnaireContactUserViewWidget(select_tag) {
+    
+    if (!select_tag.length)
+        return;
+    
+    var select = select_tag.selectize({
+        sortField: 'text',
+        disabled: true,
+        render: {
+            item: function(item, escape) {
+                return '<div class="' + item.class + '">' + escape(item.text) + '</div>';
+            }
+        }
+    });
+    
+    select[0].selectize.disable();
+    select_tag.parent().find('.selectize-control div').removeClass('disabled');
+}    
+
+function setupQuestionnaireContactUserWidget(select_tag) {
+
     if (!select_tag.length)
         return;
     
@@ -262,17 +281,15 @@ function setupAssetsAssetGroupsWidget(select_tag) {
         sortField: 'text',
         plugins: ['optgroup_columns', 'remove_button', 'restore_on_backspace'],
         delimiter: ',',
-        create: function (input){
-            return { id:input, name:input };
-        },
+        create: false,
         persist: false,
         valueField: 'id',
         labelField: 'name',
         searchField: 'name',
         sortField: 'name',
         optgroups: [
-            {class: 'asset', name: 'Standard Assets'},
-            {class: 'group', name: 'Asset Groups'}
+            {class: 'user', name: $("#_lang_SimpleriskUsers").length ? $("#_lang_SimpleriskUsers").val() : "Simplerisk Users" },
+            {class: 'assessment', name: $("#_lang_AssessmentContacts").length ? $("#_lang_AssessmentContacts").val() : "Assessment Contacts" },
         ],
         optgroupField: 'class',
         optgroupLabelField: 'name',
@@ -283,10 +300,18 @@ function setupAssetsAssetGroupsWidget(select_tag) {
                 return '<div class="' + item.class + '">' + escape(item.name) + '</div>';
             }
         },
+        onInitialize: function() {
+            $(this.$input[0]).parent().find('.selectize-control div').block({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>'});
+        },
         load: function(query, callback) {
             if (query.length) return callback();
+            var self = this;
+            
+            this.renderCache = {}
+            var originEl = $(self.$input[0]);
+            var selectedItems = originEl.data('items') ? originEl.data('items') : [];
             $.ajax({
-                url: '/api/asset-group/options',
+                url: BASE_URL + '/api/assessment/contacts-users/options',
                 type: 'GET',
                 dataType: 'json',
                 error: function() {
@@ -294,22 +319,33 @@ function setupAssetsAssetGroupsWidget(select_tag) {
                 },
                 success: function(res) {
                     var data = res.data;
-                    var control = select[0].selectize;
+                    var selected_ids = [];
                     // Have to do it this way, because addition with simple addOption() will
                     // bug out when we deselect an option(it wouldn't be added back to the
                     // list of selectable items)
                     len = data.length;
-
                     for (var i = 0; i < len; i++) {
                         var item = data[i];
-                        if (item.class == 'asset')
-                            item.id = item.name;
-                        else item.id = '[' + item.name + ']';
-                        control.registerOption(item);
+                        // Check if this element is selected one
+                        for(var selectedItem of selectedItems){
+                            if(selectedItem.class == item.class && selectedItem.id == item.id){
+                                selected_ids.push(item.id + '_' + item.class);
+                                break;
+                            }
+                        }
+
+                        item.id += '_' + item.class;
+                        self.addOption(item);
                     }
+                    
+                    if (selected_ids.length)
+                        self.setValue(selected_ids);
                 },
+                complete: function() {
+                    originEl.parent().find('.selectize-control div').unblock({message:null});
+                }
             });
         }
-    });
+    });        
 }
-*/
+

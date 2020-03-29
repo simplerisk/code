@@ -59,7 +59,8 @@ function risk_distribution_analysis()
             FROM `risk_scoring` a 
                 JOIN `risks` b ON a.id = b.id 
                 LEFT JOIN mitigations c ON b.id = c.risk_id 
-                LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, c.mitigation_controls) AND fc.deleted=0
+                LEFT JOIN mitigation_to_controls mtc ON c.id = mtc.mitigation_id
+                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
             WHERE b.status != \"Closed\"
             GROUP BY
                 b.id
@@ -158,8 +159,9 @@ function risk_distribution_analysis()
             (c.calculated_risk - (c.calculated_risk * GREATEST(IFNULL(b.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0) ) / 100)) as residual_risk 
         FROM risks a 
             JOIN mitigations b ON a.id = b.risk_id 
+            LEFT JOIN mitigation_to_controls mtc ON b.id = mtc.mitigation_id
+            LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
             LEFT JOIN risk_scoring c ON a.id = c.id 
-            LEFT JOIN framework_controls fc ON FIND_IN_SET(fc.id, b.mitigation_controls) AND fc.deleted=0
         WHERE
             b.mitigation_effort != 0
             AND a.status != \"Closed\"

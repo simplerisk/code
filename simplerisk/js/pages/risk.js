@@ -192,7 +192,7 @@ function addRisk($this){
             load: function(query, callback) {
                 if (query.length) return callback();
                 $.ajax({
-                    url: '/api/asset-group/options?risk_id=' + risk_id,
+                    url: BASE_URL + '/api/asset-group/options?risk_id=' + risk_id,
                     type: 'GET',
                     dataType: 'json',
                     error: function() {
@@ -461,7 +461,6 @@ $(document).ready(function(){
     /*****************/
     
     
-//    temp()
     $('#tab-content-container').delegate('.save-risk-form', 'click', function (){
         addRisk($(this));
     })

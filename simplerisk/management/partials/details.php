@@ -90,7 +90,7 @@ enforce_permission_riskmanagement();
                   view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_tags, $jira_issue_key);
                 }
                 ?>
-                <input type="hidden" class="risk_id" value="<?php echo $id; ?>">
+                <input type="hidden" class="risk_id" value="<?php echo $escaper->escapeHtml($id); ?>">
               </form>
             </div>
             <div id="tabs2" class="tabs2 risk-tab">

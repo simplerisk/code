@@ -83,12 +83,12 @@
             $reference_id = $risk[0]['reference_id'];
             $regulation = $risk[0]['regulation'];
             $control_number = $risk[0]['control_number'];
-            $location = $risk[0]['location'];
+            $location = $risk[0]['location_names'];
             $source = $risk[0]['source'];
             $category = $risk[0]['category'];
-            $team = $risk[0]['team'];
-            $additional_stakeholders = $risk[0]['additional_stakeholders'];
-            $technology = $risk[0]['technology'];
+            $team = $risk[0]['team_names'];
+            $additional_stakeholders = $risk[0]['additional_stakeholder_names'];
+            $technology = $risk[0]['technology_names'];
             $owner = $risk[0]['owner'];
             $manager = $risk[0]['manager'];
             $assessment = $risk[0]['assessment'];
@@ -333,7 +333,7 @@
           </div>
           <div class="row-fluid">
             <div class="well">
-              <?php view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $tags); ?>
+              <?php view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $additional_stakeholders, $owner, $manager, $assessment, $notes, $tags); ?>
             </div>
           </div>
           <div class="row-fluid">

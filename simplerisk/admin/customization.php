@@ -96,12 +96,13 @@
             $name = get_param("POST", "name");
             $required = get_param("POST", "required", 0);
             $encryption = get_param("POST", "encryption", 0);
+            $alphabetical_order = get_param("POST", "alphabetical_order", 0);
             
             if(!$id || !$name){
                 // Display an alert
                 set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameFieldIsRequired']));
             }else{
-                update_custom_field($id, $name, $required, $encryption);
+                update_custom_field($id, $name, $required, $encryption, $alphabetical_order);
                 set_alert(true, "good", $escaper->escapeHtml($lang['SuccessfullyUpdatedCustomField']));
             }
             refresh();
@@ -115,9 +116,10 @@
             $type = $_POST['type'];
             $required = isset($_POST['required']) ? 1 : 0;
             $encryption = isset($_POST['encryption']) ? 1 : 0;
+            $alphabetical_order = isset($_POST['alphabetical_order']) ? 1 : 0;
 
             // Create the new field
-            if ($field_id = create_field($fgroup, $name, $type, $required, $encryption))
+            if ($field_id = create_field($fgroup, $name, $type, $required, $encryption, $alphabetical_order))
             {
                 // Set field_id as Session variable for auto select of custom fields dropdown
                 $_SESSION['custom_field_id'] = $field_id;

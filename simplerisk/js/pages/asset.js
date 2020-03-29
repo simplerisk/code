@@ -318,7 +318,7 @@ function initSelectizeOptions() {
     if (initialLoadStatus === 'None') {
         initialLoadStatus = 'Started';
         $.ajax({
-            url: '/api/management/tag_options_of_type?type=asset',
+            url: BASE_URL + '/api/management/tag_options_of_type?type=asset',
             type: 'GET',
             dataType: 'json',
             error: function() {

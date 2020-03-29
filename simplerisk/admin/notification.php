@@ -80,6 +80,12 @@
             // Update the notification configuration
             update_notification_config();
         }
+        
+        // If notification extra is enabled, process form data
+        if (notification_extra())
+        {
+            process_run_now_notification();
+        }       
     }
 
     /*********************

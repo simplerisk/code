@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'更新のプロジェクトの状態',
     'HighRiskReport'=>'高リスク報告',
     'TotalOpenRisks'=>'全開のリスク',
-    'TotalHighRisks'=>'総合リスクが高い',
-    'HighRiskPercentage'=>'リスクが高い割合',
+    'NumberOfOpenRisks'=>'オープンリスク合計: {$number}',
+    'RiskNumberOfRiskLevel'=>'の合計数 {$display_name} リスク： {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} リスク率: {$percentage}%',
+    'RiskScoreUsing'=>'リスクスコアの使用:',
+    'HighRiskReport_ScoreWarning' => 'レポートは、"{$score_used}" スコア, ので、{$next_review_date_uses_name}" 設定を計算しています"{$management_review_header}" " を使用した列の値{$next_review_date_uses_value}" スコア。',
     'UpdateClassicScore'=>'クラシックのスコアを更新します。',
     'UpdateCVSSScore'=>'更新削除点',
     'BaseScoreMetrics'=>'ベーススコアメトリクス',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> '私を見直したい高リスク毎',
     'AbleToReviewVeryHighRisks'=>'で非常に高いリスク',
     'AbleToReviewInsignificantRisks'=>'レーは軽微でのリスク',
-    'TotalVeryHighRisks'=>'合計非常に高いリスク',
-    'VeryHighRiskPercentage'=>'非常にリスクが高い割合',
     'AllTeams'=>'すべてのチーム',
     'FileUploadSettings'=>'ファイルのアップロードの設定',
     'AllowedFileTypes'=>'可ファイルの種類',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => '複数のメールを区切るには、カンマを使用します。',
     'RiskAssessmentQuestionnaire' => 'リスクアセスメントアンケート',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n こんにちは、\\n
-            <p> {$username} は、次のリスクアセスメントのアンケートを完了するように求めている:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a>の</p>\\n
-            <p>これ は自動メッセージであり、応答は無視または拒否されます。</p>\\n
+        <html><body>
+            こんにちは
+            <p> {$username} 次のリスク評価アンケートを完了するように依頼されました。</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>これは自動化されたメッセージであり、応答は無視されるか拒否されます。</p>
         </body></html>',
     'FilterByText' => 'テキストによるフィルタ',
     'SelectMitigatingControls' => '[コントロールの軽減] を選択する',
@@ -778,7 +780,11 @@ $lang = array(
     'ClearForm'=>'クリアフォーム',
     'QuestionnaireDraftSuccess'=>'回答は正常に保存されました。',
     'QuestionnaireCompletedSuccess'=>'このアンケートは正常に完了しました。',
-    'EmailTemplateCompleteQuestionnaire' => '<html><body> \\ n こんにちは、\\n <p> {$conact_name} はアンケートを完了しました、<b>{$questionnaire_name}</b></p> \\ n <p>This は自動メッセージであり、応答は無視または拒否されます。 </p> \\ n
+    'EmailTemplateCompleteQuestionnaire' => '
+        <html><body>
+            こんにちは
+            <p> {$conact_name} アンケートを完了し、 <b>{$questionnaire_name}</b></p>
+            <p>これは自動化されたメッセージであり、応答は無視されるか拒否されます。</p>
         </body></html>',
     'QuestionnaireResults'=>'アンケート結果',
     'DateSent'=>'送信日',
@@ -791,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'新しいフレームワークが正常に追加されました。',
     'FrameworkUpdated'=>'フレームワークが正常に更新されました。',
     'FrameworkNameExist'=>'フレームワーク名は既に存在します。',
+    'FrameworkNameCantBeEmpty'=>'フレームワーク名を空にすることはできません。',
+    'FrameworkCantBeItsOwnParent'=>'フレームワークを独自の親にすることはできません。',
+    'FrameworkParentUpdated'=>'フレームワークの親が正常に更新されました。',
     'AttachmentFiles'=>'添付ファイル',
     'QuestionnaireFiles'=>'アンケートファイル',
     'ContactEmailAlreadyInUse'=>'連絡先メールは既に使用されています。',
@@ -1141,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'アセットは正常に更新されました。',
     'ThereWasAProblemUpdatingTheAsset' => '資産の更新中に問題が発生しました。',
     'ImportAssetAddSucceeded' => '追加{$verified_or_unverified}「資産名」{$asset_name}「IP 付き」{$asset_ip}「そして価値」{$asset_value}".',
-    'ImportAssetAddFailed' => '追加できませんでした "{$verified_or_unverified「資産名」{$asset_name}「IP 付き」{$asset_ip}「そして価値」{$asset_value}".',
+    'ImportAssetAddFailed' => '追加できませんでした "{$verified_or_unverified}" という名前の資産 "{$asset_name}" IP を使用する "{$asset_ip}" と値 "{$asset_value}".',
     'NoOperationRequiredOnAsset' => '資産名に必要な操作はありません "{$asset_name}"はデータベースに既に存在しています。',
     'ImportAssetUpdateSucceeded' => '更新{$verified_or_unverified}「資産名」{$asset_name}「IP 付き」{$asset_ip}「そして価値」{$asset_value}".',
     'ImportAssetUpdateFailed' => '更新に失敗しました "{$verified_or_unverified}「資産名」{$asset_name}「IP 付き」{$asset_ip}「そして価値」{$asset_value}".',
@@ -1393,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'テストの更新',
     'ControlEditHeader' => '更新コントロール',
     'FrameworkEditHeader' => 'フレームワークの更新',
+    'UserTeamUpdateAuditLog' => 'ユーザー"{$user}" 更新されたユーザーチーム "{$username}" から "{$teams_from}" へ "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'ユーザー "{$user}" 更新されたチーム {$type} (ID:{$id}) から "{$teams_from}" から "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => '削除"{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => '"を追加しました"{$teams_added}"',
+    'ItemUpdateAuditLog' => 'ユーザー"{$user}" 更新されたアイテム (種類:"{$type}") チームの"{$team}" から "{$items_from}" へ "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => '削除されました"{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => '追加された "{$items_added}"',
     'TeamType_test' => 'テスト',
     'TeamType_audit' => '監査',
     'TestCreatedAuditLogMessage' => 'テスト"{$test_name}"(ID: {$test_id}) はユーザーによって作成されました"{$user}".',
@@ -1501,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'アンケート結果が正常に承認されました。',
     'QuestionnaireResultRejectedSuccessfully' => 'アンケートの結果は正常に拒否されました。連絡先に通知メールが送信されます。',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            こんにちは\\n
-            <p> {$username} 次のリスク評価アンケートの再評価を求められました。</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>コメント： {$reject_comment}</p>\\n
-            <p>これは自動メッセージであり、応答は無視または拒否されます。</p>\\n
+        <html><body>
+            こんにちは
+            <p> {$username} 次のリスク評価アンケートを再評価するよう依頼されました。</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>コメント： {$reject_comment}</p>
+            <p>これは自動化されたメッセージであり、応答は無視されるか拒否されます。</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'アンケート"${questionnaire_name}"(連絡先に送信){$contact_name}" 上"{$date}") 結果はユーザーによって承認されました"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'アンケート"${questionnaire_name}" 結果は拒否され、連絡先に送り返されました"${contact_name}" ユーザーによる再評価のため"${user_name}" コメント付き "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'アンケート」{$questionnaire_name}"(連絡先に送信"{$contact_name}" オン "{$date}") 結果はユーザーによって承認されました"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'アンケート」{$questionnaire_name}" 結果は拒否され、連絡先に返送されました"{$contact_name}" ユーザーによる再評価用 "{$user_name}" コメント付き "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => '前回の評価の回答を事前に入力しますか?',
-    'QuestionnaireResultApprovedAuditLog' => 'アンケート "${questionnaire_name}"(連絡先に送信されました"{$contact_name}" 上 "{$date}") 結果はユーザーによって承認されました "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'アンケート "${questionnaire_name}" 結果が拒否され、連絡先に送り返されました "${contact_name}" ユーザーによる再評価用 "${user_name}" " とコメント "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'アンケート」{$questionnaire_name}"(連絡先に送信"{$contact_name}" オン "{$date}") 結果はユーザーによって承認されました"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'アンケート」{$questionnaire_name}" 結果は拒否され、連絡先に返送されました"{$contact_name}" ユーザーによる再評価用 "{$user_name}" コメント付き "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'ユーザー "{$user_name}" アンケートのコメントを追加しました"{$questionnaire_name}" (連絡先に送信){$contact_name}" 上"{$date}") 結果。',
     'QuestionnaireSentAuditLog' => 'アンケート"{$questionnaire_name}" は連絡先に送信されました"{$contact_name}" ユーザー別 "{$user_name}".',
     'PendingRiskCreationAuditLog' => 'アンケート"{$questionnaire_name}"完了した結果、保留中のリスクが発生しました"{$subject}".',
-    'PendingRiskAddAuditLog' => '保留中のリスク "{$subject}" アンケートの "${questionnaire_name}"(連絡先に送信){$contact_name}" 上"{$date}") がリスク (ID: {$risk_id}) ユーザー別 "${user_name}".',
-    'PendingRiskDeleteAuditLog' => '保留中のリスク "{$subject}" アンケートの "${questionnaire_name}"(連絡先に送信){$contact_name}" 上"{$date}") はユーザーによって削除されました"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'アンケートの保留中のリスク "${questionnaire_name}"(連絡先に送信){$contact_name}" 上"{$date}") はユーザーによって削除されました"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'アンケート"{$questionnaire_name}" は連絡先によって完了しました"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'アンケート"{$questionnaire_name}" は連絡先によって下書きとして保存されました"${contact_name}".',
+    'PendingRiskAddAuditLog' => '保留中のリスク "{$subject}"アンケートの"{$questionnaire_name}"(連絡先に送信"{$contact_name}" オン "{$date}") がリスク(ID: {$risk_id}) ユーザー別 "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => '保留中のリスク "{$subject}"アンケートの"{$questionnaire_name}"(連絡先に送信"{$contact_name}" オン "{$date}") ユーザーによって削除されました"{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'アンケートの保留中のリスク"{$questionnaire_name}"(連絡先に送信"{$contact_name}" オン "{$date}") ユーザーによって削除されました"{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'アンケート」{$questionnaire_name}"は、連絡先によって完了しました"{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'アンケート」{$questionnaire_name}" は連絡先によって下書きとして保存されました"{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'アンケート結果監査証跡レポート',
     'SubTemplate' => 'サブテンプレート',
     'MitigationAccepted' => '緩和策が受け入れられました',
@@ -1642,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'アクティブな監査の表示',
     'ViewPastAudits'=>'過去の監査の表示',
     'Uninstall' => 'アンインストール',
+    'SimpleriskUsers' => 'シンプルリスクユーザー',
+    'QuestionnaireCompletedAuditLogByUser' => 'アンケート」{$questionnaire_name}" はユーザーによって完了しました"{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'アンケート」{$questionnaire_name}" はユーザーによって下書きとして保存されました"{$contact_name}".',
+    'Internal' => '内部',
+    'QuestionType' => '質問タイプ',
+    'MultipleChoice' => '複数の選択肢',
+    'FillInTheBlank' => '空白を埋める',
+    'Proxy' => 'プロキシ',
+    'ProxyWebRequests' => 'プロキシ Web 要求',
+    'VerifySSLCertificate' => 'SSL 証明書の確認',
+    'ProxyHostname' => 'プロキシ ホスト名/IP',
+    'ProxyPort' => 'プロキシ ポート',
+    'AuthenticatedProxy' => '認証されたプロキシ',
+    'ProxyUsername' => 'プロキシ ユーザー名',
+    'ProxyPassword' => 'プロキシ パスワード',
+    'SimpleRiskExtras' => 'シンプルリスクエクストラ',
+    'ColumnSelections' => '列の選択',
+    'GroupAndFilteringSelections' => 'グループ化とフィルタ選択',
+    'Hyperlink' => 'ハイパーリンク',
+    'URL' => 'Url',
+    'AssetTeams'=>'アセットチーム',
+    'AssetSiteLocation'=>'アセット サイト/ロケーション',
+    'ActivatingSCFMessage' => 'コンプライアンスフォージ SCF フレームワークをインストールします。完了までに数分かかることがあります。',
+    'DeactivatingSCFMessage' => 'コンプライアンスフォージ SCF フレームワークをアンインストールします。',
+    'UpdatingSCFMessage' => 'コンプライアンスフォージ SCF フレームワークを更新しています。完了までに数分かかることがあります。',
+    'Processing' => '処理。。。',
+    'AlphabeticalOrder'=>'アルファベット順',
     '' => ''
 );
 

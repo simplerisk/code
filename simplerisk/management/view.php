@@ -435,7 +435,7 @@ if (isset($_GET['id']))
           </div>
         </div>
       </div>
-        <input type="hidden" id="enable_popup" value="<?php echo get_setting('enable_popup'); ?>">
+        <input type="hidden" id="enable_popup" value="<?php echo $escaper->escapeHtml(get_setting('enable_popup')); ?>">
           <script>
             /*
             * Function to add the css class for textarea title and make it popup.

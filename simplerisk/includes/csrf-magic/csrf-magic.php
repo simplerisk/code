@@ -263,7 +263,7 @@ function csrf_callback($tokens) {
     // If base_url session value is empty, get current base url
     if(empty($_SESSION['base_url']))
     {
-        $base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['SCRIPT_NAME']}";
+        $base_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://{$_SERVER['SERVER_NAME']}{$_SERVER['SCRIPT_NAME']}";
         $base_url = htmlspecialchars( $base_url, ENT_QUOTES, 'UTF-8' );
         $base_url = pathinfo($base_url)['dirname'];
     }

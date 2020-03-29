@@ -120,6 +120,7 @@ function display()
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
+    <script src="../js/jquery.blockUI.min.js"></script>
     <link rel="stylesheet" type="text/css" href="../css/jquery-ui.min.css" />
 
     <script src="../js/bootstrap-multiselect.js"></script>
@@ -142,12 +143,40 @@ function display()
         setup_alert_requirements("..");
     ?>
     <script type="text/javascript">
-    $(function(){
-        $("#complianceforge_frameworks").multiselect({
-            allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllFrameworks']); ?>',
-            includeSelectAllOption: true
+        function blockWithInfoMessage(message) {
+            toastr.options = {
+                "timeOut": "0",
+                "extendedTimeOut": "0",
+            }
+
+            $('#SCF_wrapper').block({
+                message: "<?php echo $escaper->escapeHtml($lang['Processing']); ?>",
+                css: { border: '1px solid black' }
+            });
+            setTimeout(function(){ toastr.info(message); }, 1);
+        }
+
+        $(function(){
+            $("#complianceforge_frameworks").multiselect({
+                allSelectedText: "<?php echo $escaper->escapeHtml($lang['AllFrameworks']); ?>",
+                includeSelectAllOption: true
+            });
+
+            $("form[name='activate']").submit(function(evt) {
+                blockWithInfoMessage("<?php echo $escaper->escapeHtml($lang['ActivatingSCFMessage']); ?>");
+                return true;
+            });
+
+            $("form[name='deactivate']").submit(function(evt) {
+                blockWithInfoMessage("<?php echo $escaper->escapeHtml($lang['DeactivatingSCFMessage']); ?>");
+                return true;
+            });
+
+            $("form[name='refresh_complianceforge_scf'], form[name='complianceforge_scf_frameworks']").submit(function(evt) {
+                blockWithInfoMessage("<?php echo $escaper->escapeHtml($lang['UpdatingSCFMessage']); ?>");
+                return true;
+            });
         });
-    });
     </script>
   </head>
 
@@ -167,7 +196,7 @@ function display()
         <div class="span9">
           <div class="row-fluid">
             <div class="span12">
-              <div class="hero-unit">
+              <div id="SCF_wrapper" class="hero-unit">
                 <h4>ComplianceForge SCF Extra</h4>
                 <?php display(); ?>
               </div>

@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Actualizar Status de Proyecto',
     'HighRiskReport'=>'Informe de Alto Riesgo',
     'TotalOpenRisks'=>'Total de Riesgos Abiertas',
-    'TotalHighRisks'=>'Total de Altos Riesgos',
-    'HighRiskPercentage'=>'Porcentaje de Alto Riesgo',
+    'NumberOfOpenRisks'=>'Total de riesgos abiertos: {$number}',
+    'RiskNumberOfRiskLevel'=>'Número total de {$display_name} Riesgos: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Porcentaje de Riesgo: {$percentage}%',
+    'RiskScoreUsing'=>'Puntuación de riesgo usando:',
+    'HighRiskReport_ScoreWarning' => 'Tenga en cuenta que, aunque el informe se muestra utilizando el botón "{$score_used}" puntuaciones, debido a la "{$next_review_date_uses_name}" ajuste que estamos calculando el "{$management_review_header}" valores de la columna utilizando el "{$next_review_date_uses_value}" puntuaciones.',
     'UpdateClassicScore'=>'Actualizar partitura clásica',
     'UpdateCVSSScore'=>'Actualización CVSS Puntuación',
     'BaseScoreMetrics'=>'Métricas Resultado de Base',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Revisar cada Riesgo Muy Alto',
     'AbleToReviewVeryHighRisks'=>'Poder revisar los riesgos muy alto',
     'AbleToReviewInsignificantRisks'=>'Poder revisar los riesgos insignificante',
-    'TotalVeryHighRisks'=>'Total de Muy Altos Riesgos',
-    'VeryHighRiskPercentage'=>'Porcentaje de Muy Alto Riesgo',
     'AllTeams'=>'Todos los Equipos',
     'FileUploadSettings'=>'Subir Archivo Ajustes',
     'AllowedFileTypes'=>'Tipos de archivo permitidos',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Use comas para separar varios correos electrónicos.',
     'RiskAssessmentQuestionnaire' => 'Cuestionario de evaluación de riesgos',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n Hola, \\n
-            <p> {$username} le ha pedido que complete el siguiente cuestionario de evaluación del riesgo:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>this  es un mensaje automatizado y las respuestas serán ignoradas o rechazadas.</p>\\n
+        <html><body>
+            Hola
+            <p> {$username} le ha pedido que complete el siguiente cuestionario de evaluación de riesgos:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Se trata de un mensaje automatizado y las respuestas se ignorarán o rechazarán.</p>
         </body></html>',
     'FilterByText' => 'Filtrar por texto',
     'SelectMitigatingControls' => 'Seleccionar control (es) de mitigación',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Sus respuestas se salvaron satisfactoriamente.',
     'QuestionnaireCompletedSuccess'=>'Completó este cuestionario con éxito.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body> \\ n Hola, \\n <p> {$conact_name} completó un cuestionario, <b>{$questionnaire_name}</b></p> \\ n <p>This es un mensaje automatizado y las respuestas serán ignoradas o rechazadas. </p> \\ n
+        <html><body>
+            Hola
+            <p> {$conact_name} cumplió un cuestionario, <b>{$questionnaire_name}</b></p>
+            <p>Se trata de un mensaje automatizado y las respuestas se ignorarán o rechazarán.</p>
         </body></html>',
     'QuestionnaireResults'=>'Resultados del cuestionario',
     'DateSent'=>'Fecha de envío',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Se agregó un nuevo marco con éxito.',
     'FrameworkUpdated'=>'Se ha actualizado satisfactoriamente un marco.',
     'FrameworkNameExist'=>'El nombre del marco ya existe.',
+    'FrameworkNameCantBeEmpty'=>'El nombre del marco de trabajo no puede estar vacío.',
+    'FrameworkCantBeItsOwnParent'=>'El marco de trabajo no puede ser su propio elemento primario.',
+    'FrameworkParentUpdated'=>'El elemento primario del marco de trabajo se actualizó correctamente.',
     'AttachmentFiles'=>'Archivos adjuntos',
     'QuestionnaireFiles'=>'Archivos de cuestionario',
     'ContactEmailAlreadyInUse'=>'El correo electrónico de contacto ya está en uso.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'El activo se actualizó correctamente.',
     'ThereWasAProblemUpdatingTheAsset' => 'Se ha tenido un problema al actualizar el activo.',
     'ImportAssetAddSucceeded' => 'Añadido{$verified_or_unverified}"activo llamado"{$asset_name}"con IP"{$asset_ip}"y el valor"{$asset_value}".',
-    'ImportAssetAddFailed' => 'No se pudo agregar "{$verified_or_unverified"activo llamado"{$asset_name}"con IP"{$asset_ip}"y el valor"{$asset_value}".',
+    'ImportAssetAddFailed' => 'No se pudo agregar "{$verified_or_unverified}" activo llamado "{$asset_name}" con IP "{$asset_ip}" y valor "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'No se requiere ninguna operación en el activo denominado "{$asset_name}"como ya está en la base de datos.',
     'ImportAssetUpdateSucceeded' => 'Actualizados{$verified_or_unverified}"activo llamado"{$asset_name}"con IP"{$asset_ip}"y el valor"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'No se pudo actualizar "{$verified_or_unverified}"activo llamado"{$asset_name}"con IP"{$asset_ip}"y el valor"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Prueba de actualización',
     'ControlEditHeader' => 'Control de actualización',
     'FrameworkEditHeader' => 'Marco de actualización',
+    'UserTeamUpdateAuditLog' => 'Usuario "{$user}" equipos actualizados de usuario "{$username}" de "{$teams_from}" a "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Usuario "{$user}" equipos actualizados de {$type} (ID:{$id}) de "{$teams_from}" a "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Eliminado "{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Añadido "{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Usuario "{$user}" elementos actualizados (tipo:"{$type}") del equipo "{$team}" de "{$items_from}" a "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Eliminado "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Añadido "{$items_added}"',
     'TeamType_test' => 'Prueba',
     'TeamType_audit' => 'Auditoría',
     'TestCreatedAuditLogMessage' => 'Prueba "{$test_name}"(ID: {$test_id}) fue creado por el usuario "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'El resultado del cuestionario se aprobó correctamente.',
     'QuestionnaireResultRejectedSuccessfully' => 'El resultado del cuestionario se ha rechazado correctamente. El correo electrónico de notificación se envía al contacto.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Hola\\n
-            <p> {$username} le ha pedido que reevalúe el siguiente cuestionario de evaluación de riesgos:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Comentarios: {$reject_comment}</p>\\n
-            <p>Se trata de un mensaje automatizado y las respuestas se ignorarán o rechazarán.</p>\\n
+        <html><body>
+            Hola
+            <p> {$username} le ha pedido que reevalúe el siguiente cuestionario de evaluación de riesgos:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Comentarios: {$reject_comment}</p>
+            <p>Se trata de un mensaje automatizado y las respuestas se ignorarán o rechazarán.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Cuestionario "${questionnaire_name}"(enviado a contactar"{$contact_name}" en "{$date}") resultado fue aprobado por el usuario "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Cuestionario "${questionnaire_name}" resultado fue rechazado y enviado de vuelta al contacto "${contact_name}" para la reevaluación por usuario "${user_name}" con comentario "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Cuestionario "{$questionnaire_name}"(enviado a contactar"{$contact_name}" en "{$date}") resultado fue aprobado por el usuario "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Cuestionario "{$questionnaire_name}" resultado fue rechazado y enviado de vuelta al contacto "{$contact_name}" para la reevaluación por usuario "{$user_name}" con comentario "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => '¿Rellene previamente las respuestas de la última evaluación?',
-    'QuestionnaireResultApprovedAuditLog' => 'Cuestionario "${questionnaire_name}"(enviado a contactar"{$contact_name}" en "{$date}") resultado fue aprobado por el usuario "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Cuestionario "${questionnaire_name}" resultado fue rechazado y enviado de vuelta al contacto "${contact_name}" para la reevaluación por usuario "${user_name}" con comentario "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Cuestionario "{$questionnaire_name}"(enviado a contactar"{$contact_name}" en "{$date}") resultado fue aprobado por el usuario "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Cuestionario "{$questionnaire_name}" resultado fue rechazado y enviado de vuelta al contacto "{$contact_name}" para la reevaluación por usuario "{$user_name}" con comentario "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Usuario "{$user_name}" añadido un comentario para el cuestionario "{$questionnaire_name}" (enviado a contactar "{$contact_name}" en "{$date}") .',
     'QuestionnaireSentAuditLog' => 'Cuestionario "{$questionnaire_name}" fue enviado a ponerse en contacto "{$contact_name}" por usuario "{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Cuestionario "{$questionnaire_name}"la finalización dio lugar a la creación de riesgo pendiente "{$subject}".',
-    'PendingRiskAddAuditLog' => 'Riesgo pendiente "{$subject}" del cuestionario "${questionnaire_name}"(enviado a contactar"{$contact_name}" en "{$date}") se añadió como Riesgo(ID: {$risk_id}) por el usuario "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Riesgo pendiente "{$subject}" del cuestionario "${questionnaire_name}"(enviado a contactar"{$contact_name}" en "{$date}") fue eliminado por el usuario "${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Riesgos pendientes del cuestionario "${questionnaire_name}"(enviado a contactar"{$contact_name}" en "{$date}") fueron eliminados por el usuario "${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Cuestionario "{$questionnaire_name}" se completó por contacto "${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Cuestionario "{$questionnaire_name}" se guardó como borrador por contacto "${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Riesgo pendiente "{$subject}" del cuestionario "{$questionnaire_name}"(enviado a contactar"{$contact_name}" en "{$date}") se añadió como Riesgo(ID: {$risk_id}) por el usuario "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Riesgo pendiente "{$subject}" del cuestionario "{$questionnaire_name}"(enviado a contactar"{$contact_name}" en "{$date}") fue eliminado por el usuario "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Riesgos pendientes del cuestionario "{$questionnaire_name}"(enviado a contactar"{$contact_name}" en "{$date}") fueron eliminados por el usuario "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Cuestionario "{$questionnaire_name}" se completó por contacto "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Cuestionario "{$questionnaire_name}" se guardó como borrador por contacto "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Informe de seguimiento de auditoría de resultados del cuestionario',
     'SubTemplate' => 'Subplantilla',
     'MitigationAccepted' => 'Mitigación aceptada',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Ver auditorías activas',
     'ViewPastAudits'=>'Ver auditorías anteriores',
     'Uninstall' => 'Desinstalar',
+    'SimpleriskUsers' => 'Usuarios de Simplerisk',
+    'QuestionnaireCompletedAuditLogByUser' => 'Cuestionario "{$questionnaire_name}" fue completado por el usuario "{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Cuestionario "{$questionnaire_name}" fue guardado como borrador por el usuario "{$contact_name}".',
+    'Internal' => 'Interna',
+    'QuestionType' => 'Tipo de pregunta',
+    'MultipleChoice' => 'Opción múltiple',
+    'FillInTheBlank' => 'Rellenar el espacio en blanco',
+    'Proxy' => 'Proxy',
+    'ProxyWebRequests' => 'Solicitudes Web de Proxy',
+    'VerifySSLCertificate' => 'Verificar certificado SSL',
+    'ProxyHostname' => 'Nombre de host de proxy / IP',
+    'ProxyPort' => 'Puerto Proxy',
+    'AuthenticatedProxy' => 'Proxy autenticado',
+    'ProxyUsername' => 'Nombre de usuario de proxy',
+    'ProxyPassword' => 'Contraseña de proxy',
+    'SimpleRiskExtras' => 'SimpleRisk Extras',
+    'ColumnSelections' => 'Selecciones de columnas',
+    'GroupAndFilteringSelections' => 'Selección de grupo y filtrado',
+    'Hyperlink' => 'Hipervínculo',
+    'URL' => 'Url',
+    'AssetTeams'=>'Equipo(s) de activos(s)',
+    'AssetSiteLocation'=>'Sitio/Ubicación de Activos',
+    'ActivatingSCFMessage' => 'Instalación del marco ComplianceForge SCF. Esto puede tardar varios minutos en completarse.',
+    'DeactivatingSCFMessage' => 'Desinstalación del marco De ComplianceForge SCF.',
+    'UpdatingSCFMessage' => 'Actualización del marco De ComplianceForge SCF. Esto puede tardar varios minutos en completarse.',
+    'Processing' => 'Tratamiento...',
+    'AlphabeticalOrder'=>'Orden alfabético',
     '' => ''
 );
 

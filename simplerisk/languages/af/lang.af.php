@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Projek statusse opdateer',
     'HighRiskReport'=>'Hoë risiko verslag',
     'TotalOpenRisks'=>'Totale oop risiko\'s',
-    'TotalHighRisks'=>'Totale hoë risiko\'s',
-    'HighRiskPercentage'=>'Hoë risiko persentasie',
+    'NumberOfOpenRisks'=>'Totale oop risiko\'s: {$number}',
+    'RiskNumberOfRiskLevel'=>'Totale aantal {$display_name} Risiko\'s: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Risiko persentasie: {$percentage}%',
+    'RiskScoreUsing'=>'Risikotelling met:',
+    'HighRiskReport_ScoreWarning' => 'Neem asseblief kennis dat selfs al is die verslag vertoon met behulp van die "{$score_used}"tellings, as gevolg van die"{$next_review_date_uses_name}"die instelling is dat ons die{$management_review_header}"kolom se waardes met behulp van die"{$next_review_date_uses_value}tellings.',
     'UpdateClassicScore'=>'Bywerking klassieke telling',
     'UpdateCVSSScore'=>'Dateer CVSS telling',
     'BaseScoreMetrics'=>'Basis-telling Metrics',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Ek wil baie hoë risiko hersien elke',
     'AbleToReviewVeryHighRisks'=>'Kan hersien baie hoë risiko\'s',
     'AbleToReviewInsignificantRisks'=>'Kan hersien onbeduidende risiko\'s',
-    'TotalVeryHighRisks'=>'Totale baie hoë risiko\'s',
-    'VeryHighRiskPercentage'=>'Baie hoë risiko persentasie',
     'AllTeams'=>'Alle spanne',
     'FileUploadSettings'=>'Lêer oplaai instellings',
     'AllowedFileTypes'=>'Toegelaat lêertipes',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Gebruik kommas om te skei verskeie e-posse.',
     'RiskAssessmentQuestionnaire' => 'Risiko assessering vraelys',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n Hallo, \\n
-            <p> {$username} vra jou voltooi die volgende risiko assessering vraelys:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>dit  is \'n outomatiese boodskap en reaksies sal geïgnoreer word of verwerp.</p>\\n
+        <html><body>
+            Hallo
+            <p> {$username} het jou gevra om die volgende risiko-assesseringsvraelys te voltooi:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Hierdie is \'n outomatiese boodskap en antwoorde sal geïgnoreer of verwerp word.</p>
         </body></html>',
     'FilterByText' => 'Filter volgens teks',
     'SelectMitigatingControls' => 'Kies Control(s) versag',
@@ -779,9 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Jou antwoorde is suksesvol gestoor.',
     'QuestionnaireCompletedSuccess'=>'Jy hierdie vraelys suksesvol voltooi.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body>\\n Hallo, \\n
-            <p> {$conact_name} voltooi \'n vraelys, <b>{$questionnaire_name}</b></p>\\n
-            <p>dit is \'n outomatiese boodskap en reaksies sal geïgnoreer word of verwerp.</p>\\n
+        <html><body>
+            Hallo
+            <p> {$conact_name} \'n vraelys voltooi, <b>{$questionnaire_name}</b></p>
+            <p>Hierdie is \'n outomatiese boodskap en antwoorde sal geïgnoreer of verwerp word.</p>
         </body></html>',
     'QuestionnaireResults'=>'Vraelys resultate',
     'DateSent'=>'Datum gestuur',
@@ -794,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'\'N nuwe raamwerk is suksesvol bygevoeg.',
     'FrameworkUpdated'=>'\'N raamwerk is suksesvol bygewerk.',
     'FrameworkNameExist'=>'Die raamwerk naam bestaan reeds.',
+    'FrameworkNameCantBeEmpty'=>'Die raamnaamnaam kan nie leeg wees nie.',
+    'FrameworkCantBeItsOwnParent'=>'Die raamwerk kan nie sy eie ouer wees nie.',
+    'FrameworkParentUpdated'=>'Die raamwerk se ouer het suksesvol opgedateer.',
     'AttachmentFiles'=>'Aanhegsel lêers',
     'QuestionnaireFiles'=>'Vraelys lêers',
     'ContactEmailAlreadyInUse'=>'Die kontak e-pos is reeds in gebruik.',
@@ -1144,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Bate is suksesvol bygewerk.',
     'ThereWasAProblemUpdatingTheAsset' => 'Daar was \'n probleem met die bywerking van die bate.',
     'ImportAssetAddSucceeded' => 'Bygevoeg"{$verified_or_unverified}"bate genaamd"{$asset_name}"met IP"{$asset_ip}"en waarde"{$asset_value}".',
-    'ImportAssetAddFailed' => 'Kon nie "{Voeg$verified_or_unverified"bate genaamd"{$asset_name}"met IP"{$asset_ip}"en waarde"{$asset_value}".',
+    'ImportAssetAddFailed' => 'Kon nie byvoeg nie "{$verified_or_unverified}"bate genaamd"{$asset_name}"met IP"{$asset_ip}"en waarde"{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Geen bewerking vereis op bate genaamd"{$asset_name}"as dit is reeds in die databasis.',
     'ImportAssetUpdateSucceeded' => 'Bygewerk"{$verified_or_unverified}"bate genaamd"{$asset_name}"met IP"{$asset_ip}"en waarde"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Het misluk om te werk"{$verified_or_unverified}"bate genaamd"{$asset_name}"met IP"{$asset_ip}"en waarde"{$asset_value}".',
@@ -1396,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Opdateringstoets',
     'ControlEditHeader' => 'Bywerkkontrole',
     'FrameworkEditHeader' => 'Opdateer raamwerk',
+    'UserTeamUpdateAuditLog' => 'Gebruiker{$user}"opgedateerde spanne van gebruiker"{$username}van{$teams_from}om te{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Gebruiker{$user}"opgedateerde spanne van {$type} ID{$id}van{$teams_from}om te{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Verwyder{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Bygevoeg{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Gebruiker{$user}"opgedateerde items (tipe:"{$type}") van span"{$team}van{$items_from}om te{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Verwyder{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Bygevoeg{$items_added}"',
     'TeamType_test' => 'Toets',
     'TeamType_audit' => 'Oudit',
     'TestCreatedAuditLogMessage' => 'Toets{$test_name}"(ID: {$test_id}) is geskep deur die gebruiker "{$user}".',
@@ -1504,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Vraelys se resultaat is suksesvol goedgekeur.',
     'QuestionnaireResultRejectedSuccessfully' => 'Vraelys se resultaat is suksesvol verwerp. Kennisgewinge-pos word na die kontak gestuur.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Hallo\\n
-            <p> {$username} het u gevra om die volgende risikoassesseringsvraelys weer te evalueer:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Kommentaar: {$reject_comment}</p>\\n
-            <p>Hierdie is \'n outomatiese boodskap en antwoorde sal geïgnoreer of verwerp word.</p>\\n
+        <html><body>
+            Hallo
+            <p> {$username} het u gevra om die volgende risiko-assesseringsvraelys weer te evalueer:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Kommentaar: {$reject_comment}</p>
+            <p>Hierdie is \'n outomatiese boodskap en antwoorde sal geïgnoreer of verwerp word.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Vraelys${questionnaire_name}"(gestuur na kontak"{$contact_name}op{$date}") gevolg is goedgekeur deur die gebruiker"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Vraelys${questionnaire_name}"gevolg is verwerp en teruggestuur na kontak"${contact_name}"vir herevaluering deur die gebruiker"${user_name}"met kommentaar"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Vraelys{$questionnaire_name}"(gestuur na kontak"{$contact_name}op{$date}") resultaat is goedgekeur deur die gebruiker"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Vraelys{$questionnaire_name}"resultaat is verwerp en teruggestuur om te kontak"{$contact_name}"vir herevaluering deur gebruiker"{$user_name}"met kommentaar"{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Pre-vul met antwoorde van laaste assessering?',
-    'QuestionnaireResultApprovedAuditLog' => 'Vraelys${questionnaire_name}"(gestuur na kontak"{$contact_name}op{$date}") resultaat is goedgekeur deur die gebruiker"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Vraelys${questionnaire_name}"resultaat is verwerp en teruggestuur om te kontak"${contact_name}"vir herevaluering deur gebruiker"${user_name}"met kommentaar"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Vraelys{$questionnaire_name}"(gestuur na kontak"{$contact_name}op{$date}") resultaat is goedgekeur deur die gebruiker"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Vraelys{$questionnaire_name}"resultaat is verwerp en teruggestuur om te kontak"{$contact_name}"vir herevaluering deur gebruiker"{$user_name}"met kommentaar"{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Gebruiker{$user_name}"het \'n opmerking vir vraelys bygevoeg"{$questionnaire_name}"(gestuur na kontak"{$contact_name}op{$date}") resultaat.',
     'QuestionnaireSentAuditLog' => 'Vraelys{$questionnaire_name}"is gestuur om te kontak"{$contact_name}"deur gebruiker"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Vraelys{$questionnaire_name}"se voltooiing het gelei tot die skep van hangende risiko"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Hangende risiko "{$subject}"van vraelys"${questionnaire_name}"(gestuur na kontak"{$contact_name}op{$date}") is bygevoeg as risiko (ID: {$risk_id}) deur gebruiker "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Hangende risiko "{$subject}"van vraelys"${questionnaire_name}"(gestuur na kontak"{$contact_name}op{$date}") is deur die gebruiker geskrap"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Hangende risiko\'s van vraelys "${questionnaire_name}"(gestuur na kontak"{$contact_name}op{$date}") is deur die gebruiker geskrap"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Vraelys{$questionnaire_name}"is voltooi deur kontak"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Vraelys{$questionnaire_name}"is gered as konsep deur kontak"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Hangende risiko "{$subject}"van vraelys"{$questionnaire_name}"(gestuur na kontak"{$contact_name}op{$date}") is bygevoeg as risiko (ID: {$risk_id}) deur gebruiker "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Hangende risiko "{$subject}"van vraelys"{$questionnaire_name}"(gestuur na kontak"{$contact_name}op{$date}") is deur gebruiker geskrap"{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Hangende risiko\'s van vraelys "{$questionnaire_name}"(gestuur na kontak"{$contact_name}op{$date}") is deur gebruiker geskrap"{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Vraelys{$questionnaire_name}"is deur kontak voltooi"{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Vraelys{$questionnaire_name}"is gered as konsep deur kontak"{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Vraelys resultaat oudit-roete-verslag',
     'SubTemplate' => 'Sub sjabloon',
     'MitigationAccepted' => 'Versagting aanvaar',
@@ -1645,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Bekyk aktiewe oudits',
     'ViewPastAudits'=>'Kyk verby oudits',
     'Uninstall' => 'Deïnstalleer',
+    'SimpleriskUsers' => 'Simplerisk gebruikers',
+    'QuestionnaireCompletedAuditLogByUser' => 'Vraelys{$questionnaire_name}"is deur die gebruiker voltooi"{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Vraelys{$questionnaire_name}"is gered as konsep deur die gebruiker"{$contact_name}".',
+    'Internal' => 'Interne',
+    'QuestionType' => 'Vraag tipe',
+    'MultipleChoice' => 'Verskeie keuse',
+    'FillInTheBlank' => 'Vul die leë',
+    'Proxy' => 'Gevolmagtigde',
+    'ProxyWebRequests' => 'Instaanwebversoeke',
+    'VerifySSLCertificate' => 'Verifieer SSL-sertifikaat',
+    'ProxyHostname' => 'Proxy Hostname/IP',
+    'ProxyPort' => 'Proxy Port',
+    'AuthenticatedProxy' => 'Bekragtig Proxy',
+    'ProxyUsername' => 'Proxy username',
+    'ProxyPassword' => 'Proxy wagwoord',
+    'SimpleRiskExtras' => 'SimpleRisk ekstras',
+    'ColumnSelections' => 'Kolom keuses',
+    'GroupAndFilteringSelections' => 'Groepeer-en Filterseleksies',
+    'Hyperlink' => 'Hiperskakel',
+    'URL' => 'Url',
+    'AssetTeams'=>'Batespan (e)',
+    'AssetSiteLocation'=>'Batewebwerf/ligging',
+    'ActivatingSCFMessage' => 'Installering van die ComplianceForge SCF Framework. Dit kan etlike minute neem om te voltooi.',
+    'DeactivatingSCFMessage' => 'Deïnstalleer die ComplianceForge SCF Framework.',
+    'UpdatingSCFMessage' => 'Opdatering van die ComplianceForge SCF Framework. Dit kan etlike minute neem om te voltooi.',
+    'Processing' => 'Verwerking...',
+    'AlphabeticalOrder'=>'Alfabetiese volgorde',
     '' => ''
 );
 

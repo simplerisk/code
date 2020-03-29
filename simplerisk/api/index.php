@@ -73,6 +73,7 @@
 
         // RISK API from form
         getRoute()->get('/reports/appetite', 'appetite_report_api');
+        getRoute()->post('/reports/high_risk', 'high_risk_report_datatable');
 
         getRoute()->post('/management/risk/reopen', 'reopenForm');
         getRoute()->get('/management/risk/overview', 'overviewForm');
@@ -108,7 +109,7 @@
 
         getRoute()->post('/assessment/update', 'updateAssessment');
 
-        getRoute()->get('/datatable/framework_controls', 'getFrameworkControlsDatatable');
+        getRoute()->post('/datatable/framework_controls', 'getFrameworkControlsDatatable');
         getRoute()->get('/datatable/mitigation_controls', 'getMitigationControlsDatatable');
         getRoute()->get('/role_responsibilities/get_responsibilities', 'getResponsibilitiesByRoleIdForm');
 
@@ -166,10 +167,11 @@
         getRoute()->post('/assessment/questionnaire/result/reject', 'assessment_extra_rejectResultAPI');
         getRoute()->post('/assessment/questionnaire/result/audit_log', 'get_questionnaire_result_audit_log_api');
         getRoute()->get('/assessment/questionnaire/analysis/dynamic', 'assessment_extra_questionnaireAnalysisDynamicAPI');
+        getRoute()->get('/assessment/contacts-users/options', 'assessment_extra_questionnaireContactsUsersOptionsAPI');
         /******************************************************************************/
         
         /**************************** Notification API ********************************/
-        getRoute()->post('/notification/save_settings', 'notification_extra_saveSettingsAPI');
+        getRoute()->post('/notification/save_settings_or_run_now', 'notification_extra_saveSettingsRunNowAPI');
         /******************************************************************************/
 
         /******************************* Audit Log API **********************************/

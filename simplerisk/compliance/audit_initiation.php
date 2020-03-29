@@ -57,41 +57,23 @@ include_csrf_magic();
 enforce_permission_compliance();
 
 // Check if a framework was updated
-if (isset($_POST['update_framework']))
-{
-  $framework_id = (int)$_POST['framework_id'];
-  $parent       = (int)$_POST['parent'];
-  $name         = $escaper->escapeHtml($_POST['framework_name']);
-  $descripiton  = $escaper->escapeHtml($_POST['framework_description']);
+if (isset($_POST['update_framework'])) {
 
-  // Check if the framework name is null
-  if (isset($name) && $name == "")
-  {
-    // Display an alert
-    set_alert(true, "bad", "The framework name cannot be empty.");
-  }
-  // Otherwise
-  else
-  {
+    $framework_id = (int)$_POST['framework_id'];
+    $parent       = (int)$_POST['parent'];
+    $name         = $escaper->escapeHtml($_POST['framework_name']);
+    $descripiton  = $escaper->escapeHtml($_POST['framework_description']);
+
     // Check if user has a permission to modify framework
-    if(empty($_SESSION['modify_frameworks']))
-    {
-        set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyFrameworkPermission']));
-    }
-    // Update framework
-    elseif(update_framework($framework_id, $name, $descripiton, $parent))
-    {
-        // Display an alert
-        set_alert(true, "good", $escaper->escapeHtml($lang['FrameworkUpdated']));
-    }
-    else
-    {
-        // Display an alert
-        set_alert(true, "bad", $escaper->escapeHtml($lang['FrameworkNameExist']));
+    if(has_permission('modify_frameworks')){
+        if (update_framework($framework_id, $name, $descripiton, $parent)) {
+            set_alert(true, "good", $lang['FrameworkUpdated']);
+        }
+    } else {
+        set_alert(true, "bad", $lang['NoModifyFrameworkPermission']);
     }
 
-  }
-  refresh();
+    refresh();
 }
 
 // Update if a control was updated
@@ -113,7 +95,7 @@ if (isset($_POST['update_control']))
         'long_name' => isset($_POST['long_name']) ? $_POST['long_name'] : "",
         'description' => isset($_POST['description']) ? $_POST['description'] : "",
         'supplemental_guidance' => isset($_POST['supplemental_guidance']) ? $_POST['supplemental_guidance'] : "",
-        'framework_ids' => isset($_POST['frameworks']) ? $_POST['frameworks'] : "",
+        'framework_ids' => isset($_POST['frameworks']) ? $_POST['frameworks'] : [],
         'control_owner' => isset($_POST['control_owner']) ? (int)$_POST['control_owner'] : 0,
         'control_class' => isset($_POST['control_class']) ? (int)$_POST['control_class'] : 0,
         'control_phase' => isset($_POST['control_phase']) ? (int)$_POST['control_phase'] : 0,

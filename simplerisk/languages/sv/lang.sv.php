@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Uppdatera Projektets Status',
     'HighRiskReport'=>'Hög Risk Rapport',
     'TotalOpenRisks'=>'Totalt Öppna Risker',
-    'TotalHighRisks'=>'Totalt Höga Risker',
-    'HighRiskPercentage'=>'Hög Risk Procent',
+    'NumberOfOpenRisks'=>'Totala öppna risker: {$number}',
+    'RiskNumberOfRiskLevel'=>'Totalt antal {$display_name} Risker: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Riskprocent: {$percentage}%',
+    'RiskScoreUsing'=>'Riskpoäng med hjälp av:',
+    'HighRiskReport_ScoreWarning' => 'Observera att även om rapporten visas med hjälp av "{$score_used}" poäng, på grund av "{$next_review_date_uses_name}" inställning vi beräknar "{$management_review_header}" kolumnens värden med hjälp av "{$next_review_date_uses_value}" poäng.',
     'UpdateClassicScore'=>'Uppdatera klassiska Poäng',
     'UpdateCVSSScore'=>'Uppdatering CVSS Betyg',
     'BaseScoreMetrics'=>'Poäng Statistik',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Jag vill att granska en MYCKET HÖG risk varje',
     'AbleToReviewVeryHighRisks'=>'Kunna Granska en Mycket Hög risk',
     'AbleToReviewInsignificantRisks'=>'Kunna Granska Obetydliga Risker',
-    'TotalVeryHighRisks'=>'Totalt Mycket Höga Risker',
-    'VeryHighRiskPercentage'=>'Mycket Hög Risk Procent',
     'AllTeams'=>'Alla Lag',
     'FileUploadSettings'=>'Ladda Upp Fil Inställningar',
     'AllowedFileTypes'=>'Tillåtna Filtyper',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Använd kommatecken för att separera flera e-postmeddelanden.',
     'RiskAssessmentQuestionnaire' => 'Frågeformulär för riskbedömning',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n Hej, \\n
-            <p> {$username} har bett dig att fylla i följande riskbedömning frågeformulär:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>detta  är ett automatiskt meddelande och svar kommer att ignoreras eller avvisas.</p>\\n
+        <html><body>
+            Hej
+            <p> {$username} har bett dig fylla i följande frågeformulär för riskbedömning:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Detta är ett automatiserat meddelande och svar kommer att ignoreras eller avvisas.</p>
         </body></html>',
     'FilterByText' => 'Filtrera efter text',
     'SelectMitigatingControls' => 'Välj förmildrande kontroll (er)',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Dina svar har sparats.',
     'QuestionnaireCompletedSuccess'=>'Du har slutfört enkäten.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body> \\ n Hej, \\n <p> {$conact_name} slutfört en enkät, <b>{$questionnaire_name}</b></p> \\ n <p>This är ett automatiskt meddelande och svar kommer att ignoreras eller avvisas. </p> \\ n
+        <html><body>
+            Hej
+            <p> {$conact_name} Fyllt i ett frågeformulär. <b>{$questionnaire_name}</b></p>
+            <p>Detta är ett automatiserat meddelande och svar kommer att ignoreras eller avvisas.</p>
         </body></html>',
     'QuestionnaireResults'=>'Enkätresultat',
     'DateSent'=>'Datum skickat',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Ett nytt ramverk har lagts till.',
     'FrameworkUpdated'=>'Ett ramverk har uppdaterats.',
     'FrameworkNameExist'=>'Ramnamnet finns redan.',
+    'FrameworkNameCantBeEmpty'=>'Ramnamnet kan inte vara tomt.',
+    'FrameworkCantBeItsOwnParent'=>'Ramverket kan inte vara sin egen förälder.',
+    'FrameworkParentUpdated'=>'Ramverkets överordnade har uppdaterats.',
     'AttachmentFiles'=>'Bifogade filer',
     'QuestionnaireFiles'=>'Enkät filer',
     'ContactEmailAlreadyInUse'=>'Kontakt-e-postmeddelandet används redan.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Tillgången har uppdaterats.',
     'ThereWasAProblemUpdatingTheAsset' => 'Ett problem uppstod vid uppdatering av tillgången.',
     'ImportAssetAddSucceeded' => 'Läggs{$verified_or_unverified}"tillgång som heter"{$asset_name}"med IP"{$asset_ip}"och värde"{$asset_value}".',
-    'ImportAssetAddFailed' => 'Det gick inte att lägga till "{$verified_or_unverified"tillgång som heter"{$asset_name}"med IP"{$asset_ip}"och värde"{$asset_value}".',
+    'ImportAssetAddFailed' => 'Det gick inte att lägga till "{$verified_or_unverified}" tillgång som heter "{$asset_name}" med IP "{$asset_ip}" och värde "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Ingen åtgärd krävs på tillgång som heter "{$asset_name}"som det redan finns i databasen.',
     'ImportAssetUpdateSucceeded' => 'Uppdaterad{$verified_or_unverified}"tillgång som heter"{$asset_name}"med IP"{$asset_ip}"och värde"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Det gick inte att uppdatera "{$verified_or_unverified}"tillgång som heter"{$asset_name}"med IP"{$asset_ip}"och värde"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Uppdatera test',
     'ControlEditHeader' => 'Uppdatera kontroll',
     'FrameworkEditHeader' => 'Uppdatera ramverk',
+    'UserTeamUpdateAuditLog' => 'Användare "{$user}" uppdaterade användarteam "{$username}" från "{$teams_from}" till "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Användar{$user}"uppdaterade lag av {$type} -ID{$id}från{$teams_from}att{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Bort{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Läggs{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Användare "{$user}" uppdaterade objekt (typ:"{$type}") av laget ", av laget ",{$team}" från "{$items_from}" till "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Borttagen "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Tillagd "{$items_added}"',
     'TeamType_test' => 'Test',
     'TeamType_audit' => 'Revision',
     'TestCreatedAuditLogMessage' => 'Test{$test_name}"(ID: {$test_id}) skapades av användaren "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Enkätresultatet godkändes framgångsrikt.',
     'QuestionnaireResultRejectedSuccessfully' => 'Enkätresultatet har avvisats. E-postavisering skickas till kontakten.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Hej\\n
-            <p> {$username} har bett dig att omvärdera följande riskbedömnings Enkät:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Kommentarer: {$reject_comment}</p>\\n
-            <p>Detta är ett automatiserat meddelande och svar kommer att ignoreras eller avvisas.</p>\\n
+        <html><body>
+            Hej
+            <p> {$username} har bett dig att omvärdera följande frågeformulär för riskbedömning:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Kommentarer: {$reject_comment}</p>
+            <p>Detta är ett automatiserat meddelande och svar kommer att ignoreras eller avvisas.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Enkät${questionnaire_name}"(skickas till kontakt"{$contact_name}på{$date}") resultatet godkändes av användaren"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Enkät${questionnaire_name}"resultatet avvisades och skickades tillbaka till kontakt"${contact_name}"för förnyad utvärdering av användare"${user_name}"med kommentar"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Frågeformulär "{$questionnaire_name}"(skickas för att kontakta"{$contact_name}" på "{$date}") godkändes resultatet av användaren "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Frågeformulär "{$questionnaire_name}" resultatet avvisades och skickades tillbaka för att kontakta "{$contact_name}" för omvärdering av användaren "{$user_name}" med kommentar "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Fyll i förväg med svar från den senaste utvärderingen?',
-    'QuestionnaireResultApprovedAuditLog' => 'Enkät${questionnaire_name}"(skickas till kontakt"{$contact_name}på{$date}") resultatet godkändes av användaren"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Enkät${questionnaire_name}"resultatet avvisades och skickades tillbaka till kontakt"${contact_name}"för förnyad utvärdering av användare"${user_name}"med kommentar"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Frågeformulär "{$questionnaire_name}"(skickas för att kontakta"{$contact_name}" på "{$date}") godkändes resultatet av användaren "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Frågeformulär "{$questionnaire_name}" resultatet avvisades och skickades tillbaka för att kontakta "{$contact_name}" för omvärdering av användaren "{$user_name}" med kommentar "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Användar{$user_name}"lade till en kommentar för enkät"{$questionnaire_name}"(skickas till kontakt"{$contact_name}på{$date}") resultat.',
     'QuestionnaireSentAuditLog' => 'Enkät{$questionnaire_name}"skickades till kontakt"{$contact_name}"efter användare"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Enkät{$questionnaire_name}"är avslutad resulterade i att skapa väntande risk"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Avvaktande risk "{$subject}"av enkät"${questionnaire_name}"(skickas till kontakt"{$contact_name}på{$date}") lades till som risk (ID: {$risk_id}) efter användare "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Avvaktande risk "{$subject}"av enkät"${questionnaire_name}"(skickas till kontakt"{$contact_name}på{$date}") togs bort av användaren"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Pågående risker med enkät "${questionnaire_name}"(skickas till kontakt"{$contact_name}på{$date}") har raderats av användaren"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Enkät{$questionnaire_name}"slutfördes av kontakt"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Enkät{$questionnaire_name}"sparades som utkast av kontakt"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Väntande risk "{$subject}" av frågeformulär "{$questionnaire_name}"(skickas för att kontakta"{$contact_name}" på "{$date}") lades till som risk(ID: {$risk_id}) av användaren "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Väntande risk "{$subject}" av frågeformulär "{$questionnaire_name}"(skickas för att kontakta"{$contact_name}" på "{$date}") har tagits bort av användaren "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Pågående risker med frågeformulär "{$questionnaire_name}"(skickas för att kontakta"{$contact_name}" på "{$date}") togs bort av användaren "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Frågeformulär "{$questionnaire_name}" slutfördes genom kontakt "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Frågeformulär "{$questionnaire_name}" sparades som utkast av kontakt "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Rapport över granskningsspår för enkätresultat',
     'SubTemplate' => 'Undermall',
     'MitigationAccepted' => 'Begränsning accepteras',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Visa aktiva revisioner',
     'ViewPastAudits'=>'Visa tidigare revisioner',
     'Uninstall' => 'Avinstallera',
+    'SimpleriskUsers' => 'Simplerisk Användare',
+    'QuestionnaireCompletedAuditLogByUser' => 'Frågeformulär "{$questionnaire_name}" slutfördes av användaren "{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Frågeformulär "{$questionnaire_name}" sparades som utkast av användare "{$contact_name}".',
+    'Internal' => 'Interna',
+    'QuestionType' => 'Typ av fråga',
+    'MultipleChoice' => 'Flervalsval',
+    'FillInTheBlank' => 'Fyll i tomrummet',
+    'Proxy' => 'Proxy',
+    'ProxyWebRequests' => 'Begäran om proxywebb',
+    'VerifySSLCertificate' => 'Verifiera SSL-certifikat',
+    'ProxyHostname' => 'Proxy Värdnamn / IP',
+    'ProxyPort' => 'Proxyport',
+    'AuthenticatedProxy' => 'Autentiserat ombud',
+    'ProxyUsername' => 'Användarnamn för proxy',
+    'ProxyPassword' => 'Proxy lösenord',
+    'SimpleRiskExtras' => 'SimpleRisk Extras',
+    'ColumnSelections' => 'Kolumnval',
+    'GroupAndFilteringSelections' => 'Gruppera och filtrera markeringar',
+    'Hyperlink' => 'Hyperlänk',
+    'URL' => 'Url',
+    'AssetTeams'=>'Tillgångsteam(er)',
+    'AssetSiteLocation'=>'Plats/plats för tillgångar',
+    'ActivatingSCFMessage' => 'Installera ComplianceForge SCF-ramverket. Detta kan ta flera minuter att slutföra.',
+    'DeactivatingSCFMessage' => 'Avinstallera ComplianceForge SCF-ramverket.',
+    'UpdatingSCFMessage' => 'Uppdatera ComplianceForge SCF-ramverket. Detta kan ta flera minuter att slutföra.',
+    'Processing' => 'Bearbetning...',
+    'AlphabeticalOrder'=>'Alfabetisk ordning',
     '' => ''
 );
 

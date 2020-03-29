@@ -69,7 +69,7 @@ if(isset($_POST['add_test'])){
     $approximate_time           = !empty($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
     $expected_results           = $_POST['expected_results'];
     $framework_control_id       = (int)$_POST['framework_control_id'];
-    $teams                      = isset($_POST['team']) ? $_POST['team'] : [];
+    $teams                      = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
 
     if (!$last_date)
         $last_date = "0000-00-00";
@@ -116,7 +116,7 @@ if(isset($_POST['update_test'])){
     
     $today_dt                   = strtotime(date('Ymd'));
     $tester                     = (int)$_POST['tester'];
-    $teams                      = isset($_POST['team']) ? $_POST['team'] : [];
+    $teams                      = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
     $additional_stakeholders    = empty($_POST['additional_stakeholders_edit']) ? "" : implode(",", $_POST['additional_stakeholders_edit']);
     $test_frequency             = (int)$_POST['test_frequency'];
     $last_date                  = get_standard_date_from_default_format($_POST['last_date']);
@@ -172,7 +172,7 @@ if(isset($_POST['update_test'])){
     set_alert(true, "good", $lang['TestSuccessUpdated']);
     
     // Refresh current page
-    refresh();
+    //refresh();
 }
 
 // Check if deleting test
@@ -195,7 +195,7 @@ if(isset($_POST['delete_test'])){
     set_alert(true, "good", $lang['SuccessTestDeleted']);
     
     // Refresh current page
-    refresh();
+    //refresh();
 }
 
 ?>
@@ -251,14 +251,22 @@ if(isset($_POST['delete_test'])){
             <div class="span9 compliance-content-container">
                 <div class="row-fluid">
                     <div class="span12">
-                        <span><?php echo $escaper->escapeHtml($lang['ControlFramework']); ?>: &nbsp;</span>
+                        <span><?php echo $escaper->escapeHtml($lang['ControlFramework']);?>: &nbsp;</span>
                         <select id="filter_by_control_framework" class="form-field form-control" multiple="multiple">
                             <?php 
-                                echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
+                                $filter_by_control = array();
+                                if(isset($_POST['filter_by_control'])) $filter_by_control = explode(",",$_POST['filter_by_control']);
+                                if(in_array("-1",$filter_by_control) || count($filter_by_control)== 0) 
+                                    echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
+                                else 
+                                    echo "<option value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
                                 $options = getAvailableControlFrameworkList();
                                 is_array($options) || $options = array();
                                 foreach($options as $option){
-                                    echo "<option selected value=\"".(int)$option['value']."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                                    if(in_array($option['value'],$filter_by_control) || count($filter_by_control)== 0)
+                                        echo "<option selected value=\"".(int)$option['value']."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                                    else 
+                                        echo "<option value=\"".(int)$option['value']."\">".$escaper->escapeHtml($option['name'])."</option>\n";
                                 }
                             ?>
                         </select>
@@ -283,7 +291,7 @@ if(isset($_POST['delete_test'])){
         <div class="modal-body">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['TestName']); ?></label>
-            <input type="text" name="name" required="" value="" class="form-control">
+            <input type="text" name="name" required="" value="" class="form-control" maxlength="100">
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
             <?php create_dropdown("enabled_users", NULL, "tester", false, false, false); ?>
@@ -295,7 +303,7 @@ if(isset($_POST['delete_test'])){
             <?php create_multiple_dropdown("team"); ?>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?></label>
-            <input type="number" min="0" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
+            <input type="number" min="0" max="2147483647" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
             
             <label for=""><?php echo $escaper->escapeHtml($lang['LastTestDate']); ?></label>
             <input type="text" name="last_date" value="" class="form-control datepicker">
@@ -307,12 +315,13 @@ if(isset($_POST['delete_test'])){
             <textarea name="test_steps" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ApproximateTime']); ?></label>
-            <input type="number" min="0" name="approximate_time" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['minutes']); ?>)</span>
+            <input type="number" min="0" max="2147483647" name="approximate_time" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['minutes']); ?>)</span>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ExpectedResults']); ?></label>
             <textarea name="expected_results" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <input type="hidden" name="framework_control_id" value="">
+            <input type="hidden" name="filter_by_control" value="">
 
           </div>
         </div>
@@ -333,7 +342,7 @@ if(isset($_POST['delete_test'])){
         <div class="modal-body">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['TestName']); ?></label>
-            <input type="text" name="name" required="" value="" class="form-control">
+            <input type="text" name="name" required="" value="" class="form-control" maxlength="100">>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
             <?php create_dropdown("enabled_users", NULL, "tester", false, false, false); ?>
@@ -345,7 +354,7 @@ if(isset($_POST['delete_test'])){
             <?php create_multiple_dropdown("team"); ?>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['TestFrequency']); ?></label>
-            <input type="number" min="0" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
+            <input type="number" min="0" max="2147483647" name="test_frequency" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
             
             <label for=""><?php echo $escaper->escapeHtml($lang['LastTestDate']); ?></label>
             <input type="text" name="last_date" value="" class="form-control datepicker"> 
@@ -360,12 +369,13 @@ if(isset($_POST['delete_test'])){
             <textarea name="test_steps" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ApproximateTime']); ?></label>
-            <input type="number" min="0" name="approximate_time" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['minutes']); ?>)</span>
+            <input type="number" min="0" max="2147483647" name="approximate_time" value="" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['minutes']); ?>)</span>
 
             <label for=""><?php echo $escaper->escapeHtml($lang['ExpectedResults']); ?></label>
             <textarea name="expected_results" class="form-control" rows="6" style="width:100%;"></textarea>
 
             <input type="hidden" name="test_id" value="">
+            <input type="hidden" name="filter_by_control" value="">
 
           </div>
         </div>
@@ -384,6 +394,7 @@ if(isset($_POST['delete_test'])){
           <div class="form-group text-center">
             <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisTest']); ?></label>
             <input type="hidden" name="test_id" value="" />
+            <input type="hidden" name="filter_by_control" value="">
           </div>
 
           <div class="form-group text-center project-delete-actions">
@@ -404,6 +415,10 @@ if(isset($_POST['delete_test'])){
             //Have to remove the 'fade' class for the shown event to work for modals
             $('#test--add, #test--edit').on('shown.bs.modal', function() {
                 $(this).find('.modal-body').scrollTop(0);
+            });
+            $("form").submit(function(e){
+                $("input[name=filter_by_control]").val($("#filter_by_control_framework").val());
+                return true;
             });
         });
     </script>

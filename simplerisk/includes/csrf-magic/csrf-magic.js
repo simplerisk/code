@@ -233,30 +233,3 @@ function retryCSRF(xhr, self)
     }
 }
 
-
-/**
-Need this function to be able to re-send the datatable's request when it's failing
-because of an expired csrf magic token
-**/
-function retryDatatableCSRF(xhr, api) {
-    if(retryCSRFCount >= 5){
-        retryCSRFCount = 0;
-        return true;
-    }
-
-    var obj = $('<div/>').html(xhr.responseText);
-    var token = obj.find('input[name=\"__csrf_magic\"]').val();
-    if(token)
-    {
-        $('input[name=\"__csrf_magic\"]').val(token);
-        csrfMagicToken = token;
-        api.ajax.reload();
-        retryCSRFCount++;
-        return true;
-    }
-    else
-    {
-        retryCSRFCount = 0;
-        return false;
-    }
-}

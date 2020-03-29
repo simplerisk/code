@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'更新项目的状况',
     'HighRiskReport'=>'高风险的报告',
     'TotalOpenRisks'=>'总共开放的风险',
-    'TotalHighRisks'=>'总的高风险',
-    'HighRiskPercentage'=>'高风险的百分比',
+    'NumberOfOpenRisks'=>'總開放風險： {$number}',
+    'RiskNumberOfRiskLevel'=>'總數 {$display_name} 風險： {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} 風險百分比： {$percentage}%',
+    'RiskScoreUsing'=>'風險評分 使用：',
+    'HighRiskReport_ScoreWarning' => '請注意，即使報告使用"{$score_used}"分數，因為"{$next_review_date_uses_name}設置我們正在計算{$management_review_header}"列的值使用{$next_review_date_uses_value}"分數。',
     'UpdateClassicScore'=>'更新經典得分',
     'UpdateCVSSScore'=>'更新CVSS分',
     'BaseScoreMetrics'=>'基地分的衡量标准',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> '我想审查非常高的风险每',
     'AbleToReviewVeryHighRisks'=>'审查了非常高的风险',
     'AbleToReviewInsignificantRisks'=>'审查了微不足道的风险',
-    'TotalVeryHighRisks'=>'总的风险很高',
-    'VeryHighRiskPercentage'=>'非常风险很高的百分比',
     'AllTeams'=>'所有小队',
     'FileUploadSettings'=>'文件上传环境',
     'AllowedFileTypes'=>'允许的档案的类型',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => '使用逗號分隔多個電子郵件。',
     'RiskAssessmentQuestionnaire' => '風險評估問卷',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n 您好, \\n
-            <p> {$username} 已要求您完成以下風險評估調查表:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>這 是自動消息, 回應將被忽略或拒絕。</p>\\n
+        <html><body>
+            你好
+            <p> {$username} 要求您填寫以下風險評估問卷：</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>這是一個自動消息，回應將被忽略或拒絕。</p>
         </body></html>',
     'FilterByText' => '按文本篩選',
     'SelectMitigatingControls' => '選擇緩解控制 (s)',
@@ -778,7 +780,11 @@ $lang = array(
     'ClearForm'=>'清除表單',
     'QuestionnaireDraftSuccess'=>'您的答案已成功保存。',
     'QuestionnaireCompletedSuccess'=>'您已成功完成此調查表。',
-    'EmailTemplateCompleteQuestionnaire' => '<html><body> \\n 你好, \\n <p> {$conact_name} 完成了調查表, <b>{$questionnaire_name}</b></p> \\n <p>This 是自動消息, 回應將被忽略或拒絕. </p>
+    'EmailTemplateCompleteQuestionnaire' => '
+        <html><body>
+            你好
+            <p> {$conact_name} 填寫了調查問卷， <b>{$questionnaire_name}</b></p>
+            <p>這是一個自動消息，回應將被忽略或拒絕。</p>
         </body></html>',
     'QuestionnaireResults'=>'問卷調查結果',
     'DateSent'=>'發送日期',
@@ -791,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'已成功添加新框架。',
     'FrameworkUpdated'=>'已成功更新框架。',
     'FrameworkNameExist'=>'框架名稱已存在。',
+    'FrameworkNameCantBeEmpty'=>'框架名稱不能為空。',
+    'FrameworkCantBeItsOwnParent'=>'框架不能是其自己的父級。',
+    'FrameworkParentUpdated'=>'框架的父級已成功更新。',
     'AttachmentFiles'=>'附件檔',
     'QuestionnaireFiles'=>'調查表檔',
     'ContactEmailAlreadyInUse'=>'連絡人電子郵件已在使用中。',
@@ -1141,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => '資產已成功更新。',
     'ThereWasAProblemUpdatingTheAsset' => '更新資產時出現問題。',
     'ImportAssetAddSucceeded' => '增加了 "{$verified_or_unverified}"名為資產"{$asset_name}"與 ip"{$asset_ip}"物超所值"{$asset_value}".',
-    'ImportAssetAddFailed' => '未能添加 "{$verified_or_unverified"名為資產"{$asset_name}"與 ip"{$asset_ip}"物超所值"{$asset_value}".',
+    'ImportAssetAddFailed' => '無法添加"{$verified_or_unverified}"名為"的資產"{$asset_name}" 與 IP "{$asset_ip}"和值"{$asset_value}".',
     'NoOperationRequiredOnAsset' => '不需要對命名為 "的資產進行操作{$asset_name}"因為它已經在資料庫中了"',
     'ImportAssetUpdateSucceeded' => '已更新 "{$verified_or_unverified}"名為資產"{$asset_name}"與 ip"{$asset_ip}"物超所值"{$asset_value}".',
     'ImportAssetUpdateFailed' => '更新失敗 "{$verified_or_unverified}"名為資產"{$asset_name}"與 ip"{$asset_ip}"物超所值"{$asset_value}".',
@@ -1393,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => '更新測試',
     'ControlEditHeader' => '更新控制',
     'FrameworkEditHeader' => '更新框架',
+    'UserTeamUpdateAuditLog' => '使用者 "{$user}"更新的使用者團隊"{$username}" 從 "{$teams_from}" 到 "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => '使用者"{$user}"更新團隊 {$type} (ID:{$id}) 來自"{$teams_from}"到"{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => '已刪除"{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => '已添加"{$teams_added}"',
+    'ItemUpdateAuditLog' => '使用者 "{$user}更新的專案（類型：{$type}"） 團隊"{$team}" 從 "{$items_from}" 到 "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => '已刪除"{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => '已添加 "{$items_added}"',
     'TeamType_test' => '測試',
     'TeamType_audit' => '審計',
     'TestCreatedAuditLogMessage' => '測試"{$test_name}"(ID: {$test_id}) 是由使用者創建的"{$user}".',
@@ -1501,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => '已成功批准調查表結果。',
     'QuestionnaireResultRejectedSuccessfully' => '調查表結果已成功拒絕。通知電子郵件將發送給連絡人。',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            你好\\n
-            <p> {$username} 要求您重新評估以下風險評估調查問卷：</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>評論： {$reject_comment}</p>\\n
-            <p>這是一條自動消息，將忽略或拒絕回應。</p>\\n
+        <html><body>
+            你好
+            <p> {$username} 要求您重新評估以下風險評估問卷：</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>評論： {$reject_comment}</p>
+            <p>這是一個自動消息，回應將被忽略或拒絕。</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => '問卷"${questionnaire_name}"（發送至連絡人"{$contact_name}"上"{$date}"） 結果由使用者批准"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => '問卷"${questionnaire_name}"結果被拒絕，併發送回連絡人"${contact_name}"供使用者重新評估"${user_name}"帶注釋"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => '問卷"{$questionnaire_name}"（發送給連絡人"{$contact_name}" 上 "{$date}"） 結果已獲得使用者批准{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => '問卷"{$questionnaire_name}結果被拒絕併發送回連絡人"{$contact_name}" 供使用者重新評估"{$user_name}"評論"{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => '預填充上次評估的答案？',
-    'QuestionnaireResultApprovedAuditLog' => '問卷"${questionnaire_name}"（發送至連絡人"{$contact_name}"上"{$date}"） 結果由使用者批准"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => '問卷"${questionnaire_name}"結果被拒絕，併發送回連絡人"${contact_name}"供使用者重新評估"${user_name}"帶注釋"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => '問卷"{$questionnaire_name}"（發送給連絡人"{$contact_name}" 上 "{$date}"） 結果已獲得使用者批准{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => '問卷"{$questionnaire_name}結果被拒絕併發送回連絡人"{$contact_name}" 供使用者重新評估"{$user_name}"評論"{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => '使用者"{$user_name}"為調查表添加了注釋"{$questionnaire_name}" （發送聯繫"{$contact_name}"上"{$date}"） 結果。',
     'QuestionnaireSentAuditLog' => '問卷"{$questionnaire_name}"被發送到連絡人"{$contact_name}"按使用者""{$user_name}".',
     'PendingRiskCreationAuditLog' => '問卷"{$questionnaire_name}完成導致創建掛起的風險{$subject}".',
-    'PendingRiskAddAuditLog' => '待定風險"{$subject}"問卷"${questionnaire_name}"（發送至連絡人"{$contact_name}"上"{$date}" 已添加為風險（ID： {$risk_id}） 按使用者"${user_name}".',
-    'PendingRiskDeleteAuditLog' => '待定風險"{$subject}"問卷"${questionnaire_name}"（發送至連絡人"{$contact_name}"上"{$date}"） 被使用者刪除"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => '待定問卷風險"${questionnaire_name}"（發送至連絡人"{$contact_name}"上"{$date}"） 被使用者刪除"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => '問卷"{$questionnaire_name}" 通過聯繫完成"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => '問卷"{$questionnaire_name}" 被連絡人保存為草稿"${contact_name}".',
+    'PendingRiskAddAuditLog' => '待定風險"{$subject}"問卷"{$questionnaire_name}"（發送給連絡人"{$contact_name}" 上 "{$date}"） 被添加為風險（ID： {$risk_id}） 按使用者"{$user_name}".',
+    'PendingRiskDeleteAuditLog' => '待定風險"{$subject}"問卷"{$questionnaire_name}"（發送給連絡人"{$contact_name}" 上 "{$date}"） 已由使用者刪除"{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => '調查表的待處理風險"{$questionnaire_name}"（發送給連絡人"{$contact_name}" 上 "{$date}"） 已由使用者刪除"{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => '問卷"{$questionnaire_name}"通過聯繫完成"{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => '問卷"{$questionnaire_name}"被連絡人保存為草稿"{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => '調查問卷結果審核跟蹤報告',
     'SubTemplate' => '子範本',
     'MitigationAccepted' => '已接受緩解',
@@ -1642,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'查看活動稽核',
     'ViewPastAudits'=>'查看過去的審核',
     'Uninstall' => '卸載',
+    'SimpleriskUsers' => '簡單風險使用者',
+    'QuestionnaireCompletedAuditLogByUser' => '問卷"{$questionnaire_name}"由使用者完成"{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => '問卷"{$questionnaire_name}"被使用者保存為草稿"{$contact_name}".',
+    'Internal' => '內部',
+    'QuestionType' => '問題類型',
+    'MultipleChoice' => '多種選擇',
+    'FillInTheBlank' => '填寫空白',
+    'Proxy' => '代理',
+    'ProxyWebRequests' => '代理 Web 請求',
+    'VerifySSLCertificate' => '驗證 SSL 憑證',
+    'ProxyHostname' => '代理主機名稱 / IP',
+    'ProxyPort' => '代理埠',
+    'AuthenticatedProxy' => '經過身份驗證的代理',
+    'ProxyUsername' => '代理使用者名',
+    'ProxyPassword' => '代理密碼',
+    'SimpleRiskExtras' => '簡單風險附加功能',
+    'ColumnSelections' => '列選擇',
+    'GroupAndFilteringSelections' => '分組和篩選選擇',
+    'Hyperlink' => '連結',
+    'URL' => 'Url',
+    'AssetTeams'=>'資產團隊',
+    'AssetSiteLocation'=>'資產網站/位置',
+    'ActivatingSCFMessage' => '安裝合規鍛造 SCF 框架。這可能需要幾分鐘才能完成。',
+    'DeactivatingSCFMessage' => '卸載合規鍛造 SCF 框架。',
+    'UpdatingSCFMessage' => '更新合規鍛造 SCF 框架。這可能需要幾分鐘才能完成。',
+    'Processing' => '處理。。。',
+    'AlphabeticalOrder'=>'字母順序',
     '' => ''
 );
 

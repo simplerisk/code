@@ -263,7 +263,7 @@ function push_pending_risk() {
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-        create_subject_order($_SESSION['encrypted_pass']);
+//        create_subject_order($_SESSION['encrypted_pass']);
     }
 
     if(isset($_POST['scoring_method'][0]) && $_POST['scoring_method'][0]){

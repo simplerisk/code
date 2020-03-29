@@ -193,4 +193,13 @@ function check_questionnaire_get_token() {
     $GLOBALS[$global_var_name] = false;
     return false;
 }
+
+/****************************************
+ * FUNCTION: HAS PERMISSION             *
+ * Checks if the user has $permission.  *
+ ****************************************/
+function has_permission($permission) {
+    return $permission && isset($_SESSION[$permission]) && $_SESSION[$permission] == 1;
+}
+
 ?>

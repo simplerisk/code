@@ -7,6 +7,7 @@
 // Include required configuration files
 require_once(realpath(__DIR__ . '/alerts.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
+require_once(realpath(__DIR__ . '/extras.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
@@ -15,21 +16,27 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 /*************************************
  * FUNCTION: SIMPLERISK SERVICE CALL *
  *************************************/
-function simplerisk_service_call($data)
-{
-    // Call the URL
+function simplerisk_service_call($data) {
+
     $url = "https://services.simplerisk.com/index.php";
-    $options = array(
-        'http' => array(
-            'header' => "Content-type: application/x-www-form-urlencoded\r\r",
-            'method' => 'POST',
-            'content' => http_build_query($data),
+
+    $opts = array('http' =>
+        array(
+            'method'  => 'POST',
+            'header'  => 'Content-Type: application/x-www-form-urlencoded',
+            'content' => http_build_query($data)
         )
     );
-    $context = stream_context_create($options);
+
+    // Set proxy context if needed
+    set_proxy_stream_context();
+
+    // Creating the context
+    $context = stream_context_create($opts);
+
+    // Making the actual call
     $result = file($url, NULL, $context);
 
-    // Return the result
     return $result;
 }
 
@@ -46,7 +53,7 @@ function download_extra($name, $streamed_response = false) {
         // Require the upgrade extra file
         require_once(realpath(__DIR__ . '/../extras/upgrade/index.php'));
 
-        if(!check_latest_version())
+        if(function_exists('check_app_latest_version') && !check_app_latest_version())
         {
             set_alert(true, "bad", $escaper->escapeHtml($lang['ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras']));
             return;

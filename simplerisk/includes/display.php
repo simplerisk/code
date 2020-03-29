@@ -401,7 +401,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 /*************************************
 * FUNCTION: VIEW PRINT RISK DETAILS *
 *************************************/
-function view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $owner, $manager, $assessment, $notes, $tags)
+function view_print_risk_details($id, $submission_date, $subject, $reference_id, $regulation, $control_number, $location, $category, $team, $technology, $additional_stakeholders, $owner, $manager, $assessment, $notes, $tags)
 {
     global $lang;
     global $escaper;
@@ -441,7 +441,7 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
 
     echo "<tr>\n";
     echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_names_by_multi_values("location", $location, false, "; ")) . "</td>\n";
+    echo "<td>" . $escaper->escapeHtml($location) . "</td>\n";
     echo "</tr>\n";
 
     echo "<tr>\n";
@@ -451,12 +451,17 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
 
     echo "<tr>\n";
     echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Team']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("team", $team)) . "</td>\n";
+    echo "<td>" . $escaper->escapeHtml($team) . "</td>\n";
     echo "</tr>\n";
 
     echo "<tr>\n";
     echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['Technology']) . ":</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("technology", $technology)) . "</td>\n";
+    echo "<td>" . $escaper->escapeHtml($technology) . "</td>\n";
+    echo "</tr>\n";
+
+    echo "<tr>\n";
+    echo "<td width=\"200\"><b>" . $escaper->escapeHtml($lang['AdditionalStakeholders']) . ":</td>\n";
+    echo "<td>" . $escaper->escapeHtml($additional_stakeholders) . "</td>\n";
     echo "</tr>\n";
 
     echo "<tr>\n";
@@ -516,8 +521,8 @@ function view_print_risk_details($id, $submission_date, $subject, $reference_id,
 * FUNCTION: VIEW PRINT RISK SCORE FORMS *
 *****************************************/
 function risk_score_method_html($scoring_method="1", $CLASSIC_likelihood="", $CLASSIC_impact="", $AccessVector="N", $AccessComplexity="L", $Authentication="N", $ConfImpact="C", $IntegImpact="C", $AvailImpact="C", $Exploitability="ND", $RemediationLevel="ND", $ReportConfidence="ND", $CollateralDamagePotential="ND", $TargetDistribution="ND", $ConfidentialityRequirement="ND", $IntegrityRequirement="ND", $AvailabilityRequirement="ND", $DREADDamagePotential="10", $DREADReproducibility="10", $DREADExploitability="10", $DREADAffectedUsers="10", $DREADDiscoverability="10", $OWASPSkillLevel="10", $OWASPMotive="10", $OWASPOpportunity="10", $OWASPSize="10", $OWASPEaseOfDiscovery="10", $OWASPEaseOfExploit="10", $OWASPAwareness="10", $OWASPIntrusionDetection="10", $OWASPLossOfConfidentiality="10", $OWASPLossOfIntegrity="10", $OWASPLossOfAvailability="10", $OWASPLossOfAccountability="10", $OWASPFinancialDamage="10", $OWASPReputationDamage="10", $OWASPNonCompliance="10", $OWASPPrivacyViolation="10", $custom=false, $ContributingLikelihood="", $ContributingImpacts=[]){
-    global $escaper;
-    global $lang;
+    global $escaper, $lang;
+    
     if($custom === false){
         $custom = get_setting("default_risk_score");
     }
@@ -629,7 +634,7 @@ function risk_score_method_html($scoring_method="1", $CLASSIC_likelihood="", $CL
             $max_impact_value = count(get_table("impact"));
             $contributing_risks = get_contributing_risks();
             foreach($contributing_risks as $contributing_risk){
-                $html .= "<input type='hidden' class='contributing-impact' name='ContributingImpacts[{$contributing_risk['id']}]' id='contributing_impact_{$contributing_risk['id']}' value='". (empty($ContributingImpacts[ $contributing_risk['id'] ]) ? $max_impact_value : $ContributingImpacts[ $contributing_risk['id'] ]) ."' />";
+                $html .= "<input type='hidden' class='contributing-impact' name='ContributingImpacts[{$contributing_risk['id']}]' id='contributing_impact_{$contributing_risk['id']}' value='". $escaper->escapeHtml(empty($ContributingImpacts[ $contributing_risk['id'] ]) ? $max_impact_value : $ContributingImpacts[ $contributing_risk['id'] ]) ."' />";
             }
             
             $html .= "
@@ -1153,7 +1158,7 @@ function print_mitigation_controls_table($control_ids){
 
     echo "
         <br>
-        <input type=\"hidden\" value=\"" . $control_ids . "\" class='active-textfield mitigation_control_ids' />
+        <input type=\"hidden\" value=\"" . $escaper->escapeHtml($control_ids) . "\" class='active-textfield mitigation_control_ids' />
         <div class=\"row-fluid mitigation-controls-table-container hide\" data-tableid=\"{$tableID}\">
             <strong>Mitigation Controls</strong>
             <table id=\"{$tableID}\" width=\"100%\">
@@ -3608,10 +3613,10 @@ function view_top_menu($active)
             echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000168810\" target=\"_blank\">". $escaper->escapeHtml($lang['FAQs']) ."</a>\n";
             echo "</li>\n";
             echo "<li>\n";
-            echo "<a href=\"https://github.com/simplerisk/documentation/raw/master/SimpleRisk%20Release%20Notes%20" . latest_version('app') . ".pdf\" target=\"_blank\">". $escaper->escapeHtml($lang['WhatsNew']) ."</a>\n";
+            echo "<a href=\"https://github.com/simplerisk/documentation/raw/master/SimpleRisk%20Release%20Notes%20" . $escaper->escapeHtml(get_latest_app_version()) . ".pdf\" target=\"_blank\">". $escaper->escapeHtml($lang['WhatsNew']) ."</a>\n";
             echo "</li>\n";
             echo "<li>\n";
-            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/articles/6000190811-simplerisk-feature-roadmap\" target=\"_blank\">". $escaper->escapeHtml($lang['Roadmap']) ."</a>\n";
+            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/articles/6000190811\" target=\"_blank\">". $escaper->escapeHtml($lang['Roadmap']) ."</a>\n";
             echo "</li>\n";
             echo "</ul>\n";
             echo "</div>\n";
@@ -3733,7 +3738,7 @@ function view_top_menu($active)
                                         if (data && data instanceof Array && data.length) {
 
                                             if (data[0]['category_field_name'] == 'id') {
-                                                window.location.href = '/management/view.php?id=' + data[0]['id'];
+                                                window.location.href = BASE_URL + '/management/view.php?id=' + data[0]['id'];
                                             } else {
                                                 $('#advanced-search-no-results-message').hide();
                                                 $('#advanced-search-results-table-wrapper').show();
@@ -3746,7 +3751,7 @@ function view_top_menu($active)
                                                     var template = $('#result-template').children().clone();
 
                                                     result_url = template.find('.result-url');
-                                                    result_url.attr('href', '/management/view.php?id=' + item['id']);
+                                                    result_url.attr('href', BASE_URL + '/management/view.php?id=' + item['id']);
                                                     result_url.html('(' + item['id'] + ') ' + item['subject']);
 
                                                     category_field_name = template.find('.category_field_name');
@@ -4136,16 +4141,24 @@ function view_risks_and_assets_selections($report)
 /******************************************
 * FUNCTION: VIEW GET RISKS BY SELECTIONS *
 ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_assets_filter=0, $tags_filter=0, $locations_filter="", $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_accepted=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $closure_date=false, $custom_values=[])
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_accepted=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $closure_date=false, $custom_values=[])
 {
     global $lang, $escaper;
     
-    echo "<form id=\"get_risks_by\" name=\"get_risks_by\" method=\"post\" action=\"".$_SESSION['base_url'].$_SERVER['REQUEST_URI']."\">\n";
+    $encoded_request_uri = get_encoded_request_uri();
+    
+    echo "<form id=\"get_risks_by\" name=\"get_risks_by\" method=\"post\" action=\"".$_SESSION['base_url'].$encoded_request_uri."\">\n";
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span12\">\n";
     echo "<a href=\"javascript:;\" onclick=\"javascript: closeSearchBox()\"><img src=\"../images/X-100.png\" width=\"10\" height=\"10\" align=\"right\" /></a>\n";
     echo "</div>\n";
     echo "</div>\n";
+    echo "
+            <div class=\"well\" id='group-selections-container'>
+              <h4 class=\"collapsible--toggle clearfix\">
+                  <span><i class=\"fa fa-caret-right\"></i>".$escaper->escapeHtml($lang['GroupAndFilteringSelections'])."</span>
+              </h4>
+              <div class=\"collapsible\" style=\"display: none;\">";
     echo "<div class=\"row-fluid\">\n";
 
     // Risk Status Selection
@@ -4157,48 +4170,6 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_as
     echo "<option value=\"1\"" . ($status == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ClosedRisks']) . "</option>\n";
     echo "<option value=\"2\"" . ($status == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AllRisks']) . "</option>\n";
     echo "</select>\n";
-    echo "</div>\n";
-    echo "</div>\n";
-
-    // Filter by affected_asset
-    echo "<div class=\"span3\">\n";
-    echo "<div class=\"well\">\n";
-    echo "<h4>" . $escaper->escapeHtml($lang['FilterByAffectedAsset']) . ":</h4>\n";
-    echo "<select multiple='multiple' id=\"affected_assets_filter\" name=\"affected_assets_filter[]\">\n";
-    foreach(get_assets_and_asset_groups_for_dropdown() as $row){
-        $id = "{$row['id']}_{$row['class']}";
-        echo "<option value='$id'" . (in_array($id, $affected_assets_filter) ? " selected" : "") . " data-class='{$row['class']}'>" . $escaper->escapeHtml($row['name']) . "</option>\n";
-    }
-
-    echo "</select>\n";
-    echo "
-        <script>
-            function throttledFormSubmit() {
-                clearTimeout(changeTimer);
-                changeTimer = setTimeout(function(){
-                    $('#get_risks_by').submit();
-                }, 2000);
-            }
-        
-            var changeTimer;
-            $(document).ready(function() {
-                $('#affected_assets_filter').multiselect({
-                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
-                    maxHeight: 250,
-                    enableFiltering: true,
-                    enableCaseInsensitiveFiltering: true,
-                    filterPlaceholder: '".$escaper->escapeHtml($lang['SelectForAffectedAssets'])."',
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true,
-                    onChange: throttledFormSubmit,
-                    onSelectAll: throttledFormSubmit,
-                    onDeselectAll: throttledFormSubmit,
-                    optionClass: function(element) {
-                        return $(element).data('class');
-                    }
-                });
-            });
-        </script>";
     echo "</div>\n";
     echo "</div>\n";
 
@@ -4240,53 +4211,22 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $affected_as
     echo "</div>\n";
 
     echo "</div>\n";
-    echo "<div class=\"row-fluid\">\n";
-
-    // Tags Selection
-    echo "<div class=\"span3\">\n";
-    echo "<div class=\"well\">\n";
-    echo "<h4>" . $escaper->escapeHtml($lang['Tags']) . ":</h4>\n";
-    create_multiple_dropdown("risk_tags", $tags_filter, "tags_filter");
-    echo "</div>\n";
-    echo "</div>\n";
-    echo "  <script>
-                $('#tags_filter').multiselect({
-                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
-                    enableFiltering: true,
-                    maxHeight: 250,
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true,
-                    onChange: throttledFormSubmit,
-                    onSelectAll: throttledFormSubmit,
-                    onDeselectAll: throttledFormSubmit,
-                });
-            </script>";
-
-    // Site/Locations Selection
-    echo "<div class=\"span3\">\n";
-    echo "<div class=\"well\">\n";
-    echo "<h4>" . $escaper->escapeHtml($lang['SiteLocation']) . ":</h4>\n";
-    create_multiple_dropdown("location", $locations_filter, "locations_filter", NULL, true, $escaper->escapeHtml($lang['Unassigned']));
-    echo "</div>\n";
-    echo "</div>\n";
-    echo "  <script>
-                $('#locations_filter').multiselect({
-                    allSelectedText: '" . $escaper->escapeHtml($lang['ALL']) . "',
-                    enableFiltering: true,
-                    maxHeight: 250,
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true,
-                    onChange: throttledFormSubmit,
-                    onSelectAll: throttledFormSubmit,
-                    onDeselectAll: throttledFormSubmit,
-                });
-            </script>";
-    echo "</div>\n";
+    echo "</div></div>\n";
 
     // Risk columns
     echo display_risk_columns( $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $custom_values);
     
     echo "</form>\n";
+    echo "<script>
+            $(document).ready(function(){
+                \$('#group-selections-container').on('click', '.collapsible--toggle span', function(event) {
+                    event.preventDefault();
+                    \$(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
+                    \$(this).find('i').toggleClass('fa-caret-right fa-caret-down');
+                });
+            });
+    </script>";
+
 
 }
 
@@ -4380,13 +4320,6 @@ function display_save_dynamic_risk_selections()
 {
     global $lang, $escaper;
     
-        echo "<div class='row-fluid'>";
-            echo "
-                <form method='post' >
-                    <span>".$escaper->escapeHtml($lang['SavedSelections']).": &nbsp;&nbsp;&nbsp;</span>";
-                    create_dynamic_saved_selections_dropdown();
-            echo "</form>";
-        echo "</div>";
         echo "
         
             <div class=\"well\" id='save-selections-container'>
@@ -4395,6 +4328,13 @@ function display_save_dynamic_risk_selections()
               </h4>
 
               <div class=\"collapsible\" style=\"display: none;\">";
+                echo "<div class='row-fluid'>";
+                    echo "
+                        <form method='post' >
+                            <span>".$escaper->escapeHtml($lang['SavedSelections']).": &nbsp;&nbsp;&nbsp;</span>";
+                            create_dynamic_saved_selections_dropdown();
+                    echo "</form>";
+                echo "</div>";
                 echo "<form method='post' id='save-selections-form'>";        
                     echo "<table width='100%'>";
                         echo "<tr>";
@@ -4446,6 +4386,10 @@ function display_save_dynamic_risk_selections()
                         if($(this).is(':checked'))
                             viewColumns.push($(this).attr('name'));
                     })
+                    var selectFilters = {status:0,group:0,sort:0};
+                    selectFilters.status = $('#status').val();
+                    selectFilters.group = $('#group').val();
+                    selectFilters.sort = $('#sort').val();
 
                     var test = $.ajax({
                         type: 'POST',
@@ -4453,7 +4397,8 @@ function display_save_dynamic_risk_selections()
                         data:{
                             type: type,
                             name: name,
-                            columns: viewColumns
+                            columns: viewColumns,
+                            selects: selectFilters
                         },
                         success: function(res){
                             var value = res.data.value;
@@ -4479,12 +4424,12 @@ function display_save_dynamic_risk_selections()
                 
                 $('#saved_selections').change(function(){
                     var selection = $(this).val();
-                    if(selection)
-                        $('#get_risks_by').attr('action', BASE_URL + '/reports/dynamic_risk_report.php?selection=' + selection)
-                    else
-                        $('#get_risks_by').attr('action', BASE_URL + '/reports/dynamic_risk_report.php')
-
-                    $('#get_risks_by').submit();
+                    if(selection){
+                        document.location.href = BASE_URL + '/reports/dynamic_risk_report.php?selection=' + selection;
+                    } else {
+                        document.location.href = BASE_URL + '/reports/dynamic_risk_report.php';
+                    }
+                    return true;
                 })
             })
         ";
@@ -4496,6 +4441,12 @@ function display_save_dynamic_risk_selections()
 **********************************/
 function display_risk_columns( $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_accepted=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $closure_date=false, $custom_values=[]){
     global $escaper, $lang;
+    echo "
+        <div class=\"well\" id='column-selections-container'>
+          <h4 class=\"collapsible--toggle clearfix\">
+              <span><i class=\"fa fa-caret-right\"></i>".$escaper->escapeHtml($lang['ColumnSelections'])."</span>
+          </h4>
+          <div class=\"collapsible\" style=\"display: none;\">";
     echo "<div class=\"row-fluid\">\n";
 
     
@@ -4690,7 +4641,7 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
 //                            <label for=\"checkbox_mitigation_date\">". $escaper->escapeHtml($lang['MitigationDate']) ."</label>
 //                            </td>
 //                        </tr>\n";
-//                        print_r($mitigation_fields);exit;
+
                         foreach($mitigation_fields as $mitigation_field)
                         {
                             // If this is main field
@@ -5058,6 +5009,17 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
 
         echo "</div>\n";
     }
+    echo "</div></div>\n";
+    echo "<script>
+            $(document).ready(function(){
+                \$('#column-selections-container').on('click', '.collapsible--toggle span', function(event) {
+                    event.preventDefault();
+                    \$(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
+                    \$(this).find('i').toggleClass('fa-caret-right fa-caret-down');
+                });
+            });
+    </script>";
+
 }
 
 /*************************************************
@@ -5702,7 +5664,7 @@ function display_view_assessment_questions($assessment_id = NULL)
         echo "<table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n";
         foreach($row['answers'] as $answer){
             echo "<tr>\n";
-            echo "<td><input class=\"hidden-radio\" id=\"".$answer['id']."\" type=\"radio\" name=\"" . $question_id . "\" value=\"" . $answer['id'] . "\" /><label for=\"".$answer['id']."\">".$escaper->escapeHtml($answer['answer'])."</label> </td>\n";
+            echo "<td><input class=\"hidden-radio\" id=\"". $escaper->escapeHtml($answer['id']) ."\" type=\"radio\" name=\"" . $escaper->escapeHtml($question_id) . "\" value=\"" . $escaper->escapeHtml($answer['id']) . "\" /><label for=\"". $escaper->escapeHtml($answer['id']) ."\">".$escaper->escapeHtml($answer['answer'])."</label> </td>\n";
             echo "</tr>\n";
         }
 
@@ -6407,7 +6369,7 @@ function display_score_html_from_pending_risk($scoring_method="5", $custom=false
                     $max_impact_value = count(get_table("impact"));
                     $contributing_risks = get_contributing_risks();
                     foreach($contributing_risks as $contributing_risk){
-                        $html .= "<input type='hidden' class='contributing-impact' name='ContributingImpacts[{$contributing_risk['id']}][]' id='contributing_impact_{$contributing_risk['id']}' value='". (empty($ContributingImpacts[ $contributing_risk['id'] ]) ? $max_impact_value : $ContributingImpacts[ $contributing_risk['id'] ]) ."' />";
+                        $html .= "<input type='hidden' class='contributing-impact' name='ContributingImpacts[{$contributing_risk['id']}][]' id='contributing_impact_". $escaper->escapeHtml($contributing_risk['id']) ."' value='". $escaper->escapeHtml(empty($ContributingImpacts[ $contributing_risk['id'] ]) ? $max_impact_value : $ContributingImpacts[ $contributing_risk['id'] ]) ."' />";
                     }
                     
             $html .= "

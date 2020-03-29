@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Proiectul De Actualizare Statusuri',
     'HighRiskReport'=>'Risc Ridicat Raport',
     'TotalOpenRisks'=>'Total Deschide Riscuri',
-    'TotalHighRisks'=>'Total Riscuri Ridicate',
-    'HighRiskPercentage'=>'Risc Ridicat Procent',
+    'NumberOfOpenRisks'=>'Total riscuri deschise: {$number}',
+    'RiskNumberOfRiskLevel'=>'Numărul total de {$display_name} Riscurile: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Procentul de risc: {$percentage}%',
+    'RiskScoreUsing'=>'Scorul de risc Utilizarea:',
+    'HighRiskReport_ScoreWarning' => 'Vă rugăm să rețineți că, chiar dacă raportul este afișat folosind "{$score_used}" scoruri, din cauza "{$next_review_date_uses_name}" setarea suntem calcularea "{$management_review_header}" valorile coloanei folosind "{$next_review_date_uses_value}" scoruri.',
     'UpdateClassicScore'=>'Actualizare scor clasic',
     'UpdateCVSSScore'=>'Update CVSS Scor',
     'BaseScoreMetrics'=>'Scorul De Bază Valori',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Vreau să revizuiască risc FOARTE RIDICAT de fiecare',
     'AbleToReviewVeryHighRisks'=>'Capabil de a Revizui Riscuri Foarte Mari',
     'AbleToReviewInsignificantRisks'=>'Capabil de a Revizui Riscuri Nesemnificative',
-    'TotalVeryHighRisks'=>'Total Riscuri Foarte Mari',
-    'VeryHighRiskPercentage'=>'Risc Foarte Ridicat Procent',
     'AllTeams'=>'Toate Echipele',
     'FileUploadSettings'=>'Fișier De Încărcare Setări',
     'AllowedFileTypes'=>'Tipuri De Fișiere Permise',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Utilizaţi virgule pentru a separa mai multe e-mailuri.',
     'RiskAssessmentQuestionnaire' => 'Chestionar de evaluare a riscului',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n bună ziua, \\n
-            <p> {$username} a cerut să finalizeze următorul chestionar de evaluare a riscului:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>acest  este un mesaj automat şi răspunsurile vor fi ignorate sau respinse.</p>\\n
+        <html><body>
+            Bună ziua
+            <p> {$username} v-a solicitat să completați următorul chestionar de evaluare a riscurilor:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Acesta este un mesaj automat, iar răspunsurile vor fi ignorate sau respinse.</p>
         </body></html>',
     'FilterByText' => 'Filtrare după text',
     'SelectMitigatingControls' => 'Selectare control atenuant (e)',
@@ -779,8 +781,11 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Răspunsurile tale au fost salvate cu succes.',
     'QuestionnaireCompletedSuccess'=>'Aţi finalizat cu succes acest chestionar.',
     'EmailTemplateCompleteQuestionnaire' => '
-        123_60_321123_6201_321 \\ n bună ziua, \\n <p>{$conact_name} completat un chestionar, <b>{$questionnaire_name}123_4__6321123_4__ 3321 \\ n <p>acesta este un mesaj automat şi răspunsurile vor fi ignorate sau respinse.</p> \\ n
-        123__10_321123__11_321',
+        <html><body>
+            Bună ziua
+            <p> {$conact_name} completat un chestionar; <b>{$questionnaire_name}</b></p>
+            <p>Acesta este un mesaj automat, iar răspunsurile vor fi ignorate sau respinse.</p>
+        </body></html>',
     'QuestionnaireResults'=>'Rezultatele chestionarului',
     'DateSent'=>'Data trimiterii',
     'Contact'=>'Contact',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Un nou cadru a fost adăugat cu succes.',
     'FrameworkUpdated'=>'Un cadru a fost actualizat cu succes.',
     'FrameworkNameExist'=>'Numele cadrului există deja.',
+    'FrameworkNameCantBeEmpty'=>'Numele cadrului nu poate fi gol.',
+    'FrameworkCantBeItsOwnParent'=>'Cadrul nu poate fi propriul părinte.',
+    'FrameworkParentUpdated'=>'Părintele cadrului s-a actualizat cu succes.',
     'AttachmentFiles'=>'Fișiere atașare',
     'QuestionnaireFiles'=>'Fişiere chestionar',
     'ContactEmailAlreadyInUse'=>'E-mail de contact este deja în uz.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Asset a fost actualizat cu succes.',
     'ThereWasAProblemUpdatingTheAsset' => 'A fost o problemă la actualizarea activului.',
     'ImportAssetAddSucceeded' => 'Adăugat{$verified_or_unverified}"activ numit"{$asset_name}"cu IP"{$asset_ip}"și valoarea"{$asset_value}".',
-    'ImportAssetAddFailed' => 'Nu s-a reușit adăugarea "{$verified_or_unverified"activ numit"{$asset_name}"cu IP"{$asset_ip}"și valoarea"{$asset_value}".',
+    'ImportAssetAddFailed' => 'Nu s-a reușit adăugarea "{$verified_or_unverified}" activ numit "{$asset_name}" cu IP "{$asset_ip}" și valoare "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Nu este necesară nicio operațiune pentru activul denumit "{$asset_name}așa este deja în baza de date.',
     'ImportAssetUpdateSucceeded' => 'Actualizate{$verified_or_unverified}"activ numit"{$asset_name}"cu IP"{$asset_ip}"și valoarea"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Nu s-a reușit actualizarea "{$verified_or_unverified}"activ numit"{$asset_name}"cu IP"{$asset_ip}"și valoarea"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Actualizare test',
     'ControlEditHeader' => 'Control actualizare',
     'FrameworkEditHeader' => 'Actualizare cadru',
+    'UserTeamUpdateAuditLog' => 'Utilizator "{$user}" echipe actualizate de utilizator "{$username}" din "{$teams_from}" către "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Utilizator{$user}"echipe actualizate de {$type} ID{$id}de{$teams_from}să{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Eliminat{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Adăugat{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Utilizator "{$user}" elemente actualizate (tip:"{$type}") al echipei "{$team}" din "{$items_from}" către "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Eliminat "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Adăugat "{$items_added}"',
     'TeamType_test' => 'Test',
     'TeamType_audit' => 'Audit',
     'TestCreatedAuditLogMessage' => 'Test{$test_name}"(ID: {$test_id}) a fost creată de utilizator "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Rezultatul chestionarului a fost aprobat cu succes.',
     'QuestionnaireResultRejectedSuccessfully' => 'Rezultatul chestionarului a fost respins cu succes. E-mailul de notificare este trimis contactului.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            bună\\n
-            <p> {$username} v-a cerut să reevaluați următorul chestionar de evaluare a riscurilor:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Comentarii: {$reject_comment}</p>\\n
-            <p>Acesta este un mesaj automat și răspunsurile vor fi ignorate sau respinse.</p>\\n
+        <html><body>
+            Bună ziua
+            <p> {$username} v-a solicitat să reevaluați următorul chestionar de evaluare a riscurilor:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Comentarii: {$reject_comment}</p>
+            <p>Acesta este un mesaj automat, iar răspunsurile vor fi ignorate sau respinse.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Chestionar${questionnaire_name}"(trimis la contact"{$contact_name}pe{$date}") rezultatul a fost aprobat de utilizator"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Chestionar${questionnaire_name}"rezultatul a fost respins și trimis înapoi la contact"${contact_name}"pentru re-evaluare de către utilizator"${user_name}"un comentariu"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Chestionar "{$questionnaire_name}"(trimis la contact"{$contact_name}" pe "{$date}") rezultatul a fost aprobat de utilizator "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Chestionar "{$questionnaire_name}" rezultatul a fost respins și trimis înapoi la contact "{$contact_name}" pentru reevaluare de către utilizator "{$user_name}" cu comentariu "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Pre-popula cu răspunsuri de la ultima evaluare?',
-    'QuestionnaireResultApprovedAuditLog' => 'Chestionar${questionnaire_name}"(trimis la contact"{$contact_name}pe{$date}") rezultatul a fost aprobat de utilizator"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Chestionar${questionnaire_name}"rezultatul a fost respins și trimis înapoi la contact"${contact_name}"pentru re-evaluare de către utilizator"${user_name}"un comentariu"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Chestionar "{$questionnaire_name}"(trimis la contact"{$contact_name}" pe "{$date}") rezultatul a fost aprobat de utilizator "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Chestionar "{$questionnaire_name}" rezultatul a fost respins și trimis înapoi la contact "{$contact_name}" pentru reevaluare de către utilizator "{$user_name}" cu comentariu "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Utilizator{$user_name}"a adaugat un comentariu pentru chestionar"{$questionnaire_name}"(trimis la contact"{$contact_name}pe{$date}") rezultat.',
     'QuestionnaireSentAuditLog' => 'Chestionar{$questionnaire_name}"a fost trimisă la contact"{$contact_name}"de utilizator"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Chestionar{$questionnaire_name}"finalizarea a dus la crearea de risc în așteptare"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Risc în așteptare "{$subject}"de chestionar"${questionnaire_name}"(trimis la contact"{$contact_name}pe{$date}") a fost adăugată ca risc (ID: {$risk_id}) de utilizator "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Risc în așteptare "{$subject}"de chestionar"${questionnaire_name}"(trimis la contact"{$contact_name}pe{$date}") a fost șters de utilizator"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'În așteptarea riscurilor de chestionar "${questionnaire_name}"(trimis la contact"{$contact_name}pe{$date}") au fost șterse de utilizator"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Chestionar{$questionnaire_name}"a fost completat prin contact"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Chestionar{$questionnaire_name}"a fost salvată ca schiță prin contact"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Risc în așteptare "{$subject}" din chestionar "{$questionnaire_name}"(trimis la contact"{$contact_name}" pe "{$date}") a fost adăugat ca Risk(ID: {$risk_id}) de utilizator "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Risc în așteptare "{$subject}" din chestionar "{$questionnaire_name}"(trimis la contact"{$contact_name}" pe "{$date}") a fost șters de utilizator "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Riscurile în așteptare ale chestionarului "{$questionnaire_name}"(trimis la contact"{$contact_name}" pe "{$date}") au fost șterse de utilizator "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Chestionar "{$questionnaire_name}" a fost completat de contact "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Chestionar "{$questionnaire_name}" a fost salvat ca ciornă prin contact "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Raport traseu audit rezultat chestionar',
     'SubTemplate' => 'Sub șablon',
     'MitigationAccepted' => 'Atenuare acceptată',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Vizualizare audituri active',
     'ViewPastAudits'=>'Vezi auditurile trecute',
     'Uninstall' => 'Dezinstala',
+    'SimpleriskUsers' => 'Utilizatori Simplerisk',
+    'QuestionnaireCompletedAuditLogByUser' => 'Chestionar "{$questionnaire_name}" a fost completat de utilizator "{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Chestionar "{$questionnaire_name}" a fost salvat ca ciornă de către utilizator "{$contact_name}".',
+    'Internal' => 'Interne',
+    'QuestionType' => 'Tipul întrebării',
+    'MultipleChoice' => 'Alegere multiplă',
+    'FillInTheBlank' => 'Completați butonul Necompletat',
+    'Proxy' => 'Proxy',
+    'ProxyWebRequests' => 'Solicitări Web proxy',
+    'VerifySSLCertificate' => 'Verificarea certificatului SSL',
+    'ProxyHostname' => 'Nume gazdă proxy / IP',
+    'ProxyPort' => 'Proxy Port',
+    'AuthenticatedProxy' => 'Proxy autentificat',
+    'ProxyUsername' => 'Nume utilizator proxy',
+    'ProxyPassword' => 'Parolă proxy',
+    'SimpleRiskExtras' => 'Suplimente SimpleRisk',
+    'ColumnSelections' => 'Selecții de coloane',
+    'GroupAndFilteringSelections' => 'Selecții de grupare și filtrare',
+    'Hyperlink' => 'Hyperlink',
+    'URL' => 'Url',
+    'AssetTeams'=>'Echipa (echipa)activelor',
+    'AssetSiteLocation'=>'Site/Locație activ',
+    'ActivatingSCFMessage' => 'Instalarea cadrului ComplianceForge SCF. Acest lucru poate dura câteva minute pentru a finaliza.',
+    'DeactivatingSCFMessage' => 'Dezinstalarea cadrului ComplianceForge SCF.',
+    'UpdatingSCFMessage' => 'Actualizarea cadrului ComplianceForge SCF. Acest lucru poate dura câteva minute pentru a finaliza.',
+    'Processing' => 'Prelucrare...',
+    'AlphabeticalOrder'=>'Ordine alfabetică',
     '' => ''
 );
 

@@ -1166,8 +1166,9 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
 
     if (asset_exists_exact($ip, $name, $value, $location, $teams, $details, $verified)
         && areTagsEqual($asset_id, 'asset', $tags)) {
-        return "noop"; // To notify the caller that no operation was done
-    }
+        //return "noop"; // To notify the caller that no operation was done
+        $exact = true;
+    } else $exact = false;
 
     // Open the database connection
     $db = db_open();
@@ -1181,7 +1182,7 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
     $stmt->bindParam(":ip", $enc_ip, PDO::PARAM_STR);
     $stmt->bindParam(":value", $value, PDO::PARAM_INT, 2);
     $stmt->bindParam(":location", $location, PDO::PARAM_INT, 2);
-    $stmt->bindParam(":teams", $teams, PDO::PARAM_INT, 2);
+    $stmt->bindParam(":teams", $teams, PDO::PARAM_STR);
     $stmt->bindParam(":details", $enc_details, PDO::PARAM_STR);
     $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
     $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_STR);
@@ -1193,8 +1194,7 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
     updateTagsOfType($asset_id, 'asset', $tags);
 
     // Check if we have updated the asset
-    if (asset_exists_exact($ip, $name, $value, $location, $teams, $details, $verified)
-        && areTagsEqual($asset_id, 'asset', $tags)) {
+    if (!$exact) {
         $message = "An asset named \"" . $name . "\" was modified by username \"" . $_SESSION['user'] . "\".";
         write_log($asset_id, $_SESSION['uid'], $message, "asset");
 
@@ -1640,7 +1640,8 @@ function asset_valuation_for_risk_id($risk_id)
                 INNER JOIN `assets` a ON `aag`.`asset_id` = `a`.`id`
                 INNER JOIN `asset_values` av ON `a`.`value` = `av`.`id`
             WHERE
-                `rtag`.`risk_id`=:risk_id)
+                `rtag`.`risk_id`=:risk_id
+                AND `a`.`id` NOT IN (SELECT `asset_id` FROM `risks_to_assets` WHERE `risk_id` = :risk_id))
             +
             (SELECT
                 COALESCE(sum(`av`.`max_value`), 0)
@@ -2801,6 +2802,69 @@ function get_assets_for_risk($risk_id)
 
     // Return the assets array
     return $assets;
+}
+
+/*******************************************
+ * FUNCTION: GET ASSET GROUPS FROM ASSET   *
+ *******************************************/
+function get_asset_groups_from_asset($asset_id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT ag.*
+        FROM `assets_asset_groups` aag
+        LEFT JOIN `asset_groups` ag ON ag.id = aag.asset_group_id
+        WHERE `asset_id` = :asset_id
+    ");
+    $stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+    
+    return $groups;   
+}
+/*******************************************
+ * FUNCTION: GET ASSETS FROM ASSET GROUP   *
+ *******************************************/
+function get_assets_from_group($group_id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("
+        SELECT *
+        FROM `assets_asset_groups` 
+        WHERE asset_group_id = :group_id
+    ");
+    $stmt->bindParam(":group_id", $group_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $assets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+    
+    return $assets;   
+}
+/*******************************************
+ * FUNCTION: GET ASSET IDS FROM GROUPS     *
+ *******************************************/
+function get_asset_ids_from_groups($group_ids)
+{
+    $asset_ids = [];
+    foreach($group_ids as $group){
+        $asserts = get_assets_from_group($group);
+//      $singleArray = array();
+//      foreach ($asserts as $key => $value){
+//          $singleArray[$key] = $value['asset_id'];
+//      }
+        $asset_ids = array_unique(array_merge($asset_ids,array_column($asserts,"asset_id")));
+    }
+    return $asset_ids;
+
 }
 
 ?>

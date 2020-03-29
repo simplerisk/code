@@ -173,11 +173,11 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
         }
     }
 
-	$created_at = date("Y-m-d");
+    $created_at = date("Y-m-d");
 
     // Open the database connection
     $db = db_open();
-	
+    
     // Create test
     $stmt = $db->prepare("INSERT INTO `framework_control_tests` (`tester`, `test_frequency`, `last_date`, `next_date`, `name`, `objective`, `test_steps`, `approximate_time`, `expected_results`, `framework_control_id`, `created_at`, `additional_stakeholders`) VALUES (:tester, :test_frequency, :last_date, :next_date, :name, :objective, :test_steps, :approximate_time, :expected_results, :framework_control_id, :created_at, :additional_stakeholders)");
     
@@ -201,7 +201,7 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
     $message = _lang('TestCreatedAuditLogMessage', array('test_name' => $name, 'test_id' => $test_id, 'user' => $_SESSION['user']));
     write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
 
-    updateTeamsOfType($test_id, 'test', $teams);
+    updateTeamsOfItem($test_id, 'test', $teams);
 
     // Close the database connection
     db_close($db);
@@ -255,7 +255,7 @@ function update_framework_control_test($test_id, $tester=false, $test_frequency=
     $message = _lang('TestUpdatedAuditLogMessage', array('test_name' => $name, 'test_id' => $test_id, 'user' => $_SESSION['user']));
     write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
 
-    updateTeamsOfType($test_id, 'test', $teams);
+    updateTeamsOfItem($test_id, 'test', $teams);
 
     return $test_id;
 }
@@ -274,9 +274,8 @@ function delete_framework_control_test($test_id){
     $stmt->bindParam(":id", $test_id, PDO::PARAM_INT);
     $stmt->execute();
 
-    $stmt = $db->prepare("DELETE FROM `items_to_teams` WHERE item_id=:id;");
-    $stmt->bindParam(":id", $test_id, PDO::PARAM_INT);
-    $stmt->execute();
+    // Remove teams of test
+    updateTeamsOfItem($test_audit_id, 'test', []);
     
     // Close the database connection
     db_close($db);
@@ -379,7 +378,7 @@ function get_framework_control_test_audit_by_id($test_audit_id){
             t2.name tester_name,
             t3.short_name control_name,
             t3.control_owner,
-            GROUP_CONCAT(DISTINCT t4.name) framework_name,
+            IFNULL(GROUP_CONCAT(DISTINCT t4.name), '') framework_name,
             t5.id result_id,
             t5.test_result,
             t5.summary,
@@ -391,7 +390,8 @@ function get_framework_control_test_audit_by_id($test_audit_id){
         FROM `framework_control_test_audits` t1
             LEFT JOIN `user` t2 ON t1.tester = t2.value
             LEFT JOIN `framework_controls` t3 ON t1.framework_control_id = t3.id 
-            LEFT JOIN `frameworks` t4 ON t3.framework_ids=t4.value OR t3.framework_ids like concat('%,', t4.value) OR t3.framework_ids like concat(t4.value, ',%') OR t3.framework_ids like concat('%,', t4.value, ',%')
+            LEFT JOIN `framework_control_to_framework` fctf ON t3.id = fctf.control_id
+            LEFT JOIN `frameworks` t4 ON fctf.framework_id=t4.value
             LEFT JOIN `framework_control_test_results` t5 ON t1.id=t5.test_audit_id
             LEFT JOIN `framework_control_tests` t6 ON t6.id=t1.test_id
             LEFT JOIN `items_to_teams` itt ON `itt`.`item_id` = `t1`.`id` and `itt`.`type` = 'audit'
@@ -412,11 +412,14 @@ function get_framework_control_test_audit_by_id($test_audit_id){
 
     if($test['framework_name']){
         $framework_names = explode(",", $test['framework_name']);
-        foreach($framework_names as &$framework_name)
+        $decrypted_framework_names = [];
+        foreach($framework_names as $framework_name)
         {
-            $framework_name = try_decrypt(trim($framework_name));
+            if($framework_name){
+                $decrypted_framework_names[] = try_decrypt(trim($framework_name));
+            }
         }
-        $test['framework_name'] = implode(", ", $framework_names);
+        $test['framework_name'] = implode(", ", $decrypted_framework_names);
     }
 
     if($test['teams']){
@@ -500,6 +503,7 @@ function display_initiate_audits()
                 enableFiltering: true,
                 maxHeight: 250,
                 includeSelectAllOption: true,
+                buttonWidth: '100%',
                 onDropdownHide: function(){
                     redraw();
                 }
@@ -840,21 +844,19 @@ function initiate_framework_control_tests($type, $id){
 
             $sql = "
                 SELECT
-                    t1.id
+                    DISTINCT t1.id
                 FROM framework_control_tests t1
                     INNER JOIN framework_controls t2 ON t1.framework_control_id=t2.id AND t2.deleted=0
-            ";
-            $where = array();
-            foreach($framework_ids as $key => $framework_id){
-                $where[] = " FIND_IN_SET( {$framework_id} , t2.framework_ids) ";
-            }
-            $sql .= " WHERE ". implode(" OR ", $where) . "; ";
+                    INNER JOIN framework_control_to_framework fctf ON t2.id=fctf.control_id
+                WHERE FIND_IN_SET(fctf.framework_id, :framework_ids); ";
 
             $stmt = $db->prepare($sql);
-
+            $framework_id_string = implode(",", $framework_ids);
+            $stmt->bindParam(":framework_ids", $framework_id_string, PDO::PARAM_STR);
             $stmt->execute();
 
             $test_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+            
             foreach($test_ids as $test_id){
                 if ($separation_enabled && !in_array($test_id, $compliance_separation_access_info['framework_control_tests']))
                     continue;
@@ -928,19 +930,22 @@ function initiate_test_audit($test_id, $initiated_audit_status) {
 
     $audit_id = $db->lastInsertId();
 
-    $sql = "
+    updateTeamsOfItem($audit_id, 'audit', $test['teams']);
+
+    /*$sql = "
         INSERT INTO
             `items_to_teams`(item_id, team_id, type)
         SELECT
             {$audit_id}, `itt`.`team_id`, 'audit'
-        FROM `items_to_teams` itt
+        FROM 
+            `items_to_teams` itt
         WHERE
-            `itt`.`item_id`=:test_id;
+            `itt`.`item_id`=:test_id and `itt`.`type`='audit';
     ";
 
     // Create temp table from framework_control_test
     $stmt = $db->prepare($sql);
-    $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
+    $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);*/
 
     $stmt->execute();
 
@@ -967,12 +972,14 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
     $sql = "
         SELECT t1.id, t1.test_id, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps,
             t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, t1.status, t1.created_at,
-            t2.name tester_name, t3.short_name control_name, GROUP_CONCAT(DISTINCT t4.name) framework_name, t5.test_result,
+            t2.name tester_name, t3.short_name control_name, IFNULL(GROUP_CONCAT(DISTINCT t4.name), '') framework_name, t5.test_result,
             t5.summary, t5.submitted_by, t5.submission_date, ifnull(t6.name, '--') audit_status_name, t7.additional_stakeholders{$select_background_class}
         FROM `framework_control_test_audits` t1
             LEFT JOIN `user` t2 ON t1.tester = t2.value
             LEFT JOIN `framework_controls` t3 ON t1.framework_control_id = t3.id 
-            LEFT JOIN `frameworks` t4 ON (t3.framework_ids=t4.value OR t3.framework_ids like concat('%,', t4.value) OR t3.framework_ids like concat(t4.value, ',%') OR t3.framework_ids like concat('%,', t4.value, ',%')) AND t4.status=1
+            LEFT JOIN `framework_control_to_framework` fctf ON t3.id=fctf.control_id
+            LEFT JOIN `frameworks` t4 ON fctf.framework_id=t4.value AND t4.status=1
+            LEFT JOIN `framework_control_to_framework` fctf_1 ON t3.id=fctf_1.control_id
             LEFT JOIN `framework_control_test_results` t5 ON t1.id=t5.test_audit_id
             LEFT JOIN `test_status` t6 ON t1.status=t6.value
             LEFT JOIN `framework_control_tests` t7 ON t7.id=t1.test_id
@@ -983,7 +990,7 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
 
     $closed_audit_status = get_setting("closed_audit_status");
 
-	// Active audits
+    // Active audits
     if($active)
     {
         $wheres[] = " t1.status<>'".$closed_audit_status."' ";
@@ -1038,16 +1045,11 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
                     // If unassigned option.
                     if($val == -1)
                     {
-                        $framework_wheres[] = "(t3.framework_ids is NULL OR t3.framework_ids='')";
+                        $framework_wheres[] = "fctf.framework_id IS NULL";
                     }
                     else
                     {
-                        $framework_filter_pattern1 = $val;
-                        $framework_filter_pattern2 = "%,".$val;
-                        $framework_filter_pattern3 = $val.",%";
-                        $framework_filter_pattern4 = "%,".$val.",%";
-
-                        $framework_wheres[] = "(t3.framework_ids like '{$framework_filter_pattern1}' or t3.framework_ids like '{$framework_filter_pattern2}' or t3.framework_ids like '{$framework_filter_pattern3}' or t3.framework_ids like '{$framework_filter_pattern4}')";
+                        $framework_wheres[] = "fctf_1.framework_id='{$val}'";
                     }
                 }
 
@@ -1190,7 +1192,9 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
         $framework_names = explode(",", $test_audit['framework_name']);
         $decrypted_framework_names = [];
         foreach($framework_names as $framework_name){
-            $decrypted_framework_names[] = try_decrypt(trim($framework_name));
+            if($framework_name){
+                $decrypted_framework_names[] = try_decrypt(trim($framework_name));
+            }
         }
         
         $test_audit['framework_name'] = implode(", ", $decrypted_framework_names);
@@ -1425,7 +1429,7 @@ function display_compliance_files($ref_id, $ref_type){
             <li>            
                 <div class=\"file-name\"><a href=\"".$_SESSION['base_url']."/compliance/download.php?id=".$escaper->escapeHtml($file['unique_name'])."\">".$escaper->escapeHtml($file['name'])."</a></div>
                 <a href=\"#\" class=\"remove-file\" data-id=\"file-upload-0\"><i class=\"fa fa-remove\"></i></a>
-                <input name=\"unique_names[]\" value=\"{$file['unique_name']}\" type=\"hidden\">
+                <input name=\"unique_names[]\" value=\"". $escaper->escapeHtml($file['unique_name']) ."\" type=\"hidden\">
             </li>            
         ";
     }
@@ -1654,7 +1658,7 @@ function save_test_result($test_audit_id, $status, $test_result, $tester, $test_
     db_close($db);
     
     // Update teams of the active audit
-    updateTeamsOfType($test_audit_id, 'audit', $teams);
+    updateTeamsOfItem($test_audit_id, 'audit', $teams);
     
     // Update status in test_audit table
     update_test_audit_status($test_audit_id, $status);
@@ -1867,7 +1871,7 @@ function download_compliance_file($unique_name)
     {
         header("Content-length: " . $array['size']);
         header("Content-type: " . $array['type']);
-	header("Content-Disposition: attachment; filename=" . $escaper->escapeUrl($array['name']));
+        header("Content-Disposition: attachment; filename=" . $escaper->escapeUrl($array['name']));
         echo $array['content'];
         exit;
     }
@@ -2326,9 +2330,7 @@ function delete_test_audit($test_audit_id) {
     $stmt->execute();
 
     // Delete test audit's teams
-    $stmt = $db->prepare("DELETE FROM `items_to_teams` WHERE `item_id`=:test_audit_id and `type`='audit';");
-    $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
-    $stmt->execute();
+    updateTeamsOfItem($test_audit_id, 'audit', []);
 
     // Close the database connection
     db_close($db);
@@ -2372,7 +2374,8 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
             GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
             GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
         FROM `frameworks` t1 
-            LEFT JOIN `framework_controls` t2 on FIND_IN_SET(t1.value, t2.framework_ids) AND t2.deleted=0
+            LEFT JOIN `framework_control_to_framework` fctf on t1.value=fctf.framework_id
+            LEFT JOIN `framework_controls` t2 on fctf.control_id=t2.id AND t2.deleted=0
             LEFT JOIN `framework_control_tests` t3 on t3.framework_control_id=t2.id
         WHERE
             t1.status=1 AND t3.id IS NOT NULL
@@ -2422,7 +2425,6 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
     $stmt->execute();
     // Store the list in the array
     $frameworks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
     // Close the database connection
     db_close($db);
     $filtered_frameworks = [];
@@ -2464,6 +2466,7 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
         
     }
     
+    
     $results = array();
     $ids = array();
     // Get unique array
@@ -2484,15 +2487,18 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
  ****************************************************/
 function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id=null)
 {
+    global $escaper;
+    $curren_framework = get_framework($framework_id);
+
     // Open the database connection
     $db = db_open();
 
     $sql = "
         SELECT t2.*,
-            t1.name framework_name,
-            t1.desired_frequency framework_desired_frequency,
-            t1.last_audit_date framework_last_audit_date,
-            t1.next_audit_date framework_next_audit_date,
+            '".str_replace(",", "\,", $curren_framework['name'])."' framework_name,
+            '{$curren_framework['desired_frequency']}' framework_desired_frequency,
+            '{$curren_framework['last_audit_date']}' framework_last_audit_date,
+            '{$curren_framework['next_audit_date']}' framework_next_audit_date,
             GROUP_CONCAT(DISTINCT t2.short_name SEPARATOR ',') control_names,
             GROUP_CONCAT(DISTINCT t2.desired_frequency SEPARATOR ',') control_desired_frequencies,
             GROUP_CONCAT(DISTINCT t2.last_audit_date SEPARATOR ',') control_last_audit_dates,
@@ -2502,7 +2508,8 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
             GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
             GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
         FROM `frameworks` t1 
-            INNER JOIN `framework_controls` t2 on FIND_IN_SET(t1.value, t2.framework_ids) AND t2.deleted=0
+            INNER JOIN `framework_control_to_framework` fctf on t1.value=fctf.framework_id
+            INNER JOIN `framework_controls` t2 on fctf.control_id=t2.id AND t2.deleted=0
             LEFT JOIN `framework_control_tests` t3 on t3.framework_control_id=t2.id
         WHERE
             t1.status=1 AND t3.id IS NOT NULL
@@ -2526,7 +2533,7 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
     }
     
     if($framework_id){
-        $child_frameworks = get_all_child_frameworks($framework_id, 1);
+        $child_frameworks = get_all_child_frameworks($framework_id, 1, false);
         
         $selected_framework_ids = array_map(function($row){
             return $row['value'];
@@ -2576,11 +2583,8 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
     // Close the database connection
     db_close($db);
     
-    $curren_framework = get_framework($framework_id);
-    
     $filtered_controls = [];
     foreach($controls as $control){
-        $control['framework_name'] = try_decrypt($control['framework_name']);
         if(!$filter_by_text || stripos($curren_framework['name'], $filter_by_text) !== false 
             || stripos($control['framework_desired_frequency'], $filter_by_text) !== false 
             || stripos($control['framework_last_audit_date'], $filter_by_text) !== false 
@@ -2608,15 +2612,17 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
  *************************************************/
 function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filter_by_frequency, $filter_by_framework, $filter_by_control, $framework_id, $control_id)
 {
+    $curren_framework = get_framework($framework_id);
+
     // Open the database connection
     $db = db_open();
 
     $sql = "
         SELECT t3.*,
-            t1.name framework_name,
-            t1.desired_frequency framework_desired_frequency,
-            t1.last_audit_date framework_last_audit_date,
-            t1.next_audit_date framework_next_audit_date,
+            '".str_replace(",", "\,", $curren_framework['name'])."' framework_name,
+            '{$curren_framework['desired_frequency']}' framework_desired_frequency,
+            '{$curren_framework['last_audit_date']}' framework_last_audit_date,
+            '{$curren_framework['next_audit_date']}' framework_next_audit_date,
             GROUP_CONCAT(DISTINCT t2.short_name SEPARATOR ',') control_names,
             GROUP_CONCAT(DISTINCT t2.desired_frequency SEPARATOR ',') control_desired_frequencies,
             GROUP_CONCAT(DISTINCT t2.last_audit_date SEPARATOR ',') control_last_audit_dates,
@@ -2626,12 +2632,13 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
             GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
             GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
         FROM `frameworks` t1 
-            INNER JOIN `framework_controls` t2 on FIND_IN_SET(t1.value, t2.framework_ids) AND t2.deleted=0
+            INNER JOIN `framework_control_to_framework` fctf on t1.value=fctf.framework_id
+            INNER JOIN `framework_controls` t2 on fctf.control_id=t2.id AND t2.deleted=0
             INNER JOIN `framework_control_tests` t3 on t3.framework_control_id=t2.id
         WHERE
             t1.status=1 AND t2.id=:control_id
     ";
-    
+
     $where = [];
     
     if($filter_by_frequency){
@@ -2657,7 +2664,6 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
 
     $stmt = $db->prepare($sql);
     
-//    $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     if($filter_by_frequency){
         $filter_by_frequency = "%{$filter_by_frequency}%";
@@ -2682,11 +2688,8 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
     // Close the database connection
     db_close($db);
     
-    $curren_framework = get_framework($framework_id);
-
     $filtered_tests = [];
     foreach($tests as $test){
-        $test['framework_name'] = try_decrypt($test['framework_name']);
         if(!$filter_by_text || stripos($curren_framework['name'], $filter_by_text) !== false 
             || stripos($test['framework_desired_frequency'], $filter_by_text) !== false 
             || stripos($test['framework_last_audit_date'], $filter_by_text) !== false 
@@ -2719,10 +2722,11 @@ function get_audit_tests($order_field=false, $order_dir=false)
     $db = db_open();
 
     $sql = "
-        SELECT t1.id, t1.name, t1.last_date, t1.next_date, GROUP_CONCAT(DISTINCT t3.name) framework_names
+        SELECT t1.id, t1.name, t1.last_date, t1.next_date, IFNULL(GROUP_CONCAT(DISTINCT t3.name), '') framework_names
         FROM `framework_control_tests` t1
             INNER JOIN `framework_controls` t2 ON t1.framework_control_id=t2.id
-            LEFT JOIN `frameworks` t3 ON FIND_IN_SET(t3.value, t2.framework_ids)
+            LEFT JOIN `framework_control_to_framework` fctf ON t2.id=fctf.control_id
+            LEFT JOIN `frameworks` t3 ON fctf.framework_id=t3.value
         WHERE t3.status=1
         GROUP BY t1.id
     ";
@@ -2773,11 +2777,14 @@ function get_audit_tests($order_field=false, $order_dir=false)
         // Decrypt associtated framework names
         foreach($tests as &$row){
             $framework_names = explode(",", $row['framework_names']);
-            foreach($framework_names as &$framework_name)
+            $decrypted_framework_names = [];
+            foreach($framework_names as $framework_name)
             {
-                $framework_name = try_decrypt($framework_name);
+                if($framework_name){
+                    $decrypted_framework_names[] = try_decrypt(trim($framework_name));
+                }
             }
-            $row['framework_names'] = implode(", ", $framework_names);
+            $row['framework_names'] = implode(", ", $decrypted_framework_names);
         }
         
         // If encryption extra is enabled and sort field is Associated Frameworks, sort by manually

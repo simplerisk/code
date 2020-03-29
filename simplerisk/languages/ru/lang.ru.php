@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Проект Обновления Статусов',
     'HighRiskReport'=>'Доклад Высокий Риск',
     'TotalOpenRisks'=>'Общая Открытая Риски',
-    'TotalHighRisks'=>'Общая Высокими Рисками',
-    'HighRiskPercentage'=>'Высокий Процент Риска',
+    'NumberOfOpenRisks'=>'Всего открытых рисков: {$number}',
+    'RiskNumberOfRiskLevel'=>'Общее число {$display_name} Риски: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Процент риска: {$percentage}%',
+    'RiskScoreUsing'=>'Оценка риска Использование:',
+    'HighRiskReport_ScoreWarning' => 'Пожалуйста, обратите внимание, что даже если отчет отображается с помощью{$score_used}" оценки, из-за "{$next_review_date_uses_name}" установка мы расчета "{$management_review_header}Значения колонки с использованием "{$next_review_date_uses_value}" оценки.',
     'UpdateClassicScore'=>'Обновление Классический Результат',
     'UpdateCVSSScore'=>'Обновление CVSS результат',
     'BaseScoreMetrics'=>'Базовые Показатели Результат',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Я хочу, чтобы каждый отзыв очень высокий риск',
     'AbleToReviewVeryHighRisks'=>'Возможность обзора очень высокие риски',
     'AbleToReviewInsignificantRisks'=>'Сможете ознакомиться незначительные риски',
-    'TotalVeryHighRisks'=>'Всего Очень Высокие Риски',
-    'VeryHighRiskPercentage'=>'Очень Высокий Процент Риска',
     'AllTeams'=>'Все Команды',
     'FileUploadSettings'=>'Файл Параметров Загрузки',
     'AllowedFileTypes'=>'Разрешенные Типы Файлов',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Используйте запятую, чтобы разделить несколько писем.',
     'RiskAssessmentQuestionnaire' => 'Вопросник по оценке рисков',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n Здравствуйте, \\n
-            <p> {$username} попросил вас заполнить следующую анкету оценки риска:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>этом  — Это автоматическое сообщение, и ответы будут игнорироваться или отклоняться.</p>\\n
+        <html><body>
+            Привет
+            <p> {$username} попросил вас заполнить следующий вопросник по оценке риска:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Это автоматическое сообщение, и ответы будут проигнорированы или отклонены.</p>
         </body></html>',
     'FilterByText' => 'Фильтровать по тексту',
     'SelectMitigatingControls' => 'Выбор смягчающих элементов управления',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Ваши ответы были успешно сохранены.',
     'QuestionnaireCompletedSuccess'=>'Вы успешно заполнили анкету.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body> \\ n Hello, \\n <p> {$conact_name} заполнена анкета, <b>{$questionnaire_name}</b></p> \\ n <p>This является автоматическим сообщением, и ответы будут игнорироваться или отклоняться. </p> \\ n
+        <html><body>
+            Привет
+            <p> {$conact_name} заполнил ианкету, <b>{$questionnaire_name}</b></p>
+            <p>Это автоматическое сообщение, и ответы будут проигнорированы или отклонены.</p>
         </body></html>',
     'QuestionnaireResults'=>'Результаты анкетирования',
     'DateSent'=>'Дата отправки',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Новая инфраструктура была успешно добавлена.',
     'FrameworkUpdated'=>'Инфраструктура была успешно обновлена.',
     'FrameworkNameExist'=>'Имя платформы уже существует.',
+    'FrameworkNameCantBeEmpty'=>'Имя фреймворка не может быть пустым.',
+    'FrameworkCantBeItsOwnParent'=>'Инфраструктура не может быть его собственным родителем.',
+    'FrameworkParentUpdated'=>'Родительский проект успешно обновлен.',
     'AttachmentFiles'=>'Файлы вложений',
     'QuestionnaireFiles'=>'Файлы анкет',
     'ContactEmailAlreadyInUse'=>'Контактный адрес электронной почты уже используется.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Ресурс успешно обновлен.',
     'ThereWasAProblemUpdatingTheAsset' => 'Возникла проблема с обновлением актива.',
     'ImportAssetAddSucceeded' => 'Добавлено{$verified_or_unverified}"активы под названием"{$asset_name}"с IP"{$asset_ip}"и значение"{$asset_value}".',
-    'ImportAssetAddFailed' => 'Не удалось добавить "{$verified_or_unverified"активы под названием"{$asset_name}"с IP"{$asset_ip}"и значение"{$asset_value}".',
+    'ImportAssetAddFailed' => 'Не удалось добавить "{$verified_or_unverified}" актив под названием "{$asset_name}" с IP "{$asset_ip}" и значение "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Операция не требуется для ресурса с именем "{$asset_name}", как это уже в базе данных.',
     'ImportAssetUpdateSucceeded' => 'Обновление{$verified_or_unverified}"активы под названием"{$asset_name}"с IP"{$asset_ip}"и значение"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Не удалось обновить "{$verified_or_unverified}"активы под названием"{$asset_name}"с IP"{$asset_ip}"и значение"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Тест обновления',
     'ControlEditHeader' => 'Управление обновлением',
     'FrameworkEditHeader' => 'Рамки обновления',
+    'UserTeamUpdateAuditLog' => 'Пользователь "{$user}" обновленные команды пользователей "{$username}" от "{$teams_from}" к "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Пользователь "{$user}" обновленные команды {$type} (ID:{$id}) от "{$teams_from}" к "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Удалено "{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Добавлено "{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Пользователь "{$user}" обновленные элементы (тип:"{$type}") команды "{$team}" от "{$items_from}" к "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Удалено "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Добавлено "{$items_added}"',
     'TeamType_test' => 'Тест',
     'TeamType_audit' => 'Аудита',
     'TestCreatedAuditLogMessage' => 'Тест "{$test_name}"(ID: {$test_id}) был создан пользователем "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Результат ы анкеты успешно утвержден.',
     'QuestionnaireResultRejectedSuccessfully' => 'Результат анкеты успешно отклонен. Уведомление электронной почты отправляется контакту.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Привет\\n
-            <p> {$username} попросил вас пересмотреть следующий вопросник по оценке рисков:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Комментарии: {$reject_comment}</p>\\n
-            <p>Это автоматическое сообщение, и ответы будут проигнорированы или отклонены.</p>\\n
+        <html><body>
+            Привет
+            <p> {$username} попросил вас пересмотреть следующий вопросник по оценке рисков:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Комментарии: {$reject_comment}</p>
+            <p>Это автоматическое сообщение, и ответы будут проигнорированы или отклонены.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Анкета "${questionnaire_name}"(отправлено связаться с "{$contact_name}" на "{$date}") результат был одобрен пользователем "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Анкета "${questionnaire_name}" результат был отклонен и отправлен обратно в контакт "${contact_name}" для переоценки пользователем "${user_name}" с комментарием "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Анкета "{$questionnaire_name}"(отправлено связаться с "{$contact_name}" на "{$date}") результат был одобрен пользователем "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Анкета "{$questionnaire_name}" результат был отклонен и отправлен обратно в контакт "{$contact_name}" для переоценки пользователем "{$user_name}" с комментарием "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Предварительно заселиться с ответами из последней оценки?',
-    'QuestionnaireResultApprovedAuditLog' => 'Анкета "${questionnaire_name}"(отправлено связаться с "{$contact_name}" на "{$date}") результат был одобрен пользователем "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Анкета "${questionnaire_name}" результат был отклонен и отправлен обратно в контакт "${contact_name}" для переоценки пользователем "${user_name}" с комментарием "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Анкета "{$questionnaire_name}"(отправлено связаться с "{$contact_name}" на "{$date}") результат был одобрен пользователем "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Анкета "{$questionnaire_name}" результат был отклонен и отправлен обратно в контакт "{$contact_name}" для переоценки пользователем "{$user_name}" с комментарием "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Пользователь "{$user_name}" добавил комментарий для анкеты "{$questionnaire_name}" (отправлено на контакт "{$contact_name}" на "{$date}") результат.',
     'QuestionnaireSentAuditLog' => 'Анкета "{$questionnaire_name}" был отправлен на контакт "{$contact_name}" пользователем "{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Анкета "{$questionnaire_name}"завершение привело к созданию в ожидании риска"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Ожидаемый риск "{$subject}" анкеты "${questionnaire_name}"(отправлено связаться с "{$contact_name}" на "{$date}") был добавлен в качестве риска (ID: {$risk_id}) пользователем "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Ожидаемый риск "{$subject}" анкеты "${questionnaire_name}"(отправлено связаться с "{$contact_name}" на "{$date}") был удален пользователем "${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Ожидаемые риски анкеты "${questionnaire_name}"(отправлено связаться с "{$contact_name}" на "{$date}") были удалены пользователем "${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Анкета "{$questionnaire_name}" был завершен контактом "${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Анкета "{$questionnaire_name}" был сохранен как проект контактом "${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Ожидаемый риск "{$subject}" анкеты "{$questionnaire_name}"(отправлено связаться с "{$contact_name}" на "{$date}") был добавлен в качестве риска (ID: {$risk_id}) пользователем "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Ожидаемый риск "{$subject}" анкеты "{$questionnaire_name}"(отправлено связаться с "{$contact_name}" на "{$date}") был удален пользователем "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Ожидаемые риски анкеты "{$questionnaire_name}"(отправлено связаться с "{$contact_name}" на "{$date}") были удалены пользователем "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Анкета "{$questionnaire_name}" был завершен контактом "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Анкета "{$questionnaire_name}" был сохранен как проект контактом "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Анкета Результат Аудит Trail Доклад',
     'SubTemplate' => 'Подшаблон',
     'MitigationAccepted' => 'Смягчение принято',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Просмотр активных аудитов',
     'ViewPastAudits'=>'Просмотр прошлых аудитов',
     'Uninstall' => 'Удалить',
+    'SimpleriskUsers' => 'Пользователи Simplerisk',
+    'QuestionnaireCompletedAuditLogByUser' => 'Анкета "{$questionnaire_name}" был завершен пользователем "{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Анкета "{$questionnaire_name}" был сохранен в качестве проекта пользователем "{$contact_name}".',
+    'Internal' => 'Внутренние',
+    'QuestionType' => 'Тип вопроса',
+    'MultipleChoice' => 'Множественный выбор',
+    'FillInTheBlank' => 'Заполните бланк',
+    'Proxy' => 'Прокси',
+    'ProxyWebRequests' => 'Прокси-запросы на веб',
+    'VerifySSLCertificate' => 'Проверка сертификата SSL',
+    'ProxyHostname' => 'Прокси-хостимя / IP',
+    'ProxyPort' => 'Прокси-порт',
+    'AuthenticatedProxy' => 'Аутентифицированный прокси',
+    'ProxyUsername' => 'Имя прокси-пользователя',
+    'ProxyPassword' => 'Прокси-пароль',
+    'SimpleRiskExtras' => 'SimpleRisk Экстры',
+    'ColumnSelections' => 'Выбор колонн',
+    'GroupAndFilteringSelections' => 'Выбор группи и фильтрации',
+    'Hyperlink' => 'Гиперссылки',
+    'URL' => 'Url',
+    'AssetTeams'=>'Команда активов (ы)',
+    'AssetSiteLocation'=>'Сайт актива/местоположение',
+    'ActivatingSCFMessage' => 'Установка платформы ComplianceForge SCF. Это может занять несколько минут.',
+    'DeactivatingSCFMessage' => 'Установка платформы ComplianceForge SCF.',
+    'UpdatingSCFMessage' => 'Обновление структуры ComplianceForge SCF. Это может занять несколько минут.',
+    'Processing' => 'Обработки...',
+    'AlphabeticalOrder'=>'Алфавитный порядок',
     '' => ''
 );
 

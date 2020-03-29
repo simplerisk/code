@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Oppdatering Prosjektet Statuser',
     'HighRiskReport'=>'Høy Risiko Rapport',
     'TotalOpenRisks'=>'Total Åpne Risiko',
-    'TotalHighRisks'=>'Sum Høy Risiko',
-    'HighRiskPercentage'=>'Høy Risiko Prosent',
+    'NumberOfOpenRisks'=>'Total åpne risikoer: {$number}',
+    'RiskNumberOfRiskLevel'=>'Totalt antall {$display_name} Risiko: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Risikoprosent: {$percentage}%',
+    'RiskScoreUsing'=>'Risikoscore ved hjelp av:',
+    'HighRiskReport_ScoreWarning' => 'Vær oppmerksom på at selv om rapporten vises ved hjelp av "{$score_used}" score, på grunn av "{$next_review_date_uses_name}" innstillingen vi beregner "{$management_review_header}" -kolonnens verdier ved hjelp av "{$next_review_date_uses_value}" score.',
     'UpdateClassicScore'=>'Oppdatere klassiske poeng',
     'UpdateCVSSScore'=>'Oppdatering CVSS Score',
     'BaseScoreMetrics'=>'Grunnpoengsummen Beregninger',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Jeg ønsker å gjennomgå SVÆRT HØY risiko for hver',
     'AbleToReviewVeryHighRisks'=>'I stand til å skrive en Anmeldelse Svært Høy Risiko',
     'AbleToReviewInsignificantRisks'=>'I stand til å skrive en Anmeldelse Ubetydelig Risiko',
-    'TotalVeryHighRisks'=>'Total Svært Høy Risiko',
-    'VeryHighRiskPercentage'=>'Svært Høy Risiko Prosent',
     'AllTeams'=>'Alle Lag',
     'FileUploadSettings'=>'Opplasting Av Fil-Innstillinger',
     'AllowedFileTypes'=>'Tillatt Filtyper',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Bruk komma til å skille flere e-poster.',
     'RiskAssessmentQuestionnaire' => 'Spørreskjema for risikovurdering',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n Hei, \\n
-            <p> {$username} har bedt deg om å fullføre følgende risikovurdering spørreskjema:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>denne  er en automatisert melding og et svar vil bli ignorert eller avvist.</p>\\n
+        <html><body>
+            hallo
+            <p> {$username} har bedt deg om å fylle ut følgende spørreskjema for risikovurdering:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Dette er en automatisk melding, og svarene ignoreres eller avvises.</p>
         </body></html>',
     'FilterByText' => 'Filtrer etter tekst',
     'SelectMitigatingControls' => 'Velg begrensende kontroll (er)',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Svarene ble lagret.',
     'QuestionnaireCompletedSuccess'=>'Du har fullført dette spørreskjemaet.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body> \\ n Hello, \\n <p> {$conact_name} fullført et spørreskjema, <b>{$questionnaire_name}</b></p> \\ n <p>This er en automatisert melding og svar vil bli ignorert eller forkastet. </p> \\ n
+        <html><body>
+            hallo
+            <p> {$conact_name} fullførte et spørreskjema, <b>{$questionnaire_name}</b></p>
+            <p>Dette er en automatisk melding, og svarene ignoreres eller avvises.</p>
         </body></html>',
     'QuestionnaireResults'=>'Resultater av spørreskjema',
     'DateSent'=>'Sendt dato',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'En ny ramme ble lagt til.',
     'FrameworkUpdated'=>'Et rammeverk ble oppdatert.',
     'FrameworkNameExist'=>'Rammeverk navnet finnes allerede.',
+    'FrameworkNameCantBeEmpty'=>'Rammenavnet kan ikke være tomt.',
+    'FrameworkCantBeItsOwnParent'=>'Rammeverket kan ikke være sin egen forelder.',
+    'FrameworkParentUpdated'=>'Rammeverkets overordnede er oppdatert.',
     'AttachmentFiles'=>'Vedleggsfiler',
     'QuestionnaireFiles'=>'Spørreskjema filer',
     'ContactEmailAlreadyInUse'=>'Kontakten e-post er allerede i bruk.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Ressursen ble oppdatert.',
     'ThereWasAProblemUpdatingTheAsset' => 'Det oppstod et problem under oppdatering av anleggsmidlet.',
     'ImportAssetAddSucceeded' => 'Lagt{$verified_or_unverified}"ressursnavn"{$asset_name}"med IP"{$asset_ip}"og verdi"{$asset_value}".',
-    'ImportAssetAddFailed' => 'Kan ikke legge til "{$verified_or_unverified"ressursnavn"{$asset_name}"med IP"{$asset_ip}"og verdi"{$asset_value}".',
+    'ImportAssetAddFailed' => 'Kan ikke legge til "{$verified_or_unverified}" eiendel en heter "{$asset_name}" med IP "{$asset_ip}" og verdi "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Ingen operasjon kreves på ressurs kalt "{$asset_name}"som det allerede er i databasen.',
     'ImportAssetUpdateSucceeded' => 'Oppdaterte{$verified_or_unverified}"ressursnavn"{$asset_name}"med IP"{$asset_ip}"og verdi"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Kan ikke oppdatere "{$verified_or_unverified}"ressursnavn"{$asset_name}"med IP"{$asset_ip}"og verdi"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Oppdater test',
     'ControlEditHeader' => 'Oppdater kontroll',
     'FrameworkEditHeader' => 'Oppdater rammeverk',
+    'UserTeamUpdateAuditLog' => 'Bruker "{$user}" oppdaterte team av bruker "{$username}" fra "{$teams_from}" til "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Bruker{$user}"oppdatert team av {$type} ID{$id}fra{$teams_from}å{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Fjernet{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Lagt{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Bruker "{$user}" oppdaterte elementer (type:"{$type}") av team "{$team}" fra "{$items_from}" til "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Fjernet "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Lagt til "{$items_added}"',
     'TeamType_test' => 'Test',
     'TeamType_audit' => 'Tilsynet',
     'TestCreatedAuditLogMessage' => 'Test{$test_name}"(ID: {$test_id}) ble opprettet av brukeren "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Spørreskjema resultatet er godkjent.',
     'QuestionnaireResultRejectedSuccessfully' => 'Spørreskjema resultat ble avvist. E-postmelding sendes til kontakten.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            hallo\\n
-            <p> {$username} har bedt deg om å evaluere følgende spørreskjema for risikovurdering på nytt:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Kommentarer: {$reject_comment}</p>\\n
-            <p>Dette er en automatisk melding, og svarene vil bli ignorert eller forkastet.</p>\\n
+        <html><body>
+            hallo
+            <p> {$username} har bedt deg om å revurdere følgende spørreskjema for risikovurdering:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Kommentarer: {$reject_comment}</p>
+            <p>Dette er en automatisk melding, og svarene ignoreres eller avvises.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Spørreskjema${questionnaire_name}"(sendt til kontakt"{$contact_name}på{$date}") resultatet ble godkjent av brukeren"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Spørreskjema${questionnaire_name}"resultatet ble avvist og sendt tilbake til kontakt"${contact_name}"for Re-evaluering av brukeren"${user_name}"med kommentar"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Spørreskjema "{$questionnaire_name}"(sendt til kontakt"{$contact_name}" på "{$date}") resultatet ble godkjent av brukeren "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Spørreskjema "{$questionnaire_name}" resultatet ble avvist og sendt tilbake til kontakt "{$contact_name}" for revurdering av brukeren "{$user_name}" med kommentar "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Forhåndsutfylt med svar fra siste vurdering?',
-    'QuestionnaireResultApprovedAuditLog' => 'Spørreskjema${questionnaire_name}"(sendt til kontakt"{$contact_name}på{$date}") resultatet ble godkjent av brukeren"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Spørreskjema${questionnaire_name}"resultatet ble avvist og sendt tilbake til kontakt"${contact_name}"for Re-evaluering av brukeren"${user_name}"med kommentar"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Spørreskjema "{$questionnaire_name}"(sendt til kontakt"{$contact_name}" på "{$date}") resultatet ble godkjent av brukeren "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Spørreskjema "{$questionnaire_name}" resultatet ble avvist og sendt tilbake til kontakt "{$contact_name}" for revurdering av brukeren "{$user_name}" med kommentar "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Bruker{$user_name}"lagt til en kommentar for spørreskjema"{$questionnaire_name}"(sendt til kontakt"{$contact_name}på{$date}") resultat.',
     'QuestionnaireSentAuditLog' => 'Spørreskjema{$questionnaire_name}"ble sendt til kontakt"{$contact_name}"av bruker"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Spørreskjema{$questionnaire_name}"\' s ferdigstillelse resulterte i å skape utestående risiko"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Ventende risiko "{$subject}"av spørreskjema"${questionnaire_name}"(sendt til kontakt"{$contact_name}på{$date}") ble lagt til som risiko (ID: {$risk_id}) etter bruker "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Ventende risiko "{$subject}"av spørreskjema"${questionnaire_name}"(sendt til kontakt"{$contact_name}på{$date}") ble slettet av brukeren"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Ventende risikoer for spørreskjema "${questionnaire_name}"(sendt til kontakt"{$contact_name}på{$date}") ble slettet av brukeren"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Spørreskjema{$questionnaire_name}"ble fullført ved kontakt"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Spørreskjema{$questionnaire_name}"ble lagret som utkast ved kontakt"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Ventende risiko "{$subject}" av spørreskjema "{$questionnaire_name}"(sendt til kontakt"{$contact_name}" på "{$date}") ble lagt til som Risiko (ID: {$risk_id}) av bruker "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Ventende risiko "{$subject}" av spørreskjema "{$questionnaire_name}"(sendt til kontakt"{$contact_name}" på "{$date}") ble slettet av brukeren "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Ventende risiko for spørreskjema "{$questionnaire_name}"(sendt til kontakt"{$contact_name}" på "{$date}") ble slettet av brukeren "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Spørreskjema "{$questionnaire_name}" ble fullført av kontakt "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Spørreskjema "{$questionnaire_name}" ble lagret som utkast ved kontakt "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Rapport om revisjonsspor for spørreskjema resultat',
     'SubTemplate' => 'Sub-mal',
     'MitigationAccepted' => 'Begrensning akseptert',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Vis aktive revisjoner',
     'ViewPastAudits'=>'Vis tidligere revisjoner',
     'Uninstall' => 'Avinstallere',
+    'SimpleriskUsers' => 'Simplerisk-brukere',
+    'QuestionnaireCompletedAuditLogByUser' => 'Spørreskjema "{$questionnaire_name}" ble fullført av brukeren"{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Spørreskjema "{$questionnaire_name}" ble lagret som utkast av brukeren "{$contact_name}".',
+    'Internal' => 'Interne',
+    'QuestionType' => 'Spørsmåltype',
+    'MultipleChoice' => 'Flere valg',
+    'FillInTheBlank' => 'Fyll ut det tomme',
+    'Proxy' => 'Proxy',
+    'ProxyWebRequests' => 'Proxy-webforespørsler',
+    'VerifySSLCertificate' => 'Bekrefte SSL-sertifikat',
+    'ProxyHostname' => 'Vertsnavn for proxy / IP',
+    'ProxyPort' => 'Proxy-port',
+    'AuthenticatedProxy' => 'Godkjent proxy',
+    'ProxyUsername' => 'Proxy brukernavn',
+    'ProxyPassword' => 'Proxy passord',
+    'SimpleRiskExtras' => 'SimpleRisk Statister',
+    'ColumnSelections' => 'Kolonnevalg',
+    'GroupAndFilteringSelections' => 'Gruppere og filtreringsvalg',
+    'Hyperlink' => 'Hyperkobling',
+    'URL' => 'Url',
+    'AssetTeams'=>'Ressursteam(er)',
+    'AssetSiteLocation'=>'Anleggsområde/sted for anlegg',
+    'ActivatingSCFMessage' => 'Installere ComplianceForge SCF-rammeverket. Dette kan ta flere minutter å fullføre.',
+    'DeactivatingSCFMessage' => 'Avinstallere ComplianceForge SCF-rammeverket.',
+    'UpdatingSCFMessage' => 'Oppdatere ComplianceForge SCF-rammeverket. Dette kan ta flere minutter å fullføre.',
+    'Processing' => 'Behandling...',
+    'AlphabeticalOrder'=>'Alfabetisk rekkefølge',
     '' => ''
 );
 

@@ -74,6 +74,9 @@ if (isset($_POST['change_password']))
                 // Add the old data to the pass_history table
                 add_last_password_history($_SESSION["uid"], $old_data["salt"], $old_data["password"]);
 
+                // Clean up other sessions of the user and roll the current session's id
+                kill_other_sessions_of_current_user();
+
                 // Display an alert
                 set_alert(true, "good", $lang['PasswordUpdated']);
 

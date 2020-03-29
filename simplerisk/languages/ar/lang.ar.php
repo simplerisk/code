@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'تحديث حالة المشروع',
     'HighRiskReport'=>'تقرير عالية المخاطر',
     'TotalOpenRisks'=>'مجموع المخاطر مفتوحة',
-    'TotalHighRisks'=>'مجموع المخاطر العالية',
-    'HighRiskPercentage'=>'نسبة مخاطر عالية',
+    'NumberOfOpenRisks'=>'إجمالي المخاطر المفتوحة: {$number}',
+    'RiskNumberOfRiskLevel'=>'العدد الإجمالي {$display_name} المخاطر: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} نسبة المخاطر: {$percentage}%',
+    'RiskScoreUsing'=>'نقاط المخاطر باستخدام:',
+    'HighRiskReport_ScoreWarning' => 'يرجى ملاحظة أنه على الرغم من عرض التقرير باستخدام "{$score_used}" عشرات ، وذلك بسبب "{$next_review_date_uses_name}" الإعداد نحن حساب "{$management_review_header}" قيم العمود باستخدام "{$next_review_date_uses_value}" عشرات.',
     'UpdateClassicScore'=>'تحديث نقاط الكلاسيكية',
     'UpdateCVSSScore'=>'تحديث نقاط كفس',
     'BaseScoreMetrics'=>'قاعدة مقاييس النتيجة',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'أريد أن استعراض مخاطر عالية جدا كل',
     'AbleToReviewVeryHighRisks'=>'قادرة على استعراض مخاطر عالية جدا',
     'AbleToReviewInsignificantRisks'=>'قادرة على استعراض المخاطر ضئيلة',
-    'TotalVeryHighRisks'=>'إجمالي مخاطر عالية جدا',
-    'VeryHighRiskPercentage'=>'مخاطر عالية جدا نسبة',
     'AllTeams'=>'جميع الفرق',
     'FileUploadSettings'=>'تحميل ملف الإعدادات',
     'AllowedFileTypes'=>'أنواع الملفات المسموح بها',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'استخدم الفواصل لفصل رسائل البريد الكتروني المتعددة.',
     'RiskAssessmentQuestionnaire' => 'استبيان تقييم المخاطر',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n مرحبا ، \\n
-            <p> {$username} طلب منك إكمال الاستبيان التالي لتقييم المخاطر:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>هذه رسالة مؤتمتة سيتم تجاهل الاستجابات أو رفضها.</p>\\n
+        <html><body>
+            مرحبا
+            <p> {$username} طلب منك إكمال استبيان تقييم المخاطر التالي:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>هذه رسالة تلقائية وسيتم تجاهل الاستجابات أو رفضها.</p>
         </body></html>',
     'FilterByText' => 'تصفيه حسب النص',
     'SelectMitigatingControls' => 'تحديد التحكم في التخفيف (ق)',
@@ -779,8 +781,11 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'تم حفظ إجاباتك بنجاح.',
     'QuestionnaireCompletedSuccess'=>'لقد أكملت هذا الاستبيان بنجاح.',
     'EmailTemplateCompleteQuestionnaire' => '
-        123 _ 6_0_6_1_321 \\ n مرحبا ، \\n <p> 123 _ 3_321 أكملت استبيانا ، 123 _ 3_-1_321 123 _ 6__ صفحه الرقم الحالي هو الرسالة المؤتمتة والاستجابات سيتم تجاهلها أو رفضها. 123 _ 971 _ 321 \\ n الصفحة التالية/الثانية/الخامسة.
-        123 _ صفحه 10_صفحه',
+        <html><body>
+            مرحبا
+            <p> {$conact_name} أكمل استبيانًا، <b>{$questionnaire_name}</b></p>
+            <p>هذه رسالة تلقائية وسيتم تجاهل الاستجابات أو رفضها.</p>
+        </body></html>',
     'QuestionnaireResults'=>'نتائج الاستبيان',
     'DateSent'=>'تاريخ الإرسال',
     'Contact'=>'اتصال',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'وأضيف اطار جديد بنجاح.',
     'FrameworkUpdated'=>'تم تحديث الإطار بنجاح.',
     'FrameworkNameExist'=>'اسم الإطار موجود بالفعل.',
+    'FrameworkNameCantBeEmpty'=>'لا يمكن أن يكون اسم الإطار فارغًا.',
+    'FrameworkCantBeItsOwnParent'=>'لا يمكن أن يكون الإطار هو الأصل الخاص به.',
+    'FrameworkParentUpdated'=>'تم تحديث أصل الإطار بنجاح.',
     'AttachmentFiles'=>'ملفات المرفقات',
     'QuestionnaireFiles'=>'ملفات الاستبيان',
     'ContactEmailAlreadyInUse'=>'البريد الكتروني لجهة الاتصال قيد الاستخدام بالفعل.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'تم تحديث الأصل بنجاح.',
     'ThereWasAProblemUpdatingTheAsset' => 'حدثت مشكله في تحديث الأصل.',
     'ImportAssetAddSucceeded' => 'أضاف{$verified_or_unverified}"الأصول المسمية"{$asset_name}"مع الملكية الفكرية"{$asset_ip}"القيمة المضافة"{$asset_value}".',
-    'ImportAssetAddFailed' => 'فشل في أضافه "{$verified_or_unverified"الأصول المسمية"{$asset_name}"مع الملكية الفكرية"{$asset_ip}"القيمة المضافة"{$asset_value}".',
+    'ImportAssetAddFailed' => 'فشل في إضافة "{$verified_or_unverified}" الأصل المسمى "{$asset_name}" مع الملكية الفكرية "{$asset_ip}" والقيمة "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'لا توجد عمليه مطلوبه علي الأصل المسمي "{$asset_name}"كما هو بالفعل في قاعده البيانات.',
     'ImportAssetUpdateSucceeded' => 'تحديث{$verified_or_unverified}"الأصول المسمية"{$asset_name}"مع الملكية الفكرية"{$asset_ip}"القيمة المضافة"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'فشل تحديث "{$verified_or_unverified}"الأصول المسمية"{$asset_name}"مع الملكية الفكرية"{$asset_ip}"القيمة المضافة"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'اختبار التحديث',
     'ControlEditHeader' => 'تحديث عنصر التحكم',
     'FrameworkEditHeader' => 'تحديث الإطار',
+    'UserTeamUpdateAuditLog' => 'المستخدم "{$user}" تحديث فرق المستخدم "{$username}" من "{$teams_from}" إلى "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'المستخدم "{$user}" تحديث الفرق من {$type} (ID:{$id}من "{$teams_from}" إلى "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'تمت إزالتها "{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => '"أضيفت"{$teams_added}"',
+    'ItemUpdateAuditLog' => 'المستخدم "{$user}" العناصر المحدثة (اكتب:"{$type}") من فريق "{$team}" من "{$items_from}" إلى "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'تمت إزالتها "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'وأضاف "{$items_added}"',
     'TeamType_test' => 'اختبار',
     'TeamType_audit' => 'مراجعه الحسابات',
     'TestCreatedAuditLogMessage' => 'اختبار "{$test_name}"(معرف: {$test_id}) تم إنشاؤه بواسطة المستخدم "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'تمت الموافقة علي نتيجة الاستبيان بنجاح.',
     'QuestionnaireResultRejectedSuccessfully' => 'تم رفض نتيجة الاستبيان بنجاح. يتم إرسال اشعار بالبريد الكتروني إلى جهة الاتصال.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            مرحبا\\n
-            <p> {$username} طلب منك أعاده تقييم استبيان تقييم المخاطر التالي:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>تعليقات: {$reject_comment}</p>\\n
-            <p>هذه رسالة مؤتمتة سيتم تجاهل الردود أو رفضها.</p>\\n
+        <html><body>
+            مرحبا
+            <p> {$username} طلب منك إعادة تقييم استبيان تقييم المخاطر التالي:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>تعليقات: {$reject_comment}</p>
+            <p>هذه رسالة تلقائية وسيتم تجاهل الاستجابات أو رفضها.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'استبيان${questionnaire_name}"(إرسالها إلى الاتصال){$contact_name}علي{$date}") تمت الموافقة علي النتيجة من قبل المستخدم"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'استبيان${questionnaire_name}"تم رفض النتيجة وإرسالها مره أخرى إلى الاتصال"${contact_name}"لأعاده التقييم من قبل المستخدم"${user_name}"مع التعليق"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'استبيان "{$questionnaire_name}"(أرسلت إلى الاتصال"{$contact_name}" على "{$date}") تمت الموافقة على النتيجة من قبل المستخدم "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'استبيان "{$questionnaire_name}" تم رفض النتيجة وإرسالها مرة أخرى إلى الاتصال "{$contact_name}" لإعادة التقييم من قبل المستخدم "{$user_name}" مع تعليق "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'التعبئة المسبقة مع إجابات من التقييم الأخير ؟',
-    'QuestionnaireResultApprovedAuditLog' => 'استبيان${questionnaire_name}"(إرسالها إلى الاتصال){$contact_name}علي{$date}") تمت الموافقة علي النتيجة من قبل المستخدم"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'استبيان${questionnaire_name}"تم رفض النتيجة وإرسالها مره أخرى إلى الاتصال"${contact_name}"لأعاده التقييم من قبل المستخدم"${user_name}"مع التعليق"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'استبيان "{$questionnaire_name}"(أرسلت إلى الاتصال"{$contact_name}" على "{$date}") تمت الموافقة على النتيجة من قبل المستخدم "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'استبيان "{$questionnaire_name}" تم رفض النتيجة وإرسالها مرة أخرى إلى الاتصال "{$contact_name}" لإعادة التقييم من قبل المستخدم "{$user_name}" مع تعليق "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'مستخدم{$user_name}"أضافه تعليق للاستبيان"{$questionnaire_name}"(إرسالها إلى الاتصال){$contact_name}علي{$date}") نتيجة.',
     'QuestionnaireSentAuditLog' => 'استبيان{$questionnaire_name}"تم إرساله إلى الاتصال"{$contact_name}"بواسطة المستخدم"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'استبيان{$questionnaire_name}"وقد ادي الانتهاء إلى خلق المخاطر المعلقة"{$subject}".',
-    'PendingRiskAddAuditLog' => 'المخاطر المعلقة "{$subject}"من الاستبيان"${questionnaire_name}"(إرسالها إلى الاتصال){$contact_name}علي{$date}") تمت اضافته كمخاطره (ID: {$risk_id}) من قبل المستخدم "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'المخاطر المعلقة "{$subject}"من الاستبيان"${questionnaire_name}"(إرسالها إلى الاتصال){$contact_name}علي{$date}") تم حذفها من قبل المستخدم"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'المخاطر المعلقة بالاستبيان "${questionnaire_name}"(إرسالها إلى الاتصال){$contact_name}علي{$date}") تم حذفها من قبل المستخدم"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'استبيان{$questionnaire_name}"تم الانتهاء من الاتصال"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'استبيان{$questionnaire_name}"تم حفظه كمسودة بالاتصال"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'المخاطر المعلقة "{$subject}" من الاستبيان "{$questionnaire_name}"(أرسلت إلى الاتصال"{$contact_name}" على "{$date}") تمت إضافة المخاطر (معرف: {$risk_id}) من قبل المستخدم "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'المخاطر المعلقة "{$subject}" من الاستبيان "{$questionnaire_name}"(أرسلت إلى الاتصال"{$contact_name}" على "{$date}") تم حذفه من قبل المستخدم "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'المخاطر المعلقة للاستبيان "{$questionnaire_name}"(أرسلت إلى الاتصال"{$contact_name}" على "{$date}") تم حذفها من قبل المستخدم "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'استبيان "{$questionnaire_name}" تم الانتهاء من الاتصال "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'استبيان "{$questionnaire_name}" تم حفظها كمسودة عن طريق جهة الاتصال "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'تقرير مسار تدقيق نتائج الاستبيان',
     'SubTemplate' => 'قالب فرعي',
     'MitigationAccepted' => 'التخفيف مقبول',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'عرض عمليات التدقيق النشطة',
     'ViewPastAudits'=>'عرض المراجعات السابقة',
     'Uninstall' => 'الغاء تثبيت',
+    'SimpleriskUsers' => 'مستخدمين بسيطي الخطورة',
+    'QuestionnaireCompletedAuditLogByUser' => 'استبيان "{$questionnaire_name}" تم الانتهاء من قبل المستخدم "{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'استبيان "{$questionnaire_name}" تم حفظها كمسودة من قبل المستخدم "{$contact_name}".',
+    'Internal' => 'الداخليه',
+    'QuestionType' => 'نوع السؤال',
+    'MultipleChoice' => 'اختيار متعدد',
+    'FillInTheBlank' => 'ملء الفراغ',
+    'Proxy' => 'الوكيل',
+    'ProxyWebRequests' => 'طلبات ويب الوكيل',
+    'VerifySSLCertificate' => 'التحقق من شهادة SSL',
+    'ProxyHostname' => 'اسم مضيف الوكيل / IP',
+    'ProxyPort' => 'منفذ الوكيل',
+    'AuthenticatedProxy' => 'وكيل مصادق عليه',
+    'ProxyUsername' => 'اسم المستخدم الوكيل',
+    'ProxyPassword' => 'كلمة مرور الوكيل',
+    'SimpleRiskExtras' => 'إضافات بسيطة المخاطر',
+    'ColumnSelections' => 'تحديدات الأعمدة',
+    'GroupAndFilteringSelections' => 'تحديدات المجموعة والتصفية',
+    'Hyperlink' => 'الارتباط التشعبي',
+    'URL' => 'Url',
+    'AssetTeams'=>'فريق الأصول (فرق العمل)',
+    'AssetSiteLocation'=>'موقع/موقع الأصول',
+    'ActivatingSCFMessage' => 'تثبيت إطار الامتثال Forge SCF. قد يستغرق إكمال هُنا عدة دقائق.',
+    'DeactivatingSCFMessage' => 'إلغاء تثبيت إطار عمل ComplianceForge SCF.',
+    'UpdatingSCFMessage' => 'تحديث إطار الامتثال فورفور SCF. قد يستغرق إكمال هُنا عدة دقائق.',
+    'Processing' => 'معالجه...',
+    'AlphabeticalOrder'=>'الترتيب الأبجدي',
     '' => ''
 );
 

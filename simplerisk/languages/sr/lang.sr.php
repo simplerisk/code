@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Пројекат Ажурирања Статуса',
     'HighRiskReport'=>'Извештај Висок Ризик',
     'TotalOpenRisks'=>'Укупна Отворена Ризике',
-    'TotalHighRisks'=>'Укупна Високим Ризиком',
-    'HighRiskPercentage'=>'Висок Проценат Ризика',
+    'NumberOfOpenRisks'=>'Укупни отворени ризици: {$number}',
+    'RiskNumberOfRiskLevel'=>'Укупан број {$display_name} Ризике: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Проценат ризика: {$percentage}%',
+    'RiskScoreUsing'=>'Резултат ризика коришћењем:',
+    'HighRiskReport_ScoreWarning' => 'Имајте у виду да, иако је извештај приказан помоћу "{$score_used}"оценама , због"{$next_review_date_uses_name}"Постављање које израчунавамо"{$management_review_header}"вредности колоне помоћу поља"{$next_review_date_uses_value}оцене.',
     'UpdateClassicScore'=>'Ажурирање Класичан Резултат',
     'UpdateCVSSScore'=>'Ажурирање CVSS резултат',
     'BaseScoreMetrics'=>'Основни Показатељи Резултат',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Желим да сваки коментар врло висок ризик',
     'AbleToReviewVeryHighRisks'=>'Могућност прегледа је веома висок ризик',
     'AbleToReviewInsignificantRisks'=>'Моћи да се упознају мање ризике',
-    'TotalVeryHighRisks'=>'Само Веома Високи Ризици',
-    'VeryHighRiskPercentage'=>'Веома Висок Проценат Ризика',
     'AllTeams'=>'Сви Тимови',
     'FileUploadSettings'=>'Датотеку Параметара За Преузимање',
     'AllowedFileTypes'=>'Дозвољене Врсте Датотека',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Користите зарезе за раздвајање више е-маилове.',
     'RiskAssessmentQuestionnaire' => 'Упитник за процену ризика',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\н Поздрав, \\н
-            <p> {$username} пита да попуните упитник за процену следећих ризика:</p>\\н
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\н
-            <p>ово  је аутоматизовано порука и одговора ће бити занемарене или одбијен.</p>\\н
+        <html><body>
+            Здраво
+            <p> {$username} од вас тражи да довршите следећи упитник процене ризика:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Ово је аутоматизована порука и одговори ће бити занемарени или одбијени.</p>
         </body></html>',
     'FilterByText' => 'Филтрирање текста',
     'SelectMitigatingControls' => 'Изаберите олакшавајуће Цонтрол(с)',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Ваши одговори су успјешно сачуване.',
     'QuestionnaireCompletedSuccess'=>'Успјешно сте завршили овај упитник.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body>\\н Поздрав, \\н <p> {$conact_name} је довршио упитник, <b>{$questionnaire_name}</b></p>\\н <p>Тхис је аутоматска порука и одговори ће бити занемарене или рејецтед.</p>\\н
+        <html><body>
+            Здраво
+            <p> {$conact_name} завршио упитник, <b>{$questionnaire_name}</b></p>
+            <p>Ово је аутоматизована порука и одговори ће бити занемарени или одбијени.</p>
         </body></html>',
     'QuestionnaireResults'=>'Резултати упитника',
     'DateSent'=>'Датум слања',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Нови оквир је успешно додат.',
     'FrameworkUpdated'=>'Оквир је успјешно ажуриран.',
     'FrameworkNameExist'=>'Оквир име већ постоји.',
+    'FrameworkNameCantBeEmpty'=>'Име оквира не може да буде празно.',
+    'FrameworkCantBeItsOwnParent'=>'Оквир не може да буде сопствени родитељ.',
+    'FrameworkParentUpdated'=>'Надређени оквир је успешно ажуриран.',
     'AttachmentFiles'=>'Прилог датотеке',
     'QuestionnaireFiles'=>'Упитник датотеке',
     'ContactEmailAlreadyInUse'=>'Контакт е-маил је већ у употреби.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Средство је успјешно ажуриран.',
     'ThereWasAProblemUpdatingTheAsset' => 'Дошло је до проблема ажурирање основног средства.',
     'ImportAssetAddSucceeded' => 'Додао је”{$verified_or_unverified}„средство по имену”{$asset_name}„са ИП”{$asset_ip}„и вредност”{$asset_value}".',
-    'ImportAssetAddFailed' => 'Није успео да дода „{$verified_or_unverified„средство по имену”{$asset_name}„са ИП”{$asset_ip}„и вредност”{$asset_value}".',
+    'ImportAssetAddFailed' => 'Додавање "{$verified_or_unverified}"средство названо"{$asset_name}"са ИП"{$asset_ip}"и вредност"{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Ниједна операција на средство по имену захтева”{$asset_name}„као да је већ у бази података.',
     'ImportAssetUpdateSucceeded' => 'Ажурирано”{$verified_or_unverified}„средство по имену”{$asset_name}„са ИП”{$asset_ip}„и вредност”{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Није успио ажурирати”{$verified_or_unverified}„средство по имену”{$asset_name}„са ИП”{$asset_ip}„и вредност”{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Ажурирање теста',
     'ControlEditHeader' => 'Ажурирај контролу',
     'FrameworkEditHeader' => 'Ажурирај оквир',
+    'UserTeamUpdateAuditLog' => 'Корисника{$user}"ажурирани тимови корисника"{$username}из{$teams_from}да{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Корисника{$user}"ажурирани тимови {$type} ИД{$id}из{$teams_from}да{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Уклоњена{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Додао{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Корисника{$user}"ажуриране ставке (врста:"{$type}") тима"{$team}из{$items_from}да{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Уклоњена{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Додао{$items_added}"',
     'TeamType_test' => 'Тест',
     'TeamType_audit' => 'Надгледања',
     'TestCreatedAuditLogMessage' => 'Тест{$test_name}"(ИД: {$test_id}) је креирао корисник "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Резултат упитника је успешно одобрен.',
     'QuestionnaireResultRejectedSuccessfully' => 'Резултат упитника је успешно одбијен. Обавештење е-поштом се шаље контакту.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Здраво\\n
-            <p> {$username} од вас тражи да поново процените следећи упитник процене ризика:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Коментаре: {$reject_comment}</p>\\n
-            <p>Ово је аутоматизована порука и одговори ће бити занемарени или одбијени.</p>\\n
+        <html><body>
+            Здраво
+            <p> {$username} од вас тражи да поново процените следећи упитник процене ризика:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Коментаре: {$reject_comment}</p>
+            <p>Ово је аутоматизована порука и одговори ће бити занемарени или одбијени.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Упитник${questionnaire_name}"(послато контакту"{$contact_name}на{$date}") резултат је одобрен од стране корисника"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Упитник${questionnaire_name}"резултат је одбијен и послат назад у контакт"${contact_name}"за поновни евалуацију од стране корисника"${user_name}"са коментаром"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Упитник{$questionnaire_name}"(послато контакту"{$contact_name}на{$date}") резултат је одобрен од стране корисника"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Упитник{$questionnaire_name}"резултат је одбијен и послат назад у контакт"{$contact_name}"за поновни евалуацију од стране корисника"{$user_name}"са коментаром"{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Унапред сте попунили одговоре из последње процене?',
-    'QuestionnaireResultApprovedAuditLog' => 'Упитник${questionnaire_name}"(послато контакту"{$contact_name}на{$date}") резултат је одобрен од стране корисника"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Упитник${questionnaire_name}"резултат је одбијен и послат назад у контакт"${contact_name}"за поновни евалуацију од стране корисника"${user_name}"са коментаром"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Упитник{$questionnaire_name}"(послато контакту"{$contact_name}на{$date}") резултат је одобрен од стране корисника"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Упитник{$questionnaire_name}"резултат је одбијен и послат назад у контакт"{$contact_name}"за поновни евалуацију од стране корисника"{$user_name}"са коментаром"{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Корисника{$user_name}"додат коментар за упитник"{$questionnaire_name}"(послато контакту"{$contact_name}на{$date}").',
     'QuestionnaireSentAuditLog' => 'Упитник{$questionnaire_name}"послато контакту"{$contact_name}"од стране корисника"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Упитник{$questionnaire_name}"завршетак радова резултирао је стварањем необрађеног ризика"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Необрађен ризик "{$subject}"упитника"${questionnaire_name}"(послато контакту"{$contact_name}на{$date}") је додат као ризик (ИД: {$risk_id}) од стране корисника "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Необрађен ризик "{$subject}"упитника"${questionnaire_name}"(послато контакту"{$contact_name}на{$date}") је избрисао корисник"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Необрађени ризици упитника "${questionnaire_name}"(послато контакту"{$contact_name}на{$date}") је избрисао корисник"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Упитник{$questionnaire_name}"је довршио контакт"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Упитник{$questionnaire_name}"је сачуван као радна верзија по контакту"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Необрађен ризик "{$subject}"упитника"{$questionnaire_name}"(послато контакту"{$contact_name}на{$date}") је додат као ризик (ИД: {$risk_id}) од стране корисника "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Необрађен ризик "{$subject}"упитника"{$questionnaire_name}"(послато контакту"{$contact_name}на{$date}") је избрисао корисник"{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Необрађени ризици упитника "{$questionnaire_name}"(послато контакту"{$contact_name}на{$date}") је избрисао корисник"{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Упитник{$questionnaire_name}"је довршио контакт"{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Упитник{$questionnaire_name}"је сачуван као радна верзија по контакту"{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Извештај о резултатима надгледања резултата ревизије',
     'SubTemplate' => 'Подпредложак',
     'MitigationAccepted' => 'Ублажавање је прихватљиво',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Прикажи активне провере',
     'ViewPastAudits'=>'Прикажи претходне ревизије',
     'Uninstall' => 'Деинсталирај',
+    'SimpleriskUsers' => 'Корисници за поједноставијанце',
+    'QuestionnaireCompletedAuditLogByUser' => 'Упитник{$questionnaire_name}"је довршио корисник"{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Упитник{$questionnaire_name}"је сачуван као радна верзија од стране корисника"{$contact_name}".',
+    'Internal' => 'Унутрашње',
+    'QuestionType' => 'Тип питања',
+    'MultipleChoice' => 'Вишеструки избор',
+    'FillInTheBlank' => 'Попуните поље празно',
+    'Proxy' => 'Проxy',
+    'ProxyWebRequests' => 'Проxy Wеб захтеви',
+    'VerifySSLCertificate' => 'Верификуј ССЛ цертификат',
+    'ProxyHostname' => 'Проxy име/ИП',
+    'ProxyPort' => 'Проxy порт',
+    'AuthenticatedProxy' => 'Ауторизовани проxy сервер',
+    'ProxyUsername' => 'Корисничко име проxy сервера',
+    'ProxyPassword' => 'Проxy лозинка',
+    'SimpleRiskExtras' => 'Поједностављне додатке',
+    'ColumnSelections' => 'Одабир колона',
+    'GroupAndFilteringSelections' => 'Одабир група и филтрирања',
+    'Hyperlink' => 'Хипервезу',
+    'URL' => 'Урл адреса',
+    'AssetTeams'=>'Тимови основних средстава',
+    'AssetSiteLocation'=>'Локација /локација средства',
+    'ActivatingSCFMessage' => 'Инсталација ЦомплианцеФорге СЦФ оквира. Ово може потрајати неколико минута.',
+    'DeactivatingSCFMessage' => 'Деинсталација ЦомплианцеФорге СЦФ оквира.',
+    'UpdatingSCFMessage' => 'Ажурирање ЦомплианцеФорге СЦФ оквира. Ово може потрајати неколико минута.',
+    'Processing' => 'Обрада...',
+    'AlphabeticalOrder'=>'Абецедним редоследом',
     '' => ''
 );
 

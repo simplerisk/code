@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Update-Hankkeen Tilat',
     'HighRiskReport'=>'Korkean Riskin Raportti',
     'TotalOpenRisks'=>'Yhteensä Avoimet Riskit',
-    'TotalHighRisks'=>'Yhteensä Suuria Riskejä',
-    'HighRiskPercentage'=>'Korkean Riskin Osuus',
+    'NumberOfOpenRisks'=>'Avoimet riskit yhteensä: {$number}',
+    'RiskNumberOfRiskLevel'=>'Kokonaismäärä {$display_name} Riskejä: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Riskiprosentti: {$percentage}%',
+    'RiskScoreUsing'=>'Riskipisteet käyttäen:',
+    'HighRiskReport_ScoreWarning' => 'Huomaa, että vaikka raportti näytetään käyttämällä "{$score_used}" tulokset, koska "{$next_review_date_uses_name}" asetus laskemme "{$management_review_header}" sarakkeen arvot käyttämällä "{$next_review_date_uses_value}" tulokset.',
     'UpdateClassicScore'=>'Päivitä klassisen Pisteet',
     'UpdateCVSSScore'=>'Päivitys CVSS-Pistemäärä',
     'BaseScoreMetrics'=>'Pohja Pisteet Mittareita',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Haluan tarkistaa HYVIN SUURI riski, joka',
     'AbleToReviewVeryHighRisks'=>'Mahdollisuus Tarkastella Erittäin suuria Riskejä',
     'AbleToReviewInsignificantRisks'=>'Mahdollisuus Tarkastella Merkityksettömiä Riskejä',
-    'TotalVeryHighRisks'=>'Yhteensä Erittäin Suuria Riskejä',
-    'VeryHighRiskPercentage'=>'Erittäin Korkea Riskin Osuus',
     'AllTeams'=>'Kaikki Joukkueet',
     'FileUploadSettings'=>'Tiedoston Siirto Palvelimeen-Asetukset',
     'AllowedFileTypes'=>'Sallittuja Tiedostotyyppejä',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Erottele useita sähkö posteja pilkuilla.',
     'RiskAssessmentQuestionnaire' => 'Riskin arviointi kysely lomake',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n Hei, \\n
-            <p> {$username} on pyytänyt sinua saattamaan päätökseen seuraavan riskin arviointi kyselyn:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Tämä on automaattinen viesti, ja vasta ukset ohitetaan tai hylätään.</p>\\n
+        <html><body>
+            Moi
+            <p> {$username} on pyytänyt sinua täyttämään seuraavan riskinarviointikyselyn:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Tämä on automaattinen viesti, ja vastaukset ohitetaan tai hylätään.</p>
         </body></html>',
     'FilterByText' => 'Suodata tekstin mukaan',
     'SelectMitigatingControls' => 'Valitse lieventävät ohjaus (t)',
@@ -779,8 +781,11 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Vastauksesi tallennettiin onnistuneesti.',
     'QuestionnaireCompletedSuccess'=>'Olet suorittanut tämän kysely lomakkeen onnistuneesti.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body> \\ n Hei, \\n 123_332_321 123_14_3:321 täytetty kysely lomake, <b>{$questionnaire_name}</b></p> \\ \\ n. 123_338_321tämä on automatisoitu viesti ja vasta ukset ohitetaan tai hylätään. 123_419_321 \\ n
-        1234_710_321123_7:11_321',
+        <html><body>
+            Moi
+            <p> {$conact_name} täytti kyselylomakkeen, <b>{$questionnaire_name}</b></p>
+            <p>Tämä on automaattinen viesti, ja vastaukset ohitetaan tai hylätään.</p>
+        </body></html>',
     'QuestionnaireResults'=>'Kysely lomakkeen tulokset',
     'DateSent'=>'Lähetys päivä',
     'Contact'=>'Yhteyttä',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Uusi kehys lisättiin onnistuneesti.',
     'FrameworkUpdated'=>'Kehys päivitettiin onnistuneesti.',
     'FrameworkNameExist'=>'Kehyksen nimi on jo olemassa.',
+    'FrameworkNameCantBeEmpty'=>'Kehyksen nimi ei voi olla tyhjä.',
+    'FrameworkCantBeItsOwnParent'=>'Kehys ei voi olla sen oma vanhempi.',
+    'FrameworkParentUpdated'=>'Kehyksen ylätason ylätaso päivitettiin onnistuneesti.',
     'AttachmentFiles'=>'Liite tiedostot',
     'QuestionnaireFiles'=>'Kysely lomake tiedostot',
     'ContactEmailAlreadyInUse'=>'Yhteys henkilön Sähkö posti on jo käytössä.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Resurssi päivitettiin onnistuneesti.',
     'ThereWasAProblemUpdatingTheAsset' => 'Resurssin päivittämisessä oli ongelma.',
     'ImportAssetAddSucceeded' => 'Lisätty{$verified_or_unverified}"omaisuuserä nimeltä"{$asset_name}"IP"{$asset_ip}"ja arvo"{$asset_value}".',
-    'ImportAssetAddFailed' => 'Ei voitu lisätä "{$verified_or_unverified"omaisuuserä nimeltä"{$asset_name}"IP"{$asset_ip}"ja arvo"{$asset_value}".',
+    'ImportAssetAddFailed' => 'Ei voitu lisätä "{$verified_or_unverified}" omaisuus nimeltä "{$asset_name}" ip : llä "{$asset_ip}" ja arvo "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Käyttö omaisuus erän nimi ei vaadi toimintoa{$asset_name}", koska se on jo tieto kannassa.',
     'ImportAssetUpdateSucceeded' => 'Päivitetyt vuoden{$verified_or_unverified}"omaisuuserä nimeltä"{$asset_name}"IP"{$asset_ip}"ja arvo"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Päivittäminen epäonnistui "{$verified_or_unverified}"omaisuuserä nimeltä"{$asset_name}"IP"{$asset_ip}"ja arvo"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Päivitä testi',
     'ControlEditHeader' => 'Päivitä ohjaus objekti',
     'FrameworkEditHeader' => 'Päivitä puitteet',
+    'UserTeamUpdateAuditLog' => 'Käyttäjä "{$user}" päivitetty joukkueet käyttäjä "{$username}" alkaen " alkaen "{$teams_from}" ja " ja "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Käyttäjä{$user}"päivitettyjä {$type} TUNNUS{$id}kohteesta{$teams_from}tehdä{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Poistettu{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Lisätty{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Käyttäjä "{$user}" päivitetyt kohteet (tyyppi:"{$type}") joukkue "{$team}" alkaen " alkaen "{$items_from}" ja " ja "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Poistettu "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Lisätty "{$items_added}"',
     'TeamType_test' => 'Testi',
     'TeamType_audit' => 'Tarkastuksen',
     'TestCreatedAuditLogMessage' => 'Testi{$test_name}"(ID: {$test_id}) luotiin käyttäjä "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Kysely lomakkeen tulos hyväksyttiin onnistuneesti.',
     'QuestionnaireResultRejectedSuccessfully' => 'Kysely lomakkeen tulos hylättiin onnistuneesti. Sähkö posti viesti lähetetään yhteys tieto.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Moi\\n
-            <p> {$username} on pyytänyt sinua arvioimaan uudelleen seuraavaa riskin arviointi kyselyä:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Kommentit: {$reject_comment}</p>\\n
-            <p>Tämä on automaattinen viesti, jonka vasta ukset ohitetaan tai hylätään.</p>\\n
+        <html><body>
+            Moi
+            <p> {$username} on pyytänyt sinua arvioimaan uudelleen seuraavan riskinarviointikyselyn:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Kommentit: {$reject_comment}</p>
+            <p>Tämä on automaattinen viesti, ja vastaukset ohitetaan tai hylätään.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Kysely lomakkeen${questionnaire_name}"(lähetetty yhteys henkilö"{$contact_name}on{$date}") tulos hyväksyttiin käyttäjä"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Kysely lomakkeen${questionnaire_name}"tulos hylättiin ja lähetettiin takaisin yhteyden Otto"${contact_name}"käyttäjän uudelleenarviointiin"${user_name}"kommentoi"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Kyselylomake "{$questionnaire_name}"(lähetetty ottamaan yhteyttä"{$contact_name}" päällä " on "{$date}") tulos hyväksyttiin käyttäjä "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Kyselylomake "{$questionnaire_name}" tulos hylättiin ja lähetettiin takaisin yhteyttä "{$contact_name}" käyttäjän uudelleenarviointia varten "{$user_name}" ja kommentti "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Valmiiksi täyttää viimeisimmän arvioinnin vasta ukset?',
-    'QuestionnaireResultApprovedAuditLog' => 'Kysely lomakkeen${questionnaire_name}"(lähetetty yhteys henkilö"{$contact_name}on{$date}") tulos hyväksyttiin käyttäjä"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Kysely lomakkeen${questionnaire_name}"tulos hylättiin ja lähetettiin takaisin yhteyden Otto"${contact_name}"käyttäjän uudelleenarviointiin"${user_name}"kommentoi"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Kyselylomake "{$questionnaire_name}"(lähetetty ottamaan yhteyttä"{$contact_name}" päällä " on "{$date}") tulos hyväksyttiin käyttäjä "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Kyselylomake "{$questionnaire_name}" tulos hylättiin ja lähetettiin takaisin yhteyttä "{$contact_name}" käyttäjän uudelleenarviointia varten "{$user_name}" ja kommentti "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Käyttäjä{$user_name}"lisätty kommentti kysely"{$questionnaire_name}"(lähetetty yhteys henkilö"{$contact_name}on{$date}") tulos.',
     'QuestionnaireSentAuditLog' => 'Kysely lomakkeen{$questionnaire_name}"lähetettiin yhteyttä"{$contact_name}"käyttäjän mukaan"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Kysely lomakkeen{$questionnaire_name}"valmistuminen johti odottavan riskin luomiseen"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Odottava riski "{$subject}"Kysely lomakkeen"${questionnaire_name}"(lähetetty yhteys henkilö"{$contact_name}on{$date}") lisättiin riskinä (ID: {$risk_id}) käyttäjän toimesta "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Odottava riski "{$subject}"Kysely lomakkeen"${questionnaire_name}"(lähetetty yhteys henkilö"{$contact_name}on{$date}") poistettiin käyttäjä"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Kyselyyn odottava riski "${questionnaire_name}"(lähetetty yhteys henkilö"{$contact_name}on{$date}"), poistettiin käyttäjä"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Kysely lomakkeen{$questionnaire_name}"saatiin päätökseen ottamalla yhteyttä"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Kysely lomakkeen{$questionnaire_name}"tallennettu luonnoksena yhteys henkilön mukaan"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Odottava riski "{$subject}" kyselylomakkeen "{$questionnaire_name}"(lähetetty ottamaan yhteyttä"{$contact_name}" päällä " on "{$date}") lisättiin riskiksi (ID: {$risk_id}) käyttäjä "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Odottava riski "{$subject}" kyselylomakkeen "{$questionnaire_name}"(lähetetty ottamaan yhteyttä"{$contact_name}" päällä " on "{$date}") käyttäjä poisti sen"{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Odottavien kyselyyn liittyvien riskien vuoksi "{$questionnaire_name}"(lähetetty ottamaan yhteyttä"{$contact_name}" päällä " on "{$date}") poistettiin käyttäjä "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Kyselylomake "{$questionnaire_name}" valmistui yhteystiedot "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Kyselylomake "{$questionnaire_name}" tallennettiin luonnoksena yhteystiedon toimesta "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Kysely lomakkeen tuloksen jäljitys ketju-raportti',
     'SubTemplate' => 'Alamalli',
     'MitigationAccepted' => 'Lievennys hyväksytty',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Näytä Aktiiviset tarkastukset',
     'ViewPastAudits'=>'Aiempien tarkastusten tarkasteleminen',
     'Uninstall' => 'Poistaa',
+    'SimpleriskUsers' => 'Simplerisk Käyttäjät',
+    'QuestionnaireCompletedAuditLogByUser' => 'Kyselylomake "{$questionnaire_name}" valmistui käyttäjä "{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Kyselylomake "{$questionnaire_name}" tallennettiin luonnoksena käyttäjä "{$contact_name}".',
+    'Internal' => 'Sisäinen',
+    'QuestionType' => 'Kysymyksen tyyppi',
+    'MultipleChoice' => 'Monivalintainen',
+    'FillInTheBlank' => 'Täytä Tyhjä',
+    'Proxy' => 'Välityspalvelimen',
+    'ProxyWebRequests' => 'Välityspalvelimen WWW-pyynnöt',
+    'VerifySSLCertificate' => 'SSL-varmenteen tarkistaminen',
+    'ProxyHostname' => 'Välityspalvelimen isäntänimi / IP',
+    'ProxyPort' => 'Välityspalvelimen portti',
+    'AuthenticatedProxy' => 'Todennettu välityspalvelin',
+    'ProxyUsername' => 'Välityspalvelimen käyttäjänimi',
+    'ProxyPassword' => 'Välityspalvelimen salasana',
+    'SimpleRiskExtras' => 'SimpleRisk Extras',
+    'ColumnSelections' => 'Sarakkeiden valinnat',
+    'GroupAndFilteringSelections' => 'Valintajen ryhmitteleminen ja suodattaminen',
+    'Hyperlink' => 'Hyperlinkki',
+    'URL' => 'Url',
+    'AssetTeams'=>'Asset Team (t) -tiimi',
+    'AssetSiteLocation'=>'Resurssin sivusto/sijainti',
+    'ActivatingSCFMessage' => 'ComplianceForge SCF -kehyksen asentaminen. Tämä voi kestää useita minuutteja.',
+    'DeactivatingSCFMessage' => 'Poistetaan ComplianceForge SCF -kehyksen asennusta.',
+    'UpdatingSCFMessage' => 'Päivitetään ComplianceForge SCF -kehystä. Tämä voi kestää useita minuutteja.',
+    'Processing' => 'Käsittely...',
+    'AlphabeticalOrder'=>'Aakkosjärjestys',
     '' => ''
 );
 

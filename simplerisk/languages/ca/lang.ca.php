@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Actualització Del Projecte Estats',
     'HighRiskReport'=>'Alt Risc Informe',
     'TotalOpenRisks'=>'Total Obertes Riscos',
-    'TotalHighRisks'=>'Total Alt Risc',
-    'HighRiskPercentage'=>'Risc Alt Percentatge',
+    'NumberOfOpenRisks'=>'Total riscos oberts: {$number}',
+    'RiskNumberOfRiskLevel'=>'Nombre total de {$display_name} Riscos: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Percentatge de risc: {$percentage}%',
+    'RiskScoreUsing'=>'Puntuació de risc utilitzant:',
+    'HighRiskReport_ScoreWarning' => 'Tingueu en compte que, tot i que l\'informe es mostra amb el "{$score_used}"partitures, a causa de la"{$next_review_date_uses_name}"ajust que estem calculant el"{$management_review_header}"valors de la columna utilitzant el"{$next_review_date_uses_value}resultats.',
     'UpdateClassicScore'=>'Puntuació clàssica d\'actualització',
     'UpdateCVSSScore'=>'Actualització CVSS Puntuació',
     'BaseScoreMetrics'=>'Base De Puntuació De Les Mètriques',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Vull revisió risc MOLT ALT de cada',
     'AbleToReviewVeryHighRisks'=>'Capaç de Revisar Molt Alt risc',
     'AbleToReviewInsignificantRisks'=>'Capaç de Revisar Insignificant Riscos',
-    'TotalVeryHighRisks'=>'Total Molt Alt Risc',
-    'VeryHighRiskPercentage'=>'Risc Molt Alt Percentatge',
     'AllTeams'=>'Tots Els Equips',
     'FileUploadSettings'=>'Penjar Un Fitxer De Configuració',
     'AllowedFileTypes'=>'Tipus De Fitxer Admesos',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Utilitzar comes per separar diversos correus electrònics.',
     'RiskAssessmentQuestionnaire' => 'Qüestionari d\'avaluació de risc',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n Hola, \\n
-            <p> {$username} ha demanat per completar el qüestionari d\'avaluació de risc següents:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>això  és un missatge automàtic i respostes serà ignorada o rebutjada.</p>\\n
+        <html><body>
+            Hola
+            <p> {$username} s\'ha demanat que Completeu el següent qüestionari d\'avaluació de riscos:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Aquest és un missatge automatitzat i la resposta serà ignorada o rebutjada.</p>
         </body></html>',
     'FilterByText' => 'Filtrar per Text',
     'SelectMitigatingControls' => 'Seleccioneu mitigar Control(s)',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Les seves respostes s\'han desat correctament.',
     'QuestionnaireCompletedSuccess'=>'Heu completat aquest qüestionari amb èxit.',
     'EmailTemplateCompleteQuestionnaire' => '
-        Hola <html><body>\\n, \\n <p> {$conact_name} completar un qüestionari, <b>{$questionnaire_name}</b></p>\\n <p>This és un missatge automatitzat i s\'ignoraran respostes o rejected.</p>\\n
+        <html><body>
+            Hola
+            <p> {$conact_name} completat un qüestionari, <b>{$questionnaire_name}</b></p>
+            <p>Aquest és un missatge automatitzat i la resposta serà ignorada o rebutjada.</p>
         </body></html>',
     'QuestionnaireResults'=>'Resultats del qüestionari',
     'DateSent'=>'Enviat Data',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Un nou marc s\'afegia reeixidament.',
     'FrameworkUpdated'=>'Un marc s\'ha actualitzat correctament.',
     'FrameworkNameExist'=>'El nom de marc ja existeix.',
+    'FrameworkNameCantBeEmpty'=>'El nom del marc no pot estar buit.',
+    'FrameworkCantBeItsOwnParent'=>'El marc no pot ser el seu propi pare.',
+    'FrameworkParentUpdated'=>'La matriu del Framework ha estat actualitzada amb èxit.',
     'AttachmentFiles'=>'Arxiu adjunt arxius',
     'QuestionnaireFiles'=>'Qüestionari arxius',
     'ContactEmailAlreadyInUse'=>'El correu electrònic de contacte és ja en ús.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Actiu s\'ha actualitzat correctament.',
     'ThereWasAProblemUpdatingTheAsset' => 'Hi havia un problema d\'actualització de l\'actiu.',
     'ImportAssetAddSucceeded' => 'Afegit"{$verified_or_unverified}"actiu anomenat"{$asset_name}"amb la IP"{$asset_ip}"i valor"{$asset_value}".',
-    'ImportAssetAddFailed' => 'D\'afegir "{$verified_or_unverified"actiu anomenat"{$asset_name}"amb la IP"{$asset_ip}"i valor"{$asset_value}".',
+    'ImportAssetAddFailed' => 'No s\'ha pogut afegir "{$verified_or_unverified}"actiu anomenat"{$asset_name}"amb IP"{$asset_ip}"i valor"{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Cap operació en actiu, anomenat"{$asset_name}"com ja és a la base de dades.',
     'ImportAssetUpdateSucceeded' => 'Actualització"{$verified_or_unverified}"actiu anomenat"{$asset_name}"amb la IP"{$asset_ip}"i valor"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'No ha pogut actualitzar"{$verified_or_unverified}"actiu anomenat"{$asset_name}"amb la IP"{$asset_ip}"i valor"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Prova d\'actualització',
     'ControlEditHeader' => 'Control d\'actualització',
     'FrameworkEditHeader' => 'Actualitza el marc',
+    'UserTeamUpdateAuditLog' => 'Usuari{$user}"equips d\'usuari actualitzats"{$username}de{$teams_from}a{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Usuari{$user}"equips actualitzats de {$type} ID{$id}des{$teams_from}a{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Eliminat{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Afegit{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Usuari{$user}"elements actualitzats (tipus:"{$type}") d\'equip"{$team}de{$items_from}a{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Eliminat{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Afegit{$items_added}"',
     'TeamType_test' => 'Prova',
     'TeamType_audit' => 'Auditoria',
     'TestCreatedAuditLogMessage' => 'Prova{$test_name}"(ID: {$test_id}) va ser creat per l\'usuari "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'El resultat del qüestionari aprovat amb èxit.',
     'QuestionnaireResultRejectedSuccessfully' => 'El resultat del qüestionari ha estat rebutjat amb èxit. El correu electrònic de notificació s\'envia al contacte.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Hola\\n
-            <p> {$username} ha demanat que torni a avaluar el següent qüestionari d\'avaluació de riscos:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Comentaris: {$reject_comment}</p>\\n
-            <p>Aquest és un missatge automatitzat i la resposta serà ignorada o rebutjada.</p>\\n
+        <html><body>
+            Hola
+            <p> {$username} ha demanat que torni a avaluar el següent qüestionari d\'avaluació de riscos:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Comentaris: {$reject_comment}</p>
+            <p>Aquest és un missatge automatitzat i la resposta serà ignorada o rebutjada.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Qüestionari${questionnaire_name}"(enviat al contacte"{$contact_name}al{$date}") el resultat ha estat aprovat per l\'usuari"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Qüestionari${questionnaire_name}"el resultat va ser rebutjat i enviat de nou al contacte"${contact_name}"per a la reavaluació per usuari"${user_name}"amb comentari"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Qüestionari{$questionnaire_name}"(enviat al contacte"{$contact_name}al{$date}") el resultat ha estat aprovat per l\'usuari"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Qüestionari{$questionnaire_name}"el resultat va ser rebutjat i enviat de nou al contacte"{$contact_name}"per a la reavaluació per usuari"{$user_name}"amb comentari"{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Prepoblar amb respostes de l\'última avaluació?',
-    'QuestionnaireResultApprovedAuditLog' => 'Qüestionari${questionnaire_name}"(enviat al contacte"{$contact_name}al{$date}") el resultat ha estat aprovat per l\'usuari"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Qüestionari${questionnaire_name}"el resultat va ser rebutjat i enviat de nou al contacte"${contact_name}"per a la reavaluació per usuari"${user_name}"amb comentari"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Qüestionari{$questionnaire_name}"(enviat al contacte"{$contact_name}al{$date}") el resultat ha estat aprovat per l\'usuari"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Qüestionari{$questionnaire_name}"el resultat va ser rebutjat i enviat de nou al contacte"{$contact_name}"per a la reavaluació per usuari"{$user_name}"amb comentari"{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Usuari{$user_name}"s\'ha afegit un comentari per al qüestionari"{$questionnaire_name}"(enviat al contacte"{$contact_name}al{$date}") resultat.',
     'QuestionnaireSentAuditLog' => 'Qüestionari{$questionnaire_name}"va ser enviat a contactar"{$contact_name}"per usuari"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Qüestionari{$questionnaire_name}"la finalització del projecte va resultar en la creació de riscos pendents"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Pendent de risc "{$subject}"del qüestionari"${questionnaire_name}"(enviat al contacte"{$contact_name}al{$date}") s\'ha afegit com a risc (ID: {$risk_id}) per usuari "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Pendent de risc "{$subject}"del qüestionari"${questionnaire_name}"(enviat al contacte"{$contact_name}al{$date}") ha estat suprimit per l\'usuari"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Pendents de riscos del qüestionari "${questionnaire_name}"(enviat al contacte"{$contact_name}al{$date}") han estat eliminats per l\'usuari"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Qüestionari{$questionnaire_name}"va ser completat per contacte"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Qüestionari{$questionnaire_name}"es va salvar com a esborrany per contacte"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Pendent de risc "{$subject}"del qüestionari"{$questionnaire_name}"(enviat al contacte"{$contact_name}al{$date}") s\'ha afegit com a risc (ID: {$risk_id}) per usuari "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Pendent de risc "{$subject}"del qüestionari"{$questionnaire_name}"(enviat al contacte"{$contact_name}al{$date}") ha estat suprimit per l\'usuari"{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Pendents de riscos del qüestionari "{$questionnaire_name}"(enviat al contacte"{$contact_name}al{$date}") han estat eliminats per l\'usuari"{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Qüestionari{$questionnaire_name}"va ser completat per contacte"{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Qüestionari{$questionnaire_name}"es va salvar com a esborrany per contacte"{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Informe de la pista d\'auditoria de resultats del qüestionari',
     'SubTemplate' => 'Sub plantilla',
     'MitigationAccepted' => 'La mitigació acceptada',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Veure auditories actives',
     'ViewPastAudits'=>'Veure auditories anteriors',
     'Uninstall' => 'Desinstal·lar',
+    'SimpleriskUsers' => 'Usuaris de simplerisk',
+    'QuestionnaireCompletedAuditLogByUser' => 'Qüestionari{$questionnaire_name}"va ser completat per l\'usuari"{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Qüestionari{$questionnaire_name}"es va salvar com a esborrany per usuari"{$contact_name}".',
+    'Internal' => 'Interna',
+    'QuestionType' => 'Tipus de pregunta',
+    'MultipleChoice' => 'Opció múltiple',
+    'FillInTheBlank' => 'Omple el buit',
+    'Proxy' => 'Apoderat',
+    'ProxyWebRequests' => 'Sol·licituds web proxy',
+    'VerifySSLCertificate' => 'Verifica el certificat SSL',
+    'ProxyHostname' => 'Hostname/IP d\'apoderat',
+    'ProxyPort' => 'Port intermediari',
+    'AuthenticatedProxy' => 'Apoderat autenticat',
+    'ProxyUsername' => 'Nom d\'usuari proxy',
+    'ProxyPassword' => 'Contrasenya d\'apoderat',
+    'SimpleRiskExtras' => 'SimpleRisk extres',
+    'ColumnSelections' => 'Seleccions de columnes',
+    'GroupAndFilteringSelections' => 'Seleccions de grup i filtratge',
+    'Hyperlink' => 'Hipervincle',
+    'URL' => 'Url',
+    'AssetTeams'=>'Equip d\'actius (s)',
+    'AssetSiteLocation'=>'Lloc de l\'actiu/ubicació',
+    'ActivatingSCFMessage' => 'Instal ╖ lant el marc de l\'SCF de ComplianceForge. Això pot trigar uns quants minuts a completar-se.',
+    'DeactivatingSCFMessage' => 'Desinstal·lació del marc de l\'SCF de ComplianceForge.',
+    'UpdatingSCFMessage' => 'Actualització del marc de l\'SCF de ComplianceForge. Això pot trigar uns quants minuts a completar-se.',
+    'Processing' => 'Processament...',
+    'AlphabeticalOrder'=>'Ordre alfabètic',
     '' => ''
 );
 

@@ -126,3 +126,25 @@
     width: 15px;
     height: 15px;
 }
+
+/*--------------------------------------------------
+# Selecttize Style for Assessment dual list contacts
+----------------------------------------------------*/
+.assessment_contacts{
+    .assessment{
+        background-color: $asset-option-color !important;
+    }
+    .user{
+        background-color: $asset-group-option-color !important;
+    }
+    [data-selectable].option:hover{
+        cursor: pointer;
+    }
+}
+
+#questionnaire_edit_form, #questionnaire_new_question_form{
+    .compliance-audit-element{
+        display: none;
+    }
+}
+

@@ -68,7 +68,7 @@
           $name             = $_POST['name'];
           $email            = $_POST['email'];
           $manager          = (int)$_POST['manager'];
-          $teams            = isset($_POST['team']) ? $_POST['team'] : array('none');
+          $teams            = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
           $role_id          = (int)$_POST['role'];
           $language         = get_name_by_value("languages", (int)$_POST['languages']);
           $governance       = isset($_POST['governance']) ? '1' : '0';
@@ -123,35 +123,6 @@
               $type = "simplerisk";
           }
 
-          // Create a boolean for all
-          $all = false;
-
-          // Create a boolean for none
-          $none = false;
-
-          // Set the team to empty to start
-          $team = "";
-
-          // Create the team value
-          foreach ($teams as $value)
-          {
-              // If the selected value is all
-              if ($value == "all") $all = true;
-
-              // If the selected value is none
-              if ($value == "none") $none = true;
-
-              $team .= ":";
-              $team .= $value;
-              $team .= ":";
-          }
-
-          // If all was selected then assign all teams
-          if ($all) $team = "all";
-
-          // If none was selected then assign no teams
-          if ($none) $team = "none";
-          
             $other_options = [
                 "add_documentation" => $add_documentation,
                 "modify_documentation" => $modify_documentation,
@@ -167,7 +138,7 @@
             ];
 
           // Update the user
-          update_user($user_id, $lockout, $type, $name, $email, $team, $role_id, $language, $governance, $riskmanagement, $compliance, $assessments, $asset, $admin, $review_veryhigh, $accept_mitigation, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor, $change_password, $add_new_frameworks, $modify_frameworks, $delete_frameworks, $add_new_controls, $modify_controls, $delete_controls, $other_options);
+          update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $language, $governance, $riskmanagement, $compliance, $assessments, $asset, $admin, $review_veryhigh, $accept_mitigation, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor, $change_password, $add_new_frameworks, $modify_frameworks, $delete_frameworks, $add_new_controls, $modify_controls, $delete_controls, $other_options);
 
           // Display an alert
           set_alert(true, "good", "The user was updated successfully.");

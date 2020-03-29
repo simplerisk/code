@@ -132,6 +132,7 @@ jQuery(document).ready(function($){
         dom : "flrti<'#view-all.view-all'>p",
         ajax: {
             url: BASE_URL + '/api/datatable/framework_controls',
+            type: "POST",
             data: function(d){
                 d.control_class = $("#filter_by_control_class").val();
                 d.control_phase = $("#filter_by_control_phase").val();
@@ -141,8 +142,13 @@ jQuery(document).ready(function($){
                 d.control_priority = $("#filter_by_control_priority").val();
                 d.control_text = $("#filter_by_control_text").val();
             },
+            error: function(xhr,status,error){
+                retryCSRF(xhr, this);
+            },
             complete: function(response){
-                $("#controls_count").html("("+ response.responseJSON.recordsTotal +")");
+                if(response.status == 200){
+                    $("#controls_count").html("("+ response.responseJSON.recordsTotal +")");
+                }
             }
         }
     });

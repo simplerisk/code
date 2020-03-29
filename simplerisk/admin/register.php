@@ -8,6 +8,7 @@
 	require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 	require_once(realpath(__DIR__ . '/../includes/display.php'));
 	require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+	require_once(realpath(__DIR__ . '/../includes/extras.php'));
 
     // Include Zend Escaper for HTML Output Encoding
     require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -441,7 +442,7 @@
                             // The instance is registered
                             else
                             {
-                                display_upgrade_extras();
+                                core_display_upgrade_extras();
                             }
                         ?>
                     </div>

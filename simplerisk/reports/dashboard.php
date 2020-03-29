@@ -53,17 +53,14 @@ array_unshift($teamOptions, array(
     'name' => $lang['Unassigned'],
 ));
 
+$teams = [];
 // Get teams submitted by user
 if(isset($_GET['teams'])){
-    $teams = $_GET['teams'];
+    $teams = array_filter(explode(',', $_GET['teams']), 'ctype_digit');
 }elseif(is_array($teamOptions)){
-    $teamValueArr = array();
     foreach($teamOptions as $teamOption){
-        $teamValueArr[] = $teamOption['value'];
+        $teams[] = (int)$teamOption['value'];
     }
-    $teams = implode(",", $teamValueArr);
-}else{
-    $teams = "";
 }
 
 // Get the risk pie array
@@ -71,6 +68,12 @@ $pie_array = get_pie_array(null, $teams);
 
 // Get the risk location pie array
 $pie_location_array = get_pie_array("location", $teams);
+
+// Get the risk team pie array
+$pie_team_array = get_pie_array("team", $teams);
+
+// Get the risk technology pie array
+$pie_technology_array = get_pie_array("technology", $teams);
 
 ?>
 
@@ -134,9 +137,9 @@ $pie_location_array = get_pie_array("location", $teams);
         <div class="row-fluid" style="margin-top: -8px;">
             <div class="span4">
                 <u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u>: &nbsp;
-                <?php create_multiple_dropdown("teams", ":".implode(":", explode(",", $teams)).":" , NULL, $teamOptions); ?>
+                <?php create_multiple_dropdown("teams", $teams, NULL, $teamOptions); ?>
                 <form id="risks_dashboard_form" method="GET">
-                    <input type="hidden" value="<?php echo $escaper->escapeHtml($teams); ?>" name="teams" id="team_options">
+                    <input type="hidden" value="<?php echo $escaper->escapeHtml(implode(',', $teams)); ?>" name="teams" id="team_options">
                 </form>
             </div>
         </div>
@@ -171,14 +174,14 @@ $pie_location_array = get_pie_array("location", $teams);
           </div>
           <div class="span4">
             <div class="well">
-              <?php open_risk_team_pie($pie_array, js_string_escape($lang['Team'])); ?>
+              <?php open_risk_team_pie($pie_team_array, js_string_escape($lang['Team'])); ?>
             </div>
           </div>
         </div>
         <div class="row-fluid">
           <div class="span4">
             <div class="well">
-              <?php open_risk_technology_pie($pie_array, js_string_escape($lang['Technology'])); ?>
+              <?php open_risk_technology_pie($pie_technology_array, js_string_escape($lang['Technology'])); ?>
             </div>
           </div>
           <div class="span4">

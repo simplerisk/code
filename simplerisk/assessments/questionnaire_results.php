@@ -96,7 +96,6 @@ if(process_questionnaire_pending_risks()){
     refresh();
 }
 
-
 ?>
 
 <!doctype html>

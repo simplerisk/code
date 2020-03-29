@@ -80,6 +80,15 @@ include_csrf_magic();
     <?php
         setup_alert_requirements("..");
     ?>
+
+    <style>
+        /*We're overriding other styles here, so it looks differently only on this page*/
+        a.btn {
+            margin-top: 2px;
+            text-transform: none !important;
+            font-weight: 600 !important;
+        }
+    </style>
 </head>
 
 <body>

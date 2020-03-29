@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Төслийн төлвүүдийг шинэчлэх',
     'HighRiskReport'=>'Өндөр Эрсдэлтэй эрсдэлийн Тайлан',
     'TotalOpenRisks'=>'Нийт нээлттэй эрсдэлүүд',
-    'TotalHighRisks'=>'Нийт Өндөр Эрсдэлтэй Эрсдэлүүд',
-    'HighRiskPercentage'=>'Өндөр Эрсдэлтэй Эрсдэлийн Хувь',
+    'NumberOfOpenRisks'=>'Total Open Risks: {$number}',
+    'RiskNumberOfRiskLevel'=>'Total number of {$display_name} Risks: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Risk Percentage: {$percentage}%',
+    'RiskScoreUsing'=>'Risk Score Using:',
+    'HighRiskReport_ScoreWarning' => 'Please note, that even though the report is displayed using the "{$score_used}" scores, because of the "{$next_review_date_uses_name}" setting we\'re calculating the "{$management_review_header}" column\'s values using the "{$next_review_date_uses_value}" scores.',
     'UpdateClassicScore'=>'Сонгодог Оноог шинэчлэх',
     'UpdateCVSSScore'=>'CVSS Оноог Шинэчлэх',
     'BaseScoreMetrics'=>'Суурь Онооны Хэмжигдэхүүн',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'I want to review МАШ ӨНДӨР эрсдэл бүр',
     'AbleToReviewVeryHighRisks'=>'Хянах боломжтой Маш Өндөр Эрсдэл',
     'AbleToReviewInsignificantRisks'=>'Хянах боломжтой ач холбогдолгүй Эрсдэл',
-    'TotalVeryHighRisks'=>'Нийт Маш Өндөр Эрсдэл',
-    'VeryHighRiskPercentage'=>'Маш Өндөр Эрсдэлтэй Хувь',
     'AllTeams'=>'Бүх Багууд',
     'FileUploadSettings'=>'Файл Оруулах Тохиргоо',
     'AllowedFileTypes'=>'Зөвшөөрөгдсөн Файлын Төрөл',
@@ -673,11 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Ашиглах таслалаар тулд seperate олон и-мэйл.',
     'RiskAssessmentQuestionnaire' => 'Эрсдлийн Үнэлгээний Асуулга',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n
-            Сайн байна уу,\\n
-            <p> {$username} асуусан байна, та дараах алхмуудыг хийх эрсдлийн үнэлгээний асуулга:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Энэ нь автомат зурвас болон хариултууд нь орхиж болно, эсвэл татгалзсан.</p>\\n
+        <html><body>
+            Hello,
+            <p> {$username} has asked you to complete the following risk assessment questionnaire:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>This is an automated message and responses will be ignored or rejected.</p>
         </body></html>',
     'FilterByText' => 'Шүүх Текст',
     'SelectMitigatingControls' => 'Сонгох Бууруулах Хяналтын(s)',
@@ -780,10 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Таны хариулт байсан амжилттай аварсан.',
     'QuestionnaireCompletedSuccess'=>'Та бүрэн энэ санал асуулга амжилттай.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body>\\n
-            Сайн байна уу,\\n
-            <p> {$conact_name} дууссан асуулга, <b>{$questionnaire_name}</b></p>\\n
-            <p>Энэ нь автомат зурвас болон хариултууд нь орхиж болно, эсвэл татгалзсан.</p>\\n
+        <html><body>
+            Hello,
+            <p> {$conact_name} completed a questionnaire, <b>{$questionnaire_name}</b></p>
+            <p>This is an automated message and responses will be ignored or rejected.</p>
         </body></html>',
     'QuestionnaireResults'=>'Санал Асуулгын Үр Дүн',
     'DateSent'=>'Илгээсэн Огноо',
@@ -796,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Шинэ тогтолцоо байсан нэмэгдсэн амжилттай байна.',
     'FrameworkUpdated'=>'Хүрээ байсан шинэчлэгдсэн амжилттай.',
     'FrameworkNameExist'=>'Хүрээнд нэр нь аль хэдийн байдаг.',
+    'FrameworkNameCantBeEmpty'=>'The framework name can\'t be empty.',
+    'FrameworkCantBeItsOwnParent'=>'The framework can\'t be its own parent.',
+    'FrameworkParentUpdated'=>'The framework\'s parent successfully updated.',
     'AttachmentFiles'=>'Хавсралт Файлууд',
     'QuestionnaireFiles'=>'Санал Асуулгын Файлууд',
     'ContactEmailAlreadyInUse'=>'Холбоо барих и-мэйл хаяг аль хэдийн ашиглаж байна.',
@@ -1146,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Хөрөнгийн шинэчилсэн амжилттай.',
     'ThereWasAProblemUpdatingTheAsset' => 'Тэнд байсан нэг асуудал шинэчлэх олно.',
     'ImportAssetAddSucceeded' => 'Нэмэгдсэн "{$verified_or_unverified}" хөрөнгө "нэртэй{$asset_name}" IP "{$asset_ip}" үнэ цэнэ "{$asset_value}".',
-    'ImportAssetAddFailed' => 'Чадаагүй нэмэх "{$verified_or_unverified"хөрөнгө" нэртэй{$asset_name}" IP "{$asset_ip}" үнэ цэнэ "{$asset_value}".',
+    'ImportAssetAddFailed' => 'Failed to add "{$verified_or_unverified}" asset named "{$asset_name}" with IP "{$asset_ip}" and value "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Ямар ч үйл ажиллагаанд шаардлагатай хөрөнгө нэртэй "{$asset_name}" юм гэж аль хэдийн мэдээллийн сан.',
     'ImportAssetUpdateSucceeded' => 'Шинэчлэгдсэн "{$verified_or_unverified}" хөрөнгө "нэртэй{$asset_name}" IP "{$asset_ip}" үнэ цэнэ "{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Шинэчилж чадаагүй "{$verified_or_unverified}" хөрөнгө "нэртэй{$asset_name}" IP "{$asset_ip}" үнэ цэнэ "{$asset_value}".',
@@ -1398,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Шинэчлэх Туршилтын',
     'ControlEditHeader' => 'Шинэчлэх Хяналт',
     'FrameworkEditHeader' => 'Шинэчлэх Хүрээнд',
+    'UserTeamUpdateAuditLog' => 'User "{$user}" updated teams of user "{$username}" from "{$teams_from}" to "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Хэрэглэгч "{$user}" шинэчлэгдсэн баг {$type} (ID:{$id}) - аас "{$teams_from}" нь "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Арилгасан "{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Нэмэгдсэн "{$teams_added}"',
+    'ItemUpdateAuditLog' => 'User "{$user}" updated items (type:"{$type}") of team "{$team}" from "{$items_from}" to "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Removed "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Added "{$items_added}"',
     'TeamType_test' => 'Туршилтын',
     'TeamType_audit' => 'Аудитын',
     'TestCreatedAuditLogMessage' => 'Туршилтын "{$test_name}"(ID: {$test_id}) байсан үүсгэсэн хэрэглэгч "{$user}".',
@@ -1506,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Санал асуулгын үр дүн амжилттай баталсан.',
     'QuestionnaireResultRejectedSuccessfully' => 'Санал асуулгын үр дүн амжилттай татгалзсан. Мэдэгдэл и-мэйл руу илгээсэн байна холбоо барина уу.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Сайн байна уу,\\n
-            <p> {$username} асууж байна та дахин үнэлэх дараах эрсдлийн үнэлгээний асуулга:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Тайлбар: {$reject_comment}</p>\\n
-            <p>Энэ нь автомат зурвас болон хариултууд нь орхиж болно, эсвэл татгалзсан.</p>\\n
+        <html><body>
+            Hello,
+            <p> {$username} has asked you to re-evaluate the following risk assessment questionnaire:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Comments: {$reject_comment}</p>
+            <p>This is an automated message and responses will be ignored or rejected.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Санал асуулга "${questionnaire_name}"(илгээсэн холбоо "{$contact_name}" дээр "{$date}") үр дүн баталсан хэрэглэгч "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Санал асуулга "${questionnaire_name}" үр дүн татгалзсан илгээсэн буцаж холбоо барих "${contact_name}" дахин үнэлгээний хэрэглэгч "${user_name}хамт" сэтгэгдэл "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Questionnaire "{$questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") result was approved by user "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Questionnaire "{$questionnaire_name}" result was rejected and sent back to contact "{$contact_name}" for re-evaluation by user "{$user_name}" with comment "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Урьдчилан нутагшуулах нь хариулт нь өнгөрсөн үнэлгээний?',
-    'QuestionnaireResultApprovedAuditLog' => 'Санал асуулга "${questionnaire_name}"(илгээсэн холбоо "{$contact_name}" дээр "{$date}") үр дүн баталсан хэрэглэгч "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Санал асуулга "${questionnaire_name}" үр дүн татгалзсан илгээсэн буцаж холбоо барих "${contact_name}" дахин үнэлгээний хэрэглэгч "${user_name}хамт" сэтгэгдэл "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Questionnaire "{$questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") result was approved by user "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Questionnaire "{$questionnaire_name}" result was rejected and sent back to contact "{$contact_name}" for re-evaluation by user "{$user_name}" with comment "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Хэрэглэгч "{$user_name}" нэмж тайлбар санал асуулга "{$questionnaire_name}" (илгээсэн холбоо "{$contact_name}" дээр "{$date}") үр дүн.',
     'QuestionnaireSentAuditLog' => 'Санал асуулга "{$questionnaire_name}" илгээсэн холбоо "{$contact_name}" хэрэглэгч "{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Санал асуулга "{$questionnaire_name}"\'s гүйцэтгэлийн үр дүнд бий болгох хүлээгдэж буй эрсдэл"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Хүлээгдэж буй эрсдэл "{$subject}" - ийн санал асуулга "${questionnaire_name}"(илгээсэн холбоо "{$contact_name}" дээр "{$date}") нэмсэн зэрэг Эрсдэл(ID: {$risk_id}) хэрэглэгч "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Хүлээгдэж буй эрсдэл "{$subject}" - ийн санал асуулга "${questionnaire_name}"(илгээсэн холбоо "{$contact_name}" дээр "{$date}") байсан устгасан хэрэглэгч "${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Хүлээгдэж буй эрсдэл асуулга "${questionnaire_name}"(илгээсэн холбоо "{$contact_name}" дээр "{$date}") устгасан хэрэглэгч "${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Санал асуулга "{$questionnaire_name}" гүйцэтгэсэн холбоо "${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Санал асуулга "{$questionnaire_name}" аврагдсан гэж төсөл гэхэд холбоо "${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Pending risk "{$subject}" of questionnaire "{$questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") was added as Risk(ID: {$risk_id}) by user "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Pending risk "{$subject}" of questionnaire "{$questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") was deleted by user "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Pending risks of questionnaire "{$questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") were deleted by user "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Questionnaire "{$questionnaire_name}" was completed by contact "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Questionnaire "{$questionnaire_name}" was saved as draft by contact "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Санал Асуулгын Үр Дүнд Аудит Мөрийн Тайлан',
     'SubTemplate' => 'Дэд Загвар',
     'MitigationAccepted' => 'Нөлөөллийг Бууруулах Хүлээн',
@@ -1647,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'View Active Audits',
     'ViewPastAudits'=>'View Past Audits',
     'Uninstall' => 'Uninstall',
+    'SimpleriskUsers' => 'Simplerisk Users',
+    'QuestionnaireCompletedAuditLogByUser' => 'Questionnaire "{$questionnaire_name}" was completed by user "{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Questionnaire "{$questionnaire_name}" was saved as draft by user "{$contact_name}".',
+    'Internal' => 'Internal',
+    'QuestionType' => 'Question Type',
+    'MultipleChoice' => 'Multiple Choice',
+    'FillInTheBlank' => 'Fill in the Blank',
+    'Proxy' => 'Proxy',
+    'ProxyWebRequests' => 'Proxy Web Requests',
+    'VerifySSLCertificate' => 'Verify SSL Certificate',
+    'ProxyHostname' => 'Proxy Hostname / IP',
+    'ProxyPort' => 'Proxy Port',
+    'AuthenticatedProxy' => 'Authenticated Proxy',
+    'ProxyUsername' => 'Proxy Username',
+    'ProxyPassword' => 'Proxy Password',
+    'SimpleRiskExtras' => 'SimpleRisk Extras',
+    'ColumnSelections' => 'Column Selections',
+    'GroupAndFilteringSelections' => 'Group and Filtering Selections',
+    'Hyperlink' => 'Hyperlink',
+    'URL' => 'URL',
+    'AssetTeams'=>'Asset Team(s)',
+    'AssetSiteLocation'=>'Asset Site/Location',
+    'ActivatingSCFMessage' => 'Installing the ComplianceForge SCF framework. This can take several minutes to complete.',
+    'DeactivatingSCFMessage' => 'Uninstalling the ComplianceForge SCF framework.',
+    'UpdatingSCFMessage' => 'Updating the ComplianceForge SCF framework. This can take several minutes to complete.',
+    'Processing' => 'Processing...',
+    'AlphabeticalOrder'=>'Alphabetical Order',
     '' => ''
 );
 

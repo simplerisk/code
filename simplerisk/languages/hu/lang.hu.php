@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Frissítés Projekt Állapotok',
     'HighRiskReport'=>'Magas Kockázati Jelentés',
     'TotalOpenRisks'=>'Teljes Nyitva Kockázatok',
-    'TotalHighRisks'=>'Teljes Magas Kockázatok',
-    'HighRiskPercentage'=>'Magas Kockázat Aránya',
+    'NumberOfOpenRisks'=>'Összes nyitott kockázat: {$number}',
+    'RiskNumberOfRiskLevel'=>'Összesen száma {$display_name} Kockázatok: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Kockázati százalék: {$percentage}%',
+    'RiskScoreUsing'=>'Kockázati pontszám használata:',
+    'HighRiskReport_ScoreWarning' => 'Kérjük, vegye figyelembe, hogy annak ellenére, hogy a jelentés a "{$score_used}" pontszámok, mert a "{$next_review_date_uses_name}" beállítás vagyunk kiszámítása "{$management_review_header}" oszlop értékei a "{$next_review_date_uses_value}" pontszámok.',
     'UpdateClassicScore'=>'Klasszikus pontszám frissítése',
     'UpdateCVSSScore'=>'Frissítés CVSS Pontszám',
     'BaseScoreMetrics'=>'Alappontszám Mutatók',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'Azt akarom, hogy vizsgálja felül egy NAGYON MAGAS kockázat minden',
     'AbleToReviewVeryHighRisks'=>'Tudja, hogy vizsgálja felül egy Nagyon Magas Kockázat',
     'AbleToReviewInsignificantRisks'=>'Képes Felülvizsgálat Jelentéktelen Kockázatok',
-    'TotalVeryHighRisks'=>'Összesen Nagyon Magas Kockázat',
-    'VeryHighRiskPercentage'=>'Nagyon Magas Kockázat Aránya',
     'AllTeams'=>'Minden Csapat',
     'FileUploadSettings'=>'A Fájl Feltöltési Beállítások',
     'AllowedFileTypes'=>'Megengedett Fájl Típusok',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Több e-mail címeket vesszővel válaszd el.',
     'RiskAssessmentQuestionnaire' => 'Kockázat értékelő kérdőív',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n Hello, \\n
-            <p> {$username} kérte, hogy töltse ki a következő kockázatértékelés kérdőív:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>ez  van egy gyorsbüfé üzenet és válasz lesz nem vesz tudomásul vagy visszautasított.</p>\\n
+        <html><body>
+            helló
+            <p> {$username} felkérte önt, hogy töltse ki a következő kockázatértékelési kérdőívet:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Ez egy automatikus üzenet, és a válaszokat a rendszer figyelmen kívül hagyja vagy elutasítja.</p>
         </body></html>',
     'FilterByText' => 'Szöveg szűrése',
     'SelectMitigatingControls' => 'Válassza ki a kontrollcsoportban enyhítő',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Sikeresen mentette a válaszokat.',
     'QuestionnaireCompletedSuccess'=>'Ezt a kérdőívet sikeresen befejeződött.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body>\\n Hello, \\n <p> {$conact_name} kitölteni egy kérdőívet, <b>{$questionnaire_name}</b></p>\\n <p>This egy automatikus üzenet és válaszok figyelmen kívül hagyják vagy rejected.</p>\\n
+        <html><body>
+            helló
+            <p> {$conact_name} kitöltött egy kérdőívet, <b>{$questionnaire_name}</b></p>
+            <p>Ez egy automatikus üzenet, és a válaszokat a rendszer figyelmen kívül hagyja vagy elutasítja.</p>
         </body></html>',
     'QuestionnaireResults'=>'Kérdőív eredményeinek',
     'DateSent'=>'Küldés dátuma',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'Egy új keret sikeresen hozzáadva.',
     'FrameworkUpdated'=>'Egy keretében sikeresen frissítve.',
     'FrameworkNameExist'=>'A keret-név már létezik.',
+    'FrameworkNameCantBeEmpty'=>'A keretrendszer neve nem lehet üres.',
+    'FrameworkCantBeItsOwnParent'=>'A keretrendszer nem lehet a saját szülője.',
+    'FrameworkParentUpdated'=>'A keretrendszer szülője sikeresen frissítve.',
     'AttachmentFiles'=>'Mellékletek',
     'QuestionnaireFiles'=>'Kérdőív-fájlok',
     'ContactEmailAlreadyInUse'=>'A kapcsolattartó e-mail már használatban van.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Az eszköz sikeresen frissítve.',
     'ThereWasAProblemUpdatingTheAsset' => 'Hiba történt az eszköz frissítésekor.',
     'ImportAssetAddSucceeded' => 'Hozzáadott{$verified_or_unverified}"az eszköz neve"{$asset_name}"IP-vel"{$asset_ip}"és érték"{$asset_value}".',
-    'ImportAssetAddFailed' => 'Nem sikerült hozzáadni a következőt "{$verified_or_unverified"az eszköz neve"{$asset_name}"IP-vel"{$asset_ip}"és érték"{$asset_value}".',
+    'ImportAssetAddFailed' => 'Nem sikerült hozzáadni "{$verified_or_unverified}" eszköz neve "{$asset_name}" IP-vel "{$asset_ip}" és érték "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'Nincs szükség műveletre az eszköz neve "{$asset_name}"mint-a \' már-ban adatbázis.',
     'ImportAssetUpdateSucceeded' => 'Frissített{$verified_or_unverified}"az eszköz neve"{$asset_name}"IP-vel"{$asset_ip}"és érték"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Nem sikerült frissíteni a "{$verified_or_unverified}"az eszköz neve"{$asset_name}"IP-vel"{$asset_ip}"és érték"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Frissítésteszt',
     'ControlEditHeader' => 'Frissítésvezérlő',
     'FrameworkEditHeader' => 'Frissítési keretrendszer',
+    'UserTeamUpdateAuditLog' => 'Felhasználó "{$user}" frissített felhasználói csoportok "{$username}" a "{$teams_from}"a "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'Felhasználó{$user}"frissített csapat {$type} ID{$id}a{$teams_from}hogy{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Törölték{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Hozzáadott{$teams_added}"',
+    'ItemUpdateAuditLog' => 'Felhasználó "{$user}" frissített elemek (típus:"{$type}") a csapat "{$team}" a "{$items_from}"a "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => '" eltávolítva "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Hozzáadva "{$items_added}"',
     'TeamType_test' => 'Teszt',
     'TeamType_audit' => 'Ellenőrzési',
     'TestCreatedAuditLogMessage' => 'Teszt{$test_name}"(Azonosító: {$test_id}) volt teremtett mellett felhasználó "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'A kérdőíveredmény sikeresen jóváhagyásra került.',
     'QuestionnaireResultRejectedSuccessfully' => 'A kérdőíveredmény sikeresen visszautasítva. Az értesítő e-mailt a program elküldi a kapcsolattartnak.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            helló\\n
-            <p> {$username} kérte, hogy értékelje újra az alábbi kockázatértékelő kérdőívet:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Hozzászólások: {$reject_comment}</p>\\n
-            <p>Ez egy gyorsbüfé üzenet és válasz lesz nem vesz tudomásul vagy visszautasít.</p>\\n
+        <html><body>
+            helló
+            <p> {$username} felkérte Önt, hogy értékelje újra a következő kockázatértékelési kérdőívet:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Hozzászólások: {$reject_comment}</p>
+            <p>Ez egy automatikus üzenet, és a válaszokat a rendszer figyelmen kívül hagyja vagy elutasítja.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Kérdőív${questionnaire_name}"(küldött-hoz kapcsolat"{$contact_name}a{$date}") eredményt jóváhagyta a felhasználó"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Kérdőív${questionnaire_name}"az eredmény elutasításra került, és vissza kell küldeni a kapcsolatot"${contact_name}"a felhasználó általi újraértékeléshez"${user_name}"a comment"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Kérdőív "{$questionnaire_name}"(kapcsolatfelvételre elküldve"{$contact_name}" a "{$date}") az eredményt a felhasználó jóváhagyta "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Kérdőív "{$questionnaire_name}" az eredményt elutasították, és visszaküldték a kapcsolatfelvételre"{$contact_name}" a felhasználó általi újraértékeléshez "{$user_name}" a megjegyzés "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Előre kitölti a válaszokat a legutóbbi Értékelés?',
-    'QuestionnaireResultApprovedAuditLog' => 'Kérdőív${questionnaire_name}"(küldött-hoz kapcsolat"{$contact_name}a{$date}") eredményt jóváhagyta a felhasználó"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Kérdőív${questionnaire_name}"az eredmény elutasításra került, és vissza kell küldeni a kapcsolatot"${contact_name}"a felhasználó általi újraértékeléshez"${user_name}"a comment"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Kérdőív "{$questionnaire_name}"(kapcsolatfelvételre elküldve"{$contact_name}" a "{$date}") az eredményt a felhasználó jóváhagyta "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Kérdőív "{$questionnaire_name}" az eredményt elutasították, és visszaküldték a kapcsolatfelvételre"{$contact_name}" a felhasználó általi újraértékeléshez "{$user_name}" a megjegyzés "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'Felhasználó{$user_name}"Megjegyzés hozzáadva a kérdőívhez"{$questionnaire_name}"(küldött-hoz kapcsolat"{$contact_name}a{$date}") eredményt.',
     'QuestionnaireSentAuditLog' => 'Kérdőív{$questionnaire_name}"küldték a kapcsolatot"{$contact_name}"felhasználó által"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Kérdőív{$questionnaire_name}"befejezését eredményezte a függőben lévő kockázat"{$subject}".',
-    'PendingRiskAddAuditLog' => 'Függőben lévő kockázat "{$subject}"kérdőív"${questionnaire_name}"(küldött-hoz kapcsolat"{$contact_name}a{$date}") került hozzáadásra kockázatként (azonosító: {$risk_id}) mellett felhasználó "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Függőben lévő kockázat "{$subject}"kérdőív"${questionnaire_name}"(küldött-hoz kapcsolat"{$contact_name}a{$date}") törölték a felhasználó"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'A kérdőív kockázatáig${questionnaire_name}"(küldött-hoz kapcsolat"{$contact_name}a{$date}") törölte a felhasználó"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Kérdőív{$questionnaire_name}"befejeződött a kapcsolat"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Kérdőív{$questionnaire_name}"volt megtakarított mint különítmény mellett kapcsolat"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Függőben lévő kockázat "{$subject}" kérdőív "{$questionnaire_name}"(kapcsolatfelvételre elküldve"{$contact_name}" a "{$date}") lett hozzáadva kockázatként(id: {$risk_id}) felhasználó szerint "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Függőben lévő kockázat "{$subject}" kérdőív "{$questionnaire_name}"(kapcsolatfelvételre elküldve"{$contact_name}" a "{$date}") törölte a felhasználó "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'A kérdőív függőben lévő kockázatai "{$questionnaire_name}"(kapcsolatfelvételre elküldve"{$contact_name}" a "{$date}") törölték a felhasználó "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Kérdőív "{$questionnaire_name}" kapcsolattal egészült ki "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Kérdőív "{$questionnaire_name}" a kapcsolattartó piszkozatként lett mentve "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Kérdőív-eredmény naplójelentése',
     'SubTemplate' => 'Alsablon',
     'MitigationAccepted' => 'Enyhítés elfogadott',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'Aktív könyvvizsgálatok megtekintése',
     'ViewPastAudits'=>'Korábbi auditok megtekintése',
     'Uninstall' => 'Uninstall',
+    'SimpleriskUsers' => 'Egyszerű kockázatú felhasználók',
+    'QuestionnaireCompletedAuditLogByUser' => 'Kérdőív "{$questionnaire_name}" a felhasználó befejezte "{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Kérdőív "{$questionnaire_name}" mentve piszkozatként a felhasználó "{$contact_name}".',
+    'Internal' => 'Belső',
+    'QuestionType' => 'Kérdés típusa',
+    'MultipleChoice' => 'Feleletválasztós választás',
+    'FillInTheBlank' => 'Töltse ki az üres',
+    'Proxy' => 'Proxy',
+    'ProxyWebRequests' => 'Proxy webkérései',
+    'VerifySSLCertificate' => 'Ssl-tanúsítvány ellenőrzése',
+    'ProxyHostname' => 'Proxy állomásnév / IP',
+    'ProxyPort' => 'Proxy Port',
+    'AuthenticatedProxy' => 'Hitelesített proxy',
+    'ProxyUsername' => 'Proxy felhasználóneve',
+    'ProxyPassword' => 'Proxy jelszava',
+    'SimpleRiskExtras' => 'Egyszerűkockázat-extrák',
+    'ColumnSelections' => 'Oszlopkijelölések',
+    'GroupAndFilteringSelections' => 'Kijelölés csoportosítása és szűrése',
+    'Hyperlink' => 'Hivatkozás',
+    'URL' => 'Url',
+    'AssetTeams'=>'Eszközcsapat(ok)',
+    'AssetSiteLocation'=>'Eszköz helye/helye',
+    'ActivatingSCFMessage' => 'A ComplianceForge SCF keretrendszer telepítése. Ez több percig is eltarthat.',
+    'DeactivatingSCFMessage' => 'A ComplianceForge SCF keretrendszer eltávolítása.',
+    'UpdatingSCFMessage' => 'A ComplianceForge SCF keretrendszer frissítése. Ez több percig is eltarthat.',
+    'Processing' => 'Feldolgozás...',
+    'AlphabeticalOrder'=>'Betűrend',
     '' => ''
 );
 

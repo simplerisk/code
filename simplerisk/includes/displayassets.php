@@ -521,8 +521,6 @@ function display_main_detail_asset_fields_td_edit($fields, $asset)
                 
                 $custom_values = getCustomFieldValuesByAssetId($asset['id']);
                 
-//                print_r($custom_values);exit;
-                
                 display_custom_field_td_edit($field, $custom_values);
             }
         }

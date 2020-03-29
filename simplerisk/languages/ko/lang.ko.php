@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'프로젝트 업데이트 상태',
     'HighRiskReport'=>'높은 위험 보고서',
     'TotalOpenRisks'=>'총 위험 오픈',
-    'TotalHighRisks'=>'총 높은 위험성',
-    'HighRiskPercentage'=>'위험이 높은 비율',
+    'NumberOfOpenRisks'=>'총 개방 위험: {$number}',
+    'RiskNumberOfRiskLevel'=>'총 수 {$display_name} 위험: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} 위험 비율: {$percentage}%',
+    'RiskScoreUsing'=>'다음을 사용하는 위험 점수:',
+    'HighRiskReport_ScoreWarning' => '보고서는 "를 사용하여 표시되더라도{$score_used}" 점수, 때문에 "{$next_review_date_uses_name}" 설정은 우리가 계산하는 "{$management_review_header}" 열을 사용하는 값은 "{$next_review_date_uses_value}" 점수.',
     'UpdateClassicScore'=>'고전적인 점수 업데이트',
     'UpdateCVSSScore'=>'업데이트 CVSS 점수',
     'BaseScoreMetrics'=>'기본 점수 측정',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> '고 싶을 검토하는 위험이 매우 높은 모든',
     'AbleToReviewVeryHighRisks'=>'을 검토할 수 있고 매우 높은 위험성',
     'AbleToReviewInsignificantRisks'=>'을 검토할 수 있는 하찮은 위험성',
-    'TotalVeryHighRisks'=>'총 매우 높은 위험성',
-    'VeryHighRiskPercentage'=>'위험이 매우 높은 백분율',
     'AllTeams'=>'모든 팀',
     'FileUploadSettings'=>'파일 업로드 설정',
     'AllowedFileTypes'=>'허용되는 파일 유형',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => '쉼표를 사용 하 여 여러 개의 이메일을 분리 합니다.',
     'RiskAssessmentQuestionnaire' => '리스크 평가 설문지',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n 안녕하세요, \\n
-            <p> {$username} 는 다음과 같은 위험 평가 설문지를 작성 하도록 요청 했습니다.</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>이  는 자동화 된 메시지 이며 응답은 무시 되거나 거부 됩니다.</p>\\n
+        <html><body>
+            안녕하세요
+            <p> {$username} 다음과 같은 위험 평가 설문지를 작성하도록 요청했습니다.</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>이것은 자동화된 메시지이며 응답은 무시되거나 거부됩니다.</p>
         </body></html>',
     'FilterByText' => '텍스트로 필터링',
     'SelectMitigatingControls' => '완화 컨트롤 선택',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'답변이 성공적으로 저장 되었습니다.',
     'QuestionnaireCompletedSuccess'=>'이 설문지를 성공적으로 완료 했습니다.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body> \\ n 안녕하세요, \\n <p> {$conact_name}는 설문 조사를 완료 <b>{$questionnaire_name}</b></p> \\ n <p>this는 자동화 된 메시지이 고 응답은 무시 되거나 거부 됩니다. </p> \\ n
+        <html><body>
+            안녕하세요
+            <p> {$conact_name} 설문지를 작성했으며, <b>{$questionnaire_name}</b></p>
+            <p>이것은 자동화된 메시지이며 응답은 무시되거나 거부됩니다.</p>
         </body></html>',
     'QuestionnaireResults'=>'앙케이트 결과',
     'DateSent'=>'보낸 날짜',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'새 프레임 워크가 성공적으로 추가 되었습니다.',
     'FrameworkUpdated'=>'프레임 워크가 성공적으로 업데이트 되었습니다.',
     'FrameworkNameExist'=>'프레임 워크 이름이 이미 있습니다.',
+    'FrameworkNameCantBeEmpty'=>'프레임워크 이름은 비어 있을 수 없습니다.',
+    'FrameworkCantBeItsOwnParent'=>'프레임워크는 자체 부모가 될 수 없습니다.',
+    'FrameworkParentUpdated'=>'프레임워크의 부모가 성공적으로 업데이트되었습니다.',
     'AttachmentFiles'=>'첨부 파일',
     'QuestionnaireFiles'=>'설문지 파일',
     'ContactEmailAlreadyInUse'=>'연락처 이메일이 이미 사용 되 고 있습니다.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => '자산이 성공적으로 업데이트 되었습니다.',
     'ThereWasAProblemUpdatingTheAsset' => '자산을 업데이트 하는 중에 문제가 발생 했습니다.',
     'ImportAssetAddSucceeded' => '추가{$verified_or_unverified}"자산 이름"{$asset_name}"IP"{$asset_ip}"가치"{$asset_value}".',
-    'ImportAssetAddFailed' => '추가 하지 못했습니다.$verified_or_unverified"자산 이름"{$asset_name}"IP"{$asset_ip}"가치"{$asset_value}".',
+    'ImportAssetAddFailed' => '추가하지 못했습니다"{$verified_or_unverified}" 이름 "{$asset_name}" IP와 함께 "{$asset_ip}" 및 값 "{$asset_value}".',
     'NoOperationRequiredOnAsset' => '자산에 대 한 작업 필요 없음 "{$asset_name}"이미 데이터베이스에 있습니다.',
     'ImportAssetUpdateSucceeded' => '업데이트{$verified_or_unverified}"자산 이름"{$asset_name}"IP"{$asset_ip}"가치"{$asset_value}".',
     'ImportAssetUpdateFailed' => '업데이트 실패 "{$verified_or_unverified}"자산 이름"{$asset_name}"IP"{$asset_ip}"가치"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => '업데이트 테스트',
     'ControlEditHeader' => '업데이트 제어',
     'FrameworkEditHeader' => '프레임워크 업데이트',
+    'UserTeamUpdateAuditLog' => '사용자 "{$user}" 업데이트된 사용자 팀 "{$username}" "{$teams_from}" "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => '사용자 "{$user}" 업데이트된 팀 {$type} (ID:{$id})에서 "{$teams_from}" "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => '제거 "{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => '추가 "{$teams_added}"',
+    'ItemUpdateAuditLog' => '사용자 "{$user}" 업데이트 된 항목 (유형:"{$type}") 팀의 "{$team}" "{$items_from}" "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => '제거 "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => '추가 "{$items_added}"',
     'TeamType_test' => '테스트',
     'TeamType_audit' => '감사',
     'TestCreatedAuditLogMessage' => '테스트 "{$test_name}"(ID: {$test_id})은 사용자에 의해 만들어졌습니다 "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => '설문지 결과가 성공적으로 승인되었습니다.',
     'QuestionnaireResultRejectedSuccessfully' => '설문지 결과가 성공적으로 거부되었습니다. 알림 이메일이 연락처로 전송됩니다.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            안녕하세요\\n
-            <p> {$username} 다음과 같은 위험 평가 설문지를 다시 평가하도록 요청했습니다.</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>코멘트: {$reject_comment}</p>\\n
-            <p>이것은 자동화된 메시지이며 응답은 무시되거나 거부됩니다.</p>\\n
+        <html><body>
+            안녕하세요
+            <p> {$username} 다음과 같은 위험 평가 설문지를 다시 평가하도록 요청했습니다.</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>코멘트: {$reject_comment}</p>
+            <p>이것은 자동화된 메시지이며 응답은 무시되거나 거부됩니다.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => '설문지 "${questionnaire_name}"(연락처로 전송){$contact_name}" "{$date}") 결과는 사용자에 의해 승인되었다 "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => '설문지 "${questionnaire_name}" 결과가 거부되고 다시 연락처로 전송되었습니다"${contact_name}" 사용자별 재평가 "${user_name}" 코멘트와 함께 "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => '설문지 "{$questionnaire_name}"(연락처로 전송){$contact_name}" "{$date}") 결과는 사용자에 의해 승인되었다 "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => '설문지 "{$questionnaire_name}" 결과가 거부되고 다시 연락처로 전송되었습니다"{$contact_name}" 사용자별 재평가 "{$user_name}" 코멘트와 함께 "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => '마지막 평가의 답변으로 미리 채우시나요?',
-    'QuestionnaireResultApprovedAuditLog' => '설문지 "${questionnaire_name}"(연락처로 전송){$contact_name}" "{$date}") 결과는 사용자에 의해 승인되었다 "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => '설문지 "${questionnaire_name}" 결과가 거부되고 다시 연락처로 전송되었습니다"${contact_name}" 사용자별 재평가 "${user_name}" 코멘트와 함께 "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => '설문지 "{$questionnaire_name}"(연락처로 전송){$contact_name}" "{$date}") 결과는 사용자에 의해 승인되었다 "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => '설문지 "{$questionnaire_name}" 결과가 거부되고 다시 연락처로 전송되었습니다"{$contact_name}" 사용자별 재평가 "{$user_name}" 코멘트와 함께 "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => '사용자 "{$user_name}" 설문지에 대한 코멘트를 추가했습니다"{$questionnaire_name}" (연락처로 전송"{$contact_name}" "{$date}") 결과.',
     'QuestionnaireSentAuditLog' => '설문지 "{$questionnaire_name}" " 연락처로 전송되었습니다 .{$contact_name}" 사용자 "{$user_name}".',
     'PendingRiskCreationAuditLog' => '설문지 "{$questionnaire_name}"완료로 인해 보류 중인 위험이 발생했습니다."{$subject}".',
-    'PendingRiskAddAuditLog' => '보류 중인 위험 "{$subject}" 설문지의 "${questionnaire_name}"(연락처로 전송){$contact_name}" "{$date}")가 위험(ID)으로 추가되었습니다. {$risk_id}) 사용자에 의해 "${user_name}".',
-    'PendingRiskDeleteAuditLog' => '보류 중인 위험 "{$subject}" 설문지의 "${questionnaire_name}"(연락처로 전송){$contact_name}" "{$date}") 사용자에 의해 삭제되었습니다 "${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => '설문지의 보류 중인 위험 "${questionnaire_name}"(연락처로 전송){$contact_name}" "{$date}") 사용자에 의해 삭제되었습니다 "${user_name}".',
-    'QuestionnaireCompletedAuditLog' => '설문지 "{$questionnaire_name}" 연락처에 의해 완료 되었습니다 "${contact_name}".',
-    'QuestionnaireDraftAuditLog' => '설문지 "{$questionnaire_name}" 연락처에 의해 초안으로 저장 되었습니다. "${contact_name}".',
+    'PendingRiskAddAuditLog' => '보류 중인 위험 "{$subject}" 설문지의 "{$questionnaire_name}"(연락처로 전송){$contact_name}" "{$date}")가 위험(ID)으로 추가되었습니다. {$risk_id}) 사용자에 의해 "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => '보류 중인 위험 "{$subject}" 설문지의 "{$questionnaire_name}"(연락처로 전송){$contact_name}" "{$date}") 사용자에 의해 삭제되었습니다 "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => '설문지의 보류 중인 위험 "{$questionnaire_name}"(연락처로 전송){$contact_name}" "{$date}") 사용자에 의해 삭제되었습니다 "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => '설문지 "{$questionnaire_name}" 연락처에 의해 완료 되었습니다 "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => '설문지 "{$questionnaire_name}" 연락처에 의해 초안으로 저장 되었습니다. "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => '설문지 결과 감사 추적 보고서',
     'SubTemplate' => '하위 템플릿',
     'MitigationAccepted' => '완화 허용',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'활성 감사 보기',
     'ViewPastAudits'=>'과거 감사 보기',
     'Uninstall' => '제거',
+    'SimpleriskUsers' => '단순 사용자',
+    'QuestionnaireCompletedAuditLogByUser' => '설문지 "{$questionnaire_name}" 사용자가 완료했습니다"{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => '설문지 "{$questionnaire_name}" 사용자가 초안으로 저장했습니다"{$contact_name}".',
+    'Internal' => '내부',
+    'QuestionType' => '질문 유형',
+    'MultipleChoice' => '객관식',
+    'FillInTheBlank' => '빈칸 채우기',
+    'Proxy' => '프록시',
+    'ProxyWebRequests' => '프록시 웹 요청',
+    'VerifySSLCertificate' => 'SSL 인증서 확인',
+    'ProxyHostname' => '프록시 호스트 이름 / IP',
+    'ProxyPort' => '프록시 포트',
+    'AuthenticatedProxy' => '인증된 프록시',
+    'ProxyUsername' => '프록시 사용자 이름',
+    'ProxyPassword' => '프록시 암호',
+    'SimpleRiskExtras' => '간단한 위험 엑스트라',
+    'ColumnSelections' => '열 선택',
+    'GroupAndFilteringSelections' => '선택 항목 그룹화 및 필터링',
+    'Hyperlink' => '하이퍼링크',
+    'URL' => 'Url',
+    'AssetTeams'=>'자산 팀',
+    'AssetSiteLocation'=>'자산 사이트/위치',
+    'ActivatingSCFMessage' => '컴플라이언스포지 SCF 프레임워크 설치. 완료하는 데 몇 분 정도 걸릴 수 있습니다.',
+    'DeactivatingSCFMessage' => '컴플라이언스포지 SCF 프레임워크 제거.',
+    'UpdatingSCFMessage' => '컴플라이언스포지 SCF 프레임워크 업데이트. 완료하는 데 몇 분 정도 걸릴 수 있습니다.',
+    'Processing' => '처리...',
+    'AlphabeticalOrder'=>'알파벳순',
     '' => ''
 );
 

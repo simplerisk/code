@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'עדכון פרויקט סטטוסים',
     'HighRiskReport'=>'סיכון גבוה " ח',
     'TotalOpenRisks'=>'סה " כ פתח סיכונים',
-    'TotalHighRisks'=>'הכולל סיכונים גבוהים',
-    'HighRiskPercentage'=>'סיכון גבוה אחוז',
+    'NumberOfOpenRisks'=>'סך כל הסיכונים הפתוחים: {$number}',
+    'RiskNumberOfRiskLevel'=>'המספר הכולל של {$display_name} סיכונים {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} אחוז סיכון: {$percentage}%',
+    'RiskScoreUsing'=>'ציון סיכון באמצעות:',
+    'HighRiskReport_ScoreWarning' => 'שים לב, שלמרות שהדוח מוצג באמצעות "{$score_used}"ציונים, בגלל"{$next_review_date_uses_name}"ההגדרה שאנחנו מחשב"{$management_review_header}"ערכי העמודה באמצעות"{$next_review_date_uses_value}ציונים.',
     'UpdateClassicScore'=>'עדכן את התוצאה קלאסי',
     'UpdateCVSSScore'=>'עדכון CVSS ציון',
     'BaseScoreMetrics'=>'בסיס ציון מדדים',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'אני רוצה לבחון את סיכון גבוה מאוד בכל',
     'AbleToReviewVeryHighRisks'=>'מסוגל לבחון סיכונים גבוהים',
     'AbleToReviewInsignificantRisks'=>'תוכל לסקור את חשיבות סיכונים',
-    'TotalVeryHighRisks'=>'הכולל סיכונים גבוהים',
-    'VeryHighRiskPercentage'=>'סיכון גבוה מאוד אחוז',
     'AllTeams'=>'כל הצוותים.',
     'FileUploadSettings'=>'העלאת קובץ הגדרות',
     'AllowedFileTypes'=>'מותר סוגי קבצים',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'השתמש בפסיקים כדי להפריד בין מספר הודעות דואר אלקטרוני.',
     'RiskAssessmentQuestionnaire' => 'שאלון הערכת סיכון',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n שלום, \\n
-            <p> {$username} ביקש ממך להשלים את השאלון הבא להערכת הסיכון:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>זה  הודעה ותגובות אוטומטיות יושמטו או יידחו.</p>\\n
+        <html><body>
+            שלום
+            <p> {$username} ביקש ממך להשלים את שאלון הערכת הסיכונים הבא:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>זוהי הודעה אוטומטית ותגובות שהתעלמו מהן או יידחו.</p>
         </body></html>',
     'FilterByText' => 'לסנן לפי טקסט',
     'SelectMitigatingControls' => 'בחר מקלים Control(s)',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'התשובות שלך נשמרו בהצלחה.',
     'QuestionnaireCompletedSuccess'=>'לך להשלים את השאלון הזה בהצלחה.',
     'EmailTemplateCompleteQuestionnaire' => '
-        שלום <html><body>\\n, \\n <p> {$conact_name} השלמת שאלון <b>{$questionnaire_name}</b></p>\\n <p>This הודעה אוטומטית, תגובות תתעלם או rejected.</p>\\n
+        <html><body>
+            שלום
+            <p> {$conact_name} השלמת שאלון, <b>{$questionnaire_name}</b></p>
+            <p>זוהי הודעה אוטומטית ותגובות שהתעלמו מהן או יידחו.</p>
         </body></html>',
     'QuestionnaireResults'=>'תוצאות השאלון',
     'DateSent'=>'תאריך שליחה',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'מסגרת חדשה נוספה בהצלחה.',
     'FrameworkUpdated'=>'מסגרת עודכנה בהצלחה.',
     'FrameworkNameExist'=>'שם המסגרת כבר קיים.',
+    'FrameworkNameCantBeEmpty'=>'שם המסגרת אינו יכול להיות ריק.',
+    'FrameworkCantBeItsOwnParent'=>'המסגרת לא יכולה להיות הורה משלה.',
+    'FrameworkParentUpdated'=>'ההורה של המסגרת עודכן בהצלחה.',
     'AttachmentFiles'=>'קבצים מצורפים',
     'QuestionnaireFiles'=>'שאלון קבצים',
     'ContactEmailAlreadyInUse'=>'יצירת קשר דואר אלקטרוני נמצא כבר בשימוש.',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'הנכס עודכן בהצלחה.',
     'ThereWasAProblemUpdatingTheAsset' => 'אירעה בעיה בעדכון הנכס.',
     'ImportAssetAddSucceeded' => 'וסיף{$verified_or_unverified}"נכס בשם"{$asset_name}"עם IP"{$asset_ip}"וערך"{$asset_value}".',
-    'ImportAssetAddFailed' => 'לא היתה אפשרות להוסיף "{$verified_or_unverified"נכס בשם"{$asset_name}"עם IP"{$asset_ip}"וערך"{$asset_value}".',
+    'ImportAssetAddFailed' => 'הוספת "{$verified_or_unverified}"רכוש בשם"{$asset_name}"עם IP"{$asset_ip}"וערך"{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'לא נדרשת פעולה ברכוש בשם "{$asset_name}. כפי שהוא כבר נמצא במאגר הנתונים',
     'ImportAssetUpdateSucceeded' => 'מעודכן{$verified_or_unverified}"נכס בשם"{$asset_name}"עם IP"{$asset_ip}"וערך"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'העדכון נכשל "{$verified_or_unverified}"נכס בשם"{$asset_name}"עם IP"{$asset_ip}"וערך"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'עדכון מבחן',
     'ControlEditHeader' => 'עדכן בקרה',
     'FrameworkEditHeader' => 'עדכון מסגרת',
+    'UserTeamUpdateAuditLog' => 'משתמש{$user}"צוותי משתמש מעודכנים"{$username}מן{$teams_from}כדי{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'משתמש{$user}"קבוצות מעודכנות של {$type} זהה{$id}מן{$teams_from}כדי{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'וסר{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'וסיף{$teams_added}"',
+    'ItemUpdateAuditLog' => 'משתמש{$user}"פריטים מעודכנים (סוג:"{$type}") של צוות"{$team}מן{$items_from}כדי{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'וסר{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'וסיף{$items_added}"',
     'TeamType_test' => 'בחן',
     'TeamType_audit' => 'ביקורת',
     'TestCreatedAuditLogMessage' => 'בחן{$test_name}"(מזהה: {$test_id}) נוצר על ידי המשתמש "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'תוצאת השאלון אושרה בהצלחה.',
     'QuestionnaireResultRejectedSuccessfully' => 'תוצאת השאלון נדחתה בהצלחה. דוא ל הודעה נשלחת לאיש הקשר.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            שלום\\n
-            <p> {$username} ביקש ממך להעריך מחדש את השאלון הבא להערכת סיכונים:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>ערות {$reject_comment}</p>\\n
-            <p>זוהי הודעה אוטומטית ותגובות שהתעלמו מהן או יידחו.</p>\\n
+        <html><body>
+            שלום
+            <p> {$username} ביקש ממך להעריך מחדש את השאלון הבא להערכת סיכונים:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>ערות {$reject_comment}</p>
+            <p>זוהי הודעה אוטומטית ותגובות שהתעלמו מהן או יידחו.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'שאלון${questionnaire_name}"(נשלח לאיש קשר"{$contact_name}על{$date}"התוצאה אושרה על ידי המשתמש"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'שאלון${questionnaire_name}"התוצאה נדחתה ונשלחה חזרה לאיש קשר"${contact_name}"עבור הערכה מחדש על-ידי המשתמש"${user_name}"עם תגובה"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'שאלון{$questionnaire_name}"(נשלח לאיש קשר"{$contact_name}על{$date}"התוצאה אושרה על ידי המשתמש"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'שאלון{$questionnaire_name}"התוצאה נדחתה ונשלחה חזרה לאיש קשר"{$contact_name}"עבור הערכה מחדש על-ידי המשתמש"{$user_name}"עם תגובה"{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'האם לאכלס מראש עם תשובות מהערכה אחרונה?',
-    'QuestionnaireResultApprovedAuditLog' => 'שאלון${questionnaire_name}"(נשלח לאיש קשר"{$contact_name}על{$date}"התוצאה אושרה על ידי המשתמש"${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'שאלון${questionnaire_name}"התוצאה נדחתה ונשלחה חזרה לאיש קשר"${contact_name}"עבור הערכה מחדש על-ידי המשתמש"${user_name}"עם תגובה"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'שאלון{$questionnaire_name}"(נשלח לאיש קשר"{$contact_name}על{$date}"התוצאה אושרה על ידי המשתמש"{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'שאלון{$questionnaire_name}"התוצאה נדחתה ונשלחה חזרה לאיש קשר"{$contact_name}"עבור הערכה מחדש על-ידי המשתמש"{$user_name}"עם תגובה"{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'משתמש{$user_name}"הוספת הערה לשאלון"{$questionnaire_name}"(נשלח לאיש קשר"{$contact_name}על{$date}").',
     'QuestionnaireSentAuditLog' => 'שאלון{$questionnaire_name}"נשלחה ליצור קשר"{$contact_name}"על ידי המשתמש"{$user_name}".',
     'PendingRiskCreationAuditLog' => 'שאלון{$questionnaire_name}השלמת התוצאה ביצירת סיכון ממתין{$subject}".',
-    'PendingRiskAddAuditLog' => 'סיכון ממתין "{$subject}"שאלון"${questionnaire_name}"(נשלח לאיש קשר"{$contact_name}על{$date}") התווסף כסיכון (מזהה: {$risk_id}) על ידי המשתמש "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'סיכון ממתין "{$subject}"שאלון"${questionnaire_name}"(נשלח לאיש קשר"{$contact_name}על{$date}") נמחק על ידי המשתמש"${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'סיכונים ממתינים בשאלון "${questionnaire_name}"(נשלח לאיש קשר"{$contact_name}על{$date}") נמחקו על ידי המשתמש"${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'שאלון{$questionnaire_name}"הושלם על ידי איש קשר"${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'שאלון{$questionnaire_name}"נשמרה כטיוטה באמצעות איש קשר"${contact_name}".',
+    'PendingRiskAddAuditLog' => 'סיכון ממתין "{$subject}"שאלון"{$questionnaire_name}"(נשלח לאיש קשר"{$contact_name}על{$date}") התווסף כסיכון (מזהה: {$risk_id}) על ידי המשתמש "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'סיכון ממתין "{$subject}"שאלון"{$questionnaire_name}"(נשלח לאיש קשר"{$contact_name}על{$date}") נמחק על ידי המשתמש"{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'סיכונים ממתינים בשאלון "{$questionnaire_name}"(נשלח לאיש קשר"{$contact_name}על{$date}") נמחקו על ידי המשתמש"{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'שאלון{$questionnaire_name}"הושלם על ידי איש קשר"{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'שאלון{$questionnaire_name}"נשמרה כטיוטה באמצעות איש קשר"{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'דוח שביל ביקורת של תוצאת שאלון',
     'SubTemplate' => 'תבנית משנה',
     'MitigationAccepted' => 'מתקבלת ההקלה',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'הצג ביקורות פעילים',
     'ViewPastAudits'=>'הצג ביקורות קודמות',
     'Uninstall' => 'הסיר',
+    'SimpleriskUsers' => 'סימפראיסלנדית משתמשים',
+    'QuestionnaireCompletedAuditLogByUser' => 'שאלון{$questionnaire_name}"הושלם על ידי המשתמש"{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'שאלון{$questionnaire_name}"נשמרה כטיוטה על-ידי המשתמש"{$contact_name}".',
+    'Internal' => 'פנימי',
+    'QuestionType' => 'סוג שאלה',
+    'MultipleChoice' => 'בחירה מרובה',
+    'FillInTheBlank' => 'למלא את הריק',
+    'Proxy' => 'Proxy',
+    'ProxyWebRequests' => 'בקשות אינטרנט מפרוקסי',
+    'VerifySSLCertificate' => 'בדוק אישור SSL',
+    'ProxyHostname' => 'שרת מארח/IP של Proxy',
+    'ProxyPort' => 'יציאת Proxy',
+    'AuthenticatedProxy' => 'פרוקסי מאומת',
+    'ProxyUsername' => 'שם משתמש פרוקסי',
+    'ProxyPassword' => 'סיסמה פרוקסי',
+    'SimpleRiskExtras' => 'תוספות סימפראיסלנדי',
+    'ColumnSelections' => 'בחירות עמודה',
+    'GroupAndFilteringSelections' => 'בחירות קבוצתיות וסינון',
+    'Hyperlink' => 'יפר-קישור',
+    'URL' => 'URL',
+    'AssetTeams'=>'צוות הנכס (ים)',
+    'AssetSiteLocation'=>'אתר נכס/מיקום',
+    'ActivatingSCFMessage' => 'התקנת מסגרת ה-SCF לזייף. השלמת פעולה זו עשויה להימשך מספר דקות.',
+    'DeactivatingSCFMessage' => 'הסרת ההתקנה של מסגרת ה-SCF לזייף.',
+    'UpdatingSCFMessage' => 'מעדכן את מסגרת ה-SCF לפורג \'. השלמת פעולה זו עשויה להימשך מספר דקות.',
+    'Processing' => 'מעבד...',
+    'AlphabeticalOrder'=>'סדר אלפביתי',
     '' => ''
 );
 

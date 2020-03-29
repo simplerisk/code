@@ -21,7 +21,7 @@ input[type="submit"]{
   font-family: $font-1 !important;
 
   &:hover,&:active{
-    background-color: $color-3;
+    background-color: $color-3 !important;
   }
 
   &:visited{

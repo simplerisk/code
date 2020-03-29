@@ -25,3 +25,17 @@ function showAlertFromMessage(message, success){
         toastr.error(message);
     }
 }
+
+function showAlertsFromHiddenArray(res)
+{
+    $tempDiv = $('<div class="hide"></div>').html($.parseHTML(res));
+    var objs = $('.hidden-alert-message', $tempDiv);
+    
+    objs.each(function(){
+        var alert_message = $(this).html();
+        var success = $(this).data('type') == "success" ? true : false;
+        showAlertFromMessage(alert_message, success);
+    })
+
+    $tempDiv.remove();
+}

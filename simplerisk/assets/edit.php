@@ -96,17 +96,18 @@ include_csrf_magic();
   ?>
   <script>
     $(document).ready(function() {
-//        $('#edit-assets-table select').change(updateAsset);
+        $('#edit-assets-table select:not(.multiselect)').change(updateAsset);
+
         var oldValue = "";
         $('#edit-assets-table textarea, #edit-assets-table input').bind('focusin', function(){
             oldValue = $(this).val();
-        })
+        });
         $('#edit-assets-table textarea, #edit-assets-table input').bind('focusout', function(){
             var newValue = $(this).val();
             if(oldValue !== newValue){
                 updateAsset(null, $(this));
             }
-        })
+        });
     });
   </script>
   <div id="load" style="display:none;">Scanning IPs... Please wait.</div>

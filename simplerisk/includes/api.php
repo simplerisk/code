@@ -12,6 +12,7 @@ require_once(realpath(__DIR__ . '/compliance.php'));
 require_once(realpath(__DIR__ . '/governance.php'));
 require_once(realpath(__DIR__ . '/permissions.php'));
 require_once(realpath(__DIR__ . '/datefix.php'));
+require_once(realpath(__DIR__ . '/extras.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
@@ -353,34 +354,18 @@ function dynamicrisk()
         $sort = $_GET['sort'];
         $group = $_GET['group'];
         
-        $affected_assets_filter = empty($_GET['affected_assets_filter']) ? [] : $_GET['affected_assets_filter'];
 
-        if($affected_assets_filter)
-        {
-            $processed_affected_assets_filter = array('group'=>[], 'asset'=>[]);
-            foreach($affected_assets_filter as $asset_filter) {
-                if (preg_match('/^([\d]+)_(group|asset)$/', $asset_filter, $matches)) {
-                    list(, $id, $type) = $matches;
-                    
-                    array_push($processed_affected_assets_filter[$type], (int)$id);
-                }
-            }
-        }
-        else
-        {
-            $processed_affected_assets_filter = [];
-        }
-
-        $tags_filter = isset($_GET['tags_filter']) ? array_map('intval', $_GET['tags_filter']) : [];
-        $locations_filter = isset($_GET['locations_filter']) ? array_map('intval', $_GET['locations_filter']) : [];
         $start = (isset($_GET['start']) && $_GET['start']) ? $_GET['start'] : 0;
         $length = (isset($_GET['length']) && $_GET['length']) ? $_GET['length'] : 10;
         $rowCount = "";
+        
+        // Get column filters
+        $column_filters = isset($_GET['column_filters']) ? $_GET['column_filters'] : [];
 
         $review_levels = get_review_levels();
 
         // Query the risks
-        $data = risks_query($status, $sort, $group, $processed_affected_assets_filter, $tags_filter, $locations_filter, $rowCount, $start, $length);
+        $data = risks_query($status, $sort, $group, $column_filters, $rowCount, $start, $length);
         $rows = array();
         foreach($data as $risk){
             $row = array(
@@ -400,9 +385,9 @@ function dynamicrisk()
                 "submitted_by"          => $escaper->escapeHtml($risk['submitted_by']),
                 "scoring_method"        => $escaper->escapeHtml($risk['scoring_method']),
                 "calculated_risk"       => $escaper->escapeHtml($risk['calculated_risk']),
-		        "residual_risk"		=> $escaper->escapeHtml($risk['residual_risk']),
+                "residual_risk"         => $escaper->escapeHtml($risk['residual_risk']),
                 "color"                 => get_risk_color($risk['calculated_risk']),
-		        "residual_color"	=> get_risk_color($risk['residual_risk']),
+                "residual_color"        => get_risk_color($risk['residual_risk']),
                 "submission_date"       => $escaper->escapeHtml(date(get_default_datetime_format("H:i"), strtotime($risk['submission_date']))),
                 "review_date"           => $escaper->escapeHtml($risk['review_date']),
                 "project"               => $escaper->escapeHtml($risk['project']),
@@ -472,11 +457,12 @@ function viewrisk() {
             $reference_id = $risk[0]['reference_id'];
             $regulation = get_name_by_value("frameworks", $risk[0]['regulation']);
             $control_number = $risk[0]['control_number'];
-            $location = get_names_by_multi_values("location", $risk[0]['location'], false, "; ");
+            $location = $risk[0]['location_names'];
             $source = get_name_by_value("source", $risk[0]['source']);
             $category = get_name_by_value("category", $risk[0]['category']);
-            $team = get_name_by_value("team", $risk[0]['team']);
-            $technology = get_technology_names($risk[0]['technology']);
+            $team = $risk[0]['team_names'];
+            $technology = $risk[0]['technology_names'];
+            $additional_stakeholders = $risk[0]['additional_stakeholder_names'];
             $owner = get_name_by_value("user", $risk[0]['owner']);
             $manager = get_name_by_value("user", $risk[0]['manager']);
             $assessment = try_decrypt($risk[0]['assessment']);
@@ -551,8 +537,10 @@ function viewrisk() {
                 "regulation" => $regulation,
                 "control_number" => $control_number,
                 "location" => $location, "source" => $source,
-                "category" => $category, "team" => $team,
+                "category" => $category, 
+                "team" => $team,
                 "technology" => $technology,
+                "additional_stakeholders" => $additional_stakeholders,
                 "owner" => $owner,
                 "manager" => $manager,
                 "assessment" => $assessment,
@@ -789,27 +777,6 @@ function dynamicriskForm()
         $sort   = isset($_POST['sort']) ? $_POST['sort'] : 0;
         $group  = isset($_POST['group']) ? $_POST['group'] : 0;
         
-        $affected_assets_filter = empty($_POST['affected_assets_filter']) ? [] : $_POST['affected_assets_filter'];
-        
-
-        if (!empty($affected_assets_filter)) 
-        {
-            $processed_affected_assets_filter = array('group'=>[], 'asset'=>[]);
-            foreach($affected_assets_filter as $asset_filter) {
-                if (preg_match('/^([\d]+)_(group|asset)$/', $asset_filter, $matches)) {
-                    list(, $id, $type) = $matches;
-
-                    array_push($processed_affected_assets_filter[$type], (int)$id);
-                }
-            }
-        }
-        else
-        {
-            $processed_affected_assets_filter = [];
-        }
-
-        $tags_filter = isset($_POST['tags_filter']) ? array_map ('intval', $_POST['tags_filter']) : [];
-        $locations_filter = isset($_POST['locations_filter']) ? array_map ('intval', $_POST['locations_filter']) : [];
         $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
         $length = $_POST['length'] ? (int)$_POST['length'] : 10;
         $group_value_from_db = $_POST['group_value'] ? $_POST['group_value'] : "";
@@ -822,10 +789,13 @@ function dynamicriskForm()
         $teams = isset($_POST['teams']) ? $_POST['teams'] : [];
         $owners = isset($_POST['owners']) ? $_POST['owners'] : [];
         $ownersmanagers = isset($_POST['ownersmanagers']) ? $_POST['ownersmanagers'] : [];
+        
+        // Get column filters
+        $column_filters = isset($_POST['columnFilters']) ? $_POST['columnFilters'] : [];
 
         $rowCount = 0;
         // Query the risks
-        $risks = risks_query($status, $sort, $group, $processed_affected_assets_filter, $tags_filter, $locations_filter, $rowCount, $start, $length, $group_value_from_db, "", [], $orderColumnName, $orderDir, $risks_by_team, $teams, $owners, $ownersmanagers);
+        $risks = risks_query($status, $sort, $group, $column_filters, $rowCount, $start, $length, $group_value_from_db, "", [], $orderColumnName, $orderDir, $risks_by_team, $teams, $owners, $ownersmanagers);
 
         $datas = array();
         foreach($risks as $row){
@@ -963,50 +933,39 @@ function dynamicriskUniqueColumnDataAPI()
         $status = isset($_POST['status']) ? $_POST['status'] : 0;
         $group  = isset($_POST['group']) ? $_POST['group'] : 0;
         
-        $affected_assets_filter = empty($_POST['affected_assets_filter']) ? [] : $_POST['affected_assets_filter'];
-        
-
-        if (!empty($affected_assets_filter)) 
-        {
-            $processed_affected_assets_filter = array('group'=>[], 'asset'=>[]);
-            foreach($affected_assets_filter as $asset_filter) {
-                if (preg_match('/^([\d]+)_(group|asset)$/', $asset_filter, $matches)) {
-                    list(, $id, $type) = $matches;
-
-                    array_push($processed_affected_assets_filter[$type], (int)$id);
-                }
-            }
-        }
-        else
-        {
-            $processed_affected_assets_filter = [];
-        }
-
-        $tags_filter = isset($_POST['tags_filter']) ? array_map ('intval', $_POST['tags_filter']) : [];
-        $locations_filter = isset($_POST['locations_filter']) ? array_map ('intval', $_POST['locations_filter']) : [];
         $group_value_from_db = $_POST['group_value'] ? $_POST['group_value'] : "";
         
         // Params in risks_by_teams page
         $risks_by_team = isset($_POST['risks_by_team']) ? true : false;
-        $teams = isset($_POST['teams']) ? $_POST['teams'] : [];
-        $owners = isset($_POST['owners']) ? $_POST['owners'] : [];
-        $ownersmanagers = isset($_POST['ownersmanagers']) ? $_POST['ownersmanagers'] : [];
 
         // Query the risks
-        $risks = get_dynamicrisk_unique_column_data($status, 1, $group, $processed_affected_assets_filter, $tags_filter, $locations_filter, $group_value_from_db, "", [], null, "asc", $risks_by_team, $teams, $owners, $ownersmanagers);
-
+        $risks = get_dynamicrisk_unique_column_data($status, $group, $group_value_from_db);
         $datas = array();
-        $uniqueColumns = [];
-        foreach($risks as $row){
-            $row['id'] = (int)$row['id'] + 1000;
+        
+        // If Customization Extra is true, include custom extra
+        if(customization_extra())
+        {
+            // Include the extra
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
+            $custom_extra = true;
+            $active_fields = get_active_fields();
+        }
+        else
+        {
+            $custom_extra = false;
+        }
+        
+        $uniqueColumns = [];
+        
+        $risk_ids = [];
+        foreach($risks as $row){
+            $risk_ids[] = $row['id'];
             foreach($row as $key=>$value)
             {
                 $key = strtolower($key);
-                if($key == "status"){
-                    $key = "risk_status";
-                }
-                if(isset($uniqueColumns[$key]) && is_array($uniqueColumns[$key]))
+
+                if(isset($uniqueColumns[$key]))
                 {
                     $uniqueColumns[$key][] = $value;
                 }
@@ -1015,82 +974,159 @@ function dynamicriskUniqueColumnDataAPI()
                     $uniqueColumns[$key] = [$value];
                 }
             }
-            
-            // If customization extra is enabled, add custom fields
-            if(customization_extra())
-            {
-                // Include the extra
-                require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                $custom_values = getCustomFieldValuesByRiskId($row['id']);
-
-                $active_fields = get_active_fields();
-                foreach($active_fields as $active_field)
-                {
-                    // If main field, ignore.
-                    if($active_field['is_basic'] == 1){
-                        continue;
-                    }
-                    
-                    $text = "";
-                    
-                    // Get value of custom filed
-                    foreach($custom_values as $custom_value)
-                    {
-                        // Check if this custom value is for the active field
-                        if($custom_value['field_id'] == $active_field['id']){
-                            $value = $custom_value['value'];
-                            
-                            $text = get_custom_field_name_by_value($active_field['id'], $custom_value['field_type'], $custom_value['encryption'], $value);
-                            
-                            break;
-                        }
-                    }
-                    
-                    $custom_key = "custom_field_".$active_field['id'];
-                    if(isset($uniqueColumns[$custom_key]) && is_array($uniqueColumns[$custom_key]))
-                    {
-                        $uniqueColumns[$custom_key][] = $text;
-                    }
-                    else
-                    {
-                        $uniqueColumns[$custom_key] = [$text];
-                    }
-                }
-
-            }
-        }
-
-        $uniqueColumns = array_map("array_unique", $uniqueColumns);
-        foreach($uniqueColumns as $key => &$uniqueColumnArr)
-        {
-                
-            $rows = [];
-            foreach($uniqueColumnArr as $val)
-            {
-                if($key == "submission_date")
-                {
-                    $val = date(get_default_datetime_format("H:i"), strtotime($row['submission_date']));
-                }
-                if($val)
-                {
-                    $rows[] = array(
-                        "text" => $escaper->escapeHtml($val),
-                        "value" => base64_encode($val)
-                    );
-                }
-                else
-                {
-                    $rows[] = array(
-                        "text" => $escaper->escapeHtml($lang['Unassigned']),
-                        "value" => ""
-                    );
-                }
-            }
-            
-            $uniqueColumnArr = $rows;
         }
         
-        $results = $uniqueColumns;
+        $uniqueColumns = array_map("array_values", array_map("array_unique", $uniqueColumns));
+
+        $delimiter = "---";
+        
+        $decrypted_unique_names = [];
+
+        $results = [];
+        foreach($uniqueColumns as $key => $uniqueColumnArr)
+        {
+            $continue = false;
+            
+            switch($key)
+            {
+                case "regulation":
+                case "project":
+                    $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter, true);
+                break;
+                //  columns splitted by ";"
+                case "risk_tags":
+                case "location":
+                    $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ';', $delimiter);
+                break;
+                // columns splitted by ","
+                case "risk_status":
+                case "source":
+                case "category":
+                case "team":
+                case "additional_stakeholders":
+                case "technology":
+                case "owner":
+                case "manager":
+                case "submitted_by":
+                case "regulation":
+                case "next_step":
+                case "planning_strategy":
+                case "mitigation_effort":
+                case "mitigation_cost":
+                case "mitigation_owner":
+                case "mitigation_team":
+                case "mitigation_controls":
+                    $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter);
+                break;
+                case "affected_assets":
+                    $affectedAssetsUniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter, true);
+                    // Set asset data class
+                    $affectedAssetsUniqueColumnArr = array_map(function($arr){
+                        $arr['class'] = "asset";
+                        $arr['value'] .= "-asset";
+                        return $arr;
+                    }, $affectedAssetsUniqueColumnArr);
+                    
+                    $affectedAssetGroupsUniqueColumnArr = get_name_value_array_from_text_array($uniqueColumns['affected_asset_groups'], ',', $delimiter);
+                    // Set group data class
+                    $affectedAssetGroupsUniqueColumnArr = array_map(function($arr){
+                        $arr['class'] = "group";
+                        $arr['value'] .= "-group";
+                        return $arr;
+                    }, $affectedAssetGroupsUniqueColumnArr);
+
+                    $affectedAssetGroupsUniqueArr = [];
+                    foreach($affectedAssetsUniqueColumnArr as $arr){
+                        $asset_id = base64_decode(trim(str_replace("-asset", "", $arr["value"])));
+                        $groups = get_asset_groups_from_asset($asset_id);
+                        foreach($groups as $arr_group){
+                            $affectedAssetGroupsUniqueArr[] = array(
+                                "value" => base64_encode($arr_group["id"])."-group",
+                                "text" => $escaper->escapeHtml($arr_group["name"]),
+                                "class" => "group"
+                            );
+                        }
+                    }
+                    $affectedAssetGroupsUniqueColumnArr = array_merge($affectedAssetGroupsUniqueColumnArr,$affectedAssetGroupsUniqueArr);
+                    $affectedAssetGroupsUniqueColumnArr = array_map("unserialize", array_unique(array_map("serialize", $affectedAssetGroupsUniqueColumnArr)));
+
+                    $uniqueColumnArr = array_merge($affectedAssetsUniqueColumnArr, $affectedAssetGroupsUniqueColumnArr); 
+                break;
+                case "scoring_method":
+                    $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter);
+                    
+                    $uniqueColumnArr = array_map(function($text_value_arr) use($escaper){
+                        $text = $escaper->escapeHtml(get_scoring_method_name(base64_decode($text_value_arr['value'])));
+                        $value = $text_value_arr['value'];
+                        return ["text"=>$text, "value"=>$value];
+                    }, $uniqueColumnArr);
+                break;
+                default: 
+                    $continue = true;
+                break;
+            }
+            
+            if(!empty($continue)) continue;
+            
+            $results[$key] = array_values($uniqueColumnArr);
+        }
+
+        $results["mitigation_planned"] = array(
+                [
+                    "value" => base64_encode(1),
+                    "text" => $escaper->escapeHtml($lang['Yes']),
+                ],
+                [
+                    "value" => base64_encode(2),
+                    "text" => $escaper->escapeHtml($lang['No']),
+                ],
+            );
+
+        $results["mitigation_accepted"] = array(
+                [
+                    "value" => base64_encode(1),
+                    "text" => $escaper->escapeHtml($lang['Yes']),
+                ],
+                [
+                    "value" => base64_encode(2),
+                    "text" => $escaper->escapeHtml($lang['No']),
+                ],
+            );
+
+        $results["management_review"] = array(
+                [
+                    "value" => base64_encode(1),
+                    "text" => $escaper->escapeHtml($lang['Yes']),
+                ],
+                [
+                    "value" => base64_encode(2),
+                    "text" => $escaper->escapeHtml($lang['No']),
+                ],
+                [
+                    "value" => base64_encode(3),
+                    "text" => $escaper->escapeHtml($lang['PASTDUE']),
+                ],
+            );
+
+        // If customization extra is enabled, add custom fields
+        if($custom_extra)
+        {
+            foreach($active_fields as $active_field)
+            {
+                // If this is custom field and it is dropdown field, set unique column
+                if($active_field['is_basic'] == 0)
+                {
+                    if(in_array($active_field['type'], ["dropdown", "multidropdown", "user_multidropdown"]))
+                    {
+                        $results['custom_field_'.$active_field['id']] = get_name_value_array_for_custom_field($active_field['id'], $active_field['type'], $risk_ids);
+                    }
+                    elseif($active_field['type'] == "date")
+                    {
+                        $results['custom_field_'.$active_field['id']] = ["field_type" => "date"];
+                    }
+                }
+            }
+        }
 
         // Return a JSON response
         echo json_encode($results);
@@ -1757,6 +1793,7 @@ function saveDetailsForm()
         $error = update_risk($id);
 
         $risk = get_risk_by_id($id);
+
 
         // If the jira extra is activated and after saving the issue_key
         // there's a jira issue associated to the risk
@@ -2661,23 +2698,24 @@ function addRisk(){
         $source = (int)get_param("POST", 'source');
         $category = (int)get_param("POST", 'category');
         if(is_array(get_param("POST", 'team'))){
-            $team = implode(",", get_param("POST", 'team'));
+            $team = get_param("POST", 'team');
         }else{
             $team = get_value_string_by_table('team');
         }
+        
         if(is_array(get_param("POST", 'technology'))){
-            $technology = implode(",", get_param("POST", '$technology'));
+            $technology = get_param("POST", '$technology');
         }else{
-            $technology = "";
+            $technology = [];
         }
         $owner = (int)get_param("POST", 'owner');
         $manager = (int)get_param("POST", 'manager');
         $assessment = get_param("POST", 'assessment');
         $notes = get_param("POST", 'notes');
         if(is_array(get_param("POST", 'additional_stakeholders'))){
-            $additional_stakeholders = implode(",", get_param("POST", 'additional_stakeholders'));
+            $additional_stakeholders = get_param("POST", 'additional_stakeholders');
         }else{
-            $additional_stakeholders = "";
+            $additional_stakeholders = [];
         }
 
         // Risk scoring method
@@ -2749,7 +2787,7 @@ function addRisk(){
             // Load the extra
             require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-            create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? $_SESSION['encrypted_pass'] : fetch_key());
+//            create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? $_SESSION['encrypted_pass'] : fetch_key());
         }
 
         if($scoring_method){
@@ -2838,7 +2876,7 @@ function saveMitigation(){
             'mitigation_effort'         => get_param("POST", "mitigation_effort", 0),
             'mitigation_cost'           => get_param("POST", "mitigation_cost", 0),
             'mitigation_owner'          => get_param("POST", "mitigation_owner", 0),
-            'mitigation_team'           => get_param("POST", "mitigation_team", ""),
+            'mitigation_team'           => get_param("POST", "mitigation_team", []),
             'current_solution'          => get_param("POST", "current_solution"),
             'security_requirements'     => get_param("POST", "security_requirements"),
             'security_recommendations'  => get_param("POST", "security_recommendations"),
@@ -3211,16 +3249,17 @@ function getFrameworkControlsDatatable(){
     // If the user has governance permissions
     if (check_permission_governance())
     {
-        $draw = $escaper->escapeHtml($_GET['draw']);
-        $control_class = isset($_GET['control_class']) ? $_GET['control_class'] : [];
-        $control_phase = isset($_GET['control_phase']) ? $_GET['control_phase'] : [];
-        $control_family = isset($_GET['control_family']) ? $_GET['control_family'] : [];
-        $control_owner = isset($_GET['control_owner']) ? $_GET['control_owner'] : [];
-        $control_framework = isset($_GET['control_framework']) ? $_GET['control_framework'] : [];
-        $control_priority = isset($_GET['control_priority']) ? $_GET['control_priority'] : [];
-        $control_text = $_GET['control_text'];
+        $draw = $escaper->escapeHtml($_POST['draw']);
+        $control_class = isset($_POST['control_class']) ? $_POST['control_class'] : [];
+        $control_phase = isset($_POST['control_phase']) ? $_POST['control_phase'] : [];
+        $control_family = isset($_POST['control_family']) ? $_POST['control_family'] : [];
+        $control_owner = isset($_POST['control_owner']) ? $_POST['control_owner'] : [];
+        $control_framework = isset($_POST['control_framework']) ? $_POST['control_framework'] : [];
+        $control_priority = isset($_POST['control_priority']) ? $_POST['control_priority'] : [];
+        $control_text = $_POST['control_text'];
 
         $controls = get_framework_controls_by_filter($control_class, $control_phase, $control_owner, $control_family, $control_framework, $control_priority, $control_text);
+        
         $recordsTotal = count($controls);
 
         $data = array();
@@ -3228,11 +3267,11 @@ function getFrameworkControlsDatatable(){
         foreach ($controls as $key=>$control)
         {
             // If it is not requested to view all.
-            if($_GET['length'] != -1){
-                if($key < $_GET['start']){
+            if($_POST['length'] != -1){
+                if($key < $_POST['start']){
                     continue;
                 }
-                if($key >= ($_GET['start'] + $_GET['length'])){
+                if($key >= ($_POST['start'] + $_POST['length'])){
                     break;
                 }
             }
@@ -3328,14 +3367,7 @@ function getMitigationControlsDatatable(){
     $control_ids = $_GET['control_ids'];
     $control_id_array = explode(",", $control_ids);
 
-    $allControls = get_framework_controls();
-
-    $controls = [];
-    foreach($allControls as $control){
-        if(in_array($control['id'], $control_id_array)){
-            $controls[] = $control;
-        }
-    }
+    $controls = get_framework_controls($control_ids);
 
     $recordsTotal = count($controls);
 
@@ -3514,25 +3546,29 @@ function updateControlResponse()
 /*************************************
  * FUNCTION: UPDATE FRAMEWORK PARENT *
  *************************************/
-function updateFrameworkParentResponse()
-{
-    global $escaper, $lang;
+function updateFrameworkParentResponse() {
 
-    // If user has no permission for modify frameworks
-    if(empty($_SESSION['modify_frameworks']))
-    {
-        $status_message = $escaper->escapeHtml($lang['NoModifyFrameworkPermission']);
-    }
-    // If user has permission for modify frameworks
-    else
-    {
+    global $lang;
+
+    if(has_permission('modify_frameworks')){
+
         $parent  = (int)$_POST['parent'];
         $framework_id = (int)$_POST['framework_id'];
-        update_framework_parent($parent, $framework_id);
-        $status_message = "Updated framework status";
-    }
 
-    json_response(200, $status_message, []);
+        // Check if the user is going to setup a circular reference
+        if ($parent && $framework_id && detect_circular_parent_reference($framework_id, $parent)) {
+            set_alert(true, "bad", $lang['FrameworkCantBeItsOwnParent']); //No you don't! Circular reference detected...
+            json_response(400, get_alert(true), []);
+        } else {
+            update_framework_parent($parent, $framework_id);
+
+            set_alert(true, "good", $lang['FrameworkParentUpdated']);
+            json_response(200, get_alert(true), []);
+        }
+    } else {
+        set_alert(true, "bad", $lang['NoModifyFrameworkPermission']);
+        json_response(400, get_alert(true), []);
+    }
 }
 
 /*******************************************************************
@@ -3794,8 +3830,8 @@ function auditTimelineResponse()
             $active_audits_url = $_SESSION['base_url'].'/compliance/active_audits.php?test_id='.$audit_test['id'];
             $past_audits_url = $_SESSION['base_url'].'/compliance/past_audits.php?test_id='.$audit_test['id'];
             $buttons = '<button class="btn-initiate-audit" id="'.$audit_test['id'].'" style="width:100%;">'.$escaper->escapeHtml($lang['InitiateAudit']).'</button>
-                        <a class="links" href="'.$active_audits_url.'" target="_blank">'.$escaper->escapeHtml($lang['ViewActiveAudits']).'</a>
-                        <a class="links" href="'.$past_audits_url.'" target="_blank">'.$escaper->escapeHtml($lang['ViewPastAudits']).'</a>';
+                        <a class="btn" href="'.$active_audits_url.'" target="_blank">'.$escaper->escapeHtml($lang['ViewActiveAudits']).'</a>
+                        <a class="btn" href="'.$past_audits_url.'" target="_blank">'.$escaper->escapeHtml($lang['ViewPastAudits']).'</a>';
 
             $data[] = [
                 $buttons,
@@ -4460,8 +4496,8 @@ function reopenTestAuditResponse()
  * FUNCTION: GET DATA FOR ASSESSMENT CONTACTS DATATABLE *
  ********************************************************/
 function assessment_extra_getAssessmentContacts(){
-	// Check assessment extra is enabled
-	if (assessments_extra()) {
+    // Check assessment extra is enabled
+    if (assessments_extra()) {
         
         if (!check_permission_assessments()) {
             global $lang, $escaper;
@@ -4469,16 +4505,16 @@ function assessment_extra_getAssessmentContacts(){
             return;
         }
         
-		// If the assessment extra file exists
-		if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
-		{
-			// Include the file
-			require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+        // If the assessment extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
 
-			// Call the getAssessmentContacts function
-			getAssessmentContacts();
-		}
-	}
+            // Call the getAssessmentContacts function
+            getAssessmentContacts();
+        }
+    }
 }
 
 /**********************************************************************
@@ -4951,6 +4987,31 @@ function assessment_extra_questionnaireAnalysisDynamicAPI(){
 
             // Call the questionnaireAanalysisDynamicAPI function
             questionnaireAanalysisDynamicAPI();
+        }
+    }
+}
+
+/*******************************************************************
+ * FUNCTION: GET ASSESSMENT CONTACTS AND USERS DUAL LIST JSON DATA *
+ *******************************************************************/
+function assessment_extra_questionnaireContactsUsersOptionsAPI(){
+    // Check assessment extra is enabled
+    if (assessments_extra()) {
+
+        if (!check_permission_assessments()) {
+            global $lang, $escaper;
+            json_response(400, $escaper->escapeHtml($lang['NoPermissionForAssessments']), NULL);
+            return;
+        }
+
+        // If the assessment extra file exists
+        if (file_exists(realpath(__DIR__ . '/../extras/assessments/index.php')))
+        {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+
+            // Call the questionnaireContactsUsersOptionsAPI function
+            questionnaireContactsUsersOptionsAPI();
         }
     }
 }
@@ -5600,6 +5661,9 @@ function getReviewRisksDatatableResponse()
         $date_next_review = array();
         $date_calculated_risk = array();
 
+        $risk_levels = get_risk_levels();
+        $next_review_date_uses = get_setting('next_review_date_uses');
+
         // Parse through each row in the array
         foreach ($risks as $key => $row)
         {
@@ -5608,13 +5672,14 @@ function getReviewRisksDatatableResponse()
             $subject[$key] = $row['subject'];
             $status[$key] = $row['status'];
             $calculated_risk[$key] = $row['calculated_risk'];
-            $color[$key] = get_risk_color($row['calculated_risk']);
-            $risk_level = get_risk_level_name($row['calculated_risk']);
-            $residual_risk_level = get_risk_level_name($row['residual_risk']);
-            $dayssince[$key] = dayssince($row['submission_date']);
+            $color[$key] = get_risk_color_from_levels($row['calculated_risk'], $risk_levels);
+            $risk_level = get_risk_level_name_from_levels($row['calculated_risk'], $risk_levels);
+            $residual_risk_level = get_risk_level_name_from_levels($row['residual_risk'], $risk_levels);
+//            $dayssince[$key] = dayssince($row['submission_date']);
+            $dayssince[$key] = $row['days_open'];
 
             // If next_review_date_uses setting is Residual Risk.
-            if(get_setting('next_review_date_uses') == "ResidualRisk")
+            if($next_review_date_uses == "ResidualRisk")
             {
                 $next_review[$key] = next_review($residual_risk_level, $risk_id[$key], $row['next_review'], false);
                 $next_review_html[$key] = next_review($residual_risk_level, $row['id'], $row['next_review']);
@@ -6405,7 +6470,7 @@ function create_exception_api() {
     }
 
     $approval_date = get_standard_date_from_default_format($_POST['approval_date']);
-    $approver = (ctype_digit($_POST['approver']) && get_user_by_id((int)$_POST['owner'])) ? (int)$_POST['approver'] : false;
+    $approver = (ctype_digit($_POST['approver']) && get_user_by_id((int)$_POST['approver'])) ? (int)$_POST['approver'] : false;
     $approved = false;
     if ($approval_date && $approval_date !== "0000-00-00") {
         if (strtotime($approval_date) > $today_dt) {
@@ -6544,7 +6609,7 @@ function update_exception_api() {
 
     $approved_original = !empty($_POST['approved_original']);
     $approval_date = get_standard_date_from_default_format($_POST['approval_date']);
-    $approver = (ctype_digit($_POST['approver']) && get_user_by_id((int)$_POST['owner'])) ? (int)$_POST['approver'] : false;
+    $approver = (ctype_digit($_POST['approver']) && get_user_by_id((int)$_POST['approver'])) ? (int)$_POST['approver'] : false;
     $approved = false;
     if ($approval_date && $approval_date !== "0000-00-00") {
         if (strtotime($approval_date) > $today_dt) {
@@ -7145,7 +7210,8 @@ function saveDynamicSelectionsForm()
     else
     {
         $custom_display_settings = get_param("post", "columns");
-        $id = save_dynamic_selections($type, $name, $custom_display_settings);
+        $custom_selection_settings = get_param("post", "selects");
+        $id = save_dynamic_selections($type, $name, $custom_display_settings, $custom_selection_settings);
         
         // Create the data array
         $data = array("value" => $id, "name" => ($type=="private"? $name." -- ".$escaper->escapeHtml($lang['Private']) : $name) );
@@ -7320,8 +7386,8 @@ function one_click_upgrade() {
         } else {
             stream_write($lang['UpdateDatabaseUpToDate']);
         }
-        
-        $extra_upgrades = gather_extra_upgrades();
+
+        $extra_upgrades = core_gather_extra_upgrades();
         
         if (count($extra_upgrades)) {
             stream_write(_lang('UpdateInstalledExtrasOutOfDate', array('extrasToUpdate' => implode(', ', $extra_upgrades))));
@@ -7356,7 +7422,7 @@ function one_click_upgrade() {
             }
             
             if ($need_update_extras)
-                upgrade_extras($extra_upgrades);
+                core_upgrade_extras($extra_upgrades);
         
             stream_write($lang['UpdateSuccessful']);            
         } else {
@@ -7368,7 +7434,7 @@ function one_click_upgrade() {
 /****************************************
  * FUNCTION: SAVE NOTIFICATION SETTINGS *
  ****************************************/
-function notification_extra_saveSettingsAPI()
+function notification_extra_saveSettingsRunNowAPI()
 {
     global $lang, $escaper;
     // Check notification extra is enabled
@@ -7384,9 +7450,18 @@ function notification_extra_saveSettingsAPI()
         {
             // Include the file
             require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-
-            // Call the saveRiskFromQuestionnairePendingRisksAPI function
-            update_notification_config();
+            
+            // Save settings
+            if(get_param("POST", "submit", false))
+            {
+                // Call the saveRiskFromQuestionnairePendingRisksAPI function
+                update_notification_config();
+            }
+            // Run now
+            else
+            {
+                process_run_now_notification();
+            }
             
             $status_message = get_alert(true);
 
@@ -7395,4 +7470,240 @@ function notification_extra_saveSettingsAPI()
         }
     }
 }
+
+/****************************************************
+ * FUNCTION: REPORTS - HIGH RISK                    *
+ * The High Risk Report datatable's API function    *
+ ****************************************************/
+function high_risk_report_datatable() {
+
+    global $escaper;
+
+    $draw   = $escaper->escapeHtml($_POST['draw']);
+    $score_used = isset($_GET['score_used']) && $_GET['score_used'] === 'residual' ? 'residual' : 'inherent';
+
+    $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
+    $length = $_POST['length'] ? (int)$_POST['length'] : 10;
+    $orderColumnIndex = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
+    $orderColumnName = isset($_POST['columns'][$orderColumnIndex]['name']) ? $_POST['columns'][$orderColumnIndex]['name'] : null;
+    $orderDir = isset($_POST['order'][0]['dir']) && strtoupper($_POST['order'][0]['dir']) === 'ASC'? "ASC" : 'DESC';
+
+    switch ($orderColumnName) {
+        case "management_review":
+            // Sorted in PHP code
+            $sort = false;
+            break;
+
+        case "mitigation_planned":
+            $sort = "ORDER BY `rsk`.`mitigation_id` != 0 {$orderDir}, `rsk`.`id` ASC";
+            break;
+
+        case "id":
+            $sort = "ORDER BY `rsk`.`id` {$orderDir}";
+            break;
+
+        case "risk_status":
+            $sort = "ORDER BY `rsk`.`status` {$orderDir}, `rsk`.`id` ASC";
+            break;
+
+        case "subject":
+            // If the encryption extra is enabled, sort by order_by_subject field
+            if (encryption_extra()) {
+                $sort = "ORDER BY `rsk`.`order_by_subject` {$orderDir}, `rsk`.`id` ASC";
+            } else {
+                $sort = "ORDER BY `rsk`.`subject` {$orderDir}, `rsk`.`id` ASC";
+            }
+            break;
+
+        case "submission_date":
+            $sort = "ORDER BY `rsk`.`submission_date` {$orderDir}, `rsk`.`id` ASC";
+            break;
+
+        case "score":
+        default:
+            $sort = "ORDER BY `score` {$orderDir}, `rsk`.`id` ASC";
+            break;
+    }
+
+    // Open the database connection
+    $db = db_open();
+
+    // Get the high risk level
+    $stmt = $db->prepare("SELECT value FROM `risk_levels` WHERE name = 'High'");
+    $stmt->execute();
+    $array = $stmt->fetch();
+    $high = $array['value'];
+
+    // Build the query parts related to whether we have separation enabled or not
+    $separation_query_where = "";
+    $separation_query_from = "";
+    if (team_separation_extra()) {
+        // Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $separation_query_where = " AND ". get_user_teams_query("rsk");
+        $separation_query_from = "
+            LEFT JOIN `risk_to_team` rtt ON `rsk`.`id` = `rtt`.`risk_id`
+            LEFT JOIN `risk_to_additional_stakeholder` rtas ON `rsk`.`id` = `rtas`.`risk_id`
+        ";
+    }
+
+    // If we're sorting in PHP($sort = false) or all the data is requested($length=-1)
+    // then we're requesting all the data
+    $limit = $sort !== false && $length > 0 ? "LIMIT {$start}, {$length}" : "";
+
+    $filtering_where = "";
+    $filtering_having = "";
+    $select_score = "";
+
+    if ($score_used=='inherent') {
+        $select_score = "`scores`.`inherent_score` as score";
+        $filtering_where = "AND `scoring`.`calculated_risk` >= :high";
+        $filtering_having = "";
+    } else {
+        $select_score = "`scores`.`residual_score` as score";
+        $filtering_where = "";
+        $filtering_having = "HAVING `residual_score` >= :high";
+    }
+
+    // Assemble the final query
+    $sql = "
+        SELECT SQL_CALC_FOUND_ROWS
+            {$select_score},
+            `scores`.`inherent_score`,
+            `scores`.`residual_score`,
+            `latest_review`.`next_review`,
+            `rsk`.*
+        FROM (
+                SELECT
+                    `rsk`.`id` as risk_id,
+                    `scoring`.`calculated_risk` as inherent_score,
+                    ROUND(`scoring`.`calculated_risk` - (`scoring`.`calculated_risk` * GREATEST(IFNULL(`mtg`.`mitigation_percent`,0), IFNULL(MAX(`ctrl`.`mitigation_percent`), 0)) / 100), 2) AS residual_score
+                FROM `risk_scoring` scoring
+                    JOIN `risks` rsk ON `scoring`.`id` = `rsk`.`id`
+                    LEFT JOIN `mitigations` mtg ON `rsk`.`id` = `mtg`.`risk_id`
+                    LEFT JOIN `mitigation_to_controls` mtc ON `mtg`.`id` = `mtc`.`mitigation_id`
+                    LEFT JOIN `framework_controls` ctrl ON `mtc`.`control_id`=`ctrl`.`id` AND `ctrl`.`deleted`=0
+                    {$separation_query_from}
+                WHERE
+                    `rsk`.`status` != 'Closed'
+                    {$separation_query_where}
+                    {$filtering_where}
+                GROUP BY
+                    `rsk`.`id`
+                {$filtering_having}
+            ) AS scores
+            INNER JOIN `risks` rsk ON `scores`.`risk_id` = `rsk`.`id`
+            LEFT JOIN (
+                SELECT
+                    c1.risk_id,
+                    c1.next_review
+                FROM
+                    mgmt_reviews c1
+                    RIGHT JOIN (
+                        SELECT
+                            risk_id,
+                            MAX(submission_date) AS date
+                        FROM
+                            mgmt_reviews
+                        GROUP BY
+                            risk_id
+                    ) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date
+            ) latest_review ON `rsk`.`id` = latest_review.risk_id
+        {$sort}
+        {$limit};
+    ";
+
+    $stmt = $db->prepare($sql);
+
+    $stmt->bindParam(":high", $high, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Store the results in the array
+    $risks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Get the result count
+    $stmt = $db->prepare("SELECT FOUND_ROWS();");
+    $stmt->execute();
+    $rowCount = $stmt->fetchColumn();
+
+    // Close the database connection
+    db_close($db);
+
+    $risk_levels = get_risk_levels();
+    $review_levels = get_review_levels();
+
+    $next_review_date_uses = get_setting('next_review_date_uses');
+
+    // If we're ordering by the 'management_review' column
+    if ($sort === false && $orderColumnName === 'management_review') {
+        // Calculate the 'management_review' values
+        foreach($risks as &$risk) {
+            $risk_level = get_risk_level_name_from_levels($risk[$next_review_date_uses == "ResidualRisk" ? 'residual_score' : 'inherent_score'], $risk_levels);
+            $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
+
+            $risk['management_review'] = management_review($risk['id'], $risk['mgmt_review'], $next_review);
+            $risk['management_review_text'] = management_review_text_only($risk['mgmt_review'], $next_review);
+        }
+        unset($risk);
+
+        // Sorting by the management review text as the normal 'management_review' field contains html
+        usort($risks, function($a, $b) use ($orderDir){
+            // For identical management reviews we're sorting on the id, so the results' order is not changing
+            if ($a['management_review_text'] === $b['management_review_text']) {
+                return (int)$a['id'] - (int)$b['id'];
+            }
+            if($orderDir == "ASC") {
+                return strcmp($a['management_review_text'], $b['management_review_text']);
+            } else {
+                return strcmp($b['management_review_text'], $a['management_review_text']);
+            }
+        });
+
+        // If not all the results are requested, cutting a piece of it
+        if($length > 0) {
+            $risks = array_slice($risks, $start, $length);
+        }
+    }
+
+    // Assembling the response
+    $datas = array();
+    foreach($risks as $risk){
+
+        $risk['id'] = (int)$risk['id'] + 1000;
+
+        $color = get_risk_color_from_levels($risk['score'], $risk_levels);
+
+        if (!isset($risk['management_review'])) {
+            $risk_level = get_risk_level_name_from_levels($risk[$next_review_date_uses == "ResidualRisk" ? 'residual_score' : 'inherent_score'], $risk_levels);
+            $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
+            $risk['management_review'] = management_review($risk['id'], $risk['mgmt_review'], $next_review);
+        }
+
+        $data = array(
+            "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($risk['id'])."</a>",
+            $escaper->escapeHtml($risk['status']),
+            $escaper->escapeHtml(isset($risk['subject']) ? try_decrypt($risk['subject']) : ""),
+            "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['score']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>",
+            $escaper->escapeHtml(format_datetime($risk['submission_date'], "", "g:i A T")),
+            planned_mitigation($risk['id'], $risk['mitigation_id']), // mitigation plan
+            $risk['management_review'] // management review
+        );
+
+        $datas[] = $data;
+    }
+
+    $results = array(
+        "draw" => $draw,
+        "recordsTotal" => $rowCount,
+        "recordsFiltered" => $rowCount,
+        "data" => $datas
+    );
+
+    // Return a JSON response
+    echo json_encode($results);
+}
+
+
+
+
 ?>

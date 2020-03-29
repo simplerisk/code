@@ -63,29 +63,6 @@ else if (isset($_GET['status']))
 }
 else $status = 0;
 
-if (isset($_POST['affected_assets_filter']))
-{
-    $affected_assets_filter = empty($_POST['affected_assets_filter']) ? [] : $_POST['affected_assets_filter'];
-}
-else if (isset($_GET['affected_assets_filter']))
-{
-    $affected_assets_filter = empty($_GET['affected_assets_filter']) ? [] : $_GET['affected_assets_filter'];
-}
-else $affected_assets_filter = [];
-
-$processed_affected_assets_filter = [];
-
-if (!empty($affected_assets_filter)) {
-    $processed_affected_assets_filter = array('group'=>[], 'asset'=>[]);
-    foreach($affected_assets_filter as $asset_filter) {
-        if (preg_match('/^([\d]+)_(group|asset)$/', $asset_filter, $matches)) {
-            list(, $id, $type) = $matches;
-            
-            array_push($processed_affected_assets_filter[$type], (int)$id);
-        }
-    }
-}
-
 // Set the group
 if (isset($_POST['group']))
 {
@@ -109,26 +86,14 @@ else if (isset($_GET['sort']))
 else $sort = 0;
 
 // Set the Tags
-if (isset($_POST['tags_filter']))
-{
-    $tags_filter = empty($_POST['tags_filter']) ? [] : array_map('intval', $_POST['tags_filter']);
-}
-else if (isset($_GET['tags_filter']))
-{
-    $tags_filter = empty($_GET['tags_filter']) ? [] : array_map('intval', $_GET['tags_filter']);
-}
-else $tags_filter = [];
+    $tags_filter = get_param("REQUEST", "tags_filter", []);
+    if(!is_array($tags_filter)) $tags_filter = [$tags_filter];
+    $tag_ids = array_map("base64_encode", $tags_filter);
 
 // Set the locations
-if (isset($_POST['locations_filter']))
-{
-    $locations_filter = empty($_POST['locations_filter']) ? [] : array_map('intval', $_POST['locations_filter']);
-}
-else if (isset($_GET['locations_filter']))
-{
-    $locations_filter = empty($_GET['locations_filter']) ? [] : array_map('intval', $_GET['locations_filter']);
-}
-else $locations_filter = [];
+    $locations_filter = get_param("REQUEST", "locations_filter", []);
+    if(!is_array($locations_filter)) $locations_filter = [$locations_filter];
+    $location_ids = array_map("base64_encode", $locations_filter);
 
 // Names list of Risk columns
 $columns = array(
@@ -178,7 +143,7 @@ $columns = array(
 );
 
 $custom_values = [];
-
+$custom_selection_settings = "";
 if(!empty($_GET['selection']))
 {
     $selection_id = (int)$_GET['selection'];
@@ -198,6 +163,10 @@ if(!empty($_GET['selection']))
         else
         {
             $custom_display_settings = "";
+        }
+        if($selection['custom_selection_settings'])
+        {
+            $custom_selection_settings = json_decode($selection['custom_selection_settings'], true);
         }
     }
 }
@@ -233,6 +202,11 @@ if(is_array($custom_display_settings) && !isset($_POST['status'])){
     $mitigation_planned = true;
     $management_review = true;
 }
+if(is_array($custom_selection_settings)){
+    foreach($custom_selection_settings as $select=>$custom_selection_setting){
+        if(!isset($_POST[$select])) ${$select} = $custom_selection_setting;
+    }
+}
 
 // If there was not a POST
 //if (!isset($_POST['status']))
@@ -254,14 +228,14 @@ if (import_export_extra()){
     // if download request, download all risks
     if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "download")
     {
-        download_risks_by_table($status, $group, $sort, $processed_affected_assets_filter, $tags_filter, $locations_filter, NULL, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $custom_values);
+        download_risks_by_table($status, $group, $sort, NULL, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $custom_values);
     }
 
     // if group download request, download risks by the group
     if(isset($_GET['option']) && $_GET['option'] == "download-by-group")
     {
         $group_value = $_GET['group_value'];
-        download_risks_by_table($status, $group, $sort, $processed_affected_assets_filter, $tags_filter, $locations_filter, $group_value, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $custom_values);
+        download_risks_by_table($status, $group, $sort, $group_value, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $custom_values);
     }
 }
 
@@ -312,7 +286,7 @@ if (import_export_extra()){
           <div id="selections" class="span12">
             <div class="well">
                 <div id="selection-container">
-                  <?php view_get_risks_by_selections($status, $group, $sort, $affected_assets_filter, $tags_filter, $locations_filter, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $custom_values); ?>
+                  <?php view_get_risks_by_selections($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $custom_values); ?>
                 </div>
                 <div id="save-container">
                     <?php
@@ -327,31 +301,35 @@ if (import_export_extra()){
                 <button class="expand-all"><?php echo $lang['ExpandAll'] ?></button>
             </div>
             <?php
-		    // If the Import-Export Extra is installed
+            // If the Import-Export Extra is installed
             if (is_dir(realpath(__DIR__ . '/../extras/import-export')))
             {
-		        // And the Extra is activated
+                // And the Extra is activated
                 if (import_export_extra())
                 {
-            		// Include the Import-Export Extra
-            		require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
-				    // Display the download link
-				    display_download_link();
-			    }
-		    }
+                    // Include the Import-Export Extra
+                    require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+                    // Display the download link
+                    display_download_link();
+                }
+            }
             ?>
         </div>
 
         <div class="row-fluid">
           <div class="span12">
             <div id="risk-table-container">
-                <?php get_risks_by_table($status, $sort, $group, $processed_affected_assets_filter, $tags_filter, $locations_filter, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $custom_values); ?>
+                <?php get_risks_by_table($status, $sort, $group, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $custom_values); ?>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <input type="hidden" id="hidden_location_filters" value="<?php echo implode(",", $location_ids); ?>">
+  <input type="hidden" id="hidden_tag_filters" value="<?php echo implode(",", $tag_ids); ?>">
+  <input type="hidden" id="unassigned_option" value="<?php echo $escaper->escapeHtml($lang["Unassigned"]);?>">
+  <input type="hidden" id="date_format" value="<?php echo $escaper->escapeHtml(get_setting("default_date_format"));?>">
 </body>
 
 </html>

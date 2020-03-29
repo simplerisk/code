@@ -85,15 +85,16 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     $location = implode(",", get_param("POST", "location", []));
     $source = (int)get_param("POST", 'source');
     $category = (int)get_param("POST", 'category');
-    $team = get_param("POST", 'team', "") ? implode(",", get_param("POST", 'team', "")) : "";
-    $technology = get_param("POST", 'technology') ? implode(",", get_param("POST", 'technology')) : "";
+    $team = get_param("POST", 'team', []);
+    $technology = get_param("POST", 'technology', []);
     $owner = (int)get_param("POST", "owner");
     $manager = (int)get_param("POST", "manager");
     $assessment = get_param("POST", "assessment");
     $notes = get_param("POST", "notes");
     $assets_asset_groups = get_param("POST", "assets_asset_groups", []);
-    $additional_stakeholders =  get_param("POST", "additional_stakeholders", "") ? implode(",", get_param("POST", "additional_stakeholders", "")) : "";
+    $additional_stakeholders =  get_param("POST", "additional_stakeholders", []);
     $risk_tags = get_param("POST", "tags", "");
+    
     if (jira_extra()) {
         require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
         $issue_key = strtoupper(trim($_POST['jira_issue_key']));
@@ -180,7 +181,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-        create_subject_order($_SESSION['encrypted_pass']);
+//        create_subject_order($_SESSION['encrypted_pass']);
     }
 
     // Submit risk scoring
@@ -391,7 +392,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
             ?>
         </div>
         <input type="hidden" id="_delete_tab_alert" value="<?php echo $escaper->escapeHtml($lang['Are you sure you want to close the risk? All changes will be lost!']); ?>">
-        <input type="hidden" id="enable_popup" value="<?php echo get_setting('enable_popup'); ?>">
+        <input type="hidden" id="enable_popup" value="<?php echo $escaper->escapeHtml(get_setting('enable_popup')); ?>">
         <script>
             $(document).ready(function() {
                 

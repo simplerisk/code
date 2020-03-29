@@ -89,39 +89,23 @@ if (isset($_POST['add_framework']))
 }
 
 // Check if a framework was updated
-if (isset($_POST['update_framework']))
-{
-  $framework_id = (int)$_POST['framework_id'];
-  $parent       = (int)$_POST['parent'];
-  $name         = $_POST['framework_name'];
-  $descripiton  = $_POST['framework_description'];
+if (isset($_POST['update_framework'])) {
 
-  // Check if the framework name is null
-  if (isset($name) && $name == "")
-  {
-    // Display an alert
-    set_alert(true, "bad", "The framework name cannot be empty.");
-  }
-  // Otherwise
-  else
-  {
+    $framework_id = (int)$_POST['framework_id'];
+    $parent       = (int)$_POST['parent'];
+    $name         = $_POST['framework_name'];
+    $descripiton  = $_POST['framework_description'];
+
     // Check if user has a permission to modify framework
-    if(empty($_SESSION['modify_frameworks'])){
-        set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyFrameworkPermission']));
-    }
-    // Insert a new framework up to 100 chars
-    elseif(update_framework($framework_id, $name, $descripiton, $parent))
-    {
-        // Display an alert
-        set_alert(true, "good", $escaper->escapeHtml($lang['FrameworkUpdated']));
-    }
-    else{
-        // Display an alert
-        set_alert(true, "bad", $escaper->escapeHtml($lang['FrameworkNameExist']));
+    if(has_permission('modify_frameworks')){
+        if (update_framework($framework_id, $name, $descripiton, $parent)) {
+            set_alert(true, "good", $lang['FrameworkUpdated']);
+        }
+    } else {
+        set_alert(true, "bad", $lang['NoModifyFrameworkPermission']);
     }
 
-  }
-  refresh();
+    refresh();
 }
 
 // Delete if a new framework was submitted
@@ -151,11 +135,22 @@ if (isset($_POST['delete_framework']))
           // Include the ucf extra
           require_once(realpath(__DIR__ . '/../extras/ucf/index.php'));
 
-          // Uninstall the ucf framework (which will also delete it)
-          uninstall_ucf_frameworks($value);
+          // Disable the UCF framework
+          disable_ucf_framework($value);
       }
-      // Otherwise just delete the framework
-      else delete_frameworks($value);
+
+      // If the complianceforge_scf extra is enabled
+      if (complianceforge_scf_extra())
+      {
+          // Include the ucf extra
+          require_once(realpath(__DIR__ . '/../extras/complianceforgescf/index.php'));
+
+          // Disable the UCF framework
+          disable_scf_frameworks($value);
+      }
+
+      // Delete the framework
+      delete_frameworks($value);
 
       // Display an alert
       set_alert(true, "good", "An existing framework was deleted successfully.");
@@ -746,7 +741,7 @@ if (isset($_POST['update_control']))
             <div class="modal-body">
                 <div class="form-group">
                     <label for=""><?php echo $escaper->escapeHtml($lang['NewFrameworkName']); ?></label>
-                    <input type="text" required name="new_framework" id="new_framework" value="" class="form-control" autocomplete="off">
+                    <input type="text" required name="new_framework" id="new_framework" value="" class="form-control" autocomplete="off" maxlength="100">
                     <label for=""><?php echo $escaper->escapeHtml($lang['ParentFramework']); ?></label>
                     <div class="parent_frameworks_container">
                     </div>
@@ -777,7 +772,7 @@ if (isset($_POST['update_control']))
                 <input type="hidden" class="framework_id" name="framework_id" value=""> 
                 <div class="form-group">
                     <label for=""><?php echo $escaper->escapeHtml($lang['FrameworkName']); ?></label>
-                    <input type="text" required name="framework_name" value="" class="form-control" autocomplete="off">
+                    <input type="text" required name="framework_name" value="" class="form-control" autocomplete="off" maxlength="100">
                     <label for=""><?php echo $escaper->escapeHtml($lang['ParentFramework']); ?></label>
                     <div class="parent_frameworks_container">
                     </div>
@@ -826,13 +821,13 @@ if (isset($_POST['update_control']))
             <div class="modal-body">
                 <div class="form-group">
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlShortName']); ?></label>
-                    <input type="text" name="short_name" value="" class="form-control">
+                    <input type="text" name="short_name" value="" class="form-control" maxlength="100">
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlLongName']); ?></label>
-                    <input type="text" name="long_name" value="" class="form-control">
+                    <input type="text" name="long_name" value="" class="form-control" maxlength="65500">
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlDescription']); ?></label>
-                    <textarea name="description" value="" class="form-control" rows="6" style="width:100%;"></textarea>
+                    <textarea name="description" value="" class="form-control" rows="6" style="width:100%;" maxlength="65500"></textarea>
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['SupplementalGuidance']); ?></label>
                     <textarea name="supplemental_guidance" value="" class="form-control" rows="6" style="width:100%;"></textarea>
@@ -850,7 +845,7 @@ if (isset($_POST['update_control']))
                     <?php create_dropdown("control_phase", NULL, "control_phase", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlNumber']); ?></label>
-                    <input type="text" name="control_number" value="" class="form-control">
+                    <input type="text" name="control_number" value="" class="form-control" maxlength="100">
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlPriority']); ?></label>
                     <?php create_dropdown("control_priority", NULL, "control_priority", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
@@ -884,7 +879,7 @@ if (isset($_POST['update_control']))
                 <input type="hidden" class="control_id" name="control_id" value=""> 
                 <div class="form-group">
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlShortName']); ?></label>
-                    <input type="text" name="short_name" value="" class="form-control">
+                    <input type="text" name="short_name" value="" class="form-control" maxlength="100">
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlLongName']); ?></label>
                     <input type="text" name="long_name" value="" class="form-control">
@@ -908,7 +903,7 @@ if (isset($_POST['update_control']))
                     <?php create_dropdown("control_phase", NULL, "control_phase", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlNumber']); ?></label>
-                    <input type="text" name="control_number" value="" class="form-control">
+                    <input type="text" name="control_number" value="" class="form-control" maxlength="100">
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlPriority']); ?></label>
                     <?php create_dropdown("control_priority", NULL, "control_priority", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>

@@ -44,6 +44,8 @@
             header("Location: ../index.php");
             exit(0);
     }
+    // Include the language file
+    require_once(language_file());
 
     // If the language was changed
     if (isset($_POST['change_language']))
@@ -60,18 +62,16 @@
             require_once(language_file());
 
             // Display an alert
-	    set_alert(true, "good", $lang['LanguageUpdated']);
+            set_alert(true, "good", $lang['LanguageUpdated']);
         }
         else
         {
             // Display an alert
-	    set_alert(true, "bad", $lang['SelectValidLanguage']);
+            set_alert(true, "bad", $lang['SelectValidLanguage']);
             // set_alert(true, "bad", "You need to select a valid language");
         }
     }
 
-    // Include the language file
-    require_once(language_file());
 
     // Get the users information
     $user_info = get_user_by_id($_SESSION['uid']);
@@ -152,6 +152,9 @@
 
                     // Update the password
                     update_password($user, $hash);
+
+                    // Clean up other sessions of the user and roll the current session's id
+                    kill_other_sessions_of_current_user();
 
                     // Display an alert
                     set_alert(true, "good", $lang['PasswordUpdated']);

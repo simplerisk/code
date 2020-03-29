@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'परियोजना स्थितियों को अपडेट',
     'HighRiskReport'=>'उच्च जोखिम रिपोर्ट',
     'TotalOpenRisks'=>'कुल खुला जोखिम',
-    'TotalHighRisks'=>'कुल उच्च जोखिम',
-    'HighRiskPercentage'=>'उच्च जोखिम प्रतिशत',
+    'NumberOfOpenRisks'=>'कुल खुले जोखिम: {$number}',
+    'RiskNumberOfRiskLevel'=>'कुल संख्या {$display_name} जोखिम: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} जोखिम प्रतिशत: {$percentage}%',
+    'RiskScoreUsing'=>'जोखिम स्कोर का उपयोग कर:',
+    'HighRiskReport_ScoreWarning' => 'कृपया ध्यान दें, कि भले ही रिपोर्ट का उपयोग कर प्रदर्शित किया जाता है "{$score_used}"स्कोर, क्योंकि की वजह से"{$next_review_date_uses_name}"सेटिंग हम गणना कर रहे हैं"{$management_review_header}"कॉलम के मूल्यों का उपयोग कर"{$next_review_date_uses_value}"स्कोर।',
     'UpdateClassicScore'=>'क्लासिक स्कोर अद्यतन',
     'UpdateCVSSScore'=>'CVSS स्कोर अद्यतन',
     'BaseScoreMetrics'=>'स्कोर मेट्रिक्स के आधार',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'मैं बहुत ही उच्च जोखिम की समीक्षा करने के लिए चाहते हैं हर',
     'AbleToReviewVeryHighRisks'=>'बहुत ही उच्च जोखिम की समीक्षा करने में सक्षम',
     'AbleToReviewInsignificantRisks'=>'तुच्छ जोखिम की समीक्षा करने में सक्षम',
-    'TotalVeryHighRisks'=>'कुल बहुत उच्च जोखिम',
-    'VeryHighRiskPercentage'=>'बहुत ही उच्च जोखिम प्रतिशत',
     'AllTeams'=>'सभी टीमें',
     'FileUploadSettings'=>'फ़ाइल अपलोड सेटिंग्स',
     'AllowedFileTypes'=>'फ़ाइल प्रकारों की अनुमति दी',
@@ -673,10 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'एकाधिक ईमेल को अलग करने के लिए अल्पविराम का उपयोग करें ।',
     'RiskAssessmentQuestionnaire' => 'जोखिम मूल्यांकन प्रश्नावली',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\ \\ \\ \\ n
-            <p> {$username} आप निम्नलिखित जोखिम मूल्यांकन प्रश्नावली को पूरा करने के लिए कहा गया है:</p>\\
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\ \\ \\
-            <p>यह  एक स्वचालित संदेश है और प्रतिक्रियाओं पर ध्यान नहीं दिया जाएगा या अस्वीकार किया ।</p>\\
+        <html><body>
+            नमस्कार
+            <p> {$username} आपको निम्नलिखित जोखिम मूल्यांकन प्रश्नावली को पूरा करने के लिए कहा है:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>यह एक स्वचालित संदेश है और प्रतिक्रियाओं को नजरअंदाज या अस्वीकार कर दिया जाएगा।</p>
         </body></html>',
     'FilterByText' => 'पाठ के आधार पर फ़िल्टर करें',
     'SelectMitigatingControls' => 'नियंत्रण के शमन का चयन करें',
@@ -779,7 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'आपके उत्तर सफलतापूर्वक सहेजे गए थे ।',
     'QuestionnaireCompletedSuccess'=>'आपने इस प्रश्नावली को सफलतापूर्वक पूरा किया ।',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body> \\ n Hello, n \\ <p> {$conact_name} एक प्रश्नावली पूरी की, <b>{$questionnaire_name}</b></p> \\ n <p>This एक स्वचालित संदेश है और प्रतिक्रियाओं को नजरअंदाज कर दिया या खारिज कर दिया जाएगा । </p> \\
+        <html><body>
+            नमस्कार
+            <p> {$conact_name} एक प्रश्नावली पूरी की, <b>{$questionnaire_name}</b></p>
+            <p>यह एक स्वचालित संदेश है और प्रतिक्रियाओं को नजरअंदाज या अस्वीकार कर दिया जाएगा।</p>
         </body></html>',
     'QuestionnaireResults'=>'प्रश्नावली परिणाम',
     'DateSent'=>'भेजे गए दिनांक',
@@ -792,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'एक नया ढांचा सफलतापूर्वक जोड़ा गया ।',
     'FrameworkUpdated'=>'एक ढांचा सफलतापूर्वक अद्यतन किया गया ।',
     'FrameworkNameExist'=>'framework नाम पहले से मौजूद है ।',
+    'FrameworkNameCantBeEmpty'=>'फ्रेमवर्क नाम खाली नहीं हो सकता ।',
+    'FrameworkCantBeItsOwnParent'=>'फ्रेमवर्क अपने माता पिता नहीं हो सकता ।',
+    'FrameworkParentUpdated'=>'फ्रेमवर्क के माता-पिता सफलतापूर्वक अपडेट किए गए।',
     'AttachmentFiles'=>'अनुलग्नक फ़ाइलें',
     'QuestionnaireFiles'=>'प्रश्नावली फ़ाइलें',
     'ContactEmailAlreadyInUse'=>'संपर्क ईमेल पहले से ही उपयोग में है ।',
@@ -1142,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'एसेट सफलतापूर्वक अद्यतन किया गया था ।',
     'ThereWasAProblemUpdatingTheAsset' => 'संपत्ति को अद्यतन करने में कोई समस्या थी ।',
     'ImportAssetAddSucceeded' => 'जोड़ा{$verified_or_unverified}"संपत्ति का नाम"{$asset_name}"के साथ आईपी"{$asset_ip}"और मूल्य"{$asset_value}".',
-    'ImportAssetAddFailed' => 'जोड़ने में विफल रहा "{$verified_or_unverified"संपत्ति का नाम"{$asset_name}"के साथ आईपी"{$asset_ip}"और मूल्य"{$asset_value}".',
+    'ImportAssetAddFailed' => 'जोड़ने में विफल रहा "{$verified_or_unverified}"परिसंपत्ति नाम"{$asset_name}"आईपी के साथ"{$asset_ip}"और मूल्य"{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'संपत्ति के नाम पर कोई कार्रवाई आवश्यक नहीं है "{$asset_name}"के रूप में यह पहले से ही डाटाबेस में है ।',
     'ImportAssetUpdateSucceeded' => 'अद्यतन{$verified_or_unverified}"संपत्ति का नाम"{$asset_name}"के साथ आईपी"{$asset_ip}"और मूल्य"{$asset_value}".',
     'ImportAssetUpdateFailed' => 'अद्यतन करने में विफल रहा "{$verified_or_unverified}"संपत्ति का नाम"{$asset_name}"के साथ आईपी"{$asset_ip}"और मूल्य"{$asset_value}".',
@@ -1394,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'परीक्षण अद्यतन करें',
     'ControlEditHeader' => 'नियंत्रण अद्यतन करें',
     'FrameworkEditHeader' => 'फ़्रेमवर्क अद्यतन करें',
+    'UserTeamUpdateAuditLog' => 'उपयोगकर्ता "{$user}"उपयोगकर्ता की अद्यतन टीमों"{$username}"से"{$teams_from}"करने के लिए"{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'उपयोगकर्ता "{$user}" की अद्यतन टीमों {$type} (आईडी:{$id}) से "{$teams_from}" करने के लिए "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'निकाल दिया गया "{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'जोड़ा गया "{$teams_added}"',
+    'ItemUpdateAuditLog' => 'उपयोगकर्ता "{$user}"अद्यतन आइटम (प्रकार:"{$type}टीम के ") "{$team}"से"{$items_from}"करने के लिए"{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'हटाया "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'जोड़ा गया "{$items_added}"',
     'TeamType_test' => 'परीक्षा',
     'TeamType_audit' => 'ऑडिट',
     'TestCreatedAuditLogMessage' => 'परीक्षण "{$test_name}"(आईडी: {$test_id}) उपयोगकर्ता द्वारा बनाया गया था "{$user}".',
@@ -1502,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'प्रश्नावली परिणाम सफलतापूर्वक अनुमोदित.',
     'QuestionnaireResultRejectedSuccessfully' => 'प्रश्नावली परिणाम सफलतापूर्वक अस्वीकृत कर दिया. सूचना ईमेल संपर्क करने के लिए भेजा जाता है.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            नमस्कार\\n
-            <p> {$username} निम्न जोखिम मूल्यांकन प्रश्नावली का पुन: मूल्यांकन करने के लिए कहा है:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>टिप्पणियाँ: {$reject_comment}</p>\\n
-            <p>यह एक स्वचालित संदेश है और प्रतिसादों पर ध्यान नहीं दिया जाएगा या अस्वीकार कर दिया जाएगा.</p>\\n
+        <html><body>
+            नमस्कार
+            <p> {$username} आपको निम्नलिखित जोखिम मूल्यांकन प्रश्नावली का फिर से मूल्यांकन करने के लिए कहा है:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>टिप्पणियाँ: {$reject_comment}</p>
+            <p>यह एक स्वचालित संदेश है और प्रतिक्रियाओं को नजरअंदाज या अस्वीकार कर दिया जाएगा।</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'प्रश्नावली "${questionnaire_name}"(संपर्क करने के लिए भेजा "{$contact_name}" पर "{$date}") परिणाम उपयोगकर्ता द्वारा अनुमोदित किया गया था "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'प्रश्नावली "${questionnaire_name}" परिणाम अस्वीकार कर दिया गया था और संपर्क करने के लिए वापस भेज दिया गया "${contact_name}" उपयोगकर्ता द्वारा पुन: मूल्यांकन के लिए "${user_name}" टिप्पणी के साथ "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'प्रश्नावली "{$questionnaire_name}"(संपर्क करने के लिए भेजा"{$contact_name}"पर"{$date}") परिणाम उपयोगकर्ता द्वारा अनुमोदित किया गया था "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'प्रश्नावली "{$questionnaire_name}"परिणाम अस्वीकार कर दिया गया था और संपर्क करने के लिए वापस भेज दिया"{$contact_name}"उपयोगकर्ता द्वारा पुनर्मूल्यांकन के लिए"{$user_name}"टिप्पणी के साथ"{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'पिछले आकलन से जवाब के साथ पूर्व आबादी?',
-    'QuestionnaireResultApprovedAuditLog' => 'प्रश्नावली "${questionnaire_name}"(संपर्क करने के लिए भेजा"{$contact_name}"पर"{$date}") परिणाम उपयोगकर्ता द्वारा अनुमोदित किया गया था "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'प्रश्नावली "${questionnaire_name}"परिणाम अस्वीकार कर दिया गया था और संपर्क करने के लिए वापस भेज दिया"${contact_name}"उपयोगकर्ता द्वारा पुनर्मूल्यांकन के लिए"${user_name}"टिप्पणी के साथ"{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'प्रश्नावली "{$questionnaire_name}"(संपर्क करने के लिए भेजा"{$contact_name}"पर"{$date}") परिणाम उपयोगकर्ता द्वारा अनुमोदित किया गया था "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'प्रश्नावली "{$questionnaire_name}"परिणाम अस्वीकार कर दिया गया था और संपर्क करने के लिए वापस भेज दिया"{$contact_name}"उपयोगकर्ता द्वारा पुनर्मूल्यांकन के लिए"{$user_name}"टिप्पणी के साथ"{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'उपयोगकर्ता "{$user_name}" प्रश्नावली के लिए एक टिप्पणी जोड़ा "{$questionnaire_name}" (संपर्क करने के लिए भेजा गया "{$contact_name}" पर "{$date}") परिणाम.',
     'QuestionnaireSentAuditLog' => 'प्रश्नावली "{$questionnaire_name}" संपर्क करने के लिए भेजा गया था "{$contact_name}" उपयोगकर्ता द्वारा "{$user_name}".',
     'PendingRiskCreationAuditLog' => 'प्रश्नावली "{$questionnaire_name}"के पूरा होने के परिणामस्वरूप लंबित जोखिम पैदा करने में "{$subject}".',
-    'PendingRiskAddAuditLog' => 'लंबित जोखिम "{$subject}" प्रश्नावली का "${questionnaire_name}"(संपर्क करने के लिए भेजा "{$contact_name}" पर "{$date}") जोखिम के रूप में जोड़ा गया था (आईडी: {$risk_id}) उपयोगकर्ता द्वारा "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'लंबित जोखिम "{$subject}" प्रश्नावली का "${questionnaire_name}"(संपर्क करने के लिए भेजा "{$contact_name}" पर "{$date}") उपयोगकर्ता द्वारा हटा दिया गया था "${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'प्रश्नावली के लंबित जोखिम "${questionnaire_name}"(संपर्क करने के लिए भेजा "{$contact_name}" पर "{$date}") उपयोगकर्ता द्वारा हटा दिया गया था "${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'प्रश्नावली "{$questionnaire_name}" संपर्क द्वारा पूरा किया गया था "${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'प्रश्नावली "{$questionnaire_name}" संपर्क द्वारा मसौदा के रूप में सहेजा गया था "${contact_name}".',
+    'PendingRiskAddAuditLog' => 'लंबित जोखिम "{$subject}प्रश्नावली की "{$questionnaire_name}"(संपर्क करने के लिए भेजा"{$contact_name}"पर"{$date}") जोखिम के रूप में जोड़ा गया था (आईडी: {$risk_id}) उपयोगकर्ता द्वारा "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'लंबित जोखिम "{$subject}प्रश्नावली की "{$questionnaire_name}"(संपर्क करने के लिए भेजा"{$contact_name}"पर"{$date}") उपयोगकर्ता द्वारा हटा दिया गया था "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'प्रश्नावली के लंबित जोखिम "{$questionnaire_name}"(संपर्क करने के लिए भेजा"{$contact_name}"पर"{$date}") उपयोगकर्ता द्वारा हटा दिए गए थे "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'प्रश्नावली "{$questionnaire_name}"संपर्क से पूरा किया गया था"{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'प्रश्नावली "{$questionnaire_name}"संपर्क द्वारा मसौदे के रूप में बचाया गया था"{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'प्रश्नावली परिणाम लेखा परीक्षा ट्रेल रिपोर्ट',
     'SubTemplate' => 'उप टेम्पलेट',
     'MitigationAccepted' => 'शमन स्वीकृत',
@@ -1643,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'सक्रिय ऑडिट देखें',
     'ViewPastAudits'=>'पिछले ऑडिट देखें',
     'Uninstall' => 'रद्द',
+    'SimpleriskUsers' => 'सरल जोखिम वाले उपयोगकर्ता',
+    'QuestionnaireCompletedAuditLogByUser' => 'प्रश्नावली "{$questionnaire_name}"उपयोगकर्ता द्वारा पूरा किया गया था"{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'प्रश्नावली "{$questionnaire_name}"उपयोगकर्ता द्वारा मसौदे के रूप में बचाया गया था"{$contact_name}".',
+    'Internal' => 'आंतरिक',
+    'QuestionType' => 'प्रश्न प्रकार',
+    'MultipleChoice' => 'मल्टीपल चॉइस',
+    'FillInTheBlank' => 'खाली में भरें',
+    'Proxy' => 'प्रॉक्सी',
+    'ProxyWebRequests' => 'प्रॉक्सी वेब अनुरोध',
+    'VerifySSLCertificate' => 'एसएसएल प्रमाण पत्र सत्यापित करें',
+    'ProxyHostname' => 'प्रॉक्सी होस्टनाम/',
+    'ProxyPort' => 'प्रॉक्सी पोर्ट',
+    'AuthenticatedProxy' => 'प्रमाणित प्रॉक्सी',
+    'ProxyUsername' => 'प्रॉक्सी उपयोगकर्ता नाम',
+    'ProxyPassword' => 'प्रॉक्सी पासवर्ड',
+    'SimpleRiskExtras' => 'सरल जोखिम एक्स्ट्रा कलाकार',
+    'ColumnSelections' => 'कॉलम चयन',
+    'GroupAndFilteringSelections' => 'समूह और फ़िल्टरिंग चयन',
+    'Hyperlink' => 'हाइपरलिंक',
+    'URL' => 'Url',
+    'AssetTeams'=>'एसेट टीम (एस)',
+    'AssetSiteLocation'=>'एसेट साइट/स्थान',
+    'ActivatingSCFMessage' => 'अनुपालन फोर्ज एससीएफ फ्रेमवर्क स्थापित करना। इसे पूरा होने में कई मिनट लग सकते हैं।',
+    'DeactivatingSCFMessage' => 'अनुपालन फोर्ज एससीएफ फ्रेमवर्क को अनइंस्टॉल करना।',
+    'UpdatingSCFMessage' => 'अनुपालन फोर्ज एससीएफ फ्रेमवर्क को अपडेट करना। इसे पूरा होने में कई मिनट लग सकते हैं।',
+    'Processing' => 'प्रसंस्करण...',
+    'AlphabeticalOrder'=>'वर्णानुक्रम',
     '' => ''
 );
 

@@ -255,8 +255,11 @@ $lang = array(
     'UpdateProjectStatuses'=>'Update Project Statuses',
     'HighRiskReport'=>'High Risk Report',
     'TotalOpenRisks'=>'Total Open Risks',
-    'TotalHighRisks'=>'Total High Risks',
-    'HighRiskPercentage'=>'High Risk Percentage',
+    'NumberOfOpenRisks'=>'Total Open Risks: {$number}',
+    'RiskNumberOfRiskLevel'=>'Total number of {$display_name} Risks: {$number}',
+    'RiskPercentageOfRiskLevel'=>'{$display_name} Risk Percentage: {$percentage}%',
+    'RiskScoreUsing'=>'Risk Score Using:',
+    'HighRiskReport_ScoreWarning' => 'Please note, that even though the report is displayed using the "{$score_used}" scores, because of the "{$next_review_date_uses_name}" setting we\'re calculating the "{$management_review_header}" column\'s values using the "{$next_review_date_uses_value}" scores.',
     'UpdateClassicScore'=>'Update Classic Score',
     'UpdateCVSSScore'=>'Update CVSS Score',
     'BaseScoreMetrics'=>'Base Score Metrics',
@@ -365,8 +368,6 @@ $lang = array(
     'IWantToReviewVeryHighRiskEvery'=> 'I want to review VERY HIGH risk every',
     'AbleToReviewVeryHighRisks'=>'Able to Review Very High Risks',
     'AbleToReviewInsignificantRisks'=>'Able to Review Insignificant Risks',
-    'TotalVeryHighRisks'=>'Total Very High Risks',
-    'VeryHighRiskPercentage'=>'Very High Risk Percentage',
     'AllTeams'=>'All Teams',
     'FileUploadSettings'=>'File Upload Settings',
     'AllowedFileTypes'=>'Allowed File Types',
@@ -673,11 +674,11 @@ $lang = array(
     'UseCommasToSeperateMultipleEmails' => 'Use commas to seperate multiple emails.',
     'RiskAssessmentQuestionnaire' => 'Risk Assessment Questionnaire',
     'EmailTemplateSendingAssessment' => '
-        <html><body>\\n
-            Hello,\\n
-            <p> {$username} has asked you to complete the following risk assessment questionnaire:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>This is an automated message and responses will be ignored or rejected.</p>\\n
+        <html><body>
+            Hello,
+            <p> {$username} has asked you to complete the following risk assessment questionnaire:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>This is an automated message and responses will be ignored or rejected.</p>
         </body></html>',
     'FilterByText' => 'Filter by Text',
     'SelectMitigatingControls' => 'Select Mitigating Control(s)',
@@ -780,10 +781,10 @@ $lang = array(
     'QuestionnaireDraftSuccess'=>'Your answers were successfully saved.',
     'QuestionnaireCompletedSuccess'=>'You completed this questionnaire successfully.',
     'EmailTemplateCompleteQuestionnaire' => '
-        <html><body>\\n
-            Hello,\\n
-            <p> {$conact_name} completed a questionnaire, <b>{$questionnaire_name}</b></p>\\n
-            <p>This is an automated message and responses will be ignored or rejected.</p>\\n
+        <html><body>
+            Hello,
+            <p> {$conact_name} completed a questionnaire, <b>{$questionnaire_name}</b></p>
+            <p>This is an automated message and responses will be ignored or rejected.</p>
         </body></html>',
     'QuestionnaireResults'=>'Questionnaire Results',
     'DateSent'=>'Date Sent',
@@ -796,6 +797,9 @@ $lang = array(
     'FrameworkAdded'=>'A new framework was added successfully.',
     'FrameworkUpdated'=>'A framework was updated successfully.',
     'FrameworkNameExist'=>'The framework name already exists.',
+    'FrameworkNameCantBeEmpty'=>'The framework name can\'t be empty.',
+    'FrameworkCantBeItsOwnParent'=>'The framework can\'t be its own parent.',
+    'FrameworkParentUpdated'=>'The framework\'s parent successfully updated.',
     'AttachmentFiles'=>'Attachment Files',
     'QuestionnaireFiles'=>'Questionnaire Files',
     'ContactEmailAlreadyInUse'=>'The contact email is already in use.',
@@ -1146,7 +1150,7 @@ $lang = array(
     'AssetWasUpdatedSuccessfully' => 'Asset was updated successfully.',
     'ThereWasAProblemUpdatingTheAsset' => 'There was a problem updating the asset.',
     'ImportAssetAddSucceeded' => 'Added "{$verified_or_unverified}" asset named "{$asset_name}" with IP "{$asset_ip}" and value "{$asset_value}".',
-    'ImportAssetAddFailed' => 'Failed to add "{$verified_or_unverified" asset named "{$asset_name}" with IP "{$asset_ip}" and value "{$asset_value}".',
+    'ImportAssetAddFailed' => 'Failed to add "{$verified_or_unverified}" asset named "{$asset_name}" with IP "{$asset_ip}" and value "{$asset_value}".',
     'NoOperationRequiredOnAsset' => 'No operation required on asset named "{$asset_name}" as it\'s already in the database.',
     'ImportAssetUpdateSucceeded' => 'Updated "{$verified_or_unverified}" asset named "{$asset_name}" with IP "{$asset_ip}" and value "{$asset_value}".',
     'ImportAssetUpdateFailed' => 'Failed to update "{$verified_or_unverified}" asset named "{$asset_name}" with IP "{$asset_ip}" and value "{$asset_value}".',
@@ -1398,9 +1402,13 @@ $lang = array(
     'TestEditHeader' => 'Update Test',
     'ControlEditHeader' => 'Update Control',
     'FrameworkEditHeader' => 'Update Framework',
+    'UserTeamUpdateAuditLog' => 'User "{$user}" updated teams of user "{$username}" from "{$teams_from}" to "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLog' => 'User "{$user}" updated teams of {$type} (ID:{$id}) from "{$teams_from}" to "{$teams_to}" ({$team_changes}).',
     'TeamUpdateAuditLogRemoved' => 'Removed "{$teams_removed}"',
     'TeamUpdateAuditLogAdded' => 'Added "{$teams_added}"',
+    'ItemUpdateAuditLog' => 'User "{$user}" updated items (type:"{$type}") of team "{$team}" from "{$items_from}" to "{$items_to}" ({$item_changes}).',
+    'ItemUpdateAuditLogRemoved' => 'Removed "{$items_removed}"',
+    'ItemUpdateAuditLogAdded' => 'Added "{$items_added}"',
     'TeamType_test' => 'Test',
     'TeamType_audit' => 'Audit',
     'TestCreatedAuditLogMessage' => 'Test "{$test_name}"(ID: {$test_id}) was created by user "{$user}".',
@@ -1506,26 +1514,26 @@ $lang = array(
     'QuestionnaireResultApprovedSuccessfully' => 'Questionnaire result successfully approved.',
     'QuestionnaireResultRejectedSuccessfully' => 'Questionnaire result successfully rejected. Notification email is sent to the contact.',
     'EmailTemplateRejectedQuestionnaireResult' => '
-        <html><body>\\n
-            Hello,\\n
-            <p> {$username} has asked you to re-evaluate the following risk assessment questionnaire:</p>\\n
-            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>\\n
-            <p>Comments: {$reject_comment}</p>\\n
-            <p>This is an automated message and responses will be ignored or rejected.</p>\\n
+        <html><body>
+            Hello,
+            <p> {$username} has asked you to re-evaluate the following risk assessment questionnaire:</p>
+            <p><a href="{$assessment_link}"> {$assessment_name} </a></p>
+            <p>Comments: {$reject_comment}</p>
+            <p>This is an automated message and responses will be ignored or rejected.</p>
         </body></html>',
-    'QuestionnaireResultApprovedAuditLog' => 'Questionnaire "${questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") result was approved by user "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Questionnaire "${questionnaire_name}" result was rejected and sent back to contact "${contact_name}" for re-evaluation by user "${user_name}" with comment "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Questionnaire "{$questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") result was approved by user "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Questionnaire "{$questionnaire_name}" result was rejected and sent back to contact "{$contact_name}" for re-evaluation by user "{$user_name}" with comment "{$reject_comment}".',
     'PrePopulateWithAnswersFromLastAssessment' => 'Pre-populate with answers from last assessment?',
-    'QuestionnaireResultApprovedAuditLog' => 'Questionnaire "${questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") result was approved by user "${user_name}".',
-    'QuestionnaireResultRejectedAuditLog' => 'Questionnaire "${questionnaire_name}" result was rejected and sent back to contact "${contact_name}" for re-evaluation by user "${user_name}" with comment "{$reject_comment}".',
+    'QuestionnaireResultApprovedAuditLog' => 'Questionnaire "{$questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") result was approved by user "{$user_name}".',
+    'QuestionnaireResultRejectedAuditLog' => 'Questionnaire "{$questionnaire_name}" result was rejected and sent back to contact "{$contact_name}" for re-evaluation by user "{$user_name}" with comment "{$reject_comment}".',
     'QuestionnaireResultCommentAuditLog' => 'User "{$user_name}" added a comment for questionnaire "{$questionnaire_name}" (sent to contact "{$contact_name}" on "{$date}") result.',
     'QuestionnaireSentAuditLog' => 'Questionnaire "{$questionnaire_name}" was sent to contact "{$contact_name}" by user "{$user_name}".',
     'PendingRiskCreationAuditLog' => 'Questionnaire "{$questionnaire_name}"\'s completion resulted in creating pending risk "{$subject}".',
-    'PendingRiskAddAuditLog' => 'Pending risk "{$subject}" of questionnaire "${questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") was added as Risk(ID: {$risk_id}) by user "${user_name}".',
-    'PendingRiskDeleteAuditLog' => 'Pending risk "{$subject}" of questionnaire "${questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") was deleted by user "${user_name}".',
-    'PendingRiskDeleteAllAuditLog' => 'Pending risks of questionnaire "${questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") were deleted by user "${user_name}".',
-    'QuestionnaireCompletedAuditLog' => 'Questionnaire "{$questionnaire_name}" was completed by contact "${contact_name}".',
-    'QuestionnaireDraftAuditLog' => 'Questionnaire "{$questionnaire_name}" was saved as draft by contact "${contact_name}".',
+    'PendingRiskAddAuditLog' => 'Pending risk "{$subject}" of questionnaire "{$questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") was added as Risk(ID: {$risk_id}) by user "{$user_name}".',
+    'PendingRiskDeleteAuditLog' => 'Pending risk "{$subject}" of questionnaire "{$questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") was deleted by user "{$user_name}".',
+    'PendingRiskDeleteAllAuditLog' => 'Pending risks of questionnaire "{$questionnaire_name}"(sent to contact "{$contact_name}" on "{$date}") were deleted by user "{$user_name}".',
+    'QuestionnaireCompletedAuditLog' => 'Questionnaire "{$questionnaire_name}" was completed by contact "{$contact_name}".',
+    'QuestionnaireDraftAuditLog' => 'Questionnaire "{$questionnaire_name}" was saved as draft by contact "{$contact_name}".',
     'QuestionnaireResultAuditTrailReport' => 'Questionnaire Result Audit Trail Report',
     'SubTemplate' => 'Sub Template',
     'MitigationAccepted' => 'Mitigation Accepted',
@@ -1647,6 +1655,33 @@ $lang = array(
     'ViewActiveAudits'=>'View Active Audits',
     'ViewPastAudits'=>'View Past Audits',
     'Uninstall' => 'Uninstall',
+    'SimpleriskUsers' => 'Simplerisk Users',
+    'QuestionnaireCompletedAuditLogByUser' => 'Questionnaire "{$questionnaire_name}" was completed by user "{$contact_name}".',
+    'QuestionnaireDraftAuditLogByUser' => 'Questionnaire "{$questionnaire_name}" was saved as draft by user "{$contact_name}".',
+    'Internal' => 'Internal',
+    'QuestionType' => 'Question Type',
+    'MultipleChoice' => 'Multiple Choice',
+    'FillInTheBlank' => 'Fill in the Blank',
+    'Proxy' => 'Proxy',
+    'ProxyWebRequests' => 'Proxy Web Requests',
+    'VerifySSLCertificate' => 'Verify SSL Certificate',
+    'ProxyHostname' => 'Proxy Hostname / IP',
+    'ProxyPort' => 'Proxy Port',
+    'AuthenticatedProxy' => 'Authenticated Proxy',
+    'ProxyUsername' => 'Proxy Username',
+    'ProxyPassword' => 'Proxy Password',
+    'SimpleRiskExtras' => 'SimpleRisk Extras',
+    'ColumnSelections' => 'Column Selections',
+    'GroupAndFilteringSelections' => 'Group and Filtering Selections',
+    'Hyperlink' => 'Hyperlink',
+    'URL' => 'URL',
+    'AssetTeams'=>'Asset Team(s)',
+    'AssetSiteLocation'=>'Asset Site/Location',
+    'ActivatingSCFMessage' => 'Installing the ComplianceForge SCF framework. This can take several minutes to complete.',
+    'DeactivatingSCFMessage' => 'Uninstalling the ComplianceForge SCF framework.',
+    'UpdatingSCFMessage' => 'Updating the ComplianceForge SCF framework. This can take several minutes to complete.',
+    'Processing' => 'Processing...',
+    'AlphabeticalOrder'=>'Alphabetical Order',
     '' => ''
 );
 
