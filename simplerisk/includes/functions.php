@@ -7480,9 +7480,10 @@ function planned_mitigation($risk_id, $mitigation_id)
  *******************************/
 function get_value_by_name($table, $name, $return_name = false)
 {
+    $table_key = $table."_get_value_by_name";
     $value = false;
-    if(isset($GLOBALS[$table])){
-        foreach($GLOBALS[$table] as $row){
+    if(isset($GLOBALS[$table_key])){
+        foreach($GLOBALS[$table_key] as $row){
             if(strtolower($row['name']) == strtolower($name)){
                 $value = isset($row['value']) ? $row['value'] : $row['id'];
                 break;
@@ -7490,7 +7491,7 @@ function get_value_by_name($table, $name, $return_name = false)
         }
     }
 
-    if(!$value || !isset($GLOBALS[$table])){
+    if(!$value || !isset($GLOBALS[$table_key])){
         // Open the database connection
         $db = db_open();
 
@@ -7499,18 +7500,19 @@ function get_value_by_name($table, $name, $return_name = false)
         $stmt->execute();
 
         // Store the list in the array
-        $GLOBALS[$table] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $GLOBALS[$table_key] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
 
         // Close the database connection
         db_close($db);
 
         if($table == 'frameworks'){
-            foreach($GLOBALS[$table] as &$row){
+            foreach($GLOBALS[$table_key] as &$row){
                 $row['name'] = try_decrypt($row['name']);
             }
         }
 
-        foreach($GLOBALS[$table] as &$row){
+        foreach($GLOBALS[$table_key] as &$row){
             if(strtolower($row['name']) == strtolower($name)){
                 $value = isset($row['value']) ? $row['value'] : $row['id'];
                 break;
@@ -10273,7 +10275,7 @@ function get_base_url()
             // Set the current URL
             $base_url = ($isHTTPS ? "https://" : "http://") . $_SERVER['SERVER_NAME'] . $port;
 
-            $dir_path = realpath(dirname(__FILE__,2));
+            $dir_path = realpath(dirname(dirname(__FILE__)));
             $document_root = realpath($_SERVER["DOCUMENT_ROOT"]);
             $app_root = str_replace($document_root,"",$dir_path);
             $app_root = str_replace(DIRECTORY_SEPARATOR ,"/",$app_root);
@@ -15079,11 +15081,11 @@ function get_encoded_request_uri()
 function get_request_uri()
 {
     //$requested_uri = $_SERVER["REQUEST_URI"];
-	$dir_path = realpath(dirname(__FILE__,2));
-	$file_name = realpath($_SERVER["SCRIPT_FILENAME"]);
-	$requested_uri = str_replace($dir_path,"",$file_name);
-	$requested_uri = str_replace(DIRECTORY_SEPARATOR ,"/",$requested_uri);
-	return $requested_uri;
+    $dir_path = realpath(dirname(dirname(__FILE__)));
+    $file_name = realpath($_SERVER["SCRIPT_FILENAME"]);
+    $requested_uri = str_replace($dir_path,"",$file_name);
+    $requested_uri = str_replace(DIRECTORY_SEPARATOR ,"/",$requested_uri);
+    return $requested_uri;
 }
 
 /*************************************

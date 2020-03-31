@@ -2264,6 +2264,7 @@ function get_group_name_for_dynamic_risk($group, $sort_name)
  *********************************************/
 function get_group_query_for_dynamic_risk($group, &$group_value_from_db, $rename_alias="t1.")
 {
+    global $lang, $escaper;
     list($group_name, $order_query) = get_group_name_for_dynamic_risk($group, "");
 
     if($group_name == "none")
@@ -2288,7 +2289,8 @@ function get_group_query_for_dynamic_risk($group, &$group_value_from_db, $rename
     }
     elseif(in_array($group_name, ["location", "team", "technology"]))
     {
-        $group_query .= " FIND_IN_SET(:group_value, {$rename_alias}{$group_name}) ";
+        $field_name = $group_name."_values";
+        $group_query = " ( FIND_IN_SET(:group_value, {$rename_alias}{$field_name}) OR (:group_value = '' AND {$rename_alias}{$field_name} IS NULL) ) ";
     }
     else
     {
@@ -2320,10 +2322,6 @@ function get_risks_by_table($status, $sort, $group, $column_id=true, $column_sta
     global $escaper;
     
     $rowCount = 0;
-
-
-    // Set the current group to empty
-    $current_group = "";
     
     // Get group name from $group
     list($group_name, $order_query) = get_group_name_for_dynamic_risk($group, "");
@@ -2378,55 +2376,7 @@ function get_risks_by_table($status, $sort, $group, $column_id=true, $column_sta
         // For each risk in the risks array
         foreach ($risks as $risk)
         {
-    //        $risk_id = (int)$risk['id'];
-    //        $subject = try_decrypt($risk['subject']);
-    //        $reference_id = $risk['reference_id'];
-    //        $control_number = $risk['control_number'];
-    //        $submission_date = $risk['submission_date'];
-    //        $last_update = $risk['last_update'];
-    //        $review_date = $risk['review_date'];
-    //        $calculated_risk = (float)$risk['calculated_risk'];
-    //        $residual_risk = (float)$risk['residual_risk'];
-    //        $color = get_risk_color($risk['calculated_risk']);
-    //        $residual_risk_color = get_risk_color($risk['residual_risk']);
-    //        $residual_risk_level = get_risk_level_name($risk['residual_risk']);
-    //        $submitted_by = $risk['submitted_by'];
-    //        $mitigation_id = $risk['mitigation_id'];
-    //        $mgmt_review = $risk['mgmt_review'];
-    //        $days_open = dayssince($risk['submission_date']);
-    //        $risk_tags = $risk['risk_tags'];
-    //
-    //        // If next_review_date_uses setting is Residual Risk.
-    //        if(get_setting('next_review_date_uses') == "ResidualRisk")
-    //        {
-    //            $next_review_date = next_review($residual_risk_level, $risk_id, $risk['next_review'], false);
-    //            $next_review_date_html = next_review($residual_risk_level, $risk_id, $risk['next_review']);
-    //        }
-    //        // If next_review_date_uses setting is Inherent Risk.
-    //        else
-    //        {
-    //            $next_review_date = next_review($risk_level, $risk_id, $risk['next_review'], false);
-    //            $next_review_date_html = next_review($risk_level, $risk_id, $risk['next_review']);
-    //        }
-    //
-    //        $affected_assets = $risk['affected_assets'];
-    //        $risk_assessment = try_decrypt($risk['risk_assessment']);
-    //        $additional_notes = try_decrypt($risk['additional_notes']);
-    //        $current_solution = try_decrypt($risk['current_solution']);
-    //        $security_recommendations = try_decrypt($risk['security_recommendations']);
-    //        $security_requirements = try_decrypt($risk['security_requirements']);
-    //        $planning_strategy = $risk['planning_strategy'];
-    //        $planning_date = format_date($risk['planning_date']);
-    //        $mitigation_effort = $risk['mitigation_effort'];
-    //        $mitigation_min_cost = $risk['mitigation_min_cost'];
-    //        $mitigation_max_cost = $risk['mitigation_max_cost'];
-    //        //$mitigation_cost = "$" . $mitigation_min_cost . " to $" . $mitigation_max_cost;
-    //        $mitigation_cost = $risk['mitigation_min_cost'];
-    //        $mitigation_owner = $risk['mitigation_owner'];
-    //        $mitigation_team = $risk['mitigation_team'];
-    //        $mitigation_date = format_date($risk['mitigation_date']);
 
-            
             // We only need these for grouping, it's a waste of time to calculate the rest.
             // In case you add a new grouping add to this list
             // so the $group_value = ${$group_name}; expression can get its value        
@@ -2456,101 +2406,120 @@ function get_risks_by_table($status, $sort, $group, $column_id=true, $column_sta
             // If the group name is not none
             if ($group_name != "none")
             {
-                $group_value = ${$group_name};
+                $initial_group_value = trim(${$group_name});
                 
-                switch($group_name){
-                    case "risk_level":
-                        $group_value_from_db = $risk['calculated_risk'];
-                    break;
-                    case "month_submitted":
-                        $group_value_from_db = $risk['submission_date'];
-                    break;
-                    default:
-                        $group_value_from_db = $risk[$group_name];
-                    break;
-                }
-                
-                // If the selected group value is empty
-                if ($group_value == "")
+                // Check comma splitted group
+                if($group_name == "team" || $group_name == "technology")
                 {
-                    // Current group is Unassigned
-                    $group_value = $lang['Unassigned'];
+                    if($initial_group_value)
+                    {
+                        $group_values_including_empty = array_map("trim", explode(",", $initial_group_value));
+                        $group_values = [];
+                        foreach($group_values_including_empty as $val){
+                            // Remove empty values from group_values
+                            if($val) $group_values[] = $val;
+                        }
+                    }
+                    else
+                    {
+                        $group_values = [""];
+                    }
+                }
+                else
+                {
+                    $group_values = [$initial_group_value];
                 }
 
-                // If the group is not the current group
-                if ($group_value != $current_group && !in_array($group_value, $displayed_group_names))
+                foreach($group_values as $group_value)
                 {
-                    // If this is not the first group
-                    if ($current_group != "")
+                    switch($group_name){
+                        case "risk_level":
+                            $group_value_from_db = $risk['calculated_risk'];
+                        break;
+                        case "month_submitted":
+                            $group_value_from_db = $risk['submission_date'];
+                        break;
+                        // Comma splitted group
+                        case "team";
+                        case "technology";
+                            $group_value_from_db = get_value_by_name($group_name, $group_value);
+                        break;
+                        default:
+                            $group_value_from_db = $risk[$group_name];
+                        break;
+                    }
+                    
+                    
+                    // If the selected group value is empty
+                    if ($group_value == "")
                     {
-                            echo "</tbody>\n";
-                        echo "</table>\n";
-                        echo "<br />\n";
+                        // Current group is Unassigned
+                        $group_value = $lang['Unassigned'];
                     }
 
-                    // If the group is not empty
-                    if ($group_value != "")
+                    // If the group is not the current group
+//                    if ($group_value != $current_group && !in_array($group_value, $displayed_group_names))
+                    if (!in_array($group_value, $displayed_group_names))
                     {
-                        // Set the group to the current group
-                        $current_group = $group_value;
-                    }
-                    else $current_group = $lang['Unassigned'];
+                        // If this is not the first group
+//                        if ($current_group != "")
+//                        {
+//                                echo "</tbody>\n";
+//                            echo "</table>\n";
+//                            echo "<br />\n";
+//                        }
 
-                    $displayed_group_names[] = $current_group;
-                    
-                    // Display the table header
-                    echo "<table data-group='".$escaper->escapeHtml($group_value_from_db)."' class=\"table risk-datatable table-bordered table-striped table-condensed  table-margin-top\" style='width: 100%'>\n";
-                    echo "<thead>\n";
-                    echo "<tr>\n";
-                    
-                    // If customization extra is enabled, add custom fields
-                    if(customization_extra())
-                    {
-                        // Include the extra
-                        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                        $displayed_group_names[] = $group_value;
                         
-                        $active_fields = get_active_fields();
-                        $custom_fields = [];
-                        foreach($active_fields as $active_field)
+                        // Display the table header
+                        echo "<table data-group='".$escaper->escapeHtml($group_value_from_db)."' class=\"table risk-datatable table-bordered table-striped table-condensed  table-margin-top\" style='width: 100%'>\n";
+                        echo "<thead>\n";
+                        echo "<tr>\n";
+                        
+                        // If customization extra is enabled, add custom fields
+                        if(customization_extra())
                         {
-                            if($active_field['is_basic'] == 0)
+                            // Include the extra
+                            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                            
+                            $active_fields = get_active_fields();
+                            $custom_fields = [];
+                            foreach($active_fields as $active_field)
                             {
-                                $custom_fields[] = $active_field;
+                                if($active_field['is_basic'] == 0)
+                                {
+                                    $custom_fields[] = $active_field;
+                                }
                             }
+                            
+                            $custom_fields_length = count($custom_fields);
+                        }
+                        else{
+                            $custom_fields_length = 0;
                         }
                         
-                        $custom_fields_length = count($custom_fields);
-                    }
-                    else{
-                        $custom_fields_length = 0;
+                        $length = 43 + $custom_fields_length;
+                        
+                        echo "<th bgcolor=\"#0088CC\" colspan=\"{$length}\"><center>". $escaper->escapeHtml($group_value) ."</center></th>\n";
+                        echo "</tr>\n";
+                        echo "<tr class='main'>\n";
+
+                        // Header columns go here
+                        get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date);
+
+                        echo "</tr>\n";
+                        echo "<tr class='filter'>\n";
+                        // Header columns go here
+                        get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date);
+                        echo "</tr>\n";
+                        echo "</thead>\n";
+                        echo "<tbody>\n";
                     }
                     
-                    $length = 43 + $custom_fields_length;
-                    
-                    echo "<th bgcolor=\"#0088CC\" colspan=\"{$length}\"><center>". $escaper->escapeHtml($current_group) ."</center></th>\n";
-                    echo "</tr>\n";
-                    echo "<tr class='main'>\n";
-
-                    // Header columns go here
-                    get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date);
-
-                    echo "</tr>\n";
-                    echo "<tr class='filter'>\n";
-                    // Header columns go here
-                    get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date);
-                    echo "</tr>\n";
-                    echo "</thead>\n";
-                    echo "<tbody>\n";
                 }
             }
         }
     }
-    echo "<tfoot>\n";
-    echo "<tr class='footer'>\n";
-    // Header columns go here
-    get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date);
-    echo "</tr>\n";
-    echo "<tfoot>\n";
 
     // If the group name is none
         // End the table
@@ -2653,11 +2622,21 @@ function risk_table_open_by_team($column_id=true, $column_status=false, $column_
     get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date);
 
     echo "</tr>\n";
+    echo "<tr class='filter'>\n";
+    // Header columns go here
+    get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date);
+    echo "</tr>\n";
     echo "</thead>\n";
     echo "<tbody>\n";
     
     // End the table
     echo "</tbody>\n";
+    echo "<tfoot>\n";
+    echo "<tr class='footer'>\n";
+    // Footer columns go here
+    get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date);
+    echo "</tr>\n";
+    echo "</tfoot>\n";
     echo "</table>\n";
     echo "<br />\n";
 }
@@ -2854,6 +2833,15 @@ function risks_query_select($column_filters)
                 rtt.risk_id=a.id AND rtt.team_id=team.value
         ) AS team,
 
+        (
+            SELECT
+                GROUP_CONCAT(DISTINCT team.value  SEPARATOR ',')
+            FROM
+                team, risk_to_team rtt
+            WHERE
+                rtt.risk_id=a.id AND rtt.team_id=team.value
+        ) AS team_values,
+
 
         (
             SELECT
@@ -2873,6 +2861,15 @@ function risks_query_select($column_filters)
             WHERE
                 rttg.risk_id=a.id AND rttg.technology_id=tech.value
         ) AS technology,
+
+        (
+            SELECT
+                GROUP_CONCAT(DISTINCT tech.value SEPARATOR ',')
+            FROM
+                technology tech, risk_to_technology rttg
+            WHERE
+                rttg.risk_id=a.id AND rttg.technology_id=tech.value
+        ) AS technology_values,
 
         g.name AS owner, 
         h.name AS manager, 
@@ -3015,7 +3012,8 @@ function risks_unique_column_query_select()
                 rtl.risk_id=a.id AND rtl.location_id=location.value
         ) AS location,
 
-        CONCAT(d.name, '{$delimiter}', d.value) AS category, 
+        d.name AS category, 
+        CONCAT(d.name, '{$delimiter}', d.value) AS category_for_dropdown, 
 
         (
             SELECT
@@ -3025,6 +3023,14 @@ function risks_unique_column_query_select()
             WHERE
                 rtt.risk_id=a.id AND rtt.team_id=team.value
         ) AS team,
+        (
+            SELECT
+                GROUP_CONCAT(DISTINCT team.value  SEPARATOR ',')
+            FROM
+                team, risk_to_team rtt
+            WHERE
+                rtt.risk_id=a.id AND rtt.team_id=team.value
+        ) AS team_values,
 
         (
             SELECT
@@ -3043,14 +3049,34 @@ function risks_unique_column_query_select()
             WHERE
                 rttg.risk_id=a.id AND rttg.technology_id=tech.value
         ) AS technology,
+        (
+            SELECT
+                GROUP_CONCAT(DISTINCT tech.value SEPARATOR ',')
+            FROM
+                technology tech, risk_to_technology rttg
+            WHERE
+                rttg.risk_id=a.id AND rttg.technology_id=tech.value
+        ) AS technology_values,
 
-        CONCAT(g.name, '{$delimiter}', g.value) AS owner, 
-        CONCAT(h.name, '{$delimiter}', h.value) AS manager, 
-        CONCAT(i.name, '{$delimiter}', i.value) AS submitted_by, 
-        CONCAT(j.name, '{$delimiter}', j.value) AS regulation, 
-        CONCAT(k.name, '{$delimiter}', k.value) AS project, 
+
+        g.name AS owner, 
+        CONCAT(g.name, '{$delimiter}', g.value) AS owner_for_dropdown, 
+
+        h.name AS manager, 
+        CONCAT(h.name, '{$delimiter}', h.value) AS manager_for_dropdown, 
+
+        i.name AS submitted_by, 
+        CONCAT(i.name, '{$delimiter}', i.value) AS submitted_by_for_dropdown, 
+
+        j.name AS regulation, 
+        CONCAT(j.name, '{$delimiter}', j.value) AS regulation_for_dropdown, 
+
+        k.name AS project, 
+        CONCAT(k.name, '{$delimiter}', k.value) AS project_for_dropdown, 
+        
         l.next_review, 
-        CONCAT(m.name, '{$delimiter}', m.value) AS next_step, 
+        m.name AS next_step, 
+        CONCAT(m.name, '{$delimiter}', m.value) AS next_step_for_dropdown, 
         (
             SELECT
                 GROUP_CONCAT(DISTINCT CONCAT(assets.name, '{$delimiter}', assets.id) SEPARATOR ', ')
@@ -3070,9 +3096,14 @@ function risks_unique_column_query_select()
         ) AS affected_asset_groups,
 
         o.closure_date, 
-        CONCAT(q.name, '{$delimiter}', q.value) AS planning_strategy,
+        
+        q.name AS planning_strategy,
+        CONCAT(q.name, '{$delimiter}', q.value) AS planning_strategy_for_dropdown,
+        
         p.planning_date, 
-        CONCAT(r.name, '{$delimiter}', r.value) AS mitigation_effort, 
+        
+        r.name AS mitigation_effort,
+        CONCAT(r.name, '{$delimiter}', r.value) AS mitigation_effort_for_dropdown, 
         
         IF(s.valuation_level_name IS NULL OR s.valuation_level_name='', 
             CONCAT('\$', s.min_value, ' to \$', s.max_value, '{$delimiter}', s.min_value, '-', s.max_value),
@@ -3083,7 +3114,10 @@ function risks_unique_column_query_select()
         s.max_value AS mitigation_max_cost, 
         
         s.valuation_level_name, 
-        CONCAT(t.name, '{$delimiter}', t.value) AS mitigation_owner,
+        
+        t.name AS mitigation_owner,
+        CONCAT(t.name, '{$delimiter}', t.value) AS mitigation_owner_for_dropdown,
+        
         (
             SELECT
                 GROUP_CONCAT(DISTINCT CONCAT(team.name, '{$delimiter}', team.value) SEPARATOR ', ')
@@ -3097,7 +3131,8 @@ function risks_unique_column_query_select()
         p.submission_date AS mitigation_date, 
         GROUP_CONCAT(DISTINCT CONCAT(fc.short_name, '{$delimiter}', fc.id) SEPARATOR ', ') mitigation_control_names, 
         
-        CONCAT(v.name, '{$delimiter}', v.value) AS source, 
+        v.name AS source, 
+        CONCAT(v.name, '{$delimiter}', v.value) AS source_for_dropdown, 
         p.id mitigation_id, 
         p.current_solution,
         p.security_recommendations, 
@@ -4217,10 +4252,32 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
     
     // Initialize the data array
     $data = array();
-    
 
     // For each risk in the risks array
     foreach($risks as $risk){
+        $key_relation_arr = [
+            "category" => "category_for_dropdown",
+            "owner" => "owner_for_dropdown",
+            "manager" => "manager_for_dropdown",
+            "submitted_by" => "submitted_by_for_dropdown",
+            "regulation" => "regulation_for_dropdown",
+            "project" => "project_for_dropdown",
+            "next_step" => "next_step_for_dropdown",
+            "planning_strategy" => "planning_strategy_for_dropdown",
+            "mitigation_effort" => "mitigation_effort_for_dropdown",
+            "mitigation_owner" => "mitigation_owner_for_dropdown",
+            "source" => "source_for_dropdown",
+        ];
+        
+        foreach($key_relation_arr as $key => $related_key)
+        {
+            if(isset($risk[$related_key]))
+            {
+                $risk[$key] = $risk[$related_key];
+            }
+        }
+
+
         // Create the new data array
         $data[] = array(
             "id" => $risk['id'], 

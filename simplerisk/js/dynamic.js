@@ -49,7 +49,7 @@ function makeFitlerOptionHTML(options, columnName, select, hidden_location_filte
 */
 function makeFilterNonDropdownHTML(index, columnName, fieldType)
 {
-    var HTML = '<div style="min-width: 150px">';
+    var HTML = '<div style="min-width: 150px; text-align: center">';
     var date_format = $("#date_format").val();
     if(typeof(date_format) == "undefined") date_format = "YYYY-MM-DD";
 
