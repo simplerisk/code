@@ -932,23 +932,6 @@ function initiate_test_audit($test_id, $initiated_audit_status) {
 
     updateTeamsOfItem($audit_id, 'audit', $test['teams']);
 
-    /*$sql = "
-        INSERT INTO
-            `items_to_teams`(item_id, team_id, type)
-        SELECT
-            {$audit_id}, `itt`.`team_id`, 'audit'
-        FROM 
-            `items_to_teams` itt
-        WHERE
-            `itt`.`item_id`=:test_id and `itt`.`type`='audit';
-    ";
-
-    // Create temp table from framework_control_test
-    $stmt = $db->prepare($sql);
-    $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);*/
-
-    $stmt->execute();
-
     // Close the database connection
     db_close($db);
 

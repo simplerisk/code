@@ -330,7 +330,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "/api/risklevel/update",
+                    url: BASE_URL + "/api/risklevel/update",
                     data: {
                         level: level,
                         field: field,
