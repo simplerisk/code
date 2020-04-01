@@ -940,6 +940,7 @@ function dynamicriskUniqueColumnDataAPI()
 
         // Query the risks
         $risks = get_dynamicrisk_unique_column_data($status, $group, $group_value_from_db);
+
         $datas = array();
         
         // If Customization Extra is true, include custom extra

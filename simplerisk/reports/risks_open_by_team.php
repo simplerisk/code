@@ -267,6 +267,8 @@ if(is_array($custom_display_settings = $_SESSION['custom_display_settings']) && 
             </div>
         </div>
     </div>
+    <input type="hidden" id="unassigned_option" value="<?php echo $escaper->escapeHtml($lang["Unassigned"]);?>">
+    <input type="hidden" id="date_format" value="<?php echo $escaper->escapeHtml(get_setting("default_date_format"));?>">
     <style type="">
         .download-by-group{
             display: none;

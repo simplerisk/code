@@ -204,26 +204,26 @@
 .datagrid-sort .datagrid-sort-icon {
   display: inline;
   padding: 0 13px 0 0;
-  background: url('/css/images/datagrid_icons.png') no-repeat -64px center;
+  background: url('images/datagrid_icons.png') no-repeat -64px center;
 }
 .datagrid-sort-desc .datagrid-sort-icon {
   display: inline;
   padding: 0 13px 0 0;
-  background: url('/css/images/datagrid_icons.png') no-repeat -16px center;
+  background: url('images/datagrid_icons.png') no-repeat -16px center;
 }
 .datagrid-sort-asc .datagrid-sort-icon {
   display: inline;
   padding: 0 13px 0 0;
-  background: url('/css/images/datagrid_icons.png') no-repeat 0px center;
+  background: url('images/datagrid_icons.png') no-repeat 0px center;
 }
 .datagrid-row-collapse {
-  background: url('/css/images/datagrid_icons.png') no-repeat -48px center;
+  background: url('images/datagrid_icons.png') no-repeat -48px center;
 }
 .datagrid-row-expand {
-  background: url('/css/images/datagrid_icons.png') no-repeat -32px center;
+  background: url('images/datagrid_icons.png') no-repeat -32px center;
 }
 .datagrid-mask-msg {
-  background: #ffffff url('/css/images/loading.gif') no-repeat scroll 5px center;
+  background: #ffffff url('images/loading.gif') no-repeat scroll 5px center;
 }
 .datagrid-header,
 .datagrid-td-rownumber {
@@ -461,22 +461,22 @@
   margin: 0;
 }
 .pagination-first {
-  background: url('/css/images/pagination_icons.png') no-repeat 0 center;
+  background: url('images/pagination_icons.png') no-repeat 0 center;
 }
 .pagination-prev {
-  background: url('/css/images/pagination_icons.png') no-repeat -16px center;
+  background: url('images/pagination_icons.png') no-repeat -16px center;
 }
 .pagination-next {
-  background: url('/css/images/pagination_icons.png') no-repeat -32px center;
+  background: url('images/pagination_icons.png') no-repeat -32px center;
 }
 .pagination-last {
-  background: url('/css/images/pagination_icons.png') no-repeat -48px center;
+  background: url('images/pagination_icons.png') no-repeat -48px center;
 }
 .pagination-load {
-  background: url('/css/images/pagination_icons.png') no-repeat -64px center;
+  background: url('images/pagination_icons.png') no-repeat -64px center;
 }
 .pagination-loading {
-  background: url('/css/images/loading.gif') no-repeat center center;
+  background: url('images/loading.gif') no-repeat center center;
 }
 .pagination-page-list,
 .pagination .pagination-num {
@@ -540,19 +540,19 @@
 }
 .calendar-prevmonth {
   left: 20px;
-  background: url('/css/images/calendar_arrows.png') no-repeat -18px -2px;
+  background: url('images/calendar_arrows.png') no-repeat -18px -2px;
 }
 .calendar-nextmonth {
   right: 20px;
-  background: url('/css/images/calendar_arrows.png') no-repeat -34px -2px;
+  background: url('images/calendar_arrows.png') no-repeat -34px -2px;
 }
 .calendar-prevyear {
   left: 3px;
-  background: url('/css/images/calendar_arrows.png') no-repeat -1px -2px;
+  background: url('images/calendar_arrows.png') no-repeat -1px -2px;
 }
 .calendar-nextyear {
   right: 3px;
-  background: url('/css/images/calendar_arrows.png') no-repeat -49px -2px;
+  background: url('images/calendar_arrows.png') no-repeat -49px -2px;
 }
 .calendar-body {
   position: relative;
@@ -621,11 +621,11 @@
 }
 .calendar-menu-prev {
   margin-right: 10px;
-  background: url('/css/images/calendar_arrows.png') no-repeat 2px 2px;
+  background: url('images/calendar_arrows.png') no-repeat 2px 2px;
 }
 .calendar-menu-next {
   margin-left: 10px;
-  background: url('/css/images/calendar_arrows.png') no-repeat -45px 2px;
+  background: url('images/calendar_arrows.png') no-repeat -45px 2px;
 }
 .calendar-menu-month {
   text-align: center;
@@ -711,7 +711,7 @@
   float: right;
 }
 .datebox .combo-arrow {
-  background-image: url('/css/images/datebox_arrow.png');
+  background-image: url('images/datebox_arrow.png');
   background-position: center center;
 }
 .datebox-button {
@@ -767,16 +767,16 @@
   filter: alpha(opacity=60);
 }
 .spinner-arrow-up {
-  background: url('/css/images/spinner_arrows.png') no-repeat 1px center;
+  background: url('images/spinner_arrows.png') no-repeat 1px center;
 }
 .spinner-arrow-down {
-  background: url('/css/images/spinner_arrows.png') no-repeat -15px center;
+  background: url('images/spinner_arrows.png') no-repeat -15px center;
 }
 .spinner-button-up {
-  background: url('/css/images/spinner_arrows.png') no-repeat -32px center;
+  background: url('images/spinner_arrows.png') no-repeat -32px center;
 }
 .spinner-button-down {
-  background: url('/css/images/spinner_arrows.png') no-repeat -48px center;
+  background: url('images/spinner_arrows.png') no-repeat -48px center;
 }
 .progressbar {
   border-width: 1px;
@@ -861,7 +861,7 @@
   border-width: 0 1px 0 0;
 }
 .searchbox-button {
-  background: url('/css/images/searchbox_button.png') no-repeat center center;
+  background: url('images/searchbox_button.png') no-repeat center center;
 }
 .searchbox .l-btn-plain {
   background: #E0ECFF;
@@ -960,7 +960,7 @@
   left: 23px;
 }
 .slider-handle {
-  background: url('/css/images/slider_handle.png') no-repeat;
+  background: url('images/slider_handle.png') no-repeat;
 }
 .slider-inner {
   border-color: #95B8E7;
@@ -1059,7 +1059,7 @@
   filter: progid:DXImageTransform.Microsoft.Blur(pixelRadius=2,MakeShadow=false,ShadowOpacity=0.2);
 }
 .menu-rightarrow {
-  background: url('/css/images/menu_arrows.png') no-repeat -32px center;
+  background: url('images/menu_arrows.png') no-repeat -32px center;
 }
 .menu-line {
   border-left: 1px solid #ccc;
@@ -1177,7 +1177,7 @@
 }
 .m-btn-downarrow,
 .s-btn-downarrow {
-  background: url('/css/images/menu_arrows.png') no-repeat 0 center;
+  background: url('images/menu_arrows.png') no-repeat 0 center;
 }
 .m-btn-plain-active,
 .s-btn-plain-active {
@@ -1215,16 +1215,16 @@
   margin: 0 10px 10px 0;
 }
 .messager-error {
-  background: url('/css/images/messager_icons.png') no-repeat scroll -64px 0;
+  background: url('images/messager_icons.png') no-repeat scroll -64px 0;
 }
 .messager-info {
-  background: url('/css/images/messager_icons.png') no-repeat scroll 0 0;
+  background: url('images/messager_icons.png') no-repeat scroll 0 0;
 }
 .messager-question {
-  background: url('/css/images/messager_icons.png') no-repeat scroll -32px 0;
+  background: url('images/messager_icons.png') no-repeat scroll -32px 0;
 }
 .messager-warning {
-  background: url('/css/images/messager_icons.png') no-repeat scroll -96px 0;
+  background: url('images/messager_icons.png') no-repeat scroll -96px 0;
 }
 .messager-progress {
   padding: 10px;
@@ -1275,62 +1275,62 @@
   overflow: hidden;
 }
 .tree-expanded {
-  background: url('/css/images/tree_icons.png') no-repeat -18px 0px;
+  background: url('images/tree_icons.png') no-repeat -18px 0px;
 }
 .tree-expanded-hover {
-  background: url('/css/images/tree_icons.png') no-repeat -50px 0px;
+  background: url('images/tree_icons.png') no-repeat -50px 0px;
 }
 .tree-collapsed {
-  background: url('/css/images/tree_icons.png') no-repeat 0px 0px;
+  background: url('images/tree_icons.png') no-repeat 0px 0px;
 }
 .tree-collapsed-hover {
-  background: url('/css/images/tree_icons.png') no-repeat -32px 0px;
+  background: url('images/tree_icons.png') no-repeat -32px 0px;
 }
 .tree-lines .tree-expanded,
 .tree-lines .tree-root-first .tree-expanded {
-  background: url('/css/images/tree_icons.png') no-repeat -144px 0;
+  background: url('images/tree_icons.png') no-repeat -144px 0;
 }
 .tree-lines .tree-collapsed,
 .tree-lines .tree-root-first .tree-collapsed {
-  background: url('/css/images/tree_icons.png') no-repeat -128px 0;
+  background: url('images/tree_icons.png') no-repeat -128px 0;
 }
 .tree-lines .tree-node-last .tree-expanded,
 .tree-lines .tree-root-one .tree-expanded {
-  background: url('/css/images/tree_icons.png') no-repeat -80px 0;
+  background: url('images/tree_icons.png') no-repeat -80px 0;
 }
 .tree-lines .tree-node-last .tree-collapsed,
 .tree-lines .tree-root-one .tree-collapsed {
-  background: url('/css/images/tree_icons.png') no-repeat -64px 0;
+  background: url('images/tree_icons.png') no-repeat -64px 0;
 }
 .tree-line {
-  background: url('/css/images/tree_icons.png') no-repeat -176px 0;
+  background: url('images/tree_icons.png') no-repeat -176px 0;
 }
 .tree-join {
-  background: url('/css/images/tree_icons.png') no-repeat -192px 0;
+  background: url('images/tree_icons.png') no-repeat -192px 0;
 }
 .tree-joinbottom {
-  background: url('/css/images/tree_icons.png') no-repeat -160px 0;
+  background: url('images/tree_icons.png') no-repeat -160px 0;
 }
 .tree-folder {
-  background: url('/css/images/tree_icons.png') no-repeat -208px 0;
+  background: url('images/tree_icons.png') no-repeat -208px 0;
 }
 .tree-folder-open {
-  background: url('/css/images/tree_icons.png') no-repeat -224px 0;
+  background: url('images/tree_icons.png') no-repeat -224px 0;
 }
 .tree-file {
-  background: url('/css/images/tree_icons.png') no-repeat -240px 0;
+  background: url('images/tree_icons.png') no-repeat -240px 0;
 }
 .tree-loading {
-  background: url('/css/images/loading.gif') no-repeat center center;
+  background: url('images/loading.gif') no-repeat center center;
 }
 .tree-checkbox0 {
-  background: url('/css/images/tree_icons.png') no-repeat -208px -18px;
+  background: url('images/tree_icons.png') no-repeat -208px -18px;
 }
 .tree-checkbox1 {
-  background: url('/css/images/tree_icons.png') no-repeat -224px -18px;
+  background: url('images/tree_icons.png') no-repeat -224px -18px;
 }
 .tree-checkbox2 {
-  background: url('/css/images/tree_icons.png') no-repeat -240px -18px;
+  background: url('images/tree_icons.png') no-repeat -240px -18px;
 }
 .tree-title {
   font-size: 12px;
@@ -1360,10 +1360,10 @@
   margin-top: -9px;
 }
 .tree-dnd-yes {
-  background: url('/css/images/tree_icons.png') no-repeat -256px 0;
+  background: url('images/tree_icons.png') no-repeat -256px 0;
 }
 .tree-dnd-no {
-  background: url('/css/images/tree_icons.png') no-repeat -256px -18px;
+  background: url('images/tree_icons.png') no-repeat -256px -18px;
 }
 .tree-node-top {
   border-top: 1px dotted red;

@@ -4219,6 +4219,27 @@ function upgrade_from_20191130001($db)
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20200328-001 *
+ ***************************************/
+function upgrade_from_20200328001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20200328-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20200401-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -4400,6 +4421,10 @@ function upgrade_database()
                 upgrade_from_20191130001($db);
                 upgrade_database();
                 break;                
+            case "20200328-001":
+                upgrade_from_20200328001($db);
+                upgrade_database();
+                break;
             default:
                 echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
         }

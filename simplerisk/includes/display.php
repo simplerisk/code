@@ -6047,94 +6047,30 @@ function report_likelihood_impact(){
     }
     
 
-    $risk_levels = get_risk_levels();
-
-    $data_very_low = get_data_risk_level( $risk_levels[0]['value'], get_impacts_count(), get_likelihoods_count(), 1);
-    $data_low  = get_data_risk_level( $risk_levels[1]['value'], get_impacts_count(), get_likelihoods_count(), 1);
-    $data_medium = get_data_risk_level( $risk_levels[2]['value'], get_impacts_count(), get_likelihoods_count(), 1);
-    $data_high   = get_data_risk_level( $risk_levels[3]['value'], get_impacts_count(), get_likelihoods_count(), 1);
-    $data_very_high  = get_data_risk_level( 10, get_impacts_count(), get_likelihoods_count(), 0);
+    $series = [];
     
-    $chart->series = array(
-        // Very high chart area
-        array(
-            'type'=> 'area',
-            'color' => convert_color_code($risk_levels[3]['color']) . "ff",
-            'data' => $data_very_high,
-            'enableMouseTracking' => false,
-            'states' => [
-                'hover' => [
-                    'enabled' => false
-                ]
-            ],
-            'stickyTracking' => false,
-        ),
-        // High chart area
-        array(
-            'type'=> 'area',
-            'color' => convert_color_code($risk_levels[2]['color']) . "ff",
-            'data' => $data_high,
-            'enableMouseTracking' => false,
-            'states' => [
-                'hover' => [
-                    'enabled' => false
-                ]
-            ],
-            'stickyTracking' => false,
-        ),
-        // Mediumn chart area
-        array(
-            'type'=> 'area',
-            'color' => convert_color_code($risk_levels[1]['color']) . "ff",
-            'data' => $data_medium,
-            'enableMouseTracking' => false,
-            'states' => [
-                'hover' => [
-                    'enabled' => false
-                ]
-            ],
-            'stickyTracking' => false,
-        ),
-        // Low chart area
-        array(
-            'type'=> 'area',
-            'color' => convert_color_code($risk_levels[0]['color']) . "ff",
-            'data' => $data_low,
-            'enableMouseTracking' => false,
-            'states' => [
-                'hover' => [
-                    'enabled' => false
-                ]
-            ],
-            'stickyTracking' => false,
-        ),
-        // Very low chart area
-        array(
-            'type'=> 'area',
-            'color' => "rgba(255, 255, 255)",
-            'data' => $data_very_low,
-            'enableMouseTracking' => false,
-            'states' => [
-                'hover' => [
-                    'enabled' => false
-                ]
-            ],
-            'stickyTracking' => false,
-        ),
-        array(
-            'type' => "scatter",
-            'color' => "rgba(223, 83, 83)",
-            'data' => $data,
-            'enableMouseTracking' => true,
-            'states' => [
-                'hover' => [
-                    'enabled' => false
-                ]
-            ],
-            'stickyTracking' => false,
-        ),
+    for($likelihood=1; $likelihood<=get_likelihoods_count(); $likelihood++)
+    {
+        for($impact=1; $impact<=get_impacts_count(); $impact++)
+        {
+            $series[] = get_area_series_from_likelihood_impact($likelihood, $impact);
+        }
+    }
+    
+    $series[] = array(
+        'type' => "scatter",
+        'color' => "rgba(223, 83, 83)",
+        'data' => $data,
+        'enableMouseTracking' => true,
+        'states' => [
+            'hover' => [
+                'enabled' => false
+            ]
+        ],
+        'stickyTracking' => false,
     );
 
+    $chart->series = $series;
     $chart->printScripts();
     echo "<div id=\"likelihood_impact_chart\" style=\"margin:auto;width:700px;height:700px \"></div>\n";
     echo "<script type=\"text/javascript\">";
@@ -6183,6 +6119,60 @@ function report_likelihood_impact(){
 
     echo "</script>\n";
 
+}
+
+/*************************************************************
+ * FUNCTION: GET AREA DATA FROM LIKELIHOOD AND IMPACT VALUES *
+ *************************************************************/
+function get_area_series_from_likelihood_impact($likelihood, $impact)
+{
+    $likelihood = (int)$likelihood;
+    $impact = (int)$impact;
+    
+    $risk_score = calculate_risk($impact, $likelihood);
+    
+    $data = array(
+        [
+            "x" => $likelihood-1,
+            "y" => $impact-1,
+            "risk" => calculate_risk($impact-1, $likelihood-1),
+        ],
+        [
+            "x" => $likelihood-1,
+            "y" => $impact,
+            "risk" => calculate_risk($impact, $likelihood-1),
+        ],
+        [
+            "x" => $likelihood,
+            "y" => $impact,
+            "risk" => calculate_risk($impact, $likelihood),
+        ],
+        [
+            "x" => $likelihood,
+            "y" => $impact-1,
+            "risk" => calculate_risk($impact-1, $likelihood),
+        ],
+        [
+            "x" => $likelihood-1,
+            "y" => $impact-1,
+        ],
+    );
+    $color = get_risk_color($risk_score);
+    
+    $area_series = array(
+        'type'=> 'area',
+        'color' => convert_color_code($color) . "ff",
+        'data' => $data,
+        'enableMouseTracking' => false,
+        'states' => [
+            'hover' => [
+                'enabled' => false
+            ]
+        ],
+        'stickyTracking' => false,
+    );
+    
+    return $area_series;
 }
 
 /************************************
