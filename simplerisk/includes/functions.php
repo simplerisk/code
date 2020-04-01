@@ -10612,7 +10612,10 @@ function _lang($__key, $__params=array(), $__escape=true){
     $__return = $lang[$__key];
 
     foreach($__params as $key => $value) {
+        // It has to work for all the variable types found in the language files
         $__return = str_replace('{$' . $key .'}', $value, $__return);
+        $__return = str_replace('${' . $key .'}', $value, $__return);
+        $__return = str_replace('$' . $key, $value, $__return);
     }
 
     return $__return;
