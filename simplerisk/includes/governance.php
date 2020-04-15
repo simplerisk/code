@@ -102,7 +102,10 @@ function get_frameworks_as_treegrid($status){
         if(isset($frameworks[0])){
             $frameworks[0]['totalCount'] = count($frameworks);
         }
-        return $frameworks;
+        foreach($frameworks as $framework){
+            $results[] = $framework;
+        }
+        return $results;
     }
 }
 
