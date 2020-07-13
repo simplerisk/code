@@ -130,6 +130,7 @@ function display($display = "")
         <link rel="stylesheet" href="../css/theme.css">
 
         <?php
+            setup_favicon("..");
             setup_alert_requirements("..");
         ?>
 
@@ -241,6 +242,7 @@ function display($display = "")
                             $("#exception--view #approver").text(data.approver);
                             $("#exception--view #description").html(data.description);
                             $("#exception--view #justification").html(data.justification);
+                            $("#exception--view #file_download").html(data.file_download);
 
                             if (approval) {
                                 $(".approve-footer").show();
@@ -331,6 +333,33 @@ function display($display = "")
                 }
             }
 
+            function displayFileSize(label, size) {
+                if (<?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> > size)
+                    label.attr("class","success");
+                else
+                    label.attr("class","danger");
+
+                var iSize = (size / 1024);
+                if (iSize / 1024 > 1)
+                {
+                    if (((iSize / 1024) / 1024) > 1)
+                    {
+                        iSize = (Math.round(((iSize / 1024) / 1024) * 100) / 100);
+                        label.html("<?php echo $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize + "Gb");
+                    }
+                    else
+                    {
+                        iSize = (Math.round((iSize / 1024) * 100) / 100)
+                        label.html("<?php echo $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize + "Mb");
+                    }
+                }
+                else
+                {
+                    iSize = (Math.round(iSize * 100) / 100)
+                    label.html("<?php echo $escaper->escapeHtml($lang['FileSize'] . ": ") ?>" + iSize  + "kb");
+                }
+            }
+
             $(document).ready(function(){
                 var $tabs = $( "#exceptions-tab-content" ).tabs({
                     activate: function(event, ui){
@@ -341,7 +370,10 @@ function display($display = "")
 
                 $("#exception-new-form").submit(function(event) {
                     event.preventDefault();
-
+                    if ($('#file-upload')[0].files[0] && <?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload')[0].files[0].size) {
+                        toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
+                        return false;
+                    }
                     $.ajax({
                         type: "POST",
                         url: BASE_URL + "/api/exceptions/create",
@@ -357,6 +389,7 @@ function display($display = "")
 
                             $('#exception--add').modal('hide');
                             $('#exception-new-form')[0].reset();
+                            $('#exception-new-form #file-size').text("");
                             $("#exception-new-form [name='additional_stakeholders[]']").multiselect('select', []);
 
                             if (!data.data.approved) {
@@ -385,6 +418,10 @@ function display($display = "")
 
                 $("#exception-update-form").submit(function(event) {
                     event.preventDefault();
+                    if ($('#file-upload-update')[0].files[0] && <?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload-update')[0].files[0].size) {
+                        toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
+                        return false;
+                    }
 
                     var old_type = $("#exception-update-form [name=type]").val();
 
@@ -403,6 +440,7 @@ function display($display = "")
 
                             $('#exception--update').modal('hide');
                             $('#exception-update-form')[0].reset();
+                            $('#exception-update-form #file-size').text("");
                             $("#exception-update-form [name='additional_stakeholders[]']").multiselect('select', []);
                             var tree = $('#exception-table-' + data.data.type);
                             tree.treegrid('options').animate = false;
@@ -576,6 +614,8 @@ function display($display = "")
                 $('#exception--add, #exception--update, #exception--view').on('shown.bs.modal', function() {
                     $(this).find('.modal-body').scrollTop(0);
                     refresh_type_selects_display($(this));
+                    $(".file-uploader input").val("");
+                    $("#file-size").text("");
                 });
 
                 $('.collapsible--toggle span').click(function(event) {
@@ -596,6 +636,49 @@ function display($display = "")
                 $('.audit-trail select.audit-select-days').change(refreshAuditLogs);
 
                 refreshAuditLogs();
+
+                // file upload
+                var fileAPISupported = typeof $("<input type='file'>").get(0).files != "undefined";
+
+                if (fileAPISupported) {
+                    $("input.readonly").on('keydown paste focus', function(e){
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                    });
+
+                    $("#exception-new-form input.readonly").click(function(){
+                        $("#file-upload").trigger("click");
+                    });
+
+                    $("#exception-update-form input.readonly").click(function(){
+                        $("#file-upload-update").trigger("click");
+                    });
+
+                    $('#file-upload').change(function(e){
+                        if (!e.target.files[0])
+                            return;
+
+                        var fileName = e.target.files[0].name;
+                        $("#exception-new-form input.readonly").val(fileName);
+
+                        displayFileSize($("#exception-new-form #file-size"), e.target.files[0].size);
+
+                    });
+
+                    $('#file-upload-update').change(function(e){
+                        if (!e.target.files[0])
+                            return;
+
+                        var fileName = e.target.files[0].name;
+                        $("#exception-update-form input.readonly").val(fileName);
+
+                        displayFileSize($("#exception-update-form #file-size"), e.target.files[0].size);
+
+                    });
+                } else { // If File API is not supported
+                    $("input.readonly").remove();
+                    $('#file-upload').prop('required',true);
+                }
             });
         </script>
     </head>
@@ -727,6 +810,14 @@ function display($display = "")
 
                             <label for=""><?php echo $escaper->escapeHtml($lang['Justification']); ?></label>
                             <textarea name="justification" value="" class="form-control" rows="6" style="width:100%;"></textarea>
+                            <div class="file-uploader">
+                                <label for=""><?php echo $escaper->escapeHtml($lang['File']); ?></label>
+                                <input type="text" class="form-control readonly" style="width: 50%; margin-bottom: 0px; cursor: default;"/>
+                                <label for="file-upload" class="btn"><?php echo $escaper->escapeHtml($lang['ChooseFile']) ?></label>
+                                <font size="2"><strong>Max <?php echo $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</strong></font>
+                                <input type="file" id="file-upload" name="file[]" class="hidden-file-upload active" />
+                                <label id="file-size" for=""></label>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -786,6 +877,14 @@ function display($display = "")
 
                             <label for=""><?php echo $escaper->escapeHtml($lang['Justification']); ?></label>
                             <textarea name="justification" value="" class="form-control" rows="6" style="width:100%;"></textarea>
+                            <div class="file-uploader">
+                                <label for=""><?php echo $escaper->escapeHtml($lang['File']); ?></label>
+                                <input type="text" class="form-control readonly" style="width: 50%; margin-bottom: 0px; cursor: default;"/>
+                                <label for="file-upload-update" class="btn"><?php echo $escaper->escapeHtml($lang['ChooseFile']) ?></label>
+                                <font size="2"><strong>Max <?php echo $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</strong></font>
+                                <input type="file" id="file-upload-update" name="file[]" class="hidden-file-upload active" />
+                                <label id="file-size" for=""></label>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -845,6 +944,9 @@ function display($display = "")
 
                     <h4><?php echo $escaper->escapeHtml($lang['Justification']); ?></h4>
                     <div id="justification" class="exception-data"></div>
+
+                    <h4><?php echo $escaper->escapeHtml($lang['File']); ?></h4>
+                    <div id="file_download" class="exception-data"></div>
 
                 </div>
                 <div class="modal-footer info-footer">

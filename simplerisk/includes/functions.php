@@ -39,8 +39,10 @@ $available_extras = array(
     'customization',
     'encryption',
     'import-export',
+    'incident_management',
     'jira',
     'notification',
+    'organizational_hierarchy',
     'separation',
     'ucf',
     'upgrade',
@@ -80,7 +82,8 @@ $junction_config = array(
             'user_to_team' => 'team_id',
             'mitigation_to_team' => 'team_id',
             'risk_to_team' => 'team_id',
-            'items_to_teams' => 'team_id'
+            'items_to_teams' => 'team_id',
+            'business_unit_to_team' => 'team_id'
         )
     ),
     'user' => array(
@@ -155,7 +158,7 @@ $junction_config = array(
     'framework_controls' => array(
         'id_field' => 'id',
         'junctions' => array(
-            'framework_control_to_framework' => 'control_id',
+            'framework_control_mappings' => 'control_id',
             'questionnaire_question_to_control' => 'control_id',
             'mitigation_to_controls' => 'control_id'
         )
@@ -169,7 +172,13 @@ $junction_config = array(
     'frameworks' => array(
         'id_field' => 'value',
         'junctions' => array(
-            'framework_control_to_framework' => 'framework_id'
+            'framework_control_mappings' => 'framework'
+        )
+    ),
+    'business_unit' => array(
+        'id_field' => 'id',
+        'junctions' => array(
+            'business_unit_to_team' => 'business_unit_id'
         )
     ),
 );
@@ -389,21 +398,23 @@ function get_name_value_array_from_text_array($text_array, $delimiter1=",", $del
 /*************************************
  * FUNCTION: SAVE DYNAMIC SELECTIONS *
  *************************************/
-function save_dynamic_selections($type, $name, $custom_display_settings,$custom_selection_settings)
+function save_dynamic_selections($type, $name, $custom_display_settings,$custom_selection_settings,$custom_column_filters)
 {
     $custom_display_settings = json_encode($custom_display_settings);
     $custom_selection_settings = json_encode($custom_selection_settings);
+    $custom_column_filters = json_encode($custom_column_filters);
     
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("INSERT INTO `dynamic_saved_selections` (`user_id`,`type`,`name`, `custom_display_settings`, `custom_selection_settings`) VALUES (:user_id, :type, :name, :custom_display_settings, :custom_selection_settings); ");
+    $stmt = $db->prepare("INSERT INTO `dynamic_saved_selections` (`user_id`,`type`,`name`, `custom_display_settings`, `custom_selection_settings`, `custom_column_filters`) VALUES (:user_id, :type, :name, :custom_display_settings, :custom_selection_settings, :custom_column_filters); ");
     
     $stmt->bindParam(":user_id", $_SESSION['uid'], PDO::PARAM_INT);
     $stmt->bindParam(":type", $type, PDO::PARAM_STR);
     $stmt->bindParam(":name", $name, PDO::PARAM_STR);
     $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR);
     $stmt->bindParam(":custom_selection_settings", $custom_selection_settings, PDO::PARAM_STR);
+    $stmt->bindParam(":custom_column_filters", $custom_column_filters, PDO::PARAM_STR);
     $stmt->execute();
 
     // Close the database connection
@@ -559,39 +570,81 @@ function get_custom_table($type)
     // Array of CVSS values
     $allowed_cvss_values = array('AccessComplexity', 'AccessVector', 'Authentication', 'AvailabilityRequirement', 'AvailImpact', 'CollateralDamagePotential', 'ConfidentialityRequirement', 'ConfImpact', 'Exploitability', 'IntegImpact', 'IntegrityRequirement', 'RemediationLevel', 'ReportConfidence', 'TargetDistribution');
 
-    // If we want enabled users
-    if ($type == "enabled_users") {
-        $stmt = $db->prepare("
-            SELECT
-                `u`.*, GROUP_CONCAT(DISTINCT `t`.`value`) as teams
-            FROM
-                `user` u
-                LEFT JOIN `user_to_team` u2t ON `u2t`.`user_id` = `u`.`value`
-                LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value` OR `u`.`admin` = 1
-            WHERE
-                `u`.`enabled` = 1
-            GROUP BY 
-                `u`.`value`
-            ORDER BY
-                `u`.`name`;
-        ");
+    // If we want users
+    if ($type == "user") {
+
+        if (!is_admin() && organizational_hierarchy_extra()) {
+            $stmt = $db->prepare("
+                SELECT
+                    `u`.*
+                FROM
+                    `user` u
+                    INNER JOIN `user_to_team` u2t ON `u2t`.`user_id` = `u`.`value`
+                    INNER JOIN `business_unit_to_team` bu2t ON `u2t`.`team_id` = `bu2t`.`team_id`
+                WHERE
+                    `bu2t`.`business_unit_id` = :selected_business_unit
+                GROUP BY
+                    `u`.`value`
+                ORDER BY
+                    `u`.`name`;
+            ");
+            
+            if (!isset($_SESSION['selected_business_unit'])) {
+                $selected_business_unit = get_selected_business_unit($_SESSION['uid']);
+            } else {
+                $selected_business_unit = $_SESSION['selected_business_unit'];
+            }
+            
+            $stmt->bindParam(":selected_business_unit", $selected_business_unit, PDO::PARAM_INT);
+            
+        } else {
+            $stmt = $db->prepare("SELECT * FROM `user` ORDER BY `name`;");
+        }
     }
-    // If we want disabled users
-    else if ($type == "disabled_users") {
-        $stmt = $db->prepare("
-            SELECT
-                `u`.*, GROUP_CONCAT(DISTINCT `t`.`value`) as teams
-            FROM
-                `user` u
-                LEFT JOIN `user_to_team` u2t ON `u2t`.`user_id` = `u`.`value`
-                LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value` OR `u`.`admin` = 1
-            WHERE
-                `u`.`enabled` = 0
-            GROUP BY 
-                `u`.`value`
-            ORDER BY
-                `u`.`name`;
-        ");
+    // If we want enabled/disabled users or want the enabled users without caring for business units
+    else if ($type == "enabled_users" || $type == "disabled_users" || $type == "enabled_users_all") {
+        if (!is_admin() && organizational_hierarchy_extra() && $type != "enabled_users_all") {
+            $stmt = $db->prepare("
+                SELECT
+                    `u`.*, GROUP_CONCAT(DISTINCT `t`.`value`) as teams
+                FROM
+                    `user` u
+                    INNER JOIN `user_to_team` u2t_bu ON `u2t_bu`.`user_id` = `u`.`value` OR `u`.`admin` = 1
+                    INNER JOIN `business_unit_to_team` bu2t ON `u2t_bu`.`team_id` = `bu2t`.`team_id` OR `u`.`admin` = 1
+                    LEFT JOIN `user_to_team` u2t ON `u2t`.`user_id` = `u`.`value`
+                    LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value` OR `u`.`admin` = 1
+                WHERE
+                    `bu2t`.`business_unit_id` = :selected_business_unit
+                    AND `u`.`enabled` = " . ($type == "enabled_users" ? "1": "0") . "
+                GROUP BY
+                    `u`.`value`
+                ORDER BY
+                    `u`.`name`;
+            ");
+
+            if (!isset($_SESSION['selected_business_unit'])) {
+                $selected_business_unit = get_selected_business_unit($_SESSION['uid']);
+            } else {
+                $selected_business_unit = $_SESSION['selected_business_unit'];
+            }
+
+            $stmt->bindParam(":selected_business_unit", $selected_business_unit, PDO::PARAM_INT);
+        } else {
+            $stmt = $db->prepare("
+                SELECT
+                    `u`.*, GROUP_CONCAT(DISTINCT `t`.`value`) as teams
+                FROM
+                    `user` u
+                    LEFT JOIN `user_to_team` u2t ON `u2t`.`user_id` = `u`.`value`
+                    LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value` OR `u`.`admin` = 1
+                WHERE
+                    `u`.`enabled` = " . ($type == "disabled_users" ? "0": "1") . "
+                GROUP BY 
+                    `u`.`value`
+                ORDER BY
+                    `u`.`name`;
+            ");
+        }
     }
     // If we want a languages table
     else if ($type == "languages")
@@ -677,6 +730,31 @@ function get_custom_table($type)
     else if ($type == "policies")
     {
         $stmt = $db->prepare("SELECT id as value, document_name as name FROM documents where document_type = 'policies' ORDER BY document_name");
+    } elseif ($type == "team") {
+        if (!is_admin() && organizational_hierarchy_extra()) {
+            // If the Organizational Hierarchy is activated the function only returns the teams the
+            // user's selected business unit allows. Unless it's an admin user as admins can see everything.
+            $stmt = $db->prepare("
+                SELECT
+                    `t`.*
+                FROM
+                    `business_unit_to_team` bu2t
+                    INNER JOIN `team` t ON `t`.`value` = `bu2t`.`team_id`
+                    INNER JOIN `user` u ON `u`.`selected_business_unit` = `bu2t`.`business_unit_id`
+                WHERE
+                    `u`.`value` = :user_id
+                ORDER BY
+                    `t`.`name`;
+            ");
+            $uid = (int)$_SESSION['uid'];
+            $stmt->bindParam(":user_id", $uid, PDO::PARAM_INT);
+        } else {
+            $stmt = $db->prepare("SELECT * FROM `team` ORDER BY name");
+        }
+    }
+    else if ($type == "risk_catalog")
+    {
+        $stmt = $db->prepare("SELECT id as value, name FROM `risk_catalog` ORDER BY `order`");
     }
     // Execute the database query
     $stmt->execute();
@@ -696,6 +774,9 @@ function get_custom_table($type)
             // Try to decrypt it
             $option['name'] = try_decrypt($option['name']);
         }
+        usort($array, function($a, $b){
+            return strcmp( strtolower(trim($a['name'])), strtolower(trim($b['name'])));
+        });
     }
 
     // Localize test results names
@@ -721,14 +802,14 @@ function get_options_from_table($name)
     global $lang, $escaper;
     
     // If we want a table that should be ordered by name instead of value
-    if (in_array($name, array("user", "category", "team", "technology",
+    if (in_array($name, array("category", "technology",
         "location", "regulation", "projects", "file_types", "file_type_extensions",
         "planning_strategy", "close_reason", "status", "source", "import_export_mappings", "test_status"))) {
 
         $options = get_table_ordered_by_name($name);
     }
-    else if (in_array($name, array("enabled_users", "disabled_users", "languages", "family", "date_formats",
-            "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter", "policies", "framework_control_tests"))) {
+    else if (in_array($name, array("user", "team", "enabled_users", "disabled_users", "languages", "family", "date_formats",
+            "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter", "policies", "framework_control_tests", "risk_catalog"))) {
         $options = get_custom_table($name);
     }
     // Otherwise
@@ -1746,7 +1827,7 @@ function get_setting($setting, $default=false)
     // Open the database connection
     $db = db_open();
 
-    // Get the risk levels
+    // Get the setting
     $stmt = $db->prepare("SELECT * FROM settings where name=:setting");
     $stmt->bindParam(":setting", $setting, PDO::PARAM_STR, 100);
     $stmt->execute();
@@ -3021,7 +3102,7 @@ function update_password($user, $hash)
 /*************************
  * FUNCTION: SUBMIT RISK *
  *************************/
-function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders=[])
+function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders=[],$risk_catalog_mapping=0)
 {
     $submitted_by || ($submitted_by = $_SESSION['uid']);
 
@@ -3034,14 +3115,11 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     if ($location == NULL) $location = "";
 
     // Add the risk
-    if($submission_date !== false){
-        $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `source`, `category`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :source, :category, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date)";
-    }else{
-        $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `source`, `category`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :source, :category, :owner, :manager, :assessment, :notes, :project_id, :submitted_by)";
-    }
+    $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `source`, `category`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`, `risk_catalog_mapping`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :source, :category, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date, :risk_catalog_mapping)";
     
     $try_encrypt_assessment = try_encrypt($assessment);
     $try_encrypt_notes = try_encrypt($notes);
+    if($submission_date == false) $submission_date = date("Y-m-d H:i:s");
 
     $stmt = $db->prepare($sql);
     $stmt->bindParam(":status", $status, PDO::PARAM_STR, 10);
@@ -3058,9 +3136,8 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $stmt->bindParam(":notes", $try_encrypt_notes, PDO::PARAM_STR);
     $stmt->bindParam(":project_id", $project_id, PDO::PARAM_STR);
     $stmt->bindParam(":submitted_by", $submitted_by, PDO::PARAM_INT);
-    if($submission_date !== false){
-        $stmt->bindParam(":submission_date", $submission_date, PDO::PARAM_STR);
-    }
+    $stmt->bindParam(":submission_date", $submission_date, PDO::PARAM_STR);
+    $stmt->bindParam(":risk_catalog_mapping", $risk_catalog_mapping, PDO::PARAM_INT);
     $stmt->execute();
 
     // Get the id of the risk
@@ -4021,7 +4098,7 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
 /**************************************
  * FUNCTION: SAVE MITIGATION CONTROLS *
  **************************************/
-function save_mitigation_controls($mitigation_id, $control_ids)
+function save_mitigation_controls($mitigation_id, $control_ids,$post = array())
 {
     $control_ids = is_array($control_ids) ? $control_ids : explode(",", $control_ids);
     // Open the database connection
@@ -4034,10 +4111,15 @@ function save_mitigation_controls($mitigation_id, $control_ids)
     
     foreach($control_ids as $control_id)
     {
-        // Delete existing mitigation by risk ID
-        $stmt = $db->prepare("INSERT INTO `mitigation_to_controls`(mitigation_id, control_id) VALUES(:mitigation_id, :control_id); ");
+        $validation_details = isset($post["validation_details_".$control_id])?$post["validation_details_".$control_id]:"";
+        $validation_owner = isset($post["validation_owner_".$control_id])?$post["validation_owner_".$control_id]:0;
+        $validation_mitigation_percent = isset($post["validation_mitigation_percent_".$control_id])?$post["validation_mitigation_percent_".$control_id]:0;
+        $stmt = $db->prepare("INSERT INTO `mitigation_to_controls`(mitigation_id, control_id, validation_details, validation_owner, validation_mitigation_percent) VALUES(:mitigation_id, :control_id, :validation_details, :validation_owner, :validation_mitigation_percent); ");
         $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
         $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+        $stmt->bindParam(":validation_details", $validation_details, PDO::PARAM_STR);
+        $stmt->bindParam(":validation_owner", $validation_owner, PDO::PARAM_INT);
+        $stmt->bindParam(":validation_mitigation_percent", $validation_mitigation_percent, PDO::PARAM_INT);
         $stmt->execute();
     }
 
@@ -4140,7 +4222,7 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     $mitigation_id = get_mitigation_id($id);
     
     // Save mitigation controls
-    save_mitigation_controls($mitigation_id, $mitigation_controls);
+    save_mitigation_controls($mitigation_id, $mitigation_controls, $post);
     
     // Save mitigation teams
     save_junction_values("mitigation_to_team", "mitigation_id", $mitigation_id, "team_id", $mitigation_team);
@@ -4221,7 +4303,7 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
     $residual_risk = get_residual_risk((int)$id + 1000);
     add_residual_risk_scoring_history($id, $residual_risk);
 
-    return $current_datetime;
+    return $error;
 }
 
 /**************************************
@@ -4332,6 +4414,7 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
  *************************/
 function update_risk($risk_id, $is_api = false)
 {
+	global $lang, $escaper;
     // Subtract 1000 from risk_id
     $id = (int)$risk_id - 1000;
 
@@ -4342,7 +4425,7 @@ function update_risk($risk_id, $is_api = false)
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
         // Save custom fields
-        save_risk_custom_field_values($risk_id);
+        if(!save_risk_custom_field_values($risk_id)) return $escaper->escapeHtml($lang['InvalidParams']);
     }
 
     $reference_id           = get_param("post", 'reference_id', false);
@@ -4395,14 +4478,16 @@ function update_risk($risk_id, $is_api = false)
     if($notes !== false){
         $notes = try_encrypt($notes);
     }
-
-    $submission_date        = get_param("post", "submission_date", false);
-    if($submission_date !== false){
-        $submission_date        =  get_standard_date_from_default_format($submission_date);
-    }
-
     // Get current datetime for last_update
     $current_datetime = date('Y-m-d H:i:s');
+
+    $submission_date        = get_param("post", "submission_date", false);
+    if($submission_date != false){
+        $submission_date        =  get_standard_date_from_default_format($submission_date);
+    } elseif($submission_date == ""){
+        $submission_date = $current_datetime;
+    }
+    $risk_catalog_mapping   = get_param("post", "risk_catalog_mapping", "");
 
     $data = array(
         "reference_id"      =>$reference_id,
@@ -4415,7 +4500,8 @@ function update_risk($risk_id, $is_api = false)
         "assessment"        =>$assessment,
         "notes"             =>$notes,
         "last_update"       =>$current_datetime,
-        "submission_date"   =>$submission_date
+        "submission_date"   =>$submission_date,
+        "risk_catalog_mapping"   =>$risk_catalog_mapping
     );
 
     // Open the database connection
@@ -4717,7 +4803,7 @@ function get_risk_by_id($id)
         SELECT
             a.*,
             group_concat(distinct CONCAT_WS('_', rsci.contributing_risk_id, rsci.impact)) as Contributing_Risks_Impacts,
-            b.*,
+            b.*,cat.name risk_catalog_name,
             c.next_review,
             ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
             GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR '+++') as risk_tags,
@@ -4754,6 +4840,7 @@ function get_risk_by_id($id)
             LEFT JOIN technology on rttg.technology_id=technology.value
             LEFT JOIN risk_to_additional_stakeholder rtas on b.id=rtas.risk_id
             LEFT JOIN user adsh on rtas.user_id=adsh.value
+            LEFT JOIN risk_catalog cat on cat.id=b.risk_catalog_mapping
         WHERE
             b.id=:id
             " . $separation_query . "
@@ -4823,8 +4910,9 @@ function get_mitigation_by_id($risk_id)
 
     // Query the database
     $stmt = $db->prepare("SELECT t1.*, 
-            GROUP_CONCAT(mtc.control_id) mitigation_controls,
+            GROUP_CONCAT(DISTINCT mtc.control_id) mitigation_controls,
             t1.risk_id AS id,
+            t1.id AS mitigation_id,
             t2.name AS planning_strategy_name,
             t3.name AS mitigation_effort_name,
             t4.min_value AS mitigation_min_cost, t4.max_value AS mitigation_max_cost,
@@ -4928,7 +5016,7 @@ function get_review_by_id($risk_id)
         require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
         // Strip out risks the user should not have access to
-        $array = strip_no_access_risks($array);
+        $array = strip_no_access_risks($array, null, "risk_id");
     }
 
     // If the array is empty
@@ -7202,7 +7290,7 @@ function get_project_tabs($status)
     } 
     
     $index = 0;
-    
+    $str = "";
     foreach ($projects as $project)
     {
         if ($project['status'] == $status)
@@ -7224,7 +7312,9 @@ function get_project_tabs($status)
             // If project ID was defined
             else
             {
-                $delete = '<a href="javascript:voice(0);" class="project-block--delete pull-right" data-id="'.$escaper->escapeHtml($id).'"><i class="fa fa-trash"></i></a>';
+                if(isset($_SESSION["delete_projects"]) && $_SESSION["delete_projects"] == 1) {
+                    $delete = '<a href="javascript:void(0);" class="project-block--delete pull-right" data-id="'.$escaper->escapeHtml($id).'"><i class="fa fa-trash"></i></a>';
+                } else $delete ='';
                 $no_sort = '';
                 $name = $escaper->escapeHtml($name);
 
@@ -7237,14 +7327,14 @@ function get_project_tabs($status)
             // Get count of risks for this project
             $count = count($risks);
 
-            echo '<div class="project-block clearfix" '.$no_sort.'>';
-                echo '<div class="project-block--header clearfix" data-project="'.$escaper->escapeHtml($id).'">
+            $str .= '<div class="project-block clearfix" '.$no_sort.'>';
+                $str .= '<div class="project-block--header clearfix" data-project="'.$escaper->escapeHtml($id).'">
                 <div class="project-block--priority pull-left">'.$escaper->escapeHtml($priority).'</div>
                 <div class="project-block--name pull-left">'. $name .'</div>
                 <div class="project-block--risks pull-left"><span>'.$count.'</span><a href="#" class="view--risks">'.$escaper->escapeHtml($lang['ViewRisk']).'</a>'.$delete.'</div>
                 </div>';
 
-                echo '<div class="risks">';
+                $str .= '<div class="risks">';
 
                 // For each risk
                 foreach ($risks as $risk)
@@ -7256,17 +7346,18 @@ function get_project_tabs($status)
 
                     $risk_number = (int)$risk_id + 1000;
 
-                    echo '<div class="risk clearfix">
+                    $str .= '<div class="risk clearfix">
                             <div class="pull-left risk--title"  data-risk="'.$escaper->escapeHtml($risk_id).'"><a href="../management/view.php?id=' . $escaper->escapeHtml(convert_id($risk_id)) . '" target="_blank">#'.$risk_number.' '.$escaper->escapeHtml($subject).'</a></div>
                             <div class="pull-right risk--score"> ' . $escaper->escapeHtml($lang['InherentRisk']) . ' : <span class="label label-danger" style="background-color: '. $escaper->escapeHtml($color) .'">'.$risk['calculated_risk'].'</span> </div>
                             </div>';
                 }
 
-                echo "</div>\n";
+                $str .= "</div>\n";
 
-            echo "</div>\n";
+            $str .= "</div>\n";
         }
     }
+    return $str;
 
     //echo "</div>\n";
     //echo "<br /><input type=\"submit\" name=\"update_projects\" value=\"". $escaper->escapeHtml($lang['SaveRisksToProjects']) ."\" />\n";
@@ -8028,7 +8119,9 @@ function close_risk($risk_id, $user_id, $status, $close_reason, $note, $closure_
     $stmt->execute();
 
     // Get the new mitigation id
-    $close_id = get_close_id($id);
+    $close_id = $db->lastInsertId();
+
+
 
     // Update the risk
       $stmt = $db->prepare("UPDATE risks SET status=:status,last_update=:date,close_id=:close_id WHERE id = :id");
@@ -8406,7 +8499,7 @@ function update_mitigation($risk_id, $post)
     
     // Save mitigation controls
     $mitigation_id = get_mitigation_id($id);
-    save_mitigation_controls($mitigation_id, $mitigation_controls);
+    save_mitigation_controls($mitigation_id, $mitigation_controls, $post);
         
     // Save mitigation teams
     save_junction_values("mitigation_to_team", "mitigation_id", $mitigation_id, "team_id", $mitigation_team);
@@ -8482,7 +8575,7 @@ function update_mitigation($risk_id, $post)
     $residual_risk = get_residual_risk((int)$id + 1000);
     add_residual_risk_scoring_history($id, $residual_risk);
 
-    return $current_datetime;
+    return $error;
 }
 
 /**************************
@@ -8580,92 +8673,70 @@ function get_reviews($risk_id)
 /****************************
  * FUNCTION: LATEST VERSION *
  ****************************/
-function latest_version($param)
-{
+function latest_version($param) {
+    $latest_versions = latest_versions();
+    
+    if (isset($latest_versions[$param]))
+        return $latest_versions[$param];
+    else
+        return "";
+}
+
+/****************************************************************************
+ * FUNCTION: LATEST VERSIONS                                                *
+ * Gets the list of the latest versions and caches it, so if it's needed    *
+ * multiple times in the same request it will still only be loaded once     * 
+ ****************************************************************************/
+function latest_versions() {
+
+    if(isset($GLOBALS['latest_versions_cached'])){
+        return $GLOBALS['latest_versions_cached'];
+    }
+
+    // Url for SimpleRisk current versions
+    $url = 'https://updates.simplerisk.com/Current_Version.xml';
+    write_debug_log("Checking latest versions at " . $url);
+
     // Configure the proxy server if one exists
     $method = "GET";
     $header = "content-type: Content-Type: application/x-www-form-urlencoded";
-    set_proxy_stream_context($method, $header);
+    $context = set_proxy_stream_context($method, $header);
 
-    $version_page = file('https://updates.simplerisk.com/Current_Version.xml');
+    // Set the default socket timeout to 5 seconds
+    ini_set('default_socket_timeout', 5);
 
-    if ($param == "app")
-    {
-        $regex_pattern = "/<appversion>(.*)<\/appversion>/";
-    }
-    else if ($param == "db")
-    {
-        $regex_pattern = "/<dbversion>(.*)<\/dbversion>/";
-    }
-    else if ($param == "authentication")
-    {
-        $regex_pattern = "/<authentication>(.*)<\/authentication>/";
-    }
-    else if ($param == "encryption")
-    {
-        $regex_pattern = "/<encryption>(.*)<\/encryption>/";
-    }
-    else if ($param == "importexport" || $param == "import-export")
-    {
-        $regex_pattern = "/<importexport>(.*)<\/importexport>/";
-    }
-    else if ($param == "notification")
-    {
-        $regex_pattern = "/<notification>(.*)<\/notification>/";
-    }
-    else if ($param == "separation")
-    {
-        $regex_pattern = "/<separation>(.*)<\/separation>/";
-    }
-    else if ($param == "upgrade")
-    {
-        $regex_pattern = "/<upgrade>(.*)<\/upgrade>/";
-    }
-    else if ($param == "assessments")
-    {
-        $regex_pattern = "/<assessments>(.*)<\/assessments>/";
-    }
-    else if ($param == "api")
-    {
-        $regex_pattern = "/<api>(.*)<\/api>/";
-    }
-    else if ($param == "complianceforge")
-    {
-        $regex_pattern = "/<complianceforge>(.*)<\/complianceforge>/";
-    }
-    else if ($param == "complianceforgescf")
-    {
-        $regex_pattern = "/<complianceforgescf>(.*)<\/complianceforgescf>/";
-    }
-    else if ($param == "customization")
-    {
-        $regex_pattern = "/<customization>(.*)<\/customization>/";
-    }
-    else if ($param == "advanced_search")
-    {
-        $regex_pattern = "/<advanced_search>(.*)<\/advanced_search>/";
-    }
-    else if ($param == "jira")
-    {
-        $regex_pattern = "/<jira>(.*)<\/jira>/";
-    }
-    else if ($param == "ucf")
-    {
-        $regex_pattern = "/<ucf>(.*)<\/ucf>/";
-    }
-    
-    $latest_version = "";
+    // Get the file headers for the URL
+    $file_headers = @get_headers($url, 1);
 
-    foreach ($version_page as $line)
-    {
-        if (preg_match($regex_pattern, $line, $matches))
-        {
-            $latest_version = $matches[1];
-        }
-    }
+    // If we were unable to connect to the URL
+    if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
+    {           
+        write_debug_log("SimpleRisk was unable to connect to " . $url);
 
-    // Return the latest version
-    return $latest_version;
+        // Return 0 for the latest versions
+        $GLOBALS['latest_versions_cached'] = 0;
+        return $GLOBALS['latest_versions_cached'];
+    }
+    // We were able to connect to the URL
+    else
+    {
+        write_debug_log("SimpleRisk connected to " . $url);
+
+        // Load the versions file
+        $version_page = file_get_contents('https://updates.simplerisk.com/Current_Version.xml', null, $context);
+
+        // Convert it to be an array
+        $latest_versions = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
+
+        // Adding aliases, as the values not always requested with the same name the XML serves it
+        $latest_versions['import-export'] = $latest_versions['importexport'];
+        $latest_versions['app'] = $latest_versions['appversion'];
+        $latest_versions['db'] = $latest_versions['dbversion'];
+
+        // Return the latest versions
+        $GLOBALS['latest_versions_cached'] = $latest_versions;
+        return $GLOBALS['latest_versions_cached'];
+    }
 }
 
 /*****************************
@@ -8974,7 +9045,7 @@ function import_export_extra()
         // Open the database connection
         $db = db_open();
 
-    // See if the import export extra is available
+	// See if the import export extra is available
         $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'import_export'");
         $stmt->execute();
 
@@ -8995,6 +9066,19 @@ function import_export_extra()
                 return true;
         }
         else return false;
+}
+
+/***************************************
+ * FUNCTION: INCIDENT MANAGEMENT EXTRA *
+ ***************************************/
+function incident_management_extra()
+{
+    if(isset($GLOBALS['incident_management_extra'])){
+        return $GLOBALS['incident_management_extra'];
+    }
+
+    $GLOBALS['incident_management_extra'] = get_setting('incident_management');
+    return $GLOBALS['incident_management_extra'];
 }
 
 /***********************
@@ -9164,6 +9248,13 @@ function ucf_extra() {
     
     $GLOBALS['ucf_extra'] = get_setting('ucf');
     return $GLOBALS['ucf_extra'];
+}
+
+/********************************************
+ * FUNCTION: ORGANIZATIONAL HIERARCHY EXTRA *
+ ********************************************/
+function organizational_hierarchy_extra() {
+    return get_setting('organizational_hierarchy');
 }
 
 /****************************************
@@ -9552,8 +9643,13 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
         {
             // echo "<input type=\"file\" name=\"file\" />\n";
             echo '<div class="file-uploader">';
+            echo "
+                  <script>
+                      var max_upload_size = " . $escaper->escapeJs(get_setting('max_upload_size', 0)) . ";
+                      var fileTooBigMessage = '" . $escaper->escapeJs($lang['FileIsTooBigToUpload']) . "';
+                  </script>";
             echo '<label for="file-upload" class="btn active-textfield">'.$escaper->escapeHtml($lang['ChooseFile']).'</label> <span class="file-count-html"><span class="file-count">0</span> '.$escaper->escapeHtml($lang['FileAdded']).'</span>';
-            echo "<p><font size=\"2\"><strong>Max ". round(get_setting('max_upload_size')/1024/1024) ." Mb</strong></font></p>";
+            echo "<p><font size=\"2\"><strong>Max ". $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)) ." Mb</strong></font></p>";
             echo '<ul class="file-list">';
 
             echo '</ul>';
@@ -9585,6 +9681,10 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
             }
             echo '
                 <div class="file-uploader">
+                <script>
+                    var max_upload_size = ' . $escaper->escapeJs(get_setting('max_upload_size', 0)) . ';
+                    var fileTooBigMessage = "' . $escaper->escapeJs($lang['FileIsTooBigToUpload']) . '"; 
+                </script>
                 <label for="file-upload" class="btn active-textfield">Choose File</label> <span class="file-count-html">'.$count.' Added</span>
                     <ul class="exist-files">
                         '.$documentHtml.'
@@ -9816,11 +9916,41 @@ function write_debug_log($value)
     // If DEBUG is enabled
     if ($debug_logging == 1)
     {
-        // Log file to write to
-        $log_file = get_setting("debug_log_file");
+        // If the value is not an array
+        if (!is_array($value))
+        {
+            // Log file to write to
+            $log_file = get_setting("debug_log_file");
 
-        // Write to the error log
-        $return = error_log(date('c')." ".$value."\n", 3, $log_file);
+            $root_path = str_replace('/', '\\', $_SERVER["DOCUMENT_ROOT"]);
+            $log_path = str_replace('/', '\\', realpath(dirname($log_file)));
+            if($root_path != $log_path ) {
+                // Write to the error log
+                $return = error_log(date('c')." ".$value."\n", 3, $log_file);
+            }
+        }
+        // If the value is an array
+        else
+        {
+            // For each key value pair in the array
+            foreach ($value as $key => $newvalue)
+            {
+                // If the newvalue is an array
+                if (is_array($newvalue))
+                {
+                    write_debug_log("Array key: " . $key);
+
+                    // Recursively call the write_debug_log function on it
+                    write_debug_log($newvalue);
+                }
+                // If the newvalue is not an array
+                else
+                {
+                    // Call the write_debug_log function on the key value pair
+                    write_debug_log($key . " => " . $newvalue);
+                }
+            }
+        }
     }
 }
 
@@ -9843,44 +9973,51 @@ function add_registration($name="", $company="", $title="", $phone="", $email=""
         'title' => $title,
         'phone' => $phone,
         'email' => $email,
-    'fname' => $fname,
-    'lname' => $lname,
+        'fname' => $fname,
+        'lname' => $lname,
     );
 
     // Register instance with the web service
     $results = simplerisk_service_call($data);
 
+    // If the result is false or an empty results array was returned
     if (!$results || !is_array($results)) {
+        write_debug_log("The result of the SimpleRisk services call was false or an empty array was returned");
+
         set_alert(true, "bad", $lang['FailedToRegisterInstance']);
 
         // Return a failure
         return 0;
     }
+    else
+    {
+        write_debug_log("Successfully made the SimpleRisk service call");
+        set_alert(true, "good", "Successfully made the SimpleRisk service call");
+    }
 
+    // For each line in the results returned from the SimpleRisk service call
     foreach ($results as $line)
     {
         if (preg_match("/<api_key>(.*)<\/api_key>/", $line, $matches))
         {
+            write_debug_log("An API key was returned from the SimpleRisk services tier");
+            set_alert(true, "good", "An API key was returned from the SimpleRisk services tier");
+
             $services_api_key = $matches[1];
 
             // Open the database connection
             $db = db_open();
 
             // Add the registration
-            $stmt = $db->prepare("INSERT INTO `settings` (name, value) VALUES ('registration_name', :name), ('registration_company', :company), ('registration_title', :title), ('registration_phone', :phone), ('registration_email', :email), ('registration_fname', :fname), ('registration_lname', :lname), ('services_api_key', :services_api_key)");
-            $stmt->bindParam(":name", $name, PDO::PARAM_STR, 200);
-            $stmt->bindParam(":company", $company, PDO::PARAM_STR, 200);
-            $stmt->bindParam(":title", $title, PDO::PARAM_STR, 200);
-            $stmt->bindParam(":phone", $phone, PDO::PARAM_STR, 200);
-            $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
-            $stmt->bindParam(":fname", $fname, PDO::PARAM_STR, 200);
-            $stmt->bindParam(":lname", $lname, PDO::PARAM_STR, 200);
-            $stmt->bindParam(":services_api_key", $services_api_key, PDO::PARAM_STR, 50);
-            $stmt->execute();
-
-            // Mark the instance as registered
-            $stmt = $db->prepare("INSERT INTO `settings` VALUES ('registration_registered', '1') ON DUPLICATE KEY UPDATE value='1';");
-            $stmt->execute();
+            add_setting("registration_name", $name);
+            add_setting("registration_company", $company);
+            add_setting("registration_title", $title);
+            add_setting("registration_phone", $phone);
+            add_setting("registration_email", $email);
+            add_setting("registration_fname", $fname);
+            add_setting("registration_lname", $lname);
+            add_setting("services_api_key", $services_api_key);
+            update_or_insert_setting("registration_registered", 1);
 
             // Download the upgrade extra
             $result = download_extra("upgrade");
@@ -10611,6 +10748,12 @@ function _lang($__key, $__params=array(), $__escape=true){
 
     $__return = $lang[$__key];
 
+    // Have to sort the keys from longest to shortest to make sure not replacing 
+    // $user instead of $username when encountering the pattern of {$username}
+    uksort($__params, function ($b, $a) {
+        return (strlen($a) == strlen($b) ? strcmp($a, $b) : strlen($a) - strlen($b));
+    });
+    
     foreach($__params as $key => $value) {
         // It has to work for all the variable types found in the language files
         $__return = str_replace('{$' . $key .'}', $value, $__return);
@@ -11303,17 +11446,14 @@ function ping_server()
     // Add the database version to the path
     $path .= "&db_version=" . $db_version;
 
-    // Close the database connection
-    db_close($db);
-
     // If the instance is registered
     if (get_setting('registration_registered') != 0)
     {
         // Load the upgrade.php file
         //require_once(realpath(__DIR__ . '/../extras/upgrade/index.php'));
         $path .= "&email_notification_installed=" . core_is_installed("notification");
-    $path .= "&email_notification_enabled=" . notification_extra();
-    $path .= "&email_notification_version=" . core_extra_current_version("notification");
+        $path .= "&email_notification_enabled=" . notification_extra();
+        $path .= "&email_notification_version=" . core_extra_current_version("notification");
         $path .= "&import_export_installed=" . core_is_installed("import-export");
         $path .= "&import_export_enabled=" . import_export_extra();
         $path .= "&import_export_version=" . core_extra_current_version("import-export");
@@ -11338,7 +11478,7 @@ function ping_server()
         $path .= "&complianceforgescf_installed=" . core_is_installed("complianceforgescf");
         $path .= "&complianceforgescf_enabled=" . complianceforge_scf_extra();
         $path .= "&complianceforgescf_version=" . core_extra_current_version("complianceforgescf");
-    $path .= "&advanced_search_installed=" . core_is_installed("advanced_search");
+        $path .= "&advanced_search_installed=" . core_is_installed("advanced_search");
         $path .= "&advanced_search_enabled=" . advanced_search_extra();
         $path .= "&advanced_search_version=" . core_extra_current_version("advanced_search");
         $path .= "&jira_installed=" . core_is_installed("jira");
@@ -11347,13 +11487,38 @@ function ping_server()
         $path .= "&ucf_installed=" . core_is_installed("ucf");
         $path .= "&ucf_enabled=" . ucf_extra();
         $path .= "&ucf_version=" . core_extra_current_version("ucf");
+        $path .= "&incident_management_installed=" . core_is_installed("incident_management");
+        $path .= "&incident_management_enabled=" . incident_management_extra();
+        $path .= "&incident_management_version=" . core_extra_current_version("incident_management");
+        $path .= "&organizational_hierarchy_installed=" . core_is_installed("organizational_hierarchy");
+        $path .= "&organizational_hierarchy_enabled=" . organizational_hierarchy_extra();
+        $path .= "&organizational_hierarchy_version=" . core_extra_current_version("organizational_hierarchy");
+
+        // If the organizational hierarchy extra is enabled
+	if (organizational_hierarchy_extra())
+	{
+		// Get the count of business units
+        	$stmt = $db->prepare("SELECT COUNT(id) FROM business_unit;");
+        	$stmt->execute();
+        	$array = $stmt->fetchAll();
+        	$organizational_hierarchy_count = (int)$array[0][0];	
+
+		// Add the count of business units to the path
+		$path .= "&organizational_hierarchy_count=" . $organizational_hierarchy_count;
+	}
     }
 
+    // Close the database connection
+    db_close($db);
+
     // Configure the proxy server if one exists
-    set_proxy_stream_context();
+    $context = set_proxy_stream_context();
+
+    // Set the default socket timeout to 5 seconds
+    ini_set('default_socket_timeout', 5);
 
     // Make the https request
-    file_get_contents("https://ping.simplerisk.com" . $path);
+    file_get_contents("https://ping.simplerisk.com" . $path, null, $context);
 }
 
 /*******************************************
@@ -11367,17 +11532,9 @@ function create_simplerisk_instance_id()
     // If the instance id is false
     if ($instance_id == false)
     {
-        // Open the database connection
-        $db = db_open();
-
         // Create a random instance id
         $instance_id = generate_token(50);
-        $stmt = $db->prepare("INSERT INTO `settings` VALUES ('instance_id', :instance_id)");
-        $stmt->bindParam(":instance_id", $instance_id, PDO::PARAM_STR, 50);
-        $stmt->execute();
-
-        // Close the database connection
-        db_close($db);
+	add_setting("instance_id", $instance_id);
 
         // Return the instance_id
         return $instance_id;
@@ -12222,7 +12379,7 @@ function set_all_teams_to_administrators() {
     // Close the database connection
     db_close($db);
 
-    $team_ids = get_all_teams();
+    $team_ids = get_all_team_values();
 
     foreach($admins as $admin) {
         set_teams_of_user($admin, $team_ids);
@@ -12518,8 +12675,8 @@ function delete_likelihood()
  **********************/
 function is_admin($id = false)
 {
-    // If there's no user id provided it will work the way it did before
-    if ($id === false) {
+    // If there's no user id provided OR we're checking the logged in user then it will work the way it did before
+    if ($id === false || (int)$id === (int)$_SESSION['uid']) {
         // If the user is not logged in as an administrator
         if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
         {
@@ -12682,16 +12839,159 @@ function upload_compliance_files($test_audit_id, $ref_type, $files, $version=1)
         return [true, $file_ids, []];
     }
 }
+/*************************************
+ * FUNCTION: UPLOAD EXCEPTION FILES *
+ *************************************/
+function upload_exception_files($test_audit_id, $ref_type, $files, $version=1)
+{
+    $user = $_SESSION['uid'];
+    
+    // Open the database connection
+    $db = db_open();
+    
+    // Get the list of allowed file types
+    $stmt = $db->prepare("SELECT `name` FROM `file_types`");
+    $stmt->execute();
+    $file_types = $stmt->fetchAll();
+
+    // Get the list of allowed file extensions
+    $stmt = $db->prepare("SELECT `name` FROM `file_type_extensions`");
+    $stmt->execute();
+    $file_type_extensions = $stmt->fetchAll();
+
+    // Create an array of allowed types
+    foreach ($file_types as $key => $row)
+    {
+        $allowed_types[] = $row['name'];
+    }
+
+    // Create an array of allowed extensions
+    foreach ($file_type_extensions as $key => $row)
+    {
+        $allowed_extensions[] = $row['name'];
+    }
+    
+    $errors = array();
+
+    $file_ids = [];
+
+    foreach($files['name'] as $key => $name){
+        if(!$name)
+            continue;
+            
+        $file = array(
+            'name' => $files['name'][$key],
+            'type' => $files['type'][$key],
+            'tmp_name' => $files['tmp_name'][$key],
+            'size' => $files['size'][$key],
+            'error' => $files['error'][$key],
+        );
+        
+        if (strlen($file['name']) <= 100) {
+        
+            // If the file type is appropriate
+            if (in_array($file['type'], $allowed_types))
+            {
+                // If the file extension is appropriate
+                if (in_array(pathinfo($file['name'], PATHINFO_EXTENSION), $allowed_extensions))
+                {
+                // Get the maximum upload file size
+                $max_upload_size = get_setting("max_upload_size");
+    
+                // If the file size is less than max size
+                if ($file['size'] < $max_upload_size)
+                {
+                    // If there was no error with the upload
+                    if ($file['error'] == 0)
+                    {
+                        // Read the file
+                        $content = fopen($file['tmp_name'], 'rb');
+    
+                        // Create a unique file name
+                        $unique_name = generate_token(30);
+    
+                        // Store the file in the database
+                        $stmt = $db->prepare("INSERT compliance_files (ref_id, ref_type, name, unique_name, type, size, user, content, version) VALUES (:ref_id, :ref_type, :name, :unique_name, :type, :size, :user, :content, :version)");
+                        $stmt->bindParam(":ref_id", $test_audit_id, PDO::PARAM_INT);
+                        $stmt->bindParam(":ref_type", $ref_type, PDO::PARAM_STR);
+                        $stmt->bindParam(":name", $file['name'], PDO::PARAM_STR, 30);
+                        $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
+                        $stmt->bindParam(":type", $file['type'], PDO::PARAM_STR, 30);
+                        $stmt->bindParam(":size", $file['size'], PDO::PARAM_INT);
+                        $stmt->bindParam(":user", $user, PDO::PARAM_INT);
+                        $stmt->bindParam(":content", $content, PDO::PARAM_LOB);
+                        $stmt->bindParam(":version", $version, PDO::PARAM_INT);
+                        $stmt->execute();
+                        
+                        $file_ids[] = $db->lastInsertId();
+                    }
+                    // Otherwise
+                    else
+                    {
+                        switch ($file['error'])
+                        {
+                            case 1:
+                                $errors[] = "The uploaded file exceeds the upload_max_filesize directive in php.ini.";
+                                break;
+                            case 2:
+                                $errors[] = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.";
+                                break;
+                            case 3:
+                                $errors[] = "The uploaded file was only partially uploaded.";
+                                break;
+                            case 4:
+//                                $errors[] = "No file was uploaded.";
+                                break;
+                            case 6:
+                                $errors[] = "Missing a temporary folder.";
+                                break;
+                            case 7:
+                                $errors[] = "Failed to write file to disk.";
+                                break;
+                            case 8:
+                                $errors[] = "A PHP extension stopped the file upload.";
+                                break;
+                            default:
+                                $errors[] = "There was an error with the file upload.";
+                        }
+                    }
+                }
+                else $errors[] = "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
+                }
+                else $errors[] = "The file extension of the uploaded file (" . pathinfo($file['name'], PATHINFO_EXTENSION) . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
+            }
+            else $errors[] = "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
+        } else $errors[] = "The uploaded file name is longer than the allowed maximum (100 characters).";
+    }
+
+    // Close the database connection
+    db_close($db);
+    
+    if($errors){
+        return [false, [], $errors];
+    }else{
+        return [true, $file_ids, []];
+    }
+}
 
 /****************************
  * FUNCTION: GET USER TEAMS *
  ****************************/
 function get_user_teams($user_id) {
 
-    // Open the database connection
-    $db = db_open();
 
     // Query the database
+    if (!is_admin($user_id) && organizational_hierarchy_extra()) {
+        // If the Organizational Hierarchy is activated only those teams should be returned that the user is assigned to
+        // AND in the user's selected business unit. Unless it's an Admin user. Admins can see eerything.
+        require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
+        
+        return get_teams_of_user_from_selected_business_unit($user_id, false);
+    }
+        
+    // Open the database connection
+    $db = db_open();
+    
     $stmt = $db->prepare("
         SELECT
             distinct `t`.`value`
@@ -12703,6 +13003,7 @@ function get_user_teams($user_id) {
             `u`.`value` = :user_id
             AND `t`.`value` IS NOT NULL;
     ");
+
     $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -12719,8 +13020,10 @@ function get_user_teams($user_id) {
  * FUNCTION: GET USERS IN TEAM *
  *******************************/
 function get_users_of_team($team_id) {
-
-    // Open the database connection
+    // Commented implementation as the function is not used yet
+    // and it wouldn't work properly with the Organizational Hierarchy extra
+    
+    /*// Open the database connection
     $db = db_open();
 
     // Get the user information
@@ -12744,7 +13047,7 @@ function get_users_of_team($team_id) {
     // Close the database connection
     db_close($db);
 
-    return $users;
+    return $users;*/
 }
 
 /*******************************
@@ -12799,14 +13102,16 @@ function set_teams_of_user($user_id, $team_ids) {
  * second parameter is an array of team ids. *
  *********************************************/
 function add_user_to_teams($user_id, $team_ids) {
-    set_teams_of_user($user_id,
+    // Commented implementation as the function is not used yet
+    // and it wouldn't work properly with the Organizational Hierarchy extra
+    /*set_teams_of_user($user_id,
         array_unique( // to remove duplicates
             array_merge( // to merge the existing and new teams
                 get_user_teams($user_id),
                 $team_ids
             )
         )
-    );
+    );*/
 }
 
 /*********************************************
@@ -12816,12 +13121,14 @@ function add_user_to_teams($user_id, $team_ids) {
  * second parameter is an array of team ids. *
  *********************************************/
 function remove_user_from_teams($user_id, $team_ids) {
-    set_teams_of_user($user_id,
+    // Commented implementation as the function is not used yet
+    // and it wouldn't work properly with the Organizational Hierarchy extra
+    /*set_teams_of_user($user_id,
         array_diff( // to remove the teams from the existing
             get_user_teams($user_id),
             $team_ids
         )
-    );
+    );*/
 }
 
 /************************************************
@@ -12831,14 +13138,16 @@ function remove_user_from_teams($user_id, $team_ids) {
  * second parameter is an array of user ids.    *
  ************************************************/
 function add_users_to_team($team_id, $user_ids) {
-    set_users_of_team($team_id,
+    // Commented implementation as the function is not used yet
+    // and it wouldn't work properly with the Organizational Hierarchy extra
+    /*set_users_of_team($team_id,
         array_unique( // to remove duplicates
             array_merge( // to merge the existing and new teams
                 get_users_of_team($team_id),
                 $user_ids
             )
         )
-    );
+    );*/
 }
 
 /************************************************
@@ -12848,18 +13157,21 @@ function add_users_to_team($team_id, $user_ids) {
  * second parameter is an array of user ids.    *
  ************************************************/
 function remove_users_from_team($team_id, $user_ids) {
-    set_users_of_team($team_id,
+    // Commented implementation as the function is not used yet
+    // and it wouldn't work properly with the Organizational Hierarchy extra
+    /*set_users_of_team($team_id,
         array_diff( // to remove the teams from the existing
             get_users_of_team($team_id),
             $user_ids
         )
-    );
+    );*/
 }
 
-/***************************
- * FUNCTION: GET ALL TEAMS *
- ***************************/
-function get_all_teams()
+/************************************************************
+ * FUNCTION: GET ALL TEAM VALUES                            *
+ * It gets ALL TEAM VALUES regardless of Business Units.    *
+ ************************************************************/
+function get_all_team_values()
 {
     // Open the database connection
     $db = db_open();
@@ -12873,6 +13185,26 @@ function get_all_teams()
     db_close($db);
 
     // Return the list of teams 
+    return $teams;
+}
+
+/****************************************************
+ * FUNCTION: GET ALL TEAMS                          *
+ * It gets ALL TEAMS regardless of Business Units.  *
+ ****************************************************/
+function get_all_teams() {
+    // Open the database connection
+    $db = db_open();
+    
+    // Query the database
+    $stmt = $db->prepare("SELECT * FROM `team` ORDER BY `name`;");
+    $stmt->execute();
+    $teams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+    
+    // Return the list of teams
     return $teams;
 }
 
@@ -13005,6 +13337,9 @@ function trial_extra($extra_name)
     // Check the Extra permission
     switch($extra_name)
     {
+        case 'advanced_search':
+            // Allow
+            return false;
         case 'api':
             // Allow
             return false;
@@ -13018,24 +13353,27 @@ function trial_extra($extra_name)
             // Allow
             return false;
         case 'encryption':
-            // Don't Allow
-            return true;
+            // Allow
+            return false;
         case 'importexport':
             // Allow
             return false;
+	   case 'incident_management':
+            // Allow
+            return false;
+	   case 'jira':
+            // Allow
+            return false;
         case 'notification':
+            // Allow
+            return false;
+        case 'organizational_hierarchy':
             // Allow
             return false;
         case 'riskassessment':
             // Allow
             return false;
         case 'separation':
-            // Allow
-            return false;
-        case 'advanced_search':
-            // Allow
-            return false;
-        case 'jira':
             // Allow
             return false;
     }
@@ -13049,6 +13387,9 @@ function small_extra($extra_name)
     // Check the Extra permission
     switch($extra_name)
     {
+        case 'advanced_search':
+            // Don't Allow
+            return true;
         case 'api':
             // Don't Allow
             return true;
@@ -13067,19 +13408,22 @@ function small_extra($extra_name)
         case 'importexport':
             // Allow
             return false;
+        case 'incident_management':
+            // Don't Allow
+            return true;
+        case 'jira':
+            // Don't Allow
+            return true;
         case 'notification':
             // Allow
             return false;
+        case 'organizational_hierarchy':
+            // Don't Allow
+            return true;
         case 'riskassessment':
             // Allow
             return false;
         case 'separation':
-            // Don't Allow
-            return true;
-        case 'advanced_search':
-            // Don't Allow
-            return true;
-        case 'jira':
             // Don't Allow
             return true;
     }
@@ -13093,6 +13437,9 @@ function medium_extra($extra_name)
     // Check the Extra permission
     switch($extra_name)
     {
+        case 'advanced_search':
+            // Don't Allow
+            return true;
         case 'api':
             // Don't Allow
             return true;
@@ -13111,21 +13458,24 @@ function medium_extra($extra_name)
         case 'importexport':
             // Allow
             return false;
+        case 'incident_management':
+            // Don't Allow
+            return true;
+        case 'jira':
+            // Don't Allow
+            return true;
         case 'notification':
             // Allow
             return false;
+        case 'organizational_hierarchy':
+            // Don't Allow
+            return true;
         case 'riskassessment':
             // Allow
             return false;
         case 'separation':
             // Allow
             return false;
-        case 'advanced_search':
-            // Don't Allow
-            return true;
-        case 'jira':
-            // Don't Allow
-            return true;
     }
 }
 
@@ -13137,6 +13487,9 @@ function large_extra($extra_name)
     // Check the Extra permission
     switch($extra_name)
     {
+        case 'advanced_search':
+            // Allow
+            return false;
         case 'api':
             // Allow
             return false;
@@ -13155,6 +13508,15 @@ function large_extra($extra_name)
         case 'importexport':
             // Allow
             return false;
+        case 'incident_management':
+            // Don't Allow
+            return true;
+        case 'jira':
+            // Allow
+            return false;
+        case 'organizational_hierarchy':
+            // Allow
+            return false;
         case 'notification':
             // Allow
             return false;
@@ -13162,12 +13524,6 @@ function large_extra($extra_name)
             // Allow
             return false;
         case 'separation':
-            // Allow
-            return false;
-        case 'advanced_search':
-            // Allow
-            return false;
-        case 'jira':
             // Allow
             return false;
     }
@@ -13680,13 +14036,15 @@ function prevent_extra_double_submit($extra, $is_enable) {
         ($extra == "team_separation" && (team_separation_extra() == $is_enable)) ||
         ($extra == "notification" && (notification_extra() == $is_enable)) ||
         ($extra == "import_export" && (import_export_extra() == $is_enable)) ||
+        ($extra == "incident_management" && (incident_management_extra() == $is_enable)) ||
         ($extra == "api" && (api_extra() == $is_enable)) ||
         ($extra == "assessments" && (assessments_extra() == $is_enable)) ||
         ($extra == "complianceforge" && (complianceforge_extra() == $is_enable)) ||
         ($extra == "complianceforge_scf" && (complianceforge_scf_extra() == $is_enable)) ||
         ($extra == "advanced_search" && (advanced_search_extra() == $is_enable)) ||
         ($extra == "jira" && (jira_extra() == $is_enable)) ||
-    ($extra == "ucf" && (ucf_extra() == $is_enable)) ||
+        ($extra == "organizational_hierarchy" && (organizational_hierarchy_extra() == $is_enable)) ||
+        ($extra == "ucf" && (ucf_extra() == $is_enable)) ||
         ($extra == "governance" && (governance_extra() == $is_enable));
 
     if ($interrupt) {
@@ -14119,7 +14477,9 @@ function update_risk_level($field, $value, $name) {
 function include_csrf_magic() {
 
     function csrf_startup() {
-        csrf_conf('rewrite-js', $_SESSION['base_url'].'/includes/csrf-magic/csrf-magic.js');
+        $base_url = get_base_url();
+        //csrf_conf('rewrite-js', $base_url.'/includes/csrf-magic/csrf-magic.js');
+	csrf_conf('rewrite-js', get_setting('simplerisk_base_url').'/includes/csrf-magic/csrf-magic.js');
     }
 
     require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
@@ -14701,7 +15061,7 @@ function get_dynamic_saved_selections($user_id)
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT value, name, type, custom_display_settings, custom_selection_settings FROM `dynamic_saved_selections` WHERE `type`='public' OR (`type`='private' AND user_id=:user_id) ;");
+    $stmt = $db->prepare("SELECT value, name, type, custom_display_settings, custom_selection_settings, custom_column_filters FROM `dynamic_saved_selections` WHERE `type`='public' OR (`type`='private' AND user_id=:user_id) ;");
     $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -14722,7 +15082,7 @@ function get_dynamic_saved_selection($value)
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT user_id, name, type, custom_display_settings, custom_selection_settings FROM `dynamic_saved_selections` WHERE `value`=:value;");
+    $stmt = $db->prepare("SELECT user_id, name, type, custom_display_settings, custom_selection_settings, custom_column_filters FROM `dynamic_saved_selections` WHERE `value`=:value;");
     $stmt->bindParam(":value", $value, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -14883,6 +15243,8 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
     // If proxy web requests is set
     if ($proxy_web_requests)
     {
+	write_debug_log("Proxy web requests is enabled");
+
         // Get the proxy configuration
         $proxy_verify_ssl_certificate = get_setting("proxy_verify_ssl_certificate");
         $proxy_host = get_setting("proxy_host");
@@ -14898,39 +15260,61 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
             'request_fulluri' => true,
         );
 
+	write_debug_log("HTTP Context - Proxy: " . $http_context['proxy']);
+	write_debug_log("HTTP Context - Ignore Errors: " . $http_context['ignore_errors']);
+	write_debug_log("HTTP Context - Request Full URI: " . $http_context['request_fulluri']);
+
         // Create the ssl context array
         $ssl_context = array(
             'SNI_enabled' => false
         );
 
+	write_debug_log("SSL Context - SNI Enabled: " . $ssl_context['SNI_enabled']);
+
         // If this is an authenticated proxy
         if ($proxy_authenticated)
         {
+	    write_debug_log("We are using an authenticated proxy");
+
             // Create the BASE64 encoded credentials
             $auth = base64_encode("$proxy_user:$proxy_pass");
 
             // Add the authenticated header to the http_context
             $http_context['header'] = "Proxy-Authorization: Basic $auth";
+
+	    write_debug_log("HTTP Context - Header: " . $http_context['header']);
         }
 
         // If we want to turn off ssl verification
         if (!$proxy_verify_ssl_certificate || $ssl_verify_off == true)
         {
+	    write_debug_log("SSL verification is disabled");
+
             $ssl_context['verify_peer'] = false;
             $ssl_context['verify_peer_name'] = false;
             $ssl_context['allow_self_signed'] = true;
+
+	    write_debug_log("SSL Context - Verify Peer: " . $ssl_context['verify_peer']);
+	    write_debug_log("SSL Context - Verify Peer Name: " . $ssl_context['verify_peer_name']);
+	    write_debug_log("SSL Context - Allow Self Signed: " . $ssl_context['allow_self_signed']);
         }
 
         // If the function was provided a method
         if ($method)
         {
+	    write_debug_log("A method was provided");
+
             // Set the provided method
             $http_context['method'] = $method;
+
+	    write_debug_log("HTTP Context - Method: " . $http_context['method']);
         }
 
         // If the function was provided a header
         if ($header)
         {
+	    write_debug_log("A header was provider");
+
             // If a http header is already set
             if (isset($http_context['header']))
             {
@@ -14943,18 +15327,84 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
                 // Set the provided header
                 $http_context['header'] = $header;
             }
+
+	    write_debug_log("HTTP Context - Header: " . $http_context['header']);
         }
 
         // If the function was provided content
         if ($content)
         {
+	    write_debug_log("Content was provided");
+
             // Set the provided content
             $http_context['content'] = $content;
+
+	    write_debug_log("HTTP Context - Content: " . $http_context['content']);
         }
 
         // Set the stream context
         $stream_context = array ('http' => $http_context, 'ssl' => $ssl_context);
-        stream_context_set_default($stream_context);
+
+	//write_debug_log("Stream Context: ");
+	//write_debug_log($stream_context);
+
+        // Return the default stream context resource
+        return stream_context_set_default($stream_context);
+    }
+    // Otherwise, if the proxy is not enabled
+    else
+    {
+        // Create array for the http context
+        $http_context = array();
+
+        // If the function was provided a method
+        if ($method)
+        {
+            write_debug_log("A method was provided");
+
+            // Set the provided method
+            $http_context['method'] = $method;
+
+            write_debug_log("HTTP Context - Method: " . $http_context['method']);
+        }
+
+        // If the function was provided a header
+        if ($header)
+        {
+            write_debug_log("A header was provider");
+
+            // If a http header is already set
+            if (isset($http_context['header']))
+            {
+                // Append the provided header
+                $http_context['header'] .= "\r\n" . $header;
+            }
+            // Otherwise
+            else
+            {
+                // Set the provided header
+                $http_context['header'] = $header;
+            }
+
+            write_debug_log("HTTP Context - Header: " . $http_context['header']);
+        }        
+
+        // If the function was provided content
+        if ($content)
+        {
+            write_debug_log("Content was provided");
+
+            // Set the provided content
+            $http_context['content'] = $content;
+
+            write_debug_log("HTTP Context - Content: " . $http_context['content']);
+        }
+
+        // Set the stream context
+        $stream_context = array ('http' => $http_context);
+
+        // Return the default stream context resource
+        return stream_context_set_default($stream_context);
     }
 }
 
@@ -15113,10 +15563,23 @@ function get_operator_from_value($value)
 function get_latest_app_version() {
     if (!isset($_SESSION['latest_version_app']) || !$_SESSION['latest_version_app']) {
         $_SESSION['latest_version_app'] = latest_version('app');
-        error_log("get_latest_app_version: " . json_encode($_SESSION['latest_version_app']));
     }
 
     return $_SESSION['latest_version_app'];
+}
+
+function setup_favicon($path_to_root = "") {   
+
+    global $escaper;
+
+    if ($path_to_root) {
+        if($path_to_root[strlen($path_to_root)-1] !== '/') {
+            $path_to_root .= '/';
+        }
+        $path_to_root = $escaper->escapeHtml($path_to_root);
+    }
+
+    echo "<link rel='shortcut icon' href='{$path_to_root}favicon.ico' />\n";
 }
 
 /**********************************************
@@ -15135,6 +15598,203 @@ function get_mitigation_team_query_string($user_teams, $field_name)
 
     // Return the string
     return $string;
+}
+/********************************************
+ * FUNCTION: GET mitigation_to_controls    *
+ ********************************************/
+function get_mitigation_to_controls($mitigation_id,$control_id)
+{
+    // Open the database connection
+    $db = db_open();
+    // Query the database
+    $stmt = $db->prepare("SELECT * FROM `mitigation_to_controls` WHERE mitigation_id = :mitigation_id AND control_id = :control_id");
+    $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+
+    $stmt->execute();
+    $frameworks = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $frameworks;
+}
+/*******************************
+ * FUNCTION: GET RISK CATALOGS *
+ *******************************/
+function get_risk_catalogs()
+{
+    // Open the database connection
+    $db = db_open();
+    // Query the database
+    $stmt = $db->prepare("
+        SELECT t1.*,g.name grouping_name, f.name function_name FROM `risk_catalog` t1
+            LEFT JOIN `risk_grouping` g ON t1.`grouping` = g.`value`
+            LEFT JOIN `risk_function` f ON t1.`function` = f.`value`
+        WHERE 1
+        ORDER By t1.order
+    ");
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+    return $result;
+}
+/*******************************
+ * FUNCTION: GET RISK CATALOG  *
+ *******************************/
+function get_risk_catalog($id)
+{
+    // Open the database connection
+    $db = db_open();
+    $stmt = $db->prepare("SELECT * FROM `risk_catalog` WHERE `id` = :id");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Close the database connection
+    db_close($db);
+    return $result;
+}
+/***************************************
+ * FUNCTION: UPDATE RISK CATALOG ORDER *
+ ***************************************/
+function uodate_risk_catalog_order($orders)
+{
+    // Open the database connection
+    $db = db_open();
+    foreach ($orders as $index => $row)
+    {
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET `order` = :order WHERE `id` = :id");
+        $stmt->bindParam(":order", $row[1], PDO::PARAM_INT);
+        $stmt->bindParam(":id", $row[0], PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    // Close the database connection
+    db_close($db);
+    return true;
+}
+/******************************
+ * FUNCTION: ADD RISK CATALOG *
+ ******************************/
+function add_risk_catalog($data)
+{
+    // Open the database connection
+    $db = db_open();
+    $stmt = $db->prepare("SELECT MAX(`order`) + 1 as new_order FROM `risk_catalog` WHERE 1");
+    $stmt->execute();
+    $result = $stmt->fetch();
+    $new_order = $result["new_order"];
+    $stmt = $db->prepare("INSERT INTO `risk_catalog` (`number`, `grouping`, `name`, `description`, `function`, `order`) VALUES (:number, :grouping, :name, :description, :function, :order)");
+    $stmt->bindParam(":number", $data["number"], PDO::PARAM_STR);
+    $stmt->bindParam(":grouping", $data["grouping"], PDO::PARAM_INT);
+    $stmt->bindParam(":name", $data["name"], PDO::PARAM_STR);
+    $stmt->bindParam(":description", $data["description"], PDO::PARAM_STR);
+    $stmt->bindParam(":function", $data["function"], PDO::PARAM_INT);
+    $stmt->bindParam(":order", $new_order, PDO::PARAM_INT);
+    $stmt->execute();
+    $risk_id = $db->lastInsertId();
+    // Close the database connection
+    db_close($db);
+    return true;
+}
+/*********************************
+ * FUNCTION: UPDATE RISK CATALOG *
+ *********************************/
+function update_risk_catalog($data)
+{
+    // Open the database connection
+    $db = db_open();
+    $stmt = $db->prepare("UPDATE `risk_catalog` SET `number` = :number, `grouping` = :grouping, `name` = :name, `description` = :description, `function` = :function WHERE `id` = :id;");
+    $stmt->bindParam(":id", $data["id"], PDO::PARAM_INT);
+    $stmt->bindParam(":number", $data["number"], PDO::PARAM_STR);
+    $stmt->bindParam(":grouping", $data["grouping"], PDO::PARAM_INT);
+    $stmt->bindParam(":name", $data["name"], PDO::PARAM_STR);
+    $stmt->bindParam(":description", $data["description"], PDO::PARAM_STR);
+    $stmt->bindParam(":function", $data["function"], PDO::PARAM_INT);
+    $stmt->execute();
+    $risk_id = $db->lastInsertId();
+    // Close the database connection
+    db_close($db);
+    return true;
+}
+/*********************************
+ * FUNCTION: DLETE RISK CATALOG  *
+ *********************************/
+function delete_risk_catalog($id)
+{
+    // Open the database connection
+    $db = db_open();
+    $stmt = $db->prepare("DELETE FROM `risk_catalog` WHERE `id` = :id;");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $risk_id = $db->lastInsertId();
+    // Close the database connection
+    db_close($db);
+    return true;
+}
+/*****************************
+ * FUNCTION: GET RISK STATUS *
+ *****************************/
+function get_risk_status($risk_id){
+    $id = (int)$risk_id - 1000;
+    // Open the database connection
+    $db = db_open();
+    $stmt = $db->prepare("SELECT * FROM `risks` WHERE `id` = :id;");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $risk = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+    $status = $risk?$risk["status"]:"";
+
+    return $status;
+
+}
+
+/***************************************
+ * FUNCTION: FILE UPLOAD ERROR MESSAGE *
+ ***************************************/
+function file_upload_error_message($error)
+{
+	switch ($error)
+	{
+		// File exceeds the upload_max filesize directive
+		case 1:
+			$message = "The uploaded file exceeds the upload_max_filesize directive in php.ini.";
+			break;
+		// File exceed the MAX_FILE_SIZE directive in the HTML form
+		case 2:
+			$message = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.";
+			break;
+		// File was only partially uploaded
+		case 3:
+			$message = "The uploaded file was only partially uploaded.";
+			break;
+		// No file was uploaded
+		case 4:
+			$message = "No file was uploaded.";
+			break;
+		// Temporary folder is missing
+		case 6:
+			$message = "Missing a temporary folder.";
+			break;
+		// Failed to write file to disk
+		case 7:
+			$message = "Failed to write file to disk.";
+			break;
+		// PHP extension stopped file upload
+		case 8:
+			$message = "A PHP extension stopped the file upload.";
+			break;
+		// Generic default error message
+		default:
+			$message = "There was an error with the file upload.";
+	}
+
+	// Write a message to the debug log
+	write_debug_log($message);
+
+	// Display an alert
+        set_alert(true, "bad", $message);
+
+	// Return the message
+	return $message;
 }
 
 ?>

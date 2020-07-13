@@ -63,6 +63,15 @@
         // Set all teams to admistrator users
         set_all_teams_to_administrators();
 
+        // If the Organizational Hierarchy extra is turned on
+        // the new teams should be assigned to the default business unit
+        if (organizational_hierarchy_extra()) {
+            // Include the Organizational Hierarchy Extra
+            require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
+
+            assign_teams_to_default_business_unit();
+        }
+        
         return $teamId;
     };
 
@@ -188,6 +197,14 @@
             'lengthLimit' => 100,
             'customDeleteFunction' => $customDeleteFunction_test_status,
         ),
+        'risk_grouping' => array(
+            'headerKey' => 'RiskGroupings',
+            'lengthLimit' => 50,
+        ),
+        'risk_function' => array(
+            'headerKey' => 'RiskFunctions',
+            'lengthLimit' => 50,
+        ),
     );
 
     if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
@@ -312,6 +329,7 @@
         <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
         <?php
+            setup_favicon("..");
             setup_alert_requirements("..");
         ?>
     </head>

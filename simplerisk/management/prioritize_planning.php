@@ -45,7 +45,6 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   header("Location: ../index.php");
   exit(0);
 }
-
 // Include the CSRF-magic library
 // Make sure it's called after the session is properly setup
 include_csrf_magic();
@@ -53,123 +52,9 @@ include_csrf_magic();
 // Enforce that the user has access to risk management
 enforce_permission_riskmanagement();
 
-// If the risks were saved to projects
-if (isset($_POST['update_projects']))
-{
-  foreach ($_POST['ids'] as $risk_id)
-  {
-    $project_id = $_POST['risk_' . $risk_id];
-    update_risk_project($project_id, $risk_id);
-  }
-
-  // Display an alert
-  set_alert(true, "good", "The risks were saved successfully to the projects.");
-}
-
-
-// If the order was updated
-if (isset($_POST['update_order']))
-{
-  foreach ($_POST['ids'] as $id)
-  {
-    $order = $_POST['order_' . $id];
-    update_project_order($order, $id);
-  }
-
-  // Display an alert
-  set_alert(true, "good", "The project order was updated successfully.");
-}
-
-// If the projects were saved to status
-if (isset($_POST['update_project_status']))
-{
-  // For each project
-  foreach ($_POST['projects'] as $project_id)
-  {
-    // Update its project status
-    $status_id = $_POST['project_' . $project_id];
-    update_project_status($status_id, $project_id);
-
-    // If the project status is Completed (3)
-    if ($status_id == 3)
-    {
-      // Close the risks associated with the project
-      completed_project($project_id);
-    }
-    // Otherwise
-    else
-    {
-      // Reopen the risks associated with the project
-      incomplete_project($project_id);
-    }
-  }
-
-  // Display an alert
-  set_alert(true, "good", "The project statuses were successfully updated.");
-}
-
-// Check if a new project was submitted
-if (isset($_POST['add_project']))
-{
-  $name = $_POST['new_project'];
-
-  // Check if the project name is null
-  if (isset($name) && $name == "")
-  {
-    // Display an alert
-    set_alert(true, "bad", "The project name cannot be empty.");
-  }
-  // Otherwise
-  else
-  {
-    // Insert a new project up to 100 chars
-    add_name("projects", try_encrypt($name), 100);
-
-    // Display an alert
-    set_alert(true, "good", "A new project was added successfully.");
-  }
-}
-
-// Check if a project was deleted
-if (isset($_POST['delete_project']))
-{
-  $value = (int)$_POST['projects'];
-
-  // Verify value is an integer
-  if (is_int($value))
-  {
-    // If the project ID is 0 (ie. Unassigned Risks)
-    if ($value == 0)
-    {
-      // Display an alert
-      set_alert(true, "bad", "You cannot delete the Unassigned Risks project or we will have no place to put unassigned risks.  Sorry.");
-    }
-    else
-    {
-      // Get the risks associated with the project
-      $risks = get_project_risks($value);
-
-      // For each associated risk
-      foreach ($risks as $risk)
-      {
-        // Set the project ID for the risk to unassigned (0)
-        update_risk_project(0, $risk['id']);
-      }
-
-      // Delete the project
-      delete_value("projects", $value);
-
-      // Display an alert
-      set_alert(true, "good", "An existing project was deleted successfully.");
-    }
-  }
-  // We should never get here as we bound the variable as an int
-  else
-  {
-    // Display an alert
-    set_alert(true, "bad", "The project ID was not a valid value.  Please try again.");
-  }
-}
+if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
+	$dragable = 1;
+} else $dragable = 0;
 
 ?>
 
@@ -198,6 +83,7 @@ if (isset($_POST['delete_project']))
   <link rel="stylesheet" href="../css/theme.css">
     
   <?php
+      setup_favicon("..");
       setup_alert_requirements("..");
   ?>
 
@@ -369,7 +255,9 @@ if (isset($_POST['delete_project']))
 
               <div class="status-tabs">
 
-                <a href="#project--add" role="button" data-toggle="modal" class="project--add"><i class="fa fa-plus"></i></a>
+                <?php if (isset($_SESSION["add_projects"]) && $_SESSION["add_projects"] == 1) { ?>
+                    <a href="#project--add" role="button" data-toggle="modal" class="project--add"><i class="fa fa-plus"></i></a>
+                <?php }?>
 
                 <ul class="clearfix tabs-nav">
                   <li><a href="#active-projects" class="status" data-status="1"><?php echo $escaper->escapeHtml($lang['ActiveProjects']); ?> (<?php get_projects_count(1) ?>)</a></li>
@@ -387,19 +275,20 @@ if (isset($_POST['delete_project']))
               </div> <!-- status-tabs -->
 
               <div id="active-projects" class="sortable">
-                    <?php get_project_tabs(1) ?>
+                    <?php echo get_project_tabs(1) ?>
               </div>
               <div id="on-hold-projects" class="sortable">
-                    <?php get_project_tabs(2) ?>
+                    <?php echo get_project_tabs(2) ?>
               </div>
               <div id="closed-projects" class="sortable">
-                    <?php get_project_tabs(3) ?>
+                    <?php echo get_project_tabs(3) ?>
               </div>
 
               <div id="canceled-projects" class="sortable">
-                    <?php get_project_tabs(4) ?>
+                    <?php echo get_project_tabs(4) ?>
               </div>
             </div>
+            <input type="hidden" name="is_dragable" id="is_dragable" value="<?php echo $dragable;?>" />
 
             <!-- Container Ends  -->
           </div>

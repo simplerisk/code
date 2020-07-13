@@ -43,7 +43,63 @@ $possible_permissions = [
     'create_exception',
     'update_exception',
     'delete_exception',
-    'approve_exception'
+    'approve_exception',
+    'add_projects',
+    'delete_projects',
+    'manage_projects',
+    'define_tests',
+    'edit_tests',
+    'delete_tests',
+    'initiate_audits',
+    'modify_audits',
+    'reopen_audits',
+    'delete_audits'
+];
+
+// Localization keys for permissions. If you add a new permission please add it to this list.
+$possible_permission_localization_keys = [
+    'governance' => 'AllowAccessToGovernanceMenu',
+    'add_new_frameworks' => 'AbleToAddNewFrameworks',
+    'modify_frameworks' => 'AbleToModifyExistingFrameworks',
+    'delete_frameworks' => 'AbleToDeleteExistingFrameworks',
+    'add_new_controls' => 'AbleToAddNewControls',
+    'modify_controls' => 'AbleToModifyExistingControls',
+    'delete_controls' => 'AbleToDeleteExistingControls',
+    'add_documentation' => 'AbleToAddDocumentation',
+    'modify_documentation' => 'AbleToModifyDocumentation',
+    'delete_documentation' => 'AbleToDeleteDocumentation',
+    'view_exception' => 'AbleToViewDocumentException',
+    'create_exception' => 'AbleToCreateDocumentException',
+    'update_exception' => 'AbleToUpdateDocumentException',
+    'delete_exception' => 'AbleToDeleteDocumentException',
+    'approve_exception' => 'AbleToApproveDocumentException',
+    'riskmanagement' => 'AllowAccessToRiskManagementMenu',
+    'submit_risks' => 'AbleToSubmitNewRisks',
+    'modify_risks' => 'AbleToModifyExistingRisks',
+    'close_risks' => 'AbleToCloseRisks',
+    'plan_mitigations' => 'AbleToPlanMitigations',
+    'accept_mitigation' => 'AbleToAcceptMitigations',
+    'review_insignificant' => 'AbleToReviewInsignificantRisks',
+    'review_low' => 'AbleToReviewLowRisks',
+    'review_medium' => 'AbleToReviewMediumRisks',
+    'review_high' => 'AbleToReviewHighRisks',
+    'review_veryhigh' => 'AbleToReviewVeryHighRisks',
+    'comment_risk_management' => 'AbleToCommentRiskManagement',
+    'add_projects' => 'AbleToAddProjects',
+    'delete_projects' => 'AbleToDeleteProjects',
+    'manage_projects' => 'AbleToManageProjects',
+    'compliance' => 'AllowAccessToComplianceMenu',
+    'comment_compliance' => 'AbleToCommentCompliance',
+    'define_tests' => 'AbleToDefineTests',
+    'edit_tests' => 'AbleToEditTests',
+    'delete_tests' => 'AbleToDeleteTests',
+    'initiate_audits' => 'AbleToInitiateAudits',
+    'modify_audits' => 'AbleToModifyAudits',
+    'reopen_audits' => 'AbleToReopenAudits',
+    'delete_audits' => 'AbleToDeleteAudits',
+    'asset' => 'AllowAccessToAssetManagementMenu',
+    'assessments' => 'AllowAccessToAssessmentsMenu',
+    'admin' => 'AllowAccessToConfigureMenu'
 ];
 
 /*******************************
@@ -267,18 +323,30 @@ function set_user_permissions($user, $upgrade = false)
     // If we are not doing an upgrade
     if (!$upgrade)
     {
+        
+        $organizational_hierarchy_extra = organizational_hierarchy_extra();
+        
+        $user_query_sql = "
+                SELECT
+                    value,
+                    type,
+                    name,
+                    lang,
+                    custom_display_settings,
+                    " . ($organizational_hierarchy_extra ? "selected_business_unit, " : "") . "
+                    " . implode(',', $possible_permissions) . "
+                FROM user WHERE";
+        
         // If strict user validation is disabled
         if (get_setting('strict_user_validation') == 0)
         {
             // Query the DB for the users complete information
-            $stmt = $db->prepare("
-                SELECT value, type, name, lang, custom_display_settings, " . implode(',', $possible_permissions) . "
-                FROM user WHERE LOWER(convert(`username` using utf8)) = LOWER(:user); ");
+            $stmt = $db->prepare($user_query_sql . " LOWER(convert(`username` using utf8)) = LOWER(:user);");
         }
         else
         {
             // Query the DB for the users complete information
-            $stmt = $db->prepare("SELECT value, type, name, lang, custom_display_settings, " . implode(',', $possible_permissions) . " FROM user WHERE username = :user;");
+            $stmt = $db->prepare($user_query_sql . " `username` = :user;");
         }
     }
     // If we are doing an upgrade
@@ -332,6 +400,11 @@ function set_user_permissions($user, $upgrade = false)
             // Set the encrypted password in the session
 //            $_SESSION['encrypted_pass'] = get_enc_pass($user, fetch_tmp_pass());
 //        }
+        if ($organizational_hierarchy_extra) {
+            $_SESSION['selected_business_unit'] = $array[0]['selected_business_unit'];
+            require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
+            fix_selected_business_unit($_SESSION['uid'], $array[0]['selected_business_unit']);
+        }
     }
 
     // Get the latest SimpleRisk version and add it to the session
@@ -560,6 +633,11 @@ function password_reset_by_userid($userid)
     $name = $array[0]['name'];
     $email = $array[0]['email'];
 
+    // Delete previous tokens for this user
+    $stmt = $db->prepare("DELETE FROM password_reset WHERE username=:username");
+    $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
+    $stmt->execute();
+
     // Insert into the password reset table
     $stmt = $db->prepare("INSERT INTO password_reset (`username`, `token`) VALUES (:username, :token)");
 
@@ -682,6 +760,13 @@ function password_reset_by_token($username, $token, $password, $repeat_password)
                 $stmt->bindParam(":hash", $hash, PDO::PARAM_STR, 60);
                 $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
                 $stmt->execute();
+
+                // Delete tokens for this user
+                $stmt = $db->prepare("DELETE FROM password_reset WHERE username=:username AND token=:token");
+                $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
+                $stmt->bindParam(":token", $token, PDO::PARAM_STR,20);
+                $stmt->execute();
+
 
                 // Close the database connection
                 db_close($db);

@@ -74,6 +74,8 @@
         // RISK API from form
         getRoute()->get('/reports/appetite', 'appetite_report_api');
         getRoute()->post('/reports/high_risk', 'high_risk_report_datatable');
+        getRoute()->post('/reports/user_management_reports', 'user_management_reports_api');
+        getRoute()->get('/reports/user_management_reports_unique_column_data', 'user_management_reports_unique_column_data_api');
 
         getRoute()->post('/management/risk/reopen', 'reopenForm');
         getRoute()->get('/management/risk/overview', 'overviewForm');
@@ -135,8 +137,9 @@
         getRoute()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
         getRoute()->get('/governance/related_controls_by_framework_ids', 'getRelatedControlsByFrameworkIdsResponse');
         
+        getRoute()->post('/governance/add_control', 'addControlResponse');
         getRoute()->post('/governance/update_control', 'updateControlResponse');
-        
+
         getRoute()->get('/compliance/define_tests', 'getDefineTestsResponse');
         getRoute()->get('/compliance/test', 'getTestResponse');
         getRoute()->get('/compliance/initiate_audits', 'getInitiateTestAuditsResponse');
@@ -170,10 +173,6 @@
         getRoute()->get('/assessment/contacts-users/options', 'assessment_extra_questionnaireContactsUsersOptionsAPI');
         /******************************************************************************/
         
-        /**************************** Notification API ********************************/
-        getRoute()->post('/notification/save_settings_or_run_now', 'notification_extra_saveSettingsRunNowAPI');
-        /******************************************************************************/
-
         /******************************* Audit Log API **********************************/
         getRoute()->get('/audit_logs', 'get_audit_logs_api');
         /****************************************** *************************************/
@@ -196,16 +195,6 @@
         getRoute()->get('/asset-group/info', 'asset_group_info');
         getRoute()->get('/asset-group/options', 'get_asset_group_options');
         /********************************************************************************/
-
-        /********************* Authentication API **************************/
-        getRoute()->get('/authentication/ldap_group_dropdown', 'authentication_extra_ldap_group_dropdown');
-        /******************************************************************/
-
-        /********************* Customization API **************************/
-        getRoute()->post('/customization/addOption', 'customization_extra_addOption');
-        getRoute()->post('/customization/deleteOption', 'customization_extra_deleteOption');
-        getRoute()->post('/customization/saveTemplate', 'customization_extra_saveTemplate');
-        /******************************************************************/
 
         /********************* RISK FORMULA API ***************************/
         getRoute()->post('/riskformula/add_impact', 'add_impact_api');
@@ -232,10 +221,6 @@
         getRoute()->get('/exceptions/audit_log', 'get_exceptions_audit_log_api');
         /***********************************************************/
 
-        /******************************* Advanced Search API **********************************/
-        getRoute()->get('/advanced_search', 'advanced_search_api');
-        /**************************************************************************************/
-
         getRoute()->get('/management/tag_options_of_type', 'getTagOptionsOfType');
 
         // Return scoring histories
@@ -247,6 +232,7 @@
 
         // Interal api for ajax
         getRoute()->post('/set_custom_display', 'setCustomDisplay');
+        getRoute()->post('/set_custom_audits_column', 'setCustomAuditsColumn');
 
         // Define the API routes
         getApi()->get('/version.json', 'api_version', EpiApi::external);
@@ -261,6 +247,85 @@
         getRoute()->post('/likelihood_impact_chart/tooltip', 'get_tooltip_api');
 
         getRoute()->post('/one_click_upgrade', 'one_click_upgrade');
+
+        /**************************** PROJECT API ******************************/
+        getRoute()->post('/management/project/add', 'add_project_api');
+        getRoute()->post('/management/project/delete', 'delete_project_api');
+        getRoute()->post('/management/project/update', 'update_project_api');
+        getRoute()->post('/management/project/update_status', 'update_project_status_api');
+        getRoute()->post('/management/project/update_order', 'update_project_order_api');
+
+        // Get risk catalog table data
+        getRoute()->get('/admin/risk_catalog/datatable', 'getRiskCatalogDatatableAPI');
+        getRoute()->get('/admin/risk_catalog/detail', 'getRiskCatalogAPI');
+        getRoute()->post('/admin/risk_catalog/update_order', 'updateRiskCatalogOrderAPI');
+        getRoute()->post('/admin/risk_catalog/add_risk_catalog', 'addRiskCatalogAPI');
+        getRoute()->post('/admin/risk_catalog/update_risk_catalog', 'updateRiskCatalogAPI');
+        getRoute()->post('/admin/risk_catalog/delete_risk_catalog', 'deleteRiskCatalogAPI');
+
+	/************************** SIMPLERISK EXTRAS APIS ************************************/
+
+	// If the Incident Management Extra is enabled
+	if (incident_management_extra())
+	{
+		// Include the required API file
+		require_once(realpath(__DIR__ . '/../extras/incident_management/includes/api.php'));
+
+		// Get the incident management routes
+		get_incident_management_routes();
+	}
+
+        // If the Organizational Hierarchy Extra is enabled
+        if (organizational_hierarchy_extra())
+        {
+                // Include the required API file
+                require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/includes/api.php'));
+
+                // Get the organizational hierarchy routes
+                get_organizational_hierarchy_routes();
+        }
+
+        // If the Notification Extra is enabled
+        if (notification_extra())
+        {
+                // Include the required API file
+                require_once(realpath(__DIR__ . '/../extras/notification/includes/api.php'));
+
+                // Get the notification routes
+                get_notification_routes();
+        }
+
+        // If the Custom Authentication Extra is enabled
+        if (custom_authentication_extra())
+        {
+                // Include the required API file
+                require_once(realpath(__DIR__ . '/../extras/authentication/includes/api.php'));
+
+                // Get the authentication routes
+                get_authentication_routes();
+        }
+
+        // If the Advanced Search Extra is enabled
+        if (advanced_search_extra())
+        {
+                // Include the required API file
+                require_once(realpath(__DIR__ . '/../extras/advanced_search/includes/api.php'));
+
+                // Get the advanced search routes
+                get_advanced_search_routes();
+        }
+
+        // If the Customization Extra is enabled
+        if (customization_extra())
+        {
+                // Include the required API file
+                require_once(realpath(__DIR__ . '/../extras/customization/includes/api.php'));
+
+                // Get the customization routes
+                get_customization_routes();
+        }
+
+        /**************************************************************************************/
 
         // Run epiphany
         getRoute()->run();

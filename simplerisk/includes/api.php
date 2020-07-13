@@ -358,7 +358,7 @@ function dynamicrisk()
         $start = (isset($_GET['start']) && $_GET['start']) ? $_GET['start'] : 0;
         $length = (isset($_GET['length']) && $_GET['length']) ? $_GET['length'] : 10;
         $rowCount = "";
-        
+
         // Get column filters
         $column_filters = isset($_GET['column_filters']) ? $_GET['column_filters'] : [];
 
@@ -844,7 +844,8 @@ function dynamicriskForm()
                 $escaper->escapeHtml($row['mitigation_date']),
                 $escaper->escapeHtml($row['mitigation_control_names']),
                 $escaper->escapeHtml($row['risk_tags']),
-                $escaper->escapeHtml(format_datetime($row['closure_date'], "", "H:i"))
+                $escaper->escapeHtml(format_datetime($row['closure_date'], "", "H:i")),
+                $escaper->escapeHtml($row['comments'])
             );
 
             // If customization extra is enabled, add custom fields
@@ -1245,6 +1246,8 @@ function getTabHtml($id, $template){
         $OWASPNonCompliance = $risk[0]['OWASP_NonCompliance'];
         $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
         $custom = $risk[0]['Custom'];
+        $risk_catalog_mapping = $risk[0]['risk_catalog_mapping'];
+        $risk_catalog_name = $risk[0]['risk_catalog_name'];
         
         $ContributingLikelihood = $risk[0]['Contributing_Likelihood'];
         $contributing_risks_impacts = $risk[0]['Contributing_Risks_Impacts'];
@@ -1329,6 +1332,8 @@ function getTabHtml($id, $template){
         $OWASPNonCompliance = "";
         $OWASPPrivacyViolation = "";
         $custom = "";
+        $risk_catalog_mapping = "";
+        $risk_catalog_name = "";
         
         $ContributingLikelihood = "";
         $ContributingImpacts = [];
@@ -1945,12 +1950,12 @@ function saveMitigationForm()
         {
             $status = "Mitigation Planned";
             // Submit mitigation and get the mitigation date back
-            $mitigation_date = submit_mitigation($id, $status, $_POST);
+            $error = submit_mitigation($id, $status, $_POST);
         }
         else
         {
             // Update mitigation and get the mitigation date back
-            $mitigation_date = update_mitigation($id, $_POST);
+            $error = update_mitigation($id, $_POST);
         }
 
         $html = getTabHtml($id, 'details');
@@ -1964,6 +1969,16 @@ function saveMitigationForm()
 
         // Calculate residual risk score
         $data = ['score_wrapper_html' => $score_wrapper_html, 'html' => $html];
+        if ($error == 1)
+        {
+          // Display an alert
+          set_alert(true, "good", "The Mitigation has been successfully modified.");
+        }
+        else
+        {
+          // Display an alert
+          set_alert(true, "bad", $error);
+        }
 
         json_response(200, get_alert(true), $data);
     }
@@ -3058,6 +3073,13 @@ function setCustomDisplay(){
     $_SESSION['custom_display_settings'] = isset($_POST['columns']) ? $_POST['columns'] : array();
     save_custom_display_settings();
 }
+/*****************************************************************
+ * FUNCTION: SET CUSTOM AUDITS COLUMNS *
+ ****************************************************************/
+function setCustomAuditsColumn(){
+    $_SESSION['custom_audits_solumns'] = isset($_POST['columns']) ? $_POST['columns'] : array();
+    save_custom_display_settings();
+}
 
 /****************************
  * FUNCTION: DELETE MAPPING *
@@ -3287,7 +3309,7 @@ function getFrameworkControlsDatatable(){
             {
                 $clone = '<a href="#" class="control-block--clone pull-right" title="'.$escaper->escapeHtml($lang["Clone"]).'" data-id="'.$escaper->escapeHtml($control['id']).'"><i class="fa fa-clone"></i></a>';
             }
-            $delete = '<a href="javascript:voice(0);" class="control-block--delete pull-right" title="'.$escaper->escapeHtml($lang["Delete"]).'" data-id="'.$escaper->escapeHtml($control['id']).'"><i class="fa fa-trash"></i></a>';
+            $delete = '<a href="javascript:void(0);" class="control-block--delete pull-right" title="'.$escaper->escapeHtml($lang["Delete"]).'" data-id="'.$escaper->escapeHtml($control['id']).'"><i class="fa fa-trash"></i></a>';
             $html = "<div class='control-block item-block clearfix'>\n";
                 $html .= "<div class='control-block--header clearfix' data-project=''>\n";
 
@@ -3306,11 +3328,11 @@ function getFrameworkControlsDatatable(){
                             $html .= "</tr>\n";
                             $html .= "<tr>\n";
                                 $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </td>\n";
-                                $html .= "<td width='22%' >".$escaper->escapeHtml($control['short_name'])."</td>\n";
+                                $html .= "<td width='57%' colspan='3'>".$escaper->escapeHtml($control['short_name'])."</td>\n";
                                 $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
-                                $html .= "<td width='22%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
-                                $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlFrameworks'])."</strong>: </td>\n";
-                                $html .= "<td width='17%'>". display_expandable_framework_names($control['framework_names'], 8) ."</td>\n";
+                                $html .= "<td width='17%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
+                                //$html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlFrameworks'])."</strong>: </td>\n";
+                                //$html .= "<td width='17%'>". display_expandable_framework_names($control['framework_names'], 8) ."</td>\n";
                             $html .= "</tr>\n";
                             $html .= "<tr>\n";
                                 $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>\n";
@@ -3337,16 +3359,44 @@ function getFrameworkControlsDatatable(){
                                 $html .= "<td colspan='5'>".nl2br($escaper->escapeHtml($control['supplemental_guidance']))."</td>\n";
                             $html .= "</tr>\n";
                         $html .= "</table>\n";
+                        $mapped_frameworks = get_mapping_control_frameworks($control['id']);
+                        $html .= "<div class='container-fluid'>\n";
+                            $html .= "<div class='well'>";
+                                $html .= "<h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>";
+                                $html .= "<table width='100%' class='table table-bordered'>\n";
+                                    $html .= "<tr>\n";
+                                        $html .= "<th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>\n";
+                                        $html .= "<th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>\n";
+                                    $html .= "</tr>\n";
+                                    foreach ($mapped_frameworks as $framework){
+                                        $html .= "<tr>\n";
+                                            $html .= "<td>".$escaper->escapeHtml($framework['framework_name'])."</td>\n";
+                                            $html .= "<td>".$escaper->escapeHtml($framework['reference_name'])."</td>\n";
+                                        $html .= "</tr>\n";
+                                    }
+                                $html .= "</table>\n";
+                            $html .= "</div>\n";
+                        $html .= "</div>\n";
                     $html .= "</div>\n";
                 $html .= "</div>\n";
             $html .= "</div>\n";
             $data[] = [$html];
         }
+        $classList  = getAvailableControlClassList($control_framework);
+        $phaseList  = getAvailableControlPhaseList($control_framework);
+        $familyList  = getAvailableControlFamilyList($control_framework);
+        $ownerList  = getAvailableControlOwnerList($control_framework);
+        $priorityList  = getAvailableControlPriorityList($control_framework);
         $result = array(
             'draw' => $draw,
             'data' => $data,
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
+            'classList' => $classList ,
+            'phaseList' => $phaseList ,
+            'familyList' => $familyList ,
+            'ownerList' => $ownerList ,
+            'priorityList' => $priorityList ,
         );
         echo json_encode($result);
         exit;
@@ -3365,6 +3415,8 @@ function getMitigationControlsDatatable(){
     global $escaper;
 
     $draw = $escaper->escapeHtml($_GET['draw']);
+    $flag = $escaper->escapeHtml($_GET['flag']);
+    $mitigation_id = $escaper->escapeHtml($_GET['mitigation_id']);
     $control_ids = $_GET['control_ids'];
     $control_id_array = explode(",", $control_ids);
 
@@ -3385,6 +3437,7 @@ function getMitigationControlsDatatable(){
                 break;
             }
         }
+        $validation = get_mitigation_to_controls($mitigation_id,$control['id']);
         $html = "<div class='control-block item-block clearfix'>\n";
             $html .= "<div class='control-block--header clearfix' data-project=''>\n";
 
@@ -3429,6 +3482,66 @@ function getMitigationControlsDatatable(){
                         $html .= "</tr>\n";
                     $html .= "</table>\n";
                 $html .= "</div>\n";
+
+                $html .= "<div class='container-fluid'>\n";
+                $validation_mitigation_percent = ($validation["validation_mitigation_percent"] >= 0 && $validation["validation_mitigation_percent"] <= 100) ? $validation["validation_mitigation_percent"] : 0;
+                if($flag == "edit"){
+                    if($validation["validation_mitigation_percent"] >= 0 && $validation["validation_details"] != "") {
+                        $arrow_class = "fa-caret-down";
+                        $panel_css ="";
+                    } else {
+                        $arrow_class = "fa-caret-right";
+                        $panel_css ="display: none;";
+                    }
+                    $html .= "<div class='well'>";
+                        $html .= "<h5 class='collapsible--toggle'><span><i class='fa ".$arrow_class."'></i>".$escaper->escapeHtml($lang['ControlValidation'])."</span></h5>";
+                        $html .= "<div class='collapsible' style='".$panel_css."'>";
+                            $html .= "<div class='row-fluid'>";
+                                $html .= "<div class='span4'>
+                                    ".$escaper->escapeHtml($lang['Details']).":<br>
+                                    <textarea class='active-textfield' title='".$escaper->escapeHtml($lang['Details']) ."' name='validation_details_".$control['id']."' style='width:100%;' rows='3'>".$validation["validation_details"]."</textarea>
+                                </div>";
+                                $html .= "</div>";
+                                $html .= "<div class='row-fluid'>";
+                                $html .= "<div class='span4'>
+                                    ".$escaper->escapeHtml($lang['Owner']).":<br>
+                                    ".create_dropdown("enabled_users", $validation["validation_owner"], "validation_owner_".$control['id'], true, false, true)."
+                                </div>";
+                                $html .= "</div>";
+                                $html .= "<div class='row-fluid'>";
+                                $html .= "<div class='span4'>
+                                    ".$escaper->escapeHtml($lang['MitigationPercent']).":<br>
+                                    <input type='number' min='0' max='100' name='validation_mitigation_percent_".$control['id']."' value='".$escaper->escapeHtml($validation_mitigation_percent) ."' size='50' class='percent active-textfield' />
+                                </div>";
+                            $html .= "</div>\n";
+                        $html .= "</div>\n";
+                    $html .= "</div>\n";
+                }
+                if($flag == "view" && ($validation["validation_details"]|| $validation["validation_owner"] || $validation_mitigation_percent)){
+                    $html .= "<div class='well'>";
+                        $html .= "<h5><span>".$escaper->escapeHtml($lang['ControlValidation'])."</span></h5>";
+                        $html .= "<div class='row-fluid'>";
+                            $html .= "<div class='span4'>
+                                <b>".$escaper->escapeHtml($lang['Details']).":</b>&nbsp;
+                                ".nl2br($validation["validation_details"])."
+                            </div>";
+                            $html .= "</div>";
+                            $html .= "<div class='row-fluid'>";
+                            $html .= "<div class='span4'>
+                                <b>".$escaper->escapeHtml($lang['Owner']).":</b>&nbsp;
+                                ".$escaper->escapeHtml(get_name_by_value("user", $validation["validation_owner"]))."
+                            </div>";
+                        $html .= "</div>";
+                        $html .= "<div class='row-fluid'>";
+                            $html .= "<div class='span4'>
+                                <b>".$escaper->escapeHtml($lang['MitigationPercent']).":</b>&nbsp;
+                                ".$validation_mitigation_percent." %
+                            </div>";
+                        $html .= "</div>\n";
+                    $html .= "</div>\n";
+                }
+                $html .= "</div>\n";
+
             $html .= "</div>\n";
         $html .= "</div>\n";
         $data[] = [$html];
@@ -3496,29 +3609,16 @@ function updateFrameworkStatusResponse()
 }
 
 /****************************
- * FUNCTION: UPDATE CONTROL *
+ * FUNCTION: ADD CONTROL *
  ****************************/
-function updateControlResponse()
+function addControlResponse()
 {
     global $lang, $escaper;
-
-  $control_id = (int)$_POST['control_id'];
-
-  // If user has no permission to modify controls
-  if(empty($_SESSION['modify_controls']))
-  {
-      // Display an alert
-      set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyControlPermission']));
-  }
-  // Verify value is an integer
-  elseif (is_int($control_id))
-  {
-      $control = array(
+    $control = array(
         'short_name' => isset($_POST['short_name']) ? $_POST['short_name'] : "",
         'long_name' => isset($_POST['long_name']) ? $_POST['long_name'] : "",
         'description' => isset($_POST['description']) ? $_POST['description'] : "",
         'supplemental_guidance' => isset($_POST['supplemental_guidance']) ? $_POST['supplemental_guidance'] : "",
-        'framework_ids' => isset($_POST['frameworks']) ? $_POST['frameworks'] : "",
         'control_owner' => isset($_POST['control_owner']) ? (int)$_POST['control_owner'] : 0,
         'control_class' => isset($_POST['control_class']) ? (int)$_POST['control_class'] : 0,
         'control_phase' => isset($_POST['control_phase']) ? (int)$_POST['control_phase'] : 0,
@@ -3526,23 +3626,101 @@ function updateControlResponse()
         'control_priority' => isset($_POST['control_priority']) ? (int)$_POST['control_priority'] : 0,
         'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0,
         'mitigation_percent' => (isset($_POST['mitigation_percent']) && $_POST['mitigation_percent'] >= 0 && $_POST['mitigation_percent'] <= 100) ? (int)$_POST['mitigation_percent'] : 0
-      );
-      // Update the control
-      update_framework_control($control_id, $control);
-
-      // Display an alert
-      set_alert(true, "good", "An existing control was updated successfully.");
-
-      json_response(200, get_alert(true), []);
-  }
-  // We should never get here as we bound the variable as an int
-  else
-  {
-      // Display an alert
-      set_alert(true, "bad", "The control ID was not a valid value.  Please try again.");
-      json_response(400, get_alert(true), []);
-  }
+    );
+    $map_framework_ids = isset($_POST['map_framework_id'])?$_POST['map_framework_id']:array();
+    $reference_names = isset($_POST['reference_name'])?$_POST['reference_name']:array();
+    $map_frameworks = array();
+    foreach($map_framework_ids as $index=>$frameworks){
+        $reference_name = isset($reference_names[$index])?$reference_names[$index]:"";
+        $map_frameworks[] = array($frameworks,$reference_name);
+    }
+    $control["map_frameworks"] = $map_frameworks;
+    $control_id = "";
+    // Check if the control name is null
+    if (!$control['short_name'])
+    {
+        // Display an alert
+        set_alert(true, "bad", "The control name cannot be empty.");
+    }
+    // Otherwise
+    else
+    {
+        // If user has no permission for add new controls
+        if(empty($_SESSION['add_new_controls']))
+        {
+            // Display an alert
+            set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddControlPermission']));
+        }
+        // Insert a new control up to 100 chars
+        elseif($control_id = add_framework_control($control))
+        {
+            // Display an alert
+            set_alert(true, "good", "A new control was added successfully.");
+        }
+        else
+        {
+            // Display an alert
+            set_alert(true, "bad", "The control already exists.");
+        }
+    }
+    json_response(200, get_alert(true), array("control_id"=>$control_id));
 }
+/****************************
+ * FUNCTION: UPDATE CONTROL *
+ ****************************/
+function updateControlResponse()
+{
+    global $lang, $escaper;
+
+    $control_id = (int)$_POST['control_id'];
+
+    // If user has no permission to modify controls
+    if(empty($_SESSION['modify_controls']))
+    {
+        // Display an alert
+        set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyControlPermission']));
+    }
+    // Verify value is an integer
+    elseif (is_int($control_id))
+    {
+        $control = array(
+            'short_name' => isset($_POST['short_name']) ? $_POST['short_name'] : "",
+            'long_name' => isset($_POST['long_name']) ? $_POST['long_name'] : "",
+            'description' => isset($_POST['description']) ? $_POST['description'] : "",
+            'supplemental_guidance' => isset($_POST['supplemental_guidance']) ? $_POST['supplemental_guidance'] : "",
+            'control_owner' => isset($_POST['control_owner']) ? (int)$_POST['control_owner'] : 0,
+            'control_class' => isset($_POST['control_class']) ? (int)$_POST['control_class'] : 0,
+            'control_phase' => isset($_POST['control_phase']) ? (int)$_POST['control_phase'] : 0,
+            'control_number' => isset($_POST['control_number']) ? $_POST['control_number'] : "",
+            'control_priority' => isset($_POST['control_priority']) ? (int)$_POST['control_priority'] : 0,
+            'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0,
+            'mitigation_percent' => (isset($_POST['mitigation_percent']) && $_POST['mitigation_percent'] >= 0 && $_POST['mitigation_percent'] <= 100) ? (int)$_POST['mitigation_percent'] : 0
+        );
+        $map_framework_ids = isset($_POST['map_framework_id'])?$_POST['map_framework_id']:array();
+        $reference_names = isset($_POST['reference_name'])?$_POST['reference_name']:array();
+        $map_frameworks = array();
+        foreach($map_framework_ids as $index=>$frameworks){
+            $reference_name = isset($reference_names[$index])?$reference_names[$index]:"";
+            $map_frameworks[] = array($frameworks,$reference_name);
+        }
+        $control["map_frameworks"] = $map_frameworks;
+        // Update the control
+        update_framework_control($control_id, $control);
+
+        // Display an alert
+        set_alert(true, "good", "An existing control was updated successfully.");
+
+        json_response(200, get_alert(true), array("control_id"=>$control_id));
+    }
+    // We should never get here as we bound the variable as an int
+    else
+    {
+        // Display an alert
+        set_alert(true, "bad", "The control ID was not a valid value.  Please try again.");
+        json_response(400, get_alert(true), []);
+    }
+}
+
 
 /*************************************
  * FUNCTION: UPDATE FRAMEWORK PARENT *
@@ -3765,7 +3943,7 @@ function initiateFrameworkControlTestsResponse()
     global $lang, $escaper;
     
     // If the user has compliance permissions
-    if (check_permission_compliance())
+    if (check_permission_compliance() && isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1)
     {
         $id     = (int)$_POST['id'];
         $type   = $_POST['type'];
@@ -3789,7 +3967,7 @@ function initiateFrameworkControlTestsResponse()
     }
     else
     {
-        set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForCompliance']));
+        set_alert(true, "bad", $lang['NoPermissionForCompliance']);
         json_response(400, get_alert(true), NULL);
     }
     
@@ -3874,7 +4052,16 @@ function getControlResponse()
     {
         $id = $_GET['control_id'];
         $control = get_framework_control($id);
-        json_response(200, "Get framework control by ID", ["control" => $control]);
+        $mapped_frameworks = get_mapping_control_frameworks($id);
+        $html = "";
+        foreach ($mapped_frameworks as $framework){
+            $html .= "<tr>\n";
+                $html .= "<td>".create_dropdown('frameworks', $framework['framework'],'map_framework_id[]', true, false, true, 'required')."</td>\n";
+                $html .= "<td><input type='text' name='reference_name[]' value='".$escaper->escapeHtml($framework['reference_name'])."' class='form-control' maxlength='100' required></td>\n";
+                $html .= "<td><a href='javascript:void(0);' class='control-block--delete-mapping' title='".$escaper->escapeHtml($lang["Delete"])."'><i class='fa fa-trash'></i></a></td>\n";
+            $html .= "</tr>\n";
+        }
+        json_response(200, "Get framework control by ID", ["control" => $control, "mapped_frameworks" => $html]);
     }
     else
     {
@@ -3952,32 +4139,47 @@ function getDefineTestsResponse()
                     $html .= "<div class='control-block--row'>\n";
                         $html .= "<table width='100%'>\n";
                             $html .= "<tr>\n";
-                                $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>\n";
-                                $html .= "<td >".$escaper->escapeHtml($control['long_name'])."</td>\n";
+                                $html .= "<td width='20%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>\n";
+                                $html .= "<td width='80%'>".$escaper->escapeHtml($control['long_name'])."</td>\n";
                             $html .= "</tr>\n";
                             $html .= "<tr>\n";
-                                $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
-                                $html .= "<td >".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlFrameworks'])."</strong>: </td>\n";
-                                $html .= "<td>" . display_expandable_framework_names($control['framework_names'], 8) . "</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['control_number'])."</td>\n";
+                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
+                                $html .= "<td>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
                             $html .= "</tr>\n";
                             $html .= "<tr>\n";
                                 $html .= "<td align='right'><strong>". $escaper->escapeHtml($lang['Description']) ."</strong>: </td>\n";
-                                $html .= "<td colspan='5'>". nl2br($escaper->escapeHtml($control['description'])) ."</td>\n";
+                                $html .= "<td>". nl2br($escaper->escapeHtml($control['description'])) ."</td>\n";
                             $html .= "</tr>\n";
+                            $mapped_frameworks = get_mapping_control_frameworks($control['id']);
+                            if(count($mapped_frameworks) > 0){
+                                $html .= "<tr><td colspan='2'>\n";
+                                    $html .= "<div class='container-fluid'>\n";
+                                        $html .= "<div class='well'>";
+                                            $html .= "<h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>";
+                                            $html .= "<table width='100%' class='table table-bordered'>\n";
+                                                $html .= "<tr>\n";
+                                                    $html .= "<th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>\n";
+                                                    $html .= "<th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>\n";
+                                                $html .= "</tr>\n";
+                                                foreach ($mapped_frameworks as $framework){
+                                                    $html .= "<tr>\n";
+                                                        $html .= "<td>".$escaper->escapeHtml($framework['framework_name'])."</td>\n";
+                                                        $html .= "<td>".$escaper->escapeHtml($framework['reference_name'])."</td>\n";
+                                                    $html .= "</tr>\n";
+                                                }
+                                            $html .= "</table>\n";
+                                        $html .= "</div>\n";
+                                    $html .= "</div>\n";
+                                $html .= "</td></tr>\n";
+                            }
                         $html .= "</table>\n";
                     $html .= "</div>\n";
 
-                    $html .= "<div class='text-right'>\n";
-                        $html .= "<a href='#test--add' data-control-id='". $control['id'] ."' role='button' data-toggle='modal' class='btn add-test'>".$escaper->escapeHtml($lang['AddTest'])."</a>";
-                    $html .= "</div>\n";
-
+                    if(isset($_SESSION["define_tests"]) && $_SESSION["define_tests"] == 1){
+                        $html .= "<div class='text-right'>\n";
+                            $html .= "<a href='#test--add' data-control-id='". $control['id'] ."' role='button' data-toggle='modal' class='btn add-test'>".$escaper->escapeHtml($lang['AddTest'])."</a>";
+                        $html .= "</div>\n";
+                    }
                     $html .= "<div class='framework-control-test-list'>\n";
                         $html .= "<table width='100%' class='table table-bordered table-striped table-condensed sortable'>\n";
                             $html .= "
@@ -4005,6 +4207,13 @@ function getDefineTestsResponse()
                                     
                                     $last_date = format_date($test['last_date']);
                                     $next_date = format_date($test['next_date']);
+                                    if(isset($_SESSION["edit_tests"]) && $_SESSION["edit_tests"] == 1){
+                                        $edit_row = "<a data-id='".$escaper->escapeHtml($test['id'])."' class='edit-test' data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-pencil-square-o\"></i></a>";
+                                    } else $edit_row = "";
+                                    if(isset($_SESSION["delete_tests"]) && $_SESSION["delete_tests"] == 1){
+                                        $delete_row = "<a class='delete-row' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-trash\"></i></a>";
+                                    } else $delete_row = "";
+
                                     
                                     $html .= "
                                         <tr>
@@ -4016,9 +4225,7 @@ function getDefineTestsResponse()
                                             <td>".$escaper->escapeHtml($last_date)."</td>
                                             <td>".$escaper->escapeHtml($next_date)."</td>
                                             <td style='text-align:right'>".(int)$test['approximate_time']. " " .$escaper->escapeHtml($test['approximate_time'] > 1 ? $escaper->escapeHtml($lang['minutes']) : $escaper->escapeHtml($lang['minute']))."</td>
-                                            <td class='text-center'>
-                                                <a data-id='".$escaper->escapeHtml($test['id'])."' class='edit-test' data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;
-                                                <a class='delete-row' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-trash\"></i></a>
+                                            <td class='text-center'>{$edit_row}&nbsp;&nbsp;{$delete_row}
                                             </td>
                                         </tr>
                                     ";
@@ -4131,6 +4338,9 @@ function getInitiateTestAuditsResponse()
                 if ($separation_enabled && !in_array($framework['value'], $compliance_separation_access_info['frameworks']))
                     continue;
 
+                if(isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1) 
+                    $action = "<div class='text-center'><button data-id='{$framework['value']}' class='initiate-framework-audit-btn' >".$escaper->escapeHtml($lang['InitiateFrameworkAudit'])."</button></div>"; 
+                else $action = "";
                 $results[] = array(
                     'id' => 'framework_'.$framework['value'],
                     'state' => 'closed',
@@ -4139,7 +4349,7 @@ function getInitiateTestAuditsResponse()
                     'desired_frequency' => $escaper->escapeHtml($framework['desired_frequency']),
                     'next_audit_date' => $escaper->escapeHtml(format_date($framework['next_audit_date'])),
                     'status' => $escaper->escapeHtml($framework['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
-                    'action' => "<div class='text-center'><button data-id='{$framework['value']}' class='initiate-framework-audit-btn' >".$escaper->escapeHtml($lang['InitiateFrameworkAudit'])."</button></div>"
+                    'action' => $action
                 );
             }
         }
@@ -4151,6 +4361,9 @@ function getInitiateTestAuditsResponse()
                 if ($separation_enabled && !in_array($framework_control['id'], $compliance_separation_access_info['framework_controls']))
                     continue;
                 
+                if(isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1) 
+                    $action = "<div class='text-center'><button data-id='{$framework_control['id']}' class='initiate-control-audit-btn' >".$escaper->escapeHtml($lang['InitiateControlAudit'])."</button></div>"; 
+                else $action = "";
                 $results[] = array(
                     'id' => "control_".$framework_value."_".$framework_control['id'],
                     'state' => 'closed',
@@ -4159,7 +4372,7 @@ function getInitiateTestAuditsResponse()
                     'desired_frequency' => $escaper->escapeHtml($framework_control['desired_frequency']),
                     'next_audit_date' => $escaper->escapeHtml(format_date($framework_control['next_audit_date'])),
                     'status' => $escaper->escapeHtml($framework_control['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
-                    'action' => "<div class='text-center'><button data-id='{$framework_control['id']}' class='initiate-control-audit-btn' >".$escaper->escapeHtml($lang['InitiateControlAudit'])."</button></div>",
+                    'action' => $action
                 );
             }
         }
@@ -4174,6 +4387,9 @@ function getInitiateTestAuditsResponse()
                 if ($separation_enabled && !in_array($framework_control_test['id'], $compliance_separation_access_info['framework_control_tests']))
                     continue;
 
+                if(isset($_SESSION["initiate_audits"]) && $_SESSION["initiate_audits"] == 1) 
+                    $action = "<div class='text-center'><button data-id='{$framework_control_test['id']}' class='initiate-test-btn' >".$escaper->escapeHtml($lang['InitiateTest'])."</button></div>"; 
+                else $action = "";
                 $results[] = array(
                     'id' => "test_".$framework_and_control."_".$framework_control_test['id'],
                     'state' => 'open',
@@ -4182,7 +4398,7 @@ function getInitiateTestAuditsResponse()
                     'last_audit_date' => $escaper->escapeHtml(format_date($framework_control_test['last_date'])),
                     'next_audit_date' => $escaper->escapeHtml(format_date($framework_control_test['next_date'])),
                     'status' => $escaper->escapeHtml($framework_control_test['status'] == 1 ? $lang['Active'] : $lang['Inactive']),
-                    'action' => "<div class='text-center'><button data-id='{$framework_control_test['id']}' class='initiate-test-btn' >".$escaper->escapeHtml($lang['InitiateTest'])."</button></div>",
+                    'action' => $action
                 );
             }
         }
@@ -4254,6 +4470,9 @@ function getPastTestAuditsResponse()
             $background_class = $escaper->escapeHtml($test_audit['background_class']);
 
             $last_date = format_date($test_audit['last_date']);
+            if(isset($_SESSION["modify_audits"]) && $_SESSION["modify_audits"] == 1){
+                $reopen_button = "<button class='reopen' data-id='{$test_audit['id']}'>".$escaper->escapeHtml($lang['Reopen'])."</button>";
+            } else $reopen_button = "";
 
             $data[] = [
                 "<div ><a href='".$_SESSION['base_url']."/compliance/view_test.php?id=".$test_audit['id']."' class='text-left'>".$escaper->escapeHtml($test_audit['name'])."</a><input type='hidden' class='background-class' data-background='{$background_class}'></div>",
@@ -4262,7 +4481,7 @@ function getPastTestAuditsResponse()
                 "<div >".$escaper->escapeHtml($test_audit['framework_name'])."</div>",
                 "<div >".$escaper->escapeHtml($test_audit['audit_status_name'])."</div>",
                 "<div >".$escaper->escapeHtml($test_audit['test_result'] ? $test_audit['test_result'] : "--")."</div>",
-                "<div class='text-center'><button class='reopen' data-id='{$test_audit['id']}'>".$escaper->escapeHtml($lang['Reopen'])."</button></div>",
+                "<div class='text-center'>".$reopen_button."</div>",
             ];
         }
         $result = array(
@@ -4347,6 +4566,10 @@ function getActiveTestAuditsResponse()
             $last_date = format_date($test['last_date']);
             $next_date = format_date($test['next_date']);
 
+            if(isset($_SESSION["delete_audits"]) && $_SESSION["delete_audits"] == 1) 
+                $delete_button = "<button class='btn delete-btn' data-id='{$test['id']}' >".$escaper->escapeHtml($lang['Delete'])."</button>";
+            else $delete_button = "";
+
             $data[] = [
                 "<div ><a href='".$_SESSION['base_url']."/compliance/testing.php?id=".$test['id']."' class='text-left'>".$escaper->escapeHtml($test['name'])."</a><input type='hidden' class='background-class' data-background='{$next_date_background_class}'></div>",
                 "<div >".(int)$test['test_frequency']. " " .$escaper->escapeHtml($test['test_frequency'] > 1 ? $lang['days'] : $lang['Day'])."</div>",
@@ -4358,9 +4581,7 @@ function getActiveTestAuditsResponse()
                 "<div >".$escaper->escapeHtml($test['audit_status_name'])."</div>",
                 "<div >".$escaper->escapeHtml($last_date)."</div>",
                 "<div class='text-center '>".$escaper->escapeHtml($next_date)."</div>",
-                "<div class='text-center'>
-                    <button class='btn delete-btn' data-id='{$test['id']}' >".$escaper->escapeHtml($lang['Delete'])."</button>
-                </div>"
+                "<div class='text-center'>".$delete_button."</div>"
             ];
         }
         $result = array(
@@ -4430,7 +4651,7 @@ function deleteTestAuditResponse()
     global $lang, $escaper;
 
     // If the user has compliance permissions
-    if (check_permission_compliance())
+    if (check_permission_compliance() && isset($_SESSION["delete_audits"]) && $_SESSION["delete_audits"] == 1)
     {
         $audit_id = (int)$_POST['id'];
 
@@ -4464,7 +4685,7 @@ function reopenTestAuditResponse()
     global $lang, $escaper;
 
     // If the user has compliance permissions
-    if (check_permission_compliance())
+    if (check_permission_compliance() && isset($_SESSION["reopen_audits"]) && $_SESSION["reopen_audits"] == 1)
     {
         $audit_id = $_POST['id'];
 
@@ -4737,66 +4958,6 @@ function assessment_extra_copyQuestionnaireAPI()
 }
 
 /**************************************
- * FUNCTION: CUSTOMIZATION ADD OPTION *
- **************************************/
-function customization_extra_addOption()
-{
-    // Check customization extra is enabled
-    if (customization_extra())
-    {
-        // If the customization extra file exists
-        if (file_exists(realpath(__DIR__ . '/../extras/customization/index.php')))
-        {
-            // Include the file
-            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-            // Call the addOption function
-            addOption();
-        }
-    }
-}
-
-/*****************************************
- * FUNCTION: CUSTOMIZATION DELETE OPTION *
- *****************************************/
-function customization_extra_deleteOption()
-{
-    // Check customization extra is enabled
-    if (customization_extra())
-    {
-        // If the customization extra file exists
-        if (file_exists(realpath(__DIR__ . '/../extras/customization/index.php')))
-        {
-            // Include the file
-            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-            // Call the addOption function
-            deleteOption();
-        }
-    }
-}
-
-/*****************************************
- * FUNCTION: CUSTOMIZATION SAVE TEMPLATE *
- *****************************************/
-function customization_extra_saveTemplate()
-{
-    // Check customization extra is enabled
-    if (customization_extra())
-    {
-        // If the customization extra file exists
-        if (file_exists(realpath(__DIR__ . '/../extras/customization/index.php')))
-        {
-            // Include the file
-            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
-            // Save template and get response
-            saveTemplateResponse();
-        }
-    }
-}
-
-/**************************************
  * FUNCTION: COPY ASSESSMENT TEMPLATE *
  **************************************/
 function assessment_extra_copyTemplateAPI()
@@ -4812,28 +4973,6 @@ function assessment_extra_copyTemplateAPI()
 
             // Call the copyTemplateAPI function
             copyTemplateAPI();
-        }
-    }
-}
-
-/***************************************************************
- * FUNCTION: AUTHENTICATION EXTRA GET LDAP GROUP DROPDOWN HTML *
- ***************************************************************/
-function authentication_extra_ldap_group_dropdown()
-{
-    // Check authentication extra is enabled
-    if (custom_authentication_extra())
-    {
-        // If the customization extra file exists
-        if (file_exists(realpath(__DIR__ . '/../extras/authentication/index.php')))
-        {
-            // Include the file
-            require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
-            sleep(3);
-            // Get ldap group dropdown html
-            $html = ldap_groups_dropdown("ldap_group");
-            
-            json_response(200, "Ldap group dropdown", ['ldap_group' => $html]);
         }
     }
 }
@@ -5283,9 +5422,10 @@ function getDocumentResponse()
         $document = get_document_by_id($id);
 
         $document['creation_date'] = format_date($document['creation_date']);
-        $document['review_date'] = format_date($document['review_date']);
+        $document['approval_date'] = format_date($document['approval_date']);
         $document['control_ids'] = explode(',', $document['control_ids']);
         $document['framework_ids'] = explode(',', $document['framework_ids']);
+        $document['additional_stakeholders'] = explode(',', $document['additional_stakeholders']);
 
         json_response(200, "Success", $document);
     }
@@ -5325,7 +5465,7 @@ function getTabularDocumentsResponse()
                 $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name']). " (".$document['file_version'].")" ."</a>";
                 $document['status'] = $escaper->escapeHtml($document['status']);
                 $document['creation_date'] = format_date($document['creation_date']);
-                $document['review_date'] = format_date($document['review_date']);
+                $document['approval_date'] = format_date($document['approval_date']);
                 $document['actions'] = "<div class=\"text-center\">&nbsp;&nbsp;&nbsp;";
                 if(!empty($_SESSION['delete_documentation']) && $version != $document['file_version'])
                 {
@@ -5337,14 +5477,73 @@ function getTabularDocumentsResponse()
         // If this is request to view document list.
         else
         {
+            $filterRules = isset($_GET["filterRules"])?json_decode($_GET["filterRules"],true):array();
+            $filtered_documents = array();
             $documents = get_documents($type);
             foreach($documents as &$document){
+                $frameworks = get_frameworks_by_ids($document["framework_ids"]);
+                $framework_names = implode(", ", array_map(function($framework){
+                    return $framework['name'];
+                }, $frameworks));
+
+                $control_ids = explode(",", $document["control_ids"]);
+                $controls = get_framework_controls_by_filter("all", "all", "all", "all", "all", "all", "", $control_ids);
+                $control_names = implode(", ", array_map(function($control){
+                    return $control['short_name'];
+                }, $controls));
+
+                // document filtering
+                if(count($filterRules)>0) {
+                    foreach($filterRules as $filter){
+                        $value = $filter['value'];
+                        switch($filter['field']){
+                            case "document_name":
+                                if( stripos($document['document_name'], $value) === false ){
+                                    continue 3;
+                                }
+                                break;
+                            case "document_type":
+                                if( stripos($document['document_type'], $value) === false ){
+                                    continue 3;
+                                }
+                                break;
+                            case "framework_names":
+                                if( stripos($framework_names, $value) === false ){
+                                    continue 3;
+                                }
+                                break;
+                            case "control_names":
+                                if( stripos($control_names, $value) === false ){
+                                    continue 3;
+                                }
+                                break;
+                            case "creation_date":
+                                if( stripos(format_date($document['creation_date']), $value) === false ){
+                                    continue 3;
+                                }
+                                break;
+                            case "approval_date":
+                                if( stripos(format_date($document['approval_date']), $value) === false ){
+                                    continue 3;
+                                }
+                                break;
+                            case "status":
+                                if( stripos($document['status'], $value) === false ){
+                                    continue 3;
+                                }
+                                break;
+                        }
+                    }
+                }
+
                 $document['state'] = "closed";
                 $document['document_type'] = $escaper->escapeHtml($document['document_type']);
                 $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name'])."</a>";
                 $document['status'] = $escaper->escapeHtml($document['status']);
+                $document['framework_names'] = $escaper->escapeHtml($framework_names);
+                $document['control_names'] = $escaper->escapeHtml($control_names);
                 $document['creation_date'] = format_date($document['creation_date']);
-                $document['review_date'] = format_date($document['review_date']);
+                $document['approval_date'] = format_date($document['approval_date']);
                 $document['actions'] = "<div class=\"text-center\">&nbsp;&nbsp;&nbsp;";
                 if(!empty($_SESSION['modify_documentation']))
                 {
@@ -5355,7 +5554,9 @@ function getTabularDocumentsResponse()
                     $document['actions'] .= "<a class=\"document--delete\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a>&nbsp;&nbsp;&nbsp;";
                 }
                 $document['actions'] .= "</div>";
+                $filtered_documents[] = $document;
             }
+            $documents = $filtered_documents;
         }
         
         echo json_encode($documents);
@@ -5379,6 +5580,22 @@ function get_mitigation_control_info(){
     $height     = $_GET['scroll_top'];
     
     $some_control = get_framework_controls( $control_id );
+    $mapped_frameworks = get_mapping_control_frameworks($control_id);
+    if(count($mapped_frameworks) > 0){
+        $mapping_framework_table = "
+            <table width='100%' class='table table-bordered'>
+                <tr>
+                    <th width='60%'>".$escaper->escapeHtml($lang['Framework'])."</th>
+                    <th width='40%'>".$escaper->escapeHtml($lang['Control'])."</th>
+                </tr>";
+                foreach ($mapped_frameworks as $framework){
+                    $mapping_framework_table .= "<tr>
+                        <td>".$escaper->escapeHtml($framework['framework_name'])."</td>
+                        <td>".$escaper->escapeHtml($framework['reference_name'])."</td>
+                    </tr>";
+                }
+        $mapping_framework_table .= "</table>";
+    } else $mapping_framework_table = "";
 
     $control_long_name  = $some_control[0]['long_name'];
     $control_short_name = $some_control[0]['short_name'];
@@ -5393,21 +5610,19 @@ function get_mitigation_control_info(){
     $description        = $some_control[0]['description'];
     $supplemental_guidance = $some_control[0]['supplemental_guidance'];
     
-    $control_info = '<table width="100%">
+    $control_info = '<table width="100%" class="table table-bordered">
         <tbody>
             <tr>
                 <td width="13%" align="right"><strong>' . $escaper->escapeHtml($lang['ControlShortName']) . '</strong>: </td>
-                <td width="22%">'. $escaper->escapeHtml($control_short_name) .'</td>
+                <td width="57%" colspan="3">'. $escaper->escapeHtml($control_short_name) .'</td>
                 <td width="13%" align="right"><strong>' . $escaper->escapeHtml($lang['ControlOwner']) . '</strong>: </td>
-                <td width="22%">'. $escaper->escapeHtml($control_owner) .'</td>
-                <td width="13%" align="right"><strong>' . $escaper->escapeHtml($lang['ControlFramework']) . '</strong>: </td>
-                <td width="17%">This is test</td>
+                <td width="17%">'. $escaper->escapeHtml($control_owner) .'</td>
             </tr>
             <tr>
                 <td align="right"><strong>' . $escaper->escapeHtml($lang['ControlClass']) . '</strong>: </td>
-                <td>'. $escaper->escapeHtml($control_class) .'</td>
-                <td align="right"><strong>' . $escaper->escapeHtml($lang['ControlPhase']) . '</strong>: </td>
-                <td>'. $escaper->escapeHtml($control_phase) .'</td>
+                <td width="22%">'. $escaper->escapeHtml($control_class) .'</td>
+                <td width="13%" align="right"><strong>' . $escaper->escapeHtml($lang['ControlPhase']) . '</strong>: </td>
+                <td width="22%">'. $escaper->escapeHtml($control_phase) .'</td>
                 <td align="right"><strong>' . $escaper->escapeHtml($lang['ControlNumber']) . '</strong>: </td>
                 <td>' . $escaper->escapeHtml( $control_number ) . '</td>
             </tr>
@@ -5427,9 +5642,13 @@ function get_mitigation_control_info(){
             <td align="right"><strong>' . $escaper->escapeHtml($lang['SupplementalGuidance']) . '</strong>: </td>
             <td colspan="5">' . nl2br($escaper->escapeHtml( $supplemental_guidance )) . '</td>
             </tr>
+            <tr>
+            <td align="right"><strong>' . $escaper->escapeHtml($lang['MappedControlFrameworks']) . '</strong>: </td>
+            <td colspan="5">' .$mapping_framework_table . '</td>
+            </tr>
         </tbody>
     </table>';
-    
+
     $data['control_info'] = $control_info;
     $data['scroll_top']   = $height;
     
@@ -6374,6 +6593,9 @@ function get_exception_for_display_api()
     }
     $exception['description'] = nl2br($escaper->escapeHtml($exception['description']));
     $exception['justification'] = nl2br($escaper->escapeHtml($exception['justification']));
+    if($exception['unique_name'])
+        $exception['file_download'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$exception['unique_name']."\" >".$escaper->escapeHtml($exception['file_name']). " (".$exception['file_version'].")" ."</a>";
+    else $exception['file_download'] = "";
 
     foreach($exception as $key => $value) {
         if (strlen($value) == 0)
@@ -6636,7 +6858,7 @@ function update_exception_api() {
     }
 
     try {
-        update_exception(
+        $result = update_exception(
             $name,
             $policy,
             $control,
@@ -6652,17 +6874,23 @@ function update_exception_api() {
             $justification,
             $id);
 
+    } catch(Exception $e) {
+        error_log($e);
+        set_alert(true, "bad", $lang['ThereWasAProblemUpdatingTheException']);
+        json_response(400, get_alert(true), NULL);
+        return;
+    }
+    if($result){
         set_alert(true, "good", $lang['ExceptionWasUpdatedSuccessfully']);
 
         //returning the created exception's type
         //the returned data is needed to know what tabs to refresh
         json_response(200, get_alert(true), array('approved' => $approved_original, 'type' => $policy ? "policy" : "control"));
         return;
-    } catch(Exception $e) {
-        error_log($e);
+    }
+    else{
         set_alert(true, "bad", $lang['ThereWasAProblemUpdatingTheException']);
         json_response(400, get_alert(true), NULL);
-        return;
     }
 }
 
@@ -7152,36 +7380,6 @@ function getManagerByUserAPI()
     json_response(200, get_alert(true), array("manager" => $user["manager"]));
 }
 
-
-
-/****************************************************************
- * FUNCTION: ADVANCED SEARCH                                    *
- * Params(GET)                                                  *
- *  'q': The query string                                       *
- *  'highlight': Whether the query string                       *
- *  should be highlighted in the results(0 or 1, default is 1)  *
- ****************************************************************/
-function advanced_search_api(){
-
-    global $lang;
-
-    if (is_dir(realpath(__DIR__ . '/../extras/advanced_search')) && advanced_search_extra()) {
-        
-        // Include the Import-Export Extra
-        require_once(realpath(__DIR__ . '/../extras/advanced_search/index.php'));
-
-        $highlight = !isset($_GET['highlight']) || (isset($_GET['highlight']) && boolval($_GET['highlight']));
-        $teaser_size = isset($_GET['teaser_size']) && $_GET['teaser_size'] ? (int)$_GET['teaser_size'] : 100;
-        $escape_type = isset($_GET['escape_type']) && $_GET['escape_type'] && in_array($_GET['escape_type'], ['html', 'js']) ? $_GET['escape_type'] : 'html';
-        
-        return json_response(200, null, do_advanced_search($_GET['q'], $teaser_size, $highlight, $escape_type));
-    }
-
-    set_alert(true, "bad", $lang['ActivateTheAdvancedSearchExtra']);
-    return json_response(400, get_alert(true), array("manager" => $user["manager"]));
-
-}
-
 /*************************************
  * FUNCTION: SAVE DYNAMIC SELECTIONS *
  *************************************/
@@ -7212,7 +7410,8 @@ function saveDynamicSelectionsForm()
     {
         $custom_display_settings = get_param("post", "columns");
         $custom_selection_settings = get_param("post", "selects");
-        $id = save_dynamic_selections($type, $name, $custom_display_settings, $custom_selection_settings);
+        $custom_column_filters = get_param("post", "columnFilters");
+        $id = save_dynamic_selections($type, $name, $custom_display_settings, $custom_selection_settings,$custom_column_filters);
         
         // Create the data array
         $data = array("value" => $id, "name" => ($type=="private"? $name." -- ".$escaper->escapeHtml($lang['Private']) : $name) );
@@ -7276,9 +7475,15 @@ function appetite_report_api()
 
             $orderColumn = (int)$_GET['order'][0]['column'];
             $orderDir = strtolower($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
+            $column_filters = [];
+            for ( $i=0 ; $i<count($_GET['columns']) ; $i++ ) {
+                if ( isset($_GET['columns'][$i]) && $_GET['columns'][$i]['searchable'] == "true" && $_GET['columns'][$i]['search']['value'] != '' ) {
+                    $column_filters[$_GET['columns'][$i]['name']] = $_GET['columns'][$i]['search']['value'];
+                }
+            }
 
             // Query the risks
-            $data = get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir);
+            $data = get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir, $column_filters);
 
             $rows = array();
             foreach($data['data'] as $risk){
@@ -7298,6 +7503,328 @@ function appetite_report_api()
             );
 
             echo json_encode($result);
+            exit;
+        }
+    }
+}
+
+/****************************************
+ * FUNCTION: REPORTS - TEAMS AND USERS  *
+ ****************************************/
+function user_management_reports_api() {
+    
+    global $lang, $escaper, $possible_permissions;
+    
+    if (!is_admin()) {
+        json_response(400, $lang['AdminPermissionRequired'], NULL);
+    }elseif (!isset($_POST['type'])) {
+        json_response(400, $lang['YouNeedToSpecifyATypeParameter'], NULL);
+    } else {
+        $type = $_POST['type'];
+        
+        if (!in_array($type, ['users_of_teams', 'teams_of_users', 'users_of_permissions', 'permissions_of_users', 'users_of_roles'])) {
+            json_response(400, $lang['YouNeedToSpecifyATypeParameter'], NULL);
+        } else {
+            $start = (isset($_POST['start']) && $_POST['start']) ? (int)$_POST['start'] : 0;
+            $length = (isset($_POST['length']) && $_POST['length']) ? (int)$_POST['length'] : 10;
+            
+            $draw = $escaper->escapeHtml($_POST['draw']);
+            
+            $orderColumn = (int)$_POST['order'][0]['column'];
+            $orderDir = strtolower($_POST['order'][0]['dir']) == "asc" ? "asc" : "desc";
+
+            // Sanitizing filter input data
+            if (isset($_POST['columnFilters']) && $_POST['columnFilters'] && is_array($_POST['columnFilters'])) {
+                
+                $columnFilters = $_POST['columnFilters'];
+                // $_POST['columnFilters'] is a multi-level associative array and have to sanitize the values in the inner array
+                // So we're iterating through all the filters
+                array_walk($columnFilters, function($filters, $key) use ($type, $possible_permissions) {
+                    if ($type === 'permissions_of_users' && $key === 'permissions') {
+                        // This is a string array, so it has to be sanitized differently
+                        return array_map(function($filter) use ($possible_permissions) {
+                            // -1 is the placeholder value marking the user wants to filter for users without permissions
+                            if ($filter === -1 || in_array($filter, $possible_permissions)) {
+                                return $filter;
+                            } else return null;
+                        }, $filters);
+                    } else {
+                        return array_map('intval', $filters);
+                    }
+                });
+            } else {
+                $columnFilters = [];
+            }
+
+            // These types require team separation to be activated
+            if (in_array($type, ['users_of_teams', 'teams_of_users'])) {
+                
+                if (!team_separation_extra()) {
+                    json_response(400, $lang['YouNeedTeamSeparationEnabled'], NULL);
+                    return;
+                }
+                
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+                
+                $results = get_user_management_reports_report_data_separation($type, 'normal', $start, $length, $orderColumn, $orderDir, $columnFilters);
+            } else {
+                // In this case we're doing the sorting and the paging from the PHP code as the column we can sort by is not the same as in the database
+                // so sorting and paging gives wrong results if done by the query
+                if ($type === 'users_of_permissions') {
+                    $results = get_user_management_reports_report_data($type, 'normal', 0, -1, $orderColumn, $orderDir, $columnFilters);
+                } else {
+                    $results = get_user_management_reports_report_data($type, 'normal', $start, $length, $orderColumn, $orderDir, $columnFilters);
+                }
+            }
+
+            $rows = array();
+            foreach($results['data'] as $data) {
+                if ($type === 'users_of_teams') {
+                    $rows[] = array(
+                        $escaper->escapeHtml($data['name']),
+                        $escaper->escapeHtml($data['users'])
+                    );
+                } elseif ($type === 'teams_of_users') {
+                    $rows[] = array(
+                        $escaper->escapeHtml($data['name']),
+                        $escaper->escapeHtml($data['username']),
+                        $escaper->escapeHtml($lang[$data['status'] ? 'Enabled' : 'Disabled']),
+                        $escaper->escapeHtml($data['teams'])
+                    );
+                } elseif ($type === "users_of_permissions") {
+                    
+                    global $possible_permission_localization_keys;
+                    
+                    $rows[] = array(
+                        $data['name'] ? $escaper->escapeHtml($lang[$possible_permission_localization_keys[$data['name']]]) : "",
+                        $escaper->escapeHtml($data['users'])
+                    );
+                } elseif ($type === "permissions_of_users") {
+                    
+                    global $possible_permission_localization_keys;
+                    
+                    $permissions = [];
+                    if ($data['permissions']) {
+                        foreach(explode(',', $data['permissions']) as $permission) {
+                            $permissions[] = $escaper->escapeHtml($lang[$possible_permission_localization_keys[$permission]]);
+                        }
+                    }
+
+                    $rows[] = array(
+                        $escaper->escapeHtml($data['name']),
+                        $escaper->escapeHtml($data['username']),
+                        $escaper->escapeHtml($lang[$data['status'] ? 'Enabled' : 'Disabled']),
+                        implode(', ', $permissions)
+                    );
+                } elseif ($type === "users_of_roles") {
+                    $rows[] = array(
+                        $escaper->escapeHtml($data['name']),
+                        $escaper->escapeHtml($data['users'])
+                    );
+                }
+            }
+            
+            if ($type === 'users_of_permissions') {
+                // Sorting
+                $orderDir = strtoupper($orderDir);
+                usort($rows, function($a, $b) use ($orderDir) {
+                    $cmp = strcmp($a[0], $b[0]);
+                    return $orderDir === 'ASC' ? $cmp : $cmp * -1;
+                });
+                
+                //Paging
+                if ($length != -1) { // if not all result is requested
+                    $rows = array_slice($rows, $start, $length);
+                }
+            }
+
+            $result = array(
+                'draw' => $draw,
+                'data' => $rows,
+                'recordsTotal' => $results['recordsTotal'],
+                'recordsFiltered' => $results['recordsTotal'],
+            );
+            
+            echo json_encode($result);
+            exit;
+        }
+    }
+}
+
+/************************************************************
+ * FUNCTION: USER MANAGEMENT REPORTS - UNIQUE COLUMN DATA   *
+ * Function to get the data for the column filters.         *
+ * Only getting the items that could produce valid results. *
+ ************************************************************/
+function user_management_reports_unique_column_data_api() {
+    
+    global $lang, $escaper;
+
+    if (!is_admin()) {
+        json_response(400, $lang['AdminPermissionRequired'], NULL);
+    }elseif (!isset($_GET['type'])) {
+        json_response(400, $lang['YouNeedToSpecifyATypeParameter'], NULL);
+    } else {
+        $type = $_GET['type'];
+        
+        if (!in_array($type, ['users_of_teams', 'teams_of_users', 'users_of_permissions', 'permissions_of_users', 'users_of_roles'])) {
+            json_response(400, $lang['YouNeedToSpecifyATypeParameter'], NULL);
+        } else {
+            
+            // These types require team separation to be activated
+            if (in_array($type, ['users_of_teams', 'teams_of_users'])) {
+                
+                if (!team_separation_extra()) {
+                    json_response(400, $lang['YouNeedTeamSeparationEnabled'], NULL);
+                    return;
+                }
+                
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+                
+                // get the report data in 'full' mode that's returning the ids of the items
+                $results = get_user_management_reports_report_data_separation($type, 'full', 0, -1, 0, 'asc', []);
+            } else {
+                // get the report data in 'full' mode that's returning the ids of the items
+                $results = get_user_management_reports_report_data($type, 'full', 0, -1, 0, 'asc', []);
+            }
+            
+            $unique_data = [];
+            
+            if ($type === 'users_of_teams') {
+                $unique_keys['teams'] = [];
+                $unique_keys['users'] = [];
+                
+                $unique_data['teams'] = [];
+                $unique_data['users'] = [];
+                
+                foreach($results as $data){
+                    
+                    if ($data['value'] && !in_array($data['value'], $unique_keys['teams'])) {
+                        $unique_data['teams'][] = array('value' => $escaper->escapeHtml($data['value']), 'text' => $escaper->escapeHtml($data['name']));
+                        $unique_keys['teams'][] = $data['value'];
+                    }
+                    
+                    foreach(json_decode($data['users'], true) as $user) {
+                        if (!in_array($user['value'], $unique_keys['users'])) {
+                            $unique_data['users'][] = array('value' => $escaper->escapeHtml($user['value']), 'text' => $escaper->escapeHtml($user['name']));
+                            $unique_keys['users'][] = $user['value'];
+                        }
+                    }
+                }
+            } elseif ($type === "teams_of_users") {
+                $unique_keys['users'] = [];
+                $unique_keys['statuses'] = [];
+                $unique_keys['teams'] = [];
+                
+                $unique_data['users'] = [];
+                $unique_data['usernames'] = [];
+                $unique_data['statuses'] = [];
+                $unique_data['teams'] = [];
+                
+                foreach($results as $data){
+                    
+                    if (!in_array($data['value'], $unique_keys['users'])) {
+                        $unique_data['users'][] = array('value' => $escaper->escapeHtml($data['value']), 'text' => $escaper->escapeHtml($data['name']));
+                        $unique_data['usernames'][] = array('value' => $escaper->escapeHtml($data['value']), 'text' => $escaper->escapeHtml($data['username']));
+                        $unique_keys['users'][] = $data['value'];
+                    }
+                    
+                    if (!in_array($data['status'], $unique_keys['statuses'])) {
+                        $unique_data['statuses'][] = array('value' => $escaper->escapeHtml($data['status']), 'text' => $escaper->escapeHtml($lang[$data['status'] ? 'Enabled' : 'Disabled']));
+                        $unique_keys['statuses'][] = $data['status'];
+                    }
+                    
+                    foreach(json_decode($data['teams'], true) as $team) {
+                        if (!in_array($team['value'], $unique_keys['teams'])) {
+                            $unique_data['teams'][] = array('value' => $escaper->escapeHtml($team['value']), 'text' => $escaper->escapeHtml($team['name']));
+                            $unique_keys['teams'][] = $team['value'];
+                        }
+                    }
+                }
+            } elseif ($type === "users_of_permissions") {
+
+                global $possible_permission_localization_keys;
+                
+                $unique_keys['permissions'] = [];
+                $unique_keys['users'] = [];
+                
+                $unique_data['permissions'] = [];
+                $unique_data['users'] = [];
+                
+                foreach($results as $data){
+                    
+                    if ($data['name'] && !in_array($data['name'], $unique_keys['permissions'])) {
+                        $unique_data['permissions'][] = array('value' => $escaper->escapeHtml($data['name']), 'text' => $escaper->escapeHtml($lang[$possible_permission_localization_keys[$data['name']]]));
+                        $unique_keys['permissions'][] = $data['name'];
+                    }
+                    
+                    foreach(json_decode($data['users'], true) as $user) {
+                        if (!in_array($user['value'], $unique_keys['users'])) {
+                            $unique_data['users'][] = array('value' => $escaper->escapeHtml($user['value']), 'text' => $escaper->escapeHtml($user['name']));
+                            $unique_keys['users'][] = $user['value'];
+                        }
+                    }
+                }
+                
+            } elseif ($type === "permissions_of_users") {
+                
+                global $possible_permission_localization_keys;
+                
+                $unique_keys['users'] = [];
+                $unique_keys['statuses'] = [];
+                $unique_keys['permissions'] = [];
+                
+                $unique_data['users'] = [];
+                $unique_data['usernames'] = [];
+                $unique_data['statuses'] = [];
+                $unique_data['permissions'] = [];
+                
+                foreach($results as $data){
+                    if (!in_array($data['value'], $unique_keys['users'])) {
+                        $unique_data['users'][] = array('value' => $escaper->escapeHtml($data['value']), 'text' => $escaper->escapeHtml($data['name']));
+                        $unique_data['usernames'][] = array('value' => $escaper->escapeHtml($data['value']), 'text' => $escaper->escapeHtml($data['username']));
+                        $unique_keys['users'][] = $data['value'];
+                    }
+                    
+                    if (!in_array($data['status'], $unique_keys['statuses'])) {
+                        $unique_data['statuses'][] = array('value' => $escaper->escapeHtml($data['status']), 'text' => $escaper->escapeHtml($lang[$data['status'] ? 'Enabled' : 'Disabled']));
+                        $unique_keys['statuses'][] = $data['status'];
+                    }
+                    
+                    foreach(explode(',', $data['permissions']) as $permission) {
+                        if ($permission && !in_array($permission, $unique_keys['permissions'])) {
+                            $unique_data['permissions'][] = array('value' => $escaper->escapeHtml($permission), 'text' => $escaper->escapeHtml($lang[$possible_permission_localization_keys[$permission]]));
+                            $unique_keys['permissions'][] = $permission;
+                        }
+                    }
+                }
+            } elseif ($type === "users_of_roles") {
+                
+                $unique_keys['roles'] = [];
+                $unique_keys['users'] = [];
+                
+                $unique_data['roles'] = [];
+                $unique_data['users'] = [];
+                
+                foreach($results as $data){
+                    
+                    if ($data['name'] && !in_array($data['name'], $unique_keys['roles'])) {
+                        $unique_data['roles'][] = array('value' => $escaper->escapeHtml($data['value']), 'text' => $escaper->escapeHtml($data['name']));
+                        $unique_keys['roles'][] = $data['name'];
+                    }
+                    
+                    foreach(json_decode($data['users'], true) as $user) {
+                        if (!in_array($user['value'], $unique_keys['users'])) {
+                            $unique_data['users'][] = array('value' => $escaper->escapeHtml($user['value']), 'text' => $escaper->escapeHtml($user['name']));
+                            $unique_keys['users'][] = $user['value'];
+                        }
+                    }
+                }
+                
+            }
+            
+            
+            echo json_encode($unique_data);
             exit;
         }
     }
@@ -7432,46 +7959,6 @@ function one_click_upgrade() {
     }
 }
 
-/****************************************
- * FUNCTION: SAVE NOTIFICATION SETTINGS *
- ****************************************/
-function notification_extra_saveSettingsRunNowAPI()
-{
-    global $lang, $escaper;
-    // Check notification extra is enabled
-    if (notification_extra()) {
-        if(restricted_extra("notification"))
-        {
-            json_response(400, $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']), NULL);
-            return;
-        }
-        
-        // If the notification extra file exists
-        if (file_exists(realpath(__DIR__ . '/../extras/notification/index.php')))
-        {
-            // Include the file
-            require_once(realpath(__DIR__ . '/../extras/notification/index.php'));
-            
-            // Save settings
-            if(get_param("POST", "submit", false))
-            {
-                // Call the saveRiskFromQuestionnairePendingRisksAPI function
-                update_notification_config();
-            }
-            // Run now
-            else
-            {
-                process_run_now_notification();
-            }
-            
-            $status_message = get_alert(true);
-
-            json_response(200, $status_message, NULL);
-
-        }
-    }
-}
-
 /****************************************************
  * FUNCTION: REPORTS - HIGH RISK                    *
  * The High Risk Report datatable's API function    *
@@ -7488,6 +7975,12 @@ function high_risk_report_datatable() {
     $orderColumnIndex = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
     $orderColumnName = isset($_POST['columns'][$orderColumnIndex]['name']) ? $_POST['columns'][$orderColumnIndex]['name'] : null;
     $orderDir = isset($_POST['order'][0]['dir']) && strtoupper($_POST['order'][0]['dir']) === 'ASC'? "ASC" : 'DESC';
+    $column_filters = [];
+    for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
+        if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
+            $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
+        }
+    }
 
     switch ($orderColumnName) {
         case "management_review":
@@ -7550,7 +8043,6 @@ function high_risk_report_datatable() {
 
     // If we're sorting in PHP($sort = false) or all the data is requested($length=-1)
     // then we're requesting all the data
-    $limit = $sort !== false && $length > 0 ? "LIMIT {$start}, {$length}" : "";
 
     $filtering_where = "";
     $filtering_having = "";
@@ -7565,6 +8057,24 @@ function high_risk_report_datatable() {
         $filtering_where = "";
         $filtering_having = "HAVING `residual_score` >= :high";
     }
+    $bind_params = [];
+    $manual_column_filters = [];
+    $having_query = "";
+    foreach($column_filters as $name => $column_filter){
+        if($name == "id"){
+            $separation_query_where .= " AND rsk.id LIKE :id ";
+            $bind_params[$name] = "%{$column_filter}%";
+        } elseif($name == "risk_status"){
+            $separation_query_where .= " AND rsk.status LIKE :risk_status ";
+            $bind_params[$name] = "%{$column_filter}%";
+        } elseif($name == "score"){
+            $separation_query_where .= " AND scoring.calculated_risk LIKE :score ";
+            $bind_params[$name] = "%{$column_filter}%";
+        } else {
+            $manual_column_filters[$name] = $column_filter;
+        }
+    }
+    $limit = $sort !== false && $length > 0 && !$manual_column_filters ? "LIMIT {$start}, {$length}" : "";
 
     // Assemble the final query
     $sql = "
@@ -7617,6 +8127,9 @@ function high_risk_report_datatable() {
     $stmt = $db->prepare($sql);
 
     $stmt->bindParam(":high", $high, PDO::PARAM_STR);
+    foreach($bind_params as $name => $bind_param){
+        $stmt->bindParam(":{$name}", $bind_param);
+    }
     $stmt->execute();
 
     // Store the results in the array
@@ -7680,17 +8193,59 @@ function high_risk_report_datatable() {
             $risk['management_review'] = management_review($risk['id'], $risk['mgmt_review'], $next_review);
         }
 
+        $subject = try_decrypt($risk['subject']);
+        $submission_date = format_datetime($risk['submission_date'], "", "g:i A T");
         $data = array(
             "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($risk['id'])."</a>",
             $escaper->escapeHtml($risk['status']),
-            $escaper->escapeHtml(isset($risk['subject']) ? try_decrypt($risk['subject']) : ""),
+            $escaper->escapeHtml($subject),
             "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($risk['score']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>",
-            $escaper->escapeHtml(format_datetime($risk['submission_date'], "", "g:i A T")),
+            $escaper->escapeHtml($submission_date),
             planned_mitigation($risk['id'], $risk['mitigation_id']), // mitigation plan
             $risk['management_review'] // management review
         );
+        $success = true;
+        foreach($manual_column_filters as $column_name => $val){
+            if($column_name == "subject") {
+                if( stripos($subject, $val) === false ){
+                    $success = false;
+                    break;
+                }
+            } else if($column_name == "submission_date") {
+                if( stripos($submission_date, $val) === false ){
+                    $success = false;
+                    break;
+                }
+            } else if($column_name == "mitigation_planned") {
+                if(($risk['mitigation_id']&&$val=="no")||(!$risk['mitigation_id']&&$val=="yes")){
+                    $success = false;
+                    break;
+                }
+            } else if($column_name == "management_review") {
+                if( stripos($risk['management_review'], $val) === false ){
+                    $success = false;
+                    break;
+                }
+            }
+        }
 
-        $datas[] = $data;
+        if($success) $datas[] = $data;
+    }
+    if($manual_column_filters){
+        $datas_by_page = [];
+        if($length > 0)
+        {
+            for($i=$start; $i<count($datas) && $i<$start + $length; $i++){
+                $datas_by_page[] = $datas[$i];
+            }
+        }
+        else
+        {
+            $datas_by_page = $datas;
+        }
+        $rowCount = count($datas);
+    } else {
+        $datas_by_page = $datas;
     }
 
     $results = array(
@@ -7704,7 +8259,347 @@ function high_risk_report_datatable() {
     echo json_encode($results);
 }
 
+/****************************************
+ *       FUNCTION: ADD NEW PROJECT      *
+ ****************************************/
+function add_project_api(){
+    global $lang, $escaper;
+    // check permission for project add 
+    if(isset($_SESSION["add_projects"]) && $_SESSION["add_projects"] == 1){
+        $name = isset($_POST['new_project'])?$_POST['new_project']:"";
+        // Check if the project name is null
+        if ($name == "")
+        {
+            $message = _lang('FieldRequired', array("field"=>"Project Name"));
+            // Return a JSON response
+            json_response(400, $escaper->escapeHtml($message), NULL);
+        }
+        // Otherwise
+        else
+        {
+            // Insert a new project up to 100 chars
+            add_name("projects", try_encrypt($name), 100);
+            set_alert(true, "good", $escaper->escapeHtml($lang['AddedSuccess']));
+            json_response(200, get_alert(true), NULL);
+        }
+    } else {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
+    }
+}
+/****************************************
+ *       FUNCTION: DELETE PROJECT       *
+ ****************************************/
+function delete_project_api(){
+    global $lang, $escaper;
+    $value = (int)$_POST['project_id'];
 
+    // check permission for project delete 
+    if(isset($_SESSION["delete_projects"]) && $_SESSION["delete_projects"] == 1){
+        // Verify value is an integer
+        if (is_int($value))
+        {
+            // If the project ID is 0 (ie. Unassigned Risks)
+            if ($value == 0)
+            {
+                // Display an alert
+                //set_alert(true, "bad", "You cannot delete the Unassigned Risks project or we will have no place to put unassigned risks.  Sorry.");
+                // Return a JSON response
+                json_response(400, "You cannot delete the Unassigned Risks project or we will have no place to put unassigned risks.  Sorry.", NULL);
+            }
+            else
+            {
+                // Get the risks associated with the project
+                $risks = get_project_risks($value);
 
+                // For each associated risk
+                foreach ($risks as $risk)
+                {
+                    // Set the project ID for the risk to unassigned (0)
+                    update_risk_project(0, $risk['id']);
+                }
+
+                // Delete the project
+                delete_value("projects", $value);
+
+                // Display an alert
+                set_alert(true, "good", "An existing project was deleted successfully.");
+                json_response(200, get_alert(true), NULL);
+            }
+        }
+        // We should never get here as we bound the variable as an int
+        else
+        {
+            // Display an alert
+            //set_alert(true, "bad", "The project ID was not a valid value.  Please try again.");
+            // Return a JSON response
+            json_response(400, "The project ID was not a valid value.  Please try again.", NULL);
+        }
+    } else {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
+    }
+}
+/****************************************
+ *       FUNCTION: UPDATE PROJECT       *
+ ****************************************/
+function update_project_api(){
+    global $lang, $escaper;
+    // check permission for project add 
+    if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
+        if (isset($_POST['risk_id']))
+        {
+            $risk_id = $_POST['risk_id'];
+            $project_id = $_POST['project_id'];
+            update_risk_project($project_id, $risk_id);  
+            // Display an alert
+            set_alert(true, "good", "The risks were saved successfully to the projects.");
+            json_response(200, get_alert(true), NULL);
+        } else {
+            $message = _lang('FieldRequired', array("field"=>"Risk ID"));
+            // Return a JSON response
+            json_response(400, $escaper->escapeHtml($message), NULL);
+        }
+    } else {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
+    }
+}
+/**********************************************
+ *       FUNCTION: UPDATE PROJECT STATUS      *
+ *********************************************/
+function update_project_status_api(){
+    global $lang, $escaper;
+    // check permission for project add 
+    if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
+        if (isset($_POST['status'])&&isset($_POST['project_id']))
+        {
+            $status_id  = $_POST['status'];
+            $project_id = $_POST['project_id'];
+            update_project_status($status_id, $project_id);
+
+            if ($status_id == 3)
+            {
+              // Close the risks associated with the project
+              completed_project($project_id);
+            }
+            // Otherwise
+            else
+            {
+              // Reopen the risks associated with the project
+              incomplete_project($project_id);
+            }
+            // Display an alert
+            set_alert(true, "good", "The project statuses were successfully updated.");
+            json_response(200, get_alert(true), NULL);
+        } else {
+            $message = _lang('FieldRequired', array("field"=>"Project ID"));
+            // Return a JSON response
+            json_response(400, $escaper->escapeHtml($message), NULL);
+        }
+    } else {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
+    }
+}
+
+/**********************************************
+ *       FUNCTION: UPDATE PROJECT ORDER       *
+ *********************************************/
+function update_project_order_api(){
+    global $lang, $escaper;
+    // check permission for project add 
+    if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
+        if (isset($_POST['project_ids']))
+        {
+            $ids = $_POST['project_ids'];
+            update_project_priority($ids);
+
+            // Display an alert
+            set_alert(true, "good", "The project order was updated successfully.");
+            json_response(200, get_alert(true), NULL);
+        } else {
+            $message = _lang('FieldRequired', array("field"=>"Project IDs"));
+            // Return a JSON response
+            json_response(400, $escaper->escapeHtml($message), NULL);
+        }
+    } else {
+        json_response(400, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
+    }
+}
+/****************************************
+ * FUNCTION: GET RISK CATALOG DATATABLE *
+ ****************************************/
+function getRiskCatalogDatatableAPI()
+{
+    global $lang, $escaper;
+
+    if (is_admin())
+    {
+        $risk_catalogs = get_risk_catalogs();
+        $rows = array();
+        foreach($risk_catalogs as $risk){
+            $rows[] = array(
+                "DT_RowId"=>$risk['id'],
+                $escaper->escapeHtml($risk['grouping_name']),
+                $escaper->escapeHtml($risk['number']),
+                $escaper->escapeHtml($risk['name']),
+                $escaper->escapeHtml($risk['description']),
+                $escaper->escapeHtml($risk['function_name']),
+                "<a href='javascript:void();' class='edit_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-pencil-square-o'></i></a>&nbsp;&nbsp;&nbsp;<a href='javascript:void();' class='delete_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-trash'></i></a>",
+            );
+        }
+        $draw = $escaper->escapeHtml($_GET['draw']);
+        $result = array(
+            'draw' => $draw,
+            'data' => $rows,
+            'recordsTotal' => count($risk_catalogs),
+            'recordsFiltered' => count($risk_catalogs),
+        );
+        echo json_encode($result);
+        exit;
+    }
+    else
+    {
+        unauthorized_access();
+    }
+}
+/****************************************
+ * FUNCTION: GET RISK CATALOG DETAIL    *
+ ****************************************/
+function getRiskCatalogAPI()
+{
+    global $lang, $escaper;
+
+    if (is_admin())
+    {
+        if (isset($_GET['risk_id']))
+        {
+            $id = $_GET['risk_id'];
+            $result = get_risk_catalog($id);
+            // Display an alert
+            json_response(200, "Get risk catalog by ID", ["risk" => $result]);
+        }
+    }
+    else
+    {
+        unauthorized_access();
+    }
+}
+/****************************************
+ * FUNCTION: UPDATE RISK CATALOG ORDER  *
+ ****************************************/
+function updateRiskCatalogOrderAPI()
+{
+    global $lang, $escaper;
+
+    if (is_admin())
+    {
+        if (isset($_POST['orders']))
+        {
+            // Open the database connection
+            $db = db_open();
+            $orders = $_POST['orders'];
+            uodate_risk_catalog_order($orders);
+            // Display an alert
+            set_alert(true, "good", "The order was updated successfully.");
+            json_response(200, get_alert(true), NULL);
+        }
+
+        return true;
+    }
+    else
+    {
+        unauthorized_access();
+    }
+}
+/******************************
+ * FUNCTION: ADD RISK CATALOG *
+ ******************************/
+function addRiskCatalogAPI()
+{
+    global $lang, $escaper;
+    if (is_admin())
+    {
+        $data = array(
+            "number" => isset($_POST['number']) ? $_POST['number'] : "",
+            "grouping" => isset($_POST['risk_grouping']) ? $_POST['risk_grouping'] : 0,
+            "name" => isset($_POST['name']) ? $_POST['name'] : "",
+            "description" => isset($_POST['description']) ? $_POST['description'] : "",
+            "function" => isset($_POST['risk_function']) ? $_POST['risk_function'] : 0,
+        );
+        if (!$data["number"])
+        {
+            // Display an alert
+            set_alert(true, "bad", "The risk name cannot be empty.");
+        } else {
+            add_risk_catalog($data);
+            // Display an alert
+            set_alert(true, "good", "A new risk catalog was added successfully.");
+        }
+        json_response(200, get_alert(true), NULL);
+        return true;
+    }
+    else
+    {
+        unauthorized_access();
+    }
+}
+/*********************************
+ * FUNCTION: UPDATE RISK CATALOG *
+ *********************************/
+function updateRiskCatalogAPI()
+{
+    global $lang, $escaper;
+    if (is_admin())
+    {
+        $data = array(
+            "id" => isset($_POST['id']) ? $_POST['id'] : "",
+            "number" => isset($_POST['number']) ? $_POST['number'] : "",
+            "grouping" => isset($_POST['risk_grouping']) ? $_POST['risk_grouping'] : 0,
+            "name" => isset($_POST['name']) ? $_POST['name'] : "",
+            "description" => isset($_POST['description']) ? $_POST['description'] : "",
+            "function" => isset($_POST['risk_function']) ? $_POST['risk_function'] : 0,
+        );
+        if (!$data["id"])
+        {
+            // Display an alert
+            set_alert(true, "bad", "The data ID was not a valid value.  Please try again.");
+        } else {
+            update_risk_catalog($data);
+            // Display an alert
+            set_alert(true, "good", "An existing risk catalog was updated successfully.");
+        }
+        json_response(200, get_alert(true), NULL);
+        return true;
+    }
+    else
+    {
+        unauthorized_access();
+    }
+}
+/*********************************
+ * FUNCTION: DELETE RISK CATALOG *
+ *********************************/
+function deleteRiskCatalogAPI()
+{
+    global $lang, $escaper;
+    if (is_admin())
+    {
+        $id = isset($_POST['id']) ? $_POST['id'] : "";
+        if (!$id)
+        {
+            // Display an alert
+            set_alert(true, "bad", "The data ID was not a valid value.  Please try again.");
+        } else {
+            delete_risk_catalog($id);
+            // Display an alert
+            set_alert(true, "good", "An existing risk catalog was deleted successfully.");
+        }
+        json_response(200, get_alert(true), NULL);
+        return true;
+    }
+    else
+    {
+        unauthorized_access();
+    }
+
+}
 
 ?>

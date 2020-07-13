@@ -150,7 +150,9 @@
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/settings_tabs.css">
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>    
   </head>
@@ -180,6 +182,20 @@
       </div>
     </div>
     <script>
+        (function($) {
+
+        var tabs =  $(".tabs li a");
+  
+        tabs.click(function() {
+                var content = this.hash.replace('/','');
+                tabs.removeClass("active");
+                $(this).addClass("active");
+                $("#content").find('.settings_tab').hide();
+                $(content).fadeIn(200);
+        });
+
+        })(jQuery);
+
         $(document).ready(function(){
             $(".period-dropdown").change(function(){
                 var period = $(this).val();

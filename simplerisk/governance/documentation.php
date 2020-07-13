@@ -67,7 +67,12 @@ if (isset($_POST['add_document']))
       $status        = $_POST['status'];
       $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
       $creation_date = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
-      $review_date   = get_standard_date_from_default_format($_POST['review_date']);
+      $review_frequency = (int)$_POST['review_frequency'];
+      $next_review_date   = get_standard_date_from_default_format($_POST['next_review_date']);
+      $approval_date   = get_standard_date_from_default_format($_POST['approval_date']);
+      $document_owner = (int)$_POST['document_owner'];
+      $additional_stakeholders   = empty($_POST['additional_stakeholders']) ? [] : $_POST['additional_stakeholders'];
+      $approver = (int)$_POST['approver'];
 
       // Check if the document name is null
       if (!$document_type || !$document_name)
@@ -84,7 +89,7 @@ if (isset($_POST['add_document']))
                 set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddDocumentationPermission']));
             }
             // Insert a new document
-            elseif($errors = add_document($document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $review_date))
+            elseif($errors = add_document($document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver))
             {
                 // Display an alert
                 set_alert(true, "good", $escaper->escapeHtml($lang['DocumentAdded']));
@@ -105,7 +110,12 @@ if (isset($_POST['update_document']))
       $status        = $_POST['status'];
       $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
       $creation_date = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
-      $review_date   = get_standard_date_from_default_format($_POST['review_date']);
+      $review_frequency = (int)$_POST['review_frequency'];
+      $next_review_date   = get_standard_date_from_default_format($_POST['next_review_date']);
+      $approval_date   = get_standard_date_from_default_format($_POST['approval_date']);
+      $document_owner = (int)$_POST['document_owner'];
+      $additional_stakeholders   = empty($_POST['additional_stakeholders']) ? [] : $_POST['additional_stakeholders'];
+      $approver = (int)$_POST['approver'];
 
       // Check if the document name is null
       if (!$document_type || !$document_name)
@@ -122,7 +132,7 @@ if (isset($_POST['update_document']))
                 set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyDocumentationPermission']));
             }
             // Update document
-            elseif($errors = update_document($id, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $review_date))
+            elseif($errors = update_document($id, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver))
             {
                 // Display an alert
                 set_alert(true, "good", $escaper->escapeHtml($lang['DocumentUpdated']));
@@ -164,6 +174,7 @@ if (isset($_POST['delete_document']))
   <script src="../js/jquery.draggable.js"></script>
   <script src="../js/jquery.droppable.js"></script>
   <script src="../js/treegrid-dnd.js"></script>
+  <script src="../js/datagrid-filter.js"></script>
   <script src="../js/bootstrap.min.js"></script>
   <script src="../js/bootstrap-multiselect.js"></script>
   <script src="../js/jquery.dataTables.js"></script>
@@ -186,6 +197,7 @@ if (isset($_POST['delete_document']))
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
   <?php
+      setup_favicon("..");
       setup_alert_requirements("..");
   ?>
 
@@ -282,13 +294,21 @@ if (isset($_POST['delete_document']))
             <?php create_multiple_dropdown("frameworks", NULL, "framework_ids"); ?>
             <label for=""><?php echo $escaper->escapeHtml($lang['Controls']); ?></label>
             <?php  // create_multiple_dropdown("framework_controls", NULL, "control_ids"); ?>
-            
             <select multiple="multiple" id="control_ids" name="control_ids[]"></select>
-            
+            <label for=""><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?>:</label>
+            <?php create_multiusers_dropdown("additional_stakeholders"); ?>
+            <label for=""><?php echo $escaper->escapeHtml($lang['DocumentOwner']); ?>:</label>
+            <?php create_dropdown("enabled_users", NULL, "document_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']),0); ?>
             <label for=""><?php echo $escaper->escapeHtml($lang['CreationDate']); ?></label>
             <input type="text" class="form-control datepicker" name="creation_date" value="<?php echo $escaper->escapeHtml(date(get_default_date_format())); ?>">
-            <label for=""><?php echo $escaper->escapeHtml($lang['ReviewDate']); ?></label>
-            <input type="text" class="form-control datepicker" name="review_date">
+            <label for=""><?php echo $escaper->escapeHtml($lang['ReviewFrequency']); ?></label>
+            <input type="number" min="0" name="review_frequency" value="0" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
+            <label for=""><?php echo $escaper->escapeHtml($lang['NextReviewDate']); ?></label>
+            <input type="text" class="form-control datepicker" name="next_review_date">
+            <label for=""><?php echo $escaper->escapeHtml($lang['ApprovalDate']); ?></label>
+            <input type="text" class="form-control datepicker" name="approval_date">
+            <label for=""><?php echo $escaper->escapeHtml($lang['Approver']); ?>:</label>
+            <?php create_dropdown("enabled_users", NULL, "approver", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']),0); ?>
             <label for=""><?php echo $escaper->escapeHtml($lang['ParentDocument']); ?></label>
             <div class="parent_documents_container">
                 <select>
@@ -305,7 +325,7 @@ if (isset($_POST['delete_document']))
                 <label for=""><?php echo $escaper->escapeHtml($lang['File']); ?></label>
                 <input required="" type="text" class="form-control readonly" style="width: 50%; margin-bottom: 0px; cursor: default;"/>
                 <label for="file-upload" class="btn"><?php echo $escaper->escapeHtml($lang['ChooseFile']) ?></label>
-                <font size="2"><strong>Max <?php echo round(get_setting('max_upload_size')/1024/1024); ?> Mb</strong></font>
+                <font size="2"><strong>Max <?php echo $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</strong></font>
                 <input type="file" id="file-upload" name="file[]" class="hidden-file-upload active" />
                 <label id="file-size" for=""></label>
             </div>
@@ -341,10 +361,20 @@ if (isset($_POST['delete_document']))
             <label for=""><?php echo $escaper->escapeHtml($lang['Controls']); ?></label>
             <?php // create_multiple_dropdown("framework_controls", NULL, "control_ids"); ?>
             <select multiple="multiple" id="control_ids" name="control_ids[]"></select>
+            <label for=""><?php echo $escaper->escapeHtml($lang['AdditionalStakeholders']); ?>:</label>
+            <?php create_multiusers_dropdown("additional_stakeholders"); ?>
+            <label for=""><?php echo $escaper->escapeHtml($lang['DocumentOwner']); ?>:</label>
+            <?php create_dropdown("enabled_users", NULL, "document_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']),0); ?>
             <label for=""><?php echo $escaper->escapeHtml($lang['CreationDate']); ?></label>
             <input type="text" class="form-control datepicker" name="creation_date">
-            <label for=""><?php echo $escaper->escapeHtml($lang['ReviewDate']); ?></label>
-            <input type="text" class="form-control datepicker" name="review_date">
+            <label for=""><?php echo $escaper->escapeHtml($lang['ReviewFrequency']); ?></label>
+            <input type="number" min="0" name="review_frequency" value="0" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
+            <label for=""><?php echo $escaper->escapeHtml($lang['NextReviewDate']); ?></label>
+            <input type="text" class="form-control datepicker" name="next_review_date">
+            <label for=""><?php echo $escaper->escapeHtml($lang['ApprovalDate']); ?></label>
+            <input type="text" class="form-control datepicker" name="approval_date">
+            <label for=""><?php echo $escaper->escapeHtml($lang['Approver']); ?>:</label>
+            <?php create_dropdown("enabled_users", NULL, "approver", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']),0); ?>
             <label for=""><?php echo $escaper->escapeHtml($lang['ParentDocument']); ?></label>
             <div class="parent_documents_container">
                 <select>
@@ -362,7 +392,7 @@ if (isset($_POST['delete_document']))
                 <label for=""><?php echo $escaper->escapeHtml($lang['File']); ?></label>
                 <input type="text" class="form-control readonly" style="width: 50%; margin-bottom: 0px; cursor: default;"/>
                 <label for="file-upload-update" class="btn"><?php echo $escaper->escapeHtml($lang['ChooseFile']) ?></label>
-                <font size="2"><strong>Max <?php echo round(get_setting('max_upload_size')/1024/1024); ?> Mb</strong></font>
+                <font size="2"><strong>Max <?php echo $escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024)); ?> Mb</strong></font>
                 <input type="file" id="file-upload-update" name="file[]" class="hidden-file-upload active" />
                 <label id="file-size" for=""></label>
             </div>
@@ -401,7 +431,7 @@ if (isset($_POST['delete_document']))
 
     <script>
         function displayFileSize(label, size) {
-            if (<?php echo get_setting('max_upload_size'); ?> > size)
+            if (<?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> > size)
                 label.attr("class","success");
             else
                 label.attr("class","danger");
@@ -488,7 +518,7 @@ if (isset($_POST['delete_document']))
 
             $(".datepicker").datepicker();
 
-            $("[name='framework_ids[]'], [name='control_ids[]']").multiselect();
+            $("[name='framework_ids[]'], [name='control_ids[]'], [name='additional_stakeholders[]']").multiselect({buttonWidth: '100%'});
 
             $("#document-program--add .document_type").change(function(){
                 $parent = $(this).parents(".modal");
@@ -516,6 +546,9 @@ if (isset($_POST['delete_document']))
 
             $("body").on("click", ".document--edit", function(){
                 var document_id = $(this).data("id");
+                $("#document-update-modal [name='control_ids[]']").multiselect("deselectAll", false);
+                $("#document-update-modal [name='framework_ids[]']").multiselect("deselectAll", false);
+                $("#document-update-modal [name='additional_stakeholders[]']").multiselect("deselectAll", false);
                 $.ajax({
                     url: BASE_URL + '/api/governance/document?id=' + document_id,
                     type: 'GET',
@@ -536,9 +569,13 @@ if (isset($_POST['delete_document']))
                         $("#document-update-modal [name='framework_ids[]']").multiselect('select', data.framework_ids);
                         sets_controls_by_framework_ids($("#document-update-modal [name='framework_ids[]']"));
                         $("#document-update-modal [name=creation_date]").val(data.creation_date);
-                        $("#document-update-modal [name=review_date]").val(data.review_date);
+                        $("#document-update-modal [name=review_frequency]").val(data.review_frequency);
+                        $("#document-update-modal [name=next_review_date]").val(data.next_review_date);
+                        $("#document-update-modal [name=approval_date]").val(data.approval_date);
                         $("#document-update-modal [name=status]").val(data.status);
-
+                        $("#document-update-modal [name=document_owner]").val(data.document_owner);
+                        $("#document-update-modal [name='additional_stakeholders[]']").multiselect('select', data.additional_stakeholders);
+                        $("#document-update-modal [name=approver]").val(data.approver);
                         $("#document-update-modal").modal();
                     }
                 });
@@ -584,14 +621,14 @@ if (isset($_POST['delete_document']))
                 });
 
                 $("#add-document-form").submit(function(event) {
-                    if (<?php echo get_setting('max_upload_size'); ?> <= $('#file-upload')[0].files[0].size) {
+                    if (<?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload')[0].files[0].size) {
                         toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                         event.preventDefault();
                     }
                 });
 
                 $("#update-document-form").submit(function(event) {
-                    if (<?php echo get_setting('max_upload_size'); ?> <= $('#file-upload-update')[0].files[0].size) {
+                    if (<?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload-update')[0].files[0].size) {
                         toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                         event.preventDefault();
                     }

@@ -109,6 +109,7 @@ if(process_questionnaire_pending_risks()){
     <script src="../js/jquery.dataTables.js"></script>
     <script src="../js/pages/assessment.js"></script>
     <script src="../js/common.js"></script>
+    <script src="../js/bootstrap-multiselect.js"></script>
     <script src="../js/cve_lookup.js"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -127,6 +128,7 @@ if(process_questionnaire_pending_risks()){
     <script src="../js/selectize.min.js"></script>
 
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>
 </head>

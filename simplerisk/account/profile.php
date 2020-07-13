@@ -109,7 +109,17 @@
     $modify_documentation = $user_info['modify_documentation'];
     $delete_documentation = $user_info['delete_documentation'];
     $comment_risk_management = $user_info['comment_risk_management'];
+    $add_projects = $user_info['add_projects'];
+    $delete_projects = $user_info['delete_projects'];
+    $manage_projects = $user_info['manage_projects'];
     $comment_compliance = $user_info['comment_compliance'];
+    $define_tests = $user_info['define_tests'];
+    $edit_tests = $user_info['edit_tests'];
+    $delete_tests = $user_info['delete_tests'];
+    $initiate_audits = $user_info['initiate_audits'];
+    $modify_audits = $user_info['modify_audits'];
+    $reopen_audits = $user_info['reopen_audits'];
+    $delete_audits = $user_info['delete_audits'];
 
     $view_exception = $user_info['view_exception'];
     $create_exception = $user_info['create_exception'];
@@ -209,6 +219,7 @@
     <link rel="stylesheet" href="../css/theme.css">
     
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>    
     <script type="text/javascript">
@@ -354,9 +365,19 @@
                           <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_high" type="checkbox"<?php if ($review_high) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></td></tr>
                           <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_veryhigh" type="checkbox"<?php if ($review_veryhigh) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></td></tr>
                           <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="comment_risk_management" type="checkbox"<?php if ($comment_risk_management) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCommentRiskManagement']); ?></td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="add_projects" type="checkbox"<?php if ($add_projects) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToAddProjects']); ?></td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="delete_projects" type="checkbox"<?php if ($delete_projects) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteProjects']); ?></td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="manage_projects" type="checkbox"<?php if ($manage_projects) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToManageProjects']); ?></td></tr>
                           <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['Compliance']); ?></td></tr>
                           <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="compliance" type="checkbox"<?php if ($compliance) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToComplianceMenu']); ?></td></tr>
                           <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="comment_compliance" type="checkbox"<?php if ($comment_compliance) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCommentCompliance']); ?></td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="define_tests" type="checkbox"<?php if ($define_tests) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDefineTests']); ?></td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="edit_tests" type="checkbox"<?php if ($edit_tests) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToEditTests']); ?></td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="delete_tests" type="checkbox"<?php if ($delete_tests) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteTests']); ?></td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="initiate_audits" type="checkbox"<?php if ($initiate_audits) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToInitiateAudits']); ?></td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="modify_audits" type="checkbox"<?php if ($modify_audits) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyAudits']); ?></td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="reopen_audits" type="checkbox"<?php if ($reopen_audits) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReopenAudits']); ?></td></tr>
+                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="delete_audits" type="checkbox"<?php if ($delete_audits) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteAudits']); ?></td></tr>
                           <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['AssetManagement']); ?></td></tr>
                           <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="asset" type="checkbox"<?php if ($asset) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></td></tr>
                           

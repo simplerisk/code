@@ -18,89 +18,278 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
  *************************************/
 function simplerisk_health_check()
 {
-	$current_app_version = current_version("app");
-	$latest_app_version = latest_version("app");
-	$current_db_version = current_version("db");
-	$latest_db_version = latest_version("db");
+        // Set the default socket timeout for healthchecks to 5 seconds
+        ini_set('default_socket_timeout', 5);
 
-	echo "<b><u>SimpleRisk Versions</u></b><br />";
+	// Get the current and latest versions
+        $current_app_version = current_version("app");
+        $latest_app_version = latest_version("app");
+        $current_db_version = current_version("db");
+        $latest_db_version = latest_version("db");
 
 	// Check that we are running the latest version of the SimpleRisk application
-	check_app_version($current_app_version, $latest_app_version);
+	$check_app_version = check_app_version($current_app_version, $latest_app_version);
 
-	// Check that we are running the latest version of the SimpleRisk database
-	check_db_version($current_db_version, $latest_db_version);
+        // Check that we are running the latest version of the SimpleRisk database
+        $check_db_version = check_db_version($current_db_version, $latest_db_version);
 
-	// Check that the application and database versions are the same
-	check_same_app_and_db($current_app_version, $current_db_version);
+        // Check that the application and database versions are the same
+        $check_same_app_and_db = check_same_app_and_db($current_app_version, $current_db_version);
 
-	// Check the Extra versions match the SimpleRisk version
-	check_extra_versions($current_app_version);
+        // Check the Extra versions match the SimpleRisk version
+        $check_extra_versions = check_extra_versions($current_app_version);
 
-	echo "<br /><b><u>Connectivity</u></b><br />";
+        // Search for any broken extras
+        $check_extra_versions_result = 1;
+        foreach ($check_extra_versions as $extras)
+        {
+                // If the extension result is 0
+                if ($extras['result'] === 0)
+                {
+                        // Set the overall result to 0
+                        $check_extra_versions_result = 0;
+                }
+        }
+
+        // Check the SimpleRisk Base URL
+        $check_simplerisk_base_url = check_simplerisk_base_url();
 
         // Check the SimpleRisk database connectivity
-        check_database_connectivity();
+        $check_database_connectivity = check_database_connectivity();
 
         // Check that SimpleRisk can communicate with the API
-        check_api_connectivity();
+        $check_api_connectivity = check_api_connectivity();
 
-        // Check that SimpleRisk can connect to the services platform
-        check_web_connectivity();
+        // Check that SimpleRisk can connect to the services platforms
+	$check_web_connectivity = check_web_connectivity();
 
-	echo "<br /><b><u>PHP</u></b><br />";
+	// Search for any broken connectivity
+	$check_web_connectivity_result = 1;
+        foreach ($check_web_connectivity as $connectivity)
+        {
+                // If the connectivity result is 0
+                if ($connectivity['result'] === 0)
+                {
+                        // Set the overall result to 0
+                        $check_web_connectivity_result = 0;
+                }
+        }
 
-	// Check that this is PHP 7
-	check_php_version();
-	
-	// Check the necessary PHP extensions are installed
-	check_php_extensions();
+        // Check that this is PHP 7
+        $check_php_version = check_php_version();
 
-	echo "<br /><b><u>MySQL</u></b><br />";
+        // Check the necessary PHP extensions are installed
+        $check_php_extensions = check_php_extensions();
 
-	// Check the current database size and free space
-	check_mysql_size();
+	// Search for any missing PHP extensions
+	$check_php_extensions_result = 1;
+	foreach ($check_php_extensions as $extension)
+	{
+		// If the extension result is 0
+		if ($extension['result'] === 0)
+		{
+			// Set the overall result to 0
+			$check_php_extensions_result = 0;
+		}
+	}
 
-	// Check if MySQL STRICT SQL mode is enabled
-	//check_strict_sql_mode();
+        // Check the current database size and free space
+        $check_mysql_size = check_mysql_size();
 
-	// Check if MySQL NO_ZERO_DATE mode is enabled
-	check_no_zero_date();
+        // Check if MySQL STRICT SQL mode is enabled
+        //$check_strict_sql_mode = check_strict_sql_mode();
 
-	// Check if MySQL ONLY_FULL_GROUP_BY mode is enabled
-	check_only_full_group_by();
+        // Check if MySQL NO_ZERO_DATE mode is enabled
+        $check_no_zero_date = check_no_zero_date();
+
+        // Check if MySQL ONLY_FULL_GROUP_BY mode is enabled
+        $check_only_full_group_by = check_only_full_group_by();
 
         // Check if SELECT permission is enabled
-        check_mysql_permission("SELECT");
+        $check_mysql_permission_select = check_mysql_permission("SELECT");
 
         // Check if INSERT permission is enabled
-        check_mysql_permission("INSERT");
+        $check_mysql_permission_insert = check_mysql_permission("INSERT");
 
         // Check if UPDATE permission is enabled
-        check_mysql_permission("UPDATE");
+        $check_mysql_permission_update = check_mysql_permission("UPDATE");
 
         // Check if DELETE permission is enabled
-        check_mysql_permission("DELETE");
+        $check_mysql_permission_delete = check_mysql_permission("DELETE");
 
         // Check if CREATE permission is enabled
-        check_mysql_permission("CREATE");
+        $check_mysql_permission_create = check_mysql_permission("CREATE");
 
         // Check if DROP permission is enabled
-        check_mysql_permission("DROP");
+        $check_mysql_permission_drop = check_mysql_permission("DROP");
 
         // Check if REFERENCES permission is enabled
-        check_mysql_permission("REFERENCES");
+        $check_mysql_permission_references = check_mysql_permission("REFERENCES");
 
         // Check if INDEX permission is enabled
-        check_mysql_permission("INDEX");
+        $check_mysql_permission_index = check_mysql_permission("INDEX");
 
         // Check if ALTER permission is enabled
-        check_mysql_permission("ALTER");
-
-	echo "<br /><b><u>File and Directory Permissions</u></b><br />";
+        $check_mysql_permission_alter = check_mysql_permission("ALTER");
 
 	// Check the simplerisk directory permissions
-	check_simplerisk_directory_permissions();
+        $check_simplerisk_directory_permissions = check_simplerisk_directory_permissions();
+
+        // Search for any bad directory permissions
+        $check_simplerisk_directory_permissions_result = 1;
+        foreach ($check_simplerisk_directory_permissions as $permission)
+        {
+                // If the permission result is 0
+                if ($permission['result'] === 0)
+                {
+                        // Set the overall result to 0
+                        $check_simplerisk_directory_permissions_result = 0;
+                }
+        }
+
+	echo "<div class=\"wrap\">\n";
+	echo "  <ul class=\"tabs group\">\n";
+	echo "    <li><a class=\"active\" href=\"#/summary\">Summary</a></li>\n";
+	echo "    <li><a href=\"#/versions\">Versions</a></li>\n";
+	echo "    <li><a href=\"#/extras\">Extras</a></li>\n";
+	echo "    <li><a href=\"#/connectivity\">Connectivity</a></li>\n";
+	echo "    <li><a href=\"#/php\">PHP</a></li>\n";
+	echo "    <li><a href=\"#/mysql\">MySQL</a></li>\n";
+	echo "    <li><a href=\"#/permissions\">Permissions</a></li>\n";
+	echo "  </ul>\n";
+	echo "  <div id=\"content\">\n";
+	
+	// Summary Tab
+	echo "    <div id=\"summary\" class=\"settings_tab\">\n";
+	echo "      <b><u>Health Check Summary</u></b><br />";
+
+	// Versions Summary
+	if ($check_app_version['result'] === 1 && $check_db_version['result'] === 1 && $check_same_app_and_db['result'] === 1)
+	{
+		health_check_good("Versions");
+	}
+	else health_check_bad("Versions");
+
+	// Extras Summary
+	if ($check_extra_versions_result === 1)
+	{
+		health_check_good("Extras");
+	}
+	else health_check_bad("Extras");
+
+	// Connectivity Summary
+	if ($check_simplerisk_base_url['result'] === 1 && $check_database_connectivity['result'] === 1 && $check_api_connectivity['result'] === 1 && $check_web_connectivity_result === 1)
+	{
+		health_check_good("Connectivity");
+	}
+	else health_check_bad("Connectivity");
+
+	// PHP Summary
+	if ($check_php_version['result'] === 1 && $check_php_extensions_result === 1)
+	{
+		health_check_good("PHP");
+	}
+	else health_check_bad("PHP");
+
+	// MySQL Summary
+	if ($check_no_zero_date['result'] === 1 && $check_only_full_group_by['result'] === 1 && $check_mysql_permission_select['result'] === 1 && $check_mysql_permission_insert['result'] === 1 && $check_mysql_permission_update['result'] === 1 && $check_mysql_permission_delete['result'] === 1 && $check_mysql_permission_create['result'] === 1 && $check_mysql_permission_drop['result'] === 1 && $check_mysql_permission_references['result'] === 1 && $check_mysql_permission_index['result'] === 1 && $check_mysql_permission_alter['result'] === 1)
+	{
+		health_check_good("MySQL");
+	}
+	else health_check_bad("MySQL");
+
+	// Permissions Summary
+	if ($check_simplerisk_directory_permissions_result === 1)
+	{
+		health_check_good("Permissions");
+        }
+        else health_check_bad("Permissions");
+
+	echo "    </div>\n";
+
+	// SimpleRisk Versions Tab
+	echo "    <div id=\"versions\" style=\"display: none;\" class=\"settings_tab\">\n";
+        echo "      <b><u>SimpleRisk Versions</u></b><br />";
+        display_health_check_results($check_app_version);
+	display_health_check_results($check_db_version);
+	display_health_check_results($check_same_app_and_db);
+        echo "    </div>\n";
+
+        // SimpleRisk Extras Tab
+        echo "    <div id=\"extras\" style=\"display: none;\" class=\"settings_tab\">\n";
+	echo "      <b><u>SimpleRisk Extras</u></b><br />";
+	display_health_check_array_results($check_extra_versions);
+	echo "    </div>\n";
+
+	// SimpleRisk Connectivity Tab
+        echo "    <div id=\"connectivity\" style=\"display: none;\" class=\"settings_tab\">\n";
+        echo "<b><u>Connectivity</u></b><br />";
+	display_health_check_results($check_simplerisk_base_url);
+	display_health_check_results($check_database_connectivity);
+	display_health_check_results($check_api_connectivity);
+	display_health_check_array_results($check_web_connectivity);
+	echo "    </div>\n";
+
+	// SimpleRisk PHP Tab
+        echo "    <div id=\"php\" style=\"display: none;\" class=\"settings_tab\">\n";
+        echo "<b><u>PHP</u></b><br />";
+	display_health_check_results($check_php_version);
+	display_health_check_array_results($check_php_extensions);
+	echo "    </div>\n";
+
+	// SimpleRisk MySQL Tab
+        echo "    <div id=\"mysql\" style=\"display: none;\" class=\"settings_tab\">\n";
+        echo "<b><u>MySQL</u></b><br />";
+	display_health_check_results($check_mysql_size);
+	//display_health_check_results($check_strict_sql_mode);
+	display_health_check_results($check_no_zero_date);
+	display_health_check_results($check_only_full_group_by);
+	display_health_check_results($check_mysql_permission_select);
+	display_health_check_results($check_mysql_permission_insert);
+	display_health_check_results($check_mysql_permission_update);
+	display_health_check_results($check_mysql_permission_delete);
+	display_health_check_results($check_mysql_permission_create);
+	display_health_check_results($check_mysql_permission_drop);
+	display_health_check_results($check_mysql_permission_references);
+	display_health_check_results($check_mysql_permission_index);
+	display_health_check_results($check_mysql_permission_alter);
+	echo "    </div>\n";
+
+	// SimpleRisk Permissions Tab
+        echo "    <div id=\"permissions\" style=\"display: none;\" class=\"settings_tab\">\n";
+        echo "<b><u>File and Directory Permissions</u></b><br />";
+	display_health_check_array_results($check_simplerisk_directory_permissions);
+	echo "    </div>\n";
+
+	echo "  </div>\n";
+	echo "</div>\n";
+}
+
+/******************************************
+ * FUNCTION: DISPLAY HEALTH CHECK RESULTS *
+ ******************************************/
+function display_health_check_results($health_check)
+{
+	// If the result was good
+	if ($health_check['result'] === 1)
+	{
+		health_check_good($health_check['text']);
+	}
+	else
+	{
+		health_check_bad($health_check['text']);
+	}
+}
+
+/************************************************
+ * FUNCTION: DISPLAY HEALTH CHECK ARRAY RESULTS *
+ ************************************************/
+function display_health_check_array_results($health_check_array)
+{
+	foreach($health_check_array as $health_check)
+	{
+		display_health_check_results($health_check);
+	}
 }
 
 /*******************************
@@ -131,11 +320,11 @@ function check_app_version($current_app_version, $latest_app_version)
 	// If the current and latest versions are the same
         if ($current_app_version === $latest_app_version)
         {
-                health_check_good("Running the current version (" . $current_app_version . ") of the SimpleRisk application.");
+		return array("result" => 1, "text" => "Running the current version (" . $current_app_version . ") of the SimpleRisk application.");
         }
         else
         {
-                health_check_bad("Running an outdated version (" . $current_app_version . ") of the SimpleRisk application.");
+		return array("result" => 0, "text" => "Running an outdated version (" . $current_app_version . ") of the SimpleRisk application.");
         }
 }
 
@@ -147,11 +336,11 @@ function check_db_version($current_db_version, $latest_db_version)
 	// If the current and latest versions are the same
         if ($current_db_version === $latest_db_version)
         {
-                health_check_good("Running the current version (" . $current_db_version . ") of the SimpleRisk database schema.");
+		return array("result" => 1, "text" => "Running the current version (" . $current_db_version . ") of the SimpleRisk database schema.");
         }
         else
         {
-                health_check_bad("Running an outdated version (" . $current_db_version . ") of the SimpleRisk database schema.");
+		return array("result" => 0, "text" => "Running an outdated version (" . $current_db_version . ") of the SimpleRisk database schema.");
         }
 }
 
@@ -163,11 +352,11 @@ function check_same_app_and_db($current_app_version, $current_db_version)
 	// If the current versions of the app and db are the same
 	if ($current_app_version === $current_db_version)
 	{
-		health_check_good("The SimpleRisk application and database are at the same versions (" . $current_db_version . ").");
+		return array("result" => 1, "text" => "The SimpleRisk application and database are at the same versions (" . $current_db_version . ").");
 	}
 	else
 	{
-		health_check_bad("The SimpleRisk application (" . $current_app_version . ") and database (" . $current_db_version . ") versions are not the same.");
+		return array("result" => 0, "text" => "The SimpleRisk application (" . $current_app_version . ") and database (" . $current_db_version . ") versions are not the same.");
 	}
 }
 
@@ -176,32 +365,48 @@ function check_same_app_and_db($current_app_version, $current_db_version)
  ****************************************************/
 function check_simplerisk_directory_permissions()
 {
-	$simplerisk_dir = realpath(__DIR__ . '/..');
+        // Create an empty array
+        $array = array();
 
-	// If the simplerisk directory is writeable
-	if (is_writeable($simplerisk_dir))
+	// Get the hosting tier
+	$hosting_tier = get_setting("hosting_tier");
+
+	// If the hosting tier is set and is set to trial or micro or small
+	if ($hosting_tier != false && ($hosting_tier == "trial" || $hosting_tier == "micro" || $hosting_tier == "small"))
 	{
-		health_check_good("The SimpleRisk directory (" . $simplerisk_dir . ") is writeable by the web user.");
+		$array[] = array("result" => 1, "text" => "Permissions have been automatically set to their proper values.");
 	}
 	else
 	{
-		health_check_bad("The SimpleRisk directory (" . $simplerisk_dir . ") is not writeable by the web user.");
-	}
+		$simplerisk_dir = realpath(__DIR__ . '/..');
 
-	$objects = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($simplerisk_dir), RecursiveIteratorIterator::SELF_FIRST);
-
-	foreach ($objects as $name => $object)
-	{
-		// Do not check the directory above the SimpleRisk directory
-		if ($name != $simplerisk_dir . "/..")
+		// If the simplerisk directory is writeable
+		if (is_writeable($simplerisk_dir))
 		{
-			// If the directory is writeable
-			if (!is_writeable($name))
+			$array[] = array("result" => 1, "text" => "The SimpleRisk directory (" . $simplerisk_dir . ") is writeable by the web user.");
+		}
+		else
+		{
+			$array[] = array("result" => 0, "text" => "The SimpleRisk directory (" . $simplerisk_dir . ") is not writeable by the web user.");
+		}
+
+		$objects = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($simplerisk_dir), RecursiveIteratorIterator::SELF_FIRST);
+
+		foreach ($objects as $name => $object)
+		{
+			// Do not check the directory above the SimpleRisk directory
+			if ($name != $simplerisk_dir . "/..")
 			{
-				health_check_bad($name . " is not writeable by the web user.");
+				// If the directory is writeable
+				if (!is_writeable($name))
+				{
+					$array[] = array("result" => 0, "text" => $name . " is not writeable by the web user.");
+				}
 			}
 		}
 	}
+
+	return $array;
 }
 
 /************************************
@@ -209,26 +414,50 @@ function check_simplerisk_directory_permissions()
  ************************************/
 function check_web_connectivity()
 {
-	// Configure the proxy server if one exists
-	$method = "GET";
-	$header = "content-type: Content-Type: application/x-www-form-urlencoded";
-	set_proxy_stream_context($method, $header);
+        // Configure the proxy server if one exists
+        $method = "GET";
+        $header = "content-type: Content-Type: application/x-www-form-urlencoded";
+        set_proxy_stream_context($method, $header);
 
-	// URLs to check
-	$urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io");
+        // URLs to check
+        $urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io");
 
-	// Check the URLs 
-	foreach ($urls as $url)
-	{
-		if (get_headers($url, 1))
+	// Create an empty array
+	$array = array();
+
+        // Check the URLs
+        foreach ($urls as $url)
+        {
+		write_debug_log("Healthcheck for URL: " . $url);
+
+		// Get the headers for the URL
+		$file_headers = @get_headers($url, 1);
+
+		if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
 		{
-			health_check_good("SimpleRisk connected to " . $url . ".");
+			write_debug_log("SimpleRisk was unable to connect to " . $url);
+			$array[] = array("result" => 0, "text" => "SimpleRisk was unable to connect to " . $url . ".");
 		}
 		else
 		{
-			health_check_bad("SimpleRisk was unable to connect to " . $url . ".");
+			write_debug_log("SimpleRisk connected to " . $url);
+			$array[] = array("result" => 1, "text" => "SimpleRisk connected to " . $url . ".");
 		}
-	}
+/*
+                if (get_headers($url, 1))
+                {
+			write_debug_log("SimpleRisk connected to " . $url);
+			$array[] = array("result" => 1, "text" => "SimpleRisk connected to " . $url . ".");
+                }
+                else
+                {
+			write_debug_log("SimpleRisk was unable to connect to " . $url);
+			$array[] = array("result" => 0, "text" => "SimpleRisk was unable to connect to " . $url . ".");
+                }
+*/
+        }
+
+	return $array;
 }
 
 /************************************
@@ -255,8 +484,8 @@ function check_mysql_permission($permission)
                 // If the row contains the permission
                 if (preg_match("/" . $permission . "/", $row[0]))
                 {       
-                        // The health check passed
-                        health_check_good("The '" . $escaper->escapeHtml($permission) . "' permssion has been set for the '" . $escaper->escapeHtml(DB_USERNAME) . "' user.");
+			// The health check passed
+			$array = array("result" => 1, "text" => "The '" . $escaper->escapeHtml($permission) . "' permssion has been set for the '" . $escaper->escapeHtml(DB_USERNAME) . "' user.");
                         
                         // Set the permission found to true
                         $permission_found = true;
@@ -266,8 +495,10 @@ function check_mysql_permission($permission)
         // If we did not find the permission
         if ($permission_found == false)
         {       
-                health_check_bad("The '" . $escaper->escapeHtml($permission) . "' permssion is not set for the '" . $escaper->escapeHtml(DB_USERNAME) . "' user.");
+		$array = array("result" => 0, "text" => "The '" . $escaper->escapeHtml($permission) . "' permssion is not set for the '" . $escaper->escapeHtml(DB_USERNAME) . "' user.");
         }
+
+	return $array;
 }
 
 /**********************************
@@ -278,17 +509,52 @@ function check_php_extensions()
 	// List of extensions to check for
 	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom");
 
+	// Create an empty array
+	$array = array();
+
 	// For each extension
 	foreach ($extensions as $extension)
 	{
 		if (extension_loaded($extension))
 		{
-			health_check_good("The PHP \"" . $extension . "\" extension is loaded.");
+			$array[] = array("result" => 1, "text" => "The PHP \"" . $extension . "\" extension is loaded.");
 		}
 		else
 		{
-			health_check_bad("The PHP \"" . $extension . "\" extension is not loaded.");
+			$array[] = array("result" => 0, "text" => "The PHP \"" . $extension . "\" extension is not loaded.");
 		}
+	}
+
+	return $array;
+}
+
+/***************************************
+ * FUNCTION: CHECK SIMPLERISK BASE URL *
+ ***************************************/
+function check_simplerisk_base_url()
+{
+	// Get the SimpleRisk Base URL value from the database
+	$simplerisk_base_url = get_setting('simplerisk_base_url');
+
+	// Get the current Base URL value
+	$isHTTPS = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on");
+	$port = (isset($_SERVER['SERVER_PORT']) && ((!$isHTTPS && $_SERVER['SERVER_PORT'] != "80") || ($isHTTPS && $_SERVER['SERVER_PORT'] != "443")));
+	$port = ($port) ? ":" . $_SERVER['SERVER_PORT'] : "";
+	$base_url = ($isHTTPS ? "https://" : "http://") . $_SERVER['SERVER_NAME'] . $port;
+	$dir_path = realpath(dirname(dirname(__FILE__)));
+	$document_root = realpath($_SERVER["DOCUMENT_ROOT"]);
+	$app_root = str_replace($document_root,"",$dir_path);
+	$app_root = str_replace(DIRECTORY_SEPARATOR ,"/",$app_root);
+	$base_url .= $app_root;
+
+	// If the base URL stored in settings and the one we are using are the same
+	if ($simplerisk_base_url == $base_url)
+	{
+		return array("result" => 1, "text" => "Your SimpleRisk Base URL matches the URL you are using to connect to SimpleRisk.");
+	}
+	else
+	{
+		return array("result" => 0, "text" => "Your SimpleRisk Base URL does not match the URL you are using to connect to SimpleRisk.");
 	}
 }
 
@@ -304,11 +570,11 @@ function check_database_connectivity()
 		// Close the database connection
 		db_close($db);
 
-		health_check_good("Communicated with the SimpleRisk database successfully.");
+		return array("result" => 1, "text" => "Communicated with the SimpleRisk database successfully.");
 	}
 	else
 	{
-		health_check_bad("Unable to communicate with the SimpleRisk database.");
+		return array("result" => 0, "text" => "Unable to communicate with the SimpleRisk database.");
 	}
 }
 
@@ -323,18 +589,34 @@ function check_api_connectivity()
 	// Create the whoami URL
 	$url = $base_url . "/api/whoami";
 
-	// Test the API URL
-	$headers = get_headers($url);
-	$code = substr($headers[0], 9, 3);
+	// Set the default proxy stream context
+	$context = set_proxy_stream_context();
 
-	// If the response code is success or unauthorized
-	if ($code == 200 || $code = 401)
+	// Set the default socket timeout to 5 seconds
+	ini_set('default_socket_timeout', 5);
+
+	// Get the file headers for the API URL
+	$file_headers = @get_headers($url, 1);
+
+	// If we were unable to connect to the URL
+	if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
 	{
-		health_check_good("Communicated with the SimpleRisk API successfully.");
+		return array("result" => 0, "text" => "Unable to communicate with the SimpleRisk API.");
 	}
+	// We were able to connect to the URL
 	else
 	{
-		health_check_bad("Unable to communicate with the SimpleRisk API.");
+		$code = substr($file_headers[0], 9, 3);
+
+		// If the response code is success or unauthorized
+		if ($code == 200 || $code = 401)
+		{
+			return array("result" => 1, "text" => "Communicated with the SimpleRisk API successfully.");
+		}
+		else
+		{
+			return array("result" => 0, "text" => "Unable to communicate with the SimpleRisk API.");
+		}
 	}
 }
 
@@ -358,11 +640,11 @@ function check_strict_sql_mode()
 	// If the row contains STRICT_TRANS_TABLES
 	if (preg_match("/.*STRICT_TRANS_TABLES.*/", $sql_mode))
 	{
-		health_check_bad("SimpleRisk will not work properly with STRICT_TRANS_TABLES enabled.");
+		return array("result" => 0, "text" => "SimpleRisk will not work properly with STRICT_TRANS_TABLES enabled.");
 	}
 	else
 	{
-		health_check_good("Verified that STRICT_TRANS_TABLES is not enabled for MySQL.");
+		return array("result" => 1, "text" => "Verified that STRICT_TRANS_TABLES is not enabled for MySQL.");
 	}
 }
 
@@ -386,11 +668,11 @@ function check_no_zero_date()
         // If the row contains NO_ZERO_DATE
         if (preg_match("/.*NO_ZERO_DATE.*/", $sql_mode))
         {       
-                health_check_bad("SimpleRisk will not work properly with NO_ZERO_DATE enabled.");
+		return array("result" => 0, "text" => "SimpleRisk will not work properly with NO_ZERO_DATE enabled.");
         }
         else    
         {       
-                health_check_good("Verified that NO_ZERO_DATE is not enabled for MySQL.");
+		return array("result" => 1, "text" => "Verified that NO_ZERO_DATE is not enabled for MySQL.");
         }
 }
 
@@ -415,7 +697,7 @@ function check_mysql_size()
 	// Get the percent remaining
 	//$remaining_percent = $free / $size;
 
-	health_check_good("SimpleRisk is using " . round($size, 2) . " MB of disk space.");
+	return array("result" => 1, "text" => "SimpleRisk is using " . round($size, 2) . " MB of disk space.");
 }
 
 /**************************************
@@ -438,11 +720,11 @@ function check_only_full_group_by()
         // If the row contains ONLY_FULL_GROUP_BY
         if (preg_match("/.*ONLY_FULL_GROUP_BY.*/", $sql_mode))
         {       
-                health_check_bad("SimpleRisk will not work properly with ONLY_FULL_GROUP_BY enabled.");
+		return array("result" => 0, "text" => "SimpleRisk will not work properly with ONLY_FULL_GROUP_BY enabled.");
         }
         else    
         {       
-                health_check_good("Verified that ONLY_FULL_GROUP_BY is not enabled for MySQL.");
+		return array("result" => 1, "text" => "Verified that ONLY_FULL_GROUP_BY is not enabled for MySQL.");
         }
 }
 
@@ -462,16 +744,16 @@ function check_php_version()
 	// If PHP is at least 7
 	if (PHP_VERSION_ID >= 70000)
 	{
-		health_check_good("SimpleRisk is running under PHP 7.");
+		return array("result" => 1, "text" => "SimpleRisk is running under PHP 7.");
 	}
 	// If this is PHP 5.x
 	else if (PHP_VERSION_ID >= 50000 && PHP_VERSION_ID < 60000)
 	{
-		health_check_bad("SimpleRisk will no longer run properly under PHP version 5.x.  Please upgrade to PHP 7.");
+		return array("result" => 0, "text" => "SimpleRisk will no longer run properly under PHP version 5.x.  Please upgrade to PHP 7.");
 	}
 	else
 	{
-		health_check_bad("SimpleRisk requires PHP 7 to run properly.");
+		return array("result" => 0, "text" => "SimpleRisk requires PHP 7 to run properly.");
 	}
 }
 
@@ -484,6 +766,9 @@ function check_extra_versions($current_app_version)
 {
 	global $escaper;
 
+        // Create an empty array
+        $array = array();
+
         // If the instance is registered
         if (get_setting('registration_registered') != 0)
         {
@@ -492,8 +777,6 @@ function check_extra_versions($current_app_version)
 		{
 			// Load the upgrade extra
 			require_once(realpath(__DIR__ . '/../extras/upgrade/index.php'));
-
-	                echo "<br /><b><u>SimpleRisk Extras</u></b><br />";
 
 			// Get the list of available SimpleRisk Extras
 			$extras = available_extras();
@@ -507,39 +790,41 @@ function check_extra_versions($current_app_version)
 					// If the extra is installed
 					if (core_is_installed($extra['short_name']))
 					{
-						health_check_good("The SimpleRisk " . $escaper->escapeHtml($extra['long_name']) . " has been purchased and installed.");
+						$array[] = array("result" => 1, "text" => "The SimpleRisk " . $escaper->escapeHtml($extra['long_name']) . " has been purchased and installed.");
 
 						// If this extra is compatible with this version of SimpleRisk
 						if (extra_simplerisk_version_compatible($extra['short_name']))
 						{
-							health_check_good("The currently installed " . $escaper->escapeHtml($extra['long_name']) . " is compatible with this version of SimpleRisk.");
+							$array[] = array("result" => 1, "text" => "The currently installed " . $escaper->escapeHtml($extra['long_name']) . " is compatible with this version of SimpleRisk.");
 						}
 						// This extra is not compatible
 						else
 						{
-							health_check_bad("The currently installed " . $escaper->escapeHtml($extra['long_name']) . " is not compatible with this version of SimpleRisk.");
+							$array[] = array("result" => 0, "text" => "The currently installed " . $escaper->escapeHtml($extra['long_name']) . " is not compatible with this version of SimpleRisk.");
 						}
 
 						// If we have the current version of the Extra
 						if (core_extra_current_version($extra['short_name']) == latest_version($extra['short_name']))
 						{
-							health_check_good("You are running the most recent version of the " . $escaper->escapeHtml($extra['long_name']) . ".");
+							$array[] = array("result" => 1, "text" => "You are running the most recent version of the " . $escaper->escapeHtml($extra['long_name']) . ".");
 						}
 						// We do not have the current version of the Extra
 						else
 						{
-							health_check_bad("A newer version of the " . $escaper->escapeHtml($extra['long_name']) . " is available.");
+							$array[] = array("result" => 0, "text" => "A newer version of the " . $escaper->escapeHtml($extra['long_name']) . " is available.");
 						}
 					}
 					// The extra is not installed
 					else
 					{
-						health_check_bad("The SimpleRisk " . $escaper->escapeHtml($extra['long_name']) . " has been purchased but is not installed.");	
+						$array[] = array("result" => 0, "text" => "The SimpleRisk " . $escaper->escapeHtml($extra['long_name']) . " has been purchased but is not installed.");
 					}
 				}
 			}
 		}
 	}
+
+	return $array;
 }
 
 ?>

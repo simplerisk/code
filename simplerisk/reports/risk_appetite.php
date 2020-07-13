@@ -79,6 +79,7 @@ $risk_appetite = get_setting("risk_appetite", 0);
         <link rel="stylesheet" href="../css/theme.css">
 
         <?php
+            setup_favicon("..");
             setup_alert_requirements("..");
         ?>
 
@@ -86,18 +87,32 @@ $risk_appetite = get_setting("risk_appetite", 0);
             .status-tabs .tabs-nav {
                 margin-left: 20px;
             }
+            .dataTables_filter, .dataTables_info { display: none; }
         </style>
         <script>
             function activateDatatable(id) {
                 var $this = $("#" + id);
+                //$('#'+id+' thead .filter').show();
+                $('#'+id+' thead tr').clone(true).appendTo( '#'+id+' thead' );
+                $('#'+id+' thead tr:eq(1) th').each( function (i) {
+                    var title = $(this).text();
+                    $(this).html( '<input type="text" name="'+title+'" placeholder="'+title+'" />' );
+             
+                    $( 'input', this ).on( 'keyup change', function () {
+                        if ( riskDatatable.column(i).search() !== this.value ) {
+                            riskDatatable.column(i).search( this.value ).draw();
+                        }
+                    } );
+                } );
                 var appetite_type = $this.data('type');
                 var riskDatatable = $this.DataTable({
                     scrollX: true,
-                    bFilter: false,
+                    //bFilter: false,
                     bLengthChange: false,
                     processing: true,
                     serverSide: true,
                     bSort: true,
+                    orderCellsTop: true,
                     pagingType: "full_numbers",
                     dom : "flrti<'.download-by-group'><'#view-all-"+ id +".view-all'>p",
                     ajax: {
@@ -140,11 +155,11 @@ $risk_appetite = get_setting("risk_appetite", 0);
                     if(oSettings[0]._iDisplayLength == -1){
                         oSettings[0]._iDisplayLength = 10;
                         riskDataTables[id].draw()
-                        $this.addClass("current");
+                        $this.removeClass("current");
                     } else {
                         oSettings[0]._iDisplayLength = -1;
                         riskDataTables[id].draw()
-                        $this.removeClass('current');
+                        $this.addClass('current');
                     }
                 });
             }
@@ -173,7 +188,6 @@ $risk_appetite = get_setting("risk_appetite", 0);
                         riskDataTables[id].draw()
                     }
                 });
-
             });
         </script>
     </head>

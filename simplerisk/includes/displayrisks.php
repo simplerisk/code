@@ -173,9 +173,9 @@ function display_team_view($team)
     echo "</div>\n";
 }    
     
-/**************************************************
-* FUNCTION: DISPLAY ADDIOTIONAL STAKEHOLDERS VIEW *
-***************************************************/
+/*************************************************
+* FUNCTION: DISPLAY ADDITIONAL STAKEHOLDERS VIEW *
+**************************************************/
 function display_additional_stakeholders_view($additional_stakeholders)
 {
     global $lang, $escaper;
@@ -374,11 +374,27 @@ function display_supporting_documentation_view($risk_id, $view_type)
     echo "</div>\n";
     echo "</div>\n";
 }
+/**************************************
+* FUNCTION: DISPLAY RISK MAPPING VIEW *
+***************************************/
+function display_risk_mapping_view($risk_catalog_name)
+{
+    global $lang, $escaper;
+
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span5 text-right\">\n";
+    echo $escaper->escapeHtml($lang['RiskMapping']) . ": \n";
+    echo "</div>\n";
+    echo "<div class=\"span7\">\n";
+    echo "<input style=\"cursor: default;\" type=\"text\" name=\"risk_catalog_mapping\" id=\"risk_catalog_mapping\" size=\"50\" value=\"" . $escaper->escapeHtml($risk_catalog_name) . "\" title=\"" . $escaper->escapeHtml($risk_catalog_name) . "\" disabled=\"disabled\" />\n";
+    echo "</div>\n";
+    echo "</div>\n";
+}
 
 /*********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS VIEW *
 **********************************************************/
-function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key)
+function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name="")
 {
 
     foreach($fields as $field)
@@ -472,6 +488,10 @@ function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id
 
                     case 'Tags':
                         display_risk_tags_view($tags);
+                    break;
+
+                    case 'RiskMapping':
+                        display_risk_mapping_view($risk_catalog_name);
                     break;
                 }
 
@@ -805,13 +825,30 @@ function display_supporting_documentation_edit($risk_id, $view_type)
     echo "</div>\n";
     echo "</div>\n";
 }
+/**********************************
+* FUNCTION: DISPLAY CATEGORY EDIT *
+***********************************/
+function display_risk_mapping_edit($risk_catalog_mapping)
+{
+    global $lang, $escaper;
+    $mapping_required = get_setting('risk_mapping_required') == 1?"required":"";
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span5 text-right\">\n";
+    echo $escaper->escapeHtml($lang['RiskMapping']) .": \n";
+    echo "</div>\n";
+    echo "<div class=\"span7\">\n";
+    create_dropdown("risk_catalog", $risk_catalog_mapping, "risk_catalog_mapping", true, false, false, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} style='max-width:100%'");
+    //create_dropdown("category", $category);
+    echo "</div>\n";
+    echo "</div>\n";
+}
 
 
 
 /*********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS EDIT *
 **********************************************************/
-function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key)
+function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping = "")
 {
     foreach($fields as $field)
     {
@@ -900,6 +937,10 @@ function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id
 
                     case 'Tags':
                         display_risk_tags_edit($tags);
+                    break;
+
+                    case 'RiskMapping':
+                        display_risk_mapping_edit($risk_catalog_mapping);
                     break;
                 }
 
@@ -1243,7 +1284,7 @@ function display_security_recommendations_view($security_recommendations)
 /************************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN MITIGATION VIEW *
 *************************************************************/
-function display_main_mitigation_fields_by_panel_view($panel_name, $fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls)
+function display_main_mitigation_fields_by_panel_view($panel_name, $fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $mitigation_id)
 {
 
     foreach($fields as $field)
@@ -1313,7 +1354,7 @@ function display_main_mitigation_fields_by_panel_view($panel_name, $fields, $ris
                     break;
 
                     case 'MitigationControlsList':
-                        print_mitigation_controls_table($mitigation_controls);
+                        print_mitigation_controls_table($mitigation_controls, $mitigation_id, "view");
                     break;
                 }
 
@@ -1600,7 +1641,7 @@ function display_security_recommendations_edit($security_recommendations)
 /************************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN MITIGATION EDIT *
 *************************************************************/
-function display_main_mitigation_fields_by_panel_edit($panel_name, $fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls)
+function display_main_mitigation_fields_by_panel_edit($panel_name, $fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $mitigation_id)
 {
 
     foreach($fields as $field)
@@ -1670,7 +1711,7 @@ function display_main_mitigation_fields_by_panel_edit($panel_name, $fields, $ris
 
                     case 'MitigationControlsList':
                         // Add controls table html
-                        print_mitigation_controls_table($mitigation_controls);
+                        print_mitigation_controls_table($mitigation_controls, $mitigation_id, "edit");
 
                         // Add javascript code for mitigation controls
                         display_mitigation_controls_script();
@@ -2130,9 +2171,14 @@ function display_supporting_documentation_add()
         echo "<div class=\"span7\">";
 
             echo "<div class=\"file-uploader\">";
+                echo "
+                    <script>
+                        var max_upload_size = " . $escaper->escapeJs(get_setting('max_upload_size', 0)) . ";
+                        var fileTooBigMessage = '" . $escaper->escapeJs($lang['FileIsTooBigToUpload']) . "'; 
+                    </script>";
                 echo "<label for=\"file-upload\" class=\"btn\">".$escaper->escapeHtml($lang['ChooseFile'])."</label>";
                 echo "<span class=\"file-count-html\"> <span class=\"file-count\">0</span> ".$escaper->escapeHtml($lang['FileAdded'])."</span>";
-                echo "<p><font size=\"2\"><strong>Max ".round(get_setting('max_upload_size')/1024/1024)." Mb</strong></font></p>";
+                echo "<p><font size=\"2\"><strong>Max ".$escaper->escapeHtml(round(get_setting('max_upload_size')/1024/1024))." Mb</strong></font></p>";
                 echo "<ul class=\"file-list\">";
 
                 echo "</ul>";

@@ -61,7 +61,7 @@ enforce_permission_riskmanagement();
 <script>
 	Highcharts.setOptions({
 		global: {
-			timezone: '<?php echo get_setting("default_timezone"); ?>'
+			timezone: '<?php echo $escaper->escapeHtml(get_setting("default_timezone")); ?>'
 		}
 	});
 </script>

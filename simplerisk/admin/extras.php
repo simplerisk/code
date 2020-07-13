@@ -75,6 +75,7 @@
 <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
 <link rel="stylesheet" href="../css/theme.css">
 <?php
+    setup_favicon("..");
     setup_alert_requirements("..");
 ?>    
 </head>
@@ -157,6 +158,11 @@ get_alert();
               <td width="60px"><?php echo (import_export_extra() ? '<a href="importexport.php">Yes</a>' : '<a href="importexport.php">No</a>'); ?></td>
             </tr>
             <tr>
+              <td width="155px"><b>Incident Management</b></td>
+              <td>Provides incident management capabilities from within the SimpleRisk system.</td>
+              <td width="60px"><?php echo (incident_management_extra() ? '<a href="incidentmanagement.php">Yes</a>' : '<a href="incidentmanagement.php">No</a>'); ?></td>
+            </tr>
+            <tr>
               <td width="155px"><b>Jira</b></td>
               <td>Allows integration with your JIRA instance. Enables connecting risks to Jira issues, syncing their data, status and comments.</td>
               <td width="60px"><?php echo (jira_extra() ? '<a href="jira.php">Yes</a>' : '<a href="jira.php">No</a>'); ?></td>
@@ -166,6 +172,18 @@ get_alert();
               <td width="155px"><b>Notification</b></td>
               <td>Sends email notifications when risks are submitted, updated, mitigated, or reviewed and may be run on a schedule to notify users of risks in the Unreviewed or Past Due state.</td>
               <td width="60px"><?php echo (notification_extra() ? '<a href="notification.php">Yes</a>' : '<a href="notification.php">No</a>'); ?></td>
+            </tr>
+            <tr>
+              <td width="155px"><b>Organizational Hierarchy</b></td>
+              <td>Multiple Business Units can be defined above teams. Users can then be assigned across one or more teams under various Business Units. This affects their ability to see and use the teams, users, and assets which they are not associated with.</td>
+              <td width="60px">
+              	<a href="organizational_hierarchy.php">
+              	<?php echo organizational_hierarchy_extra() ? 'Yes' : 'No';?>
+              	</a>
+              	<?php if (!team_separation_extra()) {?>
+              		<i title="<?php echo $escaper->escapeHtml($lang['OrganizationalHierarchyDisabledWarning']);?>" class='fa fa-exclamation-circle' aria-hidden='true' style='color: #ffc107; padding-left: 5px;'></i>
+              	<?php } ?>
+              </td>
             </tr>
             <tr>
               <td width="155px"><b>Risk Assessments</b></td>

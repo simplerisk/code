@@ -122,11 +122,8 @@ $(document).ready(function(){
                 },
 
                 onDropdownShown: function(){
-                    $('.dataTables_scrollHead tr.filter', selfTable.table().container()).css('height', '220px')
                 },
                 onDropdownHide: function(){
-                    $('.dataTables_scrollHead tr.filter', selfTable.table().container()).css('height', 'auto')
-                    selfTable.columns.adjust()
                     if(changedFitler){
                         selfTable.draw()
                         changedFitler = true;
@@ -150,11 +147,17 @@ $(document).ready(function(){
             var hidden_location_filters = false;
         }
         
-//        alert(initial_load);
         
         var riskDataTables = [];
         var unique = [];
         var unassigned_option = $("#unassigned_option").val();
+        if($("#custom_column_filters").val()){
+            var column_filters = JSON.parse($("#custom_column_filters").val());
+            var field_values = [];
+            for (var i = 0; i < column_filters.length; i++) {
+                field_values[column_filters[i][0]] = column_filters[i][1];
+            }
+        } else column_filters = [];
         $(".risk-datatable").each(function(index){
             var $this = $(this);
             var riskDatatable = $(this).DataTable({
@@ -307,7 +310,13 @@ $(document).ready(function(){
                                     }
                                 }
                             });
-                            
+                            if(column_filters.length > 0){
+                                $("tr.filter .dynamic-column-filter", self.api().table().header()).each(function(i){
+                                    var data_name = $(this).attr('data-name');
+                                    $(this).val(field_values[data_name]);
+                                });
+                                setTimeout(function(){self.api().draw();},1);
+                            }
 
                             createMultiSelectColumnFilter(self.api());
                             

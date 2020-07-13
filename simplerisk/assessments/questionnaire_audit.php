@@ -98,6 +98,7 @@ else
     <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
 
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>
 </head>

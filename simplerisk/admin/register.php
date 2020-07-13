@@ -176,8 +176,8 @@
 		// If the user wants to install the Upgrade Extra
 		if (isset($_POST['get_upgrade_extra']))
 		{
-            // Download the extra
-            $result = download_extra("upgrade");
+			// Download the extra
+			$result = download_extra("upgrade");
 		}
 		// If the user wants to install the Authentication Extra
 		else if (isset($_POST['get_authentication_extra']))
@@ -188,74 +188,74 @@
 		// If the user wants to install the Encryption Extra
 		else if (isset($_POST['get_encryption_extra']))
 		{
-            // Download the extra
-            $result = download_extra("encryption");
+			// Download the extra
+			$result = download_extra("encryption");
 		}
 		// If the user wants to install the Import-Export Extra
 		else if (isset($_POST['get_importexport_extra']))
 		{
-            // Download the extra
-            $result = download_extra("import-export");
+			// Download the extra
+			$result = download_extra("import-export");
 		}
 		// If the user wants to install the Notification Extra
 		else if (isset($_POST['get_notification_extra']))
 		{
-            // Download the extra
-            $result = download_extra("notification");
+			// Download the extra
+			$result = download_extra("notification");
 		}
 		// If the user wants to install the Separation Extra
 		else if (isset($_POST['get_separation_extra']))
 		{
-            // Download the extra
-            $result = download_extra("separation");
+			// Download the extra
+			$result = download_extra("separation");
 		}
 		else if (isset($_POST['get_governance_extra']))
 		{
 			// Download the extra
 			$result = download_extra("governance");
 		}
-        // If the user wants to install the Risk Assessments Extra
-        else if (isset($_POST['get_assessments_extra']))
-        {
-            // Download the extra
-            $result = download_extra("assessments");
-        }
-        // If the user wants to install the API Extra
-        else if (isset($_POST['get_api_extra']))
-        {
-            // Download the extra
-            $result = download_extra("api");
-        }
-        // If the user wants to install the ComplianceForge Extra
-        else if (isset($_POST['get_complianceforge_extra']))
-        {
-            // Download the extra
-            $result = download_extra("complianceforge");
-        }
-        // If the user wants to install the ComplianceForge SCF Extra
-        else if (isset($_POST['get_complianceforge_scf_extra']))
-        {
-            // Download the extra
-            $result = download_extra("complianceforgescf");
-        }
-        // If the user wants to install the Customization Extra
-        else if (isset($_POST['get_customization_extra']))
-        {
-            // Download the extra
-            $result = download_extra("customization");
-        }
-        // If the user wants to install the Advanced Search Extra
-        else if (isset($_POST['get_advanced_search_extra']))
-        {
-            // Download the extra
-            $result = download_extra("advanced_search");
-        }
-        // If the user wants to install the Jira Extra
-        else if (isset($_POST['get_jira_extra']))
-        {
-            // Download the extra
-            $result = download_extra("jira");
-        }
+		// If the user wants to install the Risk Assessments Extra
+		else if (isset($_POST['get_assessments_extra']))
+		{
+			// Download the extra
+			$result = download_extra("assessments");
+		}
+		// If the user wants to install the API Extra
+		else if (isset($_POST['get_api_extra']))
+		{
+			// Download the extra
+			$result = download_extra("api");
+		}
+		// If the user wants to install the ComplianceForge Extra
+		else if (isset($_POST['get_complianceforge_extra']))
+		{
+			// Download the extra
+			$result = download_extra("complianceforge");
+		}
+		// If the user wants to install the ComplianceForge SCF Extra
+		else if (isset($_POST['get_complianceforge_scf_extra']))
+		{
+			// Download the extra
+			$result = download_extra("complianceforgescf");
+		}
+		// If the user wants to install the Customization Extra
+		else if (isset($_POST['get_customization_extra']))
+		{
+			// Download the extra
+			$result = download_extra("customization");
+		}
+		// If the user wants to install the Advanced Search Extra
+		else if (isset($_POST['get_advanced_search_extra']))
+		{
+			// Download the extra
+			$result = download_extra("advanced_search");
+		}
+		// If the user wants to install the Jira Extra
+		else if (isset($_POST['get_jira_extra']))
+		{
+			// Download the extra
+			$result = download_extra("jira");
+		}
 	}
 ?>
 
@@ -281,6 +281,7 @@
     <link rel="stylesheet" href="../css/theme.css">
     
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>
     

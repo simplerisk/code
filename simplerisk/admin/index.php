@@ -84,6 +84,13 @@
             update_setting("exception_update_resets_approval", $exception_update_resets_approval);
         }
 
+        // Update the 'Require a Risk Mapping for all risks' setting
+        $risk_mapping_required = (isset($_POST['risk_mapping_required'])) ? 1 : 0;
+        if ($risk_mapping_required != get_setting("risk_mapping_required"))
+        {
+            update_setting("risk_mapping_required", $risk_mapping_required);
+        }
+
         // Update the alert timeout
         $alert_timeout = $_POST['alert_timeout'];
         if ($alert_timeout != get_setting("alert_timeout")) {
@@ -494,11 +501,11 @@
                 }
     }
 
-        // If the Debug tab was submitted
-        if (isset($_POST['update_debug_settings']))
-        {
-                // Set the error to false
-                $error = false;
+    // If the Debug tab was submitted
+    if (isset($_POST['update_debug_settings']))
+    {
+        // Set the error to false
+        $error = false;
 
         // Update the debug logging
         $debug_logging = isset($_POST['debug_logging']) ? 1 : 0;
@@ -510,18 +517,28 @@
 
         // Update the debug log file
         $debug_log_file = $_POST['debug_log_file'];
-        $current_debug_log_file = get_setting("debug_log_file");
-        if ($debug_log_file != $current_debug_log_file)
-        {
-            update_setting("debug_log_file", $debug_log_file);
+        $root_path = str_replace('/', '\\', $_SERVER["DOCUMENT_ROOT"]);
+        $log_path = str_replace('/', '\\', realpath(dirname($debug_log_file)));
+        if($root_path != $log_path && $log_path != "") {
+            $current_debug_log_file = get_setting("debug_log_file");
+            if ($debug_log_file != $current_debug_log_file)
+            {
+                update_setting("debug_log_file", $debug_log_file);
+            }
+        } elseif($log_path == "") {
+            $error = true;
+            set_alert(true, "bad", "No such directory.");
+        } else {
+            $error = true;
+            set_alert(true, "bad", "Cannot be write log file to the web root directory.");
         }
 
-                // If all setting values were saved successfully
-                if (!$error)
-                {
-                        // Display an alert
-                        set_alert(true, "good", "The settings were updated successfully.");
-                }
+        // If all setting values were saved successfully
+        if (!$error)
+        {
+                // Display an alert
+                set_alert(true, "good", "The settings were updated successfully.");
+        }
     }
 
     // Get the max upload size setting
@@ -551,6 +568,7 @@
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/settings_tabs.css">
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>    
     <script>
@@ -660,6 +678,9 @@
                             </tr>
                             <tr>
                               <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('exception_update_resets_approval')) == 1){ echo "checked"; } ?> name="exception_update_resets_approval" class="hidden-checkbox" size="2" value="90" id="exception_update_resets_approval" type="checkbox"><label for="exception_update_resets_approval">&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['ExceptionUpdateResetsApproval']); ?></label></td>
+                            </tr>
+                            <tr>
+                              <td colspan="2"><input <?php if($escaper->escapeHtml(get_setting('risk_mapping_required')) == 1){ echo "checked"; } ?> name="risk_mapping_required" class="hidden-checkbox" size="2" value="90" id="risk_mapping_required" type="checkbox"><label for="risk_mapping_required">&nbsp;&nbsp; <?php echo $escaper->escapeHtml($lang['RequireRiskMappingForAllRisks']); ?></label></td>
                             </tr>
                             <tr>
                               <td width="300px"><?php echo $escaper->escapeHtml($lang['AlertTimeout']); ?>:</td>

@@ -9,6 +9,13 @@ function close_current_tab(index)
 
 function addRisk($this){
     var tabContainer = $this.parents('.tab-data');
+
+    // Check the sum of files the user wants to upload and
+    // stop if it's over the max_upload_size
+    if (!validFileUploadSize(tabContainer)) {
+    	return false;
+    }
+
     var getForm = $this.parent().parent().parent().parent();
     var div = getForm.parent().parent();
     var index = parseInt((div).attr('id').replace(/[A-Za-z$-]/g, ""));
@@ -329,6 +336,31 @@ function addTabContainer(){
   function updateScore() {
   }
 
+  	/*
+  	  	Check the sum of files the user wants to upload
+		Displays an error message if it's over and returns false.
+  	 */
+  	function validFileUploadSize(container) {
+  		// If both variable defined
+  		if (max_upload_size && fileTooBigMessage) {
+			var filesSize = 0;
+
+			// Sum the files' sizes
+			$.each($(".file-uploader input[type=file].hidden-file-upload", container), function(i, obj) {
+				$.each(obj.files, function(j, file){
+					filesSize += file.size;
+				})
+			});
+
+			// If the sum of the files' size went over the max
+			// display an error message and stop
+			if (filesSize > max_upload_size) {
+				toastr.error(fileTooBigMessage);
+				return false;
+			}
+  		}
+  		return true;
+  	}
   
 $(document).ready(function(){
     if(jQuery.ui !== undefined){
@@ -628,6 +660,13 @@ $(document).ready(function(){
     
     function updateRisk($this){
         var tabContainer = $this.parents('.tab-data');
+
+        // Check the sum of files the user wants to upload and
+        // stop if it's over the max_upload_size
+        if (!validFileUploadSize(tabContainer)) {
+        	return false;
+        }
+
         var risk_id = $('.large-text', tabContainer).html();
 
         // Check valiation and stop if failed
@@ -729,6 +768,13 @@ $(document).ready(function(){
 
     function updateMitigation($this){
         var tabContainer = $this.parents('.tab-data');
+
+        // Check the sum of files the user wants to upload and
+        // stop if it's over the max_upload_size
+        if (!validFileUploadSize(tabContainer)) {
+        	return false;
+        }
+
         var risk_id = $('.large-text', tabContainer).html();
         
         // Check valiation and stop if failed

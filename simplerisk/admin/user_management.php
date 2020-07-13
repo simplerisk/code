@@ -9,6 +9,7 @@ require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/messages.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../includes/reporting.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
@@ -35,8 +36,6 @@ if (!isset($_SESSION))
 // Include the language file
 require_once(language_file());
 
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
 // Check for session timeout or renegotiation
 session_check();
 
@@ -53,6 +52,24 @@ if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
 {
     header("Location: ../index.php");
     exit(0);
+}
+
+
+// Include the CSRF-magic library
+// Make sure it's called after the session is properly setup
+include_csrf_magic();
+
+
+// Set the default tab values
+$addusers_tab = true;
+$manageusers_tab = false;
+$usersettings_tab = false;
+$userreports_tab = false;
+
+
+$separation = team_separation_extra();
+if ($separation) {
+    require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 }
 
 // Check if a new user was submitted
@@ -97,7 +114,17 @@ if (isset($_POST['add_user']))
     $modify_documentation = (int)(isset($_POST['modify_documentation']) ? 1 : 0);
     $delete_documentation = (int)(isset($_POST['delete_documentation']) ? 1 : 0);
     $comment_risk_management = (int)(isset($_POST['comment_risk_management']) ? 1 : 0);
+    $add_projects = (int)(isset($_POST['add_projects']) ? 1 : 0);
+    $delete_projects = (int)(isset($_POST['delete_projects']) ? 1 : 0);
+    $manage_projects = (int)(isset($_POST['manage_projects']) ? 1 : 0);
     $comment_compliance = (int)(isset($_POST['comment_compliance']) ? 1 : 0);
+    $define_tests = (int)(isset($_POST['define_tests']) ? 1 : 0);
+    $edit_tests = (int)(isset($_POST['edit_tests']) ? 1 : 0);
+    $delete_tests = (int)(isset($_POST['delete_tests']) ? 1 : 0);
+    $initiate_audits = (int)(isset($_POST['initiate_audits']) ? 1 : 0);
+    $modify_audits = (int)(isset($_POST['modify_audits']) ? 1 : 0);
+    $reopen_audits = (int)(isset($_POST['reopen_audits']) ? 1 : 0);
+    $delete_audits = (int)(isset($_POST['delete_audits']) ? 1 : 0);
     
     $view_exception           = isset($_POST['view_exception']) ? 1 : 0;
     $create_exception         = isset($_POST['create_exception']) ? 1 : 0;
@@ -171,6 +198,16 @@ if (isset($_POST['add_user']))
                     "delete_exception" => $delete_exception,
                     "approve_exception" => $approve_exception,
                     "manager" => $manager,
+                    "add_projects" => $add_projects,
+                    "delete_projects" => $delete_projects,
+                    "manage_projects" => $manage_projects,
+                    "define_tests" => $define_tests,
+                    "edit_tests" => $edit_tests,
+                    "delete_tests" => $delete_tests,
+                    "initiate_audits" => $initiate_audits,
+                    "modify_audits" => $modify_audits,
+                    "reopen_audits" => $reopen_audits,
+                    "delete_audits" => $delete_audits,
                 ];
 
                 // Insert a new user
@@ -224,6 +261,10 @@ if (isset($_POST['add_user']))
 // Check if a user was enabled
 if (isset($_POST['enable_user']))
 {
+    // Set the selected tab
+    $addusers_tab = false;
+    $manageusers_tab = true;
+
     $value = (int)$_POST['disabled_users'];
 
     // Verify value is an integer
@@ -239,6 +280,10 @@ if (isset($_POST['enable_user']))
 // Check if a user was disabled
 if (isset($_POST['disable_user']))
 {
+    // Set the selected tab
+    $addusers_tab = false;
+    $manageusers_tab = true;
+
     $value = (int)$_POST['enabled_users'];
 
     // Verify value is an integer
@@ -256,6 +301,10 @@ if (isset($_POST['disable_user']))
 // Check if a user was deleted
 if (isset($_POST['delete_user']))
 {
+    // Set the selected tab
+    $addusers_tab = false;
+    $manageusers_tab = true;
+
     $value = (int)$_POST['user'];
 
     // Verify value is an integer
@@ -292,6 +341,10 @@ if (isset($_POST['delete_user']))
 // Check if a password reset was requested
 if (isset($_POST['password_reset']))
 {
+    // Set the selected tab
+    $addusers_tab = false;
+    $manageusers_tab = true;
+
     $value = (int)$_POST['user'];
 
     // Verify value is an integer
@@ -307,6 +360,10 @@ if (isset($_POST['password_reset']))
 // Check if a password policy update was requested
 if (isset($_POST['password_policy_update']))
 {
+    // Set the selected tab
+    $addusers_tab = false;
+    $usersettings_tab = true;
+
     $strict_user_validation = (isset($_POST['strict_user_validation'])) ? 1 : 0;
     $pass_policy_enabled = (isset($_POST['pass_policy_enabled'])) ? 1 : 0;
     $min_characters = (int)$_POST['min_characters'];
@@ -339,21 +396,91 @@ if (isset($_POST['password_policy_update']))
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/bootstrap-multiselect.js"></script>
+    <script src="../js/jquery.dataTables.js"></script>
+    
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
+    <link rel="stylesheet" href="../css/settings_tabs.css">
+    <link rel="stylesheet" href="../css/jquery.dataTables.css">
+    <link rel="stylesheet" href="../css/divshot-util.css">
+    <link rel="stylesheet" href="../css/divshot-canvas.css">
+    <link rel="stylesheet" href="../css/display.css">
+
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
+    
+    <?php
+        setup_favicon("..");
+        setup_alert_requirements("..");
+    ?>
+
     <script type="text/javascript">
-    $(function(){
-        $("#team").multiselect({
-            allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllTeams']); ?>',
-            includeSelectAllOption: true
+        $(document).ready(function(){
+
+        	$("#team").multiselect({
+                allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllTeams']); ?>',
+                includeSelectAllOption: true
+            });
+            
+            // role event
+            $("#role").change(function(){
+                setUserResponsibilitesByRole();
+            });
+            
+            if($("#role").val()){
+                setUserResponsibilitesByRole();
+            }
+
+            var $tabs = $("#main").tabs({
+                active: $('.tabs a.active').parent().index(),
+            	show: { effect: "fade", duration: 200 },
+                beforeActivate: function(event, ui){
+                	ui.oldTab.find('a').removeClass("active");
+                	ui.newTab.find('a').addClass("active");
+                },
+                activate: function(event, ui){
+                	var default_report_table = <?php if ($separation) { ?>'users_of_teams-table'<?php } else { ?>'users_of_permissions-table'<?php } ?>;
+                	// Activating the default report when the 'User Reports' tab clicked the first time
+                	// the default depends on whether the team separation extra is turned on or not
+                	if (ui.newTab.find('a').attr('href') === '#userreports' && !(default_report_table in reportDatatables)) {
+                		activateDatatable(default_report_table);	
+                	}
+                }
+            });
+
+            $('#report_displayed_dropdown').change(function() {
+                datatableWrapperId = this.value + '-report';
+            	datatableId = this.value + '-table';
+    
+            	$("#userreports .report").hide();
+            	$("#" + datatableWrapperId).show();
+        	
+                if (!(datatableId in reportDatatables)) {
+                    activateDatatable(datatableId);
+                } else {
+                    // Need it because if the table is redrawn due to the filtering logic while it's not the active tab
+                    // then the header columns need to be re-adjusted
+                	reportDatatables[datatableId].columns.adjust();
+                }
+            });
+    
+            // It's required to make the view switch back from "View All" to the paginated view when a paginate button is clicked
+            $("body").on("click", "a.paginate_button", function() {
+                var id = $(this).attr('aria-controls');
+                var oSettings =  reportDatatables[id].settings();
+                if(oSettings[0]._iDisplayLength == -1){
+                    $(this).parents(".dataTables_wrapper").find('.view-all').removeClass('current');
+                    oSettings[0]._iDisplayLength = 10;
+                    reportDatatables[id].draw()
+                }
+            });
+            
         });
-    });
-    </script>
-    <script type="text/javascript">
+
         function handleSelection(choice) {
             elements = document.getElementsByClassName("ldap_pass");
             if (choice=="1") {
@@ -372,190 +499,410 @@ if (isset($_POST['password_policy_update']))
                 }
             }
         }
-    </script>
-
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
-
-    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="../css/theme.css">
+        
+        function setUserResponsibilitesByRole(){
+            // If role is unselected, uncheck all responsibilities
+            if(!$("#role").val())
+            {
+                $(".checklist input[type=checkbox]").prop("checked", false);
+            }
+            // If administrator role is selected
+            else if($("#role").val() == 1)
+            {
+                // Set all user responsibilites
+                $(".checklist input[type=checkbox]").prop("checked", true);
+                
+                // Set all teams
+                $("#team").multiselect("selectAll", false);
+                $("#team").multiselect("refresh");
+            }
+            else
+            {
+                $.ajax({
+                    type: "GET",
+                    url: BASE_URL + "/api/role_responsibilities/get_responsibilities",
+                    data: {
+                        role_id: $("#role").val()
+                    },
+                    success: function(data){
+                        // Uncheck all checkboxes
+                        $(".checklist input[type=checkbox]").prop("checked", false);
+                        
+                        // Check all for responsibilites
+                        var responsibility_names = data.data;
+                        for(var key in responsibility_names){
+                            $(".checklist input[name="+responsibility_names[key]+"]").prop("checked", true)
+                        }
+                    },
+                    error: function(xhr,status,error){
+                        if(xhr.responseJSON && xhr.responseJSON.status_message){
+                            showAlertsFromArray(xhr.responseJSON.status_message);
+                        }
+                    }
+                })
+            }
+        }
+        
+        function checkAll(bx) {
+            if(bx.checked){
+                $(bx).parents('table').find('input[type=checkbox]').prop('checked', true);
+            }else{
+                $(bx).parents('table').find('input[type=checkbox]').prop('checked', false);
+            }
+        }
     
-    <?php
-        setup_alert_requirements("..");
-    ?>    
+        function checkAllGovernance(bx) {
+            if (document.getElementsByName("check_governance")[0].checked == true) {
+                document.getElementsByName("governance")[0].checked = true;
+                document.getElementsByName("add_new_frameworks")[0].checked = true;
+                document.getElementsByName("modify_frameworks")[0].checked = true;
+                document.getElementsByName("delete_frameworks")[0].checked = true;
+                document.getElementsByName("add_new_controls")[0].checked = true;
+                document.getElementsByName("modify_controls")[0].checked = true;
+                document.getElementsByName("delete_controls")[0].checked = true;
+                document.getElementsByName("add_documentation")[0].checked = true;
+                document.getElementsByName("modify_documentation")[0].checked = true;
+                document.getElementsByName("delete_documentation")[0].checked = true;
+                document.getElementsByName("view_exception")[0].checked = true;
+                document.getElementsByName("create_exception")[0].checked = true;
+                document.getElementsByName("update_exception")[0].checked = true;
+                document.getElementsByName("delete_exception")[0].checked = true;
+                document.getElementsByName("approve_exception")[0].checked = true;
+            }
+            else {
+                document.getElementsByName("governance")[0].checked = false;
+                document.getElementsByName("add_new_frameworks")[0].checked = false;
+                document.getElementsByName("modify_frameworks")[0].checked = false;
+                document.getElementsByName("delete_frameworks")[0].checked = false;
+                document.getElementsByName("add_new_controls")[0].checked = false;
+                document.getElementsByName("modify_controls")[0].checked = false;
+                document.getElementsByName("delete_controls")[0].checked = false;
+                document.getElementsByName("add_documentation")[0].checked = false;
+                document.getElementsByName("modify_documentation")[0].checked = false;
+                document.getElementsByName("delete_documentation")[0].checked = false;
+                document.getElementsByName("view_exception")[0].checked = false;
+                document.getElementsByName("create_exception")[0].checked = false;
+                document.getElementsByName("update_exception")[0].checked = false;
+                document.getElementsByName("delete_exception")[0].checked = false;
+                document.getElementsByName("approve_exception")[0].checked = false;
+            }
+        }
+    
+        function checkAllRiskMgmt(bx) {
+            if (document.getElementsByName("check_risk_mgmt")[0].checked == true) {
+                document.getElementsByName("riskmanagement")[0].checked = true;
+                document.getElementsByName("submit_risks")[0].checked = true;
+                document.getElementsByName("modify_risks")[0].checked = true;
+                document.getElementsByName("close_risks")[0].checked = true;
+                document.getElementsByName("plan_mitigations")[0].checked = true;
+                document.getElementsByName("review_insignificant")[0].checked = true;
+                document.getElementsByName("review_low")[0].checked = true;
+                document.getElementsByName("review_medium")[0].checked = true;
+                document.getElementsByName("review_high")[0].checked = true;
+                document.getElementsByName("review_veryhigh")[0].checked = true;
+                document.getElementsByName("accept_mitigation")[0].checked = true;
+                document.getElementsByName("comment_risk_management")[0].checked = true;
+                document.getElementsByName("add_projects")[0].checked = true;
+                document.getElementsByName("delete_projects")[0].checked = true;
+                document.getElementsByName("manage_projects")[0].checked = true;
+            }
+            else {
+                document.getElementsByName("riskmanagement")[0].checked = false;
+                document.getElementsByName("submit_risks")[0].checked = false;
+                document.getElementsByName("modify_risks")[0].checked = false;
+                document.getElementsByName("close_risks")[0].checked = false;
+                document.getElementsByName("plan_mitigations")[0].checked = false;
+                document.getElementsByName("review_insignificant")[0].checked = false;
+                document.getElementsByName("review_low")[0].checked = false;
+                document.getElementsByName("review_medium")[0].checked = false;
+                document.getElementsByName("review_high")[0].checked = false;
+                document.getElementsByName("review_veryhigh")[0].checked = false;
+                document.getElementsByName("accept_mitigation")[0].checked = false;
+                document.getElementsByName("comment_risk_management")[0].checked = false;
+                document.getElementsByName("add_projects")[0].checked = false;
+                document.getElementsByName("delete_projects")[0].checked = false;
+                document.getElementsByName("manage_projects")[0].checked = false;
+            }
+        }
+    
+        function checkAllCompliance(bx) {
+            if (document.getElementsByName("check_compliance")[0].checked == true) {
+                document.getElementsByName("compliance")[0].checked = true;
+                document.getElementsByName("comment_compliance")[0].checked = true;
+                document.getElementsByName("define_tests")[0].checked = true;
+                document.getElementsByName("edit_tests")[0].checked = true;
+                document.getElementsByName("delete_tests")[0].checked = true;
+                document.getElementsByName("initiate_audits")[0].checked = true;
+                document.getElementsByName("modify_audits")[0].checked = true;
+                document.getElementsByName("reopen_audits")[0].checked = true;
+                document.getElementsByName("delete_audits")[0].checked = true;
+            }
+            else {
+                document.getElementsByName("compliance")[0].checked = false;
+                document.getElementsByName("comment_compliance")[0].checked = false;
+                document.getElementsByName("define_tests")[0].checked = false;
+                document.getElementsByName("edit_tests")[0].checked = false;
+                document.getElementsByName("delete_tests")[0].checked = false;
+                document.getElementsByName("initiate_audits")[0].checked = false;
+                document.getElementsByName("modify_audits")[0].checked = false;
+                document.getElementsByName("reopen_audits")[0].checked = false;
+                document.getElementsByName("delete_audits")[0].checked = false;
+            }
+        }
+    
+        function checkAllAssetMgmt(bx) {
+            if (document.getElementsByName("check_asset_mgmt")[0].checked == true) {
+                document.getElementsByName("asset")[0].checked = true;
+            }
+            else {
+                document.getElementsByName("asset")[0].checked = false;
+            }
+        }
+    
+        function checkAllAssessments(bx) {
+            if (document.getElementsByName("check_assessments")[0].checked == true) {
+                document.getElementsByName("assessments")[0].checked = true;
+            }
+            else {
+                document.getElementsByName("assessments")[0].checked = false;
+            }
+        }
+    
+        function checkAllConfigure(bx) {
+            if (document.getElementsByName("check_configure")[0].checked == true) {
+                document.getElementsByName("admin")[0].checked = true;
+            }
+            else {
+                document.getElementsByName("admin")[0].checked = false;
+            }
+        }
+    
+        function update_proxy()
+        {
+          var proxy_web_requests_checkbox = document.getElementById("proxy_web_requests_checkbox");
+          var proxy_verify_ssl_certificate_checkbox = document.getElementById("proxy_verify_ssl_certificate_checkbox");
+          var proxy_verify_ssl_certificate_row = document.getElementById("proxy_verify_ssl_certificate_row");
+          var proxy_authenticated_row = document.getElementById("proxy_authenticated_row");
+          var proxy_authenticated_checkbox = document.getElementById("proxy_authenticated_checkbox");
+          var proxy_host_row = document.getElementById("proxy_host_row");
+          var proxy_port_row = document.getElementById("proxy_port_row");
+          var proxy_user_row = document.getElementById("proxy_user_row");
+          var proxy_pass_row = document.getElementById("proxy_pass_row");
+    
+          if (proxy_web_requests_checkbox.checked == true)
+          {
+            proxy_verify_ssl_certificate_row.style.display = "";
+            proxy_host_row.style.display = "";
+            proxy_port_row.style.display = "";
+            proxy_authenticated_row.style.display = "";
+    
+            if (proxy_authenticated_checkbox.checked == true)
+            {
+              proxy_user_row.style.display = "";
+              proxy_pass_row.style.display = "";
+            }
+            else
+            {
+              proxy_user_row.style.display = "none";
+              proxy_pass_row.style.display = "none";
+            }
+          }
+          else
+          {
+            proxy_verify_ssl_certificate_row.style.display = "none";
+            proxy_host_row.style.display = "none";
+            proxy_port_row.style.display = "none";
+            proxy_authenticated_row.style.display = "none";
+            proxy_user_row.style.display = "none";
+            proxy_pass_row.style.display = "none";
+          }
+        }
+
+    	var filterSubmitTimer = [];
+        var reportDatatables = ["users_of_teams-table"];
+
+        function activateDatatable(id) {
+            var $this = $("#" + id);
+            var type = $this.data('type');
+
+            var reportDatatable = $this.DataTable({
+                scrollX: true,
+                bFilter: false,
+                bLengthChange: false,
+                processing: true,
+                serverSide: true,
+                bSort: true,
+                bSortCellsTop: true,
+                pagingType: "full_numbers",
+                dom : "flrti<'.download-by-group'><'#view-all-"+ id +".view-all'>p",
+                order: [[0, 'asc']],
+                columnDefs : [{
+                    "targets" : [-1],
+                    "orderable": false
+                }],
+                deferLoading:true, // We only load the data when everything has been setup properly
+                ajax: {
+                    url: BASE_URL + '/api/reports/user_management_reports',
+                    type: "POST",
+                    data: function(d) {
+                        d.type = type;
+                        d.columnFilters = {};
+                        $('select.column-filter-dropdown', reportDatatables[id].table().header()).each(function(){
+                            d.columnFilters[$(this).data('name')] = $(this).val();
+                        });
+                    },
+                    error: function(xhr, status, error){
+                    	if(!retryCSRF(xhr, this)) {}
+                    }
+                },
+                initComplete: function(){
+                    var self = this;
+                        
+                    $.ajax({
+                        type: "GET",
+                        url: BASE_URL + "/api/reports/user_management_reports_unique_column_data?type=" + type,
+                        dataType: 'json',
+                        success: function(data){
+                            var header = self.api().table().header();
+
+                            $("tr.filter th", header).each(function(){
+                                var column = $(this);
+                                var columnName = column.data('name').toLowerCase();
+
+                                var options = data[columnName];
+
+    							options.sort(function(o1, o2) {
+                            	  	var t1 = o1.text.toLowerCase(), t2 = o2.text.toLowerCase();
+                            	  	return t1 > t2 ? 1 : t1 < t2 ? -1 : 0;
+                            	});
+                                column.html("");
+
+                                var select = $("<select class='column-filter-dropdown' data-table='" + id + "'data-name='" + columnName + "' multiple></select>").appendTo(column);
+
+                                // Have to add this as it is possible to have users without a team and we want to filter on those
+                                if (id === 'users_of_teams-table' && columnName === 'teams') {
+                                	select.append($("<option value='-1' selected><?php echo $escaper->escapeHtml($lang['UsersWithoutTeam']); ?></option>"));
+                                } else
+                                
+                                // Have to add this as it is possible to have users without a team and we want to filter on those
+                                if (id === 'teams_of_users-table' && columnName === 'teams') {
+                                	select.append($("<option value='-1' selected><?php echo $escaper->escapeHtml($lang['UsersWithoutTeam']); ?></option>"));
+                                } else
+
+                                // Have to add this as it is possible to have users without a permission and we want to filter on those
+                                if (id === 'users_of_permissions-table' && columnName === 'permissions') {
+                                	select.append($("<option value='-1' selected><?php echo $escaper->escapeHtml($lang['UsersWithoutPermission']); ?></option>"));
+                                } else
+                                    
+                                // Have to add this as it is possible to have users without a permission and we want to filter on those
+                                if (id === 'permissions_of_users-table' && columnName === 'permissions') {
+                                	select.append($("<option value='-1' selected><?php echo $escaper->escapeHtml($lang['UsersWithoutPermission']); ?></option>"));
+                                } else
+
+								// Have to add this as it is possible to have users without a role or a role without a user assigned and we want to filter on those
+                                if (id === 'users_of_roles-table') {
+                                    if (columnName === 'roles') {
+                                		select.append($("<option value='-1' selected><?php echo $escaper->escapeHtml($lang['NoRole']); ?></option>"));
+                                    } else {
+                                    	select.append($("<option value='-1' selected><?php echo $escaper->escapeHtml($lang['NoUser']); ?></option>"));
+                                    }
+                                }
+
+                                $.each(options, function(i, item) {
+                                	select.append($("<option value='" + item.value + "' selected>" + item.text + "</option>"));
+                                });
+                            });
+                            
+                            $("tr.filter", header).show();
+
+                            // Have to throttle the refreshing of the datatable to let the users select more than one option from the filters per refresh
+                            var throttledDatatableRefresh = function() {
+                            	var table = $(this.$select).data('table');
+                            	clearTimeout(filterSubmitTimer[table]);
+                            	filterSubmitTimer[table] = setTimeout(function() {
+                                	// To close the dropdowns on re-draw as for some reason it's unchecking the checkboxes when re-drawing the table
+                                	// This is just a visual thing as the state of those options won't become unchecked
+                            		$('div.table-container[data-id=' + table + '] div.btn-group.open').removeClass('open');
+    
+                            		clearTimeout(filterSubmitTimer[table]);
+                                	reportDatatables[table].draw();
+                                }, 2000);
+                            }
+                            
+                            $('.column-filter-dropdown', header).multiselect({
+                                enableFiltering: true,
+                                buttonWidth: '100%',
+                                maxHeight: 150,
+                                numberDisplayed: 1,
+                                enableCaseInsensitiveFiltering: true,
+                                allSelectedText: '<?php echo $escaper->escapeHtml($lang['All']); ?>',
+                                includeSelectAllOption: true,
+                                onChange: throttledDatatableRefresh,
+                                onSelectAll: throttledDatatableRefresh,
+                                onDeselectAll: throttledDatatableRefresh
+                            });
+
+    						// When the filters are created, we're drawing the table
+                            reportDatatable.draw();
+                        },
+                        error: function(xhr, status, error) {
+                            if(!retryCSRF(xhr, this)) {}
+                        }
+                    });
+                }
+            });
+    
+            reportDatatable.on('draw', function(e, settings){
+                if(settings._iDisplayLength == -1){
+                    $("#" + settings.sTableId + "_wrapper").find(".paginate_button.current").removeClass("current");
+                }
+                $('.paginate_button.first').html('<i class="fa fa-chevron-left"></i><i class="fa fa-chevron-left"></i>');
+                $('.paginate_button.previous').html('<i class="fa fa-chevron-left"></i>');
+    
+                $('.paginate_button.last').html('<i class="fa fa-chevron-right"></i><i class="fa fa-chevron-right"></i>');
+                $('.paginate_button.next').html('<i class="fa fa-chevron-right"></i>');
+            });
+    
+            reportDatatables[id] = reportDatatable;
+    
+            $('#view-all-' + id).html("<?php echo $escaper->escapeHtml($lang['All']); ?>");
+    
+            $('#view-all-' + id).click(function(){
+                var $this = $(this);
+    
+                var id = $(this).attr('id').replace("view-all-", "");
+                var oSettings =  reportDatatables[id].settings();
+                if(oSettings[0]._iDisplayLength == -1){
+                    oSettings[0]._iDisplayLength = 10;
+                    reportDatatables[id].draw();
+                    $this.removeClass("current");
+                } else {
+                    oSettings[0]._iDisplayLength = -1;
+                    reportDatatables[id].draw();
+                    $this.addClass('current');
+                }
+            });
+        }
+
+    </script>
+    
+	<style>
+	   .dataTables_scrollHead {overflow: visible !important;}
+	   
+	   #report_displayed_dropdown {
+	       padding: 5px;
+	       margin-left: 10px;
+	   }
+	   
+	   .tabs li:focus {
+	       outline: none;
+	   }
+
+	</style>
+	
 </head>
 
 <body>
-<script type="text/javascript">
-    $(document).ready(function(){
-        // role event
-        $("#role").change(function(){
-            setUserResponsibilitesByRole();
-        });
-        
-        if($("#role").val()){
-            setUserResponsibilitesByRole();
-        }
-    });
-    
-    function setUserResponsibilitesByRole(){
-        // If role is unselected, uncheck all responsibilities
-        if(!$("#role").val())
-        {
-            $(".checklist input[type=checkbox]").prop("checked", false);
-        }
-        // If administrator role is selected
-        else if($("#role").val() == 1)
-        {
-            // Set all user responsibilites
-            $(".checklist input[type=checkbox]").prop("checked", true);
-            
-            // Set all teams
-            $("#team").multiselect("selectAll", false);
-            $("#team").multiselect("refresh");
-        }
-        else
-        {
-            $.ajax({
-                type: "GET",
-                url: BASE_URL + "/api/role_responsibilities/get_responsibilities",
-                data: {
-                    role_id: $("#role").val()
-                },
-                success: function(data){
-                    // Uncheck all checkboxes
-                    $(".checklist input[type=checkbox]").prop("checked", false);
-                    
-                    // Check all for responsibilites
-                    var responsibility_names = data.data;
-                    for(var key in responsibility_names){
-                        $(".checklist input[name="+responsibility_names[key]+"]").prop("checked", true)
-                    }
-                },
-                error: function(xhr,status,error){
-                    if(xhr.responseJSON && xhr.responseJSON.status_message){
-                        showAlertsFromArray(xhr.responseJSON.status_message);
-                    }
-                }
-            })
-        }
-    }
-    
-    function checkAll(bx) {
-        if(bx.checked){
-            $(bx).parents('table').find('input[type=checkbox]').prop('checked', true);
-        }else{
-            $(bx).parents('table').find('input[type=checkbox]').prop('checked', false);
-        }
-    }
-
-    function checkAllGovernance(bx) {
-        if (document.getElementsByName("check_governance")[0].checked == true) {
-            document.getElementsByName("governance")[0].checked = true;
-            document.getElementsByName("add_new_frameworks")[0].checked = true;
-            document.getElementsByName("modify_frameworks")[0].checked = true;
-            document.getElementsByName("delete_frameworks")[0].checked = true;
-            document.getElementsByName("add_new_controls")[0].checked = true;
-            document.getElementsByName("modify_controls")[0].checked = true;
-            document.getElementsByName("delete_controls")[0].checked = true;
-            document.getElementsByName("add_documentation")[0].checked = true;
-            document.getElementsByName("modify_documentation")[0].checked = true;
-            document.getElementsByName("delete_documentation")[0].checked = true;
-            document.getElementsByName("view_exception")[0].checked = true;
-            document.getElementsByName("create_exception")[0].checked = true;
-            document.getElementsByName("update_exception")[0].checked = true;
-            document.getElementsByName("delete_exception")[0].checked = true;
-            document.getElementsByName("approve_exception")[0].checked = true;
-        }
-        else {
-            document.getElementsByName("governance")[0].checked = false;
-            document.getElementsByName("add_new_frameworks")[0].checked = false;
-            document.getElementsByName("modify_frameworks")[0].checked = false;
-            document.getElementsByName("delete_frameworks")[0].checked = false;
-            document.getElementsByName("add_new_controls")[0].checked = false;
-            document.getElementsByName("modify_controls")[0].checked = false;
-            document.getElementsByName("delete_controls")[0].checked = false;
-            document.getElementsByName("add_documentation")[0].checked = false;
-            document.getElementsByName("modify_documentation")[0].checked = false;
-            document.getElementsByName("delete_documentation")[0].checked = false;
-            document.getElementsByName("view_exception")[0].checked = false;
-            document.getElementsByName("create_exception")[0].checked = false;
-            document.getElementsByName("update_exception")[0].checked = false;
-            document.getElementsByName("delete_exception")[0].checked = false;
-            document.getElementsByName("approve_exception")[0].checked = false;
-        }
-    }
-
-    function checkAllRiskMgmt(bx) {
-        if (document.getElementsByName("check_risk_mgmt")[0].checked == true) {
-            document.getElementsByName("riskmanagement")[0].checked = true;
-            document.getElementsByName("submit_risks")[0].checked = true;
-            document.getElementsByName("modify_risks")[0].checked = true;
-            document.getElementsByName("close_risks")[0].checked = true;
-            document.getElementsByName("plan_mitigations")[0].checked = true;
-            document.getElementsByName("review_insignificant")[0].checked = true;
-            document.getElementsByName("review_low")[0].checked = true;
-            document.getElementsByName("review_medium")[0].checked = true;
-            document.getElementsByName("review_high")[0].checked = true;
-            document.getElementsByName("review_veryhigh")[0].checked = true;
-            document.getElementsByName("accept_mitigation")[0].checked = true;
-            document.getElementsByName("comment_risk_management")[0].checked = true;
-        }
-        else {
-            document.getElementsByName("riskmanagement")[0].checked = false;
-            document.getElementsByName("submit_risks")[0].checked = false;
-            document.getElementsByName("modify_risks")[0].checked = false;
-            document.getElementsByName("close_risks")[0].checked = false;
-            document.getElementsByName("plan_mitigations")[0].checked = false;
-            document.getElementsByName("review_insignificant")[0].checked = false;
-            document.getElementsByName("review_low")[0].checked = false;
-            document.getElementsByName("review_medium")[0].checked = false;
-            document.getElementsByName("review_high")[0].checked = false;
-            document.getElementsByName("review_veryhigh")[0].checked = false;
-            document.getElementsByName("accept_mitigation")[0].checked = false;
-            document.getElementsByName("comment_risk_management")[0].checked = false;
-        }
-    }
-
-    function checkAllCompliance(bx) {
-        if (document.getElementsByName("check_compliance")[0].checked == true) {
-            document.getElementsByName("compliance")[0].checked = true;
-            document.getElementsByName("comment_compliance")[0].checked = true;
-        }
-        else {
-            document.getElementsByName("compliance")[0].checked = false;
-            document.getElementsByName("comment_compliance")[0].checked = false;
-        }
-    }
-
-    function checkAllAssetMgmt(bx) {
-        if (document.getElementsByName("check_asset_mgmt")[0].checked == true) {
-            document.getElementsByName("asset")[0].checked = true;
-        }
-        else {
-            document.getElementsByName("asset")[0].checked = false;
-        }
-    }
-
-    function checkAllAssessments(bx) {
-        if (document.getElementsByName("check_assessments")[0].checked == true) {
-            document.getElementsByName("assessments")[0].checked = true;
-        }
-        else {
-            document.getElementsByName("assessments")[0].checked = false;
-        }
-    }
-
-    function checkAllConfigure(bx) {
-        if (document.getElementsByName("check_configure")[0].checked == true) {
-            document.getElementsByName("admin")[0].checked = true;
-        }
-        else {
-            document.getElementsByName("admin")[0].checked = false;
-        }
-    }
-</script>
 
 <?php
     view_top_menu("Configure");
@@ -569,9 +916,23 @@ if (isset($_POST['password_policy_update']))
             <?php view_configure_menu("UserManagement"); ?>
         </div>
         <div class="span9">
-            <div class="row-fluid">
-                <div class="span12">
-                    <div class="hero-unit">
+          <div id="main" class="wrap">
+            <ul class="tabs group">
+              <li><a <?php echo ($addusers_tab ? "class=\"active\"" : ""); ?> href="#addusers"><?php echo $escaper->escapeHtml($lang['AddUsers']); ?></a></li>
+              <li><a <?php echo ($manageusers_tab ? "class=\"active\"" : ""); ?> href="#manageusers"><?php echo $escaper->escapeHtml($lang['ManageUsers']); ?></a></li>
+              <li><a <?php echo ($usersettings_tab ? "class=\"active\"" : ""); ?> href="#usersettings"><?php echo $escaper->escapeHtml($lang['UserSettings']); ?></a></li>
+              <li><a <?php echo ($userreports_tab ? "class=\"active\"" : ""); ?> href="#userreports"><?php echo $escaper->escapeHtml($lang['UserReports']); ?></a></li>
+            </ul>
+            <div id="content">
+
+              <!-- Add Users Tab -->
+              <div id="addusers" <?php echo ($addusers_tab ? "" : "style=\"display: none;\""); ?> class="settings_tab">
+
+                <table border="1" width="600" cellpadding="10px">
+                  <tbody>
+                    <tr>
+                      <td>
+
                         <form name="add_user" method="post" action="">
                             <table border="0" cellspacing="0" cellpadding="0">
                                 <tr><td colspan="2"><h4><?php echo $escaper->escapeHtml($lang['AddANewUser']); ?>:</h4></td></tr>
@@ -610,7 +971,7 @@ if (isset($_POST['password_policy_update']))
                             <?php create_dropdown("user", "", "manager"); ?>
 
                             <h6><u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u></h6>
-                            <?php create_multiple_dropdown("team"); ?>
+                            <?php create_multiple_dropdown("team", null, null, get_all_teams()); ?>
 
                             <h6><u><?php echo $escaper->escapeHtml($lang['Role']); ?></u></h6>
                             <?php create_dropdown("role", get_setting('default_user_role')); ?>
@@ -661,6 +1022,9 @@ if (isset($_POST['password_policy_update']))
                                                 <li><input class="hidden-checkbox" id="review_high" name="review_high" type="checkbox" />  <label for="review_high"><?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></label></li>
                                                 <li><input class="hidden-checkbox" id="review_veryhigh" name="review_veryhigh" type="checkbox" />  <label for="review_veryhigh"><?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></label></li>
                                                 <li><input class="hidden-checkbox" id="comment_risk_management" name="comment_risk_management" type="checkbox" /> <label for="comment_risk_management"><?php echo $escaper->escapeHtml($lang['AbleToCommentRiskManagement']); ?></label></li>
+                                                <li><input class="hidden-checkbox" id="add_projects" name="add_projects" type="checkbox" /> <label for="add_projects"><?php echo $escaper->escapeHtml($lang['AbleToAddProjects']); ?></label></li>
+                                                <li><input class="hidden-checkbox" id="delete_projects" name="delete_projects" type="checkbox" /> <label for="delete_projects"><?php echo $escaper->escapeHtml($lang['AbleToDeleteProjects']); ?></label></li>
+                                                <li><input class="hidden-checkbox" id="manage_projects" name="manage_projects" type="checkbox" /> <label for="manage_projects"><?php echo $escaper->escapeHtml($lang['AbleToManageProjects']); ?></label></li>
                                               </ul>
                                             </li>
                                         </ul>
@@ -670,6 +1034,13 @@ if (isset($_POST['password_policy_update']))
                                                 <ul>
                                                 <li><input class="hidden-checkbox" id="compliance" name="compliance" type="checkbox" /> <label for="compliance"><?php echo $escaper->escapeHtml($lang['AllowAccessToComplianceMenu']); ?></label></li>
                                                 <li><input class="hidden-checkbox" id="comment_compliance" name="comment_compliance" type="checkbox" /> <label for="comment_compliance"><?php echo $escaper->escapeHtml($lang['AbleToCommentCompliance']); ?></label></li>
+                                                <li><input class="hidden-checkbox" id="define_tests" name="define_tests" type="checkbox" /> <label for="define_tests"><?php echo $escaper->escapeHtml($lang['AbleToDefineTests']); ?></label></li>
+                                                <li><input class="hidden-checkbox" id="edit_tests" name="edit_tests" type="checkbox" /> <label for="edit_tests"><?php echo $escaper->escapeHtml($lang['AbleToEditTests']); ?></label></li>
+                                                <li><input class="hidden-checkbox" id="delete_tests" name="delete_tests" type="checkbox" /> <label for="delete_tests"><?php echo $escaper->escapeHtml($lang['AbleToDeleteTests']); ?></label></li>
+                                                <li><input class="hidden-checkbox" id="initiate_audits" name="initiate_audits" type="checkbox" /> <label for="initiate_audits"><?php echo $escaper->escapeHtml($lang['AbleToInitiateAudits']); ?></label></li>
+                                                <li><input class="hidden-checkbox" id="modify_audits" name="modify_audits" type="checkbox" /> <label for="modify_audits"><?php echo $escaper->escapeHtml($lang['AbleToModifyAudits']); ?></label></li>
+                                                <li><input class="hidden-checkbox" id="reopen_audits" name="reopen_audits" type="checkbox" /> <label for="reopen_audits"><?php echo $escaper->escapeHtml($lang['AbleToReopenAudits']); ?></label></li>
+                                                <li><input class="hidden-checkbox" id="delete_audits" name="delete_audits" type="checkbox" /> <label for="delete_audits"><?php echo $escaper->escapeHtml($lang['AbleToDeleteAudits']); ?></label></li>
                                               </ul>
                                             </li>
                                         </ul>
@@ -721,93 +1092,207 @@ if (isset($_POST['password_policy_update']))
 
                                     // Display the multi factor authentication options
                                     multi_factor_authentication_options(1);
+
                                 }
                             ?>
+                            <br />
                             <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Add']); ?>" name="add_user" /><br />
                         </form>
-                    </div>
-                    <div class="hero-unit">
+
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+              </div>
+
+              <!-- Manage Users Tab -->
+              <div id="manageusers" <?php echo ($manageusers_tab ? "" : "style=\"display: none;\""); ?> class="settings_tab">
+
+                <table border="1" width="600" cellpadding="10px">
+                  <tbody>
+                    <tr>
+                      <td>
                         <form name="select_user" method="post" action="view_user_details.php">
-                            <p>
                                 <h4><?php echo $escaper->escapeHtml($lang['ViewDetailsForUser']); ?>:</h4>
                                 <?php echo $escaper->escapeHtml($lang['DetailsForUser']); ?> <?php create_dropdown('enabled_users', null, 'user'); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Select']); ?>" name="select_user" />
-                            </p>
                         </form>
-                    </div>
-                    <div class="hero-unit">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <br />
+
+                <table border="1" width="600" cellpadding="10px">
+                  <tbody>
+                    <tr>
+                      <td>
                         <form name="enable_disable_user" method="post" action="">
-                            <p>
                                 <h4><?php echo $escaper->escapeHtml($lang['EnableAndDisableUsers']); ?>:</h4>
                                 <?php echo $escaper->escapeHtml($lang['EnableAndDisableUsersHelp']); ?>.
-                            </p>
-                            <p>
+				<br /><br />
                                 <?php echo $escaper->escapeHtml($lang['DisableUser']); ?> <?php create_dropdown("enabled_users"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Disable']); ?>" name="disable_user" />
-                            </p>
-                            <p>
+				<br />
                                 <?php echo $escaper->escapeHtml($lang['EnableUser']); ?> <?php create_dropdown("disabled_users"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Enable']); ?>" name="enable_user" />
-                            </p>
                         </form>
-                    </div>
-                    <div class="hero-unit">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <br />
+
+                <table border="1" width="600" cellpadding="10px">
+                  <tbody>
+                    <tr>    
+                      <td>  
                         <form name="delete_user" method="post" action="">
-                            <p>
                                 <h4><?php echo $escaper->escapeHtml($lang['DeleteAnExistingUser']); ?>:</h4>
                                 <?php echo $escaper->escapeHtml($lang['DeleteCurrentUser']); ?> <?php create_dropdown("user"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Delete']); ?>" name="delete_user" />
-                            </p>
                         </form>
-                    </div>
-                    <div class="hero-unit">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>  
+
+                <br />
+
+                <table border="1" width="600" cellpadding="10px">
+                  <tbody>
+                    <tr>
+                      <td>
                         <form name="password_reset" method="post" action="">
-                            <p>
                                 <h4><?php echo $escaper->escapeHtml($lang['PasswordReset']); ?>:</h4>
                                 <?php echo $escaper->escapeHtml($lang['SendPasswordResetEmailForUser']); ?> <?php create_dropdown("user"); ?>&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Send']); ?>" name="password_reset" />
-                            </p>
                         </form>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table> 
+
+              </div>
+
+              <!-- User Settings Tab -->
+              <div id="usersettings" <?php echo ($usersettings_tab ? "" : "style=\"display: none;\""); ?> class="settings_tab">
+
+                <form name="password_policy" method="post" action="">
+
+                <table border="1" width="600" cellpadding="10px">
+                  <tbody>
+                    <tr>
+                      <td>
+                            <h4><?php echo $escaper->escapeHtml($lang['UserPolicy']); ?>:</h4>
+                            <input class="hidden-checkbox" type="checkbox" id="strict_user_validation" name="strict_user_validation"<?php if (get_setting('strict_user_validation') == 1) echo " checked" ?> /><label for="strict_user_validation">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['UseCaseSensitiveValidationOfUsername']); ?></label>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <br />
+
+                <table border="1" width="600" cellpadding="10px">
+                  <tbody>
+                    <tr>
+                      <td>
+                            <h4><?php echo $escaper->escapeHtml($lang['AccountLockoutPolicy']); ?>:</h4>
+
+                            <?php echo $escaper->escapeHtml($lang['MaximumAttemptsLockout']); ?>:&nbsp;&nbsp;<input style="width:50px" type="number" id="pass_policy_attempt_lockout" name="pass_policy_attempt_lockout" min="0" maxlength="2" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_attempt_lockout')); ?>"/> <?php echo $escaper->escapeHtml($lang['attempts']); ?>&nbsp;&nbsp;[0 = Lockout Disabled]
+
+                            <?php echo $escaper->escapeHtml($lang['MaximumAttemptsLockoutTime']); ?>:&nbsp;&nbsp;<input style="width:50px" type="number" id="pass_policy_attempt_lockout_time" name="pass_policy_attempt_lockout_time" min="0" maxlength="2" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_attempt_lockout_time')); ?>"/> <?php echo $escaper->escapeHtml($lang['minutes']); ?>.&nbsp;&nbsp;[0 = Manual Enable Required]
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <br />
+
+                <table border="1" width="600" cellpadding="10px">
+                  <tbody>
+                    <tr>
+                      <td>
+                            <h4><?php echo $escaper->escapeHtml($lang['PasswordPolicy']); ?>:</h4>
+
+                            <input class="hidden-checkbox" type="checkbox" id="pass_policy_enabled" name="pass_policy_enabled"<?php if (get_setting('pass_policy_enabled') == 1) echo " checked" ?> /><label for="pass_policy_enabled">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['Enabled']); ?></label>
+
+                            <?php echo $escaper->escapeHtml($lang['MinimumNumberOfCharacters']); ?> <input style="width:50px" type="number" id="min_characters" name="min_characters" min="1" max="50" maxlength="2" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_min_chars')); ?>"/> [1-50]
+
+                            <input type="checkbox" class="hidden-checkbox" id="alpha_required" name="alpha_required"<?php if (get_setting('pass_policy_alpha_required') == 1) echo " checked" ?>  /><label for="alpha_required">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireAlphaCharacter']); ?></label>
+
+                            <input type="checkbox" class="hidden-checkbox" id="upper_required" name="upper_required"<?php if (get_setting('pass_policy_upper_required') == 1) echo " checked" ?>  /><label for="upper_required">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireUpperCaseCharacter']); ?></label>
+
+                            <input type="checkbox" class="hidden-checkbox" id="lower_required" name="lower_required"<?php if (get_setting('pass_policy_lower_required') == 1) echo " checked" ?>  /><label for="lower_required">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireLowerCaseCharacter']); ?></label>
+
+                            <input type="checkbox" class="hidden-checkbox" id="digits_required" name="digits_required"<?php if (get_setting('pass_policy_digits_required') == 1) echo " checked" ?>  /><label for="digits_required">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireNumericCharacter']); ?></label>
+
+                            <input type="checkbox" class="hidden-checkbox" id="special_required" name="special_required"<?php if (get_setting('pass_policy_special_required') == 1) echo " checked" ?> /><label for="special_required">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireSpecialCharacter']); ?>
+
+                            <?php echo $escaper->escapeHtml($lang['MinimumPasswordAge']); ?>:&nbsp;&nbsp;<input style="width:50px" type="number" id="pass_policy_min_age" name="pass_policy_min_age" min="0" maxlength="4" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_min_age')); ?>"/> <?php echo $escaper->escapeHtml($lang['days']); ?>.&nbsp;&nbsp;[0 = Min Age Disabled]
+
+                            <?php echo $escaper->escapeHtml($lang['MaximumPasswordAge']); ?>:&nbsp;&nbsp;<input style="width:50px" type="number" id="pass_policy_max_age" name="pass_policy_max_age" min="0" maxlength="4" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_max_age')); ?>"/> <?php echo $escaper->escapeHtml($lang['days']); ?>.&nbsp;&nbsp;[0 = Max Age Disabled]
+
+                            <?php echo $escaper->escapeHtml($lang['RememberTheLast']); ?>&nbsp;&nbsp;<input class="text-right" style="width:70px" type="number" id="pass_policy_reuse_limit" name="pass_policy_reuse_limit" min="0" maxlength="4" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_reuse_limit')); ?>"/> <?php echo $escaper->escapeHtml($lang['Passwords']); ?>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <br />
+
+                <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="password_policy_update" />
+
+                </form>
+
+              </div>
+              
+              <!-- User Reports Tab -->
+              <div id="userreports" <?php echo ($userreports_tab ? "" : "style=\"display: none;\""); ?> class="reports_tab">
+
+					<u><?php echo $escaper->escapeHtml($lang['ReportDisplayed']); ?></u>:
+                    <select id="report_displayed_dropdown" class="form-field form-control" style="width:auto !important;">
+                    <?php if ($separation) { ?>
+                        <option value='users_of_teams' selected><?php echo $escaper->escapeHtml($lang['UsersOfTeams']);?></option>
+                        <option value='teams_of_users'><?php echo $escaper->escapeHtml($lang['TeamsOfUsers']);?></option>
+					<?php } ?>
+                        <option value='users_of_permissions' <?php if (!$separation) { ?>selected<?php } ?>><?php echo $escaper->escapeHtml($lang['UsersOfPermissions']);?></option>
+                        <option value='permissions_of_users'><?php echo $escaper->escapeHtml($lang['PermissionsOfUsers']);?></option>
+                        <option value='users_of_roles'><?php echo $escaper->escapeHtml($lang['UsersOfRoles']);?></option>
+                    </select>
+
+					<?php if ($separation) { ?>
+                    <div id="users_of_teams-report" class="report">
+                        <?php display_user_management_reports_datatable('users_of_teams'); ?>
                     </div>
-                    <div class="hero-unit">
-                        <form name="password_policy" method="post" action="">
-                            <p><h4><?php echo $escaper->escapeHtml($lang['UserPolicy']); ?>:</h4></p>
-                            <p><input class="hidden-checkbox" type="checkbox" id="strict_user_validation" name="strict_user_validation"<?php if (get_setting('strict_user_validation') == 1) echo " checked" ?> /><label for="strict_user_validation">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['UseCaseSensitiveValidationOfUsername']); ?></label></p>
 
-                            <br />
-                            <p><h4><?php echo $escaper->escapeHtml($lang['AccountLockoutPolicy']); ?>:</h4></p>
-
-                            <p><?php echo $escaper->escapeHtml($lang['MaximumAttemptsLockout']); ?>:&nbsp;&nbsp;<input style="width:50px" type="number" id="pass_policy_attempt_lockout" name="pass_policy_attempt_lockout" min="0" maxlength="2" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_attempt_lockout')); ?>"/> <?php echo $escaper->escapeHtml($lang['attempts']); ?>&nbsp;&nbsp;[0 = Lockout Disabled]</p>
-
-                            <p><?php echo $escaper->escapeHtml($lang['MaximumAttemptsLockoutTime']); ?>:&nbsp;&nbsp;<input style="width:50px" type="number" id="pass_policy_attempt_lockout_time" name="pass_policy_attempt_lockout_time" min="0" maxlength="2" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_attempt_lockout_time')); ?>"/> <?php echo $escaper->escapeHtml($lang['minutes']); ?>.&nbsp;&nbsp;[0 = Manual Enable Required]</p>
-
-                            <br />
-                            <p><h4><?php echo $escaper->escapeHtml($lang['PasswordPolicy']); ?>:</h4></p>
-
-                            <p><input class="hidden-checkbox" type="checkbox" id="pass_policy_enabled" name="pass_policy_enabled"<?php if (get_setting('pass_policy_enabled') == 1) echo " checked" ?> /><label for="pass_policy_enabled">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['Enabled']); ?></label></p>
-
-                            <p><?php echo $escaper->escapeHtml($lang['MinimumNumberOfCharacters']); ?> <input style="width:50px" type="number" id="min_characters" name="min_characters" min="1" max="50" maxlength="2" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_min_chars')); ?>"/> [1-50]</p>
-
-                            <p><input type="checkbox" class="hidden-checkbox" id="alpha_required" name="alpha_required"<?php if (get_setting('pass_policy_alpha_required') == 1) echo " checked" ?>  /><label for="alpha_required">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireAlphaCharacter']); ?></label></p>
-
-                            <p><input type="checkbox" class="hidden-checkbox" id="upper_required" name="upper_required"<?php if (get_setting('pass_policy_upper_required') == 1) echo " checked" ?>  /><label for="upper_required">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireUpperCaseCharacter']); ?></label></p>
-
-                            <p><input type="checkbox" class="hidden-checkbox" id="lower_required" name="lower_required"<?php if (get_setting('pass_policy_lower_required') == 1) echo " checked" ?>  /><label for="lower_required">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireLowerCaseCharacter']); ?></label></p>
-
-                            <p><input type="checkbox" class="hidden-checkbox" id="digits_required" name="digits_required"<?php if (get_setting('pass_policy_digits_required') == 1) echo " checked" ?>  /><label for="digits_required">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireNumericCharacter']); ?></label></p>
-
-                            <p><input type="checkbox" class="hidden-checkbox" id="special_required" name="special_required"<?php if (get_setting('pass_policy_special_required') == 1) echo " checked" ?> /><label for="special_required">&nbsp;&nbsp;<?php echo $escaper->escapeHtml($lang['RequireSpecialCharacter']); ?></p>
-
-                            <p><?php echo $escaper->escapeHtml($lang['MinimumPasswordAge']); ?>:&nbsp;&nbsp;<input style="width:50px" type="number" id="pass_policy_min_age" name="pass_policy_min_age" min="0" maxlength="4" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_min_age')); ?>"/> <?php echo $escaper->escapeHtml($lang['days']); ?>.&nbsp;&nbsp;[0 = Min Age Disabled]</p>
-
-                            <p><?php echo $escaper->escapeHtml($lang['MaximumPasswordAge']); ?>:&nbsp;&nbsp;<input style="width:50px" type="number" id="pass_policy_max_age" name="pass_policy_max_age" min="0" maxlength="4" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_max_age')); ?>"/> <?php echo $escaper->escapeHtml($lang['days']); ?>.&nbsp;&nbsp;[0 = Max Age Disabled]</p>
-
-                            <p><?php echo $escaper->escapeHtml($lang['RememberTheLast']); ?>&nbsp;&nbsp;<input class="text-right" style="width:70px" type="number" id="pass_policy_reuse_limit" name="pass_policy_reuse_limit" min="0" maxlength="4" size="2" value="<?php echo $escaper->escapeHtml(get_setting('pass_policy_reuse_limit')); ?>"/> <?php echo $escaper->escapeHtml($lang['Passwords']); ?></p>
-
-                            <p><input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="password_policy_update" /></p>
-                        </form>
+                    <div id="teams_of_users-report" style="display: none" class="report">
+                        <?php display_user_management_reports_datatable('teams_of_users'); ?>
                     </div>
-                </div>
+					<?php } ?>
+					
+                    <div id="users_of_permissions-report" class="report" <?php if ($separation) { ?>style="display: none"<?php } ?>>
+                        <?php display_user_management_reports_datatable('users_of_permissions'); ?>
+                    </div>
+
+                    <div id="permissions_of_users-report" class="report" style="display: none">
+                        <?php display_user_management_reports_datatable('permissions_of_users'); ?>
+                    </div>
+
+                    <div id="users_of_roles-report" class="report" style="display: none">
+                        <?php display_user_management_reports_datatable('users_of_roles'); ?>
+                    </div>
+					
+              </div>
             </div>
+          </div>
+
+
         </div>
     </div>
 </div>
 <?php display_set_default_date_format_script(); ?>
+
+
+
 </body>
 
 </html>

@@ -196,6 +196,7 @@
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
     
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>    
   </head>

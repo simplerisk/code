@@ -90,6 +90,7 @@ if ((isset($_POST['search'])) && $manage_assets)
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
   <?php
+    setup_favicon("..");
     setup_alert_requirements("..");
   ?>
 

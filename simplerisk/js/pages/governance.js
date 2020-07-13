@@ -70,6 +70,7 @@ jQuery(document).ready(function($){
                     $('[name=control_priority]', modal).val(Number(control.control_priority) ? control.control_priority : "");
                     $('[name=family]', modal).val(Number(control.family) ? control.family : "");
                     $('[name=mitigation_percent]', modal).val(Number(control.mitigation_percent) ? control.mitigation_percent : "");
+                    $(".mapping_framework_table tbody", modal).html(data.mapped_frameworks);
 
                     $(modal).modal('show');
                 }
@@ -92,13 +93,6 @@ jQuery(document).ready(function($){
                     $('[name=long_name]', modal).val(control.long_name);
                     $('[name=description]', modal).val(control.description);
                     $('[name=supplemental_guidance]', modal).val(control.supplemental_guidance);
-                    
-                    $("#add_framework_ids").multiselect('deselectAll', false);
-                    $.each(control.framework_ids.split(","), function(i,e){
-                        $("#add_framework_ids option[value='" + e + "']").prop("selected", true);
-                    });
-                    $("#add_framework_ids").multiselect('refresh');
-                    
                     $('[name=control_class]', modal).val(Number(control.control_class) ? control.control_class : "");
                     $('[name=control_phase]', modal).val(Number(control.control_phase) ? control.control_phase : "");
                     $('[name=control_owner]', modal).val(Number(control.control_owner) ? control.control_owner : "");
@@ -110,6 +104,18 @@ jQuery(document).ready(function($){
                     $(modal).modal('show');
                 }
             });
+          });
+          $(document).on('click', '.control-block--add-mapping', function(event) {
+            event.preventDefault();
+            var form = $(this).closest('form');
+            $(".mapping_framework_table tbody", form).append($("#add_mapping_row").val());
+          });
+          $(document).on('click', '.control-block--delete-mapping', function(event) {
+            event.preventDefault();
+            $(this).closest("tr").remove();
+          });
+          $('#control--add').on('shown.bs.modal', function () {
+              $(".mapping_framework_table tbody", this).html("");
           });
         }
     };
@@ -148,6 +154,11 @@ jQuery(document).ready(function($){
             complete: function(response){
                 if(response.status == 200){
                     $("#controls_count").html("("+ response.responseJSON.recordsTotal +")");
+                    rebuild_filter($("#filter_by_control_class"),response.responseJSON.classList);
+                    rebuild_filter($("#filter_by_control_phase"),response.responseJSON.phaseList);
+                    rebuild_filter($("#filter_by_control_family"),response.responseJSON.familyList);
+                    rebuild_filter($("#filter_by_control_owner"),response.responseJSON.ownerList);
+                    rebuild_filter($("#filter_by_control_priority"),response.responseJSON.priorityList);
                 }
             }
         }
@@ -187,7 +198,41 @@ jQuery(document).ready(function($){
     })
 
 });
-
+function rebuild_filter(obj,new_options){
+    var selected_classes = $(obj).val();
+    var unassigned_label = $("#unassigned_label").val();
+    $(obj).find("option").remove();
+    if(selected_classes.indexOf("-1") >= 0){
+        var $option = $("<option/>", {
+            value: "-1",
+            text: unassigned_label,
+            selected: true,
+        });
+    } else {
+        var $option = $("<option/>", {
+            value: "-1",
+            text: unassigned_label,
+        });
+    }
+    $(obj).append($option);
+    $.each(new_options, function(key, item) {
+        if(selected_classes.indexOf(item.value) >= 0){
+            var $option = $("<option/>", {
+                value: item.value,
+                text: item.name,
+                selected: true,
+            });
+        } else {
+            var $option = $("<option/>", {
+                value: item.value,
+                text: item.name,
+            });
+        }
+        $(obj).append($option);
+    });
+    $(obj).multiselect('rebuild');
+    return true;
+}
 
 function getProjects(){
   return {
@@ -223,10 +268,49 @@ $(document).ready(function(){
         document.location.hash = $(this).data('content').replace("-content", "");
     });
     
+    // Add control form event
+    $("#add-control-form").submit(function(){
+        var form = new FormData($(this)[0]);
+        $.ajax({
+            type: "POST",
+            url: BASE_URL + "/api/governance/add_control",
+            data: form,
+            async: true,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function(result){
+                var data = result.data;
+                if(result.status_message){
+                    showAlertsFromArray(result.status_message);
+                }
+                var control_frameworks = $("#filter_by_control_framework").val();
+                $("#add-control-form [name*=map_framework_id]").each(function(index){
+                    var framework_id = $(this).val();
+                    if(control_frameworks.indexOf(framework_id) === -1){
+                        var framework_name = $(this).find("option:selected").text();
+                        $('#filter_by_control_framework').append($('<option>').val(framework_id).text(framework_name).attr("selected",true));
+                    }
+                });
+                $("#filter_by_control_framework").multiselect("rebuild");
+                $("#add-control-form")[0].reset();
+                $('#control--add').modal('hide');
+                controlDatatable.ajax.reload(null, false);
+            }
+        })
+        .fail(function(xhr, textStatus){
+            if(!retryCSRF(xhr, this))
+            {
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    showAlertsFromArray(xhr.responseJSON.status_message);
+                }
+            }
+        });
+        return false;
+    });
     // Update control form event
     $("#update-control-form").submit(function(){
         var form = new FormData($(this)[0]);
-
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/governance/update_control",
@@ -240,7 +324,16 @@ $(document).ready(function(){
                 if(result.status_message){
                     showAlertsFromArray(result.status_message);
                 }
-                $('#control--update').modal('toggle');
+                var control_frameworks = $("#filter_by_control_framework").val();
+                $("#update-control-form [name*=map_framework_id]").each(function(index){
+                    var framework_id = $(this).val();
+                    if(control_frameworks.indexOf(framework_id) === -1){
+                        var framework_name = $(this).find("option:selected").text();
+                        $('#filter_by_control_framework').append($('<option>').val(framework_id).text(framework_name).attr("selected",true));
+                    }
+                });
+                $("#filter_by_control_framework").multiselect("rebuild");
+                $('#control--update').modal('hide');
                 controlDatatable.ajax.reload(null, false);
             }
         })
@@ -255,38 +348,7 @@ $(document).ready(function(){
         });
         
         return false;
-    })
-    
-    // Control Class dropdown event
-    $('#filter_by_control_class').change(function(){
-        redrawFrameworkControl();
     });
-    
-    // Control Class dropdown event
-    $('#filter_by_control_phase').change(function(){
-        redrawFrameworkControl();
-    });
-    
-    // Control Family dropdown event
-    $('#filter_by_control_family').change(function(){
-        redrawFrameworkControl();
-    });
-    
-    // Control Owner dropdown event
-    $('#filter_by_control_owner').change(function(){
-        redrawFrameworkControl();
-    });
-    
-    // Control Framework dropdown event
-    $('#filter_by_control_framework').change(function(){
-        redrawFrameworkControl();
-    });
-    
-    // Control Priority dropdown event
-    $('#filter_by_control_priority').change(function(){
-        redrawFrameworkControl();
-    });
-        
     // timer identifier
     var typingTimer;                
     // time in ms (5 seconds)
@@ -300,7 +362,6 @@ $(document).ready(function(){
 
     
 });
-
 //Function to give some margin to the text-spans in the collapsable column to
 //force a reflow in case a text is overflowing
 function fixTreeGridCollapsableColumn() {

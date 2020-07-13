@@ -1086,6 +1086,25 @@ a#show-search-pop i.fa.fa-search {
   padding: 1px 0px;
 }
 
+li.dropdown-submenu.business-units a {
+  white-space: unset !important;
+}
+li.dropdown-submenu.business-units a.selected {
+  padding-left: 5px !important;
+}
+li.dropdown-submenu.business-units a.selected:before {
+  font-family: "FontAwesome";
+  content: "\f058";
+  display: inline-block;
+  padding-right: 3px;
+  vertical-align: middle;
+  font-weight: 900;
+  color: green;
+}
+li.dropdown-submenu.business-units a.selected:hover:before {
+  color: white;
+}
+
 /*--------------------------------------------------------------
  ## Main Section Styles
  --------------------------------------------------------------*/
@@ -1795,6 +1814,13 @@ form#comment {
   width: 22px;
   padding-left: 13px;
 }
+.control-block--add-mapping, .control-block--edit-mapping, .control-block--delete-mapping,
+.control-block-unassined--add-mapping,
+.control-block-unassined--edit-mapping,
+.control-block-unassined--delete-mapping {
+  width: 22px;
+  padding-left: 13px;
+}
 
 .tab-data {
   margin-bottom: 30px;
@@ -2334,7 +2360,7 @@ span.multiselect-native-select select {
   color: #fff;
   font-weight: 600;
   font-size: 14px;
-  min-width: 175px;
+  min-width: 160px;
   border: 3px solid #3a3a3a;
   border-bottom: none;
   -webkit-border-top-left-radius: 2px;
@@ -2465,7 +2491,7 @@ select#languages {
   margin-left: 60px;
 }
 
-.questionnaire-pending-risk-form {
+.questionnaire-pending-risk-form, .questionnaire-active-risk-form {
   border: 1px dotted;
 }
 

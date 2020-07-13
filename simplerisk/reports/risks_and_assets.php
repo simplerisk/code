@@ -57,6 +57,9 @@ if (isset($_POST['report']))
   $report = (int)$_POST['report'];
 }
 else $report = 0;
+if (isset($_POST['sortby']))
+    $sortby = (int)$_POST['sortby'];
+else $sortby = 0;
 ?>
 
 <!doctype html>
@@ -76,7 +79,10 @@ else $report = 0;
 
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
-
+  <?php
+    setup_favicon("..");
+    setup_alert_requirements("..");
+  ?>
     <style>
         .group-name-row {
             cursor: pointer;
@@ -99,7 +105,11 @@ else $report = 0;
 
 <body>
 
-  <?php view_top_menu("Reporting"); ?>
+  <?php
+    view_top_menu("Reporting");
+    // Get any alert messages
+    get_alert();
+  ?>
 
   <div class="container-fluid">
     <div class="row-fluid">
@@ -110,13 +120,13 @@ else $report = 0;
         <div class="row-fluid">
           <div id="selections" class="span12">
             <div class="well">
-              <?php view_risks_and_assets_selections($report); ?>
+              <?php view_risks_and_assets_selections($report,$sortby); ?>
             </div>
           </div>
         </div>
         <div class="row-fluid">
           <div class="span12">
-            <?php risks_and_assets_table($report); ?>
+            <?php risks_and_assets_table($report,$sortby); ?>
           </div>
         </div>
       </div>

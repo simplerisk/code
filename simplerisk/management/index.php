@@ -79,6 +79,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
     $status = "New";
     $subject = get_param("POST", 'subject');
+    $risk_catalog_mapping = (int)get_param("POST", 'risk_catalog_mapping');
     $reference_id = get_param("POST", 'reference_id');
     $regulation = (int)get_param("POST", 'regulation');
     $control_number = get_param("POST", 'control_number');
@@ -165,7 +166,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     $ContributingImpacts = get_param("POST", "ContributingImpacts");
 
     // Submit risk and get back the id
-    if($last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders)){}
+    if($last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders, $risk_catalog_mapping)){}
     else
     {
         // Display an alert
@@ -329,6 +330,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <script src="../js/selectize.min.js"></script>
 
         <?php
+            setup_favicon("..");
             setup_alert_requirements("..");
         ?>
     </head>
@@ -445,7 +447,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                         .prev('label').attr('for', 'file_upload'+num_tabs);
                     
                         
-                    // Add multiple selctets
+                    // Add multiple selects
                     $('.multiselect', "#tab-container"+num_tabs).multiselect({buttonWidth: '100%'});
                     
                     // Add DatePicker

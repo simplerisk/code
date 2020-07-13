@@ -4240,6 +4240,286 @@ function upgrade_from_20200328001($db)
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20200401-001 *
+ ***************************************/
+function upgrade_from_20200401001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20200401-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20200711-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Add a document owner field to documents table
+    if (!field_exists_in_table('document_owner', 'documents')) {
+        echo "Adding a document owner field to documents table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `document_owner` INT DEFAULT 0 NOT NULL AFTER `framework_ids`;");
+        $stmt->execute();
+    }
+    // Add a additional stakeholders field to documents table
+    if (!field_exists_in_table('additional_stakeholders', 'documents')) {
+        echo "Adding a additional stakeholders field to documents table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `additional_stakeholders` VARCHAR(500) NOT NULL AFTER `document_owner`;");
+        $stmt->execute();
+    }
+    // Add a approver field to documents table
+    if (!field_exists_in_table('approver', 'documents')) {
+        echo "Adding a approver field to documents table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `approver` INT DEFAULT 0 NOT NULL AFTER `additional_stakeholders`;");
+        $stmt->execute();
+    }
+    // Change a review_date field to approval_date in documents table
+    if (field_exists_in_table('review_date', 'documents')) {
+        echo "Change a review_date field to approval_date in documents table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` CHANGE `review_date` `approval_date` DATE NULL DEFAULT NULL;");
+        $stmt->execute();
+    }
+    // Add a custom_column_filters field to dynamic_saved_selections table
+    if (!field_exists_in_table('custom_column_filters', 'dynamic_saved_selections')) {
+        echo "Adding a custom_column_filters field to dynamic_saved_selections table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `dynamic_saved_selections` ADD `custom_column_filters` TEXT NOT NULL AFTER `custom_selection_settings`;");
+        $stmt->execute();
+    }
+    // Add new permission fields to user table
+    if (!field_exists_in_table('add_projects', 'user')) {
+        echo "Adding new field `add_projects` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `add_projects` TINYINT(1) NOT NULL DEFAULT '0'");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('delete_projects', 'user')) {
+        echo "Adding new field `delete_projects` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `delete_projects` TINYINT(1) NOT NULL DEFAULT '0'");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('manage_projects', 'user')) {
+        echo "Adding new field `manage_projects` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `manage_projects` TINYINT(1) NOT NULL DEFAULT '0'");
+        $stmt->execute();
+    }
+    // Add new permission for Compliance
+    if (!field_exists_in_table('define_tests', 'user')) {
+        echo "Adding new field `define_tests` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `define_tests` TINYINT(1) NOT NULL DEFAULT '0'");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('edit_tests', 'user')) {
+        echo "Adding new field `edit_tests` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `edit_tests` TINYINT(1) NOT NULL DEFAULT '0'");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('delete_tests', 'user')) {
+        echo "Adding new field `delete_tests` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `delete_tests` TINYINT(1) NOT NULL DEFAULT '0'");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('initiate_audits', 'user')) {
+        echo "Adding new field `initiate_audits` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `initiate_audits` TINYINT(1) NOT NULL DEFAULT '0'");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('modify_audits', 'user')) {
+        echo "Adding new field `modify_audits` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `modify_audits` TINYINT(1) NOT NULL DEFAULT '0'");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('reopen_audits', 'user')) {
+        echo "Adding new field `reopen_audits` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `reopen_audits` TINYINT(1) NOT NULL DEFAULT '0'");
+        $stmt->execute();
+    }
+    if (!field_exists_in_table('delete_audits', 'user')) {
+        echo "Adding new field `delete_audits` to `user` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `user` ADD `delete_audits` TINYINT(1) NOT NULL DEFAULT '0'");
+        $stmt->execute();
+    }
+    // Add a review_frequency field to documents table
+    if (!field_exists_in_table('review_frequency', 'documents')) {
+        echo "Adding a review frequency field to documents table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `review_frequency` INT NOT NULL DEFAULT '0' AFTER `creation_date`;");
+        $stmt->execute();
+    }
+    // Add a next_review_date field to documents table
+    if (!field_exists_in_table('next_review_date', 'documents')) {
+        echo "Adding a next review date field to documents table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `next_review_date` DATE NOT NULL AFTER `review_frequency`;");
+        $stmt->execute();
+    }
+
+    // Add the new risk management permissions to users who currently have the allow access to risk management menu
+    echo "Add the new risk management permissions to users who can access risk management menu.<br />\n";
+    $stmt = $db->prepare("UPDATE `user` SET `add_projects` = '1', `delete_projects` = '1', `manage_projects` = '1' WHERE `riskmanagement` = 1;");
+    $stmt->execute();
+
+    // Add the new compliance permissions to users who currently have the allow access to access compliance menu
+    echo "Add the new compliance permissions to users who can access compliance menu.<br />\n";
+    $stmt = $db->prepare("UPDATE `user` SET `define_tests` = '1', `edit_tests` = '1', `delete_tests` = '1', `initiate_audits` = '1', `modify_audits` = '1', `reopen_audits` = '1', `delete_audits` = '1' WHERE `compliance` = 1 ");
+    $stmt->execute();
+
+    // Add the new permissions to Administrator role
+    echo "Add the new permissions to Administrator role.<br />\n";
+    $new_permissions = array(
+        "add_projects",
+        "delete_projects",
+        "manage_projects",
+        "define_tests",
+        "edit_tests",
+        "delete_tests",
+        "initiate_audits",
+        "modify_audits",
+        "reopen_audits",
+        "delete_audits"
+    );
+    foreach ($new_permissions as $permission)
+    {
+        $stmt = $db->prepare("DELETE FROM `role_responsibilities` WHERE `role_id`=1 AND `responsibility_name` = :responsibility_name");
+        $stmt->bindParam(":responsibility_name", $permission, PDO::PARAM_STR, 100);
+        $stmt->execute();
+        $stmt = $db->prepare("INSERT INTO `role_responsibilities`(`role_id`, `responsibility_name`) VALUES(1, :responsibility_name);");
+        $stmt->bindParam(":responsibility_name", $permission, PDO::PARAM_STR, 100);
+        $stmt->execute();
+    }
+
+    // Add a file id field to document exceptions table
+    if (!field_exists_in_table('file_id', 'document_exceptions')) {
+        echo "Add a file id field to document exceptions table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `document_exceptions` ADD `file_id` INT NOT NULL;");
+        $stmt->execute();
+    }
+
+    // Add a validation_details field to mitigation_to_controls table
+    if (!field_exists_in_table('validation_details', 'mitigation_to_controls')) {
+        echo "Adding a validation details field to mitigation_to_controls table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigation_to_controls` ADD `validation_details` MEDIUMTEXT NULL AFTER `control_id`;");
+        $stmt->execute();
+    }
+
+    // Add a validation_owner field to mitigation_to_controls table
+    if (!field_exists_in_table('validation_owner', 'mitigation_to_controls')) {
+        echo "Adding a validation owner field to mitigation_to_controls table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigation_to_controls` ADD `validation_owner` INT NULL DEFAULT '0' AFTER `validation_details`;");
+        $stmt->execute();
+    }
+
+    // Add a validation_mitigation_percent field to mitigation_to_controls table
+    if (!field_exists_in_table('validation_mitigation_percent', 'mitigation_to_controls')) {
+        echo "Adding a validation mitigation percent field to mitigation_to_controls table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `mitigation_to_controls` ADD `validation_mitigation_percent` INT NULL DEFAULT '0' AFTER `validation_owner`;");
+        $stmt->execute();
+    }
+
+    // Add a table for framework control mappings
+    echo "Adding a table for framework control mappings.<br />\n";
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `framework_control_mappings` (`id` int(11) NOT NULL AUTO_INCREMENT,`control_id` int(11) NOT NULL,`framework` int(11) NOT NULL,`reference_name` varchar(200) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt->execute();
+
+    // Migrate every framework and control into new mapping table
+    echo "Migrate every framework and control into new mapping table.<br />\n";
+    $stmt = $db->prepare("DELETE t1 FROM `framework_control_mappings` t1 LEFT JOIN framework_control_to_framework t2 ON t1.`control_id` = t2.`control_id` AND t1.`framework` = t2.framework_id WHERE t2.`control_id` IS NOT NULL");
+    $stmt->execute();
+
+    $stmt = $db->prepare("INSERT INTO `framework_control_mappings` (`control_id`, `framework`, `reference_name`) SELECT t1.`control_id`, t1.`framework_id`, t3.`control_number` FROM `framework_control_to_framework` t1 LEFT JOIN frameworks t2 ON t1.framework_id = t2.value LEFT JOIN framework_controls t3 ON t1.control_id = t3.id WHERE t2.status = 1");
+    $stmt->execute();
+
+    // Add a table for risk grouping
+    echo "Adding a table for risk grouping.<br />\n";
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risk_grouping` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(50) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt->execute();
+
+    // Add new group to risk grouping table
+    echo "Add new group to risk grouping table.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `risk_grouping` (`value`, `name`) VALUES
+        (1, 'Access Control'),
+        (2, 'Asset Management'),
+        (3, 'Business Continuity'),
+        (4, 'Exposure'),
+        (5, 'Governance'),
+        (6, 'Situational Awareness');");
+    $stmt->execute();
+
+    // Add a table for risk function
+    echo "Adding a table for risk function.<br />\n";
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risk_function` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(50) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt->execute();
+
+    // Add new rows to risk function table
+    echo "Add new rows to risk function table.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `risk_function` (`value`, `name`) VALUES
+        (1, 'Identify'),
+        (2, 'Protect'),
+        (3, 'Detect'),
+        (4, 'Respond'),
+        (5, 'Recover');");
+    $stmt->execute();
+
+    // Add a table for risk catalog
+    echo "Adding a table for risk catalog.<br />\n";
+    $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `risk_catalog` ( `id` int(11) NOT NULL AUTO_INCREMENT, `number` varchar(20) NOT NULL, `grouping` int(11) NOT NULL, `name` varchar(1000) NOT NULL, `description` text NOT NULL, `function` int(11) NOT NULL, `order` int(11) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+    $stmt->execute();
+
+    // Add new rows to risk catalog table
+    echo "Add new rows to risk catalog table.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `risk_catalog` (`id`, `number`, `grouping`, `name`, `description`, `function`, `order`) VALUES
+        (1, 'R-AC-1', 1, 'Inability to maintain individual accountability', 'There is a failure to maintain asset ownership and it is not possible to have non-repudiation of actions or inactions.', 2, 1),
+        (2, 'R-AC-2', 1, 'Improper assignment of privileged functions', 'There is a failure to implement lease privileges.', 2, 2),
+        (3, 'R-AC-3', 1, 'Privilege escalation', 'Access to privileged functions cannot be controlled.', 2, 3),
+        (4, 'R-AC-4', 1, 'Unauthorized access', 'Access is granted to unauthorized individuals or services.', 2, 4),
+        (5, 'R-AM-1', 2, 'Lost, damaged or stolen asset(s)', 'Asset(s) are lost, damaged or stolen.', 2, 5),
+        (6, 'R-AM-2', 2, 'Loss of integrity through unauthorized changes ', 'Unauthorized changes damage the integrity of the system / application / service.', 2, 6),
+        (7, 'R-BC-1', 3, 'Business interruption ', 'There is increased latency or a service outage.', 5, 7),
+        (8, 'R-BC-2', 3, 'Data loss / corruption ', 'There is a failure to maintain the confidentiality of the data (compromise) or data is corrupted (loss).', 5, 8),
+        (9, 'R-BC-3', 3, 'Improper response to incidents ', 'Response actions fail to act appropriately in a timely manner to properly address the incident.', 4, 9),
+        (10, 'R-BC-4', 3, 'Inability to investigate / prosecute incidents', 'Response actions either corrupt evidence or impede the ability to prosecute incidents.', 4, 10),
+        (11, 'R-BC-5', 3, 'Expense associated with managing a loss event', 'There are financial reprocussions from responding to an incident or loss.', 4, 11),
+        (12, 'R-BC-6', 3, 'Reduction in productivity', 'Productivity is negatively affected by the incident.', 2, 12),
+        (13, 'R-EX-1', 4, 'Loss of revenue ', 'A financial loss occures from either a loss of clients or inability to generate future revenue.', 5, 13),
+        (14, 'R-EX-2', 4, 'Cancelled contract', 'A contract is cancelled due to a violation of a contract clause.', 5, 14),
+        (15, 'R-EX-3', 4, 'Diminished competitive advantage', 'The competitive advantage of the organization is jeapordized.', 5, 15),
+        (16, 'R-EX-4', 4, 'Diminished reputation ', 'Negative publicity tarnishes the organization\'s reputation.', 5, 16),
+        (17, 'R-EX-5', 4, 'Fines and judgements', 'There are legal and/or financial damages resulting from statutory / regulatory / contractual non-compliance.', 5, 17),
+        (18, 'R-EX-6', 4, 'Unmitigated vulnerabilities', 'Thre are unmitigated technical vulnerabilities that exist without compensating controls or other mitigation actions.', 2, 18),
+        (19, 'R-EX-7', 4, 'System compromise', 'Malicious software infects the system(s) that affects its confidentiality, integrity and availability.', 2, 19),
+        (20, 'R-EX-8', 4, 'Information loss / compromise due to technical attack', 'Users fall for phishing, or other technical attacks, that compromise data, systems, applications or services.', 2, 20),
+        (21, 'R-EX-9', 4, 'Information loss / compromise due to non-technical attack', 'Users fall for a social engineering attack, that compromise data, systems, applications or services.', 2, 21),
+        (22, 'R-GV-1', 5, 'Inability to support business processes / missions', 'Security /privacy are unable to support the organization\'s mission requirements for secure technologies & processes.', 2, 22),
+        (23, 'R-GV-2', 5, 'Ineffective remediation actions', 'There is no oversight to ensure remediation actions are correct and/or effective.', 2, 23),
+        (24, 'R-GV-3', 5, 'Improper internal security / privacy practices', 'Internal procedures do not exist or are improper. Procedures fail to meet \"reasonable practices\" expected by industry standards.', 2, 24),
+        (25, 'R-GV-4', 5, 'Improper third-party security / privacy practices', 'Third-party procedures do not exist or are improper. Procedures fail to meet \"reasonable practices\" expected by industry standards.', 2, 25),
+        (26, 'R-GV-5', 5, 'Lack of accountability for security / privacy roles & responsibilities', 'There is a failure to govern security / privacy roles & responsibilities.', 1, 26),
+        (27, 'R-GV-6', 5, 'Gap or lapse in security / privacy controls coverage', 'There is improper scoping of control environment, which leads to a potential gap or lapse in security / privacy controls coverage.', 1, 27),
+        (28, 'R-GV-7', 5, 'Abusive content or action', 'There is harmful speech / violence threats / illegal content that negatively affect business operations.', 1, 28),
+        (29, 'R-SA-1', 6, 'Inability to maintain situational awareness', 'There is an inability to detect incidents.', 3, 29),
+        (30, 'R-SA-2', 6, 'Lack of a security-minded workforce', 'The workforce lacks user-level understanding about security & privacy principles.', 2, 30),
+        (31, 'R-SA-3', 6, 'Lack of oversight of internal security / privacy controls', 'There is a lack of due diligence / due care in overseeing the organization\'s internal security / privacy controls.', 1, 31),
+        (32, 'R-SA-4', 6, 'Lack of oversight of third-party security / privacy controls ', 'There is a lack of due diligence / due care in overseeing security / privacy controls operated by third-party service providers.', 1, 32);
+    ");
+    $stmt->execute();
+
+    // Add new setting for risk mapping required
+    echo "Add new setting for risk mapping required.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `settings` (`name`, `value`) VALUES ('risk_mapping_required',0);");
+    $stmt->execute();
+
+    // Add a risk_catalog_mapping field to risks table
+    if (!field_exists_in_table('risk_catalog_mapping', 'risks')) {
+        echo "Adding a risk catalog mapping field to risks table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD `risk_catalog_mapping` INT NULL DEFAULT NULL;");
+        $stmt->execute();
+    }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -4423,6 +4703,10 @@ function upgrade_database()
                 break;                
             case "20200328-001":
                 upgrade_from_20200328001($db);
+                upgrade_database();
+                break;
+            case "20200401-001":
+                upgrade_from_20200401001($db);
                 upgrade_database();
                 break;
             default:

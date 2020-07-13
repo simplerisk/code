@@ -105,6 +105,7 @@ if(process_questionnaire_pending_risks()){
     <script src="../js/selectize.min.js"></script>
 
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>
 </head>

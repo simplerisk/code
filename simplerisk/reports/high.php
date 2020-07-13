@@ -80,7 +80,10 @@
 
         <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
-
+        <?php
+            setup_favicon("..");
+            setup_alert_requirements("..");
+        ?>
         <script>
             $(function() {
                 $('#score_used_dropdown').change(function() {
@@ -89,10 +92,16 @@
                 });
             });
         </script>
-      
+        <style>
+            .dataTables_filter, .dataTables_info { display: none; }
+        </style>
     </head>
     <body>
-        <?php view_top_menu("Reporting"); ?>
+        <?php
+            view_top_menu("Reporting");
+            // Get any alert messages
+            get_alert();
+        ?>
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="span3">
@@ -178,12 +187,28 @@
                     <br>
                     <script>
                         var pageLength = 10;
+                        $('#high-risk-datatable thead tr').clone(true).appendTo( '#high-risk-datatable thead' );
+                        $('#high-risk-datatable thead tr:eq(1) th').each( function (i) {
+                            var title = $(this).text();
+                            if(title == "Mitigation Planned") {
+                                $(this).html( '<select name="mitigation_planned"><option value="">--</option><option value="yes">Yes</option><option value="no">No</option></select>' );
+                            } else {
+                                $(this).html( '<input type="text" name="'+title+'" placeholder="'+title+'" />' );
+                            }
+                     
+                            $( 'input, select', this ).on( 'keyup change', function () {
+                                if ( datatableInstance.column(i).search() !== this.value ) {
+                                    datatableInstance.column(i).search( this.value ).draw();
+                                }
+                            } );
+                        } );
                         var datatableInstance = $('#high-risk-datatable').DataTable({
-                            bFilter: false,
+                            //bFilter: false,
                             bLengthChange: false,
                             processing: true,
                             serverSide: true,
                             bSort: true,
+                            orderCellsTop: true,
                             pagingType: "full_numbers",
                             dom : "flrtip",
                             pageLength: pageLength,

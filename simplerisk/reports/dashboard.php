@@ -118,12 +118,22 @@ $pie_technology_array = get_pie_array("technology", $teams);
     });
   
   </script>
+  
+  <?php
+    setup_favicon("..");
+    setup_alert_requirements("..");
+  ?>
 </head>
 
 <body>
 
 
-  <?php view_top_menu("Reporting"); ?>
+  <?php
+    view_top_menu("Reporting");
+
+    // Get any alert messages
+    get_alert();
+  ?>
 
   <div class="container-fluid">
     <div class="row-fluid">

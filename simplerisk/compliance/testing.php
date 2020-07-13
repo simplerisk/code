@@ -71,6 +71,11 @@ if (team_separation_extra()) {
 // Check if a framework was updated
 if (isset($_POST['submit_test_result']))
 {
+    // check permission
+    if(!isset($_SESSION["modify_audits"]) || $_SESSION["modify_audits"] != 1){
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        refresh();
+    }
     // Process submitting test result
     if(submit_test_result()){
         $closed_audit_status = get_setting("closed_audit_status");
@@ -110,6 +115,7 @@ if (isset($_POST['submit_test_result']))
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>    
     

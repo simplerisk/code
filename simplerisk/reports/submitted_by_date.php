@@ -66,11 +66,19 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+  <?php
+    setup_favicon("..");
+    setup_alert_requirements("..");
+  ?>
 </head>
 
 <body>
 
-  <?php view_top_menu("Reporting"); ?>
+  <?php
+    view_top_menu("Reporting");
+    // Get any alert messages
+    get_alert();
+  ?>
 
   <div class="container-fluid">
     <div class="row-fluid">

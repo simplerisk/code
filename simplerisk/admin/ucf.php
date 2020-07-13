@@ -237,6 +237,7 @@ function display()
     <script type="text/javascript" src="../js/jquery.tree.min.js"></script>
     <link rel="stylesheet" type="text/css" href="../css/jquery.tree.min.css" />
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>
   </head>

@@ -166,56 +166,6 @@ if (isset($_POST['delete_framework']))
   refresh();
 }
 
-// Check if a new control was submitted
-if (isset($_POST['add_control']))
-{
-  $control = array(
-    'short_name' => isset($_POST['short_name']) ? $_POST['short_name'] : "",
-    'long_name' => isset($_POST['long_name']) ? $_POST['long_name'] : "",
-    'description' => isset($_POST['description']) ? $_POST['description'] : "",
-    'supplemental_guidance' => isset($_POST['supplemental_guidance']) ? $_POST['supplemental_guidance'] : "",
-    'framework_ids' => isset($_POST['add_framework_ids']) ? $_POST['add_framework_ids'] : "",
-    'control_owner' => isset($_POST['control_owner']) ? (int)$_POST['control_owner'] : 0,
-    'control_class' => isset($_POST['control_class']) ? (int)$_POST['control_class'] : 0,
-    'control_phase' => isset($_POST['control_phase']) ? (int)$_POST['control_phase'] : 0,
-    'control_number' => isset($_POST['control_number']) ? $_POST['control_number'] : "",
-    'control_priority' => isset($_POST['control_priority']) ? (int)$_POST['control_priority'] : 0,
-    'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0,
-    'mitigation_percent' => (isset($_POST['mitigation_percent']) && $_POST['mitigation_percent'] >= 0 && $_POST['mitigation_percent'] <= 100) ? (int)$_POST['mitigation_percent'] : 0
-  );
-
-  // Check if the control name is null
-  if (!$control['short_name'])
-  {
-    // Display an alert
-    set_alert(true, "bad", "The control name cannot be empty.");
-  }
-  // Otherwise
-  else
-  {
-    // If user has no permission for add new controls
-    if(empty($_SESSION['add_new_controls']))
-    {
-        // Display an alert
-        set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddControlPermission']));
-    }
-    // Insert a new control up to 100 chars
-    elseif(add_framework_control($control))
-    {
-        // Display an alert
-        set_alert(true, "good", "A new control was added successfully.");
-    }
-    else
-    {
-        // Display an alert
-        set_alert(true, "bad", "The control already exists.");
-    }
-  }
-  
-  // Refresh current page
-  refresh();
-}
-
 // Delete if a delete control was submitted
 if (isset($_POST['delete_control']))
 {
@@ -280,51 +230,6 @@ if (isset($_POST['delete_controls']))
   refresh();
 }
 
-// Update if a control was updated
-if (isset($_POST['update_control']))
-{
-  $control_id = (int)$_POST['control_id'];
-
-  // If user has no permission to modify controls
-  if(empty($_SESSION['modify_controls']))
-  {
-      // Display an alert
-      set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyControlPermission']));
-  }
-  // Verify value is an integer
-  elseif (is_int($control_id))
-  {
-      $control = array(
-        'short_name' => isset($_POST['short_name']) ? $_POST['short_name'] : "",
-        'long_name' => isset($_POST['long_name']) ? $_POST['long_name'] : "",
-        'description' => isset($_POST['description']) ? $_POST['description'] : "",
-        'supplemental_guidance' => isset($_POST['supplemental_guidance']) ? $_POST['supplemental_guidance'] : "",
-        'framework_ids' => isset($_POST['frameworks']) ? $_POST['frameworks'] : "",
-        'control_owner' => isset($_POST['control_owner']) ? (int)$_POST['control_owner'] : 0,
-        'control_class' => isset($_POST['control_class']) ? (int)$_POST['control_class'] : 0,
-        'control_phase' => isset($_POST['control_phase']) ? (int)$_POST['control_phase'] : 0,
-        'control_number' => isset($_POST['control_number']) ? $_POST['control_number'] : "",
-        'control_priority' => isset($_POST['control_priority']) ? (int)$_POST['control_priority'] : 0,
-        'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0,
-        'mitigation_percent' => (isset($_POST['mitigation_percent']) && $_POST['mitigation_percent'] >= 0 && $_POST['mitigation_percent'] <= 100) ? (int)$_POST['mitigation_percent'] : 0
-      );
-      // Update the control
-      update_framework_control($control_id, $control);
-
-      // Display an alert
-      set_alert(true, "good", "An existing control was updated successfully.");
-  }
-  // We should never get here as we bound the variable as an int
-  else
-  {
-    // Display an alert
-    set_alert(true, "bad", "The control ID was not a valid value.  Please try again.");
-  }
-  
-  // Refresh current page
-  refresh();
-}
-
 ?>
 
 <!doctype html>
@@ -361,6 +266,7 @@ if (isset($_POST['update_control']))
   <link rel="stylesheet" href="../css/theme.css">
 
   <?php
+      setup_favicon("..");
       setup_alert_requirements("..");
   ?>
   <?php
@@ -432,74 +338,72 @@ if (isset($_POST['update_control']))
             $(tabContentId).removeClass("hide");
             $(".framework-table").treegrid('resize');
 
-            $(function(){
-                // Create multiselect instance in Updating modal of framework control 
-                $("#frameworks").multiselect({
-                    allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllFrameworks']); ?>',
-                    enableFiltering: true,
-                    maxHeight: 250,
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true
-                });
-
-                // Create multiselect instance in Adding modal of framework control 
-                $("#add_framework_ids").multiselect({
-                    allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllFrameworks']); ?>',
-                    enableFiltering: true,
-                    maxHeight: 250,
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true
-                });
-
-                $("#filter_by_control_owner").multiselect({
-                    allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
-                    enableFiltering: true,
-                    maxHeight: 250,
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true
-                });
-
-                $("#filter_by_control_class").multiselect({
-                    allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
-                    enableFiltering: true,
-                    maxHeight: 250,
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true
-                });
-
-                $("#filter_by_control_phase").multiselect({
-                    allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
-                    enableFiltering: true,
-                    maxHeight: 250,
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true
-                });
-
-                $("#filter_by_control_family").multiselect({
-                    allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
-                    enableFiltering: true,
-                    maxHeight: 250,
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true
-                });
-
-                $("#filter_by_control_framework").multiselect({
-                    allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
-                    enableFiltering: true,
-                    maxHeight: 250,
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true
-                });
-
-                $("#filter_by_control_priority").multiselect({
-                    allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
-                    enableFiltering: true,
-                    maxHeight: 250,
-                    buttonWidth: '100%',
-                    includeSelectAllOption: true
-                });
+            $("#filter_by_control_owner").multiselect({
+                allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
+                enableFiltering: true,
+                maxHeight: 250,
+                buttonWidth: '100%',
+                includeSelectAllOption: true,
+                onDropdownHide: function(){
+                    controlDatatable.draw();
+                }
             });
-        
+
+            $("#filter_by_control_class").multiselect({
+                allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
+                enableFiltering: true,
+                maxHeight: 250,
+                buttonWidth: '100%',
+                includeSelectAllOption: true,
+                onDropdownHide: function(){
+                    controlDatatable.draw();
+                }
+            });
+
+            $("#filter_by_control_phase").multiselect({
+                allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
+                enableFiltering: true,
+                maxHeight: 250,
+                buttonWidth: '100%',
+                includeSelectAllOption: true,
+                onDropdownHide: function(){
+                    controlDatatable.draw();
+                }
+            });
+
+            $("#filter_by_control_family").multiselect({
+                allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
+                enableFiltering: true,
+                maxHeight: 250,
+                buttonWidth: '100%',
+                includeSelectAllOption: true,
+                onDropdownHide: function(){
+                    controlDatatable.draw();
+                }
+            });
+
+            $("#filter_by_control_framework").multiselect({
+                allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
+                enableFiltering: true,
+                maxHeight: 250,
+                buttonWidth: '100%',
+                includeSelectAllOption: true,
+                onDropdownHide: function(){
+                    controlDatatable.draw();
+                }
+            });
+
+            $("#filter_by_control_priority").multiselect({
+                allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
+                enableFiltering: true,
+                maxHeight: 250,
+                buttonWidth: '100%',
+                includeSelectAllOption: true,
+                onDropdownHide: function(){
+                    controlDatatable.draw();
+                }
+            });
+
         });
     </script>
 </head>
@@ -677,6 +581,7 @@ if (isset($_POST['update_control']))
                             <li><a href="#active-controls" class="status" data-status="1"><?php echo $escaper->escapeHtml($lang['Controls']); ?> <span id="controls_count"></span></a></li>
                         </ul>
                         <input type="hidden" name="delete_controls" value="1">
+                        <input type="hidden" id="unassigned_label" value="<?php echo $escaper->escapeHtml($lang['Unassigned']);?>">
                         <button type="submit" id="delete-controls-btn" class="btn"><?php echo $escaper->escapeHtml($lang['DeleteControls']) ?></button>
                     </div> <!-- status-tabs -->
 
@@ -810,8 +715,8 @@ if (isset($_POST['update_control']))
     </div>
 
     <!-- MODEL WINDOW FOR ADDING CONTROL -->
-    <div id="control--add" class="modal hide no-padding" tabindex="-1" role="dialog" aria-labelledby="control--add" aria-hidden="true">
-        <form class="" id="control--new" action="#controls-tab" method="post" autocomplete="off">
+    <div id="control--add" class="modal hide no-padding" tabindex="-1" role="dialog" aria-labelledby="control--add" aria-hidden="true" style="width:700px;">
+        <form class="" id="add-control-form" action="#controls-tab" method="post" autocomplete="off">
 
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -821,7 +726,7 @@ if (isset($_POST['update_control']))
             <div class="modal-body">
                 <div class="form-group">
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlShortName']); ?></label>
-                    <input type="text" name="short_name" value="" class="form-control" maxlength="100">
+                    <input type="text" name="short_name" value="" class="form-control" maxlength="100" required>
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlLongName']); ?></label>
                     <input type="text" name="long_name" value="" class="form-control" maxlength="65500">
@@ -835,8 +740,21 @@ if (isset($_POST['update_control']))
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlOwner']); ?></label>
                     <?php create_dropdown("enabled_users", NULL, "control_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
 
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlFrameworks']); ?></label>
-                    <?php create_multiple_dropdown("frameworks", NULL, "add_framework_ids"); ?>
+                    <div class='well'>
+                        <h5><span><?php echo $escaper->escapeHtml($lang['MappedControlFrameworks']);?>
+                        <a href="javascript:void(0);" class="control-block--add-mapping" title="<?php echo $escaper->escapeHtml($lang["Add"]);?>"><i class="fa fa-plus"></i></a></span></h5>
+                        <table width='100%' class='table table-bordered mapping_framework_table'>
+                            <thead>
+                                <tr>
+                                    <th width='50%'><?php echo $escaper->escapeHtml($lang['Framework']);?></th>
+                                    <th width='35%'><?php echo$escaper->escapeHtml($lang['Control']);?></th>
+                                    <th><?php echo $escaper->escapeHtml($lang['Actions']);?></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlClass']); ?></label>
                     <?php create_dropdown("control_class", NULL, "control_class", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
@@ -867,7 +785,7 @@ if (isset($_POST['update_control']))
     </div>
 
     <!-- MODEL WINDOW FOR UPDATING CONTROL -->
-    <div id="control--update" class="modal hide no-padding" tabindex="-1" role="dialog" aria-labelledby="control--update" aria-hidden="true">
+    <div id="control--update" class="modal hide no-padding" tabindex="-1" role="dialog" aria-labelledby="control--update" aria-hidden="true" style="width:700px;">
         <form class="" id="update-control-form" action="#controls-tab" method="post" autocomplete="off">
 
             <div class="modal-header">
@@ -879,7 +797,7 @@ if (isset($_POST['update_control']))
                 <input type="hidden" class="control_id" name="control_id" value=""> 
                 <div class="form-group">
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlShortName']); ?></label>
-                    <input type="text" name="short_name" value="" class="form-control" maxlength="100">
+                    <input type="text" name="short_name" value="" class="form-control" maxlength="100" required>
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlLongName']); ?></label>
                     <input type="text" name="long_name" value="" class="form-control">
@@ -893,8 +811,21 @@ if (isset($_POST['update_control']))
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlOwner']); ?></label>
                     <?php create_dropdown("enabled_users", NULL, "control_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
 
-                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlFrameworks']); ?></label>
-                    <?php create_multiple_dropdown("frameworks", NULL); ?>
+                    <div class='well'>
+                        <h5><span><?php echo $escaper->escapeHtml($lang['MappedControlFrameworks']);?>
+                        <a href="javascript:void(0);" class="control-block--add-mapping" title="<?php echo $escaper->escapeHtml($lang["Add"]);?>"><i class="fa fa-plus"></i></a></span></h5>
+                        <table width='100%' class='table table-bordered mapping_framework_table'>
+                            <thead>
+                                <tr>
+                                    <th width='50%'><?php echo $escaper->escapeHtml($lang['Framework']);?></th>
+                                    <th width='35%'><?php echo$escaper->escapeHtml($lang['Control']);?></th>
+                                    <th><?php echo $escaper->escapeHtml($lang['Actions']);?></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlClass']); ?></label>
                     <?php create_dropdown("control_class", NULL, "control_class", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
@@ -942,8 +873,13 @@ if (isset($_POST['update_control']))
 
         </div>
     </div>
-
+    <textarea id="add_mapping_row" class="hide">
+        <tr>
+            <td><?php create_dropdown("frameworks", NULL,"map_framework_id[]", true, false, false, "required"); ?></td>
+            <td><input type="text" name="reference_name[]" value="" class="form-control" maxlength="100" required></td>
+            <td><a href="javascript:void(0);" class="control-block--delete-mapping" title="<?php echo $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a></td>
+        </tr>
+    </textarea>
     <?php display_set_default_date_format_script(); ?>
 </body>
-
 </html>

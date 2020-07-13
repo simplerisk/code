@@ -78,6 +78,7 @@ include_csrf_magic();
     <link rel="stylesheet" href="../css/theme.css">
     
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>
 

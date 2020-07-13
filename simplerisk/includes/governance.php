@@ -444,8 +444,8 @@ function get_framework_controls($control_ids=false)
             LEFT JOIN `family` t4 on t1.family=t4.value
             LEFT JOIN `control_phase` t5 on t1.control_phase=t5.value
             LEFT JOIN `user` t6 on t1.control_owner=t6.value
-            LEFT JOIN `framework_control_to_framework` fctf ON t1.id=fctf.control_id
-            LEFT JOIN `frameworks` t7 ON fctf.framework_id=t7.value AND t7.status=1
+            LEFT JOIN `framework_control_mappings` m ON t1.id=m.control_id
+            LEFT JOIN `frameworks` t7 ON m.framework=t7.value AND t7.status=1
         WHERE
             t1.deleted=0
     ";
@@ -514,16 +514,16 @@ function get_framework_controls($control_ids=false)
 /**********************************************
  * FUNCTION: GET FRAMEWORK CONTROLS BY FILTER *
  **********************************************/
-function get_framework_controls_by_filter($control_class="all", $control_phase="all", $control_owner="all", $control_family="all", $control_framework="all", $control_priority="all", $control_text="")
+function get_framework_controls_by_filter($control_class="all", $control_phase="all", $control_owner="all", $control_family="all", $control_framework="all", $control_priority="all", $control_text="", $control_ids = "all")
 {
     // Open the database connection
     $db = db_open();
     $sql = "
         SELECT t1.*, GROUP_CONCAT(DISTINCT f.value) framework_ids, GROUP_CONCAT(DISTINCT f.name) framework_names, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.name family_short_name, t6.name control_owner_name
         FROM `framework_controls` t1 
-            LEFT JOIN `framework_control_to_framework` fctf on t1.id=fctf.control_id
-            LEFT JOIN `frameworks` f on fctf.framework_id=f.value AND f.status=1
-            LEFT JOIN `framework_control_to_framework` fctf_1 on t1.id=fctf_1.control_id
+            LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
+            LEFT JOIN `frameworks` f on m.framework=f.value AND f.status=1
+            LEFT JOIN `framework_control_mappings` m_1 on t1.id=m_1.control_id
             LEFT JOIN `control_class` t2 on t1.control_class=t2.value
             LEFT JOIN `control_phase` t3 on t1.control_phase=t3.value
             LEFT JOIN `control_priority` t4 on t1.control_priority=t4.value
@@ -690,7 +690,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
                 // If unassigned option.
                 if($val == -1)
                 {
-                    $where[] = "fctf.control_id is NULL";
+                    $where[] = "m.control_id is NULL";
                 }
                 else
                 {
@@ -698,7 +698,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
                 }
             }
         }
-        $where[] = "FIND_IN_SET(fctf_1.framework_id, '".implode(",", $where_or_ids)."')";
+        $where[] = "FIND_IN_SET(m_1.framework, '".implode(",", $where_or_ids)."')";
         
         $sql .= " AND (". implode(" OR ", $where) . ")";
 
@@ -709,7 +709,30 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
     else{
         $sql .= " AND 0 ";
     }
-    
+
+    // If control ID is requested.
+    if($control_ids && is_array($control_ids)){
+        $where = [0];
+        $where_or_ids = [];
+        foreach($control_ids as $val){
+            $val = (int)$val;
+            if($val)
+            {
+                $where_or_ids[] = $val;
+            }
+        }
+        $where[] = "FIND_IN_SET(t1.id, '".implode(",", $where_or_ids)."')";
+        
+        $sql .= " AND (". implode(" OR ", $where) . ")";
+
+    }
+    elseif($control_ids == "all"){
+        $sql .= " AND 1 ";
+    }
+    else{
+        $sql .= " AND 0 ";
+    }
+
     $sql .= " GROUP BY t1.id; ";
 
     $stmt = $db->prepare($sql);
@@ -1058,14 +1081,16 @@ function add_framework_control($control){
     $stmt->execute();
     
     $control_id = $db->lastInsertId();
-    
-    save_control_to_frameworks($control_id, $framework_ids);
+    if(isset($control['map_frameworks'])&&count($control['map_frameworks'])>0) save_control_to_frameworks($control_id, $control['map_frameworks']);
+    if(count($framework_ids)>0) save_control_to_framework_by_ids($control_id, $framework_ids);
 
     // Close the database connection
     db_close($db);
 
-    $message = "A new control named \"{$short_name}\" was created by username \"" . $_SESSION['user'] . "\".";
-    write_log((int)$control_id + 1000, $_SESSION['uid'], $message, "control");
+    $user = isset($_SESSION['user'])?$_SESSION['user']:"";
+    $uid = isset($_SESSION['uid'])?$_SESSION['uid']:"";
+    $message = "A new control named \"{$short_name}\" was created by username \"" . $user . "\".";
+    write_log((int)$control_id + 1000, $uid, $message, "control");
     
     return $control_id;
 }
@@ -1078,7 +1103,6 @@ function update_framework_control($control_id, $control){
     $long_name = isset($control['long_name']) ? $control['long_name'] : "";
     $description = isset($control['description']) ? $control['description'] : "";
     $supplemental_guidance = isset($control['supplemental_guidance']) ? $control['supplemental_guidance'] : "";
-    $framework_ids = (!empty($control['framework_ids']) && is_array($control['framework_ids'])) ? $control['framework_ids'] : [];
     $framework_ids = !empty($control['framework_ids']) ? (is_array($control['framework_ids']) ? $control['framework_ids'] : explode(",", $control['framework_ids'])) : [];
     $control_owner = isset($control['control_owner']) ? (int)$control['control_owner'] : 0;
     $control_class = isset($control['control_class']) ? (int)$control['control_class'] : 0;
@@ -1109,10 +1133,13 @@ function update_framework_control($control_id, $control){
     // Close the database connection
     db_close($db);
     
-    save_control_to_frameworks($control_id, $framework_ids);
+    if(isset($control['map_frameworks'])&&count($control['map_frameworks'])>0) save_control_to_frameworks($control_id, $control['map_frameworks']);
+    if(count($framework_ids)>0) save_control_to_framework_by_ids($control_id, $framework_ids);
     
-    $message = "A control named \"{$short_name}\" was updated by username \"" . $_SESSION['user'] . "\".";
-    write_log((int)$control_id + 1000, $_SESSION['uid'], $message, "control");
+    $user = isset($_SESSION['user'])?$_SESSION['user']:"";
+    $uid = isset($_SESSION['uid'])?$_SESSION['uid']:"";
+    $message = "A control named \"{$short_name}\" was updated by username \"" . $user . "\".";
+    write_log((int)$control_id + 1000, $uid, $message, "control");
     
     // Add residual risk scoring history
     add_residual_risk_scoring_histories_for_control($control_id);
@@ -1148,6 +1175,7 @@ function add_residual_risk_scoring_histories_for_control($control_id)
 function delete_framework_control($control_id){
     // Open the database connection
     $db = db_open();
+    $control = get_framework_control($control_id);
 
     // Check if test used this control
     $stmt = $db->prepare("SELECT count(*) cnt FROM `framework_control_tests` WHERE framework_control_id=:control_id");
@@ -1174,11 +1202,11 @@ function delete_framework_control($control_id){
     
     // Close the database connection
     db_close($db);
-    
-    $control = get_framework_control($control_id);
 
-    $message = "A control named \"{$control['short_name']}\" was deleted by username \"" . $_SESSION['user'] . "\".";
-    write_log((int)$control_id + 1000, $_SESSION['uid'], $message, "control");
+    $user = isset($_SESSION['user'])?$_SESSION['user']:"";
+    $uid = isset($_SESSION['uid'])?$_SESSION['uid']:"";
+    $message = "A control named \"{$control['short_name']}\" was deleted by username \"" . $user . "\".";
+    write_log((int)$control_id + 1000, $uid, $message, "control");
 
     // Add residual risk scoring history
     add_residual_risk_scoring_histories_for_control($control_id);
@@ -1192,9 +1220,9 @@ function get_framework_control($id){
     $db = db_open();
 
     $stmt = $db->prepare("
-        SELECT t1.*, IFNULL(GROUP_CONCAT(fctf.framework_id), '') framework_ids, t2.name control_class_name, t3.name control_priority_name, t4.name family_short_name
+        SELECT t1.*, IFNULL(GROUP_CONCAT(m.framework), '') framework_ids, t2.name control_class_name, t3.name control_priority_name, t4.name family_short_name
         FROM `framework_controls` t1 
-            LEFT JOIN `framework_control_to_framework` fctf on t1.id=fctf.control_id
+            LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
             LEFT JOIN `control_class` t2 on t1.control_class=t2.value
             LEFT JOIN `control_priority` t3 on t1.control_priority=t3.value
             LEFT JOIN `family` t4 on t1.family=t4.value
@@ -1216,7 +1244,7 @@ function get_framework_control($id){
 /**********************************************
  * FUNCTION: GET AVAILABLE CONTROL CLASS List *
  **********************************************/
-function getAvailableControlClassList(){
+function getAvailableControlClassList($control_framework=""){
     // Open the database connection
     $db = db_open();
     
@@ -1224,7 +1252,34 @@ function getAvailableControlClassList(){
         SELECT t2.*
         FROM `framework_controls` t1 
             LEFT JOIN `control_class` t2 on t1.control_class=t2.value
-        WHERE t2.value is not null AND t1.deleted=0
+            LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
+        WHERE t2.value is not null AND t1.deleted=0";
+    if($control_framework && is_array($control_framework)){
+        $where = [0];
+        $where_or_ids = [];
+        foreach($control_framework as $val){
+            $val = (int)$val;
+            if($val)
+            {
+                // If unassigned option.
+                if($val == -1)
+                {
+                    $where[] = "m.control_id is NULL";
+                }
+                else
+                {
+                    $where_or_ids[] = $val;
+                }
+            }
+        }
+        $where[] = "FIND_IN_SET(m.framework, '".implode(",", $where_or_ids)."')";
+        
+        $sql .= " AND (". implode(" OR ", $where) . ")";
+
+    } else{
+        $sql .= " AND 1 ";
+    }
+    $sql .= "
         GROUP BY
             t2.value
     ";
@@ -1244,7 +1299,7 @@ function getAvailableControlClassList(){
 /**********************************************
  * FUNCTION: GET AVAILABLE CONTROL PHASE List *
  **********************************************/
-function getAvailableControlPhaseList(){
+function getAvailableControlPhaseList($control_framework=""){
     // Open the database connection
     $db = db_open();
     
@@ -1252,11 +1307,37 @@ function getAvailableControlPhaseList(){
         SELECT t2.*
         FROM `framework_controls` t1 
             LEFT JOIN `control_phase` t2 on t1.control_phase=t2.value
-        WHERE t2.value is not null AND t1.deleted=0
+            LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
+        WHERE t2.value is not null AND t1.deleted=0";
+    if($control_framework && is_array($control_framework)){
+        $where = [0];
+        $where_or_ids = [];
+        foreach($control_framework as $val){
+            $val = (int)$val;
+            if($val)
+            {
+                // If unassigned option.
+                if($val == -1)
+                {
+                    $where[] = "m.control_id is NULL";
+                }
+                else
+                {
+                    $where_or_ids[] = $val;
+                }
+            }
+        }
+        $where[] = "FIND_IN_SET(m.framework, '".implode(",", $where_or_ids)."')";
+        
+        $sql .= " AND (". implode(" OR ", $where) . ")";
+
+    } else{
+        $sql .= " AND 1 ";
+    }
+    $sql .= "
         GROUP BY
             t2.value
     ";
-    
     $stmt = $db->prepare($sql);
     
     $stmt->execute();
@@ -1272,7 +1353,7 @@ function getAvailableControlPhaseList(){
 /**********************************************
  * FUNCTION: GET AVAILABLE CONTROL OWNER List *
  **********************************************/
-function getAvailableControlOwnerList(){
+function getAvailableControlOwnerList($control_framework=""){
     // Open the database connection
     $db = db_open();
     
@@ -1280,11 +1361,37 @@ function getAvailableControlOwnerList(){
         SELECT t2.*
         FROM `framework_controls` t1 
             LEFT JOIN `user` t2 on t1.control_owner=t2.value
-        WHERE t2.value is not null AND t1.deleted=0
+            LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
+        WHERE t2.value is not null AND t1.deleted=0";
+    if($control_framework && is_array($control_framework)){
+        $where = [0];
+        $where_or_ids = [];
+        foreach($control_framework as $val){
+            $val = (int)$val;
+            if($val)
+            {
+                // If unassigned option.
+                if($val == -1)
+                {
+                    $where[] = "m.control_id is NULL";
+                }
+                else
+                {
+                    $where_or_ids[] = $val;
+                }
+            }
+        }
+        $where[] = "FIND_IN_SET(m.framework, '".implode(",", $where_or_ids)."')";
+        
+        $sql .= " AND (". implode(" OR ", $where) . ")";
+
+    } else{
+        $sql .= " AND 1 ";
+    }
+    $sql .= "
         GROUP BY
             t2.value
     ";
-    
     $stmt = $db->prepare($sql);
     
     $stmt->execute();
@@ -1300,7 +1407,7 @@ function getAvailableControlOwnerList(){
 /***********************************************
  * FUNCTION: GET AVAILABLE CONTROL FAMILY LIST *
  ***********************************************/
-function getAvailableControlFamilyList(){
+function getAvailableControlFamilyList($control_framework=""){
     // Open the database connection
     $db = db_open();
     
@@ -1308,11 +1415,37 @@ function getAvailableControlFamilyList(){
         SELECT t2.*
         FROM `framework_controls` t1 
             LEFT JOIN `family` t2 on t1.family=t2.value
-        WHERE t2.value is not null AND t1.deleted=0
+            LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
+        WHERE t2.value is not null AND t1.deleted=0";
+    if($control_framework && is_array($control_framework)){
+        $where = [0];
+        $where_or_ids = [];
+        foreach($control_framework as $val){
+            $val = (int)$val;
+            if($val)
+            {
+                // If unassigned option.
+                if($val == -1)
+                {
+                    $where[] = "m.control_id is NULL";
+                }
+                else
+                {
+                    $where_or_ids[] = $val;
+                }
+            }
+        }
+        $where[] = "FIND_IN_SET(m.framework, '".implode(",", $where_or_ids)."')";
+        
+        $sql .= " AND (". implode(" OR ", $where) . ")";
+
+    } else{
+        $sql .= " AND 1 ";
+    }
+    $sql .= "
         GROUP BY
             t2.value
     ";
-    
     $stmt = $db->prepare($sql);
     
     $stmt->execute();
@@ -1335,8 +1468,8 @@ function getAvailableControlFrameworkList(){
     $sql = "
         SELECT t1.*
         FROM `frameworks` t1
-            LEFT JOIN `framework_control_to_framework` fctf ON fctf.framework_id=t1.value
-            LEFT JOIN `framework_controls` t2 ON fctf.control_id=t2.id AND t2.deleted=0
+            LEFT JOIN `framework_control_mappings` m ON m.framework=t1.value
+            LEFT JOIN `framework_controls` t2 ON m.control_id=t2.id AND t2.deleted=0
         WHERE t2.id IS NOT NULL AND t1.`status`=1 
         GROUP BY t1.value
         ;
@@ -1425,8 +1558,8 @@ function getHasBeenAuditFrameworkList(){
     $sql = "
         SELECT t1.value, t1.name, t1.description
         FROM `frameworks` t1
-            LEFT JOIN `framework_control_to_framework` fctf ON t1.value=fctf.framework_id
-            LEFT JOIN `framework_controls` t2 ON fctf.control_id=t2.id AND t2.deleted=0
+            LEFT JOIN `framework_control_mappings` m ON t1.value=m.framework
+            LEFT JOIN `framework_controls` t2 ON m.control_id=t2.id AND t2.deleted=0
             LEFT JOIN `framework_control_test_audits` t3 ON t2.id=t3.framework_control_id
         WHERE
              t3.id IS NOT NULL
@@ -1457,7 +1590,7 @@ function getHasBeenAuditFrameworkList(){
 /*************************************************
  * FUNCTION: GET AVAILABLE CONTROL PRIORITY LIST *
  *************************************************/
-function getAvailableControlPriorityList(){
+function getAvailableControlPriorityList($control_framework=""){
     // Open the database connection
     $db = db_open();
     
@@ -1465,13 +1598,39 @@ function getAvailableControlPriorityList(){
         SELECT t2.*
         FROM `framework_controls` t1 
             LEFT JOIN `control_priority` t2 on t1.control_priority=t2.value 
-        WHERE t2.value is not null AND t1.deleted=0
+            LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
+        WHERE t2.value is not null AND t1.deleted=0";
+    if($control_framework && is_array($control_framework)){
+        $where = [0];
+        $where_or_ids = [];
+        foreach($control_framework as $val){
+            $val = (int)$val;
+            if($val)
+            {
+                // If unassigned option.
+                if($val == -1)
+                {
+                    $where[] = "m.control_id is NULL";
+                }
+                else
+                {
+                    $where_or_ids[] = $val;
+                }
+            }
+        }
+        $where[] = "FIND_IN_SET(m.framework, '".implode(",", $where_or_ids)."')";
+        
+        $sql .= " AND (". implode(" OR ", $where) . ")";
+
+    } else{
+        $sql .= " AND 1 ";
+    }
+    $sql .= "
         GROUP BY
             t2.value
     ORDER BY
         CAST(t2.name AS UNSIGNED), t2.name ASC
     ";
-    
     $stmt = $db->prepare($sql);
     
     $stmt->execute();
@@ -1602,7 +1761,7 @@ function make_tree_options_html($options, $parent, &$html, $indent="", $selected
 /******************************
  * FUNCTION: ADD NEW DOCUMENT *
  ******************************/
-function add_document($document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $review_date){
+function add_document($document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver){
     global $lang, $escaper;
     
     // Open the database connection
@@ -1618,9 +1777,8 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
         set_alert(true, "bad", $escaper->escapeHtml($lang['DocumentNameExist']));
         return false;
     }
-
     // Create a document
-    $stmt = $db->prepare("INSERT INTO `documents` (`document_type`, `document_name`, `control_ids`, `framework_ids`, `parent`, `status`, `file_id`, `creation_date`, `review_date`) VALUES (:document_type, :document_name, :control_ids, :framework_ids, :parent, :status, :file_id, :creation_date, :review_date)");
+    $stmt = $db->prepare("INSERT INTO `documents` (`document_type`, `document_name`, `control_ids`, `framework_ids`, `parent`, `status`, `file_id`, `creation_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `additional_stakeholders`, `approver`) VALUES (:document_type, :document_name, :control_ids, :framework_ids, :parent, :status, :file_id, :creation_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :additional_stakeholders, :approver)");
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":control_ids", $control_ids, PDO::PARAM_STR);
@@ -1630,7 +1788,12 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
     $init_file_id = 0;
     $stmt->bindParam(":file_id", $init_file_id, PDO::PARAM_INT);
     $stmt->bindParam(":creation_date", $creation_date, PDO::PARAM_STR);
-    $stmt->bindParam(":review_date", $review_date, PDO::PARAM_STR);
+    $stmt->bindParam(":review_frequency", $review_frequency, PDO::PARAM_INT);
+    $stmt->bindParam(":next_review_date", $next_review_date, PDO::PARAM_STR);
+    $stmt->bindParam(":approval_date", $approval_date, PDO::PARAM_STR);
+    $stmt->bindParam(":document_owner", $document_owner, PDO::PARAM_INT);
+    $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR);
+    $stmt->bindParam(":approver", $approver, PDO::PARAM_INT);
 
     $stmt->execute();
 
@@ -1678,7 +1841,7 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
 /*****************************
  * FUNCTION: UPDATE DOCUMENT *
  *****************************/
-function update_document($document_id, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $review_date){
+function update_document($document_id, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver){
     global $lang, $escaper;
     
     // Open the database connection
@@ -1697,7 +1860,7 @@ function update_document($document_id, $document_type, $document_name, $control_
     }
 
     // Update a document
-    $stmt = $db->prepare("UPDATE `documents` SET `document_type`=:document_type, `document_name`=:document_name, `control_ids`=:control_ids, `framework_ids`=:framework_ids, `parent`=:parent, `status`=:status, `creation_date`=:creation_date, `review_date`=:review_date WHERE id=:document_id; ");
+    $stmt = $db->prepare("UPDATE `documents` SET `document_type`=:document_type, `document_name`=:document_name, `control_ids`=:control_ids, `framework_ids`=:framework_ids, `parent`=:parent, `status`=:status, `creation_date`=:creation_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `additional_stakeholders`=:additional_stakeholders , `approver`=:approver WHERE id=:document_id; ");
     $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
@@ -1706,7 +1869,12 @@ function update_document($document_id, $document_type, $document_name, $control_
     $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
     $stmt->bindParam(":status", $status, PDO::PARAM_STR);
     $stmt->bindParam(":creation_date", $creation_date, PDO::PARAM_STR);
-    $stmt->bindParam(":review_date", $review_date, PDO::PARAM_STR);
+    $stmt->bindParam(":review_frequency", $review_frequency, PDO::PARAM_INT);
+    $stmt->bindParam(":next_review_date", $next_review_date, PDO::PARAM_STR);
+    $stmt->bindParam(":approval_date", $approval_date, PDO::PARAM_STR);
+    $stmt->bindParam(":document_owner", $document_owner, PDO::PARAM_STR);
+    $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR);
+    $stmt->bindParam(":approver", $approver, PDO::PARAM_INT);
     $stmt->execute();
 
     // Close the database connection
@@ -1786,27 +1954,15 @@ function get_document_hierarchy_tabs($type="")
     global $escaper;
     
     echo "<table  class='easyui-treegrid document-table'
-            data-options=\"
-                iconCls: 'icon-ok',
-                animate: true,
-                collapsible: false,
-                fitColumns: true,
-                url: '".$_SESSION['base_url']."/api/governance/documents?type={$type}',
-                method: 'get',
-                idField: 'id',
-                treeField: 'document_name',
-                scrollbarSize: 0,
-                onLoadSuccess: function(row, data){
-
-                }
             \">";
     echo "<thead >";
-    echo "<th data-options=\"field:'document_name'\" width='40%'>".$escaper->escapeHtml($lang['DocumentName'])."</th>";
-    echo "<th data-options=\"field:'document_type'\" width='20%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
+    echo "<th data-options=\"field:'document_name'\" width='25%'>".$escaper->escapeHtml($lang['DocumentName'])."</th>";
+    echo "<th data-options=\"field:'document_type'\" width='15%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
+    echo "<th data-options=\"field:'framework_names'\" width='20%'>".$escaper->escapeHtml($lang['ControlFrameworks'])."</th>";
+    echo "<th data-options=\"field:'control_names'\" width='20%'>".$escaper->escapeHtml($lang['Controls'])."</th>";
     echo "<th data-options=\"field:'creation_date'\" width='10%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
-    echo "<th data-options=\"field:'review_date'\" width='10%'>".$escaper->escapeHtml($lang['ReviewDate'])."</th>";
-    echo "<th data-options=\"field:'status'\" width='20%'>".$escaper->escapeHtml($lang['Status'])."</th>";
-//    echo "<th data-options=\"field:'actions'\" width='10%'>&nbsp;</th>";
+    echo "<th data-options=\"field:'approval_date'\" width='10%'>".$escaper->escapeHtml($lang['ApprovalDate'])."</th>";
+    echo "<th data-options=\"field:'status'\" width='10%'>".$escaper->escapeHtml($lang['Status'])."</th>";
     echo "</thead>\n";
 
     echo "</table>";
@@ -1816,6 +1972,23 @@ function get_document_hierarchy_tabs($type="")
                 display: none;
             }
         </style>
+        <script>
+            $(function(){
+                var tg = $('#document-hierachy-content .easyui-treegrid').treegrid({
+                    iconCls: 'icon-ok',
+                    animate: true,
+                    collapsible: false,
+                    fitColumns: true,
+                    url: '".$_SESSION['base_url']."/api/governance/documents?type={$type}',
+                    method: 'get',
+                    idField: 'id',
+                    treeField: 'document_name',
+                    remoteFilter: true,
+                    scrollbarSize: 0
+                });
+                tg.treegrid('enableFilter');
+            });
+        </script>
     ";
 } 
 
@@ -1827,26 +2000,14 @@ function get_document_tabular_tabs($type, $document_id=0)
     global $lang;
     global $escaper;
     
-    echo "<table  class='easyui-treegrid document-table'
-            data-options=\"
-                iconCls: 'icon-ok',
-                animate: true,
-                collapsible: false,
-                fitColumns: true,
-                url: '".$_SESSION['base_url']."/api/governance/tabular_documents?type={$type}',
-                method: 'get',
-                idField: 'id',
-                treeField: 'document_name',
-                scrollbarSize: 0,
-                onLoadSuccess: function(row, data){
-
-                }
-            \">";
+    echo "<table  class='easyui-treegrid document-table' id='{$type}-table'>";
     echo "<thead >";
-    echo "<th data-options=\"field:'document_name'\" width='40%'>".$escaper->escapeHtml($lang['DocumentName'])."</th>";
-    echo "<th data-options=\"field:'document_type'\" width='20%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
+    echo "<th data-options=\"field:'document_name'\" width='25%'>".$escaper->escapeHtml($lang['DocumentName'])."</th>";
+    echo "<th data-options=\"field:'document_type'\" width='15%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
+    echo "<th data-options=\"field:'framework_names'\" width='20%'>".$escaper->escapeHtml($lang['ControlFrameworks'])."</th>";
+    echo "<th data-options=\"field:'control_names'\" width='20%'>".$escaper->escapeHtml($lang['Controls'])."</th>";
     echo "<th data-options=\"field:'creation_date'\" width='10%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
-    echo "<th data-options=\"field:'review_date'\" width='10%'>".$escaper->escapeHtml($lang['ReviewDate'])."</th>";
+    echo "<th data-options=\"field:'approval_date'\" width='10%'>".$escaper->escapeHtml($lang['ApprovalDate'])."</th>";
     echo "<th data-options=\"field:'status'\" width='10%'>".$escaper->escapeHtml($lang['Status'])."</th>";
     echo "<th data-options=\"field:'actions'\" width='10%'>&nbsp;</th>";
     echo "</thead>\n";
@@ -1858,6 +2019,28 @@ function get_document_tabular_tabs($type, $document_id=0)
                 display: none;
             }
         </style>
+        <script>
+            $(function(){
+                var tg = $('#{$type}-table').treegrid({
+                    iconCls: 'icon-ok',
+                    animate: true,
+                    collapsible: false,
+                    fitColumns: true,
+                    url: '".$_SESSION['base_url']."/api/governance/tabular_documents?type={$type}',
+                    method: 'get',
+                    idField: 'id',
+                    treeField: 'document_name',
+                    remoteFilter: true,
+                    scrollbarSize: 0,
+                    onLoadSuccess: function(row, data){
+                    }
+                });
+                tg.treegrid('enableFilter', [{
+                    field:'actions',
+                    type:'label'
+                }]);
+            });
+        </script>
     ";
 } 
  
@@ -1865,23 +2048,80 @@ function get_document_tabular_tabs($type, $document_id=0)
  * FUNCTION: GET DOCUMENTS DATA IN TREE FORMAT *
  ***********************************************/
 function get_documents_as_treegrid($type){
-    global $lang;
-    global $escaper;
-    
+    global $lang, $escaper;
+    $filterRules = isset($_GET["filterRules"])?json_decode($_GET["filterRules"],true):array();
+    $filtered_documents = array();
     $documents = get_documents($type);
     foreach($documents as &$document){
+        $frameworks = get_frameworks_by_ids($document["framework_ids"]);
+        $framework_names = implode(", ", array_map(function($framework){
+            return $framework['name'];
+        }, $frameworks));
+
+        $control_ids = explode(",", $document["control_ids"]);
+        $controls = get_framework_controls_by_filter("all", "all", "all", "all", "all", "all", "", $control_ids);
+        $control_names = implode(", ", array_map(function($control){
+            return $control['short_name'];
+        }, $controls));
+
+        // document filtering
+        if(count($filterRules)>0) {
+            foreach($filterRules as $filter){
+                $value = $filter['value'];
+                switch($filter['field']){
+                    case "document_name":
+                        if( stripos($document['document_name'], $value) === false ){
+                            continue 3;
+                        }
+                        break;
+                    case "document_type":
+                        if( stripos($document['document_type'], $value) === false ){
+                            continue 3;
+                        }
+                        break;
+                    case "framework_names":
+                        if( stripos($framework_names, $value) === false ){
+                            continue 3;
+                        }
+                        break;
+                    case "control_names":
+                        if( stripos($control_names, $value) === false ){
+                            continue 3;
+                        }
+                        break;
+                    case "creation_date":
+                        if( stripos(format_date($document['creation_date']), $value) === false ){
+                            continue 3;
+                        }
+                        break;
+                    case "approval_date":
+                        if( stripos(format_date($document['approval_date']), $value) === false ){
+                            continue 3;
+                        }
+                        break;
+                    case "status":
+                        if( stripos($document['status'], $value) === false ){
+                            continue 3;
+                        }
+                        break;
+                }
+            }
+        }
+
         $document['value'] = $document['id'];
         $document['document_type'] = $escaper->escapeHtml($document['document_type']);
         $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name'])."</a>";
+        $document['framework_names'] = $escaper->escapeHtml($framework_names);
+        $document['control_names'] = $escaper->escapeHtml($control_names);
         $document['status'] = $escaper->escapeHtml($document['status']);
         $document['creation_date'] = format_date($document['creation_date']);
-        $document['review_date'] = format_date($document['review_date']);
+        $document['approval_date'] = format_date($document['approval_date']);
         $document['actions'] = "<div class=\"text-center\"><a class=\"framework-block--edit\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;<a class=\"framework-block--delete\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a></div>";
+        $filtered_documents[] = $document;
     }
     $results = array();
     $count = 0;
-    
-    makeTree($documents, 0, $results, $count);
+    makeTree($filtered_documents, 0, $results, $count);
     if(isset($results['children'][0])){
         $results['children'][0]['totalCount'] = $count;
     }
@@ -1960,8 +2200,15 @@ function get_exception($id){
     // Open the database connection
     $db = db_open();
 
+    $sql = "
+        SELECT t1.*, t2.version file_version, t2.unique_name
+        FROM `document_exceptions` t1 
+            LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
+        WHERE t1.value=:id
+    ";
+
     // Query the database
-    $stmt = $db->prepare("select * from document_exceptions where value=:id;");
+    $stmt = $db->prepare($sql);
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -2005,12 +2252,16 @@ function get_exception_for_display($id, $type){
             de.approval_date,
             a.name as approver,
             de.description,
-            de.justification
+            de.justification,
+            f.version file_version,
+            f.unique_name,
+            f.name file_name
         from
             document_exceptions de
             {$type_based_sql_parts[1]}
             left join user o on o.value = de.owner
             left join user a on a.value = de.approver
+            left join compliance_files f on de.file_id=f.id
         where
             {$type_based_sql_parts[2]}
             and de.value = :id;";
@@ -2225,6 +2476,32 @@ function create_exception($name, $policy, $control, $owner, $additional_stakehol
 
     write_log($id, $_SESSION['uid'], _lang('ExceptionAuditLogCreate', array('exception_name' => $name, 'user' => $_SESSION['user'])), 'exception');
 
+
+    // If submitted files are existing, save files
+    if(!empty($_FILES['file'])){
+        $files = $_FILES['file'];
+        list($status, $file_ids, $errors) = upload_compliance_files($id, "exceptions", $files);
+        if($file_ids){
+            $file_id = $file_ids[0];
+        }
+    }
+    // Check if error was happen in uploading files
+    if(!empty($errors))
+    {
+        // Delete added document if failed to upload a document file
+        delete_exception($id);
+        $errors = array_unique($errors);
+        foreach ($errors as $error) {
+            set_alert(true, "bad", $error);
+        }
+        return false;
+    }elseif(!empty($file_id)){
+        $stmt = $db->prepare("UPDATE `document_exceptions` SET file_id=:file_id WHERE value=:id");
+        $stmt->bindParam(":file_id", $file_id, PDO::PARAM_INT);
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
     return $id;
 }
 
@@ -2281,6 +2558,33 @@ function update_exception($name, $policy, $control, $owner, $additional_stakehol
     if (!empty($changes)) {
         write_log($id, $_SESSION['uid'], _lang('ExceptionAuditLogUpdate', array('exception_name' => $name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes))), 'exception');
     }
+
+    // If submitted files are existing, save files
+    if(!empty($_FILES['file'])){
+        $exception = get_exception($id);
+        $version = $exception['file_version'] + 1;
+        $files = $_FILES['file'];
+        list($status, $file_ids, $errors) = upload_compliance_files($id, "exceptions", $files, $version);
+        if($file_ids){
+            $file_id = $file_ids[0];
+        }
+    }
+
+    // Check if error was happen in uploading files
+    if(!empty($errors))
+    {
+        $errors = array_unique($errors);
+        foreach ($errors as $error) {
+            set_alert(true, "bad", $error);
+        }
+        return false;
+    }elseif(!empty($file_id)){
+        $stmt = $db->prepare("UPDATE `document_exceptions` SET file_id=:file_id WHERE value=:id");
+        $stmt->bindParam(":file_id", $file_id, PDO::PARAM_INT);
+        $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    return true;
 }
 
 function getExceptionForChangeChecking($id) {
@@ -2382,6 +2686,10 @@ function delete_exception($id) {
 
     $deleted_exception = $stmt->fetch();
 
+    $stmt = $db->prepare("DELETE FROM compliance_files WHERE ref_id=:document_id AND ref_type='exceptions'; ");
+    $stmt->bindParam(":document_id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
     // Delete the exception
     $stmt = $db->prepare("DELETE from `document_exceptions` where `value`=:id;");
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
@@ -2441,13 +2749,37 @@ function get_exceptions_audit_log($days){
 /***************************************
  * FUNCTION: SAVE CONTROL TO FRAMEWORK *
  ***************************************/
-function save_control_to_frameworks($control_id, $framework_ids)
+function save_control_to_frameworks($control_id, $map_frameworks)
 {
     // Open the database connection
     $db = db_open();
 
     // Delete all current control framework relations
-    $stmt = $db->prepare("DELETE FROM `framework_control_to_framework` WHERE control_id=:control_id;");
+    $stmt = $db->prepare("DELETE FROM `framework_control_mappings` WHERE control_id=:control_id;");
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+    foreach($map_frameworks as $row){
+        $framework_id = $row[0];
+        $reference_name = $row[1];
+        $stmt = $db->prepare("INSERT INTO `framework_control_mappings`(control_id, framework, reference_name) VALUES (:control_id, :framework_id, :reference_name)");
+        $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+        $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+        $stmt->bindParam(":reference_name", $reference_name, PDO::PARAM_STR);
+        $stmt->execute();
+    }
+    // Close the database connection
+    db_close($db);  
+}
+/*********************************************
+ * FUNCTION: SAVE CONTROL TO FRAMEWORK BY ID *
+ *********************************************/
+function save_control_to_framework_by_ids($control_id, $framework_ids)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Delete all current control framework relations
+    $stmt = $db->prepare("DELETE FROM `framework_control_mappings` WHERE control_id=:control_id;");
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -2458,17 +2790,18 @@ function save_control_to_frameworks($control_id, $framework_ids)
         {
             $framework_ids = explode(",", $framework_ids);
         }
-        
+        $control = get_framework_control($control_id);
+        $reference_name = isset($control['control_number'])?$control['control_number']:"";
 
         $inserted = false;
-        $insert_query = "INSERT INTO `framework_control_to_framework`(control_id, framework_id) VALUES ";
+        $insert_query = "INSERT INTO `framework_control_mappings` (control_id, framework, reference_name) VALUES ";
         foreach($framework_ids as $framework_id)
         {
             $framework_id = (int)$framework_id;
             if($framework_id)
             {
                 $inserted = true;
-                $insert_query .= "(:control_id, {$framework_id}),";
+                $insert_query .= "(:control_id, {$framework_id}, :reference_name),";
                 write_debug_log("Adding SimpleRisk control id \"" . $control_id . "\" to framework id \"" . $framework_id . "\".");
             }
         }
@@ -2478,6 +2811,7 @@ function save_control_to_frameworks($control_id, $framework_ids)
         {
             $stmt = $db->prepare($insert_query);
             $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+            $stmt->bindParam(":reference_name", $reference_name, PDO::PARAM_STR);
             $stmt->execute();
         }
 
@@ -2487,42 +2821,35 @@ function save_control_to_frameworks($control_id, $framework_ids)
     db_close($db);  
 }
 
-/**************************************
- * FUNCTION: ADD CONTROL TO FRAMEWORK *
- **************************************/
-/*function add_control_to_framework($control_id, $framework_id)
+function add_control_to_framework($control_id, $framework_id, $reference_name=null)
 {
-    // Open the database connection
-    $db = db_open();
-
-    write_debug_log("Adding SimpleRisk control id \"" . $control_id . "\" to framework id \"" . $framework_id . "\".");
-
-    // Append the framework_id value in the control
-    $stmt = $db->prepare("UPDATE framework_controls SET framework_ids=TRIM(BOTH ',' FROM CONCAT(framework_ids, ',', :framework_id)) WHERE id=:control_id;");
-    $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
-    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    // Close the database connection
-    db_close($db);  
-}*/
-function add_control_to_framework($control_id, $framework_id)
-{
-    if($framework_id)
+    if($framework_id > 0 && $control_id > 0)
     {
         // Open the database connection
         $db = db_open();
 
         // Delete all current control framework relations
-        $stmt = $db->prepare("DELETE FROM `framework_control_to_framework` WHERE control_id=:control_id AND framework_id=:framework_id;");
+        $stmt = $db->prepare("DELETE FROM `framework_control_mappings` WHERE control_id=:control_id AND framework=:framework_id AND reference_name=:reference_name;");
         $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
         $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+        $stmt->bindParam(":reference_name", $reference_name, PDO::PARAM_STR);
         $stmt->execute();
         
-        $insert_query = "INSERT INTO `framework_control_to_framework`(control_id, framework_id) VALUES (:control_id, :framework_id); ";
+        $control = get_framework_control($control_id);
+
+        // If there wasn't a reference name
+        if ($reference_name === null)
+        {
+            // Set the control number
+            $control_number = isset($control['control_number'])?$control['control_number']:"";
+        }
+        else $control_number = $reference_name;
+
+        $insert_query = "INSERT INTO `framework_control_mappings`(control_id, framework, reference_name) VALUES (:control_id, :framework_id, :control_number); ";
         $stmt = $db->prepare($insert_query);
         $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
         $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+        $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR);
         $stmt->execute();
 
         write_debug_log("Adding SimpleRisk control id \"" . $control_id . "\" to framework id \"" . $framework_id . "\".");
@@ -2575,7 +2902,7 @@ function remove_framework_from_controls($framework_id)
     $db = db_open();
 
     $framework_id = (int)$framework_id;
-    $stmt = $db->prepare("DELETE FROM `framework_control_to_framework` WHERE framework_id=:framework_id;");
+    $stmt = $db->prepare("DELETE FROM `framework_control_mappings` WHERE framework=:framework_id;");
     $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
     $stmt->execute();
     write_debug_log("Removing SimpleRisk framework id \"" . $framework_id . "\" from existing controls.");
@@ -2583,4 +2910,61 @@ function remove_framework_from_controls($framework_id)
     // Close the database connection
     db_close($db);
 }
+/********************************************
+ * FUNCTION: GET FRAMEWORKS BY IDs *
+ ********************************************/
+function get_frameworks_by_ids($framework_ids)
+{
+    // Open the database connection
+    $db = db_open();
+    // Query the database
+    $stmt = $db->prepare("SELECT * FROM `frameworks` WHERE FIND_IN_SET(`value`,:framework_ids)");
+    $stmt->bindParam(":framework_ids", $framework_ids, PDO::PARAM_STR);
+
+    $stmt->execute();
+    $frameworks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+    foreach($frameworks as &$framework){
+        // Try to decrypt the framework name
+        $framework['name'] = try_decrypt($framework['name']);
+        
+        // Try to decrypt the framework description
+        $framework['description'] = try_decrypt($framework['description']);
+    }
+    return $frameworks;
+}
+
+/********************************************
+ * FUNCTION: GET MAPPING CONTROL FRAMEWORKS *
+ ********************************************/
+function get_mapping_control_frameworks($control_id)
+{
+    // Open the database connection
+    $db = db_open();
+    $sql = "
+        SELECT t1.*,t2.name framework_name, t2.description framework_description  FROM `framework_control_mappings` t1
+            LEFT JOIN `frameworks` t2 ON t1.framework = t2.value
+            WHERE t1.control_id = :control_id 
+    ";
+
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $frameworks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // decrypt data
+    foreach($frameworks as &$framework){
+        // Try to decrypt the framework name
+        $framework['framework_name'] = try_decrypt($framework['framework_name']);
+        
+        // Try to decrypt the framework description
+        $framework['framework_description'] = try_decrypt($framework['framework_description']);
+    }
+    // Close the database connection
+    db_close($db);
+    return $frameworks;
+}
+
 ?>

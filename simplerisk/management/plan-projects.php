@@ -205,6 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="stylesheet" href="../css/theme.css">
 
   <?php
+      setup_favicon("..");
       setup_alert_requirements("..");
   ?>
   <?php

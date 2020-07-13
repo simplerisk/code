@@ -59,143 +59,156 @@ enforce_permission_compliance();
 
 // Check if adding test
 if(isset($_POST['add_test'])){
-    $tester                     = (int)$_POST['tester'];
-    $additional_stakeholders    = empty($_POST['additional_stakeholders_add']) ? "" : implode(",", $_POST['additional_stakeholders_add']);
-    $test_frequency             = (int)$_POST['test_frequency'];
-    $last_date                  = get_standard_date_from_default_format($_POST['last_date']);
-    $name                       = $_POST['name'];
-    $objective                  = $_POST['objective'];
-    $test_steps                 = $_POST['test_steps'];
-    $approximate_time           = !empty($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
-    $expected_results           = $_POST['expected_results'];
-    $framework_control_id       = (int)$_POST['framework_control_id'];
-    $teams                      = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
+    $error = false;
+    $error_msg = "";
+    // check permission
+    if(!isset($_SESSION["define_tests"]) || $_SESSION["define_tests"] != 1){
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+    } else {
+        $tester                     = (int)$_POST['tester'];
+        $additional_stakeholders    = empty($_POST['additional_stakeholders_add']) ? "" : implode(",", $_POST['additional_stakeholders_add']);
+        $test_frequency             = (int)$_POST['test_frequency'];
+        $last_date                  = get_standard_date_from_default_format($_POST['last_date']);
+        $name                       = $_POST['name'];
+        $objective                  = $_POST['objective'];
+        $test_steps                 = $_POST['test_steps'];
+        $approximate_time           = !empty($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
+        $expected_results           = $_POST['expected_results'];
+        $framework_control_id       = (int)$_POST['framework_control_id'];
+        $teams                      = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
 
-    if (!$last_date)
-        $last_date = "0000-00-00";
-    else {
-        if ($last_date && strtotime($last_date) > strtotime(date('Ymd'))) {
-            set_alert(true, "bad", $lang['InvalidLastTestDate']);
-            refresh();
+        if (!$last_date)
+            $last_date = "0000-00-00";
+        else {
+            if ($last_date && strtotime($last_date) > strtotime(date('Ymd'))) {
+                $error = true;
+                $error_msg = $lang['InvalidLastTestDate'];
+            }
+        }
+        if ($test_frequency < 0) {
+            $error = true;
+            $error_msg = $lang['InvalidTestFrequency'];
+        }
+
+        if ($approximate_time < 0) {
+            $error = true;
+            $error_msg = $lang['InvalidApproximateTime'];
+        }
+        if($error !== true) {
+            // Add a framework control test
+            add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders, $last_date, false, $teams);
+            set_alert(true, "good", $lang['TestSuccessCreated']);
+
+        } else {
+            set_alert(true, "bad", $error_msg);
         }
     }
-
-    if ($test_frequency < 0) {
-        set_alert(true, "bad", $lang['InvalidTestFrequency']);
-        refresh();
-    }
-
-    if ($approximate_time < 0) {
-        set_alert(true, "bad", $lang['InvalidApproximateTime']);
-        refresh();
-    }
-
-    // Add a framework control test
-    add_framework_control_test($tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $framework_control_id, $additional_stakeholders, $last_date, false, $teams);
-    
-    set_alert(true, "good", $lang['TestSuccessCreated']);
-    
-    // Refresh current page
-    refresh();
 }
 
 // Check if editing test
 if(isset($_POST['update_test'])){
+    $error = false;
+    $error_msg = "";
+    // check permission
+    if(!isset($_SESSION["edit_tests"]) || $_SESSION["edit_tests"] != 1){
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+    } else {
     
-    $test_id                    = (int)$_POST['test_id'];
+        $test_id                    = (int)$_POST['test_id'];
 
-    // If team separation is enabled
-    if (team_separation_extra()) {
-        //Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        if (!is_user_allowed_to_access($_SESSION['uid'], $test_id, 'test')) {
-            set_alert(true, "bad", $lang['NoPermissionForThisTest']);
-            refresh();
+        // If team separation is enabled
+        if (team_separation_extra()) {
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            if (!is_user_allowed_to_access($_SESSION['uid'], $test_id, 'test')) {
+                $error = true;
+                $error_msg = $lang['NoPermissionForThisTest'];
+            }
+        }
+        
+        $today_dt                   = strtotime(date('Ymd'));
+        $tester                     = (int)$_POST['tester'];
+        $teams                      = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
+        $additional_stakeholders    = empty($_POST['additional_stakeholders_edit']) ? "" : implode(",", $_POST['additional_stakeholders_edit']);
+        $test_frequency             = (int)$_POST['test_frequency'];
+        $last_date                  = get_standard_date_from_default_format($_POST['last_date']);
+        $next_date                  = get_standard_date_from_default_format($_POST['next_date']);
+        $name                       = $_POST['name'];
+        $objective                  = $_POST['objective'];
+        $test_steps                 = $_POST['test_steps'];
+        $approximate_time           = !empty($_POST['approximate_time']) ? (int)$_POST['approximate_time'] : 0;
+        $expected_results           = $_POST['expected_results'];
+
+        if ($test_frequency < 0) {
+            $error = true;
+            $error_msg = $lang['InvalidTestFrequency'];
+        }
+
+        if ($approximate_time < 0) {
+            $error = true;
+            $error_msg = $lang['InvalidApproximateTime'];
+        }
+
+        if (!$last_date)
+            $last_date = false;
+        else {
+            if (strtotime($last_date) > $today_dt) {
+                $error = true;
+                $error_msg = $lang['InvalidLastTestDate'];
+            }
+        }
+
+        if (!$next_date)
+            $next_date = false;
+        else {
+            if (strtotime($next_date) < $today_dt) {
+                $error = true;
+                $error_msg = $lang['InvalidNextTestDate'];
+            }
+        }
+
+        if ($last_date && $next_date && strtotime($next_date) < strtotime($last_date)) {
+            $error = true;
+            $error_msg = $lang['InvalidNextTestDateLastTestDateOrder'];
+        }
+        if($error !== true) {
+            // Update a framework control test
+            update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams);
+            
+            set_alert(true, "good", $lang['TestSuccessUpdated']);
+        } else {
+            set_alert(true, "bad", $error_msg);
         }
     }
-    
-    $today_dt                   = strtotime(date('Ymd'));
-    $tester                     = (int)$_POST['tester'];
-    $teams                      = isset($_POST['team']) ? array_filter($_POST['team'], 'ctype_digit') : [];
-    $additional_stakeholders    = empty($_POST['additional_stakeholders_edit']) ? "" : implode(",", $_POST['additional_stakeholders_edit']);
-    $test_frequency             = (int)$_POST['test_frequency'];
-    $last_date                  = get_standard_date_from_default_format($_POST['last_date']);
-    $next_date                  = get_standard_date_from_default_format($_POST['next_date']);
-    $name                       = $_POST['name'];
-    $objective                  = $_POST['objective'];
-    $test_steps                 = $_POST['test_steps'];
-    $approximate_time           = !empty($_POST['approximate_time']) ? (int)$_POST['approximate_time'] : 0;
-    $expected_results           = $_POST['expected_results'];
-
-    if ($test_frequency < 0) {
-        set_alert(true, "bad", $lang['InvalidTestFrequency']);
-        //$test_frequency = false;
-        refresh();
-    }
-
-    if ($approximate_time < 0) {
-        set_alert(true, "bad", $lang['InvalidApproximateTime']);
-        //$approximate_time = false;
-        refresh();
-    }
-
-    if (!$last_date)
-        $last_date = false;
-    else {
-        if (strtotime($last_date) > $today_dt) {
-            set_alert(true, "bad", $lang['InvalidLastTestDate']);
-            //$last_date = false;
-            refresh();
-        }
-    }
-
-    if (!$next_date)
-        $next_date = false;
-    else {
-        if (strtotime($next_date) < $today_dt) {
-            set_alert(true, "bad", $lang['InvalidNextTestDate']);
-            //$next_date = false;
-            refresh();
-        }
-    }
-
-    if ($last_date && $next_date && strtotime($next_date) < strtotime($last_date)) {
-            set_alert(true, "bad", $lang['InvalidNextTestDateLastTestDateOrder']);
-            //$next_date = false;
-            //$last_date = false;
-            refresh();
-    }
-
-    // Update a framework control test
-    update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams);
-    
-    set_alert(true, "good", $lang['TestSuccessUpdated']);
-    
-    // Refresh current page
-    //refresh();
 }
 
 // Check if deleting test
 if(isset($_POST['delete_test'])){
-    $test_id = (int)$_POST['test_id'];
+    $error = false;
+    $error_msg = "";
+    // check permission
+    if(!isset($_SESSION["delete_tests"]) || $_SESSION["delete_tests"] != 1){
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+    } else {
+        $test_id = (int)$_POST['test_id'];
 
-    // If team separation is enabled
-    if (team_separation_extra()) {
-        //Include the team separation extra
-        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-        if (!is_user_allowed_to_access($_SESSION['uid'], $test_id, 'test')) {
-            set_alert(true, "bad", $lang['NoPermissionForThisTest']);
-            refresh();
+        // If team separation is enabled
+        if (team_separation_extra()) {
+            //Include the team separation extra
+            require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+            if (!is_user_allowed_to_access($_SESSION['uid'], $test_id, 'test')) {
+                $error = true;
+                $error_msg = $lang['NoPermissionForThisTest'];
+            }
+        }
+        if($error !== true) {
+            // Add a framework control
+            delete_framework_control_test($test_id);
+            set_alert(true, "good", $lang['SuccessTestDeleted']);
+        } else {
+            set_alert(true, "bad", $error_msg);
         }
     }
-
-    // Add a framework control
-    delete_framework_control_test($test_id);
-    
-    set_alert(true, "good", $lang['SuccessTestDeleted']);
-    
-    // Refresh current page
-    //refresh();
 }
 
 ?>
@@ -222,6 +235,7 @@ if(isset($_POST['delete_test'])){
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>    
     <style>
@@ -342,7 +356,7 @@ if(isset($_POST['delete_test'])){
         <div class="modal-body">
           <div class="form-group">
             <label for=""><?php echo $escaper->escapeHtml($lang['TestName']); ?></label>
-            <input type="text" name="name" required="" value="" class="form-control" maxlength="100">>
+            <input type="text" name="name" required="" value="" class="form-control" maxlength="100">
 
             <label for=""><?php echo $escaper->escapeHtml($lang['Tester']); ?></label>
             <?php create_dropdown("enabled_users", NULL, "tester", false, false, false); ?>
@@ -421,6 +435,9 @@ if(isset($_POST['delete_test'])){
                 return true;
             });
         });
+        if ( window.history.replaceState ) {
+            window.history.replaceState( null, null, window.location.href );
+        }
     </script>
 
     <?php display_set_default_date_format_script(); ?>

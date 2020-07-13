@@ -100,6 +100,8 @@ function display_framework_controls_in_compliance()
 
             $('#filter_by_control_framework').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                enableFiltering: true,
+                buttonWidth: '400px',
                 includeSelectAllOption: true
             });
             
@@ -275,7 +277,7 @@ function delete_framework_control_test($test_id){
     $stmt->execute();
 
     // Remove teams of test
-    updateTeamsOfItem($test_audit_id, 'test', []);
+    updateTeamsOfItem($test_id, 'test', []);
     
     // Close the database connection
     db_close($db);
@@ -390,8 +392,8 @@ function get_framework_control_test_audit_by_id($test_audit_id){
         FROM `framework_control_test_audits` t1
             LEFT JOIN `user` t2 ON t1.tester = t2.value
             LEFT JOIN `framework_controls` t3 ON t1.framework_control_id = t3.id 
-            LEFT JOIN `framework_control_to_framework` fctf ON t3.id = fctf.control_id
-            LEFT JOIN `frameworks` t4 ON fctf.framework_id=t4.value
+            LEFT JOIN `framework_control_mappings` m ON t3.id = m.control_id
+            LEFT JOIN `frameworks` t4 ON m.framework=t4.value
             LEFT JOIN `framework_control_test_results` t5 ON t1.id=t5.test_audit_id
             LEFT JOIN `framework_control_tests` t6 ON t6.id=t1.test_id
             LEFT JOIN `items_to_teams` itt ON `itt`.`item_id` = `t1`.`id` and `itt`.`type` = 'audit'
@@ -575,9 +577,10 @@ function display_active_audits(){
     global $lang, $escaper;
     
     $tableID = "active-audits";
-    
+    $column_settings = isset($_SESSION['custom_audits_solumns'])?$_SESSION['custom_audits_solumns']:array();
+    if(count($column_settings) == 0) $column_settings = array("test_name","test_frequency","tester","additional_stakeholders","objective","control_name","framework_name","status","last_date","next_date");
     echo "
-        <div id='filter-container'>
+        <div id='filter-container' class='well'>
             <div class='row-fluid'>
                 <div class='span1' align='right'>
                     <strong>".$escaper->escapeHtml($lang['Framework']).":&nbsp;&nbsp;&nbsp;</strong>
@@ -628,31 +631,69 @@ function display_active_audits(){
                 echo "</div>
                 </div>
             </div>
+            <div class='well' id='column-selections-container'>
+                <h4 class='collapsible--toggle clearfix'>
+                    <span><i class='fa fa-caret-right'></i>".$escaper->escapeHtml($lang['ColumnSelections'])."</span>
+                </h4>
+                <div class='collapsible' style='display: none;'>
+                    <div class='row-fluid'>
+                        <div class='span4'>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"test_name\" id=\"checkbox_test_name\" ".(in_array("test_name",$column_settings)?"checked":"")."/>
+                            <label for=\"checkbox_test_name\"> ". $escaper->escapeHtml($lang['TestName']) ."</label>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"test_frequency\" id=\"checkbox_test_frequency\" ".(in_array("test_frequency",$column_settings)?"checked":"")."/>
+                            <label for=\"checkbox_test_frequency\"> ". $escaper->escapeHtml($lang['TestFrequency']) ."</label>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"tester\" id=\"checkbox_tester\" ".(in_array("tester",$column_settings)?"checked":"")."/> 
+                            <label for=\"checkbox_tester\"> ". $escaper->escapeHtml($lang['Tester']) ."</label>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"additional_stakeholders\" id=\"checkbox_additional_stakeholders\" ".(in_array("additional_stakeholders",$column_settings)?"checked":"")."/>
+                            <label for=\"checkbox_additional_stakeholders\"> ". $escaper->escapeHtml($lang['AdditionalStakeholders']) ."</label>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"objective\" id=\"checkbox_objective\" ".(in_array("objective",$column_settings)?"checked":"")."/>
+                            <label for=\"checkbox_objective\"> ". $escaper->escapeHtml($lang['Objective']) ."</label>
+                        </div>
+                        <div class='span4'>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"control_name\" id=\"checkbox_control_name\" ".(in_array("control_name",$column_settings)?"checked":"")."/>
+                            <label for=\"checkbox_control_name\"> ". $escaper->escapeHtml($lang['ControlName']) ."</label>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"framework_name\" id=\"checkbox_framework_name\" ".(in_array("framework_name",$column_settings)?"checked":"")."/>
+                            <label for=\"checkbox_framework_name\"> ". $escaper->escapeHtml($lang['FrameworkName']) ."</label>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"status\" id=\"checkbox_status\" ".(in_array("status",$column_settings)?"checked":"")."/> 
+                            <label for=\"checkbox_status\"> ". $escaper->escapeHtml($lang['Status']) ."</label>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"last_date\" id=\"checkbox_last_date\" ".(in_array("last_date",$column_settings)?"checked":"")."/>
+                            <label for=\"checkbox_last_date\"> ". $escaper->escapeHtml($lang['LastAuditDate']) ."</label>
+                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"next_date\" id=\"checkbox_next_date\" ".(in_array("next_date",$column_settings)?"checked":"")."/>
+                            <label for=\"checkbox_next_date\"> ". $escaper->escapeHtml($lang['NextAuditDate']) ."</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
             <thead >
                 <tr >
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['TestName'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['TestFrequency'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['Tester'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['AdditionalStakeholders'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['Objective'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['ControlName'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['FrameworkName'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['Status'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['LastAuditDate'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['NextAuditDate'])."</th>
-                    <th valign=\"top\"></th>
+                    <th data-name='test_name' valign=\"top\">".$escaper->escapeHtml($lang['TestName'])."</th>
+                    <th data-name='test_frequency' valign=\"top\">".$escaper->escapeHtml($lang['TestFrequency'])."</th>
+                    <th data-name='tester' valign=\"top\">".$escaper->escapeHtml($lang['Tester'])."</th>
+                    <th data-name='additional_stakeholders' valign=\"top\">".$escaper->escapeHtml($lang['AdditionalStakeholders'])."</th>
+                    <th data-name='objective' valign=\"top\">".$escaper->escapeHtml($lang['Objective'])."</th>
+                    <th data-name='control_name' valign=\"top\">".$escaper->escapeHtml($lang['ControlName'])."</th>
+                    <th data-name='framework_name' valign=\"top\">".$escaper->escapeHtml($lang['FrameworkName'])."</th>
+                    <th data-name='status' valign=\"top\">".$escaper->escapeHtml($lang['Status'])."</th>
+                    <th data-name='last_date' valign=\"top\">".$escaper->escapeHtml($lang['LastAuditDate'])."</th>
+                    <th data-name='next_date' valign=\"top\">".$escaper->escapeHtml($lang['NextAuditDate'])."</th>
+                    <th data-name='actions' valign=\"top\"></th>
                 </tr>
             </thead>
             <tbody>
             </tbody>
         </table>
         <br>
-        <script>
+    <script>
+        $(document).ready(function(){
             var pageLength = 10;
             var form = $('#{$tableID}').parents('form');
+            var columnOptions = [];
+            $('#filter-container input.hidden-checkbox').each(function(index){
+                if(!$(this).is(':checked')) columnOptions.push(index);
+            });
             var datatableInstance = $('#{$tableID}').DataTable({
                 bFilter: false,
                 bLengthChange: false,
@@ -660,6 +701,10 @@ function display_active_audits(){
                 serverSide: true,
                 bSort: true,
                 columnDefs : [
+                    {
+                        'targets' : columnOptions,
+                        'visible' : false
+                    },
                     {
                         'targets' : [-1],
                         'orderable': false,
@@ -758,24 +803,28 @@ function display_active_audits(){
 
             $('#filter_by_framework').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
-                includeSelectAllOption: true
+                includeSelectAllOption: true,
+                buttonWidth: '100%'
             });
             
             $('#filter_by_status').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
-                includeSelectAllOption: true
+                includeSelectAllOption: true,
+                buttonWidth: '100%'
             });
             
             $('#filter_by_tester').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
-                includeSelectAllOption: true
+                includeSelectAllOption: true,
+                buttonWidth: '100%'
             });
 
             $('#filter_by_testname').multiselect({
                 enableFiltering: true,
                 enableCaseInsensitiveFiltering: true,
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
-                includeSelectAllOption: true
+                includeSelectAllOption: true,
+                buttonWidth: '100%'
             });
 
             // Search filter event
@@ -799,7 +848,53 @@ function display_active_audits(){
             $('#filter_by_testname').change(function(){
                 redrawActiveAudits();
             });
-        </script>
+            $('#column-selections-container').on('click', '.collapsible--toggle span', function(event) {
+                event.preventDefault();
+                $(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
+                $(this).find('i').toggleClass('fa-caret-right fa-caret-down');
+            });
+            $(\"#filter-container .hidden-checkbox\").click(function(e){
+                
+                var column = datatableInstance.column(\"th[data-name='\"+ $(this).attr('name') +\"']\");
+                if($(this).is(':checked')){
+                    column.visible(true);
+                    // The TH element to show filter html
+                    var targetTH = $(\"tr.filter th[data-name='\"+ $(this).attr('name') +\"']\", datatableInstance.table().header());
+
+                    // If this element was hidden on loading, add filter content to the TH element and create multi dropdown
+                    if($(\".hidden-container\", column.header()).length > 0)
+                    {
+                        targetTH.html($(\".hidden-container\", column.header()).html());
+                        //createMultiSelectColumnFilter(datatableInstance, targetTH);
+                        $(\".hidden-container\", column.header()).remove();
+                    }
+                }else{
+                    column.visible(false);
+                }
+                
+                var checkBoxes = $(\"#filter-container .hidden-checkbox\");
+                var viewColumns = [];
+                checkBoxes.each(function(){
+                    if($(this).is(':checked'))
+                        viewColumns.push($(this).attr('name'));
+                })
+                $.ajax({
+                    type: \"POST\",
+                    url: BASE_URL + \"/api/set_custom_audits_column\",
+                    data: {
+                        columns: viewColumns,
+                    },
+                    success: function(data){
+                    },
+                    error: function(xhr,status,error){
+                        if(!retryCSRF(xhr, this))
+                        {
+                        }
+                    }
+                });
+            })
+        });
+    </script>
     ";
 }
 
@@ -845,10 +940,10 @@ function initiate_framework_control_tests($type, $id){
             $sql = "
                 SELECT
                     DISTINCT t1.id
-                FROM framework_control_tests t1
-                    INNER JOIN framework_controls t2 ON t1.framework_control_id=t2.id AND t2.deleted=0
-                    INNER JOIN framework_control_to_framework fctf ON t2.id=fctf.control_id
-                WHERE FIND_IN_SET(fctf.framework_id, :framework_ids); ";
+                FROM `framework_control_tests` t1
+                    INNER JOIN `framework_controls` t2 ON t1.framework_control_id=t2.id AND t2.deleted=0
+                    INNER JOIN `framework_control_mappings` m ON t2.id=m.control_id
+                WHERE FIND_IN_SET(m.framework, :framework_ids); ";
 
             $stmt = $db->prepare($sql);
             $framework_id_string = implode(",", $framework_ids);
@@ -960,9 +1055,9 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
         FROM `framework_control_test_audits` t1
             LEFT JOIN `user` t2 ON t1.tester = t2.value
             LEFT JOIN `framework_controls` t3 ON t1.framework_control_id = t3.id 
-            LEFT JOIN `framework_control_to_framework` fctf ON t3.id=fctf.control_id
-            LEFT JOIN `frameworks` t4 ON fctf.framework_id=t4.value AND t4.status=1
-            LEFT JOIN `framework_control_to_framework` fctf_1 ON t3.id=fctf_1.control_id
+            LEFT JOIN `framework_control_mappings` m ON t3.id=m.control_id
+            LEFT JOIN `frameworks` t4 ON m.framework=t4.value AND t4.status=1
+            LEFT JOIN `framework_control_mappings` m_1 ON t3.id=m_1.control_id
             LEFT JOIN `framework_control_test_results` t5 ON t1.id=t5.test_audit_id
             LEFT JOIN `test_status` t6 ON t1.status=t6.value
             LEFT JOIN `framework_control_tests` t7 ON t7.id=t1.test_id
@@ -1028,11 +1123,11 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
                     // If unassigned option.
                     if($val == -1)
                     {
-                        $framework_wheres[] = "fctf.framework_id IS NULL";
+                        $framework_wheres[] = "m.framework IS NULL";
                     }
                     else
                     {
-                        $framework_wheres[] = "fctf_1.framework_id='{$val}'";
+                        $framework_wheres[] = "m_1.framework='{$val}'";
                     }
                 }
 
@@ -1279,6 +1374,9 @@ function display_testing()
 
     // If test date is not set, set today as default
     $test_audit['test_date'] = format_date($test_audit['test_date'], date(get_default_date_format()));
+    if(isset($_SESSION["modify_audits"]) && $_SESSION["modify_audits"] == 1){
+        $submit_button = "<button name='submit_test_result'  type='submit'>".$escaper->escapeHtml($lang['Submit'])."</button>";
+    } else $submit_button = "";
     
     echo "
         <form class='well' method='POST' enctype='multipart/form-data'>
@@ -1379,7 +1477,7 @@ function display_testing()
                     </td>
                 </tr>
                 <tr>
-                    <td align='right' colspan='2'><button name='submit_test_result'  type='submit'>".$escaper->escapeHtml($lang['Submit'])."</button></td>
+                    <td align='right' colspan='2'>".$submit_button."</td>
                 </tr>
             </table>
 
@@ -2357,8 +2455,8 @@ function get_initiate_frameworks_by_filter($filter_by_text, $filter_by_status, $
             GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
             GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
         FROM `frameworks` t1 
-            LEFT JOIN `framework_control_to_framework` fctf on t1.value=fctf.framework_id
-            LEFT JOIN `framework_controls` t2 on fctf.control_id=t2.id AND t2.deleted=0
+            LEFT JOIN `framework_control_mappings` m on t1.value=m.framework
+            LEFT JOIN `framework_controls` t2 on m.control_id=t2.id AND t2.deleted=0
             LEFT JOIN `framework_control_tests` t3 on t3.framework_control_id=t2.id
         WHERE
             t1.status=1 AND t3.id IS NOT NULL
@@ -2478,10 +2576,10 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
 
     $sql = "
         SELECT t2.*,
-            '".str_replace(",", "\,", $curren_framework['name'])."' framework_name,
-            '{$curren_framework['desired_frequency']}' framework_desired_frequency,
-            '{$curren_framework['last_audit_date']}' framework_last_audit_date,
-            '{$curren_framework['next_audit_date']}' framework_next_audit_date,
+            :framework_name framework_name,
+            :framework_desired_frequency framework_desired_frequency,
+            :framework_last_audit_date framework_last_audit_date,
+            :framework_next_audit_date framework_next_audit_date,
             GROUP_CONCAT(DISTINCT t2.short_name SEPARATOR ',') control_names,
             GROUP_CONCAT(DISTINCT t2.desired_frequency SEPARATOR ',') control_desired_frequencies,
             GROUP_CONCAT(DISTINCT t2.last_audit_date SEPARATOR ',') control_last_audit_dates,
@@ -2491,8 +2589,8 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
             GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
             GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
         FROM `frameworks` t1 
-            INNER JOIN `framework_control_to_framework` fctf on t1.value=fctf.framework_id
-            INNER JOIN `framework_controls` t2 on fctf.control_id=t2.id AND t2.deleted=0
+            INNER JOIN `framework_control_mappings` m on t1.value=m.framework
+            INNER JOIN `framework_controls` t2 on m.control_id=t2.id AND t2.deleted=0
             LEFT JOIN `framework_control_tests` t3 on t3.framework_control_id=t2.id
         WHERE
             t1.status=1 AND t3.id IS NOT NULL
@@ -2535,8 +2633,13 @@ function get_initiate_controls_by_filter($filter_by_text, $filter_by_status, $fi
     $sql .= " GROUP BY t2.id ";
 
     $stmt = $db->prepare($sql);
-    
-//    if($filter_by_text){
+
+    $stmt->bindParam(":framework_name", $curren_framework['name'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_desired_frequency", $curren_framework['desired_frequency'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_last_audit_date", $curren_framework['last_audit_date'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_next_audit_date", $curren_framework['next_audit_date'], PDO::PARAM_STR);
+
+    //    if($filter_by_text){
 //        $filter_by_text = "%{$filter_by_text}%";
 //        $stmt->bindParam(":filter_by_text", $filter_by_text, PDO::PARAM_STR);
 //    }
@@ -2602,10 +2705,10 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
 
     $sql = "
         SELECT t3.*,
-            '".str_replace(",", "\,", $curren_framework['name'])."' framework_name,
-            '{$curren_framework['desired_frequency']}' framework_desired_frequency,
-            '{$curren_framework['last_audit_date']}' framework_last_audit_date,
-            '{$curren_framework['next_audit_date']}' framework_next_audit_date,
+            :framework_name framework_name,
+            :framework_desired_frequency framework_desired_frequency,
+            :framework_last_audit_date framework_last_audit_date,
+            :framework_next_audit_date framework_next_audit_date,
             GROUP_CONCAT(DISTINCT t2.short_name SEPARATOR ',') control_names,
             GROUP_CONCAT(DISTINCT t2.desired_frequency SEPARATOR ',') control_desired_frequencies,
             GROUP_CONCAT(DISTINCT t2.last_audit_date SEPARATOR ',') control_last_audit_dates,
@@ -2615,8 +2718,8 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
             GROUP_CONCAT(DISTINCT t3.last_date SEPARATOR ',') test_last_audit_dates,
             GROUP_CONCAT(DISTINCT t3.next_date SEPARATOR ',') test_next_audit_dates
         FROM `frameworks` t1 
-            INNER JOIN `framework_control_to_framework` fctf on t1.value=fctf.framework_id
-            INNER JOIN `framework_controls` t2 on fctf.control_id=t2.id AND t2.deleted=0
+            INNER JOIN `framework_control_mappings` m on t1.value=m.framework
+            INNER JOIN `framework_controls` t2 on m.control_id=t2.id AND t2.deleted=0
             INNER JOIN `framework_control_tests` t3 on t3.framework_control_id=t2.id
         WHERE
             t1.status=1 AND t2.id=:control_id
@@ -2646,7 +2749,12 @@ function get_initiate_tests_by_filter($filter_by_text, $filter_by_status, $filte
     $sql .= " GROUP BY t3.id ";
 
     $stmt = $db->prepare($sql);
-    
+
+    $stmt->bindParam(":framework_name", $curren_framework['name'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_desired_frequency", $curren_framework['desired_frequency'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_last_audit_date", $curren_framework['last_audit_date'], PDO::PARAM_STR);
+    $stmt->bindParam(":framework_next_audit_date", $curren_framework['next_audit_date'], PDO::PARAM_STR);
+
     $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
     if($filter_by_frequency){
         $filter_by_frequency = "%{$filter_by_frequency}%";
@@ -2708,8 +2816,8 @@ function get_audit_tests($order_field=false, $order_dir=false)
         SELECT t1.id, t1.name, t1.last_date, t1.next_date, IFNULL(GROUP_CONCAT(DISTINCT t3.name), '') framework_names
         FROM `framework_control_tests` t1
             INNER JOIN `framework_controls` t2 ON t1.framework_control_id=t2.id
-            LEFT JOIN `framework_control_to_framework` fctf ON t2.id=fctf.control_id
-            LEFT JOIN `frameworks` t3 ON fctf.framework_id=t3.value
+            LEFT JOIN `framework_control_mappings` m ON t2.id=m.control_id
+            LEFT JOIN `frameworks` t3 ON m.framework=t3.value
         WHERE t3.status=1
         GROUP BY t1.id
     ";

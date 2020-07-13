@@ -126,6 +126,7 @@ elseif(isset($_POST['delete_role']))
     <link rel="stylesheet" href="../css/theme.css">
     
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>    
 </head>
@@ -242,6 +243,9 @@ elseif(isset($_POST['delete_role']))
                                                         <li><input class="hidden-checkbox" id="review_high" name="responsibilities[review_high]" type="checkbox" />  <label for="review_high"><?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></label></li>
                                                         <li><input class="hidden-checkbox" id="review_veryhigh" name="responsibilities[review_veryhigh]" type="checkbox" />  <label for="review_veryhigh"><?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></label></li>
                                                         <li><input class="hidden-checkbox" id="comment_risk_management" name="responsibilities[comment_risk_management]" type="checkbox" /> <label for="comment_risk_management"><?php echo $escaper->escapeHtml($lang['AbleToCommentRiskManagement']); ?></label></li>
+                                                        <li><input class="hidden-checkbox" id="add_projects" name="responsibilities[add_projects]" type="checkbox" /> <label for="add_projects"><?php echo $escaper->escapeHtml($lang['AbleToAddProjects']); ?></label></li>
+                                                        <li><input class="hidden-checkbox" id="delete_projects" name="responsibilities[delete_projects]" type="checkbox" /> <label for="delete_projects"><?php echo $escaper->escapeHtml($lang['AbleToDeleteProjects']); ?></label></li>
+                                                        <li><input class="hidden-checkbox" id="manage_projects" name="responsibilities[manage_projects]" type="checkbox" /> <label for="manage_projects"><?php echo $escaper->escapeHtml($lang['AbleToManageProjects']); ?></label></li>
                                                     </ul>
                                                 </li>
                                             </ul>
@@ -251,6 +255,13 @@ elseif(isset($_POST['delete_role']))
                                                     <ul>
                                                     <li><input class="hidden-checkbox" id="compliance" name="responsibilities[compliance]" type="checkbox" /> <label for="compliance"><?php echo $escaper->escapeHtml($lang['AllowAccessToComplianceMenu']); ?></label></li>
                                                     <li><input class="hidden-checkbox" id="comment_compliance" name="responsibilities[comment_compliance]" type="checkbox" /> <label for="comment_compliance"><?php echo $escaper->escapeHtml($lang['AbleToCommentCompliance']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="define_tests" name="responsibilities[define_tests]" type="checkbox" /> <label for="define_tests"><?php echo $escaper->escapeHtml($lang['AbleToDefineTests']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="edit_tests" name="responsibilities[edit_tests]" type="checkbox" /> <label for="edit_tests"><?php echo $escaper->escapeHtml($lang['AbleToEditTests']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="delete_tests" name="responsibilities[delete_tests]" type="checkbox" /> <label for="delete_tests"><?php echo $escaper->escapeHtml($lang['AbleToDeleteTests']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="initiate_audits" name="responsibilities[initiate_audits]" type="checkbox" /> <label for="initiate_audits"><?php echo $escaper->escapeHtml($lang['AbleToInitiateAudits']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="modify_audits" name="responsibilities[modify_audits]" type="checkbox" /> <label for="modify_audits"><?php echo $escaper->escapeHtml($lang['AbleToModifyAudits']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="reopen_audits" name="responsibilities[reopen_audits]" type="checkbox" /> <label for="reopen_audits"><?php echo $escaper->escapeHtml($lang['AbleToReopenAudits']); ?></label></li>
+                                                    <li><input class="hidden-checkbox" id="delete_audits" name="responsibilities[delete_audits]" type="checkbox" /> <label for="delete_audits"><?php echo $escaper->escapeHtml($lang['AbleToDeleteAudits']); ?></label></li>
                                                   </ul>
                                                 </li>
                                             </ul>

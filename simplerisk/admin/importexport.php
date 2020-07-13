@@ -211,6 +211,7 @@
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/settings_tabs.css">
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>     
   </head>
@@ -264,7 +265,7 @@
                 
             });
             $('#import').submit(function(event) {
-                if ($("#import input[type='file']").length && <?php echo get_setting('max_upload_size'); ?> <= $("#import input[type='file']")[0].files[0].size) {
+                if ($("#import input[type='file']").length && <?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $("#import input[type='file']")[0].files[0].size) {
                     toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                     event.preventDefault();
                 }

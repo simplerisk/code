@@ -186,6 +186,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
   <script src="js/jquery.min.js"></script>
   
   <?php
+      setup_favicon();
       setup_alert_requirements();
   ?>  
 </head>

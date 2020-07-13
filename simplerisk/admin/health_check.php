@@ -76,7 +76,14 @@
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/settings_tabs.css">
+    <style>
+           .tabs li:focus {
+               outline: none;
+           }
+    </style>
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>    
   </head>
@@ -95,19 +102,30 @@
           <?php view_configure_menu("Health Check"); ?>
         </div>
         <div class="span9">
-          <div class="row-fluid">
-            <div class="span12">
-              <div class="hero-unit">
 		<?php
 			// Run the health check
 			simplerisk_health_check();
 		?>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
+
+    <script>
+      (function($) {
+
+        var tabs =  $(".tabs li a");
+  
+        tabs.click(function() {
+                var content = this.hash.replace('/','');
+                tabs.removeClass("active");
+                $(this).addClass("active");
+                $("#content").find('.settings_tab').hide();
+                $(content).fadeIn(200);
+        });
+
+      })(jQuery);
+    </script>
+
   </body>
 
 </html>

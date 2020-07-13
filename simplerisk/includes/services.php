@@ -16,28 +16,41 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 /*************************************
  * FUNCTION: SIMPLERISK SERVICE CALL *
  *************************************/
-function simplerisk_service_call($data) {
-
+function simplerisk_service_call($data)
+{
+    // Configuration for the SimpleRisk service call
     $url = "https://services.simplerisk.com/index.php";
+    $method = "POST";
+    $header = "Content-Type: application/x-www-form-urlencoded";
+    $content = http_build_query($data);
 
+    // Set the http options
     $opts = array('http' =>
         array(
-            'method'  => 'POST',
-            'header'  => 'Content-Type: application/x-www-form-urlencoded',
-            'content' => http_build_query($data)
+            'method'  => $method,
+            'header'  => $header,
+            'content' => $content
         )
     );
 
-    // Set proxy context if needed
-    set_proxy_stream_context();
+    // Set the default proxy stream context
+    $context = set_proxy_stream_context($method, $header, $content);
 
-    // Creating the context
-    $context = stream_context_create($opts);
-
-    // Making the actual call
+    // Make the services call
     $result = file($url, NULL, $context);
 
-    return $result;
+    // If we were unable to connect to the URL
+    if(!$result || $result[0] == 'HTTP/1.1 404 Not Found')
+    {
+        write_debug_log("SimpleRisk was unable to connect to " . $url);
+        return false;
+    }
+    // We were able to connect to the URL
+    else
+    {
+        write_debug_log("SimpleRisk successfully connected to " . $url);
+        return $result;
+    }
 }
 
 /****************************

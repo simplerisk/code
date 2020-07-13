@@ -201,6 +201,7 @@
     </style>
 
     <?php
+        setup_favicon("..");
         setup_alert_requirements("..");
     ?>    
   </head>

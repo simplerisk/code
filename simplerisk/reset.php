@@ -35,7 +35,7 @@ if (!isset($_SESSION))
 require_once(language_file());
 
 // Check if this is a page from reset password email
-if(isset($_GET['token']) && $_GET['token']){
+if(isset($_GET['token']) && $_GET['token'] && isset($_GET['username'])){
     $token = $_GET['token'];
     $username = $_GET['username'];
 }
@@ -43,47 +43,63 @@ if(isset($_GET['token']) && $_GET['token']){
 // Check if a password reset email was requested
 if (isset($_POST['send_reset_email']))
 {
-    $server_host = parse_url(get_setting('simplerisk_base_url'),PHP_URL_HOST);
-    // This was added to prevent attack by tampered host header
-    if(!get_setting('simplerisk_base_url') || (isset($_SERVER) && array_key_exists('SERVER_NAME', $_SERVER) && ($server_host == $_SERVER['SERVER_NAME']))){
-
-        $username = $_POST['user'];
-
-        // Try to generate a password reset token
-        password_reset_by_username($username);
-
-        // Display an alert
-        set_alert(true, "good", $lang['PassworResetEmailSent']);
+    if(isset($_POST['user']) && $_POST['user'] == ""){
+        $message = _lang('FieldRequired', array("field"=>"Username"));
+        set_alert(true, "bad", $message);
     } else {
-        set_alert(true, "bad", $lang['PassworResetRequestFailed']);
+        $server_host = parse_url(get_setting('simplerisk_base_url'),PHP_URL_HOST);
+        // This was added to prevent attack by tampered host header
+        if(!get_setting('simplerisk_base_url') || (isset($_SERVER) && array_key_exists('SERVER_NAME', $_SERVER) && ($server_host == $_SERVER['SERVER_NAME']))){
+
+            $username = $_POST['user'];
+
+            // Try to generate a password reset token
+            password_reset_by_username($username);
+
+            // Display an alert
+            set_alert(true, "good", $lang['PassworResetEmailSent']);
+        } else {
+            set_alert(true, "bad", $lang['PassworResetRequestFailed']);
+        }
     }
 }
-
 // Check if a password reset was requested
 if (isset($_POST['password_reset']))
 {
-	$username = $_POST['user'];
-	$token = $_POST['token'];
-	$password = $_POST['password'];
-	$repeat_password = $_POST['repeat_password'];
-
-	// If a password reset was submitted
-	if (password_reset_by_token($username, $token, $password, $repeat_password))
-	{
-		// Display an alert
-		set_alert(true, "good", $lang['PassworResetSuccessfulRedirectIn5Secs']);
-
-		// Redirect back to the login page
-		$redirect_js = true;
-	}
-	else
-	{
-        if (isset($_SESSION['alert']) && $_SESSION['alert'] == true){
-        }else{
-            // Display an alert
-            set_alert(true, "bad", $lang['PassworResetRequestFailed']);
+    $username = $_POST['user'];
+    $token = $_POST['token'];
+    $password = $_POST['password'];
+    $repeat_password = $_POST['repeat_password'];
+    $fields = array("user"=>"Username","token"=>"Reset Token","password"=>"Password","repeat_password"=>"Repeat Password");
+    $chk_require = true;
+    // check required fields
+    foreach($fields as $field=>$label){
+        if($_POST[$field] == "") {
+            $message = _lang('FieldRequired', array("field"=>$label));
+            set_alert(true, "bad", $message);
+            $chk_require = false;
+            break;
         }
-	}
+    }
+    if($chk_require == true){
+        // If a password reset was submitted
+        if (password_reset_by_token($username, $token, $password, $repeat_password))
+        {
+            // Display an alert
+            set_alert(true, "good", $lang['PassworResetSuccessfulRedirectIn5Secs']);
+
+            // Redirect back to the login page
+            $redirect_js = true;
+        }
+        else
+        {
+            if (isset($_SESSION['alert']) && $_SESSION['alert'] == true){
+            }else{
+                // Display an alert
+                set_alert(true, "bad", $lang['PassworResetRequestFailed']);
+            }
+        }
+    }
 }
 
 ?>
@@ -121,6 +137,7 @@ if (isset($_POST['password_reset']))
     <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="css/theme.css">
     <?php
+        setup_favicon();
         setup_alert_requirements();
     ?>  
 
@@ -179,7 +196,7 @@ if (isset($_POST['password_reset']))
 						?>
 						<div class="form-actions text-right">
 							<input class="btn" value="<?php echo $escaper->escapeHtml($lang['Reset']); ?>" type="reset">
-							<button type="submit" name="password_reset" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
+							<button type="submit" name="password_reset" class="btn btn-danger <?php if (!empty($redirect_js)) echo "hide";?>"><?php echo $escaper->escapeHtml($lang['Submit']); ?></button>
 						</div>
 					</form>
 				</div>

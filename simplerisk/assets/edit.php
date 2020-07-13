@@ -81,6 +81,7 @@ include_csrf_magic();
   <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
   <script src="../js/selectize.min.js"></script>
   <?php
+      setup_favicon("..");
       setup_alert_requirements("..");
   ?>
 

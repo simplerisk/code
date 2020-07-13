@@ -149,6 +149,8 @@ if (isset($_GET['id']))
         $OWASPNonCompliance = $risk[0]['OWASP_NonCompliance'];
         $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
         $custom = $risk[0]['Custom'];
+        $risk_catalog_mapping = $risk[0]['risk_catalog_mapping'];
+        $risk_catalog_name = $risk[0]['risk_catalog_name'];
 
         $ContributingLikelihood = $risk[0]['Contributing_Likelihood'];
         $contributing_risks_impacts = $risk[0]['Contributing_Risks_Impacts'];
@@ -239,6 +241,8 @@ if (isset($_GET['id']))
         $OWASPNonCompliance = "";
         $OWASPPrivacyViolation = "";
         $custom = "";
+        $risk_catalog_mapping = "";
+        $risk_catalog_name = "";
 
         $ContributingLikelihood  = "";
         $ContributingImpacts = [];
@@ -253,6 +257,7 @@ if (isset($_GET['id']))
     if ($mitigation == true && $access)
     {
         // Set the mitigation values
+        $mitigation_id = $mitigation[0]['mitigation_id'];
         $mitigation_date = $mitigation[0]['submission_date'];
         $mitigation_date = format_date($mitigation_date);
         $planning_strategy = $mitigation[0]['planning_strategy'];
@@ -271,6 +276,7 @@ if (isset($_GET['id']))
     else
     {
         // Set the values to empty
+        $mitigation_id = "";
         $mitigation_date = "N/A";
         $mitigation_date = "";
         $planning_strategy = "";
@@ -388,6 +394,7 @@ if (isset($_GET['id']))
         </script>
         
       <?php
+          setup_favicon("..");
           setup_alert_requirements("..");
       ?>    
     </head>
