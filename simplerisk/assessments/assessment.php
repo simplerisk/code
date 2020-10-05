@@ -105,6 +105,7 @@ else
 
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/side-navigation.css">
   
   <?php
       setup_favicon("..");

@@ -171,7 +171,7 @@ $(document).ready(function(){
                 deferLoading: initial_load ? null : 0, // if initial load is false, prevent initial load by setting deferloadding to 0
 //                ordering: false,
                 pagingType: "full_numbers",
-                dom : "flrti<'.download-by-group'><'#view-all-"+ index +".view-all'>p",
+                dom : "flrti<'.download-by-group'><'.print-by-group'><'#view-all-"+ index +".view-all'>p",
                 ajax: {
                     url: BASE_URL + '/api/reports/dynamic',
                     type: "post",
@@ -349,6 +349,7 @@ $(document).ready(function(){
 
         $('.view-all').html("All");
         $('.download-by-group').html("<i class=\"fa fa-download\" aria-hidden=\"true\"></i>");
+        $('.print-by-group').html("<i class=\"fa fa-print\" aria-hidden=\"true\"></i>");
         
         $("form[name='get_risks_by'] .hidden-checkbox").click(function(e){
             
@@ -447,11 +448,20 @@ $(document).ready(function(){
             document.get_risks_by.action = "";
             // $("#get_risks_by").attr('target', '');
         })
+        $("body").on("click", '.print-by-group', function(){
+            // $("#get_risks_by").attr('target', '_blank');
+            var group_value = $(this).closest('.dataTables_wrapper').find(".risk-datatable").data('group');
+            var status = $("#status").val();
+            var group = $("#group").val();
+            var sort = $("#sort").val();
+            var url = "print_by_group.php?group=" + group + "&status=" + status + "&sort=" + sort + "&group_value=" + group_value;
+            window.open(url,'_blank');
+        })
     }
     
     $("#export-dynamic-risk-report").click(function(e){
         // $("#get_risks_by").attr('target', '_blank');
-        document.get_risks_by.action += "?option=download";
+        document.get_risks_by.action += (document.get_risks_by.action.indexOf('?') !== -1  ? "&" : "?") + "option=download";
         document.get_risks_by.submit();
         document.get_risks_by.action = "";
         // $("#get_risks_by").attr('target', '');

@@ -20,42 +20,18 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
+// Add the session
+$permissions = array(
+        "check_access" => true,
+        "check_compliance" => true,
+);
+add_session_check($permissions);
 
-if (!isset($_SESSION))
-{
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
-
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-    session_name('SimpleRisk');
-    session_start();
-}
-
-// Include the language file
-require_once(language_file());
-
-// Check for session timeout or renegotiation
-session_check();
-
-// Check if access is authorized
-if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-{
-  set_unauthenticated_redirect();
-  header("Location: ../index.php");
-  exit(0);
-}
-
-// Include the CSRF-magic library
-// Make sure it's called after the session is properly setup
+// Include the CSRF Magic library
 include_csrf_magic();
 
-// Enforce that the user has access to compliance
-enforce_permission_compliance();
+// Include the SimpleRisk language file
+require_once(language_file());
 
 // Check if adding test
 if(isset($_POST['add_test'])){
@@ -166,7 +142,7 @@ if(isset($_POST['update_test'])){
                 $error_msg = $lang['InvalidNextTestDate'];
             }
         }
-
+        
         if ($last_date && $next_date && strtotime($next_date) < strtotime($last_date)) {
             $error = true;
             $error_msg = $lang['InvalidNextTestDateLastTestDateOrder'];
@@ -234,6 +210,7 @@ if(isset($_POST['delete_test'])){
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/side-navigation.css">
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
@@ -274,7 +251,7 @@ if(isset($_POST['delete_test'])){
                                     echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
                                 else 
                                     echo "<option value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
-                                $options = getAvailableControlFrameworkList();
+                                $options = getAvailableControlFrameworkList(true);
                                 is_array($options) || $options = array();
                                 foreach($options as $option){
                                     if(in_array($option['value'],$filter_by_control) || count($filter_by_control)== 0)

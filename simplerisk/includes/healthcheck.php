@@ -97,7 +97,7 @@ function simplerisk_health_check()
         $check_mysql_size = check_mysql_size();
 
         // Check if MySQL STRICT SQL mode is enabled
-        //$check_strict_sql_mode = check_strict_sql_mode();
+        $check_strict_sql_mode = check_strict_sql_mode();
 
         // Check if MySQL NO_ZERO_DATE mode is enabled
         $check_no_zero_date = check_no_zero_date();
@@ -241,7 +241,7 @@ function simplerisk_health_check()
         echo "    <div id=\"mysql\" style=\"display: none;\" class=\"settings_tab\">\n";
         echo "<b><u>MySQL</u></b><br />";
 	display_health_check_results($check_mysql_size);
-	//display_health_check_results($check_strict_sql_mode);
+	display_health_check_results($check_strict_sql_mode);
 	display_health_check_results($check_no_zero_date);
 	display_health_check_results($check_only_full_group_by);
 	display_health_check_results($check_mysql_permission_select);
@@ -420,7 +420,7 @@ function check_web_connectivity()
         set_proxy_stream_context($method, $header);
 
         // URLs to check
-        $urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io");
+        $urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io", "https://github.com");
 
 	// Create an empty array
 	$array = array();
@@ -475,6 +475,9 @@ function check_mysql_permission($permission)
         $stmt = $db->prepare("SHOW GRANTS FOR CURRENT_USER;");
         $stmt->execute();
         $array = $stmt->fetchAll();
+
+        // Close the database connection
+        db_close($db);
         
         // Set permission found to false
         $permission_found = false;
@@ -589,34 +592,26 @@ function check_api_connectivity()
 	// Create the whoami URL
 	$url = $base_url . "/api/whoami";
 
-	// Set the default proxy stream context
-	$context = set_proxy_stream_context();
+	// Create a cookie string with the current session ID
+	$strCookie = 'SimpleRisk=' . session_id() . '; path=/';
 
-	// Set the default socket timeout to 5 seconds
-	ini_set('default_socket_timeout', 5);
+	// Make a curl request to the whoami API endpoint using the cookie
+	$curl = curl_init();
+	curl_setopt($curl, CURLOPT_URL, $url);
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+	curl_setopt($curl, CURLOPT_COOKIE, $strCookie);
+	$json_result = curl_exec($curl);
+	$json_array = json_decode($json_result, true);
 
-	// Get the file headers for the API URL
-	$file_headers = @get_headers($url, 1);
-
-	// If we were unable to connect to the URL
-	if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found')
+	// If we received a json status of 200
+	if ($json_array['status'] === 200)
 	{
-		return array("result" => 0, "text" => "Unable to communicate with the SimpleRisk API.");
+		return array("result" => 1, "text" => "Communicated with the SimpleRisk API successfully.");
 	}
-	// We were able to connect to the URL
 	else
 	{
-		$code = substr($file_headers[0], 9, 3);
-
-		// If the response code is success or unauthorized
-		if ($code == 200 || $code = 401)
-		{
-			return array("result" => 1, "text" => "Communicated with the SimpleRisk API successfully.");
-		}
-		else
-		{
-			return array("result" => 0, "text" => "Unable to communicate with the SimpleRisk API.");
-		}
+		return array("result" => 0, "text" => "Unable to communicate with the SimpleRisk API.");
 	}
 }
 
@@ -781,16 +776,65 @@ function check_extra_versions($current_app_version)
 			// Get the list of available SimpleRisk Extras
 			$extras = available_extras();
 
+			// Check all purchases in one web service call
+			$purchases = core_check_all_purchases();
+
 			// For each available Extra
 			foreach ($extras as $extra)
 			{
+				// If this is the Upgrade or ComplianceForge SCF Extra
+				if ($extra['short_name'] == "upgrade" || $extra['short_name'] == "complianceforgescf")
+				{
+					// Set purchased to true
+					$purchased = true;
+					$expired = false;
+				}
+				else
+				{
+					$extras_xml = $purchases->{"extras"};
+					$extra_xml = $extras_xml->{$extra['short_name']};
+					$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
+					$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
+					$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
+
+					// If the extra was purchased
+					if ($purchased)
+					{
+						// Get the expiration date
+						$expires = $extra_xml->{"expires"}->__toString();
+
+						// If the exipration date is not set
+						if ($expires == "0000-00-00 00:00:00")
+						{
+							$expired = false;
+						}
+						// If the expiration date has passed
+						else if ($expires < date('Y-m-d h:i:s'))
+						{
+							$expired = true;
+						}
+						else $expired = false;
+					}
+					else $expires = "N/A";
+				}
+
+
 				// If the extra is purchased
-				if (core_is_purchased($extra['short_name']))
+				if ($purchased)
 				{
 					// If the extra is installed
 					if (core_is_installed($extra['short_name']))
 					{
-						$array[] = array("result" => 1, "text" => "The SimpleRisk " . $escaper->escapeHtml($extra['long_name']) . " has been purchased and installed.");
+						// If the extra license has not expired
+						if (!$expired)
+						{
+							$array[] = array("result" => 1, "text" => "The SimpleRisk " . $escaper->escapeHtml($extra['long_name']) . " has been purchased and installed.");
+						}
+						// The license has expired
+						else
+						{
+							$array[] = array("result" => 0, "text" => "Your license for the SimpleRisk " . $escaper->escapeHtml($extra['long_name']) . " has expired.");
+						}
 
 						// If this extra is compatible with this version of SimpleRisk
 						if (extra_simplerisk_version_compatible($extra['short_name']))

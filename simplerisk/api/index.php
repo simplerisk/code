@@ -11,8 +11,8 @@
     require_once(realpath(__DIR__ . '/../includes/compliance.php'));
     require_once(realpath(__DIR__ . '/../includes/api.php'));
 
-    // Add various security headers
-    add_security_headers();
+    // Add various security headers except CSP
+    add_security_headers(true, true, true, true, false);
 
     if (!isset($_SESSION))
     {
@@ -116,11 +116,16 @@
         getRoute()->get('/role_responsibilities/get_responsibilities', 'getResponsibilitiesByRoleIdForm');
 
         /******************** Risk Management Datatatable API **********************/
-        getRoute()->get('/risk_management/plan_mitigation', 'getPlanMitigationsDatatableResponse');
-        getRoute()->get('/risk_management/managment_review', 'getManagementReviewsDatatableResponse');
-        getRoute()->get('/risk_management/review_risks', 'getReviewRisksDatatableResponse');
+        getRoute()->post('/risk_management/plan_mitigation', 'getPlanMitigationsDatatableResponse');
+        getRoute()->post('/risk_management/managment_review', 'getManagementReviewsDatatableResponse');
+        getRoute()->post('/risk_management/review_risks', 'getReviewRisksDatatableResponse');
         getRoute()->get('/risk_management/review_date_issues', 'getReviewsWithDateIssuesDatatableResponse');
-        
+
+        /******************** Custom Display Settings API **********************/
+        getRoute()->post('/risk_management/save_custom_plan_mitigation_display_settings', 'saveCustomPlanMitigationDisplaySettingsAPI');
+        getRoute()->post('/risk_management/save_custom_perform_reviews_display_settings', 'saveCustomPerformReviewsDisplaySettingsAPI');
+        getRoute()->post('/risk_management/save_custom_reviewregularly_display_settings', 'saveCustomReviewregularlyDisplaySettingsAPI');
+
         /******************** Governance and Compliance API **********************/
         getRoute()->get('/governance/frameworks', 'getFrameworksResponse');
         getRoute()->get('/governance/tabular_documents', 'getTabularDocumentsResponse');
@@ -136,6 +141,7 @@
         getRoute()->get('/governance/document', 'getDocumentResponse');
         getRoute()->get('/governance/selected_parent_documents_dropdown', 'getSelectedParentDocumentsDropdownResponse');
         getRoute()->get('/governance/related_controls_by_framework_ids', 'getRelatedControlsByFrameworkIdsResponse');
+        getRoute()->get('/governance/rebuild_control_filters', 'getControlFiltersByFrameworksResponse');
         
         getRoute()->post('/governance/add_control', 'addControlResponse');
         getRoute()->post('/governance/update_control', 'updateControlResponse');
@@ -171,6 +177,7 @@
         getRoute()->post('/assessment/questionnaire/result/audit_log', 'get_questionnaire_result_audit_log_api');
         getRoute()->get('/assessment/questionnaire/analysis/dynamic', 'assessment_extra_questionnaireAnalysisDynamicAPI');
         getRoute()->get('/assessment/contacts-users/options', 'assessment_extra_questionnaireContactsUsersOptionsAPI');
+        getRoute()->post('/assessment/questionnaire/template/controls', 'assessment_extra_questionnaireTemplateControlsAPI');
         /******************************************************************************/
         
         /******************************* Audit Log API **********************************/
@@ -265,70 +272,160 @@
 
 	/************************** SIMPLERISK EXTRAS APIS ************************************/
 
-	// If the Incident Management Extra is enabled
-	if (incident_management_extra())
-	{
-		// Include the required API file
-		require_once(realpath(__DIR__ . '/../extras/incident_management/includes/api.php'));
-
-		// Get the incident management routes
-		get_incident_management_routes();
-	}
-
-        // If the Organizational Hierarchy Extra is enabled
-        if (organizational_hierarchy_extra())
-        {
-                // Include the required API file
-                require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/includes/api.php'));
-
-                // Get the organizational hierarchy routes
-                get_organizational_hierarchy_routes();
-        }
-
-        // If the Notification Extra is enabled
-        if (notification_extra())
-        {
-                // Include the required API file
-                require_once(realpath(__DIR__ . '/../extras/notification/includes/api.php'));
-
-                // Get the notification routes
-                get_notification_routes();
-        }
-
-        // If the Custom Authentication Extra is enabled
-        if (custom_authentication_extra())
-        {
-                // Include the required API file
-                require_once(realpath(__DIR__ . '/../extras/authentication/includes/api.php'));
-
-                // Get the authentication routes
-                get_authentication_routes();
-        }
-
         // If the Advanced Search Extra is enabled
         if (advanced_search_extra())
         {
-                // Include the required API file
-                require_once(realpath(__DIR__ . '/../extras/advanced_search/includes/api.php'));
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/advanced_search/includes/api.php'));
 
-                // Get the advanced search routes
-                get_advanced_search_routes();
+            // Get the advanced search routes
+            get_advanced_search_routes();
+        }
+
+        // If the API Extra is enabled
+        if (api_extra())
+        {
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/api/includes/api.php'));
+
+            // Get the api routes
+            get_api_routes();
+        }
+
+        // If the Assessments Extra is enabled
+        if (assessments_extra())
+        {
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/assessments/includes/api.php'));
+
+            // Get the assessments routes
+            get_assessments_routes();
+        }
+
+        // If the Authentication Extra is enabled
+        if (custom_authentication_extra())
+        {
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/authentication/includes/api.php'));
+
+            // Get the authentication routes
+            get_authentication_routes();
+        }
+
+        // If the ComplianceForge SCF Extra is enabled
+        if (complianceforge_scf_extra())
+        {
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/complianceforgescf/includes/api.php'));
+
+            // Get the complianceforge scf routes
+            get_complianceforge_scf_routes();
         }
 
         // If the Customization Extra is enabled
         if (customization_extra())
         {
-                // Include the required API file
-                require_once(realpath(__DIR__ . '/../extras/customization/includes/api.php'));
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/customization/includes/api.php'));
 
-                // Get the customization routes
-                get_customization_routes();
+            // Get the customization routes
+            get_customization_routes();
+        }
+
+        // If the Encryption Extra is enabled
+        if (encryption_extra())
+        {
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/encryption/includes/api.php'));
+
+            // Get the encryption routes
+            get_encryption_routes();
+        }
+
+        // If the Import Export Extra is enabled
+        if (import_export_extra())
+        {   
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/import-export/includes/api.php'));
+            
+            // Get the import-export routes
+            get_import_export_routes();
+        }
+
+        // If the Incident Management Extra is enabled
+        if (incident_management_extra())
+        {
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/incident_management/includes/api.php'));
+
+            // Get the incident management routes
+            get_incident_management_routes();
+        }
+
+        // If the Jira Extra is enabled
+        if (jira_extra())
+        {
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/jira/includes/api.php'));
+
+            // Get the jira routes
+            get_jira_routes();
+        }
+
+        // If the Notification Extra is enabled
+        if (notification_extra())
+        {
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/notification/includes/api.php'));
+
+            // Get the notification routes
+            get_notification_routes();
+        }
+
+        // If the Organizational Hierarchy Extra is enabled
+        if (organizational_hierarchy_extra())
+        {
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/includes/api.php'));
+
+            // Get the organizational hierarchy routes
+            get_organizational_hierarchy_routes();
+        }
+
+        // If the Separation Extra is enabled
+        if (team_separation_extra())
+        {
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/separation/includes/api.php'));
+
+            // Get the separation routes
+            get_separation_routes();
+        }
+
+        // If the UCF Extra is enabled
+        if (ucf_extra())
+        {
+            // Include the required API file
+            require_once(realpath(__DIR__ . '/../extras/ucf/includes/api.php'));
+
+            // Get the ucf routes
+            get_ucf_routes();
         }
 
         /**************************************************************************************/
 
-        // Run epiphany
-        getRoute()->run();
+	// Try the epiphany route
+	try
+	{
+        	// Run epiphany
+        	getRoute()->run();
+	}
+	catch (EpiException $e)
+	{
+		//echo $e->getMessage();
+		// Return a JSON response
+		return json_response(404, $escaper->escapeHtml($lang['TheRequestedAPIEndpointWasNotFound']), NULL);
+	}
     } elseif(check_questionnaire_get_token()) {
         // Here's a separate section for when the request is not authenticated,
         // but has a valid questionnaire token.

@@ -17,55 +17,34 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-if (!isset($_SESSION))
-{
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
+// Add the session
+$permissions = array(
+        "check_access" => true,
+        "check_admin" => true,
+);
+add_session_check($permissions);
 
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+// Include the CSRF Magic library
+include_csrf_magic();
 
-    session_name('SimpleRisk');
-    session_start();
-}
-
-// Include the language file
+// Include the SimpleRisk language file
 require_once(language_file());
 
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-// Check for session timeout or renegotiation
-session_check();
-
-// Check if access is authorized
-if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-{
-    set_unauthenticated_redirect();
-    header("Location: ../index.php");
-    exit(0);
-}
-
-// Check if access is authorized
-if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
-{
-    header("Location: ../index.php");
-    exit(0);
-}
-
+$admin = 0;
+$default = 0;
 // Check if save role responsibilites was submitted
 if(isset($_POST['save_role_responsibilities']))
 {
-    $role = (int)$_POST['role'];
-    $responsibilities = empty($_POST['responsibilities']) ? [] : array_keys($_POST['responsibilities']); 
+    $role_id = (int)$_POST['role'];
+    $responsibilities = isset($_POST['permissions']) ? array_filter($_POST['permissions'], 'ctype_digit') : [];
+    $admin = isset($_POST['admin']) ? '1' : '0';
+    $default = isset($_POST['default']) ? '1' : '0';
     
     // Check if role was submitted
-    if($role)
+    if($role_id)
     {
-        save_role_responsibilities($role, $responsibilities);
-        set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
+        save_role_responsibilities($role_id, $admin, $default, $responsibilities);
+        set_alert(true, "good", $lang['SavedSuccess']);
     }
     else
     {
@@ -110,7 +89,7 @@ elseif(isset($_POST['delete_role']))
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/bootstrap-multiselect.js"></script>
-    <script src="../js/pages/role_management.js"></script>
+    <script src="../js/permissions-widget.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -124,17 +103,104 @@ elseif(isset($_POST['delete_role']))
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/side-navigation.css">
     
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
-    ?>    
-</head>
+    ?>
 
+	<script>
+    	$(document).ready(function(){
+
+    		if ($("#admin").is(':checked')) {
+        		check_indeterminate_checkboxes($('.permissions-widget #check_all'));
+    	    	$(".permissions-widget input[type=checkbox]").prop("readonly", true);
+    		}
+
+    	    $("#role").change(function(){
+    	        // If role is unselected, uncheck all responsibilities
+    	        if(!$(this).val()) {
+					$("#admin").prop("checked", false);
+					$("#default").prop("checked", false);
+					$("#admin").prop("readonly", false);
+
+				    $(".permissions-widget input[type=checkbox]").each(function() {
+				    	$this = $(this);
+				    	$this.prop("checked", false);
+				    	$this.prop("readonly", false);
+				    	$this.prop("indeterminate", false);
+				    });
+					
+    	            check_indeterminate_checkboxes($('.permissions-widget #check_all'));
+    	            update_admin_button();
+    	        } else {
+    	        	$("#admin").prop("checked", false);
+    	            $.ajax({
+    	                type: "GET",
+    	                url: BASE_URL + "/api/role_responsibilities/get_responsibilities",
+    	                data: {
+    	                    role_id: $(this).val()
+    	                },
+    	                success: function(data) {
+
+							if (data.data) {
+								
+								$("#admin").prop("checked", data.data.admin);
+								$("#default").prop("checked", data.data.default);
+								$("#admin").prop("readonly", data.data.value === '1');
+
+    	                		update_widget(data.data.responsibilities);
+
+    	                		if (data.data.admin) {
+        	            	    	check_indeterminate_checkboxes($('.permissions-widget #check_all'));
+        	            	    	$(".permissions-widget input[type=checkbox]").prop("readonly", true);
+    	                		}
+    	                		update_admin_button();
+							}
+    	                },
+    	                error: function(xhr,status,error) {
+    	                    if(xhr.responseJSON && xhr.responseJSON.status_message) {
+    	                        showAlertsFromArray(xhr.responseJSON.status_message);
+    	                    }
+    	                }
+    	            });
+    	        }
+    	    });
+
+            $("#admin_button").click(function(){
+                $("#admin").prop("checked", !$("#admin").prop("checked"));
+        	    if ($("#admin").prop("checked")) {
+        	    	$(".permissions-widget input[type=checkbox]").prop("checked", true);
+        	    	check_indeterminate_checkboxes($('.permissions-widget #check_all'));
+        	    	$(".permissions-widget input[type=checkbox]").prop("readonly", true);
+        	    } else {
+        	    	$(".permissions-widget input[type=checkbox]").prop("readonly", false);
+        	    }
+        	    update_admin_button();
+            });
+
+            update_admin_button();
+    	});
+
+        function update_admin_button() {
+            admin = $("#admin").prop("checked");
+        	admin_button = $("#admin_button");
+    		remove_text = admin_button.data('remove');
+    		grant_text = admin_button.data('grant');
+
+        	$("#admin_button").text(admin ? remove_text : grant_text);
+        	$("#admin_button").prop("disabled", $("#admin").prop("readonly"));
+        }
+	</script>
+
+</head>
 <body>
 
 
 <?php
+    display_license_check();
+
     view_top_menu("Configure");
 
     // Get any alert messages
@@ -199,105 +265,60 @@ elseif(isset($_POST['delete_role']))
                                     </td>
                                 </tr>
                                 <tr>
+                                	<td colspan="2">
+                                        <input class="hidden-checkbox" type="checkbox" name="default" id="default" <?php if ($default) echo "checked='checked'";?>>
+                                        <label for="default"><?php echo $escaper->escapeHtml($lang['DefaultUserRole']);?></label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                	<td colspan="2">
+                                        <input style="display:none" type="checkbox" name="admin" id="admin">
+            							<button id="admin_button" type="button" class="btn btn-danger" data-grant="<?php echo $escaper->escapeHtml($lang['GrantAdmin']); ?>" data-remove="<?php echo $escaper->escapeHtml($lang['RemoveAdmin']); ?>" title="<?php echo $escaper->escapeHtml($lang['AdminRoleDescription']);?>"><?php echo $escaper->escapeHtml($lang['GrantAdmin']);?></button>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td colspan="2">
                                         <h4><u><?php echo $escaper->escapeHtml($lang['UserResponsibilities']); ?></u></h4>
-                                        <ul class="checklist">
-                                          <li><input name="check_all" class="hidden-checkbox" id="check_all" type="checkbox" onclick="checkAll(this)" /> <label for="check_all"> <?php echo $escaper->escapeHtml($lang['CheckAll']); ?> </label> </li>
-                                          <li>
+                                        <div class="permissions-widget">
                                             <ul>
-                                                <li><input class="hidden-checkbox" id="check_governance" name="check_governance" type="checkbox" > <label for="check_governance"><?php echo $escaper->escapeHtml($lang['CheckAllGovernance']); ?></label></li>
                                                 <li>
+                                                    <input class="hidden-checkbox" type="checkbox" id="check_all">
+                                                    <label for="check_all"><?php echo $escaper->escapeHtml($lang['CheckAll']); ?></label>
                                                     <ul>
-                                                        <li><input class="hidden-checkbox" id="governance" name="responsibilities[governance]" type="checkbox" /> <label for="governance"><?php echo $escaper->escapeHtml($lang['AllowAccessToGovernanceMenu']); ?></label></li>
-                                                        
-                                                        <li><input class="hidden-checkbox" id="add_new_frameworks" name="responsibilities[add_new_frameworks]" type="checkbox" /> <label for="add_new_frameworks"><?php echo $escaper->escapeHtml($lang['AbleToAddNewFrameworks']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="modify_frameworks" name="responsibilities[modify_frameworks]" type="checkbox" /> <label for="modify_frameworks"><?php echo $escaper->escapeHtml($lang['AbleToModifyExistingFrameworks']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="delete_frameworks" name="responsibilities[delete_frameworks]" type="checkbox" /> <label for="delete_frameworks"><?php echo $escaper->escapeHtml($lang['AbleToDeleteExistingFrameworks']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="add_new_controls" name="responsibilities[add_new_controls]" type="checkbox" /> <label for="add_new_controls"><?php echo $escaper->escapeHtml($lang['AbleToAddNewControls']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="modify_controls" name="responsibilities[modify_controls]" type="checkbox" /> <label for="modify_controls"><?php echo $escaper->escapeHtml($lang['AbleToModifyExistingControls']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="delete_controls" name="responsibilities[delete_controls]" type="checkbox" /> <label for="delete_controls"><?php echo $escaper->escapeHtml($lang['AbleToDeleteExistingControls']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="add_documentation" name="responsibilities[add_documentation]" type="checkbox" /> <label for="add_documentation"><?php echo $escaper->escapeHtml($lang['AbleToAddDocumentation']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="modify_documentation" name="responsibilities[modify_documentation]" type="checkbox" /> <label for="modify_documentation"><?php echo $escaper->escapeHtml($lang['AbleToModifyDocumentation']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="delete_documentation" name="responsibilities[delete_documentation]" type="checkbox" /> <label for="delete_documentation"><?php echo $escaper->escapeHtml($lang['AbleToDeleteDocumentation']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="view_exception" name="responsibilities[view_exception]" type="checkbox" /> <label for="view_exception"><?php echo $escaper->escapeHtml($lang['AbleToViewDocumentException']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="create_exception" name="responsibilities[create_exception]" type="checkbox" /> <label for="create_exception"><?php echo $escaper->escapeHtml($lang['AbleToCreateDocumentException']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="update_exception" name="responsibilities[update_exception]" type="checkbox" /> <label for="update_exception"><?php echo $escaper->escapeHtml($lang['AbleToUpdateDocumentException']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="delete_exception" name="responsibilities[delete_exception]" type="checkbox" /> <label for="delete_exception"><?php echo $escaper->escapeHtml($lang['AbleToDeleteDocumentException']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="approve_exception" name="responsibilities[approve_exception]" type="checkbox" /> <label for="approve_exception"><?php echo $escaper->escapeHtml($lang['AbleToApproveDocumentException']); ?></label></li>
+<?php
+   $permission_groups = get_grouped_permissions();
+   foreach ($permission_groups as $permission_group_name => $permission_group) {
+       $permission_group_id = $escaper->escapeHtml("pg-" . $permission_group[0]['permission_group_id']);
+       $permission_group_name = $escaper->escapeHtml($permission_group_name);
+       $permission_group_description = $escaper->escapeHtml($permission_group[0]['permission_group_description']);
+?>       
+                                                        <li>
+                                                            <input class="hidden-checkbox permission-group" type="checkbox" id="<?php echo $permission_group_id;?>">
+                                                            <label for="<?php echo $permission_group_id;?>" title="<?php echo $permission_group_description;?>"><?php echo $permission_group_name;?></label>
+                                                            <ul>
+<?php
+       foreach ($permission_group as $permission) {
+           $permission_id = $escaper->escapeHtml($permission['permission_id']);
+           $permission_key = $escaper->escapeHtml($permission['key']);
+           $permission_name = $escaper->escapeHtml($permission['permission_name']);
+           $permission_description = $escaper->escapeHtml($permission['permission_description']);
+?>       
+                                                                <li>
+                                                                    <input class="hidden-checkbox permission" type="checkbox" name="permissions[]" id="<?php echo $permission_key;?>" value="<?php echo $permission_id;?>">
+                                                                    <label for="<?php echo $permission_key;?>" title="<?php echo $permission_description;?>"><?php echo $permission_name;?></label>
+                                                                </li>
+<?php
+       }
+?>  
+                                                        	</ul>
+                                                        </li>
+<?php
+   }
+?>
                                                     </ul>
                                                 </li>
                                             </ul>
-                                            <ul>
-                                                <li><input class="hidden-checkbox" id="check_risk_mgmt" name="check_risk_mgmt" type="checkbox" > <label for="check_risk_mgmt"><?php echo $escaper->escapeHtml($lang['CheckAllRiskMgmt']); ?></label></li>
-                                                <li>
-                                                    <ul>
-                                                        <li><input class="hidden-checkbox" id="riskmanagement" name="responsibilities[riskmanagement]" type="checkbox" /> <label for="riskmanagement"><?php echo $escaper->escapeHtml($lang['AllowAccessToRiskManagementMenu']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="submit_risks" name="responsibilities[submit_risks]" type="checkbox" />   <label for="submit_risks"><?php echo $escaper->escapeHtml($lang['AbleToSubmitNewRisks']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="modify_risks" name="responsibilities[modify_risks]" type="checkbox" />   <label for="modify_risks"><?php echo $escaper->escapeHtml($lang['AbleToModifyExistingRisks']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="close_risks" name="responsibilities[close_risks]" type="checkbox" />    <label for="close_risks"><?php echo $escaper->escapeHtml($lang['AbleToCloseRisks']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="plan_mitigations" name="responsibilities[plan_mitigations]" type="checkbox" />  <label for="plan_mitigations"><?php echo $escaper->escapeHtml($lang['AbleToPlanMitigations']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="accept_mitigation" name="responsibilities[accept_mitigation]" type="checkbox" />  <label for="accept_mitigation"><?php echo $escaper->escapeHtml($lang['AbleToAcceptMitigations']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="review_insignificant" name="responsibilities[review_insignificant]" type="checkbox" />  <label for="review_insignificant"><?php echo $escaper->escapeHtml($lang['AbleToReviewInsignificantRisks']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="review_low" name="responsibilities[review_low]" type="checkbox" />  <label for="review_low"><?php echo $escaper->escapeHtml($lang['AbleToReviewLowRisks']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="review_medium" name="responsibilities[review_medium]" type="checkbox" />  <label for="review_medium"><?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="review_high" name="responsibilities[review_high]" type="checkbox" />  <label for="review_high"><?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="review_veryhigh" name="responsibilities[review_veryhigh]" type="checkbox" />  <label for="review_veryhigh"><?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="comment_risk_management" name="responsibilities[comment_risk_management]" type="checkbox" /> <label for="comment_risk_management"><?php echo $escaper->escapeHtml($lang['AbleToCommentRiskManagement']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="add_projects" name="responsibilities[add_projects]" type="checkbox" /> <label for="add_projects"><?php echo $escaper->escapeHtml($lang['AbleToAddProjects']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="delete_projects" name="responsibilities[delete_projects]" type="checkbox" /> <label for="delete_projects"><?php echo $escaper->escapeHtml($lang['AbleToDeleteProjects']); ?></label></li>
-                                                        <li><input class="hidden-checkbox" id="manage_projects" name="responsibilities[manage_projects]" type="checkbox" /> <label for="manage_projects"><?php echo $escaper->escapeHtml($lang['AbleToManageProjects']); ?></label></li>
-                                                    </ul>
-                                                </li>
-                                            </ul>
-                                            <ul>
-                                                <li><input class="hidden-checkbox" id="check_compliance" name="check_compliance" type="checkbox" > <label for="check_compliance"><?php echo $escaper->escapeHtml($lang['CheckAllCompliance']); ?></label></li>
-                                                <li>
-                                                    <ul>
-                                                    <li><input class="hidden-checkbox" id="compliance" name="responsibilities[compliance]" type="checkbox" /> <label for="compliance"><?php echo $escaper->escapeHtml($lang['AllowAccessToComplianceMenu']); ?></label></li>
-                                                    <li><input class="hidden-checkbox" id="comment_compliance" name="responsibilities[comment_compliance]" type="checkbox" /> <label for="comment_compliance"><?php echo $escaper->escapeHtml($lang['AbleToCommentCompliance']); ?></label></li>
-                                                    <li><input class="hidden-checkbox" id="define_tests" name="responsibilities[define_tests]" type="checkbox" /> <label for="define_tests"><?php echo $escaper->escapeHtml($lang['AbleToDefineTests']); ?></label></li>
-                                                    <li><input class="hidden-checkbox" id="edit_tests" name="responsibilities[edit_tests]" type="checkbox" /> <label for="edit_tests"><?php echo $escaper->escapeHtml($lang['AbleToEditTests']); ?></label></li>
-                                                    <li><input class="hidden-checkbox" id="delete_tests" name="responsibilities[delete_tests]" type="checkbox" /> <label for="delete_tests"><?php echo $escaper->escapeHtml($lang['AbleToDeleteTests']); ?></label></li>
-                                                    <li><input class="hidden-checkbox" id="initiate_audits" name="responsibilities[initiate_audits]" type="checkbox" /> <label for="initiate_audits"><?php echo $escaper->escapeHtml($lang['AbleToInitiateAudits']); ?></label></li>
-                                                    <li><input class="hidden-checkbox" id="modify_audits" name="responsibilities[modify_audits]" type="checkbox" /> <label for="modify_audits"><?php echo $escaper->escapeHtml($lang['AbleToModifyAudits']); ?></label></li>
-                                                    <li><input class="hidden-checkbox" id="reopen_audits" name="responsibilities[reopen_audits]" type="checkbox" /> <label for="reopen_audits"><?php echo $escaper->escapeHtml($lang['AbleToReopenAudits']); ?></label></li>
-                                                    <li><input class="hidden-checkbox" id="delete_audits" name="responsibilities[delete_audits]" type="checkbox" /> <label for="delete_audits"><?php echo $escaper->escapeHtml($lang['AbleToDeleteAudits']); ?></label></li>
-                                                  </ul>
-                                                </li>
-                                            </ul>
-                                          </li>
-                                          <li>
-                                                <ul>
-                                                  <li><input class="hidden-checkbox" id="check_asset_mgmt" name="check_asset_mgmt" type="checkbox"  /> <label for="check_asset_mgmt"><?php echo $escaper->escapeHtml($lang['CheckAllAssetMgmt']); ?></label></li>
-                                                  <li>
-                                                      <ul>
-                                                        <li><input class="hidden-checkbox" id="asset" name="responsibilities[asset]" type="checkbox" /> <label for="asset"><?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></label></li>
-                                                      </ul>
-                                                  </li>
-                                                </ul>
-                                          </li>    
-                                          <li>
-                                                <ul>
-                                                  <li><input class="hidden-checkbox" id="check_assessments" name="check_assessments" type="checkbox"  /> <label for="check_assessments"><?php echo $escaper->escapeHtml($lang['CheckAllAssessments']); ?></label></li>
-                                                  <li>
-                                                      <ul>
-                                                        <li><input class="hidden-checkbox" id="assessments" name="responsibilities[assessments]" type="checkbox" /> <label for="assessments"><?php echo $escaper->escapeHtml($lang['AllowAccessToAssessmentsMenu']); ?></label></li>
-                                                      </ul>
-                                                  </li>
-                                                </ul>
-                                          </li>
-                                          <li>
-                                                <ul>
-                                                  <li><input class="hidden-checkbox" id="check_configure" name="check_configure" type="checkbox"  /> <label for="check_configure"><?php echo $escaper->escapeHtml($lang['CheckAllConfigure']); ?></label></li>
-                                                  <li>
-                                                      <ul>
-                                                        <li><input class="hidden-checkbox" id="admin" name="responsibilities[admin]" type="checkbox" /> <label for="admin"><?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></label></li>
-                                                      </ul>
-                                                  </li>
-
-                                                </ul>
-                                          </li>
-                                        </ul>
+                                        </div>
 
                                     </td>
                                 </tr>

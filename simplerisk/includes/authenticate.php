@@ -9,98 +9,7 @@ require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/messages.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
-
-// The list of currently existing permissions. If there's a new permission created, please add it here!
-$possible_permissions = [
-    'governance',
-    'riskmanagement',
-    'compliance',
-    'assessments',
-    'asset',
-    'admin',
-    'review_veryhigh',
-    'accept_mitigation',
-    'review_high',
-    'review_medium',
-    'review_low',
-    'review_insignificant',
-    'submit_risks',
-    'modify_risks',
-    'plan_mitigations',
-    'close_risks',
-    'add_new_frameworks',
-    'modify_frameworks',
-    'delete_frameworks',
-    'add_new_controls',
-    'modify_controls',
-    'delete_controls',
-    'add_documentation',
-    'modify_documentation',
-    'delete_documentation',
-    'comment_risk_management',
-    'comment_compliance',
-    'view_exception',
-    'create_exception',
-    'update_exception',
-    'delete_exception',
-    'approve_exception',
-    'add_projects',
-    'delete_projects',
-    'manage_projects',
-    'define_tests',
-    'edit_tests',
-    'delete_tests',
-    'initiate_audits',
-    'modify_audits',
-    'reopen_audits',
-    'delete_audits'
-];
-
-// Localization keys for permissions. If you add a new permission please add it to this list.
-$possible_permission_localization_keys = [
-    'governance' => 'AllowAccessToGovernanceMenu',
-    'add_new_frameworks' => 'AbleToAddNewFrameworks',
-    'modify_frameworks' => 'AbleToModifyExistingFrameworks',
-    'delete_frameworks' => 'AbleToDeleteExistingFrameworks',
-    'add_new_controls' => 'AbleToAddNewControls',
-    'modify_controls' => 'AbleToModifyExistingControls',
-    'delete_controls' => 'AbleToDeleteExistingControls',
-    'add_documentation' => 'AbleToAddDocumentation',
-    'modify_documentation' => 'AbleToModifyDocumentation',
-    'delete_documentation' => 'AbleToDeleteDocumentation',
-    'view_exception' => 'AbleToViewDocumentException',
-    'create_exception' => 'AbleToCreateDocumentException',
-    'update_exception' => 'AbleToUpdateDocumentException',
-    'delete_exception' => 'AbleToDeleteDocumentException',
-    'approve_exception' => 'AbleToApproveDocumentException',
-    'riskmanagement' => 'AllowAccessToRiskManagementMenu',
-    'submit_risks' => 'AbleToSubmitNewRisks',
-    'modify_risks' => 'AbleToModifyExistingRisks',
-    'close_risks' => 'AbleToCloseRisks',
-    'plan_mitigations' => 'AbleToPlanMitigations',
-    'accept_mitigation' => 'AbleToAcceptMitigations',
-    'review_insignificant' => 'AbleToReviewInsignificantRisks',
-    'review_low' => 'AbleToReviewLowRisks',
-    'review_medium' => 'AbleToReviewMediumRisks',
-    'review_high' => 'AbleToReviewHighRisks',
-    'review_veryhigh' => 'AbleToReviewVeryHighRisks',
-    'comment_risk_management' => 'AbleToCommentRiskManagement',
-    'add_projects' => 'AbleToAddProjects',
-    'delete_projects' => 'AbleToDeleteProjects',
-    'manage_projects' => 'AbleToManageProjects',
-    'compliance' => 'AllowAccessToComplianceMenu',
-    'comment_compliance' => 'AbleToCommentCompliance',
-    'define_tests' => 'AbleToDefineTests',
-    'edit_tests' => 'AbleToEditTests',
-    'delete_tests' => 'AbleToDeleteTests',
-    'initiate_audits' => 'AbleToInitiateAudits',
-    'modify_audits' => 'AbleToModifyAudits',
-    'reopen_audits' => 'AbleToReopenAudits',
-    'delete_audits' => 'AbleToDeleteAudits',
-    'asset' => 'AllowAccessToAssetManagementMenu',
-    'assessments' => 'AllowAccessToAssessmentsMenu',
-    'admin' => 'AllowAccessToConfigureMenu'
-];
+require_once(realpath(__DIR__ . '/permissions.php'));
 
 /*******************************
  * FUNCTION: OLD GENERATE SALT *
@@ -307,8 +216,6 @@ function is_valid_user($user, $pass, $upgrade = false)
  **********************************/
 function set_user_permissions($user, $upgrade = false)
 {
-    global $possible_permissions;
-
     // Open the database connection
     $db = db_open();
 
@@ -333,8 +240,8 @@ function set_user_permissions($user, $upgrade = false)
                     name,
                     lang,
                     custom_display_settings,
-                    " . ($organizational_hierarchy_extra ? "selected_business_unit, " : "") . "
-                    " . implode(',', $possible_permissions) . "
+                    admin
+                    " . ($organizational_hierarchy_extra ? ",selected_business_unit" : "") . "
                 FROM user WHERE";
         
         // If strict user validation is disabled
@@ -386,9 +293,11 @@ function set_user_permissions($user, $upgrade = false)
     {
         $_SESSION['custom_display_settings'] = empty($array[0]['custom_display_settings']) ? array() : json_decode($array[0]['custom_display_settings'], true);
 
+        $possible_permissions = get_possible_permissions();
+        $actual_permissions = get_permissions_of_user($_SESSION['uid']);
         // Set permissions
         foreach($possible_permissions as $permission) {
-            $_SESSION[$permission] = $array[0][$permission];
+            $_SESSION[$permission] = in_array($permission, $actual_permissions);
         }
 
 //        // If the encryption extra is enabled
@@ -426,6 +335,9 @@ function set_user_permissions($user, $upgrade = false)
         }
         else $_SESSION['lang'] = get_setting("default_language");
     }
+
+    // Close the database connection
+    db_close($db);
 }
 
 /**************************
@@ -901,6 +813,143 @@ function expire_reset_token($token)
         db_close($db);
 }
 
+/*******************************
+ * FUNCTION: ADD SESSION CHECK *
+ *******************************/
+function add_session_check($permissions = null)
+{
+	write_debug_log("SCRIPT NAME: " . $_SERVER['SCRIPT_NAME']);
+
+	// If a session is not currently started and active
+	if (session_status() === PHP_SESSION_NONE)
+	{
+		write_debug_log("A session is not currently started and active.");
+
+		// If we are using the database for sessions
+		if (USE_DATABASE_FOR_SESSIONS == "true")
+		{
+			write_debug_log("We are using the database for sessions.");
+
+			// Set the custom session save handler
+			session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
+		}
+
+		// If we are running an old version of PHP
+		if (PHP_VERSION_ID < 70300)
+		{
+			write_debug_log("We are running an old version of PHP.");
+			write_debug_log("Setting the session cookie parameters.");
+
+			// Set the session cookie parameters
+			session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+		}
+		else
+		{
+			write_debug_log("We are running a newer version of PHP.");
+			write_debug_log("Setting the session cookie parameters.");
+
+			// Set the session cookie parameters
+			$cookie_params = array(
+				// Set the lifetime to be until the browser is closed
+				"lifetime" => 0,
+				// Set the path for all paths on the domain
+				"path" => "/",
+				// Set the domain to the host name of the server which generated the cookie
+				"domain" => "",
+				// Only send the cookie over secure connections if we are using HTTPS
+				"secure" => isset($_SERVER["HTTPS"]),
+				// Only send the httponly flag when setting the session cookie
+				"httponly" => true,
+			);
+			session_set_cookie_params($cookie_params);
+		}
+
+		// Set the current session name
+		write_debug_log("Setting the current session name.");
+		session_name('SimpleRisk');
+
+		// Start the session
+		write_debug_log("Starting the session.");
+		session_start();
+	}
+
+	// Check for session timeout or renegotiation
+	write_debug_log("Checking for session timeout or renegotiation.");
+	session_check();
+
+	// If permissions were provided
+	if (!is_null($permissions))
+	{
+		// Extract the permissions from the array
+		extract($permissions);
+	}
+
+	// Set default permission values for whatever wasn't provided
+	(!isset($check_access) ? $check_access = true : null);
+	(!isset($check_admin) ? $check_admin = false : null);
+	(!isset($check_assessments) ? $check_assessments = false : null);
+	(!isset($check_assets) ? $check_assets = false : null);
+	(!isset($check_compliance) ? $check_compliance = false : null);
+	(!isset($check_governance) ? $check_governance = false : null);
+	(!isset($check_riskmanagement) ? $check_riskmanagement = false: null);
+
+	// If we need to check if the user was granted access
+	if ($check_access)
+	{
+		// Enforce the access permission
+		write_debug_log("Access permission is required.");
+		enforce_permission_access();
+	}
+
+	// If we need to check if the user has admin
+	if ($check_admin)
+	{
+		// Enforce the admin permission
+		write_debug_log("Admin permission is required.");
+		enforce_permission_admin();
+	}
+
+	// If we need to check if the user has assessments permissions
+	if ($check_assessments)
+	{
+		// Enforce the assessments permission
+		write_debug_log("Assessments permission is required.");
+		enforce_permission_assessments();
+	}
+
+	// If we need to check if the user has assets permissions
+	if ($check_assets)
+	{
+		// Enforce the assets permission
+		write_debug_log("Assets permission is required.");
+		enforce_permission_asset();
+	}
+
+	// If we need to check if the user has compliance permissions
+	if ($check_compliance)
+	{
+		// Enforce the compliance permission
+		write_debug_log("Compliance permission is required.");
+		enforce_permission_compliance();
+	}
+
+	// If we need to check if the user has governance permissions
+	if ($check_governance)
+	{
+		// Enforce the governance permission
+		write_debug_log("Governance permission is required.");
+		enforce_permission_governance();
+	}
+
+	// If we need to check if the user has risk management permissions
+	if ($check_riskmanagement)
+	{
+		// Enforce the risk management permission
+		write_debug_log("Risk management permission is required.");
+		enforce_permission_riskmanagement();
+	}
+}
+
 /***************************
  * FUNCTION: SESSION CHECK *
  ***************************/
@@ -986,7 +1035,7 @@ function sess_read($sess_id)
 
         // Get the session data
         $stmt = $db->prepare("SELECT data FROM sessions WHERE `id`=:sess_id");
-        $stmt->bindParam(":sess_id", $sess_id, PDO::PARAM_STR, 32);
+        $stmt->bindParam(":sess_id", $sess_id, PDO::PARAM_STR, 128);
         $stmt->execute();
         $array = $stmt->fetchAll();
 
@@ -998,7 +1047,7 @@ function sess_read($sess_id)
 
                 // Create the session
                 $stmt = $db->prepare("INSERT INTO sessions (id, access) VALUES (:sess_id, :current_time)");
-                $stmt->bindParam(":sess_id", $sess_id, PDO::PARAM_STR, 32);
+                $stmt->bindParam(":sess_id", $sess_id, PDO::PARAM_STR, 128);
                 $stmt->bindParam(":current_time", $current_time, PDO::PARAM_INT, 10);
                 $stmt->execute();
 
@@ -1008,7 +1057,7 @@ function sess_read($sess_id)
         else
         {
                 $stmt = $db->prepare("UPDATE sessions SET `access`=:current_time WHERE `id`=:sess_id");
-                $stmt->bindParam(":sess_id", $sess_id, PDO::PARAM_STR, 32);
+                $stmt->bindParam(":sess_id", $sess_id, PDO::PARAM_STR, 128);
                 $stmt->bindParam(":current_time", $current_time, PDO::PARAM_INT, 10);
                 $stmt->execute();
 
@@ -1061,7 +1110,7 @@ function sess_destroy($sess_id)
         $db = db_open();
 
         $stmt = $db->prepare("DELETE FROM sessions WHERE `id`=:sess_id");
-        $stmt->bindParam(":sess_id", $sess_id, PDO::PARAM_STR, 32);
+        $stmt->bindParam(":sess_id", $sess_id, PDO::PARAM_STR, 128);
         $stmt->execute();
 
         // Close the database connection
@@ -1316,9 +1365,15 @@ function check_add_password_reuse_history($user_id, $password)
 		}
 		else
 		{
+			// Close the database connection
+			db_close($db);
+
 			return false;
 		}
 	}
+
+	// Close the database connection
+	db_close($db);
     
 	return true;
 }

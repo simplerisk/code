@@ -8,6 +8,7 @@ require_once(realpath(__DIR__ . '/includes/functions.php'));
 require_once(realpath(__DIR__ . '/includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/includes/display.php'));
 require_once(realpath(__DIR__ . '/includes/alerts.php'));
+require_once(realpath(__DIR__ . '/includes/extras.php'));
 
 // Include Zend Escaper for HTML Output Encoding
 require_once(realpath(__DIR__ . '/includes/Component_ZendEscaper/Escaper.php'));
@@ -70,11 +71,14 @@ if (isset($_POST['submit']))
         // Create the SimpleRisk instance ID if it doesn't already exist
         create_simplerisk_instance_id();
 
+        // Set the user permissions
+        set_user_permissions($user);
+
         // Ping the server
         ping_server();
 
-        // Set the user permissions
-        set_user_permissions($user);
+	// Do a license check
+	simplerisk_license_check();
 
         // Get base url
 	//$base_url = get_base_url() . $_SERVER['SCRIPT_NAME'];

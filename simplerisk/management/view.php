@@ -17,41 +17,18 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-if (!isset($_SESSION))
-{
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
+// Add the session
+$permissions = array(
+        "check_access" => true,
+        "check_riskmanagement" => true,
+);
+add_session_check($permissions);
 
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-    session_name('SimpleRisk');
-    session_start();
-}
-
-// Include the language file
-require_once(language_file());
-
-// Check for session timeout or renegotiation
-session_check();
-
-// Check if access is authorized
-if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-{
-    set_unauthenticated_redirect();
-    header("Location: ../index.php");
-    exit(0);
-}
-
-// Include the CSRF-magic library
-// Make sure it's called after the session is properly setup
+// Include the CSRF Magic library
 include_csrf_magic();
 
-// Enforce that the user has access to risk management
-enforce_permission_riskmanagement();
+// Include the SimpleRisk language file
+require_once(language_file());
 
 // Check if a risk ID was sent
 if (isset($_GET['id']))
@@ -366,6 +343,7 @@ if (isset($_GET['id']))
         <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="../css/style.css">
         <link rel="stylesheet" href="../css/theme.css">
+        <link rel="stylesheet" href="../css/side-navigation.css">
         <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
 
         <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
@@ -425,7 +403,10 @@ if (isset($_GET['id']))
       <div class="container-fluid">
         <div class="row-fluid">
           <div class="span3">
-            <?php view_risk_management_menu("ReviewRisksRegularly"); ?>
+            <?php 
+                $active = isset($_GET['active']) ? $_GET['active'] : "ReviewRisksRegularly";
+                view_risk_management_menu($active); 
+            ?>
           </div>
           <div class="span9">
 

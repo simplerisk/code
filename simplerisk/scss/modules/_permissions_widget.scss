@@ -1,0 +1,22 @@
+/*--------------------------------------------------------------
+ ## Styles for the permissions widget
+ --------------------------------------------------------------*/
+.permissions-widget { 
+	ul { 
+	    list-style: none;
+	    margin: 5px 20px;
+	}
+	
+	li {
+	    margin: 10px 0;
+	}
+	
+	.hidden-checkbox:indeterminate + label:before {
+	    content: "\2212";
+	}
+}
+/*-------------------------------------------------------------*/
+
+
+
+

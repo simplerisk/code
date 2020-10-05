@@ -327,7 +327,8 @@ function setupQuestionnaireContactUserWidget(select_tag) {
                     for (var i = 0; i < len; i++) {
                         var item = data[i];
                         // Check if this element is selected one
-                        for(var selectedItem of selectedItems){
+                        for(var j = 0; j < selectedItems.length; j++){
+                            var selectedItem = selectedItems[j];
                             if(selectedItem.class == item.class && selectedItem.id == item.id){
                                 selected_ids.push(item.id + '_' + item.class);
                                 break;
@@ -349,3 +350,40 @@ function setupQuestionnaireContactUserWidget(select_tag) {
     });        
 }
 
+function redraw_control(){
+    var template_framework = $("#template_framework").val();
+    $.ajax({
+        type: "POST",
+        url: BASE_URL + "/api/assessment/questionnaire/template/controls",
+        data: {
+            template_framework: template_framework
+        },
+        dataType: "json",
+        success: function(data){
+            if(data.status_message){
+                toastr.success(data.status_message);
+            }
+            if(data.controls){
+                var obj = $("#template_controls");
+                $(obj).find("option").remove();
+                $.each(data.controls, function(key, item) {
+                    var $option = $("<option/>", {
+                        value: item.id,
+                        text: item.short_name,
+                        selected: true,
+                    });
+                    $(obj).append($option);
+                });
+                $(obj).multiselect('rebuild');
+            }
+        },
+        error: function(xhr,status,error){
+            if(xhr.responseJSON && xhr.responseJSON.status_message){
+                showAlertsFromArray(xhr.responseJSON.status_message);
+            }
+            if(!retryCSRF(xhr, this))
+            {
+            }
+        }
+    })
+}

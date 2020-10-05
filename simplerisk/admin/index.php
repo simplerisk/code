@@ -14,46 +14,21 @@
     require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
     $escaper = new Zend\Escaper\Escaper('utf-8');
 
-    // Add various security headers
-    add_security_headers();
+// Add various security headers
+add_security_headers();
 
-    if (!isset($_SESSION))
-    {
-        // Session handler is database
-        if (USE_DATABASE_FOR_SESSIONS == "true")
-        {
-            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-        }
+// Add the session
+$permissions = array(
+        "check_access" => true,
+        "check_admin" => true,
+);
+add_session_check($permissions);
 
-        // Start the session
-        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+// Include the CSRF Magic library
+include_csrf_magic();
 
-        session_name('SimpleRisk');
-        session_start();
-    }
-
-    // Include the language file
-    require_once(language_file());
-
-    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-    // Check for session timeout or renegotiation
-    session_check();
-
-    // Check if access is authorized
-    if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-    {
-        set_unauthenticated_redirect();
-        header("Location: ../index.php");
-        exit(0);
-    }
-
-    // Check if access is authorized
-    if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
-    {
-        header("Location: ../index.php");
-        exit(0);
-    }
+// Include the SimpleRisk language file
+require_once(language_file());
 
     // If the General tab was submitted
     if (isset($_POST['update_general_settings']))
@@ -519,7 +494,7 @@
         $debug_log_file = $_POST['debug_log_file'];
         $root_path = str_replace('/', '\\', $_SERVER["DOCUMENT_ROOT"]);
         $log_path = str_replace('/', '\\', realpath(dirname($debug_log_file)));
-        if($root_path != $log_path && $log_path != "") {
+        if(strpos($log_path, $root_path) === false && $log_path != "") {
             $current_debug_log_file = get_setting("debug_log_file");
             if ($debug_log_file != $current_debug_log_file)
             {
@@ -566,6 +541,7 @@
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/side-navigation.css">
     <link rel="stylesheet" href="../css/settings_tabs.css">
     <?php
         setup_favicon("..");
@@ -632,6 +608,8 @@
   <body>
 
 <?php
+    display_license_check();
+
     view_top_menu("Configure");
 
     // Get any alert messages

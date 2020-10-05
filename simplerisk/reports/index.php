@@ -16,39 +16,17 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
+// Add the session
+add_session_check();
 
-if (!isset($_SESSION))
-{
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
+// Include the CSRF Magic library
+include_csrf_magic();
 
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-    session_name('SimpleRisk');
-    session_start();
-}
-
-// Include the language file
+// Include the SimpleRisk language file
 require_once(language_file());
 
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-// Check for session timeout or renegotiation
-session_check();
-
-// Check if access is authorized
-if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-{
-    set_unauthenticated_redirect();
-    header("Location: ../index.php");
-    exit(0);
-}
-
 ?>
+
 <!doctype html>
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
@@ -63,9 +41,9 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
   <link rel="stylesheet" href="../css/bootstrap.css">
   <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-  
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/side-navigation.css">
   
   <?php
     setup_favicon("..");
@@ -76,6 +54,8 @@ if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
 <body>
 
   <?php
+    display_license_check();
+
     view_top_menu("Reporting");
 
     // Get any alert messages

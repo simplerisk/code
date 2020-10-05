@@ -14,38 +14,17 @@
     require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
     $escaper = new Zend\Escaper\Escaper('utf-8');
 
-    // Add various security headers
-    add_security_headers();
+// Add various security headers
+add_security_headers();
 
-    if (!isset($_SESSION))
-    {
-        // Session handler is database
-        if (USE_DATABASE_FOR_SESSIONS == "true")
-        {
-            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-        }
+// Add the session
+add_session_check();
 
-        // Start the session
-        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+// Include the CSRF Magic library
+include_csrf_magic();
 
-        session_name('SimpleRisk');
-        session_start();
-    }
-
-    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-    // Check for session timeout or renegotiation
-    session_check();
-
-    // Check if access is authorized
-    if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-    {
-        set_unauthenticated_redirect();
-            header("Location: ../index.php");
-            exit(0);
-    }
-    // Include the language file
-    require_once(language_file());
+// Include the SimpleRisk language file
+require_once(language_file());
 
     // If the language was changed
     if (isset($_POST['change_language']))
@@ -72,73 +51,39 @@
         }
     }
 
-
+    $user_id = $_SESSION['uid'];
     // Get the users information
-    $user_info = get_user_by_id($_SESSION['uid']);
+    $user_info = get_user_by_id($user_id);
     $username = $user_info['username'];
     $name = $user_info['name'];
     $email = $user_info['email'];
-    $manager = $user_info['manager'];
+    $manager = $user_info['manager'] ? get_user_name($user_info['manager']) : "-";
     $last_login = format_date($user_info['last_login']);
-    $teams = $user_info['teams'];
+    $teams = get_names_by_multi_values('team', $user_info['teams'], true);
     $language = $user_info['lang'];
-    $asset = $user_info['asset'];
-    $governance = $user_info['governance'];
-    $riskmanagement = $user_info['riskmanagement'];
-    $compliance = $user_info['compliance'];
-    $assessments = $user_info['assessments'];
     $admin = $user_info['admin'];
-    $review_veryhigh = $user_info['review_veryhigh'];
-    $accept_mitigation = $user_info['accept_mitigation'];
-    $review_high = $user_info['review_high'];
-    $review_medium = $user_info['review_medium'];
-    $review_low = $user_info['review_low'];
-    $review_insignificant = $user_info['review_insignificant'];
-    $submit_risks = $user_info['submit_risks'];
-    $modify_risks = $user_info['modify_risks'];
-    $plan_mitigations = $user_info['plan_mitigations'];
-    $close_risks = $user_info['close_risks'];
-    
-    $add_new_frameworks = $user_info['add_new_frameworks'];
-    $modify_frameworks = $user_info['modify_frameworks'];
-    $delete_frameworks = $user_info['delete_frameworks'];
-    $add_new_controls = $user_info['add_new_controls'];
-    $modify_controls = $user_info['modify_controls'];
-    $delete_controls = $user_info['delete_controls'];
-    $add_documentation = $user_info['add_documentation'];
-    $modify_documentation = $user_info['modify_documentation'];
-    $delete_documentation = $user_info['delete_documentation'];
-    $comment_risk_management = $user_info['comment_risk_management'];
-    $add_projects = $user_info['add_projects'];
-    $delete_projects = $user_info['delete_projects'];
-    $manage_projects = $user_info['manage_projects'];
-    $comment_compliance = $user_info['comment_compliance'];
-    $define_tests = $user_info['define_tests'];
-    $edit_tests = $user_info['edit_tests'];
-    $delete_tests = $user_info['delete_tests'];
-    $initiate_audits = $user_info['initiate_audits'];
-    $modify_audits = $user_info['modify_audits'];
-    $reopen_audits = $user_info['reopen_audits'];
-    $delete_audits = $user_info['delete_audits'];
-
-    $view_exception = $user_info['view_exception'];
-    $create_exception = $user_info['create_exception'];
-    $update_exception = $user_info['update_exception'];
-    $delete_exception = $user_info['delete_exception'];
-    $approve_exception = $user_info['approve_exception'];
 
     $role_id = $user_info['role_id'];
+    
+    if ($role_id) {
+        $role = get_role($role_id);
+        if ($role) {
+            $role = $role['name'];
+        }
+    } else {
+        $role = "-";
+    }
 
     // Check if a new password was submitted
     if (isset($_POST['change_password']))
     {
-        $user = $_SESSION["user"];
+        $team = $_SESSION["user"];
         $current_pass = $_POST['current_pass'];
         $new_pass = $_POST['new_pass'];
         $confirm_pass = $_POST['confirm_pass'];
 
         // If the user and current password are valid
-        if (is_valid_user($user, $current_pass))
+        if (is_valid_user($team, $current_pass))
         {
             // Check the password
             $error_code = valid_password($new_pass, $confirm_pass, $_SESSION['uid']);
@@ -147,7 +92,7 @@
             if ($error_code == 1)
             {
                 // Generate the salt
-                $salt = generateSalt($user);
+                $salt = generateSalt($team);
 
                 // Generate the password hash
                 $hash = generateHash($salt, $new_pass);
@@ -161,7 +106,7 @@
                     add_last_password_history($_SESSION["uid"], $old_data["salt"], $old_data["password"]);
 
                     // Update the password
-                    update_password($user, $hash);
+                    update_password($team, $hash);
 
                     // Clean up other sessions of the user and roll the current session's id
                     kill_other_sessions_of_current_user();
@@ -203,82 +148,78 @@
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/bootstrap-multiselect.js"></script>
+    <script src="../js/permissions-widget.js"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
-
-
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
-
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/side-navigation.css">
     
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
     ?>    
     <script type="text/javascript">
-        $(function(){
-            $(document).ready(function(){
-                $("#team").multiselect({
-                    allSelectedText: '<?php echo $escaper->escapeHtml($lang['AllTeams']); ?>',
-                    includeSelectAllOption: true
-                });
-                // role event
-                $("#role").change(function(){
-//                    setUserResponsibilitesByRole();
-                })
-            });
-            
-            function setUserResponsibilitesByRole(){
-                // If role is unselected, uncheck all responsibilities
-                if(!$("#role").val())
-                {
-                    $(".checklist input[type=checkbox]").prop("checked", false);
-                    return;
-                }
-                else if($("#role").val() == 1)
-                {
-                    // Set all user responsibilites
-                    $(".checklist input[type=checkbox]").prop("checked", true);
-                    
-                    // Set all teams
-                    $("#team").multiselect("selectAll", false);
-                    $("#team").multiselect("refresh");
-                }
-                else
-                {
-                    $.ajax({
-                        type: "GET",
-                        url: BASE_URL + "/api/role_responsibilities/get_responsibilities",
-                        data: {
-                            role_id: $("#role").val()
-                        },
-                        success: function(data){
-                            // Uncheck all checkboxes
-                            $(".checklist input[type=checkbox]").prop("checked", false);
-                            
-                            // Check all for responsibilites
-                            var responsibility_names = data.data;
-                            for(var key in responsibility_names){
-                                $(".checklist input[name="+responsibility_names[key]+"]").prop("checked", true)
-                            }
-                        },
-                        error: function(xhr,status,error){
-                            if(xhr.responseJSON && xhr.responseJSON.status_message){
-                                showAlertsFromArray(xhr.responseJSON.status_message);
-                            }
-                        }
-                    })
-                }
-            }
+        $(document).ready(function(){
+        	$(".permissions-widget input[type=checkbox]").prop("readonly", true);
+
+			$('.show-more-teams, .show-less-teams').click(function() {
+				$('.teams-limited').toggle();
+				$('.teams-all').toggle();
+			});
+
+        	
         });
     </script>
+    
+    <style>
+        .profile-table {
+            width: 100%;
+        }
+        .profile-table .profile-data {
+            cursor: default;
+            font-weight: bold;
+            width: 90%;
+        }
+        
+        .profile-table .profile-data-name {
+            cursor: default;
+            width: 10%;
+        }
+        
+        .profile-table div.profile-data.teams {
+            width: 50%;
+        }
+        
+         .profile-table div.profile-data.teams a {
+            font-weight: normal;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .profile-table td.profile-data-name.teams {
+           vertical-align: top;
+        }
+
+        input[type=checkbox][readonly] + label {
+            color: inherit;
+        }
+        
+        .admin-info:before {
+            font-family: "FontAwesome";
+            content: "\f05A";
+            display: inline-block;
+            padding-right: 3px;
+            color: red;
+        }
+    </style>
   </head>
 
   <body>
@@ -295,14 +236,42 @@
             <div class="span12">
               <div class="hero-unit">
                 <form name="change_language" method="post" action="">
-                <table border="0" cellspacing="0" cellpadding="0">
-                  <tr><td colspan="2"><h4><?php echo $escaper->escapeHtml($lang['ProfileDetails']); ?></h4></td></tr>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['FullName']); ?>:&nbsp;</td><td><input style="cursor: default;" name="name" type="text" maxlength="50" size="20" title="<?php echo $escaper->escapeHtml($name); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($name); ?>" /></td></tr>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>:&nbsp;</td><td><input style="cursor: default;" name="email" type="text" maxlength="200" size="20" title="<?php echo $escaper->escapeHtml($email); ?>"disabled="disabled" value="<?php echo $escaper->escapeHtml($email); ?>" /></td></tr>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['Username']); ?>:&nbsp;</td><td><input style="cursor: default;" name="username" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($username); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($username); ?>" /></td></tr>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['LastLogin']); ?>:&nbsp;</td><td><input style="cursor: default;" name="last_login" type="text" maxlength="20" size="20" title="<?php echo $escaper->escapeHtml($last_login); ?>" disabled="disabled" value="<?php echo $escaper->escapeHtml($last_login); ?>" /></td></tr>
-                  <tr><td><?php echo $escaper->escapeHtml($lang['Language']); ?>:&nbsp;</td><td><?php create_dropdown("languages", get_value_by_name("languages", $language)); ?><input type="submit" name="change_language" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" /></td></tr>
-
+                <table class="profile-table" border="0" cellspacing="0" cellpadding="0">
+                  <tr><td colspan="2" class='profile-data-name'><h4><?php echo $escaper->escapeHtml($lang['ProfileDetails']); ?></h4></td></tr>
+                  <tr><td class="profile-data-name"><?php echo $escaper->escapeHtml($lang['FullName']); ?>:&nbsp;</td><td class="profile-data"><?php echo $escaper->escapeHtml($name); ?></td></tr>
+                  <tr><td class="profile-data-name"><?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>:&nbsp;</td><td class="profile-data"><?php echo $escaper->escapeHtml($email); ?></td></tr>
+                  <tr><td class="profile-data-name"><?php echo $escaper->escapeHtml($lang['Username']); ?>:&nbsp;</td><td class="profile-data"><?php echo $escaper->escapeHtml($username); ?></td></tr>
+                  <tr><td class="profile-data-name"><?php echo $escaper->escapeHtml($lang['LastLogin']); ?>:&nbsp;</td><td class="profile-data"><?php echo $escaper->escapeHtml($last_login); ?></td></tr>
+                  <tr><td class="profile-data-name"><?php echo $escaper->escapeHtml($lang['Manager']); ?>:</td><td class="profile-data"><?php echo $escaper->escapeHtml($manager); ?></td></tr>
+                  <tr><td class="profile-data-name teams"><?php echo $escaper->escapeHtml($lang['Teams']); ?>:</td><td><div class="profile-data teams">
+                  <?php
+                    if ($teams) {
+                        $teams = array_map(function($team) use ($escaper) {
+                            return $escaper->escapeHtml($team);
+                        }, $teams);
+                        $names = array();
+                        $count = 0;
+                        $limit = 3;
+                        $limited = count($teams) > $limit;
+                        
+                        foreach($teams as $team){
+                            $names[] = $team;
+                            $count += 1;
+                            if ($count == $limit)
+                                break;
+                        }
+                        
+                        if ($limited) {
+                            echo "<div class='teams-limited'>" . implode("<br/>", $names) . "<br/><a class='show-more-teams'>Show more...</a></div>";
+                        }
+                        echo "<div class='teams-all'" . ($limited ? "style='display: none;'" : "") . ">" . implode("<br/>", $teams) . ($limited ? "<br/><a class='show-less-teams'>Show less...</a> " : "" ) . "</div>";
+                    } else {
+                        echo "-";
+                    }
+                  ?></div></td></tr>
+                  <tr><td class="profile-data-name"><?php echo $escaper->escapeHtml($lang['Role']); ?>:</td><td><div class="profile-data"><?php echo $escaper->escapeHtml($role); ?></div></td></tr>
+                  <tr><td class="profile-data-name"><i class="admin-info"  title="<?php echo $escaper->escapeHtml($lang['AdminRoleDescription']);?>"></i><?php echo $escaper->escapeHtml($lang['Admin']); ?>:</td><td><div class="profile-data"><?php echo $escaper->escapeHtml(localized_yes_no($admin)); ?></div></td></tr>
+                  <tr><td class="profile-data-name"><?php echo $escaper->escapeHtml($lang['Language']); ?>:&nbsp;</td><td><?php create_dropdown("languages", get_value_by_name("languages", $language)); ?><input type="submit" name="change_language" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" /></td></tr>
                     <?php
                         // If the API Extra is enabled
                         if (api_extra())
@@ -314,7 +283,6 @@
                             display_api_profile();
                         }
                     ?>
-
                 </table>
                 </form>
                 <br>
@@ -323,70 +291,51 @@
                 </form>
                 
                 <h6>
-                    <u><?php echo $escaper->escapeHtml($lang['Manager']); ?></u>
+                    <u><?php echo $escaper->escapeHtml($lang['UserResponsibilities']); ?></u>
                 </h6>
-                <?php create_dropdown("user", $manager, "manager"); ?>
 
-                <h6><u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u></h6>
-                <?php create_multiple_dropdown("team", $teams); ?>
-                
-                <h6><u><?php echo $escaper->escapeHtml($lang['Role']); ?></u></h6>
-                <?php create_dropdown("role", $role_id); ?>
-                
-                <h6><u><?php echo $escaper->escapeHtml($lang['UserResponsibilities']); ?></u></h6>
-                <table class="checklist" border="0" cellspacing="0" cellpadding="0">
-                          <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['Governance']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="governance" type="checkbox"<?php if ($governance) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToGovernanceMenu']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="add_new_frameworks" type="checkbox"<?php if ($add_new_frameworks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToAddNewFrameworks']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="modify_frameworks" type="checkbox"<?php if ($modify_frameworks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyExistingFrameworks']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="delete_frameworks" type="checkbox"<?php if ($delete_frameworks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteExistingFrameworks']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="add_new_controls" type="checkbox"<?php if ($add_new_controls) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToAddNewControls']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="modify_controls" type="checkbox"<?php if ($modify_controls) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyExistingControls']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="delete_controls" type="checkbox"<?php if ($delete_controls) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteExistingControls']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="add_documentation" type="checkbox"<?php if ($add_documentation) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToAddDocumentation']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="modify_documentation" type="checkbox"<?php if ($modify_documentation) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyDocumentation']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="delete_documentation" type="checkbox"<?php if ($delete_documentation) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteDocumentation']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="view_exception" type="checkbox"<?php if ($view_exception) echo " checked" ?> /> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToViewDocumentException']); ?> </td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="create_exception" type="checkbox"<?php if ($create_exception) echo " checked" ?> /> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCreateDocumentException']); ?> </td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="update_exception" type="checkbox"<?php if ($update_exception) echo " checked" ?> /> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToUpdateDocumentException']); ?> </td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="delete_exception" type="checkbox"<?php if ($delete_exception) echo " checked" ?> /> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteDocumentException']); ?> </td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="approve_exception" type="checkbox"<?php if ($approve_exception) echo " checked" ?> /> &nbsp;<?php echo $escaper->escapeHtml($lang['AbleToApproveDocumentException']); ?> </td></tr>
-
-                          <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['RiskManagement']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="riskmanagement" type="checkbox"<?php if ($riskmanagement) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToRiskManagementMenu']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="submit_risks" type="checkbox"<?php if ($submit_risks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToSubmitNewRisks']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="modify_risks" type="checkbox"<?php if ($modify_risks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyExistingRisks']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="close_risks" type="checkbox"<?php if ($close_risks) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCloseRisks']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="plan_mitigations" type="checkbox"<?php if ($plan_mitigations) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToPlanMitigations']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="accept_mitigation" type="checkbox"<?php if ($accept_mitigation) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToAcceptMitigations']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_insignificant" type="checkbox"<?php if ($review_insignificant) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewInsignificantRisks']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_low" type="checkbox"<?php if ($review_low) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewLowRisks']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_medium" type="checkbox"<?php if ($review_medium) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewMediumRisks']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_high" type="checkbox"<?php if ($review_high) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewHighRisks']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="review_veryhigh" type="checkbox"<?php if ($review_veryhigh) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReviewVeryHighRisks']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="comment_risk_management" type="checkbox"<?php if ($comment_risk_management) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCommentRiskManagement']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="add_projects" type="checkbox"<?php if ($add_projects) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToAddProjects']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="delete_projects" type="checkbox"<?php if ($delete_projects) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteProjects']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="manage_projects" type="checkbox"<?php if ($manage_projects) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToManageProjects']); ?></td></tr>
-                          <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['Compliance']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="compliance" type="checkbox"<?php if ($compliance) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToComplianceMenu']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="comment_compliance" type="checkbox"<?php if ($comment_compliance) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToCommentCompliance']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="define_tests" type="checkbox"<?php if ($define_tests) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDefineTests']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="edit_tests" type="checkbox"<?php if ($edit_tests) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToEditTests']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="delete_tests" type="checkbox"<?php if ($delete_tests) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteTests']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="initiate_audits" type="checkbox"<?php if ($initiate_audits) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToInitiateAudits']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="modify_audits" type="checkbox"<?php if ($modify_audits) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToModifyAudits']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="reopen_audits" type="checkbox"<?php if ($reopen_audits) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToReopenAudits']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="delete_audits" type="checkbox"<?php if ($delete_audits) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AbleToDeleteAudits']); ?></td></tr>
-                          <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['AssetManagement']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="asset" type="checkbox"<?php if ($asset) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssetManagementMenu']); ?></td></tr>
-                          
-                          <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['Assessments']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="assessments" type="checkbox"<?php if ($assessments) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToAssessmentsMenu']); ?></td></tr>
-                          
-                          <tr><td colspan="2"><?php echo $escaper->escapeHtml($lang['Configure']); ?></td></tr>
-                          <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input name="admin" type="checkbox"<?php if ($admin) echo " checked" ?> />&nbsp;<?php echo $escaper->escapeHtml($lang['AllowAccessToConfigureMenu']); ?></td></tr>
-                </table>
+                <div class="permissions-widget">
+                    <ul>
+                        <li>
+                            <input class="hidden-checkbox" type="checkbox" id="check_all">
+                            <label for="check_all"><?php echo $escaper->escapeHtml($lang['CheckAll']); ?></label>
+                            <ul>
+<?php
+   $permission_groups = get_grouped_permissions($user_id);
+   error_log("permission_groups: " . json_encode($permission_groups));
+   foreach ($permission_groups as $permission_group_name => $permission_group) {
+       $permission_group_id = $escaper->escapeHtml("pg-" . $permission_group[0]['permission_group_id']);
+       $permission_group_name = $escaper->escapeHtml($permission_group_name);
+       $permission_group_description = $escaper->escapeHtml($permission_group[0]['permission_group_description']);
+?>       
+                                <li>
+                                    <input class="hidden-checkbox permission-group" type="checkbox" id="<?php echo $permission_group_id;?>">
+                                    <label for="<?php echo $permission_group_id;?>" title="<?php echo $permission_group_description;?>"><?php echo $permission_group_name;?></label>
+                                    <ul>
+<?php
+       foreach ($permission_group as $permission) {
+           $permission_id = $escaper->escapeHtml($permission['permission_id']);
+           $permission_key = $escaper->escapeHtml($permission['key']);
+           $permission_name = $escaper->escapeHtml($permission['permission_name']);
+           $permission_description = $escaper->escapeHtml($permission['permission_description']);
+           $selected = $permission['selected'];
+?>       
+                                        <li>
+                                            <input class="hidden-checkbox permission" type="checkbox" name="permissions[]" id="<?php echo $permission_key;?>" value="<?php echo $permission_id;?>" <?php if ($selected) echo "checked='checked'";?>>
+                                            <label for="<?php echo $permission_key;?>" title="<?php echo $permission_description;?>"><?php echo $permission_name;?></label>
+                                        </li>
+<?php
+       }
+?>  
+                                	</ul>
+                                </li>
+<?php
+   }
+?>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
               </div>
 <?php
     if (isset($_SESSION['user_type']) && $_SESSION['user_type'] != "ldap")

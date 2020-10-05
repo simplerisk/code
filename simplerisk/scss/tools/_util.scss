@@ -274,3 +274,25 @@ div#show-alert + #tab-content-container .tab-data {
   padding: 9px;
   border-radius: $border-radius-small;
 }
+
+input[type=checkbox][disabled] + label {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+input[type=checkbox][disabled] + label:before {
+    color: #fbb5b8;
+    cursor: not-allowed;
+}
+
+input[type=checkbox][readonly] + label {
+    color: #ccc;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+input[type=checkbox][readonly] + label:before {
+    color: #fbb5b8;
+    cursor: not-allowed;
+    pointer-events: none;
+}

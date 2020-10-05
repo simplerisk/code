@@ -838,7 +838,6 @@ function display_risk_mapping_edit($risk_catalog_mapping)
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
     create_dropdown("risk_catalog", $risk_catalog_mapping, "risk_catalog_mapping", true, false, false, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} style='max-width:100%'");
-    //create_dropdown("category", $category);
     echo "</div>\n";
     echo "</div>\n";
 }

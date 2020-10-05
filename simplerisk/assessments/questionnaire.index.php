@@ -118,11 +118,15 @@ else
 
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/side-navigation.css">
   <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
   <script src="../js/selectize.min.js"></script>
   <?php
       setup_favicon("..");
       setup_alert_requirements("..");
+      echo "<script>\n";
+      echo "var BASE_URL = '". (isset($_SESSION['base_url']) ? $_SESSION['base_url'] : "") ."'; \n";
+      echo "</script>\n";
   ?>  
 </head>
 

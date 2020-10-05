@@ -1809,10 +1809,17 @@ function get_review_needed_table()
 /************************************
  * FUNCTION: RISKS AND ASSETS TABLE *
  ************************************/
-function risks_and_assets_table($report,$sortby)
+function risks_and_assets_table($report, $sortby, $asset_tags_in_array)
 {
     global $lang;
     global $escaper;
+
+    if($asset_tags_in_array == "all") {
+        $tags = get_options_from_table("asset_tags");
+        $asset_tags_in_array = array_map(function($tag){ return $tag["value"];}, $tags);
+        $asset_tags_in_array[] = "-1";
+    }
+    $asset_tags = implode(",", $asset_tags_in_array);
 
     // If team separation is enabled
     if (team_separation_extra())
@@ -1835,6 +1842,22 @@ function risks_and_assets_table($report,$sortby)
 
     // If risks by asset
     if ($report == 0) {
+        $wheres = ["0"];
+        $bind_params = [];
+        if($asset_tags){
+            $wheres[] = " FIND_IN_SET(tg.id, :asset_tags) ";
+            $bind_params[":asset_tags"] = $asset_tags;
+        }
+
+        if(in_array(-1, $asset_tags_in_array)){
+            $wheres[] = " tg.id IS NULL ";
+        }
+        if($wheres){
+            $where_in_string = " WHERE (" . implode(" OR", $wheres) . " ) ";
+        }else{
+            $where_in_string = "";
+        }
+        
         $stmt = $db->prepare("
             SELECT
                 CONCAT(u.id, '_', u._type) AS gr_id,
@@ -1842,11 +1865,13 @@ function risks_and_assets_table($report,$sortby)
                 `loc`.`name` AS asset_location,
                 rsk_loc.name AS risk_location,
                 GROUP_CONCAT(DISTINCT rsk_team.name SEPARATOR ', ') AS risk_teams,
+				GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR ',') as tags,
                 u.*
             FROM (
                 SELECT
                     a.id AS id,
                     r.id AS risk_id,
+                    a.id AS asset_id,
                     a.name AS name,
                     a.name AS asset_name,
                     a.value AS asset_value,
@@ -1873,7 +1898,8 @@ function risks_and_assets_table($report,$sortby)
                 UNION ALL
                 SELECT
                     ag.id AS id,
-                    r.id AS risk_id,    
+                    r.id AS risk_id,
+                    a.id AS asset_id,
                     ag.name AS name,
                     a.name AS asset_name,
                     null AS asset_value,
@@ -1908,6 +1934,9 @@ function risks_and_assets_table($report,$sortby)
                 LEFT JOIN location rsk_loc on rtl.location_id = rsk_loc.value
                 LEFT JOIN risk_to_team rtt on u.risk_id = rtt.risk_id
                 LEFT JOIN team rsk_team on rtt.team_id = rsk_team.value
+				LEFT JOIN tags_taggees tt ON tt.taggee_id = u.asset_id AND tt.type = 'asset'
+				LEFT JOIN tags tg on tg.id = tt.tag_id
+		{$where_in_string}
             GROUP BY
                 gr_id, u.risk_id
             ORDER BY
@@ -1916,6 +1945,9 @@ function risks_and_assets_table($report,$sortby)
                 u.calculated_risk DESC,
                 u.risk_id;
         ");
+        foreach($bind_params as $key => $value){
+            $stmt->bindParam($key, $value, PDO::PARAM_STR);
+        }
         $stmt->execute();
 
         // Store the results in the rows array
@@ -1927,7 +1959,7 @@ function risks_and_assets_table($report,$sortby)
             });
         } else {
             uasort($rows, function($a, $b) {
-                 return ($a[0]['calculated_risk'] < $b[0]['calculated_risk'])?-1:1;
+                 return ($a[0]['calculated_risk'] > $b[0]['calculated_risk'])?-1:1;
             });
         }
 
@@ -1952,6 +1984,7 @@ function risks_and_assets_table($report,$sortby)
             $name = $type == 'asset' ? try_decrypt($group[0]['name']) : $group[0]['name'];
             $calculated_risk = $group[0]['calculated_risk'];
             $color = get_risk_color_from_levels($calculated_risk, $risk_levels);
+			$tags = $group[0]['tags'];
             
             // Display the table header
             echo "<table class=\"table table-bordered table-condensed sortable\">\n";
@@ -1964,6 +1997,7 @@ function risks_and_assets_table($report,$sortby)
                 echo "<th style=\"background-color: " .$escaper->escapeHtml($color). "\" colspan=\"7\">
                         <center>
                             " . $escaper->escapeHtml($lang['AssetName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($name) . "<br />
+                            " . $escaper->escapeHtml($lang['AssetTags']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($tags) . "<br />
                             " . $escaper->escapeHtml($lang['AssetValue']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml(get_asset_value_by_id($asset_value)) . "<br />
                             " . $escaper->escapeHtml($lang['AssetRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($calculated_risk) ."<br />
                             " . $escaper->escapeHtml($lang['AssetSiteLocation']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_location) . "<br />
@@ -1975,6 +2009,7 @@ function risks_and_assets_table($report,$sortby)
                 echo "<th style=\"background-color: " .$escaper->escapeHtml($color). "\" colspan=\"7\">
                         <center>
                             " . $escaper->escapeHtml($lang['AssetGroupName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($name) . "<br />
+                            " . $escaper->escapeHtml($lang['AssetTags']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($tags) . "<br />
                             " . $escaper->escapeHtml($lang['GroupMaximumQuantitativeLoss']) . ":&nbsp;&nbsp;$" . $escaper->escapeHtml(number_format($max_value)) . "<br />
                             " . $escaper->escapeHtml($lang['AssetGroupRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($calculated_risk) ."
                         </center>
@@ -2025,8 +2060,25 @@ function risks_and_assets_table($report,$sortby)
     // If assets by risk
     elseif ($report == 1) {
         
-        $separation_query = $separation ? get_user_teams_query("rsk", true) : "";
+        $where_in_string = $separation ? get_user_teams_query("rsk", true) : " WHERE 1 ";
+
+        // Set where for asset_tags
+        $wheres = ["0"];
+        $bind_params = [];
+        if($asset_tags){
+            $wheres[] = " FIND_IN_SET(tg.id, :asset_tags) ";
+            $bind_params[":asset_tags"] = $asset_tags;
+        }
+
+        if(in_array(-1, $asset_tags_in_array)){
+            $wheres[] = " tg.id IS NULL ";
+        }
+        if($wheres){
+            $where_in_string .= " AND (" . implode(" OR", $wheres) . " ) ";
+        }
         
+//        $separation_query .= $asset_tags?" AND tg.id IN ({$asset_tags})":"";
+
         $sql = "
             SELECT
                 `u`.`risk_id`,
@@ -2038,8 +2090,10 @@ function risks_and_assets_table($report,$sortby)
                 `u`.`status`,
                 `u`.`subject`,
                 `u`.`calculated_risk`,
+                `u`.`calculated_risk`,
                 GROUP_CONCAT(DISTINCT `t`.`name` SEPARATOR ', ') AS asset_teams,
-                GROUP_CONCAT(DISTINCT `ag`.`name` SEPARATOR ', ') AS asset_groups
+                GROUP_CONCAT(DISTINCT `ag`.`name` SEPARATOR ', ') AS asset_groups,
+				GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR ',') as tags
             from (
                 SELECT
                     `r`.`id` as risk_id,
@@ -2087,7 +2141,9 @@ function risks_and_assets_table($report,$sortby)
                 LEFT JOIN `risk_to_additional_stakeholder` rtas ON u.risk_id = `rtas`.`risk_id`
                 LEFT JOIN `assets_asset_groups` aag ON `aag`.`asset_id` = `u`.`asset_id`
                 LEFT JOIN `asset_groups` ag ON `ag`.`id` = `aag`.`asset_group_id`
-            {$separation_query}
+				LEFT JOIN `tags_taggees` tt ON tt.taggee_id = `u`.`asset_id` AND tt.type = 'asset'
+				LEFT JOIN `tags` tg on tg.id = tt.tag_id
+            {$where_in_string}
             GROUP BY
                 `u`.`risk_id`, `u`.`asset_id`
             ORDER BY
@@ -2098,6 +2154,9 @@ function risks_and_assets_table($report,$sortby)
         ";
         
         $stmt = $db->prepare($sql);
+        foreach($bind_params as $key => $value){
+            $stmt->bindParam($key, $value, PDO::PARAM_STR);
+        }
         $stmt->execute();
 
         // Store the results in the rows array
@@ -2120,7 +2179,7 @@ function risks_and_assets_table($report,$sortby)
             echo "<table class=\"table table-bordered table-condensed sortable\">\n";
             echo "<thead>\n";
             echo "<tr>\n";
-            echo "<th style=\"background-color:" . $escaper->escapeHtml($color) . "\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"6\">
+            echo "<th style=\"background-color:" . $escaper->escapeHtml($color) . "\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"7\">
                     <center>
                         <font color=\"#000000\">
                             " . $escaper->escapeHtml($lang['RiskId']) . ":&nbsp;&nbsp;<a target='_blank' href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\" style=\"color:#000000\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a>
@@ -2133,10 +2192,11 @@ function risks_and_assets_table($report,$sortby)
             echo "<tr>\n";
             echo "<th align=\"left\" width='30%'>". $escaper->escapeHtml($lang['AssetName']) ."</th>\n";
             echo "<th align=\"left\" width='10%'>". $escaper->escapeHtml($lang['IPAddress']) ."</th>\n";
-            echo "<th align=\"left\" width='15%'>". $escaper->escapeHtml($lang['SiteLocation']) ."</th>\n";
-            echo "<th align=\"left\" width='15%'>". $escaper->escapeHtml($lang['Teams']) ."</th>\n";
-            echo "<th align=\"left\" width='15%'>". $escaper->escapeHtml($lang['AssetGroups']) ."</th>\n";
-            echo "<th align=\"left\" width='15%'>". $escaper->escapeHtml($lang['AssetValuation']) ."</th>\n";
+            echo "<th align=\"left\" width='12%'>". $escaper->escapeHtml($lang['SiteLocation']) ."</th>\n";
+            echo "<th align=\"left\" width='12%'>". $escaper->escapeHtml($lang['Teams']) ."</th>\n";
+            echo "<th align=\"left\" width='12%'>". $escaper->escapeHtml($lang['AssetTags']) ."</th>\n";
+            echo "<th align=\"left\" width='12%'>". $escaper->escapeHtml($lang['AssetGroups']) ."</th>\n";
+            echo "<th align=\"left\" width='12%'>". $escaper->escapeHtml($lang['AssetValuation']) ."</th>\n";
             echo "</tr>\n";
             echo "</thead>\n";
             echo "<tbody>\n";
@@ -2150,22 +2210,24 @@ function risks_and_assets_table($report,$sortby)
                 $asset_value = $row['asset_value'];
                 $asset_location = isset($row['asset_location']) ? $row['asset_location'] : "N/A";
                 $asset_teams = isset($row['asset_teams']) ? $row['asset_teams'] : "N/A";
+                $tags = isset($row['tags']) ? $row['tags'] : "N/A";
                 $asset_groups = isset($row['asset_groups']) ? $row['asset_groups'] : "N/A";
 
                 // Display the individual asset information
                 echo "<tr>\n";
-                echo "<td align='left' width='50px'>" . $escaper->escapeHtml($asset_name) . "</td>\n";
-                echo "<td align='left' width='50px'>" . $escaper->escapeHtml($asset_ip) . "</td>\n";
-                echo "<td align='left' width='50px'>" . $escaper->escapeHtml($asset_location) . "</td>\n";
-                echo "<td align='left' width='50px'>" . $escaper->escapeHtml($asset_teams) . "</td>\n";
-                echo "<td align='left' width='50px'>" . $escaper->escapeHtml($asset_groups) . "</td>\n";
-                echo "<td align='left' width='50px'>" . $escaper->escapeHtml(get_asset_value_by_id($asset_value)) . "</td>\n";
+                echo "<td align='left'>" . $escaper->escapeHtml($asset_name) . "</td>\n";
+                echo "<td align='left'>" . $escaper->escapeHtml($asset_ip) . "</td>\n";
+                echo "<td align='left'>" . $escaper->escapeHtml($asset_location) . "</td>\n";
+                echo "<td align='left'>" . $escaper->escapeHtml($asset_teams) . "</td>\n";
+                echo "<td align='left'>" . $escaper->escapeHtml($tags) . "</td>\n";
+                echo "<td align='left'>" . $escaper->escapeHtml($asset_groups) . "</td>\n";
+                echo "<td align='left'>" . $escaper->escapeHtml(get_asset_value_by_id($asset_value)) . "</td>\n";
                 echo "</tr>\n";
             }
 
-            echo "<tr><td style=\"background-color:" . $escaper->escapeHtml($color) . "\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"6\"></td></tr>\n";
+            echo "<tr><td style=\"background-color:" . $escaper->escapeHtml($color) . "\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" colspan=\"7\"></td></tr>\n";
             echo "<tr>\n";
-            echo "<td style=\"background-color: lightgrey\" align=\"left\" width=\"50px\" colspan=\"5\"><b>" . $escaper->escapeHtml($lang['MaximumQuantitativeLoss']) . "</b></td>\n";
+            echo "<td style=\"background-color: lightgrey\" align=\"left\" width=\"50px\" colspan=\"6\"><b>" . $escaper->escapeHtml($lang['MaximumQuantitativeLoss']) . "</b></td>\n";
             echo "<td style=\"background-color: lightgrey\" align=\"left\" width=\"50px\"><b>$" . $escaper->escapeHtml(number_format($asset_valuation)) . "</b></td>\n";
             echo "</tr>\n";
             echo "</tbody>\n";
@@ -2358,9 +2420,19 @@ function get_risks_by_table($status, $sort, $group, $column_id=true, $column_sta
             </style>
         ";
     }
+    // If Import/Export extra is disabled, hide print button by group
+    if (!import_export_extra())
+    {
+        echo "
+            <style>
+                .print-by-group{
+                    display: none;
+                }
+            </style>
+        ";
+    }
     
     // If the group name is none
-//    if ($group_name == "none" || !$rowCount)
     if ($group_name == "none")
     {
         // Display the table header
@@ -2510,7 +2582,7 @@ function get_risks_by_table($status, $sort, $group, $column_id=true, $column_sta
                             $custom_fields_length = 0;
                         }
                         
-                        $length = 43 + $custom_fields_length;
+                        $length = 44 + $custom_fields_length;
                         
                         echo "<th bgcolor=\"#0088CC\" colspan=\"{$length}\"><center>". $escaper->escapeHtml($group_value) ."</center></th>\n";
                         echo "</tr>\n";
@@ -2538,6 +2610,239 @@ function get_risks_by_table($status, $sort, $group, $column_id=true, $column_sta
     echo "</tbody>\n";
     echo "</table>\n";
     echo "<br />\n";
+}
+
+/********************************
+ * FUNCTION: GET RISKS BY GROUP *
+ ********************************/
+function get_risks_by_group($status, $group, $sort, $group_value, $display_columns)
+{
+    global $lang, $escaper;
+    $rowCount = 0;
+
+    // Get group name from $group
+    list($group_name, $order_query) = get_group_name_for_dynamic_risk($group, "");
+
+    $displayed_group_names = [];
+    // If this is download by group value, set query
+    if($group_name != "none" && $group_value !== NULL)
+    {
+        $group_field_name = "";
+        if($group_name == "month_submitted"){
+            if (!$group_value || stripos($group_value, "0000-00-00") !== false)
+            {
+                // Set the review date to empty
+                $group_value = "";
+            }
+            else
+            {
+                $group_value = date('Y F', strtotime($group_value)); 
+            }
+        }else{
+            switch($group_name){
+                case "risk_level":
+                    $group_value = get_risk_level_name($group_value);
+                break;
+            }
+        }
+    }
+    $risks = risks_query($status, $sort, $group, [], $rowCount, 0, -1, $group_value, "", [], null, "asc");
+    if ($group_value == "")
+    {
+        // Current group is Unassigned
+        $group_value = $lang['Unassigned'];
+    }
+    // Display the table header
+    $str = "<table class=\"table risk-datatable table-bordered table-striped table-condensed  table-margin-top\" style='width: 100%'>\n";
+    $str .= "<thead>\n";
+    if ($group_name != "none"){
+        // If customization extra is enabled, add custom fields
+        if(customization_extra())
+        {
+            // Include the extra
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+            
+            $active_fields = get_active_fields();
+            $custom_fields = [];
+            foreach($active_fields as $active_field)
+            {
+                if($active_field['is_basic'] == 0)
+                {
+                    $custom_fields[] = $active_field;
+                }
+            }
+            
+            $custom_fields_length = count($custom_fields);
+        }
+        else{
+            $custom_fields_length = 0;
+        }
+        $length = 44 + $custom_fields_length;
+        $str .= "<tr>\n";
+        $str .= "<th bgcolor=\"#0088CC\" colspan=\"{$length}\"><center>". $escaper->escapeHtml($group_value) ."</center></th>\n";
+        $str .= "</tr>\n";
+    }
+    $str .= "<tr class='main'>\n";
+    $str .= get_print_header_columns($display_columns);
+    $str .= "</tr>\n";
+    $str .= "</thead>\n";
+    $str .= "<tbody>\n";
+    $rowCount = 0;
+    foreach($risks as $index=>$row){
+        $class = $index%2?"odd":"even";
+        $str .= "<tr class='{$class}'>\n";
+        $row['id'] = (int)$row['id'] + 1000;
+        $data_row = [];
+        if(in_array("id", $display_columns)) $data_row[] = "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($row['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($row['id'])."</a>";
+        if(in_array("risk_status", $display_columns)) $data_row[] = $escaper->escapeHtml($row['status']);
+        if(in_array("subject", $display_columns)) $data_row[] = $escaper->escapeHtml($row['subject']);
+        if(in_array("reference_id", $display_columns)) $data_row[] = $escaper->escapeHtml($row['reference_id']);
+        if(in_array("regulation", $display_columns)) $data_row[] = $escaper->escapeHtml($row['regulation']);
+        if(in_array("control_number", $display_columns)) $data_row[] = $escaper->escapeHtml($row['control_number']);
+        if(in_array("location", $display_columns)) $data_row[] = $escaper->escapeHtml($row['location']);
+        if(in_array("source", $display_columns)) $data_row[] = $escaper->escapeHtml($row['source']);
+        if(in_array("category", $display_columns)) $data_row[] = $escaper->escapeHtml($row['category']);
+        if(in_array("team", $display_columns)) $data_row[] = $escaper->escapeHtml($row['team']);
+        if(in_array("additional_stakeholders", $display_columns)) $data_row[] = $escaper->escapeHtml($row['additional_stakeholders']);
+        if(in_array("technology", $display_columns)) $data_row[] = $escaper->escapeHtml($row['technology']);
+        if(in_array("owner", $display_columns)) $data_row[] = $escaper->escapeHtml($row['owner']);
+        if(in_array("manager", $display_columns)) $data_row[] = $escaper->escapeHtml($row['manager']);
+        if(in_array("submitted_by", $display_columns)) $data_row[] = $escaper->escapeHtml($row['submitted_by']);
+        if(in_array("scoring_method", $display_columns)) $data_row[] = $escaper->escapeHtml($row['scoring_method']);
+        if(in_array("calculated_risk", $display_columns)) $data_row[] = "<div class='".$escaper->escapeHtml($row['color'])."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($row['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($row['color']) . "\"></span></div></div>";
+        if(in_array("residual_risk", $display_columns)) $data_row[] = "<div class='".$escaper->escapeHtml($row['residual_color'])."'><div class='risk-cell-holder'>" . $escaper->escapeHtml($row['residual_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($row['residual_color']) . "\"></span></div></div>";
+        if(in_array("submission_date", $display_columns)) $data_row[] = $escaper->escapeHtml(format_datetime($row['submission_date'], "", "H:i"));
+        if(in_array("review_date", $display_columns)) $data_row[] = $escaper->escapeHtml($row['review_date']);
+        if(in_array("project", $display_columns)) $data_row[] = $escaper->escapeHtml($row['project']);
+        if(in_array("mitigation_planned", $display_columns)) $data_row[] = planned_mitigation($row['id'], $row['mitigation_id']); // mitigation plan
+        if(in_array("management_review", $display_columns)) $data_row[] = management_review($row['id'], $row['mgmt_review'], $row['next_review_date']); // management review
+        if(in_array("days_open", $display_columns)) $data_row[] = $escaper->escapeHtml($row['days_open']);
+        if(in_array("next_review_date", $display_columns)) $data_row[] = $row['next_review_date_html'];
+        if(in_array("next_step", $display_columns)) $data_row[] = $escaper->escapeHtml($row['next_step']);
+        if(in_array("affected_assets", $display_columns)) $data_row[] = "<div class='affected-asset-cell'>{$row['affected_assets']}</div>";
+        if(in_array("risk_assessment", $display_columns)) $data_row[] = $escaper->escapeHtml($row['risk_assessment']);
+        if(in_array("additional_notes", $display_columns)) $data_row[] = $escaper->escapeHtml($row['additional_notes']);
+        if(in_array("current_solution", $display_columns)) $data_row[] = $escaper->escapeHtml($row['current_solution']);
+        if(in_array("security_recommendations", $display_columns)) $data_row[] = $escaper->escapeHtml($row['security_recommendations']);
+        if(in_array("security_requirements", $display_columns)) $data_row[] = $escaper->escapeHtml($row['security_requirements']);
+        if(in_array("planning_strategy", $display_columns)) $data_row[] = $escaper->escapeHtml($row['planning_strategy']);
+        if(in_array("planning_date", $display_columns)) $data_row[] = $escaper->escapeHtml($row['planning_date']);
+        if(in_array("mitigation_effort", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_effort']);
+        if(in_array("mitigation_cost", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_cost']);
+        if(in_array("mitigation_owner", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_owner']);
+        if(in_array("mitigation_team", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_team']);
+        if(in_array("mitigation_accepted", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_accepted']);
+        if(in_array("mitigation_date", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_date']);
+        if(in_array("mitigation_controls", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_control_names']);
+        if(in_array("risk_tags", $display_columns)) $data_row[] = $escaper->escapeHtml($row['risk_tags']);
+        if(in_array("closure_date", $display_columns)) $data_row[] = $escaper->escapeHtml(format_datetime($row['closure_date'], "", "H:i"));
+        if(in_array("comments", $display_columns)) $data_row[] = $escaper->escapeHtml($row['comments']);
+        foreach($data_row as $col){
+            $str .= "<td class=\"risk-cell\">".$col."</td>\n";
+        }
+        // If customization extra is enabled, add custom fields
+        if(customization_extra())
+        {
+            // Include the extra
+            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+            $custom_values = getCustomFieldValuesByRiskId($row['id']);
+            foreach($display_columns as $column){
+                if(($pos = stripos($column, "custom_field_")) !== false){
+                    $field_id = str_replace("custom_field_", "", $column);
+                    $text = "";
+                    // Get value of custom filed
+                    foreach($custom_values as $custom_value)
+                    {
+                        // Check if this custom value is for the active field
+                        if($custom_value['field_id'] == $field_id){
+                            $text = get_custom_field_name_by_value($field_id, $custom_value['field_type'], $custom_value['encryption'], $custom_value['value']);
+                            break;
+                        }
+                    }
+                    $str .= "<td class=\"risk-cell\">".$text."</td>\n";
+                }
+            }
+        }
+        $str .= "</tr>\n";
+    }
+    // End the table
+    $str .= "</tbody>\n";
+    $str .= "</table>\n";
+    $str .= "<br />\n";
+	echo $str;
+}
+
+/********************************
+ * FUNCTION: GET HEADER COLUMNS *
+ ********************************/
+function get_print_header_columns($columns)
+{
+    global $lang, $escaper;
+	$str = "";
+    if(in_array("id",$columns)) $str .= "<th class=\"id\" data-name='id' align=\"left\" >". $escaper->escapeHtml($lang['ID']) ."</th>\n";
+    if(in_array("risk_status",$columns)) $str .= "<th class=\"status\" data-name='risk_status' align=\"left\" >". $escaper->escapeHtml($lang['Status']) ."</th>\n";
+    if(in_array("subject",$columns)) $str .= "<th class=\"subject\" data-name='subject' align=\"left\" >". $escaper->escapeHtml($lang['Subject']) ."</th>\n";
+    if(in_array("reference_id",$columns)) $str .= "<th class=\"reference_id\" data-name='reference_id' align=\"left\" >". $escaper->escapeHtml($lang['ExternalReferenceId']) ."</th>\n";
+    if(in_array("regulation",$columns)) $str .= "<th class=\"regulation\" data-name='regulation' align=\"left\" >". $escaper->escapeHtml($lang['ControlRegulation']) ."</th>\n";
+    if(in_array("control_number",$columns)) $str .= "<th class=\"control_number\" data-name='control_number' align=\"left\" >". $escaper->escapeHtml($lang['ControlNumber']) ."</th>\n";
+    if(in_array("location",$columns)) $str .= "<th class=\"location\" data-name='location' align=\"left\" >". $escaper->escapeHtml($lang['SiteLocation']) ."</th>\n";
+    if(in_array("source",$columns)) $str .= "<th class=\"source\" data-name='source' align=\"left\" >". $escaper->escapeHtml($lang['RiskSource']) ."</th>\n";
+    if(in_array("category",$columns)) $str .= "<th class=\"category\" data-name='category' align=\"left\" >". $escaper->escapeHtml($lang['Category']) ."</th>\n";
+    if(in_array("team",$columns)) $str .= "<th class=\"team\" data-name='team' align=\"left\" >". $escaper->escapeHtml($lang['Team']) ."</th>\n";
+    if(in_array("additional_stakeholders",$columns)) $str .= "<th class=\"additional_stakeholders\" data-name='additional_stakeholders' align=\"left\" >". $escaper->escapeHtml($lang['AdditionalStakeholders']) ."</th>\n";
+    if(in_array("technology",$columns)) $str .= "<th class=\"technology\" data-name='technology' align=\"left\" >". $escaper->escapeHtml($lang['Technology']) ."</th>\n";
+    if(in_array("owner",$columns)) $str .= "<th class=\"owner\" data-name='owner' align=\"left\" >". $escaper->escapeHtml($lang['Owner']) ."</th>\n";
+    if(in_array("manager",$columns)) $str .= "<th class=\"manager\" data-name='manager' align=\"left\" >". $escaper->escapeHtml($lang['OwnersManager']) ."</th>\n";
+    if(in_array("submitted_by",$columns)) $str .= "<th class=\"submitted_by\" data-name='submitted_by' align=\"left\" >". $escaper->escapeHtml($lang['SubmittedBy']) ."</th>\n";
+    if(in_array("scoring_method",$columns)) $str .= "<th class=\"scoring_method\" data-name='scoring_method' align=\"left\" >". $escaper->escapeHtml($lang['RiskScoringMethod']) ."</th>\n";
+    if(in_array("calculated_risk",$columns)) $str .= "<th class=\"calculated_risk\" data-name='calculated_risk' align=\"left\" >". $escaper->escapeHtml($lang['InherentRisk']) ."</th>\n";
+    if(in_array("residual_risk",$columns)) $str .= "<th class=\"residual_risk\" data-name='residual_risk' align=\"left\" >". $escaper->escapeHtml($lang['ResidualRisk']) ."</th>\n";
+    if(in_array("submission_date",$columns)) $str .= "<th class=\"submission_date\" data-name='submission_date' align=\"left\" >". $escaper->escapeHtml($lang['DateSubmitted']) ."</th>\n";
+    if(in_array("review_date",$columns)) $str .= "<th class=\"review_date\" data-name='review_date' align=\"left\" >". $escaper->escapeHtml($lang['ReviewDate']) ."</th>\n";
+    if(in_array("project",$columns)) $str .= "<th class=\"project\" data-name='project' align=\"left\" >". $escaper->escapeHtml($lang['Project']) ."</th>\n";
+    if(in_array("mitigation_planned",$columns)) $str .= "<th class=\"mitigation_planned\" data-name='mitigation_planned' align=\"left\" >". $escaper->escapeHtml($lang['MitigationPlanned']) ."</th>\n";
+    if(in_array("management_review",$columns)) $str .= "<th class=\"management_review\" data-name='management_review' align=\"left\" >". $escaper->escapeHtml($lang['ManagementReview']) ."</th>\n";
+    if(in_array("days_open",$columns)) $str .= "<th class=\"days_open\" data-name='days_open' align=\"left\" >". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
+    if(in_array("next_review_date",$columns)) $str .= "<th class=\"next_review_date\" data-name='next_review_date' align=\"left\" >". $escaper->escapeHtml($lang['NextReviewDate']) ."</th>\n";
+    if(in_array("next_step",$columns)) $str .= "<th class=\"next_step\" data-name='next_step' align=\"left\" >". $escaper->escapeHtml($lang['NextStep']) ."</th>\n";
+    if(in_array("affected_assets",$columns)) $str .= "<th class=\"affected_assets\" data-name='affected_assets' align=\"left\" >". $escaper->escapeHtml($lang['AffectedAssets']) ."</th>\n";
+    if(in_array("risk_assessment",$columns)) $str .= "<th class=\"risk_assessment\" data-name='risk_assessment' align=\"left\" >". $escaper->escapeHtml($lang['RiskAssessment']) ."</th>\n";
+    if(in_array("additional_notes",$columns)) $str .= "<th class=\"additional_notes\" data-name='additional_notes' align=\"left\" >". $escaper->escapeHtml($lang['AdditionalNotes']) ."</th>\n";
+    if(in_array("current_solution",$columns)) $str .= "<th class=\"current_solution\" data-name='current_solution' align=\"left\" >". $escaper->escapeHtml($lang['CurrentSolution']) ."</th>\n";
+    if(in_array("security_recommendations",$columns)) $str .= "<th class=\"security_recommendations\" data-name='security_recommendations' align=\"left\" >". $escaper->escapeHtml($lang['SecurityRecommendations']) ."</th>\n";
+    if(in_array("security_requirements",$columns)) $str .= "<th class=\"security_requirements\" data-name='security_requirements' align=\"left\" >". $escaper->escapeHtml($lang['SecurityRequirements']) ."</th>\n";
+    if(in_array("planning_strategy",$columns)) $str .= "<th class=\"planning_strategy\" data-name='planning_strategy' align=\"left\" >". $escaper->escapeHtml($lang['PlanningStrategy']) ."</th>\n";
+    if(in_array("planning_date",$columns)) $str .= "<th class=\"planning_date\" data-name='planning_date' align=\"left\" >". $escaper->escapeHtml($lang['MitigationPlanning']) ."</th>\n";
+    if(in_array("mitigation_effort",$columns)) $str .= "<th class=\"mitigation_effort\" data-name='mitigation_effort' align=\"left\" >". $escaper->escapeHtml($lang['MitigationEffort']) ."</th>\n";
+    if(in_array("mitigation_cost",$columns)) $str .= "<th class=\"mitigation_cost\" data-name='mitigation_cost' align=\"left\" >". $escaper->escapeHtml($lang['MitigationCost']) ."</th>\n";
+    if(in_array("mitigation_owner",$columns)) $str .= "<th class=\"mitigation_owner\" data-name='mitigation_owner' align=\"left\" >". $escaper->escapeHtml($lang['MitigationOwner']) ."</th>\n";
+    if(in_array("mitigation_team",$columns)) $str .= "<th class=\"mitigation_team\" data-name='mitigation_team' align=\"left\" >". $escaper->escapeHtml($lang['MitigationTeam']) ."</th>\n";
+    if(in_array("mitigation_accepted",$columns)) $str .= "<th class=\"mitigation_accepted\" data-name='mitigation_accepted' align=\"left\" >". $escaper->escapeHtml($lang['MitigationAccepted']) ."</th>\n";
+    if(in_array("mitigation_date",$columns)) $str .= "<th class=\"mitigation_date\" data-name='mitigation_date' align=\"left\" >". $escaper->escapeHtml($lang['MitigationDate']) ."</th>\n";
+    if(in_array("mitigation_controls",$columns)) $str .= "<th class=\"mitigation_controls\" data-name='mitigation_controls' align=\"left\" >". $escaper->escapeHtml($lang['MitigationControls']) ."</th>\n";
+    if(in_array("risk_tags",$columns)) $str .= "<th class=\"risk_tags\" data-name='risk_tags' align=\"left\" >". $escaper->escapeHtml($lang['Tags']) ."</th>\n";
+    if(in_array("closure_date",$columns)) $str .= "<th class=\"closure_date\" data-name='closure_date' align=\"left\" >". $escaper->escapeHtml($lang['DateClosed']) ."</th>\n";
+    if(in_array("comments",$columns)) $str .= "<th class=\"comments\" data-name='comments' align=\"left\" >". $escaper->escapeHtml($lang['Comments']) ."</th>\n";
+    
+    // If customization extra is enabled, includes customization fields 
+    if(customization_extra()){
+        $custom_cols = "";
+        
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        
+        foreach($columns as $index => $column){
+            if(($pos = stripos($column, "custom_field_")) !== false){
+                $field_id = str_replace("custom_field_", "", $column);
+                $custom_field = get_field_by_id($field_id);
+                $label = $escaper->escapeHtml($custom_field['name']);
+                $custom_cols .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
+            }
+        }
+        $str .=  $custom_cols;
+    }
+    
+    return $str;
 }
 
 /********************************
@@ -5309,22 +5614,13 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
     if ($separation && ($type === 'users_of_teams' || $type === 'teams_of_users')) {
         return get_user_management_reports_report_data_separation($type, $mode, $start, $length, $orderColumn, $orderDir, $filters);
     }
-    
-    global $possible_permissions;
-    
+
     $orderColumns = array(
         'users_of_permissions' => [''], // No ordering on the permission names as they're added to the results from PHP code so it's ordered there
         'permissions_of_users' => ['`u`.`name`', '`u`.`username`', '`u`.`enabled`'],
         'users_of_roles' => ['`users_roles`.`r_name`']
     );
     $orderColumn = $orderColumns[$type][$orderColumn];
-    
-    $permission_selects = [];
-    foreach ($possible_permissions as $permission) {
-        $permission_selects[] = "SELECT value, '$permission' AS name FROM user WHERE `$permission` = 1 OR `admin` = 1";
-    }
-    
-    $permissions_from_part = implode(" UNION ALL ", $permission_selects);
 
     if ($type === "permissions_of_users") {
 
@@ -5348,16 +5644,14 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
                     unset($filters['permissions'][$key]);
                     $filter_where_parts[] = '`perms`.`name` IS NULL';
                 }
-                foreach ($filters['permissions'] as $permission) {
-                    $filter_where_parts[] = "
-                        `u`.`{$permission}` = 1";                    
+                if (count($filters['permissions'])) {
+                    $filter_where_parts[] = "`perms`.`id` IN (" . implode(',', $filters['permissions']) . ")";                    
                 }
-
                 $filter_where_part .= "
                     AND (" . implode(' OR ', $filter_where_parts) . ")";
                 
                 // Generating the group_concat this way to make sure to only display the permissions that are filtered for
-                $permissions_select = "GROUP_CONCAT(DISTINCT if(`perms`.`name` IN ('" . implode("','", $filters['permissions']) . "'), `perms`.`name`, null) ORDER BY `perms`.`name` ASC) AS permissions";
+                $permissions_select = "GROUP_CONCAT(`perms`.`name` ORDER BY `perms`.`name` ASC SEPARATOR ', ') AS permissions";
                     
 
             } else {
@@ -5368,8 +5662,24 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
                     "recordsFiltered" => 0,
                 );
             }
-        } else {
-            $permissions_select = "GROUP_CONCAT(DISTINCT `perms`.`name` ORDER BY `perms`.`name` ASC) AS permissions"; 
+        } else { // If we're requesting all the data to be able to populate the unique table columns
+            $permissions_select = "
+                    CONCAT(
+                        '[',
+                        IF(
+                            `perms`.`id` IS NOT NULL,
+                            GROUP_CONCAT(
+                                JSON_OBJECT(
+                                    'value', `perms`.`id`,
+                                    'name', `perms`.`name`
+                                )
+                                SEPARATOR ','
+                            ),
+                            ''
+                        ),
+                        ']'
+                    ) AS permissions
+                ";
         }
         
         $query = "
@@ -5381,7 +5691,8 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
                 {$permissions_select}
             FROM
                 `user` u
-                LEFT JOIN ($permissions_from_part) perms ON `u`.`value` = `perms`.`value`
+                LEFT JOIN `permission_to_user` p2u ON `u`.`value` = `p2u`.`user_id`
+                LEFT JOIN `permissions` perms ON `p2u`.`permission_id` = `perms`.`id`
                 {$filter_where_part}
             GROUP BY
                 `u`.`value`
@@ -5403,11 +5714,11 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
                 // Removing the unnecessary marker value(-1)
                 if (($key = array_search(-1, $filters['permissions'])) !== false) {
                     unset($filters['permissions'][$key]);
-                    $permission_filter_parts[] = "`perms`.`name` IS NULL";
+                    $permission_filter_parts[] = "`perms`.`id` IS NULL";
                 }
                 
                 if ($filters['permissions']) {
-                    $permission_filter_parts[] = "`perms`.`name` IN ('" . implode("','", $filters['permissions']) . "')";
+                    $permission_filter_parts[] = "`perms`.`id` IN (" . implode(",", $filters['permissions']) . ")";
                 }
 
                 $filter_where_part = "
@@ -5445,11 +5756,13 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
 
         $query = "
             SELECT
+                `perms`.`id`,
                 `perms`.`name`,
                 {$users_select}
             FROM
-                `user` u
-                LEFT JOIN ($permissions_from_part) perms ON `u`.`value` = `perms`.`value`
+            	`user` u
+            	LEFT JOIN permission_to_user p2u ON u.value = p2u.user_id
+                LEFT JOIN permissions perms ON p2u.permission_id = perms.id
             {$filter_where_part}
             GROUP BY
                 `perms`.`name`
@@ -5540,6 +5853,7 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
                {$orderColumn} {$orderDir}
         ";
     }
+    $db = db_open();
     
     if ($mode === 'normal') {
         $limitQuery = $length == -1 ? "" : "Limit {$start}, {$length}";
@@ -5553,7 +5867,7 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
         ";
 
         $db = db_open();
-        
+
         $stmt = $db->prepare($query);
         $stmt->execute();
         
@@ -5573,7 +5887,6 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
             "recordsFiltered" => count($data),
         );
     } else { // If we just need the raw data to be able to populate the unique column filters
-        $db = db_open();
 
         $stmt = $db->prepare($query);
         $stmt->execute();

@@ -10,6 +10,7 @@ require_once(realpath(__DIR__ . '/cvss.php'));
 require_once(realpath(__DIR__ . '/services.php'));
 require_once(realpath(__DIR__ . '/alerts.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
+require_once(realpath(__DIR__ . '/authenticate.php'));
 
 // Include the language file
 require_once(language_file());
@@ -27,7 +28,7 @@ set_simplerisk_timezone();
     functions that are getting name(s) by value(s). When querying the names of
     these tables the results should be ran through the 'try_decrypt()' function.
 */
-$tables_where_name_is_encrypted = array('frameworks', 'projects');
+$tables_where_name_is_encrypted = array('frameworks', 'projects', 'assets');
 
 
 $available_extras = array(
@@ -90,7 +91,8 @@ $junction_config = array(
         'id_field' => 'value',
         'junctions' => array(
             'user_to_team' => 'user_id',
-            'risk_to_additional_stakeholder' => 'user_id'
+            'risk_to_additional_stakeholder' => 'user_id',
+            'permission_to_user' => 'user_id' // There's no permission counterpart to this, as permissions can't be deleted 
         )
     ),
     'risks' => array(
@@ -113,7 +115,7 @@ $junction_config = array(
     'technology' => array(
         'id_field' => 'value',
         'junctions' => array(
-            'risk_to_location' => 'technology_id'
+            'risk_to_technology' => 'technology_id'
         )
     ),
     'assets' => array(
@@ -181,6 +183,12 @@ $junction_config = array(
             'business_unit_to_team' => 'business_unit_id'
         )
     ),
+    'role' => array(
+        'id_field' => 'value',
+        'junctions' => array(
+            'role_responsibilities' => 'role_id',
+        )
+    ),
 );
 
 
@@ -193,24 +201,7 @@ function db_open()
         return $GLOBALS['db'];
     }
     // Connect to the database
-    try
-    {
-	// Set the default options array
-	$options = array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION);
-
-	// If a database SSL certificate path has been defined
-	if (defined("DB_SSL_CERTIFICATE_PATH") && DB_SSL_CERTIFICATE_PATH != '')
-	{
-		// Add the SSL certificate to the options array
-		$options[PDO::MYSQL_ATTR_SSL_CA] = DB_SSL_CERTIFICATE_PATH;
-	}
-
-	$GLOBALS['db'] = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, $options);
-        $GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET NAMES utf8");
-        $GLOBALS['db']->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, "SET CHARACTER SET utf8");
-
-        // Set the simplerisk timezone for any datetime functions
-        set_simplerisk_timezone();
+    try {
         
         $now = new DateTime();
         $mins = $now->getOffset() / 60;
@@ -220,8 +211,52 @@ function db_open()
         $mins -= $hrs * 60;
         $offset = sprintf('%+d:%02d', $hrs*$sgn, $mins);
 
-        //Your DB Connection - sample
-        $GLOBALS['db']->exec("SET time_zone='{$offset}';");
+        // Set the default options array
+        $options = array(
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8, CHARACTER SET utf8, @@group_concat_max_len = 4294967295, time_zone='{$offset}'"
+        );
+        
+        // If a database SSL certificate path has been defined
+        if (defined("DB_SSL_CERTIFICATE_PATH") && DB_SSL_CERTIFICATE_PATH != '') {
+            // Add the SSL certificate to the options array
+            $options[PDO::MYSQL_ATTR_SSL_CA] = DB_SSL_CERTIFICATE_PATH;
+        }
+        
+        // Create the PDO object
+        $GLOBALS['db'] = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, $options);
+
+
+        // Set the simplerisk timezone for any datetime functions
+        
+        // Get the value set for the timezone in the database
+        $stmt = $GLOBALS['db']->prepare("SELECT `value` FROM `settings` WHERE `name` = 'default_timezone';");
+        $stmt->execute();
+        
+        // Store the list in the array
+        $default_timezone = $stmt->fetch(PDO::FETCH_COLUMN);
+        
+        // If no timezone is set, set it to CST
+        if (!$default_timezone) $default_timezone = "America/Chicago";
+        
+        // Set the timezone for PHP date functions
+        date_default_timezone_set($default_timezone);
+        
+    	// FOR DEBUGGING DATABASE CONNECTIONS ONLY
+    	/*
+    	$log_file = "/tmp/debug_log";
+    	$connection = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, $options);
+    	$stmt = $connection->prepare("SHOW VARIABLES LIKE 'max_connections';");
+    	$stmt->execute();
+    	$results = $stmt->fetch();
+    	$max_connections = $results['Value'];
+    	$stmt = $connection->prepare("SHOW STATUS WHERE `variable_name` = 'Threads_connected';");
+    	$stmt->execute();
+    	$results = $stmt->fetch();
+    	$current_connections = $results['Value'];
+    	error_log(date('c')." Database Connections: ".$current_connections . " / " . $max_connections."\n", 3, $log_file);
+    	$connection = null;
+    	*/
 
         return $GLOBALS['db'];
     }
@@ -241,6 +276,7 @@ function db_close($db)
 {
         // Close the DB connection
         $db = null;
+        $GLOBALS['db'] = null;
 }
 
 /*****************************
@@ -603,7 +639,7 @@ function get_custom_table($type)
     }
     // If we want enabled/disabled users or want the enabled users without caring for business units
     else if ($type == "enabled_users" || $type == "disabled_users" || $type == "enabled_users_all") {
-        if (!is_admin() && organizational_hierarchy_extra() && $type != "enabled_users_all") {
+        if ($type != "enabled_users_all" && !is_admin() && organizational_hierarchy_extra()) {
             $stmt = $db->prepare("
                 SELECT
                     `u`.*, GROUP_CONCAT(DISTINCT `t`.`value`) as teams
@@ -1971,7 +2007,7 @@ function format_date($date, $default = "")
 function format_datetime($date, $default = "", $timeformat = "H:i:s")
 {
     // If the date is not 0000-00-00
-    if ($date && $date != "0000-00-00")
+    if ($date && $date != "0000-00-00" && $date != "0000-00-00 00:00:00")
     {
         // Set it to the proper format
         return strtotime($date) ? date(get_default_datetime_format($timeformat), strtotime($date)) : "";
@@ -2717,60 +2753,55 @@ function update_password_policy($strict_user_validation, $pass_policy_enabled, $
 /**********************
  * FUNCTION: ADD USER *
  **********************/
-function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $governance, $riskmanagement, $compliance, $assessments, $asset, $admin, $review_veryhigh, $accept_mitigation, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor, $change_password, $add_new_frameworks, $modify_frameworks, $delete_frameworks, $add_new_controls, $modify_controls, $delete_controls, $other_options=[])
+function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions)
 {
     // Open the database connection
     $db = db_open();
 
     // Insert the new user
-    $sql = "INSERT INTO user (`type`, `username`, `name`, `email`, `salt`, `password`, `role_id`, `governance`, `riskmanagement`, `compliance`, `assessments`, `asset`, `admin`, `review_veryhigh`, `accept_mitigation`, `review_high`, `review_medium`, `review_low`, `review_insignificant`, `submit_risks`, `modify_risks`, `plan_mitigations`, `close_risks`, `multi_factor`, `change_password`, `add_new_frameworks`, `modify_frameworks`, `delete_frameworks`, `add_new_controls`, `modify_controls`, `delete_controls`, `custom_display_settings`";
-    foreach($other_options as $field => $value)
-    {
-        $sql .= ", `{$field}`";
-    }
-    $sql .= ") VALUES (:type, :user, :name, :email, :salt, :hash, :role_id, :governance, :riskmanagement, :compliance, :assessments, :asset, :admin, :review_veryhigh, :accept_mitigation, :review_high, :review_medium, :review_low, :review_insignificant, :submit_risks, :modify_risks, :plan_mitigations, :close_risks, :multi_factor, :change_password, :add_new_frameworks, :modify_frameworks, :delete_frameworks, :add_new_controls, :modify_controls, :delete_controls, ''";
-    foreach($other_options as $field => $value)
-    {
-        $sql .= ", :{$field}";
-    }
-    $sql .= "); ";
-    
-    $stmt = $db->prepare($sql);
-    $stmt->bindParam(":type", $type, PDO::PARAM_STR, 20);
-    $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
-    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
-    $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
-    $stmt->bindParam(":salt", $salt, PDO::PARAM_STR, 20);
-    $stmt->bindParam(":hash", $hash, PDO::PARAM_STR, 60);
+    $stmt = $db->prepare(
+        "INSERT INTO
+            user (
+                `type`,
+                `username`,
+                `name`,
+                `email`,
+                `salt`,
+                `password`,
+                `role_id`,
+                `admin`,
+                `multi_factor`,
+                `change_password`,
+                `manager`,
+                `custom_display_settings`
+            )
+        VALUES (
+            :type,
+            :user,
+            :name,
+            :email,
+            :salt,
+            :hash,
+            :role_id,
+            :admin,
+            :multi_factor,
+            :change_password,
+            :manager,
+            ''
+        );
+    ");
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->bindParam(":user", $user, PDO::PARAM_STR);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+    $stmt->bindParam(":email", $email, PDO::PARAM_STR);
+    $stmt->bindParam(":salt", $salt, PDO::PARAM_STR);
+    $stmt->bindParam(":hash", $hash, PDO::PARAM_STR);
     $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
-    $stmt->bindParam(":governance", $governance, PDO::PARAM_INT);
-    $stmt->bindParam(":riskmanagement", $riskmanagement, PDO::PARAM_INT);
-    $stmt->bindParam(":compliance", $compliance, PDO::PARAM_INT);
-    $stmt->bindParam(":assessments", $assessments, PDO::PARAM_INT);
-    $stmt->bindParam(":asset", $asset, PDO::PARAM_INT);
     $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
-    $stmt->bindParam(":review_veryhigh", $review_veryhigh, PDO::PARAM_INT);
-    $stmt->bindParam(":accept_mitigation", $accept_mitigation, PDO::PARAM_INT);
-    $stmt->bindParam(":review_high", $review_high, PDO::PARAM_INT);
-    $stmt->bindParam(":review_medium", $review_medium, PDO::PARAM_INT);
-    $stmt->bindParam(":review_low", $review_low, PDO::PARAM_INT);
-    $stmt->bindParam(":review_insignificant", $review_insignificant, PDO::PARAM_INT);
-    $stmt->bindParam(":submit_risks", $submit_risks, PDO::PARAM_INT);
-    $stmt->bindParam(":modify_risks", $modify_risks, PDO::PARAM_INT);
-    $stmt->bindParam(":plan_mitigations", $plan_mitigations, PDO::PARAM_INT);
-    $stmt->bindParam(":close_risks", $close_risks, PDO::PARAM_INT);
     $stmt->bindParam(":multi_factor", $multi_factor, PDO::PARAM_INT);
     $stmt->bindParam(":change_password", $change_password, PDO::PARAM_INT);
-    $stmt->bindParam(":add_new_frameworks", $add_new_frameworks, PDO::PARAM_INT);
-    $stmt->bindParam(":modify_frameworks", $modify_frameworks, PDO::PARAM_INT);
-    $stmt->bindParam(":delete_frameworks", $delete_frameworks, PDO::PARAM_INT);
-    $stmt->bindParam(":add_new_controls", $add_new_controls, PDO::PARAM_INT);
-    $stmt->bindParam(":modify_controls", $modify_controls, PDO::PARAM_INT);
-    $stmt->bindParam(":delete_controls", $delete_controls, PDO::PARAM_INT);
-    foreach($other_options as $field => $value)
-    {
-        $stmt->bindParam(":{$field}", $other_options[$field], PDO::PARAM_INT);
-    }
+    $stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
+
     $stmt->execute();
     
     $user_id = $db->lastInsertId();
@@ -2778,8 +2809,9 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     // Set user's teams
     set_teams_of_user($user_id, $teams);
 
-    // Audit log
+    update_permissions($user_id, $permissions);
     
+    // Audit log
     if(!empty($_SESSION['uid']))
     {
         $message = "The new user \"" . $user . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
@@ -2800,72 +2832,60 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
 /*************************
  * FUNCTION: UPDATE USER *
  *************************/
-function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $lang, $governance, $riskmanagement, $compliance, $assessments, $asset, $admin, $review_veryhigh, $accept_mitigation, $review_high, $review_medium, $review_low, $review_insignificant, $submit_risks, $modify_risks, $plan_mitigations, $close_risks, $multi_factor, $change_password, $add_new_frameworks, $modify_frameworks, $delete_frameworks, $add_new_controls, $modify_controls, $delete_controls, $other_options=[]) {
+function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $language, $admin, $multi_factor, $change_password, $manager, $permissions=[]) {
 
     // Checking whether the user just got locked out
     // It's only true when the user wasn't locked, but with this call it'll be
     $user_got_locked = !is_user_locked_out($user_id) && (int)$lockout == 1;
 
     // If the language is empty
-    if ($lang == "")
+    if ($language == "")
     {
         // Set the value to null
-        $lang = NULL;
+        $language = NULL;
     }
 
     // Open the database connection
     $db = db_open();
 
     // Update the user
-    $sql = "UPDATE user set `lockout`=:lockout, `type`=:type, `name`=:name, `email`=:email, `role_id`=:role_id, `lang` =:lang, `governance`=:governance, `riskmanagement`=:riskmanagement, `compliance`=:compliance, `assessments`=:assessments, `asset`=:asset, `admin`=:admin, `review_veryhigh`=:review_veryhigh, `accept_mitigation`=:accept_mitigation, `review_high`=:review_high, `review_medium`=:review_medium, `review_low`=:review_low, `review_insignificant`=:review_insignificant, `submit_risks`=:submit_risks, `modify_risks`=:modify_risks, `plan_mitigations`=:plan_mitigations, `close_risks`=:close_risks, `multi_factor`=:multi_factor, `change_password`=:change_password, `add_new_frameworks`=:add_new_frameworks, `modify_frameworks`=:modify_frameworks, `delete_frameworks`=:delete_frameworks, `add_new_controls`=:add_new_controls, `modify_controls`=:modify_controls, `delete_controls`=:delete_controls";
-    foreach($other_options as $field => $value)
-    {
-        $sql .= ", `{$field}`=:{$field} ";
-    }
-    $sql .= " WHERE `value`=:user_id; ";
-    
-    $stmt = $db->prepare($sql);
+    $stmt = $db->prepare("
+        UPDATE
+            `user`
+        SET
+            `lockout`=:lockout,
+            `type`=:type,
+            `name`=:name,
+            `email`=:email,
+            `role_id`=:role_id,
+            `lang` =:lang,
+            `admin`=:admin,
+            `multi_factor`=:multi_factor,
+            `change_password`=:change_password,
+            `manager`=:manager
+        WHERE
+            `value`=:user_id;
+    ");
     
     $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
     $stmt->bindParam(":lockout", $lockout, PDO::PARAM_INT);
-    $stmt->bindParam(":type", $type, PDO::PARAM_STR, 10);
-    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 50);
-    $stmt->bindParam(":email", $email, PDO::PARAM_STR, 200);
-    $stmt->bindParam(":role_id", $role_id, PDO::PARAM_STR, 200);
-    $stmt->bindParam(":lang", $lang, PDO::PARAM_STR, 2);
-    $stmt->bindParam(":governance", $governance, PDO::PARAM_INT);
-    $stmt->bindParam(":riskmanagement", $riskmanagement, PDO::PARAM_INT);
-    $stmt->bindParam(":compliance", $compliance, PDO::PARAM_INT);
-    $stmt->bindParam(":assessments", $assessments,  PDO::PARAM_INT);
-    $stmt->bindParam(":asset", $asset, PDO::PARAM_INT);
+    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+    $stmt->bindParam(":email", $email, PDO::PARAM_STR);
+    $stmt->bindParam(":role_id", $role_id, PDO::PARAM_STR);
+    $stmt->bindParam(":lang", $language, PDO::PARAM_STR);
     $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
-    $stmt->bindParam(":review_veryhigh", $review_veryhigh, PDO::PARAM_INT);
-    $stmt->bindParam(":accept_mitigation", $accept_mitigation, PDO::PARAM_INT);
-    $stmt->bindParam(":review_high", $review_high, PDO::PARAM_INT);
-    $stmt->bindParam(":review_medium", $review_medium, PDO::PARAM_INT);
-    $stmt->bindParam(":review_low", $review_low, PDO::PARAM_INT);
-    $stmt->bindParam(":review_insignificant", $review_insignificant, PDO::PARAM_INT);
-    $stmt->bindParam(":submit_risks", $submit_risks, PDO::PARAM_INT);
-    $stmt->bindParam(":modify_risks", $modify_risks, PDO::PARAM_INT);
-    $stmt->bindParam(":plan_mitigations", $plan_mitigations, PDO::PARAM_INT);
-    $stmt->bindParam(":close_risks", $close_risks, PDO::PARAM_INT);
     $stmt->bindParam(":multi_factor", $multi_factor, PDO::PARAM_INT);
     $stmt->bindParam(":change_password", $change_password, PDO::PARAM_INT);
-    $stmt->bindParam(":add_new_frameworks", $add_new_frameworks, PDO::PARAM_INT);
-    $stmt->bindParam(":modify_frameworks", $modify_frameworks, PDO::PARAM_INT);
-    $stmt->bindParam(":delete_frameworks", $delete_frameworks, PDO::PARAM_INT);
-    $stmt->bindParam(":add_new_controls", $add_new_controls, PDO::PARAM_INT);
-    $stmt->bindParam(":modify_controls", $modify_controls, PDO::PARAM_INT);
-    $stmt->bindParam(":delete_controls", $delete_controls, PDO::PARAM_INT);
-    foreach($other_options as $field => $value)
-    {
-        $stmt->bindParam(":{$field}", $other_options[$field], PDO::PARAM_INT);
-    }
+    $stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
+
     $stmt->execute();
 
     // Update the user's teams
     set_teams_of_user($user_id, $teams);
 
+    update_permissions($user_id, $permissions);
+    
     // Close the database connection
     db_close($db);
 
@@ -3027,7 +3047,6 @@ function get_id_by_user($user)
  *******************************/
 function core_get_mapping_value($prefix, $type, $mappings, $csv_line)
 {
-
     // Create the search term
     $search_term = $prefix . $type;
 
@@ -3169,6 +3188,14 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
             return false;
         }
     }
+
+    if(jira_extra()) {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
+
+        CreateIssueForRisk($last_insert_id);
+    }
+
 
     $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $_SESSION['user'] . "\".";
     write_log($risk_id, $submitted_by, $message);
@@ -4487,7 +4514,8 @@ function update_risk($risk_id, $is_api = false)
     } elseif($submission_date == ""){
         $submission_date = $current_datetime;
     }
-    $risk_catalog_mapping   = get_param("post", "risk_catalog_mapping", "");
+    $risk_catalog_mapping = get_param("post", "risk_catalog_mapping", "");
+	$risk_catalog_mapping = $risk_catalog_mapping?$risk_catalog_mapping:0;
 
     $data = array(
         "reference_id"      =>$reference_id,
@@ -4663,6 +4691,9 @@ function get_residual_risk($risk_id)
 
     $residual_risk = round($risk['calculated_risk'] * (100-$risk['mitigation_percent']) / 100, 2);
 
+    // Close the database connection
+    db_close($db);
+
     return $residual_risk ? $residual_risk : "0.0";
 }
 
@@ -4743,6 +4774,9 @@ function check_risk_by_id($id){
 
     // Store the list in the array
     $array = $stmt->fetchAll();
+
+    // Close the database connection
+    db_close($db);
 
     if($array){
         return true;
@@ -5222,6 +5256,34 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             case "days_open":
                 $sort_query = " ORDER BY datediff(NOW(), b.submission_date) {$order_dir} ";
             break;
+            case "regulation":
+                $sort_query = " ORDER BY b.regulation {$order_dir} ";
+            break;
+            case "source":
+                $sort_query = " ORDER BY v.name {$order_dir} ";
+            break;
+            case "category":
+                $sort_query = " ORDER BY d.name {$order_dir} ";
+            break;
+            case "owner":
+                $sort_query = " ORDER BY g.name {$order_dir} ";
+            break;
+            case "manager":
+                $sort_query = " ORDER BY h.name {$order_dir} ";
+            break;
+            case "mitigation_cost":
+                $sort_query = " ORDER BY s.min_value {$order_dir} ";
+            break;
+            case "submitted_by":
+                $sort_query = " ORDER BY i.name {$order_dir} ";
+            break;
+            case "next_review_date":
+                $sort_query = "";
+            break;
+            default: 
+                if (stripos($order_field, "custom_field_") === false)
+                    $sort_query = " ORDER BY `$order_field` {$order_dir} ";
+            break;
         }
         
     }
@@ -5303,14 +5365,127 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
+                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT location.name SEPARATOR '; ')
+                        FROM
+                            location, risk_to_location rtl
+                        WHERE
+                            rtl.risk_id=b.id AND rtl.location_id=location.value
+                    ) AS location,
+                    v.name AS source, 
+                    d.name AS category,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ', ')
+                        FROM
+                            team, risk_to_team rtt
+                        WHERE
+                            rtt.risk_id=b.id AND rtt.team_id=team.value
+                    ) AS team,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ')
+                        FROM
+                            user u, risk_to_additional_stakeholder rtas
+                        WHERE
+                            rtas.risk_id=b.id AND rtas.user_id=u.value
+                    ) AS additional_stakeholders,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ', ')
+                        FROM
+                            technology tech, risk_to_technology rttg
+                        WHERE
+                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
+                    ) AS technology,
+                    g.name AS owner,
+                    h.name AS manager,
+                    a.scoring_method,
+                    k.name AS project, 
+                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
+                    i.name AS submitted_by,
+                    (
+                        SELECT
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                        FROM
+                            tags t, tags_taggees tt 
+                        WHERE
+                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
+                    ) AS risk_tags,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT rta.asset_id SEPARATOR ', ')
+                        FROM
+                            risks_to_assets rta
+                        WHERE
+                            rta.risk_id=b.id
+                    ) AS affected_assets,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT rtag.asset_group_id SEPARATOR ', ')
+                        FROM
+                            risks_to_asset_groups rtag
+                        WHERE
+                            rtag.risk_id=b.id
+                    ) AS affected_asset_groups,
+                    q.name AS planning_strategy,
+                    p.planning_date,
+                    r.name AS mitigation_effort,
+                    s.min_value AS mitigation_min_cost,
+                    s.max_value AS mitigation_max_cost,
+                    t.name AS mitigation_owner,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
+                        FROM
+                            team, mitigation_to_team mtt 
+                        WHERE
+                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
+                    ) AS mitigation_team,
+
+
+                    NOT(ISNULL(mau.id)) mitigation_accepted, 
+                    p.submission_date AS mitigation_date,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ')
+                        FROM
+                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                        WHERE
+                            mtc.mitigation_id=p.id 
+                    ) AS mitigation_controls,
+                    p.current_solution,
+                    p.security_recommendations,
+                    p.security_requirements,
+                    m.name AS next_step,
+                    l.comments
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
+                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
+                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+                    LEFT JOIN mitigations p ON b.id = p.risk_id
+                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN closures o ON b.close_id = o.id
+                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
+                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
+                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
+                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
+                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
+                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
+                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
+                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
+                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
+                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
+                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
                 WHERE
                     b.mitigation_id = 0 and b.status != \"Closed\"
                 GROUP BY b.id
@@ -5329,16 +5504,127 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
+                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT location.name SEPARATOR '; ')
+                        FROM
+                            location, risk_to_location rtl
+                        WHERE
+                            rtl.risk_id=b.id AND rtl.location_id=location.value
+                    ) AS location,
+                    v.name AS source, 
+                    d.name AS category,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ', ')
+                        FROM
+                            team, risk_to_team rtt
+                        WHERE
+                            rtt.risk_id=b.id AND rtt.team_id=team.value
+                    ) AS team,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ')
+                        FROM
+                            user u, risk_to_additional_stakeholder rtas
+                        WHERE
+                            rtas.risk_id=b.id AND rtas.user_id=u.value
+                    ) AS additional_stakeholders,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ', ')
+                        FROM
+                            technology tech, risk_to_technology rttg
+                        WHERE
+                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
+                    ) AS technology,
+                    g.name AS owner,
+                    h.name AS manager,
+                    a.scoring_method,
+                    k.name AS project, 
+                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
+                    i.name AS submitted_by,
+                    (
+                        SELECT
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                        FROM
+                            tags t, tags_taggees tt 
+                        WHERE
+                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
+                    ) AS risk_tags,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT rta.asset_id SEPARATOR ', ')
+                        FROM
+                            risks_to_assets rta
+                        WHERE
+                            rta.risk_id=b.id
+                    ) AS affected_assets,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT rtag.asset_group_id SEPARATOR ', ')
+                        FROM
+                            risks_to_asset_groups rtag
+                        WHERE
+                            rtag.risk_id=b.id
+                    ) AS affected_asset_groups,
+                    q.name AS planning_strategy,
+                    p.planning_date,
+                    r.name AS mitigation_effort,
+                    s.min_value AS mitigation_min_cost,
+                    s.max_value AS mitigation_max_cost,
+                    t.name AS mitigation_owner,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
+                        FROM
+                            team, mitigation_to_team mtt 
+                        WHERE
+                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
+                    ) AS mitigation_team,
+
+
+                    NOT(ISNULL(mau.id)) mitigation_accepted, 
+                    p.submission_date AS mitigation_date,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ')
+                        FROM
+                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                        WHERE
+                            mtc.mitigation_id=p.id 
+                    ) AS mitigation_controls,
+                    p.current_solution,
+                    p.security_recommendations,
+                    p.security_requirements,
+                    m.name AS next_step,
+                    l.comments
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
                     LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+                    LEFT JOIN mitigations p ON b.id = p.risk_id
+                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN closures o ON b.close_id = o.id
+                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
+                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
+                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
+                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
+                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
+                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
+                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
+                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
+                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
+                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
+                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
                 WHERE
                     b.mitigation_id = 0 and b.status != \"Closed\"  " . $separation_query . "
                 GROUP BY b.id
@@ -5367,14 +5653,127 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
+                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT location.name SEPARATOR '; ')
+                        FROM
+                            location, risk_to_location rtl
+                        WHERE
+                            rtl.risk_id=b.id AND rtl.location_id=location.value
+                    ) AS location,
+                    v.name AS source, 
+                    d.name AS category,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ', ')
+                        FROM
+                            team, risk_to_team rtt
+                        WHERE
+                            rtt.risk_id=b.id AND rtt.team_id=team.value
+                    ) AS team,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ')
+                        FROM
+                            user u, risk_to_additional_stakeholder rtas
+                        WHERE
+                            rtas.risk_id=b.id AND rtas.user_id=u.value
+                    ) AS additional_stakeholders,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ', ')
+                        FROM
+                            technology tech, risk_to_technology rttg
+                        WHERE
+                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
+                    ) AS technology,
+                    g.name AS owner,
+                    h.name AS manager,
+                    a.scoring_method,
+                    k.name AS project, 
+                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
+                    i.name AS submitted_by,
+                    (
+                        SELECT
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                        FROM
+                            tags t, tags_taggees tt 
+                        WHERE
+                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
+                    ) AS risk_tags,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT rta.asset_id SEPARATOR ', ')
+                        FROM
+                            risks_to_assets rta
+                        WHERE
+                            rta.risk_id=b.id
+                    ) AS affected_assets,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT rtag.asset_group_id SEPARATOR ', ')
+                        FROM
+                            risks_to_asset_groups rtag
+                        WHERE
+                            rtag.risk_id=b.id
+                    ) AS affected_asset_groups,
+                    q.name AS planning_strategy,
+                    p.planning_date,
+                    r.name AS mitigation_effort,
+                    s.min_value AS mitigation_min_cost,
+                    s.max_value AS mitigation_max_cost,
+                    t.name AS mitigation_owner,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
+                        FROM
+                            team, mitigation_to_team mtt 
+                        WHERE
+                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
+                    ) AS mitigation_team,
+
+
+                    NOT(ISNULL(mau.id)) mitigation_accepted, 
+                    p.submission_date AS mitigation_date,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ')
+                        FROM
+                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                        WHERE
+                            mtc.mitigation_id=p.id 
+                    ) AS mitigation_controls,
+                    p.current_solution,
+                    p.security_recommendations,
+                    p.security_requirements,
+                    m.name AS next_step,
+                    l.comments
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
+                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
+                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+                    LEFT JOIN mitigations p ON b.id = p.risk_id
+                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN closures o ON b.close_id = o.id
+                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
+                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
+                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
+                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
+                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
+                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
+                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
+                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
+                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
+                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
+                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
                 WHERE
                     b.mgmt_review = 0 and b.status != \"Closed\"
                 GROUP BY
@@ -5394,16 +5793,127 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             // Query the database
             $stmt = $db->prepare("
                 SELECT
-                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk
+                    a.calculated_risk, b.*, c.next_review, ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
+                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT location.name SEPARATOR '; ')
+                        FROM
+                            location, risk_to_location rtl
+                        WHERE
+                            rtl.risk_id=b.id AND rtl.location_id=location.value
+                    ) AS location,
+                    v.name AS source, 
+                    d.name AS category,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ', ')
+                        FROM
+                            team, risk_to_team rtt
+                        WHERE
+                            rtt.risk_id=b.id AND rtt.team_id=team.value
+                    ) AS team,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ')
+                        FROM
+                            user u, risk_to_additional_stakeholder rtas
+                        WHERE
+                            rtas.risk_id=b.id AND rtas.user_id=u.value
+                    ) AS additional_stakeholders,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ', ')
+                        FROM
+                            technology tech, risk_to_technology rttg
+                        WHERE
+                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
+                    ) AS technology,
+                    g.name AS owner,
+                    h.name AS manager,
+                    a.scoring_method,
+                    k.name AS project, 
+                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
+                    i.name AS submitted_by,
+                    (
+                        SELECT
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                        FROM
+                            tags t, tags_taggees tt 
+                        WHERE
+                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
+                    ) AS risk_tags,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT rta.asset_id SEPARATOR ', ')
+                        FROM
+                            risks_to_assets rta
+                        WHERE
+                            rta.risk_id=b.id
+                    ) AS affected_assets,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT rtag.asset_group_id SEPARATOR ', ')
+                        FROM
+                            risks_to_asset_groups rtag
+                        WHERE
+                            rtag.risk_id=b.id
+                    ) AS affected_asset_groups,
+                    q.name AS planning_strategy,
+                    p.planning_date,
+                    r.name AS mitigation_effort,
+                    s.min_value AS mitigation_min_cost,
+                    s.max_value AS mitigation_max_cost,
+                    t.name AS mitigation_owner,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
+                        FROM
+                            team, mitigation_to_team mtt 
+                        WHERE
+                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
+                    ) AS mitigation_team,
+
+
+                    NOT(ISNULL(mau.id)) mitigation_accepted, 
+                    p.submission_date AS mitigation_date,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ')
+                        FROM
+                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                        WHERE
+                            mtc.mitigation_id=p.id 
+                    ) AS mitigation_controls,
+                    p.current_solution,
+                    p.security_recommendations,
+                    p.security_requirements,
+                    m.name AS next_step,
+                    l.comments
                 FROM
                     risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
                     LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
                     LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+                    LEFT JOIN mitigations p ON b.id = p.risk_id
+                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                    LEFT JOIN closures o ON b.close_id = o.id
+                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
+                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
+                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
+                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
+                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
+                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
+                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
+                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
+                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
+                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
+                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
                 WHERE
                     b.mgmt_review = 0 and b.status != \"Closed\"  {$separation_query}
                 GROUP BY
@@ -5436,15 +5946,127 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     a.calculated_risk,
                     b.*,
                     c.next_review,
-                    ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
-                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open
-                FROM risk_scoring a
+                    ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
+                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
+                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT location.name SEPARATOR '; ')
+                        FROM
+                            location, risk_to_location rtl
+                        WHERE
+                            rtl.risk_id=b.id AND rtl.location_id=location.value
+                    ) AS location,
+                    v.name AS source, 
+                    d.name AS category,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ', ')
+                        FROM
+                            team, risk_to_team rtt
+                        WHERE
+                            rtt.risk_id=b.id AND rtt.team_id=team.value
+                    ) AS team,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ')
+                        FROM
+                            user u, risk_to_additional_stakeholder rtas
+                        WHERE
+                            rtas.risk_id=b.id AND rtas.user_id=u.value
+                    ) AS additional_stakeholders,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ', ')
+                        FROM
+                            technology tech, risk_to_technology rttg
+                        WHERE
+                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
+                    ) AS technology,
+                    g.name AS owner,
+                    h.name AS manager,
+                    a.scoring_method,
+                    k.name AS project, 
+                    i.name AS submitted_by,
+                    (
+                        SELECT
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                        FROM
+                            tags t, tags_taggees tt 
+                        WHERE
+                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
+                    ) AS risk_tags,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT rta.asset_id SEPARATOR ', ')
+                        FROM
+                            risks_to_assets rta
+                        WHERE
+                            rta.risk_id=b.id
+                    ) AS affected_assets,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT rtag.asset_group_id SEPARATOR ', ')
+                        FROM
+                            risks_to_asset_groups rtag
+                        WHERE
+                            rtag.risk_id=b.id
+                    ) AS affected_asset_groups,
+                    q.name AS planning_strategy,
+                    p.planning_date,
+                    r.name AS mitigation_effort,
+                    s.min_value AS mitigation_min_cost,
+                    s.max_value AS mitigation_max_cost,
+                    t.name AS mitigation_owner,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
+                        FROM
+                            team, mitigation_to_team mtt 
+                        WHERE
+                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
+                    ) AS mitigation_team,
+
+
+                    NOT(ISNULL(mau.id)) mitigation_accepted, 
+                    p.submission_date AS mitigation_date,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ')
+                        FROM
+                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                        WHERE
+                            mtc.mitigation_id=p.id 
+                    ) AS mitigation_controls,
+                    p.current_solution,
+                    p.security_recommendations,
+                    p.security_requirements,
+                    m.name AS next_step,
+                    l.comments
+                FROM
+                    risk_scoring a
                     LEFT JOIN risks b ON a.id = b.id
-                    LEFT JOIN mgmt_reviews c ON b.mgmt_review = c.id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+                    LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
+                    LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
+                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
+                    LEFT JOIN mitigations p ON b.id = p.risk_id
+                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
                     LEFT JOIN closures o ON b.close_id = o.id
+                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
+                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
+                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
+                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
+                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
+                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
+                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
+                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
+                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
+                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
+                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
                 WHERE b.status != \"Closed\"
                 GROUP BY b.id
                 {$sort_query}
@@ -5464,16 +6086,127 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     a.calculated_risk,
                     b.*,
                     c.next_review,
-                    ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
-                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open
-                FROM risk_scoring a 
-                    LEFT JOIN risks b ON a.id = b.id LEFT JOIN mgmt_reviews c ON b.mgmt_review = c.id
+                    ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
+                    DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open,
+                    o.closure_date, j.name AS regulation, b.regulation regulation_id, b.assessment AS risk_assessment, b.notes AS additional_notes,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT location.name SEPARATOR '; ')
+                        FROM
+                            location, risk_to_location rtl
+                        WHERE
+                            rtl.risk_id=b.id AND rtl.location_id=location.value
+                    ) AS location,
+                    v.name AS source, 
+                    d.name AS category,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name  SEPARATOR ', ')
+                        FROM
+                            team, risk_to_team rtt
+                        WHERE
+                            rtt.risk_id=b.id AND rtt.team_id=team.value
+                    ) AS team,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ')
+                        FROM
+                            user u, risk_to_additional_stakeholder rtas
+                        WHERE
+                            rtas.risk_id=b.id AND rtas.user_id=u.value
+                    ) AS additional_stakeholders,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT tech.name SEPARATOR ', ')
+                        FROM
+                            technology tech, risk_to_technology rttg
+                        WHERE
+                            rttg.risk_id=b.id AND rttg.technology_id=tech.value
+                    ) AS technology,
+                    g.name AS owner,
+                    h.name AS manager,
+                    a.scoring_method,
+                    k.name AS project, 
+                    i.name AS submitted_by,
+                    (
+                        SELECT
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                        FROM
+                            tags t, tags_taggees tt 
+                        WHERE
+                            tt.tag_id = t.id AND tt.taggee_id=b.id AND tt.type='risk'
+                    ) AS risk_tags,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT rta.asset_id SEPARATOR ', ')
+                        FROM
+                            risks_to_assets rta
+                        WHERE
+                            rta.risk_id=b.id
+                    ) AS affected_assets,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT rtag.asset_group_id SEPARATOR ', ')
+                        FROM
+                            risks_to_asset_groups rtag
+                        WHERE
+                            rtag.risk_id=b.id
+                    ) AS affected_asset_groups,
+                    q.name AS planning_strategy,
+                    p.planning_date,
+                    r.name AS mitigation_effort,
+                    s.min_value AS mitigation_min_cost,
+                    s.max_value AS mitigation_max_cost,
+                    t.name AS mitigation_owner,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT team.name SEPARATOR ', ')
+                        FROM
+                            team, mitigation_to_team mtt 
+                        WHERE
+                            mtt.mitigation_id=p.id AND mtt.team_id=team.value
+                    ) AS mitigation_team,
+
+
+                    NOT(ISNULL(mau.id)) mitigation_accepted, 
+                    p.submission_date AS mitigation_date,
+                    (
+                        SELECT
+                            GROUP_CONCAT(DISTINCT fc.short_name SEPARATOR ', ')
+                        FROM
+                            `mitigation_to_controls` mtc INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                        WHERE
+                            mtc.mitigation_id=p.id 
+                    ) AS mitigation_controls,
+                    p.current_solution,
+                    p.security_recommendations,
+                    p.security_requirements,
+                    m.name AS next_step,
+                    l.comments
+                FROM
+                    risk_scoring a
+                    LEFT JOIN risks b ON a.id = b.id
                     LEFT JOIN risk_to_team rtt ON b.id = rtt.risk_id
                     LEFT JOIN risk_to_additional_stakeholder rtas ON b.id = rtas.risk_id
-                    LEFT JOIN mitigations mg ON b.id = mg.risk_id
-                    LEFT JOIN mitigation_to_controls mtc ON mg.id = mtc.mitigation_id
+                    LEFT JOIN (SELECT c1.risk_id, c1.next_review FROM mgmt_reviews c1 RIGHT JOIN (SELECT risk_id, MAX(submission_date) AS date FROM mgmt_reviews GROUP BY risk_id) AS c2 ON c1.risk_id = c2.risk_id AND c1.submission_date = c2.date) c ON a.id = c.risk_id
+                    LEFT JOIN mitigations p ON b.id = p.risk_id
+                    LEFT JOIN mitigation_to_controls mtc ON p.id = mtc.mitigation_id
                     LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
                     LEFT JOIN closures o ON b.close_id = o.id
+                    LEFT JOIN frameworks j FORCE INDEX(PRIMARY) ON b.regulation = j.value
+                    LEFT JOIN source v FORCE INDEX(PRIMARY) ON b.source = v.value
+                    LEFT JOIN category d FORCE INDEX(PRIMARY) ON b.category = d.value
+                    LEFT JOIN user g FORCE INDEX(PRIMARY) ON b.owner = g.value
+                    LEFT JOIN user h FORCE INDEX(PRIMARY) ON b.manager = h.value
+                    LEFT JOIN projects k FORCE INDEX(PRIMARY) ON b.project_id = k.value
+                    LEFT JOIN user i FORCE INDEX(PRIMARY) ON b.submitted_by = i.value
+                    LEFT JOIN planning_strategy q FORCE INDEX(PRIMARY) ON p.planning_strategy = q.value
+                    LEFT JOIN mitigation_effort r FORCE INDEX(PRIMARY) ON p.mitigation_effort = r.value
+                    LEFT JOIN asset_values s ON p.mitigation_cost = s.id
+                    LEFT JOIN user t FORCE INDEX(PRIMARY) ON p.mitigation_owner = t.value
+                    LEFT JOIN mitigation_accept_users mau ON b.id=mau.risk_id
+                    LEFT JOIN mgmt_reviews l ON b.mgmt_review = l.id
+                    LEFT JOIN next_step m FORCE INDEX(PRIMARY) ON l.next_step = m.value
                 WHERE b.status != \"Closed\" " . $separation_query . "
                 GROUP BY b.id
                 {$sort_query}
@@ -6264,7 +6997,7 @@ function get_risk_table($sort_order=0, $activecol="")
 
         echo "<tr data-id='" . $escaper->escapeHtml(convert_id($risk['id'])) . "'>\n";
 
-        // if this is All Open Risks by Team by Risk Levle page
+        // if this is All Open Risks by Team by Risk Level page
         if($sort_order == 22){
             echo "<td align=\"left\" width=\"50px\" class='open-risk'><a target=\"blank\" href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk['id'])) . "\">" . $escaper->escapeHtml(convert_id($risk['id'])) . "</a></td>\n";
         }else{
@@ -7502,7 +8235,7 @@ function get_delete_risk_table()
 /*******************************
  * FUNCTION: MANAGEMENT REVIEW *
  *******************************/
-function management_review($risk_id, $mgmt_review, $next_review, $is_html = true)
+function management_review($risk_id, $mgmt_review, $next_review, $is_html = true, $active="ReviewRisksRegularly")
 {
     global $lang;
     global $escaper;
@@ -7510,18 +8243,18 @@ function management_review($risk_id, $mgmt_review, $next_review, $is_html = true
     // If the review hasn't happened
     if ($mgmt_review == "0")
     {
-        $html = "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview\">". $escaper->escapeHtml($lang['No']) ."</a>";
+        $html = "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview&active={$active}\">". $escaper->escapeHtml($lang['No']) ."</a>";
         $text = $lang['No'];
     }
     else
     {
         if($next_review != $lang['PASTDUE'] ){
             // If review doensn't past due.
-            $html = "<a class=\"management yes\" href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview\">".$escaper->escapeHtml($lang['Yes']).'</a>';
+            $html = "<a class=\"management yes\" href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview&active={$active}\">".$escaper->escapeHtml($lang['Yes']).'</a>';
             $text = $lang['Yes'];
         }else{
             // If review past due.
-            $html = "<a class=\"management pastdue\" href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview\">".$escaper->escapeHtml($lang['PASTDUE']).'</a>';
+            $html = "<a class=\"management pastdue\" href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) ."&type=2&action=editreview&active={$active}\">".$escaper->escapeHtml($lang['PASTDUE']).'</a>';
             $text = $lang['PASTDUE'];
         }
     }
@@ -7548,7 +8281,7 @@ function management_review_text_only($mgmt_review_id, $next_review) {
 /********************************
  * FUNCTION: PLANNED MITIGATION *
  ********************************/
-function planned_mitigation($risk_id, $mitigation_id)
+function planned_mitigation($risk_id, $mitigation_id, $active="ReviewRisksRegularly")
 {
     global $lang;
     global $escaper;
@@ -7556,11 +8289,11 @@ function planned_mitigation($risk_id, $mitigation_id)
     // If the review hasn't happened
     if (!$mitigation_id)
     {
-        $value = "<a href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "\">". $escaper->escapeHtml($lang['No']) ."</a>";
+        $value = "<a href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "&action=editmitigation&active={$active}\">". $escaper->escapeHtml($lang['No']) ."</a>";
     }
     else
     {
-        $value = "<a class=\"mitigation yes\" href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "\">".$escaper->escapeHtml($lang['Yes'])."</a>";
+        $value = "<a class=\"mitigation yes\" href=\"../management/view.php?type=1&id=" . $escaper->escapeHtml($risk_id) . "&active={$active}\">".$escaper->escapeHtml($lang['Yes'])."</a>";
     }
 
     return $value;
@@ -8919,30 +9652,26 @@ function language_file($force_default=false)
  *****************************************/
 function custom_authentication_extra()
 {
-        // Open the database connection
-        $db = db_open();
+    if(isset($GLOBALS['authentication_extra'])){
+        return $GLOBALS['authentication_extra'];
+    }
 
-    // See if the custom authentication extra is available
-        $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'custom_auth'");
-        $stmt->execute();
+    $setting = get_setting('custom_auth');
 
-        // Get the results array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
-        // If no value was found
-        if (empty($array))
+    // If the setting is not empty
+    if (!empty($setting))
+    {
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
-                return false;
+            // The extra is enabled
+            $GLOBALS['authentication_extra'] = true;
         }
-        // If the value is true
-        else if ($array[0]['value'] == "true")
-        {
-                return true;
-        }
-        else return false;
+        else $GLOBALS['authentication_extra'] = false;
+    }
+    else $GLOBALS['authentication_extra'] = false;
+
+    return $GLOBALS['authentication_extra'];
 }
 
 /*********************************
@@ -8950,30 +9679,26 @@ function custom_authentication_extra()
  *********************************/
 function customization_extra()
 {
-    // Open the database connection
-    $db = db_open();
-
-    // See if the customization extra is available
-    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'customization'");
-    $stmt->execute();
-
-    // Get the results array
-    $array = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-    // If no value was found
-    if (empty($array))
-    {
-          return false;
+    if(isset($GLOBALS['customization_extra'])){
+        return $GLOBALS['customization_extra'];
     }
-    // If the value is true
-    else if ($array[0]['value'] == "true")
+
+    $setting = get_setting('customization');
+
+    // If the setting is not empty
+    if (!empty($setting))
     {
-          return true;
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['customization_extra'] = true;
+        }
+        else $GLOBALS['customization_extra'] = false;
     }
-    else return false;
+    else $GLOBALS['customization_extra'] = false;
+
+    return $GLOBALS['customization_extra'];
 }
 
 /***********************************
@@ -8981,30 +9706,26 @@ function customization_extra()
  ***********************************/
 function team_separation_extra()
 {
-    // Open the database connection
-    $db = db_open();
-
-    // See if the team separation extra is available
-    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'team_separation'");
-    $stmt->execute();
-
-    // Get the results array
-    $array = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-        // If no value was found
-    if (empty($array))
-    {
-        return false;
+    if(isset($GLOBALS['separation_extra'])){
+        return $GLOBALS['separation_extra'];
     }
-    // If the value is true
-    else if ($array[0]['value'] == "true")
+
+    $setting = get_setting('team_separation');
+
+    // If the setting is not empty
+    if (!empty($setting))
     {
-        return true;
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['separation_extra'] = true;
+        }
+        else $GLOBALS['separation_extra'] = false;
     }
-    else return false;
+    else $GLOBALS['separation_extra'] = false;
+
+    return $GLOBALS['separation_extra'];
 }
 
 /********************************
@@ -9012,29 +9733,26 @@ function team_separation_extra()
  ********************************/
 function notification_extra()
 {
-    // Open the database connection
-    $db = db_open();
-
-    // See if the notification extra is available
-    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'notifications'");
-    $stmt->execute();
-
-    // Get the results array
-    $array = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-    // If no value was found
-    if (empty($array))
-    {
-        return false;
+    if(isset($GLOBALS['notification_extra'])){
+        return $GLOBALS['notification_extra'];
     }
-    // If the value is true
-    else if ($array[0]['value'] == "true")
+
+    $setting = get_setting('notifications');
+
+    // If the setting is not empty
+    if (!empty($setting))
     {
-        return true;
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['notification_extra'] = true;
+        }
+        else $GLOBALS['notification_extra'] = false;
     }
-    else return false;
+    else $GLOBALS['notification_extra'] = false;
+
+    return $GLOBALS['notification_extra'];
 }
 
 /*********************************
@@ -9042,30 +9760,26 @@ function notification_extra()
  *********************************/
 function import_export_extra()
 {
-        // Open the database connection
-        $db = db_open();
+    if(isset($GLOBALS['importexport_extra'])){
+        return $GLOBALS['importexport_extra'];
+    }
 
-	// See if the import export extra is available
-        $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'import_export'");
-        $stmt->execute();
+    $setting = get_setting('import_export');
 
-        // Get the results array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
-        // If no value was found
-        if (empty($array))
+    // If the setting is not empty
+    if (!empty($setting))
+    {
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
-                return false;
+            // The extra is enabled
+            $GLOBALS['importexport_extra'] = true;
         }
-        // If the value is true
-        else if ($array[0]['value'] == "true")
-        {
-                return true;
-        }
-        else return false;
+        else $GLOBALS['importexport_extra'] = false;
+    }
+    else $GLOBALS['importexport_extra'] = false;
+
+    return $GLOBALS['importexport_extra'];
 }
 
 /***************************************
@@ -9077,7 +9791,21 @@ function incident_management_extra()
         return $GLOBALS['incident_management_extra'];
     }
 
-    $GLOBALS['incident_management_extra'] = get_setting('incident_management');
+    $setting = get_setting('incident_management');
+
+    // If the setting is not empty
+    if (!empty($setting))
+    {
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['incident_management_extra'] = true;
+        }
+        else $GLOBALS['incident_management_extra'] = false;
+    }
+    else $GLOBALS['incident_management_extra'] = false;
+
     return $GLOBALS['incident_management_extra'];
 }
 
@@ -9086,30 +9814,26 @@ function incident_management_extra()
  ***********************/
 function api_extra()
 {
-        // Open the database connection
-        $db = db_open();
+    if(isset($GLOBALS['api_extra'])){
+        return $GLOBALS['api_extra'];
+    }
+    
+    $setting = get_setting('api');
 
-        // See if the api extra is available
-        $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'api'");
-        $stmt->execute();
-
-        // Get the results array
-        $array = $stmt->fetchAll();
-
-        // Close the database connection
-        db_close($db);
-
-        // If no value was found
-        if (empty($array))
+    // If the setting is not empty
+    if (!empty($setting))
+    {
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
         {
-                return false;
+            // The extra is enabled
+            $GLOBALS['api_extra'] = true;
         }
-        // If the value is true
-        else if ($array[0]['value'] == "true")
-        {
-                return true;
-        }
-        else return false;
+        else $GLOBALS['api_extra'] = false;
+    }
+    else $GLOBALS['api_extra'] = false;
+
+    return $GLOBALS['api_extra'];
 }
 
 /*******************************
@@ -9117,30 +9841,26 @@ function api_extra()
  *******************************/
 function assessments_extra()
 {
-    // Open the database connection
-    $db = db_open();
+    if(isset($GLOBALS['assessments_extra'])){
+        return $GLOBALS['assessments_extra'];
+    }   
 
-    // See if the assessments extra is available
-    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'assessments'");
-    $stmt->execute();
+    $setting = get_setting('assessments');
 
-    // Get the results array
-    $array = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-    // If no value was found
-    if (empty($array))
+    // If the setting is not empty
+    if (!empty($setting))
     {
-        return false;
-    }
-    // If the value is true
-    else if ($array[0]['value'] == "true")
-    {
-        return true;
-    }
-    else return false;
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['assessments_extra'] = true;
+        }
+        else $GLOBALS['assessments_extra'] = false;
+    }   
+    else $GLOBALS['assessments_extra'] = false;
+
+    return $GLOBALS['assessments_extra'];
 }
 
 /***********************************
@@ -9148,30 +9868,26 @@ function assessments_extra()
  ***********************************/
 function complianceforge_extra()
 {
-    // Open the database connection
-    $db = db_open();
-
-    // See if the complianceforge extra is available
-    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'complianceforge'");
-    $stmt->execute();
-
-    // Get the results array
-    $array = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-    // If no value was found
-    if (empty($array))
-    {
-        return false;
+    if(isset($GLOBALS['complianceforge_extra'])){
+        return $GLOBALS['complianceforge_extra'];
     }
-    // If the value is true
-    else if ($array[0]['value'] == "true")
+
+    $setting = get_setting('complianceforge');
+
+    // If the setting is not empty
+    if (!empty($setting))
     {
-        return true;
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['complianceforge_extra'] = true;
+        }
+        else $GLOBALS['complianceforge_extra'] = false;
     }
-    else return false;
+    else $GLOBALS['complianceforge_extra'] = false;
+
+    return $GLOBALS['complianceforge_extra'];
 }
 
 /***************************************
@@ -9183,7 +9899,21 @@ function complianceforge_scf_extra()
         return $GLOBALS['complianceforge_scf_extra'];
     }
 
-    $GLOBALS['complianceforge_scf_extra'] = get_setting('complianceforge_scf');
+    $setting = get_setting('complianceforge_scf');
+
+    // If the setting is not empty
+    if (!empty($setting))
+    {
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['complianceforge_scf_extra'] = true;
+        }
+        else $GLOBALS['complianceforge_scf_extra'] = false;
+    }
+    else $GLOBALS['complianceforge_scf_extra'] = false;
+
     return $GLOBALS['complianceforge_scf_extra'];
 }
 
@@ -9192,30 +9922,26 @@ function complianceforge_scf_extra()
  ******************************/
 function governance_extra()
 {
-    // Open the database connection
-    $db = db_open();
+    if(isset($GLOBALS['governance_extra'])){
+        return $GLOBALS['governance_extra'];
+    }   
+    
+    $setting = get_setting('governance');
 
-    // See if the governance extra is available
-    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'governance'");
-    $stmt->execute();
-
-    // Get the results array
-    $array = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-    // If no value was found
-    if (empty($array))
+    // If the setting is not empty
+    if (!empty($setting))
     {
-        return false;
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['governance_extra'] = true;
+        }
+        else $GLOBALS['governance_extra'] = false;
     }
-    // If the value is true
-    else if ($array[0]['value'] == "true")
-    {
-        return true;
-    }
-    else return false;
+    else $GLOBALS['governance_extra'] = false;
+
+    return $GLOBALS['governance_extra'];
 }
 
 
@@ -9223,7 +9949,26 @@ function governance_extra()
  * FUNCTION: ADVANCED SEARCH EXTRA *
  ***********************************/
 function advanced_search_extra() {
-    return get_setting('advanced_search');
+    if(isset($GLOBALS['advanced_search_extra'])){
+        return $GLOBALS['advanced_search_extra'];
+    }   
+
+    $setting = get_setting('advanced_search');
+
+    // If the setting is not empty
+    if (!empty($setting))
+    {
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['advanced_search_extra'] = true;
+        }
+        else $GLOBALS['advanced_search_extra'] = false;
+    }
+    else $GLOBALS['advanced_search_extra'] = false;
+
+    return $GLOBALS['advanced_search_extra'];
 }
 
 /************************
@@ -9234,19 +9979,47 @@ function jira_extra() {
         return $GLOBALS['jira_extra'];
     }
 
-    $GLOBALS['jira_extra'] = get_setting('jira');
+    $setting = get_setting('jira');
+
+    // If the setting is not empty
+    if (!empty($setting))
+    {
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['jira_extra'] = true;
+        }
+        else $GLOBALS['jira_extra'] = false;
+    }
+    else $GLOBALS['jira_extra'] = false;
+
     return $GLOBALS['jira_extra'];
 }
 
-/************************
+/***********************
  * FUNCTION: UCF EXTRA *
- ************************/
+ ***********************/
 function ucf_extra() {
     if(isset($GLOBALS['ucf_extra'])){
         return $GLOBALS['ucf_extra'];
     }
-    
-    $GLOBALS['ucf_extra'] = get_setting('ucf');
+
+    $setting = get_setting('ucf');
+
+    // If the setting is not empty
+    if (!empty($setting))
+    {
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['ucf_extra'] = true;
+        }
+        else $GLOBALS['ucf_extra'] = false;
+    }
+    else $GLOBALS['ucf_extra'] = false;
+
     return $GLOBALS['ucf_extra'];
 }
 
@@ -9254,7 +10027,26 @@ function ucf_extra() {
  * FUNCTION: ORGANIZATIONAL HIERARCHY EXTRA *
  ********************************************/
 function organizational_hierarchy_extra() {
-    return get_setting('organizational_hierarchy');
+    if(isset($GLOBALS['organizational_hierarchy_extra'])){
+        return $GLOBALS['organizational_hierarchy_extra'];
+    }
+
+    $setting = get_setting('organizational_hierarchy');
+
+    // If the setting is not empty
+    if (!empty($setting))
+    {
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['organizational_hierarchy_extra'] = true;
+        }
+        else $GLOBALS['organizational_hierarchy_extra'] = false;
+    }
+    else $GLOBALS['organizational_hierarchy_extra'] = false;
+
+    return $GLOBALS['organizational_hierarchy_extra'];
 }
 
 /****************************************
@@ -9279,35 +10071,23 @@ function encryption_extra()
     if(isset($GLOBALS['encryption_extra'])){
         return $GLOBALS['encryption_extra'];
     }
-    // Open the database connection
-    $db = db_open();
+    
+    $setting = get_setting('encryption');
 
-    // See if the encryption extra is available
-    $stmt = $db->prepare("SELECT `value` FROM `settings` WHERE `name` = 'encryption'");
-    $stmt->execute();
-
-    // Get the results array
-    $array = $stmt->fetchAll();
-
-    // Close the database connection
-    db_close($db);
-
-    // If no value was found
-    if (empty($array))
+    // If the setting is not empty
+    if (!empty($setting))
     {
-        $GLOBALS['encryption_extra'] = false;
-        return false;
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['encryption_extra'] = true;
+        }
+        else $GLOBALS['encryption_extra'] = false;
     }
-    // If the value is true
-    else if ($array[0]['value'] == "true")
-    {
-        $GLOBALS['encryption_extra'] = true;
-        return true;
-    }
-    else {
-        $GLOBALS['encryption_extra'] = false;
-        return false;
-    }
+    else $GLOBALS['encryption_extra'] = false;
+
+    return $GLOBALS['encryption_extra'];
 }
 
 /*************************
@@ -9910,8 +10690,15 @@ function incomplete_project($project_id)
  *****************************/
 function write_debug_log($value)
 {
-    // Get the current debug setting
-    $debug_logging = get_setting("debug_logging");
+    // If a global variable for debug logging is not already set
+    if (!isset($GLOBALS['debug_logging']))
+    {
+        // Get the current debug setting from the database
+        $GLOBALS['debug_logging'] = get_setting("debug_logging");
+    }
+
+    // Set debug logging to the global variable
+    $debug_logging = $GLOBALS['debug_logging'];
 
     // If DEBUG is enabled
     if ($debug_logging == 1)
@@ -9924,7 +10711,7 @@ function write_debug_log($value)
 
             $root_path = str_replace('/', '\\', $_SERVER["DOCUMENT_ROOT"]);
             $log_path = str_replace('/', '\\', realpath(dirname($log_file)));
-            if($root_path != $log_path ) {
+            if(strpos($log_path, $root_path) === false && $log_path != ""){
                 // Write to the error log
                 $return = error_log(date('c')." ".$value."\n", 3, $log_file);
             }
@@ -9951,6 +10738,12 @@ function write_debug_log($value)
                 }
             }
         }
+    }
+    // DEBUG is disabled
+    else
+    {
+        // Set a global variable for debug_logging
+        $GLOBALS['debug_logging'] = false;
     }
 }
 
@@ -10268,6 +11061,9 @@ function update_risk_status($risk_id, $status)
         } else {
             global $lang;
 
+            // Close the database connection
+            db_close($db);
+
             set_alert(true, "bad", $lang['NoPermissionForClosingRisks']);
             return;
         }
@@ -10322,7 +11118,7 @@ function try_decrypt($value)
         }
         else{
             // Decrypt the value
-            $decrypted_value = decrypt($_SESSION['encrypted_pass'], $value);
+            $decrypted_value = decrypt(base64_decode($_SESSION['encrypted_pass']), $value);
         }
     }
     // Otherwise return the value
@@ -10355,7 +11151,7 @@ function try_encrypt($value)
         }
         else{
             // Encrypt the value
-            $encrypted_value = encrypt($_SESSION['encrypted_pass'], $value);
+            $encrypted_value = encrypt(base64_decode($_SESSION['encrypted_pass']), $value);
         }
 
         return $encrypted_value;
@@ -10835,6 +11631,9 @@ function get_user_value_from_name_or_id($name_or_id){
         // Store the list in the array
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $GLOBALS['users'] = $users;
+
+        // Close the database connection
+        db_close($db);
     }else{
         $users = $GLOBALS['users'];
     }
@@ -11295,7 +12094,7 @@ function get_technology_names($ids="")
 /********************************************
  * FUNCTION: GET STAKEHOLDER NAMES FROM IDS *
  ********************************************/
-function get_stakeholder_names($ids="", $limit=4, $escape=true)
+function get_stakeholder_names($ids="", $limit=4, $escape=false)
 {
     global $escaper;
 
@@ -12092,72 +12891,70 @@ function set_unauthenticated_redirect()
     $_SESSION['requested_url'] = $requested_url;
 }
 
-/**************************************************************
- * FUNCTION: GET UPDATED ROLES BY ROLE ID AND NEW PERMISSIONS *
- **************************************************************/
-function get_updated_roles($role_id, $new_responsibility_names)
-{
-    $old_responsibility_names = get_responsibilites_by_role_id($role_id);
-    
-    // Get added roles
-    $added_permissions = [];
-    foreach($new_responsibility_names as $new_responsibility_name){
-        // if this permission is new, save this permission to added array
-        if(!in_array($new_responsibility_name, $old_responsibility_names)){
-            $added_permissions[] = $new_responsibility_name;
-        }
-    }
-    
-    // Get deleted roles
-    $deleted_permissions = [];
-    foreach($old_responsibility_names as $old_responsibility_name){
-        // if this permission no exists in new permission names, save this permission to deleted array
-        if(!in_array($old_responsibility_name, $new_responsibility_names)){
-            $deleted_permissions[] = $old_responsibility_name;
-        }
-    }
-    
-    return array($added_permissions, $deleted_permissions);
-}
-
 /***************************
  * FUNCTION: DELETE A ROLE *
  ***************************/
-function delete_role($role_id)
-{
-    $old_responsibility_names = get_responsibilites_by_role_id($role_id);
-    
+function delete_role($role_id) {
+
+    $deleted_role_responsibilities = get_responsibilites_by_role_id($role_id);
+
+    $default_role = get_default_role();
+    $default_role_id = $default_role ? $default_role['value'] : 0;
+    $default_responsibilities = $default_role ? get_responsibilites_by_role_id($default_role_id) : [];
+
     // Open the database connection
     $db = db_open();
 
-    // Get the name to be deleted
+    // Get all the users that have this role and their current permissions
+    $stmt = $db->prepare("
+            SELECT
+                `u`.`value` AS value,
+                `p2u`.`permission_id`
+            FROM
+                `user` u
+                LEFT JOIN `permission_to_user` p2u ON `u`.`value` = `p2u`.`user_id`
+            WHERE
+                `u`.`role_id` = :role_id;
+        ");
+    $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $permissions_of_users = $stmt->fetchAll(PDO::FETCH_COLUMN | PDO::FETCH_GROUP);
+
+    // Iterate through the list of users and update their permissions
+    foreach($permissions_of_users as $user_id => $permissions) {
+
+        // If a user has no permissions the $permissions contain invalid data
+        if (!$permissions || !$permissions[0]) {
+            $permissions = [];
+        }
+
+        // Add the new responsibilities and remove what needs to be removed
+        $new_responsibilities = array_unique(array_merge(array_diff($permissions, $deleted_role_responsibilities), $default_responsibilities));
+
+        // Update the user's permissions
+        update_permissions($user_id, $new_responsibilities);
+
+        // Update users to use their new role(default)
+        $stmt = $db->prepare("UPDATE `user` SET `role_id` = :role_id WHERE value=:user_id;");
+        $stmt->bindParam(":role_id", $default_role_id, PDO::PARAM_INT);
+        $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    // Get the name before deleted
     $name = get_name_by_value('role', $role_id);
 
-    // Delete the table value
+    // Delete the role
     $stmt = $db->prepare("DELETE FROM `role` WHERE value=:value; ");
     $stmt->bindParam(":value", $role_id, PDO::PARAM_INT);
     $stmt->execute();
+
+    cleanup_after_delete('role');
 
     $risk_id = 1000;
     $message = "The existing role \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
     write_log($risk_id, $_SESSION['uid'], $message);
 
-    // If this role had permissions, remove permissions that this role had from users with this role 
-    if($old_responsibility_names){
-        $sql = "UPDATE `user` SET ";
-        foreach($old_responsibility_names as $index => $old_responsibility_name){
-            if($index == count($old_responsibility_names)-1){
-                $sql .= "`{$old_responsibility_name}`=0 ";
-            }else{
-                $sql .= "`{$old_responsibility_name}`=0, ";
-            }
-        }
-        $sql .= " WHERE role_id=:role_id AND admin<>1; ";
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
-        $stmt->execute();
-    }
-    
     // Close the database connection
     db_close($db);
 
@@ -12167,75 +12964,95 @@ function delete_role($role_id)
 /*******************************************
  * FUNCTION: SAVE ROLE AND RESPONSIBILITES *
  *******************************************/
-function save_role_responsibilities($role_id, $responsibility_names)
-{
-    // The list of possible permissions, maintained in the authenticate.php
-    global $possible_permissions;
-
-    // Removing entries that are not on the list of possible permissions
-    $responsibility_names = array_intersect($possible_permissions, $responsibility_names);
-
-    // Get added and deleted permissions
-    list($added_permissions, $deleted_permissions) = get_updated_roles($role_id, $responsibility_names);
+function save_role_responsibilities($role_id, $admin, $default, $responsibilities) {
     
-    // Open the database connection
     $db = db_open();
+    
+    if ($default) {
+        set_default_role($role_id);
+    }
 
-    // Delete relations of role and responsibilities by role_id
-    $stmt = $db->prepare("DELETE FROM `role_responsibilities` WHERE `role_id`=:role_id");
+    $stmt = $db->prepare("UPDATE `role` SET `admin` = :admin WHERE `value` = :role_id;");
+    $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
     $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
     $stmt->execute();
 
-    foreach($responsibility_names as $responsibility_name){
-        // Add a relation of role and responsibility
-        $stmt = $db->prepare("INSERT INTO `role_responsibilities`(`role_id`, `responsibility_name`) VALUES(:role_id, :responsibility_name);");
-        $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
-        $stmt->bindParam(":responsibility_name", $responsibility_name, PDO::PARAM_STR, 100);
-        $stmt->execute();
+    if ($admin) {
+        // Admins have ALL the responsibilities
+        $responsibilities = get_possible_permission_ids();
+    } else {
+        // Removing entries that are not on the list of possible permissions to sanitize the input
+        $responsibilities = array_intersect(get_possible_permission_ids(), $responsibilities);
     }
-    
-    // Set added permissions to users with this role if there are added permissions
-    if($added_permissions){
-        $sql = "UPDATE `user` SET ";
-        foreach($added_permissions as $index => $added_permission){
-            if($index == count($added_permissions)-1){
-                $sql .= "`{$added_permission}`=1 ";
-            }else{
-                $sql .= "`{$added_permission}`=1, ";
-            }
-        }
-        $sql .= " WHERE role_id=:role_id; ";
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
-        $stmt->execute();
-    } 
 
-    // Remove deleted permissions from users with this role if there are deleted permissions
-    if($deleted_permissions){
-        $sql = "UPDATE `user` SET ";
-        foreach($deleted_permissions as $index => $deleted_permission){
-            if($index == count($deleted_permissions)-1){
-                $sql .= "`{$deleted_permission}`=0 ";
-            }else{
-                $sql .= "`{$deleted_permission}`=0, ";
-            }
-        }
-        $sql .= " WHERE role_id=:role_id ";
-        if(!in_array("admin", $deleted_permissions))
-        {
-            $sql .= " AND admin<>1; ";
-        }
-        else
-        {
-            $sql .= ";";
-        }
-        $stmt = $db->prepare($sql);
+    $current_responsibilities = get_responsibilites_by_role_id($role_id);
+    
+    if (save_junction_values('role_responsibilities', 'role_id', $role_id, 'permission_id', $responsibilities)) {
+        // Calculate what permissions are removed from the role and what permissions are added
+        $responsibilities_to_remove = array_diff($current_responsibilities, $responsibilities);
+        $responsibilities_to_add = array_diff($responsibilities, $current_responsibilities);
+
+        // Get all the users that have this role and their current permissions
+        $stmt = $db->prepare("
+            SELECT
+                `u`.`value` AS value,
+                `p2u`.`permission_id`
+            FROM
+                `user` u
+                LEFT JOIN `permission_to_user` p2u ON `u`.`value` = `p2u`.`user_id`
+            WHERE
+                `u`.`role_id` = :role_id;
+        ");
         $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
         $stmt->execute();
+        $permissions_of_users = $stmt->fetchAll(PDO::FETCH_COLUMN | PDO::FETCH_GROUP);
+
+        // Iterate through the list of users and update their permissions
+        foreach($permissions_of_users as $user_id => $permissions) {
+
+            // If a user has no permissions the $permissions contain invalid data
+            if (!$permissions || !$permissions[0]) {
+                $permissions = [];
+            }
+
+            // Add the new responsibilities and remove what needs to be removed
+            $new_responsibilities = array_unique(array_diff(array_merge($permissions, $responsibilities_to_add), $responsibilities_to_remove));
+
+            // Update the user's permissions
+            update_permissions($user_id, $new_responsibilities);
+        }
     }
 
     // Close the database connection
     db_close($db);
+}
+
+/********************************************
+ * FUNCTION: GET RESPONSIBILITES BY ROLE ID *
+ ********************************************/
+function get_role($role_id)
+{
+    // Open the database connection
+    $db = db_open();
+    
+    $stmt = $db->prepare("SELECT `value`, `name`, `admin`, (`r`.`default` IS NOT NULL) AS 'default' FROM `role` r WHERE `r`.`value`=:role_id");
+    $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
+    $stmt->execute();
+    
+    // Get responsibilites
+    $role = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if ($role) {
+        $role = $role[0];
+        $role['responsibilities'] = get_responsibilites_by_role_id($role_id);
+        $role['admin'] = $role['admin'] === '1';
+        $role['default'] = $role['default'] === '1';
+    }
+
+    // Close the database connection
+    db_close($db);
+    
+    return $role;
 }
 
 /********************************************
@@ -12246,7 +13063,7 @@ function get_responsibilites_by_role_id($role_id)
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT responsibility_name FROM `role_responsibilities` WHERE `role_id`=:role_id");
+    $stmt = $db->prepare("SELECT permission_id FROM `role_responsibilities` WHERE `role_id`=:role_id");
     $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -12404,26 +13221,58 @@ function set_simplerisk_timezone()
 /**********************************
  * FUNCTION: ADD SECURITY HEADERS *
  **********************************/
-function add_security_headers()
+function add_security_headers($x_frame_options = true, $x_xss_protection = true, $x_content_type_options = true, $content_type = true, $content_security_policy = true)
 {
-    // X-Frame-Options
-    header("X-Frame-Options: DENY");
+	// If we want to send a X-Frame-Options header
+	if ($x_frame_options)
+	{
+		header("X-Frame-Options: DENY");
+	}
 
-    // X-XSS-Protection
-    header("X-XSS-Protection: 1; mode=block");
+	// If we want to send a X-XSS-Protection header 
+	if ($x_xss_protection)
+	{
+		header("X-XSS-Protection: 1; mode=block");
+	}
 
-    // X-Content-Type-Options
-    header("X-Content-Type-Options: nosniff");
+	// If we want to send a X-Content-Type-Options header
+	if ($x_content_type_options)
+	{
+		header("X-Content-Type-Options: nosniff");
+	}
 
-    // Content-Type
-    header("Content-Type: text/html; charset=utf-8");
+	// If we want to send a Content-Type header
+	if ($content_type)
+	{
+		header("Content-Type: text/html; charset=utf-8");
+	}
 
-    // If we want to enable the Content Security Policy (CSP) - This may break Chrome
-    if (csp_enabled())
-    {
-            // Add the Content-Security-Policy header
-            header("Content-Security-Policy: default-src 'self' 'unsafe-inline' *.highcharts.com *.googleapis.com *.gstatic.com *.jquery.com;");
-    }
+	// If we want to send a Content-Security-Policy header
+	if ($content_security_policy)
+	{
+		// If we want to enable the Content Security Policy (CSP) - This may break Chrome
+		if (csp_enabled())
+		{
+			// If the base URL is not set
+			if (!isset($_SESSION) || !array_key_exists('base_url', $_SESSION))
+			{
+				// Get the base URL
+				$simplerisk_base_url = get_setting("simplerisk_base_url");
+			}
+			// Otherwise, set the base URL
+			else  $simplerisk_base_url = $_SESSION['base_url'];
+
+			// If the simplerisk base url is valid
+			if (filter_var($simplerisk_base_url, FILTER_VALIDATE_URL))
+			{
+				// Add the Content-Security-Policy header with the simplerisk base url
+				header("Content-Security-Policy: default-src 'self'; style-src-elem 'unsafe-inline' *.googleapis.com " . $simplerisk_base_url . "; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.highcharts.com *.jquery.com; font-src *.gstatic.com " . $simplerisk_base_url . "; img-src 'self' " . $simplerisk_base_url . " data:; connect-src 'self' *.simplerisk.com;");
+			}
+			// Otherwise add the Content-Security-Policy header without it
+			else header("Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' data:");
+		}
+		else header("Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' data:");
+	}
 }
 
 /******************************************
@@ -12676,7 +13525,7 @@ function delete_likelihood()
 function is_admin($id = false)
 {
     // If there's no user id provided OR we're checking the logged in user then it will work the way it did before
-    if ($id === false || (int)$id === (int)$_SESSION['uid']) {
+    if ($id === false || (isset($_SESSION['uid']) && (int)$id === (int)$_SESSION['uid'])) {
         // If the user is not logged in as an administrator
         if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
         {
@@ -13902,7 +14751,7 @@ function checkUploadedFileSizeErrors() {
         $maxPostSize = trim(ini_get('post_max_size'));
         if ($maxPostSize != '') {
             $last = strtolower(
-                $maxPostSize{strlen($maxPostSize) - 1}
+                $maxPostSize[strlen($maxPostSize) - 1]
             );
         } else {
             $last = '';
@@ -14908,7 +15757,7 @@ function updateItemsOfTeam($team_id, $type, $items) {
     if ($items_to_add || $items_to_remove) {
         global $lang;
 
-        $db = db_open();
+        //$db = db_open();
 
         switch($type) {
             case 'audit':
@@ -15613,6 +16462,10 @@ function get_mitigation_to_controls($mitigation_id,$control_id)
 
     $stmt->execute();
     $frameworks = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
     return $frameworks;
 }
 /*******************************
@@ -15628,7 +16481,7 @@ function get_risk_catalogs()
             LEFT JOIN `risk_grouping` g ON t1.`grouping` = g.`value`
             LEFT JOIN `risk_function` f ON t1.`function` = f.`value`
         WHERE 1
-        ORDER By t1.order
+        ORDER By g.name,t1.order
     ");
     $stmt->execute();
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -15653,7 +16506,7 @@ function get_risk_catalog($id)
 /***************************************
  * FUNCTION: UPDATE RISK CATALOG ORDER *
  ***************************************/
-function uodate_risk_catalog_order($orders)
+function update_risk_catalog_order($orders)
 {
     // Open the database connection
     $db = db_open();
@@ -15797,4 +16650,40 @@ function file_upload_error_message($error)
 	return $message;
 }
 
+/***********************************************
+ * FUNCTION: SAVE CUSTOM RISK DISPLAY SETTINGS *
+ **********************************************/
+function save_custom_risk_display_settings($field = "custom_plan_mitigation_display_settings", $data = [])
+{
+    $data_str = json_encode($data);
+    
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("UPDATE `user` SET `{$field}` = :data_str WHERE `value` = :value");
+    $stmt->bindParam(":data_str", $data_str, PDO::PARAM_STR);
+    $stmt->bindParam(":value", $_SESSION['uid'], PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+    return;
+}
+
+function get_user_name($user_id) {
+    // Open the database connection
+    $db = db_open();
+    
+    // Query the database
+    $stmt = $db->prepare("SELECT `name` FROM `user` WHERE `value` = :user_id;");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+    
+    $name = $stmt->fetch(PDO::FETCH_COLUMN);
+    
+    // Close the database connection
+    db_close($db);
+    
+    return $name;
+}
 ?>

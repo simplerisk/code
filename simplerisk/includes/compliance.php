@@ -469,7 +469,7 @@ function display_initiate_audits()
                 <div class='span2'>
                     <div class='multiselect-content-container'>
                         <select id='filter_by_framework' class='' multiple=''>\n";
-                            $options = getAvailableControlFrameworkList();
+                            $options = getAvailableControlFrameworkList(true);
                             is_array($options) || $options = array();
                             foreach($options as $option){
                                 echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
@@ -1216,7 +1216,7 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
         $sql .= " ORDER BY t6.name {$columnDir} ";
     }
     elseif($columnName == "last_date"){
-        $sql .= " ORDER BY t1.last_date {$columnDir} ";
+        $sql .= " ORDER BY t1.last_date {$columnDir}, t5.last_updated {$columnDir} ";
     }
     elseif($columnName == "next_date"){
         $sql .= " ORDER BY t1.next_date {$columnDir} ";
@@ -1228,7 +1228,16 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
         $sql .= " ORDER BY t7.additional_stakeholders {$columnDir} ";
     }
     else{
-        $sql .= " ORDER BY t1.created_at ";
+        // Active audits
+        if($active)
+        {
+            $sql .= " ORDER BY t1.created_at DESC ";
+        }
+        // Past audits
+        else
+        {
+            $sql .= " ORDER BY t5.last_updated DESC ";
+        }
     }
 
     $stmt = $db->prepare($sql);
@@ -2097,7 +2106,7 @@ function display_past_audits()
                 dom : \"flrtip\",
                 pageLength: pageLength,
                 dom : \"flrti<'#view-all.view-all'>p\",
-                order: [[1, 'desc']],
+                order: [],
                 createdRow: function(row, data, index){
                     var background = $('.background-class', $(row)).data('background');
                     $(row).find('td').addClass(background)

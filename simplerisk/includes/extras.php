@@ -25,20 +25,20 @@ function available_extras()
     // The available SimpleRisk Extras
     $extras = array(
         array("short_name" => "upgrade", "long_name" => "Upgrade Extra"),
+	array("short_name" => "complianceforgescf", "long_name" => "ComplianceForge SCF Extra"),
+	array("short_name" => "advanced_search", "long_name" => "Advanced Search Extra"),
+	array("short_name" => "api", "long_name" => "API Extra"),
         array("short_name" => "authentication", "long_name" => "Custom Authentication Extra"),
+	array("short_name" => "customization", "long_name" => "Customization Extra"),
+	array("short_name" => "notification", "long_name" => "Email Notification Extra"),
         array("short_name" => "encryption", "long_name" => "Encrypted Database Extra"),
         array("short_name" => "import-export", "long_name" => "Import-Export Extra"),
-        array("short_name" => "notification", "long_name" => "Email Notification Extra"),
+	array("short_name" => "incident_management", "long_name" => "Incident Management Extra"),
+	array("short_name" => "jira", "long_name" => "Jira Integration Extra"),
+	array("short_name" => "organizational_hierarchy", "long_name" => "Organizational Hierarchy Extra"),
+	array("short_name" => "assessments", "long_name" => "Risk Assessment Extra"),
         array("short_name" => "separation", "long_name" => "Team-Based Separation Extra"),
-        array("short_name" => "assessments", "long_name" => "Risk Assessment Extra"),
-        array("short_name" => "api", "long_name" => "API Extra"),
-        array("short_name" => "complianceforgescf", "long_name" => "ComplianceForge SCF Extra"),
-        array("short_name" => "customization", "long_name" => "Customization Extra"),
-        array("short_name" => "advanced_search", "long_name" => "Advanced Search Extra"),
-        array("short_name" => "jira", "long_name" => "Jira Extra"),
         array("short_name" => "ucf", "long_name" => "Unified Compliance Framework (UCF) Extra"),
-        array("short_name" => "incident_management", "long_name" => "Incident Management Extra"),
-        array("short_name" => "organizational_hierarchy", "long_name" => "Organizational Hierarchy Extra")
     );
 
     // Return the array of available Extras
@@ -117,14 +117,103 @@ function core_extra_current_version($extra)
                     return SEPARATION_EXTRA_VERSION;
                 case "ucf":
                     return UCF_EXTRA_VERSION;
-				case "upgrade":
-					return UPGRADE_EXTRA_VERSION;
-				default:
-					return "N/A";
+		case "upgrade":
+		    return UPGRADE_EXTRA_VERSION;
+		default:
+		    return "N/A";
 			}
 		}
 		else return "N/A";
 	}
+}
+
+/**********************************************************
+ * FUNCTION: EXTRA ACTIVATED                              *
+ * Returns whether the specified extra has been activated *
+ **********************************************************/
+function core_extra_activated($extra)
+{       
+	// Return the extra activated
+        switch ($extra) {
+                case "advanced_search":
+                    return advanced_search_extra();
+                case "api":
+                    return api_extra();
+                case "assessments":
+                    return assessments_extra();
+                case "authentication":
+                    return custom_authentication_extra();
+                case "complianceforgescf":
+                    return complianceforge_scf_extra();
+                case "customization":
+                    return customization_extra();
+                case "encryption":
+                    return encryption_extra();
+                case "import-export":
+                    return import_export_extra();
+                case "incident_management":
+                    return incident_management_extra();
+                case "jira":
+                    return jira_extra();
+                case "notification":
+                    return notification_extra();
+                case "organizational_hierarchy":
+                    return organizational_hierarchy_extra();
+                case "separation":
+                    return team_separation_extra();
+                case "ucf":
+                    return ucf_extra();
+                case "upgrade":
+                	return true;
+                default:
+                	return false;
+        }
+}
+
+/********************************************************
+ * FUNCTION: EXTRA ACTIVATED LINK                       *
+ * Returns the link for a purchased and activated extra *
+ ********************************************************/
+function core_extra_activated_link($extra)
+{
+	global $lang;
+	global $escaper;
+
+        // Return the extra activated
+        switch ($extra) {
+                case "advanced_search":
+                    return "&nbsp;&nbsp;<a href=\"advanced_search.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "api":
+                    return "&nbsp;&nbsp;<a href=\"api.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "assessments":
+                    return "&nbsp;&nbsp;<a href=\"assessments.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "authentication":
+                    return "&nbsp;&nbsp;<a href=\"authentication.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "complianceforgescf":
+                    return "&nbsp;&nbsp;<a href=\"complianceforge_scf.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "customization":
+                    return "&nbsp;&nbsp;<a href=\"customization.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "encryption":
+                    return "&nbsp;&nbsp;<a href=\"encryption.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "import-export":
+                    return "&nbsp;&nbsp;<a href=\"importexport.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "incident_management":
+                    return "&nbsp;&nbsp;<a href=\"incidentmanagement.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "jira":
+                    return "&nbsp;&nbsp;<a href=\"jira.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "notification":
+                    return "&nbsp;&nbsp;<a href=\"notification.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "organizational_hierarchy":
+                    return "&nbsp;&nbsp;<a href=\"organizational_hierarchy.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "separation":
+                    return "&nbsp;&nbsp;<a href=\"separation.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "ucf":
+                    return "&nbsp;&nbsp;<a href=\"ucf.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+                case "upgrade":
+                        return "";
+                default:
+                        return "";
+        }
 }
 
 /*******************************************************
@@ -137,6 +226,12 @@ function core_display_upgrade_extras()
 	global $escaper;
 	global $lang;
 
+	// Check all purchases in one web service call
+	$purchases = core_check_all_purchases();
+
+	// Get the list of available extras
+	$available_extras = available_extras();
+
 	// Display the table header
 	echo "<p><h4>" . $escaper->escapeHtml($lang['SimpleRiskExtras']) . "</h4></p>\n";
 	echo "<table width=\"100%\" class=\"table table-bordered table-condensed\">\n";
@@ -144,6 +239,7 @@ function core_display_upgrade_extras()
 	echo "<tr>\n";
 	echo "  <td width=\"115px\"><b><u>Extra Name</u></b></td>\n";
 	echo "  <td width=\"10px\"><b><u>Purchased</u></b></td>\n";
+	echo "  <td width=\"60px\"><b><u>Expires</u></b></td>\n";
 	echo "  <td width=\"10px\"><b><u>Installed</u></b></td>\n";
 	echo "  <td width=\"10px\"><b><u>Activated</u></b></td>\n";
 	echo "  <td width=\"60px\"><b><u>Version</u></b></td>\n";
@@ -153,294 +249,77 @@ function core_display_upgrade_extras()
 	echo "</thead>\n";
 	echo "<tbody>\n";
 
-	// Upgrade Extra
-	$purchased = true;
-	$installed = core_is_installed("upgrade");
-	$activated = true;
-	$version = core_extra_current_version("upgrade");
-	$latest_version = latest_version("upgrade");
-	$action_button = core_get_action_button("upgrade", $purchased, $installed, $activated, $version, $latest_version);
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>Upgrade</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\" checked /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\" checked /></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
-
-	// ComplianceForge SCF Extra
-	$purchased = true;
-	$installed = core_is_installed("complianceforgescf");
-	$activated = complianceforge_scf_extra();
-	$version = core_extra_current_version("complianceforgescf");
-	$latest_version = latest_version("complianceforgescf");
-	$action_button = core_get_action_button("complianceforgescf", $purchased, $installed, $activated, $version, $latest_version);
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>ComplianceForge SCF</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\" checked /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\" checked /></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-
-	// Custom Authentication Extra
-	$purchased = core_is_purchased("authentication");
-	$installed = core_is_installed("authentication");
-	$activated = custom_authentication_extra();
-	$version = core_extra_current_version("authentication");
-	$latest_version = latest_version("authentication");
-	$action_button = core_get_action_button("authentication", $purchased, $installed, $activated, $version, $latest_version);
-	if ($purchased && $activated)
+	// For each available extra
+	foreach ($available_extras as $extra)
 	{
-		$activated_link = "&nbsp;&nbsp;<a href=\"authentication.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
+		// If this is the Upgrade or ComplianceForge SCF Extra
+		if ($extra['short_name'] == "upgrade" || $extra['short_name'] == "complianceforgescf")
+		{
+			// Set purchased to true
+			$purchased = true;
+			$expires = "Unlimited";
+		}
+		else
+		{
+			$extras_xml = $purchases->{"extras"};
+			$extra_xml = $extras_xml->{$extra['short_name']};
+			$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
+			$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
+			$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
+
+			// If the extra was purchased
+			if ($purchased)
+			{
+				// Get the expiration date
+				$expires = $extra_xml->{"expires"}->__toString();
+
+				// If the exipration date is not set
+				if ($expires == "0000-00-00 00:00:00")
+				{
+					$expires = $escaper->escapeHtml("N/A");
+				}
+				// If the expiration date has passed
+				else if ($expires < date('Y-m-d h:i:s'))
+				{
+					$expires = "<font color=\"red\"><b>Expired</b></font>";
+				}
+				else $expires = "<font color=\"green\"><b>" . $escaper->escapeHtml(substr($expires, 0, 10)) . "</b></font>";
+			}
+			else $expires = "N/A";
+		}
+
+		// Check if the extra is installed
+		$installed = core_is_installed($extra['short_name']);
+
+		// Check if the extra is activated
+		$activated = core_extra_activated($extra['short_name']);
+
+		// If the extra is purchased and activated
+		if ($purchased && $activated)
+		{
+			$activated_link = core_extra_activated_link($extra['short_name']);
+		}
+		else $activated_link = "";
+
+		// Get the version information
+		$version = core_extra_current_version($extra['short_name']);
+		$latest_version = latest_version($extra['short_name']);
+
+		// Get the action button
+		$action_button = core_get_action_button($extra['short_name'], $purchased, $installed, $activated, $version, $latest_version);
+
+		// Display the table row
+		echo "<tr>\n";
+		echo "  <td width=\"115px\"><b>" . $escaper->escapeHtml($extra['long_name']) . "</b></td>\n";
+		echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
+		echo "  <td width=\"60px\">" . $expires . "</td>\n";
+		echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
+		echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " />" . $activated_link . "</td>\n";
+		echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
+		echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
+		echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
+		echo "</tr>\n";
 	}
-	else $activated_link = "";
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>Custom Authentication</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " />" . $activated_link . "</td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
-
-	// Customization Extra
-	$purchased = core_is_purchased("customization");
-	$installed = core_is_installed("customization");
-	$activated = customization_extra();
-	$version = core_extra_current_version("customization");
-	$latest_version = latest_version("customization");
-	$action_button = core_get_action_button("customization", $purchased, $installed, $activated, $version, $latest_version);
-	if ($purchased && $activated)
-	{
-		$activated_link = "&nbsp;&nbsp;<a href=\"customization.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-	}
-	else $activated_link = "";
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>Customization</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " />" . $activated_link . "</td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
-
-	// Encrypted Database Extra
-	$purchased = core_is_purchased("encryption");
-	$installed = core_is_installed("encryption");
-	$activated = encryption_extra();
-	$version = core_extra_current_version("encryption");
-	$latest_version = latest_version("encryption");
-	$action_button = core_get_action_button("encryption", $purchased, $installed, $activated, $version, $latest_version);
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>Encrypted Database</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
-
-	// Import-Export Extra
-	$purchased = core_is_purchased("import-export");
-	$installed = core_is_installed("import-export");
-	$activated = import_export_extra();
-	$version = core_extra_current_version("import-export");
-	$latest_version = latest_version("import-export");
-	$action_button = core_get_action_button("import-export", $purchased, $installed, $activated, $version, $latest_version);
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>Import / Export</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
-
-    // Incident Management Extra
-    $purchased = core_is_purchased("incident_management");
-    $installed = core_is_installed("incident_management");
-    $activated = incident_management_extra();
-    $version = core_extra_current_version("incident_management");
-    $latest_version = latest_version("incident_management");
-    $action_button = core_get_action_button("incident_management", $purchased, $installed, $activated, $version, $latest_version);
-    echo "<tr>\n";
-    echo "  <td width=\"115px\"><b>Incident Management</b></td>\n";
-    echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-    echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-    echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " /></td>\n";
-    echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-    echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-    echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-    echo "</tr>\n";
-
-	// Notification Extra
-	$purchased = core_is_purchased("notification");
-	$installed = core_is_installed("notification");
-	$activated = notification_extra();
-	$version = core_extra_current_version("notification");
-	$latest_version = latest_version("notification");
-	$action_button = core_get_action_button("notification", $purchased, $installed, $activated, $version, $latest_version);
-	if ($purchased && $activated)
-	{
-		$activated_link = "&nbsp;&nbsp;<a href=\"notification.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-	}
-	else $activated_link = "";
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>E-mail Notification</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " />" . $activated_link . "</td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
-
-	// Separation Extra
-	$purchased = core_is_purchased("separation");
-	$installed = core_is_installed("separation");
-	$activated = team_separation_extra();
-	$version = core_extra_current_version("separation");
-	$latest_version = latest_version("separation");
-	$action_button = core_get_action_button("separation", $purchased, $installed, $activated, $version, $latest_version);
-	if ($purchased && $activated)
-	{
-		$activated_link = "&nbsp;&nbsp;<a href=\"separation.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-	}
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>Team-Based Separation</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
-
-	// Assessments Extra
-	$purchased = core_is_purchased("assessments");
-	$installed = core_is_installed("assessments");
-	$activated = assessments_extra();
-	$version = core_extra_current_version("assessments");
-	$latest_version = latest_version("assessments");
-	$action_button = core_get_action_button("assessments", $purchased, $installed, $activated, $version, $latest_version);
-    if ($purchased && $activated)
-    {
-            $activated_link = "&nbsp;&nbsp;<a href=\"assessments.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-    }
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>Risk Assessments</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
-
-	// API Extra
-	$purchased = core_is_purchased("api");
-	$installed = core_is_installed("api");
-	$activated = api_extra();
-	$version = core_extra_current_version("api");
-	$latest_version = latest_version("api");
-	$action_button = core_get_action_button("api", $purchased, $installed, $activated, $version, $latest_version);
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>API</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
-
-	// Advanced Search Extra
-	$purchased = core_is_purchased("advanced_search");
-	$installed = core_is_installed("advanced_search");
-	$activated = advanced_search_extra();
-	$version = core_extra_current_version("advanced_search");
-	$latest_version = latest_version("advanced_search");
-	$action_button = core_get_action_button("advanced_search", $purchased, $installed, $activated, $version, $latest_version);
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>Advanced Search</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
-
-	// Jira Extra
-	$purchased = core_is_purchased("jira");
-	$installed = core_is_installed("jira");
-	$activated = jira_extra();
-	$version = core_extra_current_version("jira");
-	$latest_version = latest_version("jira");
-	$action_button = core_get_action_button("jira", $purchased, $installed, $activated, $version, $latest_version);
-    if ($purchased && $activated)
-    {
-            $activated_link = "&nbsp;&nbsp;<a href=\"jira.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-    }
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>Jira</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
-
-	// UCF Extra
-	$purchased = core_is_purchased("ucf");
-	$installed = core_is_installed("ucf");
-	$activated = ucf_extra();
-	$version = core_extra_current_version("ucf");
-	$latest_version = latest_version("ucf");
-	$action_button = core_get_action_button("ucf", $purchased, $installed, $activated, $version, $latest_version);
-    if ($purchased && $activated)
-    {
-            $activated_link = "&nbsp;&nbsp;<a href=\"ucf.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-    }
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>Unified Compliance Framework (UCF)</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
-
-	// Organizational Hierarchy Extra
-	$purchased = core_is_purchased("organizational_hierarchy");
-	$installed = core_is_installed("organizational_hierarchy");
-	$activated = organizational_hierarchy_extra();
-	$version = core_extra_current_version("organizational_hierarchy");
-	$latest_version = latest_version("organizational_hierarchy");
-	$action_button = core_get_action_button("organizational_hierarchy", $purchased, $installed, $activated, $version, $latest_version);
-	if ($purchased && $activated)
-	{
-	    $activated_link = "&nbsp;&nbsp;<a href=\"organizational_hierarchy.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
-	}
-	echo "<tr>\n";
-	echo "  <td width=\"115px\"><b>Organizational Hierarchy</b></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " /></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-	echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
-	echo "</tr>\n";
 
 	echo "</tbody>\n";
 	echo "</table>\n";
@@ -516,6 +395,63 @@ function core_is_purchased($extra)
             else return false;
         }
     }
+}
+
+/***************************************************************
+ * FUNCTION: CHECK ALL PURCHASES                               *
+ * Calls the services API to get all purchases at once         *
+ ***************************************************************/
+function core_check_all_purchases()
+{
+    // Get the instance identifier
+    $instance_id = get_setting("instance_id");
+
+    // Get the services API key
+    $services_api_key = get_setting("services_api_key");
+
+    // Create the data to send
+    $data = array(
+        'action' => 'check_all_purchases',
+        'instance_id' => $instance_id,
+        'api_key' => $services_api_key,
+    );
+
+    write_debug_log("Checking for all purchases for instance ID " . $instance_id);
+
+    // Configuration for the SimpleRisk service call
+    $url = "https://services.simplerisk.com/index.php";
+    $method = "POST";
+    $header = "Content-Type: application/x-www-form-urlencoded";
+    $content = http_build_query($data);
+
+    // Set the http options
+    $opts = array('http' =>
+        array(
+            'method'  => $method,
+            'header'  => $header,
+            'content' => $content
+        )
+    );
+
+    // Set the default proxy stream context
+    $context = set_proxy_stream_context($method, $header, $content);
+
+    // Make the services call
+    $result = file_get_contents($url, NULL, $context);
+
+    // If we were unable to connect to the URL
+    if(!$result || $result[0] == 'HTTP/1.1 404 Not Found')
+    {
+        write_debug_log("SimpleRisk was unable to connect to " . $url);
+    }
+    // We were able to connect to the URL
+    else
+    {
+        write_debug_log("SimpleRisk successfully connected to " . $url);
+    }
+
+    $xml = simplexml_load_string($result);
+    return $xml;
 }
 
 /*************************************************************
@@ -772,6 +708,317 @@ function extra_simplerisk_version_compatible($extra)
 			return false;
 		}
 	}
+}
+
+/**************************************
+ * FUNCTION: SIMPLERISK LICENSE CHECK *
+ **************************************/
+function simplerisk_license_check()
+{
+	write_debug_log("Running license check.");
+
+	// Get if the instance is registered
+	$registration_registered = get_setting('registration_registered');
+
+	// If the registration is registered
+	if ($registration_registered == 1)
+	{
+		write_debug_log("The instance is registered.");
+
+        	// Get the hosting tier setting
+        	$hosting_tier = get_setting('hosting_tier');
+
+        	// If the hosting tier is not set then this is an on-premise instance
+        	if (!$hosting_tier)
+        	{
+			write_debug_log("The instance is on-premise.");
+
+			// Check the license against what is installed
+			simplerisk_license_check_purchases();
+
+			// Set the last checked date to now
+			$now = time();
+			update_setting("license_check_date", $now);
+
+/*
+                	// Get the last license check
+                	$license_check_date = get_setting('license_check_date');
+
+			// Get the current date and time
+			$now = time();
+
+                	// If the license has not been checked
+                	if (!$license_check_date)
+                	{
+				write_debug_log("This is the first time a license check has been run.");
+
+				// Check the license against what is installed
+				simplerisk_license_check_purchases();
+
+                        	// Set the last checked date to now
+                        	update_setting("license_check_date", $now);
+                	}
+                	else
+                	{
+                	        // Get the number of days since the last check
+                	        $difference = $now - $license_check_date;
+                	        $days = round($difference / (60 * 60 * 24));
+
+				write_debug_log("Current timestamp: " . $now);
+				write_debug_log("Last license check date: " . $license_check_date);
+				write_debug_log("Days since last license check: " . $days);
+                	        
+                	        // If it has been one or more days since the last license check
+                	        if ($days >= 1)
+                	        {       
+					write_debug_log("It has been at least one day since the last license check.");
+
+					// Check the license against what is installed
+					simplerisk_license_check_purchases();
+
+                	                // Set the last checked date to now
+                	                update_setting("license_check_date", $now);
+                	        }
+                	}       
+*/
+
+        	}
+	}
+}
+
+/************************************************
+ * FUNCTION: SIMPLERISK LICENSE CHECK PURCHASES *
+ * Check that Extras align with licenses        *
+ ************************************************/
+function simplerisk_license_check_purchases()
+{
+	// Set a session value for the license check
+	$_SESSION['license_check'] = "pass";
+
+	// Check the purchases
+	$purchases = core_check_all_purchases();
+
+	// Get the list of available SimpleRisk Extras
+	$extras = available_extras();
+
+	// For each available Extra
+	foreach ($extras as $extra)
+	{
+		// If this is not the Upgrade or ComplianceForge SCF Extra
+		if ($extra['short_name'] != "upgrade" && $extra['short_name'] != "complianceforgescf")
+		{
+			// Get the license information
+			$extras_xml = $purchases->{"extras"};
+			$extra_xml = $extras_xml->{$extra['short_name']};
+			$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
+			$expires = $extra_xml->{"expires"}->__toString();
+			$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
+			$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
+
+			// Check if the extra is installed
+			$installed = core_is_installed($extra['short_name']);
+
+			// Check if the extra is activated
+			$activated = core_extra_activated($extra['short_name']);
+
+			// If the Extra is activated and should be disabled
+			if ($activated && $disabled)
+			{
+				write_debug_log("SimpleRisk says this Extra should be disabled: " . $extra['short_name']);
+
+				// Deactivate the Extra
+				core_deactivate_extra($extra['short_name']);
+			}
+
+			// If the Extra is installed and should be deleted
+			if ($installed && $deleted)
+			{
+				write_debug_log("SimpleRisk says this Extra should be deleted: " . $extra['short_name']);
+
+				// Delete the Extra
+				core_delete_extra($extra['short_name']);
+			}
+
+			// If the Extra is installed and activated
+			if ($installed && $activated)
+			{
+				// If the expiration date is set
+				if ($expires != "0000-00-00 00:00:00")
+				{
+					// If the expiration date has passed
+					if ($expires < date('Y-m-d h:i:s'))
+					{
+						// Set the license to expired
+						$expired = true;
+					}
+					else $expired = false;					
+				}
+				else $expired = false;
+
+				// Get the name of the setting to check for a license failure
+				$license_check_fail_date_name = "license_check_fail_date_" . $extra['short_name'];
+
+				// Get the current date and time
+				$now = time();
+				
+				// If the Extra is not purchased or has expired
+				if (!$purchased || $expired)
+				{
+					write_debug_log("Extra not purchased or expired: " . $extra['short_name']);
+
+					// Set the session value for the license check to failed
+					$_SESSION['license_check'] = "fail";
+
+					// Check if we already have a license failed date
+					$license_check_fail_date = get_setting($license_check_fail_date_name);
+
+					// If we do not have a license failed date
+					if (!$license_check_fail_date)
+					{
+						// Set a license failed date
+						update_setting($license_check_fail_date_name, $now);
+					}
+					// We do have a license failed date
+					else
+					{
+                        			// Get the number of days since the license failure
+                        			$diference = $now - $license_check_fail_date;
+                        			$days = round($difference / (60 * 60 * 24));
+
+                        			// If it has been 30 or more days since the license check failure
+                        			if ($days >= 30)
+						{
+							write_debug_log("Deactivating and deleting Extra: " . $extra['short_name']);
+
+							// Deactivate the Extra
+							core_deactivate_extra($extra['short_name']);
+
+							// Delete the Extra
+							core_delete_extra($extra['short_name']);
+						}
+					}
+				}
+				// If the Extra is purchased and has not expired
+				else if ($purchased && !$expired)
+				{
+					write_debug_log("Removing license check failure for Extra: " . $extra['short_name']);
+
+					// Delete the setting for a failed license date
+					delete_setting($license_check_fail_date_name);
+				}
+			}
+		}
+	}
+}
+
+/*********************************
+ * FUNCTION: DEACTIVATE EXTRA    *
+ * Deactivates a specified Extra *
+ *********************************/
+function core_deactivate_extra($extra)
+{
+        // Get the list of available extra names
+        $available_extras = available_extra_short_names();
+
+        // If the provided extra name is not in the list of available extras
+        if (!in_array($extra, $available_extras))
+        {
+                return false;
+        }
+        // The provided extra name is in the list of available extras
+        else
+        {
+                // Get the path to the extra
+                $path = realpath(__DIR__ . "/../extras/$extra/index.php");
+
+                // If the extra is installed
+                if (file_exists($path))
+                {
+                        // Include the extra
+                        require_once($path);
+
+                        // Deactivate the Extra
+                        switch ($extra) {
+				case "advanced_search":
+					disable_advanced_search_extra();
+					return true;
+				case "api":
+					disable_api_extra();
+					return true;
+				case "assessments":
+					disable_assessments_extra();
+					return true;
+				case "authentication":
+					disable_authentication_extra();
+					return true;
+				case "complianceforgescf":
+					disable_complianceforge_scf_extra();
+					return true;
+				case "customization":
+					disable_customization_extra();
+					return true;
+				case "encryption":
+					disable_encryption_extra();
+					return true;
+				case "import-export":
+					disable_import_export_extra();
+					return true;
+				case "incident_management":
+					disable_incident_management_extra();
+					return true;
+				case "jira":
+					disable_jira_extra();
+					return true;
+				case "notification":
+					disable_notification_extra();
+					return true;
+				case "organizational_hierarchy":
+					disable_organizational_hierarchy_extra();
+					return true;
+				case "separation":
+					disable_team_separation_extra();
+					return true;
+				case "ucf":
+					disable_ucf_extra();
+					return true;
+				case "upgrade":
+					return false;
+				default:
+					return false;
+                        }
+                }
+                else return false;
+        }
+}
+
+/*****************************
+ * FUNCTION: DELETE EXTRA    *
+ * Deletes a specified Extra *
+ *****************************/
+function core_delete_extra($extra)
+{
+        // Get the list of available extra names
+        $available_extras = available_extra_short_names();
+
+        // If the provided extra name is not in the list of available extras
+        if (!in_array($extra, $available_extras))
+        {
+                return false;
+        }
+        // The provided extra name is in the list of available extras
+        else
+        {
+                // Get the path to the extra
+                $path = realpath(__DIR__ . "/../extras/$extra");
+
+		// If the extra directory exists
+		if (is_dir($path))
+		{
+			// Call the proper delete directory function for the OS
+			delete_dir($path);
+                }
+                else return false;
+        }
 }
 
 ?>

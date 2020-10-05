@@ -318,7 +318,7 @@ function add_asset($ip, $name, $value=5, $location=0, $teams=[], $details = "", 
         // If the encryption extra is enabled, updates order_by_name
         if (encryption_extra()) {
             require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-            create_asset_name_order($_SESSION['encrypted_pass']);
+            create_asset_name_order(base64_decode($_SESSION['encrypted_pass']));
         }
 
         $message = "An asset named \"" . try_decrypt($name) . "\" was added by username \"" . $_SESSION['user'] . "\".";
@@ -348,6 +348,9 @@ function delete_all_assets($verified)
     $stmt->bindParam(":verified", $verified, PDO::PARAM_INT);
     $stmt->execute();
     $asset_ids = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+
+    // Close the database connection
+    db_close($db);
     
     $asset_ids || $asset_ids=[];
     
@@ -1806,21 +1809,6 @@ function delete_asset_group($asset_group_id) {
 
     $db = db_open();
 
-    // Remove junction table entries for the Asset Group
-    foreach(['assets_asset_groups',
-        'risks_to_asset_groups',
-        'assessment_answers_to_asset_groups',
-        'questionnaire_answers_to_asset_groups'] as $junction_name) {
-        $stmt = $db->prepare("
-            delete from
-                `$junction_name`
-            where
-                `asset_group_id`=:id;
-        ");    
-        $stmt->bindParam(":id", $asset_group_id, PDO::PARAM_INT);
-        $stmt->execute();
-    }
-
     // Delete the group
     $stmt = $db->prepare("
         DELETE FROM
@@ -1833,6 +1821,9 @@ function delete_asset_group($asset_group_id) {
 
     db_close($db);
 
+    // Delete leftover junction entries
+    cleanup_after_delete('asset_groups');
+    
     $message = _lang('AssetGroupDeleteAuditLog', array(
             'user' => $_SESSION['user'],
             'group_name' => $name,
@@ -2633,6 +2624,9 @@ function get_assets_and_asset_groups_of_type_as_string($id, $type) {
     $stmt->bindParam(":$junction_id_name", $id, PDO::PARAM_INT);
     $stmt->execute();
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
 
     if ($data) {
         $affected_assets = [];

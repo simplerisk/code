@@ -18,41 +18,18 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-if (!isset($_SESSION))
-{
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
+// Add the session
+$permissions = array(
+        "check_access" => true,
+        "check_governance" => true,
+);
+add_session_check($permissions);
 
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-    session_name('SimpleRisk');
-    session_start();
-}
-
-// Include the language file
-require_once(language_file());
-
-// Check for session timeout or renegotiation
-session_check();
-
-// Check if access is authorized
-if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-{
-    set_unauthenticated_redirect();
-    header("Location: ../index.php");
-    exit(0);
-}
-
-// Include the CSRF-magic library
-// Make sure it's called after the session is properly setup
+// Include the CSRF Magic library
 include_csrf_magic();
 
-// Enforce that the user has access to governance
-enforce_permission_governance();
+// Include the SimpleRisk language file
+require_once(language_file());
 
 enforce_permission_exception('view');
 
@@ -128,6 +105,7 @@ function display($display = "")
 
         <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
+        <link rel="stylesheet" href="../css/side-navigation.css">
 
         <?php
             setup_favicon("..");

@@ -117,6 +117,23 @@ jQuery(document).ready(function($){
           $('#control--add').on('shown.bs.modal', function () {
               $(".mapping_framework_table tbody", this).html("");
           });
+          $(document).on('change', '[name*=map_framework_id]', function(event) {
+              var cur_select = this;
+              if(!$(cur_select).val()) return true;
+              var existing_mappings = $("#existing_mappings").val();
+              $("[name*=map_framework_id]").each(function(index){
+                if(this != cur_select && $(this).val() == $(cur_select).val()){
+                    $(cur_select).find("option:eq(0)").prop('selected', true);
+                    showAlertFromMessage(existing_mappings, false);
+                    return false;
+                }
+              });
+          });
+          $('#control--add, #control--update').on('hidden.bs.modal', function () {
+              $("[name*=map_framework_id]").each(function(index){
+                  $(this).find("option:eq(0)").prop('selected', true);
+              });
+          })
         }
     };
        
@@ -196,36 +213,58 @@ jQuery(document).ready(function($){
         }
         
     })
-
 });
+
+function rebuild_filters()
+{
+    $.ajax({
+        type: "GET",
+        url: BASE_URL + "/api/governance/rebuild_control_filters?control_framework=" + $("#filter_by_control_framework").val(),
+        success: function(result){
+            var data = result.data;
+            rebuild_filter($("#filter_by_control_class"),data.classList);
+            rebuild_filter($("#filter_by_control_phase"),data.phaseList);
+            rebuild_filter($("#filter_by_control_family"),data.familyList);
+            rebuild_filter($("#filter_by_control_owner"),data.ownerList);
+            rebuild_filter($("#filter_by_control_priority"),data.priorityList);
+            controlDatatable.draw();
+        }
+    });
+}
+
 function rebuild_filter(obj,new_options){
-    var selected_classes = $(obj).val();
+    var unselected_classes = [];
+    $(obj).find('option').not(':selected').each(function(k, v){
+        unselected_classes.push(v.value);
+    });
+    
+//    var selected_classes = $(obj).val();
     var unassigned_label = $("#unassigned_label").val();
     $(obj).find("option").remove();
-    if(selected_classes.indexOf("-1") >= 0){
+    if(unselected_classes.indexOf("-1") >= 0){
         var $option = $("<option/>", {
             value: "-1",
             text: unassigned_label,
-            selected: true,
         });
     } else {
         var $option = $("<option/>", {
             value: "-1",
             text: unassigned_label,
+            selected: true,
         });
     }
     $(obj).append($option);
     $.each(new_options, function(key, item) {
-        if(selected_classes.indexOf(item.value) >= 0){
+        if(unselected_classes.indexOf(item.value) >= 0){
             var $option = $("<option/>", {
                 value: item.value,
                 text: item.name,
-                selected: true,
             });
         } else {
             var $option = $("<option/>", {
                 value: item.value,
                 text: item.name,
+                selected: true,
             });
         }
         $(obj).append($option);

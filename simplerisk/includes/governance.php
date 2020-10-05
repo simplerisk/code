@@ -81,15 +81,27 @@ function makeTree($olds, $parent, &$news, &$count=0){
  * FUNCTION: GET FRAMEWORK DATA IN TREE FORMAT *
  ***********************************************/
 function get_frameworks_as_treegrid($status){
-    global $lang;
     global $escaper;
-    
+
+    $complianceforge_scf_framework_id = complianceforge_scf_extra() ? (int)get_setting('complianceforge_scf_framework_id', 0) : 0;
+
     $frameworks = get_frameworks($status);
     foreach($frameworks as &$framework){
+        $framework_value = (int)$framework['value'];
         $framework['name'] = $escaper->escapeHtml($framework['name']);
         $framework['description'] = nl2br($escaper->escapeHtml($framework['description']));
-        $framework['actions'] = "<div class=\"text-center\"><a class=\"framework-block--edit\" data-id=\"".((int)$framework['value'])."\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;<a class=\"framework-block--delete\" data-id=\"".((int)$framework['value'])."\"><i class=\"fa fa-trash\"></i></a></div>";
+        $framework['actions'] = "
+            <div class=\"text-center\">
+                <a class=\"framework-block--edit\" data-id=\"" . $framework_value . "\">
+                    <i class=\"fa fa-pencil-square-o\"></i>
+                </a>"
+                    . ($complianceforge_scf_framework_id && $complianceforge_scf_framework_id === $framework_value ? "" : "&nbsp;&nbsp;&nbsp;
+                <a class=\"framework-block--delete\" data-id=\"" . $framework_value . "\">
+                    <i class=\"fa fa-trash\"></i>
+                </a>") . "
+            </div>";
     }
+
     $results = array();
     $count = 0;
     if($status == 1){
@@ -293,7 +305,7 @@ function get_frameworks_count($status)
     // Close the database connection
     db_close($db);
 
-    echo $array[0]['count'];
+    return $array[0]['count'];
 }
 
 /********************************
@@ -1461,7 +1473,7 @@ function getAvailableControlFamilyList($control_framework=""){
 /**************************************************
  * FUNCTION: GET AVAILABLE CONTROL FRAMEWORK LIST *
  **************************************************/
-function getAvailableControlFrameworkList(){
+function getAvailableControlFrameworkList($alphabetical_order=false){
     // Open the database connection
     $db = db_open();
     
@@ -1503,6 +1515,7 @@ function getAvailableControlFrameworkList(){
 
     $results = array();
     $ids = array();
+    if($alphabetical_order == true) usort($all_parent_frameworks, function($a, $b){return strcmp($a["name"], $b["name"]);});
     // Get unique array
     foreach($all_parent_frameworks as $result){
         if(!in_array($result['value'], $ids))
@@ -2387,8 +2400,9 @@ function get_exception_tabs($type)
                     var totalCount = 0;
                     if((data && data.length))
                     {
-                        for(parent of data)
+                        for(var i = 0; i < data.length; i++)
                         {
+                            var parent = data[i];
                             if((parent.children && parent.children.length))
                             {
                                 totalCount += parent.children.length;
@@ -2761,11 +2775,13 @@ function save_control_to_frameworks($control_id, $map_frameworks)
     foreach($map_frameworks as $row){
         $framework_id = $row[0];
         $reference_name = $row[1];
-        $stmt = $db->prepare("INSERT INTO `framework_control_mappings`(control_id, framework, reference_name) VALUES (:control_id, :framework_id, :reference_name)");
-        $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-        $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
-        $stmt->bindParam(":reference_name", $reference_name, PDO::PARAM_STR);
-        $stmt->execute();
+        if(!get_exist_mapping_control_framework($control_id, $framework_id)){
+            $stmt = $db->prepare("INSERT INTO `framework_control_mappings`(control_id, framework, reference_name) VALUES (:control_id, :framework_id, :reference_name)");
+            $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+            $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+            $stmt->bindParam(":reference_name", $reference_name, PDO::PARAM_STR);
+            $stmt->execute();
+        }
     }
     // Close the database connection
     db_close($db);  
@@ -2798,7 +2814,7 @@ function save_control_to_framework_by_ids($control_id, $framework_ids)
         foreach($framework_ids as $framework_id)
         {
             $framework_id = (int)$framework_id;
-            if($framework_id)
+            if($framework_id && !get_exist_mapping_control_framework($control_id, $framework_id))
             {
                 $inserted = true;
                 $insert_query .= "(:control_id, {$framework_id}, :reference_name),";
@@ -2844,13 +2860,13 @@ function add_control_to_framework($control_id, $framework_id, $reference_name=nu
             $control_number = isset($control['control_number'])?$control['control_number']:"";
         }
         else $control_number = $reference_name;
-
-        $insert_query = "INSERT INTO `framework_control_mappings`(control_id, framework, reference_name) VALUES (:control_id, :framework_id, :control_number); ";
-        $stmt = $db->prepare($insert_query);
-        $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
-        $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
-        $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR);
-        $stmt->execute();
+        if(!get_exist_mapping_control_framework($control_id, $framework_id)){
+            $stmt = $db->prepare("INSERT INTO `framework_control_mappings`(control_id, framework, reference_name) VALUES (:control_id, :framework_id, :control_number); ");
+            $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+            $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+            $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR);
+            $stmt->execute();
+        }
 
         write_debug_log("Adding SimpleRisk control id \"" . $control_id . "\" to framework id \"" . $framework_id . "\".");
 
@@ -2965,6 +2981,24 @@ function get_mapping_control_frameworks($control_id)
     // Close the database connection
     db_close($db);
     return $frameworks;
+}
+/*************************************************
+ * FUNCTION: GET EXIST MAPPING CONTROL FRAMEWORK *
+ *************************************************/
+function get_exist_mapping_control_framework($control_id, $framework_id)
+{
+    // Open the database connection
+    $db = db_open();
+    $sql = "SELECT * FROM `framework_control_mappings`  WHERE control_id = :control_id AND framework=:framework_id;";
+
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $mappings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    db_close($db);
+    return $mappings;
 }
 
 ?>

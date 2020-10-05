@@ -17,46 +17,18 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-if (!isset($_SESSION))
-{
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
+// Add the session
+$permissions = array(
+        "check_access" => true,
+        "check_assessments" => true,
+);
+add_session_check($permissions);
 
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-    session_name('SimpleRisk');
-    session_start();
-}
-
-// Include the language file
-require_once(language_file());
-
-
-// Check for session timeout or renegotiation
-session_check();
-
-// Check if access is authorized
-if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-{
-    set_unauthenticated_redirect();
-    header("Location: ../index.php");
-    exit(0);
-}
-
-// Check if access is authorized
-if (!isset($_SESSION["assessments"]) || $_SESSION["assessments"] != "1")
-{
-    header("Location: ../index.php");
-    exit(0);
-}
-
-// Include the CSRF-magic library
-// Make sure it's called after the session is properly setup
+// Include the CSRF Magic library
 include_csrf_magic();
+
+// Include the SimpleRisk language file
+require_once(language_file());
 
 // Check if assessment extra is enabled
 if(assessments_extra())
@@ -77,7 +49,7 @@ if(process_assessment_questionnaire_templates()){
 ?>
 
 <!doctype html>
-<html>
+<html lang="en" class="notranslate" translate="no">
 
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
@@ -93,6 +65,7 @@ if(process_assessment_questionnaire_templates()){
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <meta name="google" content="notranslate" />
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
     <link rel="stylesheet" href="../css/jquery.dataTables.css">
@@ -101,6 +74,7 @@ if(process_assessment_questionnaire_templates()){
 
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/side-navigation.css">
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
@@ -122,8 +96,8 @@ if(process_assessment_questionnaire_templates()){
             </div>
             <div class="span9">
                 <?php if(isset($_GET['action']) && $_GET['action']=="template_list"){ ?>
-                    <div class="row-fluid text-right content-navbar-container">
-                        <a class="btn" href="questionnaire_templates.php?action=add_template"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
+                    <div class="row-fluid text-right">
+                        <a class="btn" href="#aseessment-questionnaire-template--add" role="button" data-toggle="modal"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
                     </div>
                     <div class="row-fluid">
                         <?php display_questionnaire_templates(); ?>
@@ -131,6 +105,10 @@ if(process_assessment_questionnaire_templates()){
                 <?php }elseif(isset($_GET['action']) && $_GET['action']=="add_template"){ ?>
                     <div class="hero-unit">
                         <?php display_questionnaire_template_add(); ?>
+                    </div>
+                <?php }elseif(isset($_GET['action']) && $_GET['action']=="add_template_from_scf"){ ?>
+                    <div class="hero-unit">
+                        <?php display_questionnaire_template_add_from_scf(); ?>
                     </div>
                 <?php }elseif(isset($_GET['action']) && $_GET['action']=="edit_template"){ ?>
                     <div class="hero-unit">
@@ -140,6 +118,22 @@ if(process_assessment_questionnaire_templates()){
             </div>
         </div>
     </div>
+    <div id="aseessment-questionnaire-template--add" class="modal hide fade" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-body">
+
+        <form class="" action="" method="post">
+          <div class="form-group text-center">
+            <label for=""><?php echo $escaper->escapeHtml($lang['WouldYouLikeSimpleRiskToAutomaticallyGenerate']);?></label>
+          </div>
+          <input type="hidden" name="template_id" value="" />
+          <div class="form-group text-center ">
+            <a class="delete_control btn btn-danger" href="questionnaire_templates.php?action=add_template_from_scf"><?php echo $escaper->escapeHtml($lang['Yes']);?></a>
+            <a class="btn btn-default" href="questionnaire_templates.php?action=add_template"><?php echo $escaper->escapeHtml($lang['No']);?></a>
+          </div>
+        </form>
+      </div>
+    </div>
+
 </body>
 
 </html>

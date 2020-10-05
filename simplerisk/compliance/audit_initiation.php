@@ -20,41 +20,18 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-if (!isset($_SESSION))
-{
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-      session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
+// Add the session
+$permissions = array(
+        "check_access" => true,
+        "check_compliance" => true,
+);
+add_session_check($permissions);
 
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-    session_name('SimpleRisk');
-    session_start();
-}
-
-// Include the language file
-require_once(language_file());
-
-// Check for session timeout or renegotiation
-session_check();
-
-// Check if access is authorized
-if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-{
-  set_unauthenticated_redirect();
-  header("Location: ../index.php");
-  exit(0);
-}
-
-// Include the CSRF-magic library
-// Make sure it's called after the session is properly setup
+// Include the CSRF Magic library
 include_csrf_magic();
 
-// Enforce that the user has access to compliance
-enforce_permission_compliance();
+// Include the SimpleRisk language file
+require_once(language_file());
 
 // Check if a framework was updated
 if (isset($_POST['update_framework'])) {
@@ -129,11 +106,11 @@ if(isset($_POST['update_test'])){
     $test_frequency = (int)$_POST['test_frequency'];
     $last_date      = get_standard_date_from_default_format($_POST['last_date']);
     $next_date      = get_standard_date_from_default_format($_POST['next_date']);
-    $name           = $escaper->escapeHtml($_POST['name']);
-    $objective      = $escaper->escapeHtml($_POST['objective']);
-    $test_steps     = $escaper->escapeHtml($_POST['test_steps']);
+    $name           = $_POST['name'];
+    $objective      = $_POST['objective'];
+    $test_steps     = $_POST['test_steps'];
     $approximate_time = is_int($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
-    $expected_results = $escaper->escapeHtml($_POST['expected_results']);
+    $expected_results = $_POST['expected_results'];
     
     // Update a framework control test
     update_framework_control_test($test_id, $tester, $test_frequency, $name, $objective, $test_steps, $approximate_time, $expected_results, $last_date, $next_date, false, $additional_stakeholders, $teams);
@@ -187,6 +164,7 @@ if(isset($_GET['initiate']) ){
     
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/side-navigation.css">
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");

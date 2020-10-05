@@ -16,38 +16,14 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-if (!isset($_SESSION))
-{
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
+// Add the session
+add_session_check();
 
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-    session_name('SimpleRisk');
-    session_start();
-}
-
-// Include the language file
-require_once(language_file());
-
-// Check for session timeout or renegotiation
-session_check();
-
-// Check if access is authorized
-if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-{
-  set_unauthenticated_redirect();
-  header("Location: ../index.php");
-  exit(0);
-}
-
-// Include the CSRF-magic library
-// Make sure it's called after the session is properly setup
+// Include the CSRF Magic library
 include_csrf_magic();
+
+// Include the SimpleRisk language file
+require_once(language_file());
 
 // Get page info
 $currentpage = isset($_GET['currentpage']) ? $_GET['currentpage'] : "1";
@@ -177,6 +153,7 @@ if(is_array($custom_display_settings = $_SESSION['custom_display_settings']) && 
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/side-navigation.css">
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
@@ -283,7 +260,7 @@ if(is_array($custom_display_settings = $_SESSION['custom_display_settings']) && 
     <input type="hidden" id="unassigned_option" value="<?php echo $escaper->escapeHtml($lang["Unassigned"]);?>">
     <input type="hidden" id="date_format" value="<?php echo $escaper->escapeHtml(get_setting("default_date_format"));?>">
     <style type="">
-        .download-by-group{
+        .download-by-group, .print-by-group{
             display: none;
         }
     </style>

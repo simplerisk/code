@@ -13,37 +13,21 @@
     require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
     $escaper = new Zend\Escaper\Escaper('utf-8');
 
-    // Add various security headers
-    add_security_headers();
+// Add various security headers
+add_security_headers();
 
-    if (!isset($_SESSION))
-    {
-        // Session handler is database
-        if (USE_DATABASE_FOR_SESSIONS == "true")
-        {
-            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-        }
+// Add the session
+$permissions = array(
+        "check_access" => true,
+        "check_assets" => true,
+);
+add_session_check($permissions);
 
-        // Start the session
-        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
+// Include the CSRF Magic library
+include_csrf_magic();
 
-        session_name('SimpleRisk');
-        session_start();
-    }
-
-    // Include the language file
-    require_once(language_file());
-
-    // Check for session timeout or renegotiation
-    session_check();
-
-    // Check if access is authorized
-    if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-    {
-        set_unauthenticated_redirect();
-        header("Location: ../index.php");
-        exit(0);
-    }
+// Include the SimpleRisk language file
+require_once(language_file());
 
     // Check if the user has access to manage assets
     if (!isset($_SESSION["asset"]) || $_SESSION["asset"] != 1)
@@ -53,10 +37,6 @@
     }
     else $manage_assets = true;
 
-    // Include the CSRF-magic library
-    // Make sure it's called after the session is properly setup
-    include_csrf_magic();
-
     // Check if an asset was added
     if ((isset($_POST['add_asset'])) && $manage_assets)
     {
@@ -64,7 +44,7 @@
         $ip         = $_POST['ip'];
         $value      = $_POST['value'];
         $location   = (int)$_POST['location'];
-        $teams      = $_POST['team'];
+        $teams      = empty($_POST['team']) ? [] : $_POST['team'];
         $details    = $_POST['details'];
         $tags       = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
         
@@ -131,6 +111,7 @@
     <link rel="stylesheet" href="../css/display.css">
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/side-navigation.css">
 
     <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
     <script src="../js/selectize.min.js"></script>

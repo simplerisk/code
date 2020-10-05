@@ -18,41 +18,18 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
-if (!isset($_SESSION))
-{
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
+// Add the session
+$permissions = array(
+        "check_access" => true,
+        "check_governance" => true,
+);
+add_session_check($permissions);
 
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-    session_name('SimpleRisk');
-    session_start();
-}
-
-// Include the language file
-require_once(language_file());
-
-// Check for session timeout or renegotiation
-session_check();
-
-// Check if access is authorized
-if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-{
-    set_unauthenticated_redirect();
-    header("Location: ../index.php");
-    exit(0);
-}
-
-// Include the CSRF-magic library
-// Make sure it's called after the session is properly setup
+// Include the CSRF Magic library
 include_csrf_magic();
 
-// Enforce that the user has access to governance
-enforce_permission_governance();
+// Include the SimpleRisk language file
+require_once(language_file());
 
 // Check if a new framework was submitted
 if (isset($_POST['add_framework']))
@@ -119,13 +96,17 @@ if (isset($_POST['delete_framework']))
     // If user has no permission for modify frameworks
     if(empty($_SESSION['delete_frameworks']))
     {
-      set_alert(true, "bad", $escaper->escapeHtml($lang['NoDeleteFrameworkPermission']));
+      set_alert(true, "bad", $lang['NoDeleteFrameworkPermission']);
     }
     // If the framework ID is 0 (ie. Unassigned Risks)
     elseif ($value == 0)
     {
       // Display an alert
-      set_alert(true, "bad", "You cannot delete the Unassigned framework.  Sorry.");
+        set_alert(true, "bad", $lang['CantDeleteUnassignedFramework']);
+    }
+    
+    elseif ((complianceforge_scf_extra() ? (int)get_setting('complianceforge_scf_framework_id', 0) : 0) === $value) {
+        set_alert(true, "bad", $lang['CantDeleteComplianceForgeSCFFramework']);
     }
     else
     {
@@ -264,6 +245,7 @@ if (isset($_POST['delete_controls']))
 
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/side-navigation.css">
 
   <?php
       setup_favicon("..");
@@ -389,7 +371,8 @@ if (isset($_POST['delete_controls']))
                 buttonWidth: '100%',
                 includeSelectAllOption: true,
                 onDropdownHide: function(){
-                    controlDatatable.draw();
+                    rebuild_filters();
+//                    controlDatatable.draw();
                 }
             });
 
@@ -454,8 +437,8 @@ if (isset($_POST['delete_controls']))
                 <a href="#framework--add" id="framework-add-btn" role="button" data-toggle="modal" class="project--add"><i class="fa fa-plus"></i></a>
 
                 <ul class="clearfix tabs-nav">
-                  <li><a href="#active-frameworks" class="status" data-status="1"><?php echo $escaper->escapeHtml($lang['ActiveFrameworks']); ?> (<span id="active-frameworks-count"><?php get_frameworks_count(1) ?></span>)</a></li>
-                  <li><a href="#inactive-frameworks" class="status" data-status="2"><?php echo $escaper->escapeHtml($lang['InactiveFrameworks']); ?> (<span id="inactive-frameworks-count"><?php get_frameworks_count(2) ?></span>)</a></li>
+                  <li><a href="#active-frameworks" class="status" data-status="1"><?php echo $escaper->escapeHtml($lang['ActiveFrameworks']); ?> (<span id="active-frameworks-count"><?php echo get_frameworks_count(1) ?></span>)</a></li>
+                  <li><a href="#inactive-frameworks" class="status" data-status="2"><?php echo $escaper->escapeHtml($lang['InactiveFrameworks']); ?> (<span id="inactive-frameworks-count"><?php echo get_frameworks_count(2) ?></span>)</a></li>
                 </ul>
 
                   <div id="active-frameworks" class="custom-treegrid-container">
@@ -464,6 +447,49 @@ if (isset($_POST['delete_controls']))
                   <div id="inactive-frameworks" class="custom-treegrid-container">
                         <?php get_framework_tabs(2) ?>
                   </div>
+                  <?php
+			// If there are no active frameworks
+			if (get_frameworks_count(1) === "0")
+			{
+				// URL for the frameworks
+				$url = "https://github.com/simplerisk/import-content/raw/master/Control%20Frameworks/frameworks.xml";
+
+				// HTTP Options
+				$opts = array(
+					'ssl'=>array(
+						'verify_peer'=>true,
+						'verify_peer_name'=>true,
+					),
+					'http'=>array(
+						'method'=>"GET",
+						'header'=>"content-type: application/json\r\n",
+					)
+				);
+				$context = stream_context_create($opts);
+
+				$frameworks = @file_get_contents($url, false, $context);
+				$frameworks_xml = simplexml_load_string($frameworks);
+
+				echo "<h3>No frameworks?  No problem.</h3>\n";
+				echo "<h4>Try one of the following ways to load frameworks into SimpleRisk:</h4>\n";
+				echo "<ol>\n";
+				echo "  <li>Click the plus (+) icon above to manually create a new framework.</li>\n";
+				echo "  <li><a href=\"../admin/register.php\">Register</a> your SimpleRisk instance to download the free ComplianceForge SCF Extra and <a href=\"../admin/complianceforge_scf.php\">select from 148 different frameworks</a> that have been expertly mapped against 875 security and privacy controls.</li>\n";
+				echo "  <li>Use the licensed <a href=\"../admin/content.php\">Import-Export Extra</a> to instantly install any of the following frameworks or import your own:\n";
+				echo "    <ol style=\"list-style-type: disc;\">\n";
+
+				// For each framework returned from GitHub
+				foreach ($frameworks_xml as $framework_xml)
+				{
+					$name = $framework_xml->{"name"};
+					echo "<li>" . $escaper->escapeHtml($name) . "</li>\n";
+				}
+				echo "    </ol>\n";
+				echo "  </li>\n";
+				echo "</ol>\n";
+			}
+
+                  ?>
               </div> <!-- status-tabs -->
 
             </div>
@@ -540,7 +566,7 @@ if (isset($_POST['delete_controls']))
                             <select id="filter_by_control_framework" class="form-field form-control" multiple="multiple">
                                 <?php 
                                     echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
-                                    $options = getAvailableControlFrameworkList();  
+                                    $options = getAvailableControlFrameworkList(true);
                                     is_array($options) || $options = array();
                                     foreach($options as $option){
                                         echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
@@ -582,6 +608,7 @@ if (isset($_POST['delete_controls']))
                         </ul>
                         <input type="hidden" name="delete_controls" value="1">
                         <input type="hidden" id="unassigned_label" value="<?php echo $escaper->escapeHtml($lang['Unassigned']);?>">
+                        <input type="hidden" id="existing_mappings" value="<?php echo $escaper->escapeHtml($lang["ExistingMappings"]);?>">
                         <button type="submit" id="delete-controls-btn" class="btn"><?php echo $escaper->escapeHtml($lang['DeleteControls']) ?></button>
                     </div> <!-- status-tabs -->
 

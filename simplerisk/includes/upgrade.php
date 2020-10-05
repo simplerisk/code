@@ -235,7 +235,7 @@ function convert_tables_to_innodb()
     foreach ($array as $value)
     {
         // Get the table name
-        $table_name = $value['table_name'];
+        $table_name = $value['TABLE_NAME'];
 
         // We cannot convert the session table due to id characters
         if ($table_name != "sessions")
@@ -3885,7 +3885,7 @@ function upgrade_from_20191130001($db)
         $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
 
         foreach($array as $risk_id => $locations) {
-            $sql = "INSERT INTO `risk_to_location`(risk_id, location_id) values";
+            $sql = "REPLACE INTO `risk_to_location`(risk_id, location_id) values";
             foreach($locations as $location) {
                 $sql .= "('{$risk_id}', '{$location['location_id']}'),";
             }
@@ -4046,7 +4046,7 @@ function upgrade_from_20191130001($db)
         $stmt = $db->prepare("ALTER TABLE `mitigations` DROP `mitigation_team`; ");
         $stmt->execute();
     }
-
+    
     // Creating junction table for user <-> team associations and doing the migration
     if (field_exists_in_table('teams', 'user')) {
 
@@ -4076,7 +4076,7 @@ function upgrade_from_20191130001($db)
         $array = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
 
         foreach($array as $user_id => $teams) {
-            $sql = "INSERT INTO `user_to_team`(user_id, team_id) values";
+            $sql = "REPLACE INTO `user_to_team`(user_id, team_id) values";
             foreach($teams as $team) {
                 $sql .= "('{$user_id}', '{$team['team_id']}'),";
             }
@@ -4520,6 +4520,636 @@ function upgrade_from_20200401001($db)
 
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20200711-001 *
+ ***************************************/
+function upgrade_from_20200711001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20200711-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20201005-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Add a custom_plan_mitigation_display_settings field to user table
+    if (!field_exists_in_table('custom_plan_mitigation_display_settings', 'user')) {
+        echo "Adding a custom_plan_mitigation_display_settings field to user table.<br />\n";
+        $stmt = $db->prepare('ALTER TABLE `user` ADD `custom_plan_mitigation_display_settings` VARCHAR(2000) NULL DEFAULT \'{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["submission_date","1"]],"mitigation_colums":[["mitigation_planned","1"]],"review_colums":[["management_review","1"]]}
+\';');
+        $stmt->execute();
+    }
+
+    // Add a custom_perform_reviews_display_settings field to user table
+    if (!field_exists_in_table('custom_perform_reviews_display_settings', 'user')) {
+        echo "Adding a custom_perform_reviews_display_settings field to user table.<br />\n";
+        $stmt = $db->prepare('ALTER TABLE `user` ADD `custom_perform_reviews_display_settings` VARCHAR(2000) NULL DEFAULT \'{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["submission_date","1"]],"mitigation_colums":[["mitigation_planned","1"]],"review_colums":[["management_review","1"]]}
+\';');
+        $stmt->execute();
+    }
+
+    // Add a custom_reviewregularly_display_settings field to user table
+    if (!field_exists_in_table('custom_reviewregularly_display_settings', 'user')) {
+        echo "Adding a custom_reviewregularly_display_settings field to user table.<br />\n";
+        $stmt = $db->prepare('ALTER TABLE `user` ADD `custom_reviewregularly_display_settings` VARCHAR(2000) NULL DEFAULT \'{"risk_colums":[["id","1"],["risk_status","1"],["subject","1"],["calculated_risk","1"],["days_open","1"]],"review_colums":[["management_review","0"],["review_date","0"],["next_step","0"],["next_review_date","1"],["comments","0"]]}\';');
+        $stmt->execute();
+    }
+
+    // Add a control_id index to framework_control_mappings table
+    if (!index_exists_on_table('control_id', 'framework_control_mappings')) {
+        echo "Adding index 'control_id' to framework_control_mappings table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_control_mappings` ADD INDEX `control_id`(`control_id`);");
+        $stmt->execute();
+    }
+
+    // Add a framework index to framework_control_mappings table
+    if (!index_exists_on_table('framework', 'framework_control_mappings')) {
+        echo "Adding index 'framework' to framework_control_mappings table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_control_mappings` ADD INDEX `framework`(`framework`);");
+        $stmt->execute();
+    }
+
+    // Fix the `tag` field's length of the `tags` table 
+    if (table_exists('tags')) {
+        echo "Fix the `tag` field's length of the `tags` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `tags` CHANGE `tag` `tag` VARCHAR(500) NOT NULL;");
+        $stmt->execute();
+    }
+
+    $permission_groups_and_permissions = [
+        'governance' => [
+            'name' => 'Governance',
+            'description' => '',
+            'order' => 1,
+            'permissions' => [
+                'governance' => [
+                    'name' => 'Allow Access to "Governance" Menu',
+                    'description' => 'This permission grants a user access to the "Governance" menu in SimpleRisk.',
+                    'order' => 1,
+                ],
+                'add_new_frameworks' => [
+                    'name' => 'Able to Add New Frameworks',
+                    'description' => 'This permission allows a user to create new Control Frameworks in the "Governance" menu at the top, followed by "Define Control Frameworks" menu on the left.',
+                    'order' => 2
+                ],
+                'modify_frameworks' => [
+                    'name' => 'Able to Modify Existing Frameworks',
+                    'description' => 'This permission allows a user to modify existing Control Frameworks in the "Governance" menu at the top, followed by "Define Control Frameworks" menu on the left.',
+                    'order' => 3
+                ],
+                'delete_frameworks' => [
+                    'name' => 'Able to Delete Existing Frameworks',
+                    'description' => 'This permission allows a user to delete existing Control Frameworks in the "Governance" menu at the top, followed by "Define Control Frameworks" menu on the left.',
+                    'order' => 4
+                ],
+                'add_new_controls' => [
+                    'name' => 'Able to Add New Controls',
+                    'description' => 'This permission allows a user to add new Framework Controls in the "Governance" menu at the top, followed by "Define Control Frameworks" menu on the left then going to the controls tab.',
+                    'order' => 5
+                ],
+                'modify_controls' => [
+                    'name' => 'Able to Modify Existing Controls',
+                    'description' => 'This permission allows a user to modify existing Framework Controls in the "Governance" menu at the top, followed by "Define Control Frameworks" menu on the left then going to the controls tab.',
+                    'order' => 6
+                ],
+                'delete_controls' => [
+                    'name' => 'Able to Delete Existing Controls',
+                    'description' => 'This permission allows a user to delete existing Framework Controls in the "Governance" menu at the top, followed by "Define Control Frameworks" menu on the left then going to the controls tab.',
+                    'order' => 7
+                ],
+                'add_documentation' => [
+                    'name' => 'Able to Add Documentation',
+                    'description' => 'This permission allows a user to upload Policies/Guidelines/Standards/Procedures in the "Governance" menu at the top, followed by "Document Program" on the left.',
+                    'order' => 8
+                ],
+                'modify_documentation' => [
+                    'name' => 'Able to Modify Documentation',
+                    'description' => 'This permission allows a user to modify Policies/Guidelines/Standards/Procedures in the "Governance" menu at the top, followed by "Document Program" on the left.',
+                    'order' => 9
+                ],
+                'delete_documentation' => [
+                    'name' => 'Able to Delete Documentation',
+                    'description' => 'This permission allows a user to delete Policies/Guidelines/Standards/Procedures in the "Governance" menu at the top, followed by "Document Program" on the left.',
+                    'order' => 10
+                ],
+                'view_exception' => [
+                    'name' => 'Able to View Exceptions',
+                    'description' => 'This permission allows a user to view exceptions for Policies and Controls as well as Unapproved Exceptions in the "Governance" menu at the top, followed by "Define Exceptions" on the left.',
+                    'order' => 11
+                ],
+                'create_exception' => [
+                    'name' => 'Able to Create Exceptions',
+                    'description' => 'This permission allows a user to create exceptions for Policies and Controls in the "Governance" menu at the top, followed by "Define Exceptions" on the left.',
+                    'order' => 12
+                ],
+                'update_exception' => [
+                    'name' => 'Able to Update Exceptions',
+                    'description' => 'This permission allows a user to modify/update exceptions for Policies and Controls in the "Governance" menu at the top, followed by "Define Exceptions" on the left.',
+                    'order' => 13
+                ],
+                'delete_exception' => [
+                    'name' => 'Able to Delete Exceptions',
+                    'description' => 'This permission allows a user to delete exceptions for Policies and Controls in the "Governance" menu at the top, followed by "Define Exceptions" on the left.',
+                    'order' => 14
+                ],
+                'approve_exception' => [
+                    'name' => 'Able to Approve Exceptions',
+                    'description' => 'This permission allows a user to approve an exception moving it from the Unapproved Exceptions tab to its respecitve Policy or Control Exceptions tab in the "Governance" menu at the top, followed by "Define Exceptions" on the left.',
+                    'order' => 15
+                ]
+            ]
+        ],
+        'risk_management' => [
+            'name' => 'Risk Management',
+            'description' => '',
+            'order' => 2,
+            'permissions' => [
+                'riskmanagement' => [
+                    'name' => 'Allow Access to "Risk Management" Menu',
+                    'description' => 'This permission will allow a user to see the "Risk Management" menu in SimpleRisk and allow them to use any risk management responsibilities they have been assigned. If a user has been assigned this permission, but no others, they will only be able to see the details for risks, mitigations, and reviews, but will not be able to edit or submit anything. (Note: If team-based separation is in use, users will only see risks that are assigned to a team they are part of, otherwise, no risks will be displayed to that user.)',
+                    'order' => 1
+                ],
+                'submit_risks' => [
+                    'name' => 'Able to Submit New Risks',
+                    'description' => 'This permission, as the name suggests, allows for the submission of new risks in the "Risk Management" menu. If a user has this permission, but does not have the "Able to Modify Risk" permission, they will not be able to edit risks, even if they are the original submitter.',
+                    'order' => 2
+                ],
+                'modify_risks' => [
+                    'name' => 'Able to Modify Existing Risks',
+                    'description' => 'This permission allows users to save changes made to risks. No risk, mitigation, or review will be able to be modified with out it.',
+                    'order' => 3
+                ],
+                'close_risks' => [
+                    'name' => 'Able to Close Risks',
+                    'description' => 'This permission grants a user the ability to close a risk.',
+                    'order' => 4
+                ],
+                'plan_mitigations' => [
+                    'name' => 'Able to Plan Mitigations',
+                    'description' => 'This permission is neccessary along with the "Able to Modify Risks" permission, in order to give the user the ability to plan and save mitigations.',
+                    'order' => 5
+                ],
+                'accept_mitigation' => [
+                    'name' => 'Able to Accept Mitigations',
+                    'description' => 'This permission allows a user to accept risk mitigations. This is separate from submitting mitigations as this only refers to the check box found in each risk mitigation to signify this particular mitigation has been accepted by management. This is not a core step in the risk management life cycle and serves as an additional feature for users needing to delegate responsibilities further.',
+                    'order' => 6
+                ],
+                'review_insignificant' => [
+                    'name' => 'Able to Review Insignificant Risks',
+                    'description' => 'This permission, along with the "Able to Modify Risks" permission, will grant the user the ability to review risks that have a current score that would be labeled as "Insignificant" by the risk scoring system. You may change which risk scores are defined as "Insignificant" by selecting the "Configure" menu at the top, followed by "Configure Risk Formula" on the left.',
+                    'order' => 7
+                ],
+                'review_low' => [
+                    'name' => 'Able to Review Low Risks',
+                    'description' => 'This permission, along with the "Able to Modify Risks" permission, will grant the user the ability to review risks that have a current score that would be labeled as "Low" by the risk scoring system. You may change which risk scores are defined as "Low" by selecting the "Configure" menu at the top, followed by "Configure Risk Formula” on the left.',
+                    'order' => 8
+                ],
+                'review_medium' => [
+                    'name' => 'Able to Review Medium Risks',
+                    'description' => 'This permission, along with the "Able to Modify Risks” permission, will grant the user the ability to review risks that have a current score that would be labeled as "Medium" by the risk scoring system. You may change which risk scores are defined as "Medium" by selecting the "Configure” menu at the top, followed by "Configure Risk Formula” on the left.',
+                    'order' => 9
+                ],
+                'review_high' => [
+                    'name' => 'Able to Review High Risks',
+                    'description' => 'This permission, along with the "Able to Modify Risks” permission, will grant the user the ability to review risks that have a current score that would be labeled as "High" by the risk scoring system. You may change which risk scores are defined as "High" by selecting the "Configure” menu at the top, followed by "Configure Risk Formula” on the left.',
+                    'order' => 10
+                ],
+                'review_veryhigh' => [
+                    'name' => 'Able to Review Very High Risks',
+                    'description' => 'This permission, along with the "Able to Modify Risks” permission, will grant the user the ability to review risks that have a current score that would be labeled as "Very High" by the risk scoring system. You may change which risk scores are defined as "Very High" by selecting the "Configure” menu at the top, followed by "Configure Risk Formula” on the left.',
+                    'order' => 11
+                ],
+                'comment_risk_management' => [
+                    'name' => 'Able to Comment Risk Management',
+                    'description' => 'This permission allows a user to add comments to risks they can otherwise already access.',
+                    'order' => 12
+                ],
+                'add_projects' => [
+                    'name' => 'Able to Add Projects',
+                    'description' => 'This permission allows a user to create new Projects in the "Risk Management" menu at the top, followed by "Plan Projects" menu on the left.',
+                    'order' => 13
+                ],
+                'delete_projects' => [
+                    'name' => 'Able to Delete Projects',
+                    'description' => 'This permission alows a user to delete existing projects from the "Risk Management" menu at the to, followed by "Plan Projects" menu on the left.',
+                    'order' => 14
+                ],
+                'manage_projects' => [
+                    'name' => 'Able to Manage Projects',
+                    'description' => 'This permission alows a user to modfiy/manage existing projects from the "Risk Management" menu at the to, followed by "Plan Projects" menu on the left.',
+                    'order' => 15
+                ]
+            ]
+        ],
+        'compliance' => [
+            'name' => 'Compliance',
+            'description' => '',
+            'order' => 3,
+            'permissions' => [
+                'compliance' => [
+                    'name' => 'Allow Access to "Compliance" Menu',
+                    'description' => 'This permission will allow users to see and access the "Compliance" menu at the top.',
+                    'order' => 1
+                ],
+                'comment_compliance' => [
+                    'name' => 'Able to Comment Compliance',
+                    'description' => 'This permission allows a user to add comments to control audits they can otherwise already access.',
+                    'order' => 2
+                ],
+                'define_tests' => [
+                    'name' => 'Able to Define Tests',
+                    'description' => 'This permission allows a user to define/create tests in the "Compliance" menu at the top, followed by "Define Tests" on the left.',
+                    'order' => 3
+                ],
+                'edit_tests' => [
+                    'name' => 'Able to Edit Tests',
+                    'description' => 'This permission allows a user to edit/modify tests in the "Compliance" menu at the top, followed by "Define Tests" on the left.',
+                    'order' => 4
+                ],
+                'delete_tests' => [
+                    'name' => 'Able to Delete Tests',
+                    'description' => 'This permission allows a user to delete tests in the "Compliance" menu at the top, followed by "Define Tests" on the left.',
+                    'order' => 5
+                ],
+                'initiate_audits' => [
+                    'name' => 'Able to Initiate Audits',
+                    'description' => 'This permission allows a user to iniate an audit of tests, controls, and/or frameworks in the "Compliance" menu at the top followed by "Initiate Audits" on the left.',
+                    'order' => 6
+                ],
+                'modify_audits' => [
+                    'name' => 'Able to Modify Audits',
+                    'description' => 'This permission allows a user to modify audits of tests, controls, and/or frameworks in the "Compliance" menu at the top followed by "Active Audits" on the left.',
+                    'order' => 7
+                ],
+                'reopen_audits' => [
+                    'name' => 'Able to Reopen Audits',
+                    'description' => 'This permission allows a user to reopen audits of tests, controls, and/or frameworks in the "Compliance" menu at the top followed by "Past Audits" on the left.',
+                    'order' => 8
+                ],
+                'delete_audits' => [
+                    'name' => 'Able to Delete Audits',
+                    'description' => 'This permission allows a user to delete audits of tests, controls, and/or frameworks in the "Compliance" menu at the top followed by "Past Audits" on the left.',
+                    'order' => 9
+                ]
+            ]
+        ],
+        'asset_management' => [
+            'name' => 'Asset Management',
+            'description' => '',
+            'order' => 4,
+            'permissions' => [
+                'asset' => [
+                    'name' => 'Allow Access to "Asset Management" Menu',
+                    'description' => 'This permission allows a user to create, modify, and delete assets. This permission will grant the user full control in the Asset Management Menu.',
+                    'order' => 1
+                ]
+            ]
+        ],
+        'assessments' => [
+            'name' => 'Assessments',
+            'description' => '',
+            'order' => 5,
+            'permissions' => [
+                'assessments' => [
+                    'name' => 'Allow Access to "Assessments" Menu',
+                    'description' => 'This permission will allow the user access to the "Assessments" menu. If SimpleRisk has the "Risk Assessment Extra" enabled the user will gain access to this as well with all the permssions to make, change, and send assessments.',
+                    'order' => 1
+                ]
+            ]
+        ]
+    ];
+
+    if (!table_exists('permissions')) {
+        echo "Creating `permissions` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `permissions` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `key` varchar(100) NOT NULL UNIQUE,
+                `name` varchar(200) NOT NULL,
+                `description` blob NOT NULL,
+                `order` int NOT NULL,
+                PRIMARY KEY(`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+    if (!table_exists('permission_to_user')) {
+        echo "Creating `permission_to_user` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `permission_to_user` (
+                `permission_id` int(11) NOT NULL ,
+                `user_id` int(11) NOT NULL,
+                PRIMARY KEY(`permission_id`, `user_id`),
+                INDEX(`user_id`, `permission_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+    
+    if (!table_exists('permission_groups')) {
+        echo "Creating `permission_groups` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `permission_groups` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
+                `name` varchar(200) NOT NULL UNIQUE,
+                `description` blob NOT NULL,
+                `order` int NOT NULL,
+                PRIMARY KEY(`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+    
+    if (!table_exists('permission_to_permission_group')) {
+        echo "Creating `permission_to_permission_group` table.<br />\n";
+        $stmt = $db->prepare("
+            CREATE TABLE IF NOT EXISTS `permission_to_permission_group` (
+                `permission_id` int(11) NOT NULL,
+                `permission_group_id` int(11) NOT NULL,
+                PRIMARY KEY(`permission_id`, `permission_group_id`),
+                INDEX(`permission_group_id`, `permission_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        ");
+        $stmt->execute();
+    }
+
+    // Doing the user permission migration. Checking for the 'assessments' permission here, but could've chosen
+    // any other as they're dropped in the same query
+    if (field_exists_in_table('assessments', 'user')) {
+        
+        echo "Populating `permissions` and `permission_groups` tables.<br />\n";
+        $possible_permissions = [];
+        foreach ($permission_groups_and_permissions as $_ => $group) {
+            $group_name = $group['name'];
+            $group_description = $group['description'];
+            $group_order = $group['order'];
+            $permissions = $group['permissions'];
+            
+            // Creating the permission group
+            $stmt = $db->prepare("INSERT IGNORE INTO `permission_groups` (`name`, `description`, `order`) VALUES (:name, :description, :order);");
+            $stmt->bindParam(":name", $group_name, PDO::PARAM_STR);
+            $stmt->bindParam(":description", $group_description, PDO::PARAM_STR);
+            $stmt->bindParam(":order", $group_order, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            // Getting the permission group id
+            $group_id = $db->lastInsertId();
+            
+            foreach ($permissions as $key => $permission) {
+                $permission_name = $permission['name'];
+                $permission_description = $permission['description'];
+                $permission_order = $permission['order'];
+                
+                // Creating the permission
+                $stmt = $db->prepare("INSERT IGNORE INTO `permissions` (`key`, `name`, `description`, `order`) VALUES (:key, :name, :description, :order);");
+                $stmt->bindParam(":key", $key, PDO::PARAM_STR);
+                $stmt->bindParam(":name", $permission_name, PDO::PARAM_STR);
+                $stmt->bindParam(":description", $permission_description, PDO::PARAM_STR);
+                $stmt->bindParam(":order", $permission_order, PDO::PARAM_INT);
+                $stmt->execute();
+                
+                // Getting the permission id
+                $permission_id = $db->lastInsertId();
+                
+                $possible_permissions[] = $key;
+                
+                // Adding the permission to the group
+                $stmt = $db->prepare("INSERT IGNORE INTO `permission_to_permission_group` (`permission_id`, `permission_group_id`) VALUES (:permission_id, :permission_group_id);");
+                $stmt->bindParam(":permission_id", $permission_id);
+                $stmt->bindParam(":permission_group_id", $group_id);
+                $stmt->execute();
+            }
+        }
+        
+        echo "Starting the migration of the user permissions.<br />\n";
+        echo "Getting users' current permissions.<br />\n";
+        $permission_selects = [];
+        // Building the selects that'll return the users and their permissions in a 'joinable' way
+        foreach ($possible_permissions as $permission) {
+            $permission_selects[] = "SELECT value, '$permission' AS name FROM `user` WHERE `$permission` = 1 OR `admin` = 1";
+        }
+        $permissions_from_part = implode(" UNION ALL ", $permission_selects);
+        
+        // The query joins the above built union query's results with the `permissions` table, this way being able to
+        // return not the permission keys(which we'd have to process later), but the actual permission ids from the `permissions` table
+        $stmt = $db->prepare("
+            SELECT
+                `u`.`value` AS value,
+                `p`.`id`
+            FROM
+                `user` u
+                LEFT JOIN ($permissions_from_part) perms ON `u`.`value` = `perms`.`value`
+                INNER JOIN `permissions` p on `p`.`key` = `perms`.`name`
+        ");
+        $stmt->execute();
+        $permissions_of_users = $stmt->fetchAll(PDO::FETCH_COLUMN | PDO::FETCH_GROUP);
+        
+        echo "Populating `permission_to_user` table.<br />\n";
+        foreach($permissions_of_users as $user_id => $permissions) {
+            // We can safely do that as both the user id and the keys of the permissions are coming from a safe source
+            // user id is an INT from the db and the permission keys are coming from the array structure of $permission_groups_and_permissions
+            $stmt = $db->prepare("INSERT INTO `permission_to_user` (`permission_id`, `user_id`) SELECT `id`, {$user_id} FROM `permissions` WHERE `id` IN (" . implode(",", $permissions) . ");");
+            $stmt->execute();
+        }
+        
+        echo "Dropping permission columns of the `user` table.<br />\n";
+        $column_drop_parts = [];
+        foreach ($possible_permissions as $permission) {
+            $column_drop_parts[] = "DROP `{$permission}`";
+        }
+        
+        $stmt = $db->prepare("ALTER TABLE `user` " . implode(',', $column_drop_parts) . ";");
+        $stmt->execute();
+        echo "Finished the migration of the user permissions.<br />\n";
+    }
+    
+    // If the `admin` column doesn't exist in the `role` table yet.
+    if (!field_exists_in_table('admin', 'role')) {
+        
+        echo "Adding the `admin` column to the `role` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `role` ADD `admin` tinyint(1) NOT NULL DEFAULT 0;");
+        $stmt->execute();
+        
+        // Populate the `admin` column
+        // It's admin if the id is 1 or it has the 'admin' responsibility associated in the `role_responsibilities` table
+        echo "Populating the `admin` column of the `role` table.<br />\n";
+        $stmt = $db->prepare("
+            UPDATE
+                `role` r
+                INNER JOIN `role_responsibilities` rr ON `rr`.`role_id` = `r`.`value`
+            SET
+                `r`.`admin` = 1
+            WHERE
+                `rr`.`responsibility_name`='admin' OR `r`.`value` = 1;");
+        $stmt->execute();
+    }
+    
+    // If the `default` column doesn't exist in the `role` table yet.
+    if (!field_exists_in_table('default', 'role')) {
+        
+        echo "Adding the `default` column to the `role` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `role` ADD `default` tinyint(1) UNIQUE DEFAULT NULL;");
+        $stmt->execute();
+        
+        $default_user_role = get_setting("default_user_role");
+        
+        if ($default_user_role) {
+            echo "Setting the default role in the `role` table.<br />\n";
+            set_default_role($default_user_role);
+            
+            echo "Removing the 'default_user_role' setting from the `settings` table.<br />\n";
+            $stmt = $db->prepare("DELETE FROM `settings` WHERE `name` = 'default_user_role';");
+            $stmt->execute();
+        } else {
+            echo "There's no default role to set.<br />\n";
+        }
+    }
+    
+    // If the `responsibility_name` column exists in the `role_responsibilities` table then migrate the data
+    if (field_exists_in_table('responsibility_name', 'role_responsibilities')) {
+        
+        echo "Starting migration of the roles.<br />\n";
+        
+        // Clean up every junction entries that aren't tied to a role
+        echo "Cleaning up leftover entries from the `role_responsibilities` table.<br />\n";
+        $stmt = $db->prepare("
+            DELETE
+                `junction`
+            FROM
+                `role_responsibilities` `junction`
+                LEFT JOIN `role` `tbl` ON `junction`.`role_id` = `tbl`.`value`
+            WHERE
+                `tbl`.`value` IS NULL;
+        ");
+        $stmt->execute();
+        
+        // Add the `permission_id` column
+        echo "Adding the `permission_id` column to the `role_responsibilities` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `role_responsibilities` ADD `permission_id` INT(11);");
+        $stmt->execute();
+        
+        // Populate the `permission_id` column
+        echo "Populating the `permission_id` column of the `role_responsibilities` table.<br />\n";
+        $stmt = $db->prepare("
+            UPDATE
+                `role_responsibilities` rr
+                INNER JOIN `permissions` p ON `rr`.`responsibility_name` = `p`.`key`
+            SET
+                `rr`.`permission_id` = `p`.`id`;");
+        $stmt->execute();
+        
+        // Delete entries where no matching permission was found
+        echo "Cleaning up entries from the `role_responsibilities` table where no matching permission was found.<br />\n";
+        $stmt = $db->prepare("DELETE FROM `role_responsibilities` WHERE `permission_id` IS NULL;");
+        $stmt->execute();
+        
+        // Modify the `permission_id` column to be mandatory
+        echo "Modifying the `permission_id` column of the `role_responsibilities` table to be mandatory.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `role_responsibilities` MODIFY `permission_id` INT(11) NOT NULL;");
+        $stmt->execute();
+        
+        // Drop the `responsibility_name` column as it's not needed anymore
+        echo "Modifying the `permission_id` column of the `role_responsibilities` table to be mandatory.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `role_responsibilities` DROP COLUMN `responsibility_name`;");
+        $stmt->execute();
+        
+        // Add the indexes that are required for a junction table
+        if (!index_exists_on_table('role_id', 'role_responsibilities')) {
+            echo "Adding index 'role_id' to table 'role_responsibilities'.<br />\n";
+            $stmt = $db->prepare("ALTER TABLE `role_responsibilities` ADD PRIMARY KEY `role_id` (`role_id`, `permission_id`);");
+            $stmt->execute();
+        }
+        
+        if (!index_exists_on_table('permission_id', 'role_responsibilities')) {
+            echo "Adding index 'permission_id' to table 'role_responsibilities'.<br />\n";
+            $stmt = $db->prepare("ALTER TABLE `role_responsibilities` ADD INDEX `permission_id` (`permission_id`, `role_id`);");
+            $stmt->execute();
+        }
+        
+        // Grant all permissions to admin roles as they were handled differently before
+        echo "Granting all permissions to admin roles.<br />\n";
+        $stmt = $db->prepare("
+            INSERT IGNORE INTO
+                `role_responsibilities`(`role_id`, `permission_id`)
+            SELECT
+                `r`.`value`,
+                `p`.`id`
+            FROM
+                `role` r, `permissions` p
+            WHERE
+                `r`.`admin` = 1;");
+        $stmt->execute();
+        
+        echo "Finished migration of the roles.<br />\n";
+    }
+
+    // Fix issues related to larger PHP session ids in SUSE (and possibly other OSes)
+    echo "Increasing the maximum session ID size from 32 to 128 characters.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE sessions CHANGE id id varchar(128) NOT NULL;");
+    $stmt->execute();
+    
+    // Add last_updated field to framework_control_test_results table
+    if (!field_exists_in_table('last_updated', 'framework_control_test_results')) {
+        echo "Adding last_updated field to framework_control_test_results table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_control_test_results` ADD `last_updated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;");
+        $stmt->execute();
+    }
+
+    // Delete the PCI DSS 3.2 framework if no controls are associated with it
+    echo "Deleting the PCI DSS 3.2 framework if no controls are associated with it.<br />\n";
+    $stmt = $db->prepare("DELETE FROM `frameworks` WHERE name='PCI DSS 3.2' AND value NOT IN (SELECT `framework` FROM framework_control_mappings);");
+    $stmt->execute();
+
+    // Delete the Sarbanes-Oxley (SOX) framework if no controls are associated with it
+    echo "Deleting the Sarbanes-Oxley (SOX) framework if no controls are associated with it.<br />\n";
+    $stmt = $db->prepare("DELETE FROM `frameworks` WHERE name='Sarbanes-Oxley (SOX)' AND value NOT IN (SELECT `framework` FROM framework_control_mappings);");
+    $stmt->execute();
+
+    // Delete the HIPAA framework if no controls are associated with it
+    echo "Deleting the HIPAA framework if no controls are associated with it.<br />\n";
+    $stmt = $db->prepare("DELETE FROM `frameworks` WHERE name='HIPAA' AND value NOT IN (SELECT `framework` FROM framework_control_mappings);");
+    $stmt->execute();
+
+    // Delete the ISO 27001 framework if no controls are associated with it
+    echo "Deleting the ISO 27001 framework if no controls are associated with it.<br />\n";
+    $stmt = $db->prepare("DELETE FROM `frameworks` WHERE name='ISO 27001' AND value NOT IN (SELECT `framework` FROM framework_control_mappings);");
+    $stmt->execute();
+
+    // Change the settings table to allow MEDIUMTEXT size values to accommodate larger SAML_METADATA_XML values
+    echo "Changing the settings table from TEXT to MEDIUMTEXT to allow for larger value fields.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE settings MODIFY value mediumtext;");
+    $stmt->execute();
+
+    // Add new group to risk grouping table
+    echo "Adding new Incident Response group to risk grouping table.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `risk_grouping` (`name`) VALUES
+	('Incident Response');");
+    $stmt->execute();
+
+    // Get the id of the Incident Response group
+    $incident_response_group_id = $db->lastInsertId();
+
+    // Add new rows to risk catalog table
+    echo "Add new rows to risk catalog table.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `risk_catalog` (`number`, `grouping`, `name`, `description`, `function`, `order`) VALUES
+        ('R-IR-1', :incident_response_group_id, 'Inability to investigate / prosecute incidents', 'Response actions either corrupt evidence or impede the ability to prosecute incidents.', 4, 1),
+	('R-IR-2', :incident_response_group_id, 'Improper response to incidents', 'Response actions fail to act appropriately in a timely manner to properly address the incident.', 4, 2),
+	('R-IR-3', :incident_response_group_id, 'Ineffective remediation actions', 'There is no oversight to ensure remediation actions are correct and/or effective.', 2, 3),
+	('R-IR-4', :incident_response_group_id, 'Expense associated with managing a loss event', 'There are financial repercussions from responding to an incident or loss.', 4, 4);
+    ");
+    $stmt->bindParam(":incident_response_group_id", $incident_response_group_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -4709,6 +5339,10 @@ function upgrade_database()
                 upgrade_from_20200401001($db);
                 upgrade_database();
                 break;
+            case "20200711-001":
+                upgrade_from_20200711001($db);
+                upgrade_database();
+                break;
             default:
                 echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
         }
@@ -4728,10 +5362,10 @@ function upgrade_database()
  *****************************************/
 function display_cache_clear_warning()
 {
-    global $lang;
-    global $escaper;
+	global $lang;
+	global $escaper;
 
-    echo "<image src=\"../images/exclamation_warning.png\" width=\"30\" height=\"30\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['CacheClearWarning']);
+	echo "<image src=\"../images/exclamation_warning.png\" width=\"30\" height=\"30\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['CacheClearWarning']);
 }
 
 ?>

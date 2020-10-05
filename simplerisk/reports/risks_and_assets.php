@@ -16,50 +16,28 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 // Add various security headers
 add_security_headers();
 
+// Add the session
+add_session_check();
 
-if (!isset($_SESSION))
-{
-    // Session handler is database
-    if (USE_DATABASE_FOR_SESSIONS == "true")
-    {
-        session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-    }
+// Include the CSRF Magic library
+include_csrf_magic();
 
-    // Start the session
-    session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-    session_name('SimpleRisk');
-    session_start();
-}
-
-// Include the language file
+// Include the SimpleRisk language file
 require_once(language_file());
-
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
-
-// Check for session timeout or renegotiation
-session_check();
-
-// Check if access is authorized
-if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
-{
-  set_unauthenticated_redirect();
-  header("Location: ../index.php");
-  exit(0);
-}
 
 // Record the page the workflow started from as a session variable
 $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 
 // If the select_report form was posted
-if (isset($_POST['report']))
+if (isset($_REQUEST['report']))
 {
-  $report = (int)$_POST['report'];
+  $report = (int)$_REQUEST['report'];
 }
 else $report = 0;
-if (isset($_POST['sortby']))
-    $sortby = (int)$_POST['sortby'];
-else $sortby = 0;
+
+$sortby = isset($_REQUEST['sortby']) ? (int)$_REQUEST['sortby'] : 0;
+$asset_tags = isset($_REQUEST['asset_tags']) ? $_REQUEST['asset_tags'] : [];
+if(!isset($_REQUEST['report'])) $asset_tags = "all";
 ?>
 
 <!doctype html>
@@ -68,6 +46,7 @@ else $sortby = 0;
 <head>
   <script src="../js/jquery.min.js"></script>
   <script src="../js/bootstrap.min.js"></script>
+  <script src="../js/bootstrap-multiselect.js"></script>
   <script src="../js/sorttable.js"></script>
   <script src="../js/obsolete.js"></script>
   <script src="../js/dynamic.js"></script>
@@ -79,6 +58,7 @@ else $sortby = 0;
 
   <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/side-navigation.css">
   <?php
     setup_favicon("..");
     setup_alert_requirements("..");
@@ -120,13 +100,13 @@ else $sortby = 0;
         <div class="row-fluid">
           <div id="selections" class="span12">
             <div class="well">
-              <?php view_risks_and_assets_selections($report,$sortby); ?>
+              <?php view_risks_and_assets_selections($report, $sortby, $asset_tags); ?>
             </div>
           </div>
         </div>
         <div class="row-fluid">
           <div class="span12">
-            <?php risks_and_assets_table($report,$sortby); ?>
+            <?php risks_and_assets_table($report, $sortby, $asset_tags); ?>
           </div>
         </div>
       </div>

@@ -967,11 +967,9 @@ function view_print_mitigation_controls($mitigation)
                         $html .= "</tr>\n";
                         $html .= "<tr>\n";
                             $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </td>\n";
-                            $html .= "<td width='22%' >".$escaper->escapeHtml($control['short_name'])."</td>\n";
+                            $html .= "<td width='57%' colspan='3'>".$escaper->escapeHtml($control['short_name'])."</td>\n";
                             $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
-                            $html .= "<td width='22%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
-                            $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlFrameworks'])."</strong>: </td>\n";
-                            $html .= "<td width='17%'>".$escaper->escapeHtml($control['framework_names'])."</td>\n";
+                            $html .= "<td width='17%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
                         $html .= "</tr>\n";
                         $html .= "<tr>\n";
                             $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>\n";
@@ -998,6 +996,22 @@ function view_print_mitigation_controls($mitigation)
                             $html .= "<td colspan='5'>".$escaper->escapeHtml($control['supplemental_guidance'])."</td>\n";
                         $html .= "</tr>\n";
                     $html .= "</table>\n";
+                    $mapped_frameworks = get_mapping_control_frameworks($control['id']);
+                    $html .= "<div class='well'>";
+                        $html .= "<h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>";
+                        $html .= "<table width='100%' class='table table-bordered'>\n";
+                            $html .= "<tr>\n";
+                                $html .= "<th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>\n";
+                                $html .= "<th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>\n";
+                            $html .= "</tr>\n";
+                            foreach ($mapped_frameworks as $framework){
+                                $html .= "<tr>\n";
+                                    $html .= "<td>".$escaper->escapeHtml($framework['framework_name'])."</td>\n";
+                                    $html .= "<td>".$escaper->escapeHtml($framework['reference_name'])."</td>\n";
+                                $html .= "</tr>\n";
+                            }
+                        $html .= "</table>\n";
+                    $html .= "</div>\n";
                     $validation = get_mitigation_to_controls($mitigation[0]['mitigation_id'],$control['id']);
                     $validation_mitigation_percent = ($validation["validation_mitigation_percent"] >= 0 && $validation["validation_mitigation_percent"] <= 100) ? $validation["validation_mitigation_percent"] : 0;
                     if($validation["validation_details"]|| $validation["validation_owner"] || $validation_mitigation_percent){
@@ -1008,13 +1022,13 @@ function view_print_mitigation_controls($mitigation)
                                     ".$escaper->escapeHtml($lang['Details']).":<br>
                                     ".nl2br($validation["validation_details"])."
                                 </div>";
-				$html .= "</div>";
-				$html .= "<div class='row-fluid'>";
+                            $html .= "</div>";
+                            $html .= "<div class='row-fluid'>";
                                 $html .= "<div class='span4'>
                                     ".$escaper->escapeHtml($lang['Owner']).":<br>
                                     ".$escaper->escapeHtml(get_name_by_value("user", $validation["validation_owner"]))."
                                 </div>";
-				$html .= "</div>";
+                            $html .= "</div>";
                                 $html .= "<div class='row-fluid'>";
                                 $html .= "<div class='span4'>
                                     ".$escaper->escapeHtml($lang['MitigationPercent']).":<br>
@@ -2566,7 +2580,7 @@ function owasp_scoring_table($id, $calculated_risk, $OWASPSkillLevel, $OWASPEase
     echo "</tr>\n";
 
     echo "<tr>\n";
-    echo "<td colspan=\"9\"><strong>Full details of the OWASP Risk Rating Methodology can be found <a href=\"https://www.owasp.org/index.php/OWASP_Risk_Rating_Methodology\" target=\"_blank\">here</a>.</strong></td>\n";
+    echo "<td colspan=\"9\"><strong>Full details of the OWASP Risk Rating Methodology can be found <a href=\"https://owasp.org/www-community/OWASP_Risk_Rating_Methodology\" target=\"_blank\">here</a>.</strong></td>\n";
     echo "</tr>\n";
 
     echo "</table>\n";
@@ -4093,6 +4107,9 @@ function view_configure_menu($active)
     echo ($active == "Settings" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"index.php\">" . $escaper->escapeHtml($lang['Settings']) . "</a>\n";
     echo "</li>\n";
+    echo ($active == "Content" ? "<li class=\"active\">\n" : "<li>\n");
+    echo "<a href=\"content.php\">" . $escaper->escapeHtml($lang['Content']) . "</a>\n";
+    echo "</li>\n";
     echo ($active == "RiskCatalog" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"risk_catalog.php\">" . $escaper->escapeHtml($lang['RiskCatalog']) . "</a>\n";
     echo "</li>\n";
@@ -4166,12 +4183,11 @@ function view_configure_menu($active)
 /**********************************************
 * FUNCTION: VIEW RISKS AND ASSETS SELECTIONS *
 **********************************************/
-function view_risks_and_assets_selections($report,$sortby)
+function view_risks_and_assets_selections($report, $sortby, $asset_tags)
 {
-    global $lang;
-    global $escaper;
+    global $lang, $escaper;
 
-    echo "<form name=\"select_report\" method=\"post\" action=\"\">\n";
+    echo "<form name=\"select_report\" method=\"GET\" action=\"\">\n";
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span12\">\n";
     echo "<a href=\"javascript:;\" onclick=\"javascript: closeSearchBox()\"><img src=\"../images/X-100.png\" width=\"10\" height=\"10\" align=\"right\" /></a>\n";
@@ -4186,22 +4202,38 @@ function view_risks_and_assets_selections($report,$sortby)
     echo "<option value=\"1\"" . ($report == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetsByRisk']) . "</option>\n";
     echo "</select>\n";
     echo "</td>\n";
-	if($report == 0){
-		echo "<td>&nbsp; " . $escaper->escapeHtml($lang['SortBy']) . ":&nbsp;</td>\n";
-		echo "<td>\n";
-		echo "<select id=\"sortby\" name=\"sortby\" onchange=\"javascript: submit()\">\n";
-		echo "<option value=\"0\"" . ($sortby == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetName']) . "</option>\n";
-		echo "<option value=\"1\"" . ($sortby == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetRisk']) . "</option>\n";
-		echo "</select>\n";
-		echo "</td>\n";
-	}
-
-	echo "</tr>\n";
+    echo "<td>&emsp;" . $escaper->escapeHtml($lang['AssetTags']) . ":&nbsp;</td>\n";
+    echo "<td width='250px'>\n";
+    // Set unassigned value to empty string
+    create_multiple_dropdown("asset_tags", $asset_tags, NULL, NULL, true, $lang['Unassigned'], "-1");
+    echo "</td>\n";
+    if($report == 0){
+        echo "<td>&nbsp; " . $escaper->escapeHtml($lang['SortBy']) . ":&nbsp;</td>\n";
+        echo "<td>\n";
+        echo "<select id=\"sortby\" name=\"sortby\" onchange=\"javascript: submit()\">\n";
+        echo "<option value=\"0\"" . ($sortby == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetName']) . "</option>\n";
+        echo "<option value=\"1\"" . ($sortby == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetRisk']) . "</option>\n";
+        echo "</select>\n";
+        echo "</td>\n";
+    }
+    echo "</tr>\n";
     echo "</table>\n";
 
     echo "</div>\n";
     echo "</div>\n";
     echo "</form>\n";
+    echo "<script>
+            $('#asset_tags').multiselect({
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                enableFiltering: true,
+                maxHeight: 250,
+                buttonWidth: '100%',
+                includeSelectAllOption: true,
+                onDropdownHide: function(){
+                    $('form[name=select_report]').submit();
+                }
+            });
+        </script>";
 
 }
 
@@ -4477,7 +4509,7 @@ function display_save_dynamic_risk_selections()
                         },
                         success: function(res){
                             var value = res.data.value;
-                            var name = res.data.name;
+                            var name = escapeHTML(res.data.name);
                             if(value)
                             {
                                 $('#saved_selections').append('<option value='+value+'>'+name+'</option>');
@@ -4507,6 +4539,24 @@ function display_save_dynamic_risk_selections()
                     return true;
                 })
             })
+
+		function escapeHTML(str) {
+		     var out = \"\";
+		     for(var i=0; i<str.length; i++) {
+		         if(str[i] === '<') {
+		             out += '&lt;';
+		         } else if(str[i] === '>') {
+		             out += '&gt;';
+		         } else if(str[i] === \"'\") {
+		             out += '&#39;';
+		         } else if(str[i] === '\"') {
+		             out += '&quot;';
+		         } else {
+		             out += str[i];
+		         }
+		     }
+		     return out;
+		}
         ";
     echo "</script>";
 }
@@ -6925,22 +6975,58 @@ function display_contributing_risk_from_calculator()
 function display_plan_mitigations()
 {
     global $lang, $escaper;
-    
+    $user = get_user_by_id($_SESSION['uid']);
+    $settings = json_decode($user["custom_plan_mitigation_display_settings"], true);
+    $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
+    $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
+    $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
+    $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
+    $columns = [];
+    $unsort_columns = array("regulation", "project", "affected_assets", "risk_assessment", "additional_notes", "mitigation_planned", "management_review", "current_solution", "security_recommendations", "security_requirements", "next_review_date", "comments");
+    foreach($columns_setting as $column){
+        if(stripos($column[0], "custom_field_") !== false){
+            if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
+        } else if($column[1] == 1) $columns[] = $column[0];
+    }
+    if(!count($columns)){
+        $columns = array("id","risk_status","subject","calculated_risk","submission_date","mitigation_planned","management_review");
+    }
+    $tr = "";
+    $index = 0;
+    $unsort_indexs = [];
+    $order_index = 0;
+    $order_dir = "asc";
+    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+    foreach($columns as $column){
+        $add_column = false;
+        if(($pos = stripos($column, "custom_field_")) !== false){
+            if(customization_extra()){
+                $field_id = str_replace("custom_field_", "", $column);
+                $custom_field = get_field_by_id($field_id);
+                $label = $escaper->escapeHtml($custom_field['name']);
+                $tr .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
+                $add_column = true;
+            }
+        } else {
+            $label = get_label_by_risk_field_name($column);
+            $tr .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
+            $add_column = true;
+        }
+        if($column == "calculated_risk") {
+            $order_index = $index;
+            $order_dir = "desc";
+        }
+        if($add_column == true) {
+            if(in_array($column, $unsort_columns)||stripos($column, "custom_field_") !== false) $unsort_indexs[] = $index;
+            $index++;
+        }
+    }
     $tableID = "plan-mitigations";
-    
     echo "
 
         <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
             <thead >
-                <tr >
-                    <th data-name='id' align=\"left\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['ID'])."</th>
-                    <th data-name='risk_status' align=\"left\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['Status'])."</th>
-                    <th data-name='subject' align=\"left\" width=\"300px\" valign=\"top\">".$escaper->escapeHtml($lang['Subject'])."</th>
-                    <th data-name='calculated_risk' align=\"center\" width=\"80px\" valign=\"top\">".$escaper->escapeHtml($lang['InherentRisk'])."</th>
-                    <th data-name='submission_date' align=\"center\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['Submitted'])."</th>
-                    <th align=\"center\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['MitigationPlanned'])."</th>
-                    <th align=\"center\" width=\"160px\" valign=\"top\">".$escaper->escapeHtml($lang['ManagementReview'])."</th>
-                </tr>
+                <tr>{$tr}</tr> 
             </thead>
             <tbody>
             </tbody>
@@ -6963,9 +7049,11 @@ function display_plan_mitigations()
                     var background = $('.background-class', $(row)).data('background');
                     $(row).find('td').addClass(background)
                 },
-                order: [[3, 'desc']],
+                scrollX: true,
+                order: [[{$order_index}, '{$order_dir}']],
                 ajax: {
                     url: BASE_URL + '/api/risk_management/plan_mitigation',
+                    type: 'post',
                     data: function(d){
                     },
                     complete: function(response){
@@ -6973,26 +7061,10 @@ function display_plan_mitigations()
                 },
                 columnDefs : [
                     {
-                        'targets' : [3, 4],
-                        'className' : 'risk-cell',
-                    },
-                    {
-                        'targets' : [5],
-                        'className' : 'open-mitigation management',
-                    },
-                    {
-                        'targets' : [6],
-                        'className' : 'open-review management',
-                    },
-                    {
-                        'targets' : [0],
-                        'className' : 'open-risk',
-                    },
-                    {
-                        'targets' : [5, 6],
+                        'targets' : ".json_encode($unsort_indexs).",
                         'orderable' : false,
-                    },
-                ]                
+                    }
+                ]
             });
             
             // Add paginate options
@@ -7026,6 +7098,59 @@ function display_plan_mitigations()
                     datatableInstance.draw()
                 }
             })
+            $(document).ready(function(){
+                $('.sortable-risk').sortable({
+                    connectWith: '.sortable-risk'
+                });
+                $('.sortable-mitigation').sortable({
+                    connectWith: '.sortable-mitigation'
+                });
+                $('.sortable-review').sortable({
+                    connectWith: '.sortable-review'
+                });
+                $('#save_display_settings').click(function(){
+                    var risk_checkboxes = $('.sortable-risk .hidden-checkbox');
+                    var riskColumns = [];
+                    risk_checkboxes.each(function(){
+                        var check_val = $(this).is(':checked')?1:0;
+                        riskColumns.push([$(this).attr('name'),check_val]);
+                    });
+                    var mitigation_checkboxes = $('.sortable-mitigation .hidden-checkbox');
+                    var mitigationColumns = [];
+                    mitigation_checkboxes.each(function(){
+                        var check_val = $(this).is(':checked')?1:0;
+                        mitigationColumns.push([$(this).attr('name'),check_val]);
+                    });
+                    var review_checkboxes = $('.sortable-review .hidden-checkbox');
+                    var reviewColumns = [];
+                    review_checkboxes.each(function(){
+                        var check_val = $(this).is(':checked')?1:0;
+                        reviewColumns.push([$(this).attr('name'),check_val]);
+                    });
+                    $.ajax({
+                        type: 'POST',
+                        url: BASE_URL + '/api/risk_management/save_custom_plan_mitigation_display_settings',
+                        data:{
+                            risk_columns: riskColumns,
+                            mitigation_columns: mitigationColumns,
+                            review_columns: reviewColumns,
+                        },
+                        success: function(res){
+                            $('#setting_modal').modal('hide');
+                            showAlertsFromArray(res.status_message);
+                            document.location.reload();
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this)){
+                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                            }
+                        }
+                    });
+                    return false;
+                });
+            });
             
         </script>
     ";
@@ -7037,22 +7162,58 @@ function display_plan_mitigations()
 function display_management_review()
 {
     global $lang, $escaper;
-    
+    $user = get_user_by_id($_SESSION['uid']);
+    $settings = json_decode($user["custom_perform_reviews_display_settings"], true);
+    $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
+    $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
+    $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
+    $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
+    $columns = [];
+    $unsort_columns = array("regulation", "project", "affected_assets", "risk_assessment", "additional_notes", "mitigation_planned", "management_review", "current_solution", "security_recommendations", "security_requirements", "next_review_date", "comments");
+    foreach($columns_setting as $column){
+        if(stripos($column[0], "custom_field_") !== false){
+            if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
+        } else if($column[1] == 1) $columns[] = $column[0];
+    }
+    if(!count($columns)){
+        $columns = array("id","risk_status","subject","calculated_risk","submission_date","mitigation_planned","management_review");
+    }
+    $tr = "";
+    $index = 0;
+    $unsort_indexs = [];
+    $order_index = 0;
+    $order_dir = "asc";
+    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+    foreach($columns as $column){
+        $add_column = false;
+        if(($pos = stripos($column, "custom_field_")) !== false){
+            if(customization_extra()){
+                $field_id = str_replace("custom_field_", "", $column);
+                $custom_field = get_field_by_id($field_id);
+                $label = $escaper->escapeHtml($custom_field['name']);
+                $tr .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
+                $add_column = true;
+            }
+        } else {
+            $label = get_label_by_risk_field_name($column);
+            $tr .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
+            $add_column = true;
+        }
+        if($column == "calculated_risk") {
+            $order_index = $index;
+            $order_dir = "desc";
+        }
+        if($add_column == true) {
+            if(in_array($column, $unsort_columns)||stripos($column, "custom_field_") !== false) $unsort_indexs[] = $index;
+            $index++;
+        }
+    }
     $tableID = "management-review";
-    
     echo "
 
         <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
             <thead >
-                <tr >
-                    <th data-name='id' align=\"left\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['ID'])."</th>
-                    <th data-name='risk_status' align=\"left\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['Status'])."</th>
-                    <th data-name='subject' align=\"left\" width=\"300px\" valign=\"top\">".$escaper->escapeHtml($lang['Subject'])."</th>
-                    <th data-name='calculated_risk' align=\"center\" width=\"80px\" valign=\"top\">".$escaper->escapeHtml($lang['InherentRisk'])."</th>
-                    <th data-name='submission_date' align=\"center\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['Submitted'])."</th>
-                    <th align=\"center\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['MitigationPlanned'])."</th>
-                    <th align=\"center\" width=\"160px\" valign=\"top\">".$escaper->escapeHtml($lang['ManagementReview'])."</th>
-                </tr>
+                <tr>{$tr}</tr>
             </thead>
             <tbody>
             </tbody>
@@ -7075,9 +7236,11 @@ function display_management_review()
                     var background = $('.background-class', $(row)).data('background');
                     $(row).find('td').addClass(background)
                 },
-                order: [[3, 'desc']],
+                scrollX: true,
+                order: [[{$order_index}, '{$order_dir}']],
                 ajax: {
                     url: BASE_URL + '/api/risk_management/managment_review',
+                    type: 'post',
                     data: function(d){
                     },
                     complete: function(response){
@@ -7085,26 +7248,10 @@ function display_management_review()
                 },
                 columnDefs : [
                     {
-                        'targets' : [3, 4],
-                        'className' : 'risk-cell',
-                    },
-                    {
-                        'targets' : [5],
-                        'className' : 'open-mitigation management',
-                    },
-                    {
-                        'targets' : [6],
-                        'className' : 'open-review management',
-                    },
-                    {
-                        'targets' : [0],
-                        'className' : 'open-risk',
-                    },
-                    {
-                        'targets' : [5, 6],
+                        'targets' : ".json_encode($unsort_indexs).",
                         'orderable' : false,
-                    },
-                ]                
+                    }
+                ]
             });
             
             // Add paginate options
@@ -7138,7 +7285,59 @@ function display_management_review()
                     datatableInstance.draw()
                 }
             })
-            
+            $(document).ready(function(){
+                $('.sortable-risk').sortable({
+                    connectWith: '.sortable-risk'
+                });
+                $('.sortable-mitigation').sortable({
+                    connectWith: '.sortable-mitigation'
+                });
+                $('.sortable-review').sortable({
+                    connectWith: '.sortable-review'
+                });
+                $('#save_display_settings').click(function(){
+                    var risk_checkboxes = $('.sortable-risk .hidden-checkbox');
+                    var riskColumns = [];
+                    risk_checkboxes.each(function(){
+                        var check_val = $(this).is(':checked')?1:0;
+                        riskColumns.push([$(this).attr('name'),check_val]);
+                    });
+                    var mitigation_checkboxes = $('.sortable-mitigation .hidden-checkbox');
+                    var mitigationColumns = [];
+                    mitigation_checkboxes.each(function(){
+                        var check_val = $(this).is(':checked')?1:0;
+                        mitigationColumns.push([$(this).attr('name'),check_val]);
+                    });
+                    var review_checkboxes = $('.sortable-review .hidden-checkbox');
+                    var reviewColumns = [];
+                    review_checkboxes.each(function(){
+                        var check_val = $(this).is(':checked')?1:0;
+                        reviewColumns.push([$(this).attr('name'),check_val]);
+                    });
+                    $.ajax({
+                        type: 'POST',
+                        url: BASE_URL + '/api/risk_management/save_custom_perform_reviews_display_settings',
+                        data:{
+                            risk_columns: riskColumns,
+                            mitigation_columns: mitigationColumns,
+                            review_columns: reviewColumns,
+                        },
+                        success: function(res){
+                            $('#setting_modal').modal('hide');
+                            showAlertsFromArray(res.status_message);
+                            document.location.reload();
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this)){
+                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                            }
+                        }
+                    });
+                    return false;
+                });
+            });
         </script>
     ";
 }
@@ -7149,21 +7348,58 @@ function display_management_review()
 function display_review_risks()
 {
     global $lang, $escaper;
-    
+    $user = get_user_by_id($_SESSION['uid']);
+    $settings = json_decode($user["custom_reviewregularly_display_settings"], true);
+    $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
+    $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
+    $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
+    $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
+    $columns = [];
+    $unsort_columns = array("regulation", "project", "affected_assets", "risk_assessment", "additional_notes", "mitigation_planned", "management_review", "current_solution", "security_recommendations", "security_requirements", "comments");
+    foreach($columns_setting as $column){
+        if(stripos($column[0], "custom_field_") !== false){
+            if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
+        } else if($column[1] == 1) $columns[] = $column[0];
+    }
+    if(!count($columns)){
+        $columns = array("id","risk_status","subject","calculated_risk","days_open","next_review_date");
+    }
+    $tr = "";
+    $index = 0;
+    $unsort_indexs = [];
+    $order_index = 0;
+    $order_dir = "asc";
+    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+    foreach($columns as $column){
+        $add_column = false;
+        if(($pos = stripos($column, "custom_field_")) !== false){
+            if(customization_extra()){
+                $field_id = str_replace("custom_field_", "", $column);
+                $custom_field = get_field_by_id($field_id);
+                $label = $escaper->escapeHtml($custom_field['name']);
+                $tr .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
+                $add_column = true;
+            }
+        } else {
+            $label = get_label_by_risk_field_name($column);
+            $tr .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
+            $add_column = true;
+        }
+        if($column == "next_review_date") {
+            $order_index = $index;
+            $order_dir = "asc";
+        }
+        if($add_column == true) {
+            if(in_array($column, $unsort_columns)||stripos($column, "custom_field_") !== false) $unsort_indexs[] = $index;
+            $index++;
+        }
+    }
     $tableID = "review-risks";
-    
     echo "
 
         <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
             <thead >
-                <tr >
-                    <th data-name='id' align=\"left\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['ID'])."</th>
-                    <th data-name='risk_status' align=\"left\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['Status'])."</th>
-                    <th data-name='subject' align=\"left\" width=\"300px\" valign=\"top\">".$escaper->escapeHtml($lang['Subject'])."</th>
-                    <th data-name='calculated_risk' align=\"center\" width=\"65px\" valign=\"top\">".$escaper->escapeHtml($lang['InherentRisk'])."</th>
-                    <th data-name='days_open' align=\"center\" width=\"100px\" valign=\"top\">".$escaper->escapeHtml($lang['DaysOpen'])."</th>
-                    <th data-name='next_review' align=\"center\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['NextReviewDate'])."</th>
-                </tr>
+                <tr>{$tr}</tr>
             </thead>
             <tbody>
             </tbody>
@@ -7186,9 +7422,11 @@ function display_review_risks()
                     var background = $('.background-class', $(row)).data('background');
                     $(row).find('td').addClass(background)
                 },
-                order: [[5, 'asc']],
+                scrollX: true,
+                order: [[{$order_index}, '{$order_dir}']],
                 ajax: {
                     url: BASE_URL + '/api/risk_management/review_risks',
+                    type: 'post',
                     data: function(d){
                     },
                     complete: function(response){
@@ -7196,20 +7434,11 @@ function display_review_risks()
                 },
                 columnDefs : [
                     {
-                        'targets' : [3],
-                        'className' : 'risk-cell',
-                    },
-                    {
-                        'targets' : [5],
-                        'className' : 'text-center open-review ',
-                    },
-                    {
-                        'targets' : [0],
-                        'className' : 'open-risk',
+                        'targets' : ".json_encode($unsort_indexs).",
+                        'orderable' : false,
                     }
-                ]                
+                ]
             });
-            
             // Add paginate options
             datatableInstance.on('draw', function(e, settings){
                 $('.paginate_button.first').html('<i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i>');
@@ -7241,7 +7470,59 @@ function display_review_risks()
                     datatableInstance.draw()
                 }
             })
-            
+            $(document).ready(function(){
+                $('.sortable-risk').sortable({
+                    connectWith: '.sortable-risk'
+                });
+                $('.sortable-mitigation').sortable({
+                    connectWith: '.sortable-mitigation'
+                });
+                $('.sortable-review').sortable({
+                    connectWith: '.sortable-review'
+                });
+                $('#save_display_settings').click(function(){
+                    var risk_checkboxes = $('.sortable-risk .hidden-checkbox');
+                    var riskColumns = [];
+                    risk_checkboxes.each(function(){
+                        var check_val = $(this).is(':checked')?1:0;
+                        riskColumns.push([$(this).attr('name'),check_val]);
+                    });
+                    var mitigation_checkboxes = $('.sortable-mitigation .hidden-checkbox');
+                    var mitigationColumns = [];
+                    mitigation_checkboxes.each(function(){
+                        var check_val = $(this).is(':checked')?1:0;
+                        mitigationColumns.push([$(this).attr('name'),check_val]);
+                    });
+                    var review_checkboxes = $('.sortable-review .hidden-checkbox');
+                    var reviewColumns = [];
+                    review_checkboxes.each(function(){
+                        var check_val = $(this).is(':checked')?1:0;
+                        reviewColumns.push([$(this).attr('name'),check_val]);
+                    });
+                    $.ajax({
+                        type: 'POST',
+                        url: BASE_URL + '/api/risk_management/save_custom_reviewregularly_display_settings',
+                        data:{
+                            risk_columns: riskColumns,
+                            mitigation_columns: mitigationColumns,
+                            review_columns: reviewColumns,
+                        },
+                        success: function(res){
+                            $('#setting_modal').modal('hide');
+                            showAlertsFromArray(res.status_message);
+                            document.location.reload();
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this)){
+                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                            }
+                        }
+                    });
+                    return false;
+                });
+            });
         </script>
     ";
 }
@@ -7624,6 +7905,332 @@ function display_side_navigation($active)
 	echo "  }\n";
 	echo "}\n";
 	echo "</script>\n";
+}
+/****************************************
+* FUNCTION: DISPLAY CUSTOM RISK COLUMNS *
+****************************************/
+function display_custom_risk_columns($custom_setting_field = "custom_plan_mitigation_display_settings"){
+    global $escaper, $lang;
+    $user = get_user_by_id($_SESSION['uid']);
+    $settings = json_decode($user[$custom_setting_field], true);
+
+    $risk_colums_setting = isset($settings["risk_colums"])?$settings["risk_colums"]:[];
+    $risk_setting = [];
+    foreach($risk_colums_setting as $column){
+        $risk_setting[$column[0]] = $column[1];
+    }
+
+    $mitigation_colums_setting = isset($settings["mitigation_colums"])?$settings["mitigation_colums"]:[];
+    $mitigation_setting = [];
+    foreach($mitigation_colums_setting as $column){
+        $mitigation_setting[$column[0]] = $column[1];
+    }
+
+    $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
+    $review_setting = [];
+    foreach($review_colums_setting as $column){
+        $review_setting[$column[0]] = $column[1];
+    }
+    $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
+    $columns = [];
+    foreach($columns_setting as $column){
+        if(stripos($column[0], "custom_field_") !== false){
+            if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
+        } else if($column[1] == 1) $columns[] = $column[0];
+    }
+    if(!count($columns)){
+        if($custom_setting_field == "custom_reviewregularly_display_settings"){
+            $risk_setting = array("id"=>1,"risk_status"=>1,"subject"=>1,"calculated_risk"=>1,"days_open"=>1);
+            $mitigation_setting = array();
+            $review_setting = array("management_review"=>0,"review_date"=>0,"next_step"=>0,"next_review_date"=>1);
+        } else {
+            $risk_setting = array("id"=>1,"risk_status"=>1,"subject"=>1,"calculated_risk"=>1,"submission_date"=>1);
+            $mitigation_setting = array("mitigation_planned"=>1);
+            $review_setting = array("management_review"=>1);
+        }
+    }
+
+    $str = "
+        <style>
+            #column-selections-container label{color:#000;}
+            ul.sortable{list-style:none;margin:0;}
+            ul.sortable li{border: 1px dotted #cccccc;margin:2px 0;padding:5px;}
+        </style>
+        <div class=\"well\" id='column-selections-container'>
+            <h4 class=\"collapsible--toggle clearfix\">
+                <span>".$escaper->escapeHtml($lang['ColumnSelections'])."</span>
+            </h4>\n";
+
+    
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        $active_fields = get_active_fields();
+
+        $risk_columns = array(
+            'id' => $escaper->escapeHtml($lang['ID']),
+            'risk_status' => $escaper->escapeHtml($lang['Status']),
+            'closure_date' => $escaper->escapeHtml($lang['DateClosed']),
+            'subject' => $escaper->escapeHtml($lang['Subject']),
+            'calculated_risk' => $escaper->escapeHtml($lang['InherentRisk']),
+            'residual_risk' => $escaper->escapeHtml($lang['ResidualRisk']),
+            'project' => $escaper->escapeHtml($lang['Project']),
+            'days_open' => $escaper->escapeHtml($lang['DaysOpen']),
+        );
+        $mitigation_columns = array(
+            'mitigation_planned' => $escaper->escapeHtml($lang['MitigationPlanned']),
+        );
+        $review_columns = array("management_review"=>$escaper->escapeHtml($lang['ManagementReview']));
+        foreach($active_fields as $active_field)
+        {
+            $field = $label = "";
+            // If this is main field
+            if($active_field['is_basic'] == 1) {
+                $dynamic_field_info = get_dynamic_names_by_main_field_name($active_field['name']);
+                if($dynamic_field_info) {
+                    $field = $dynamic_field_info['name'];
+                    $label = $dynamic_field_info['text'];
+                } else continue;
+            } else {
+                $field = "custom_field_{$active_field['id']}";
+                $label = $active_field['name'];
+            }
+            $active_field["field"] = $field;
+            $active_field["label"] = $label;
+            switch($active_field['tab_index']){
+                case 1:
+                    $risk_columns[$field] = $label;
+                break;
+                case 2:
+                    $mitigation_columns[$field] = $label;
+                break;
+                case 3:
+                    $review_columns[$field] = $label;
+                break;
+            }
+        }
+    } else {
+        // Names list of Risk columns
+        $risk_columns = array(
+            'id' => $escaper->escapeHtml($lang['ID']),
+            'risk_status' => $escaper->escapeHtml($lang['Status']),
+            'closure_date' => $escaper->escapeHtml($lang['DateClosed']),
+            'subject' => $escaper->escapeHtml($lang['Subject']),
+            'reference_id' => $escaper->escapeHtml($lang['ExternalReferenceId']),
+            'regulation' => $escaper->escapeHtml($lang['ControlRegulation']),
+            'control_number' => $escaper->escapeHtml($lang['ControlNumber']),
+            'location' => $escaper->escapeHtml($lang['SiteLocation']),
+            'source' => $escaper->escapeHtml($lang['RiskSource']),
+            'category' => $escaper->escapeHtml($lang['Category']),
+            'team' => $escaper->escapeHtml($lang['Team']),
+            'additional_stakeholders' => $escaper->escapeHtml($lang['AdditionalStakeholders']),
+            'technology' => $escaper->escapeHtml($lang['Technology']),
+            'owner' => $escaper->escapeHtml($lang['Owner']),
+            'manager' => $escaper->escapeHtml($lang['OwnersManager']),
+            'submitted_by' => $escaper->escapeHtml($lang['SubmittedBy']),
+            'risk_tags' => $escaper->escapeHtml($lang['Tags']),
+            'scoring_method' => $escaper->escapeHtml($lang['RiskScoringMethod']),
+            'calculated_risk' => $escaper->escapeHtml($lang['InherentRisk']),
+            'residual_risk' => $escaper->escapeHtml($lang['ResidualRisk']),
+            'submission_date' => $escaper->escapeHtml($lang['SubmissionDate']),
+            'project' => $escaper->escapeHtml($lang['Project']),
+            'days_open' => $escaper->escapeHtml($lang['DaysOpen']),
+            'affected_assets' => $escaper->escapeHtml($lang['AffectedAssets']),
+            'risk_assessment' => $escaper->escapeHtml($lang['RiskAssessment']),
+            'additional_notes' => $escaper->escapeHtml($lang['AdditionalNotes']),
+        );
+        $mitigation_columns = array(
+            'mitigation_planned' => $escaper->escapeHtml($lang['MitigationPlanned']),
+            'planning_strategy' => $escaper->escapeHtml($lang['PlanningStrategy']),
+            'planning_date' => $escaper->escapeHtml($lang['MitigationPlanning']),
+            'mitigation_effort' => $escaper->escapeHtml($lang['MitigationEffort']),
+            'mitigation_cost' => $escaper->escapeHtml($lang['MitigationCost']),
+            'mitigation_owner' => $escaper->escapeHtml($lang['MitigationOwner']),
+            'mitigation_team' => $escaper->escapeHtml($lang['MitigationTeam']),
+            'mitigation_accepted' => $escaper->escapeHtml($lang['MitigationAccepted']),
+            'mitigation_date' => $escaper->escapeHtml($lang['MitigationDate']),
+            'mitigation_controls' => $escaper->escapeHtml($lang['MitigationControls']),
+            'current_solution' => $escaper->escapeHtml($lang['CurrentSolution']),
+            'security_recommendations' => $escaper->escapeHtml($lang['SecurityRecommendations']),
+            'security_requirements' => $escaper->escapeHtml($lang['SecurityRequirements']),
+        );
+        $review_columns = array(
+            'management_review' => $escaper->escapeHtml($lang['ManagementReview']),
+            'review_date' => $escaper->escapeHtml($lang['ReviewDate']),
+            'next_review_date' => $escaper->escapeHtml($lang['NextReviewDate']),
+            'next_step' => $escaper->escapeHtml($lang['NextStep']),
+            'comments' => $escaper->escapeHtml($lang['Comments']),
+        );
+    }
+    $risk_columns_keys = array_values(array_unique(array_merge(array_keys($risk_setting),array_keys($risk_columns))));
+    $mitigation_columns_keys = array_values(array_unique(array_merge(array_keys($mitigation_setting),array_keys($mitigation_columns))));
+    $review_columns_keys = array_values(array_unique(array_merge(array_keys($review_setting),array_keys($review_columns))));
+    // risk columns
+    $str .= "<div class=\"well\">\n
+            <h4 class=\"collapsible--toggle clearfix\">
+                <span><i class=\"fa fa-caret-down\"></i>" . $escaper->escapeHtml($lang['RiskColumns']) . ":</span>
+            </h4>\n
+            <div class=\"collapsible\">
+                <div class=\"row-fluid\">\n
+                    <div class=\"span6\">\n
+                        <ul class=\"sortable sortable-risk\">";
+                        $half_num = ceil(count($risk_columns_keys)/2);
+                        for($i=0;$i<$half_num;$i++){
+                            $field = $risk_columns_keys[$i];
+                            $elem_id = "checkbox_".$field;
+                            $check_val = isset($risk_setting[$field])?$risk_setting[$field]:0;
+                            $checked = $check_val?"checked='yes'":"";
+                            if(isset($risk_columns[$field])){
+                                $str .= "<li>
+                                        <input class='hidden-checkbox' type='checkbox' name='".$field."' id='".$elem_id."' ".$checked."/>
+                                        <label for='".$elem_id."'>".$risk_columns[$field]."</label>
+                                    </li>";
+                            }
+                        }
+                        $str .= "</ul>
+                    </div>\n
+                    <div class=\"span6\">\n
+                        <ul class=\"sortable sortable-risk\">";
+                        for($i;$i<count($risk_columns_keys);$i++){
+                            $field = $risk_columns_keys[$i];
+                            $elem_id = "checkbox_".$field;
+                            $check_val = isset($risk_setting[$field])?$risk_setting[$field]:0;
+                            $checked = $check_val?"checked='yes'":"";
+                            if(isset($risk_columns[$field])){
+                                $str .= "<li>
+                                        <input class='hidden-checkbox' type='checkbox' name='".$field."' id='".$elem_id."' ".$checked."/>
+                                        <label for='".$elem_id."'>".$risk_columns[$field]."</label>
+                                    </li>";
+                            }
+                        }
+                        $str .= "</ul>
+                    </div>\n
+                </div>\n
+            </div>\n
+        </div>\n";
+    $str .= "<div class=\"row-fluid\">
+        <div class=\"span6\">\n";
+        // mitigation columns
+        $str .= "<div class=\"well\">\n
+                <h4 class=\"collapsible--toggle clearfix\">
+                    <span><i class=\"fa fa-caret-down\"></i>" . $escaper->escapeHtml($lang['MitigationColumns']) . ":</span>
+                </h4>\n
+                <div class=\"collapsible\">
+                    <ul class=\"sortable sortable-mitigation\">";
+                    foreach($mitigation_columns_keys as $field){
+                        $check_val = isset($mitigation_setting[$field])?$mitigation_setting[$field]:0;
+                        $elem_id = "checkbox_".$field;
+                        $checked = $check_val?"checked='yes'":"";
+                        if(isset($mitigation_columns[$field])){
+                            $str .= "<li>
+                                    <input class='hidden-checkbox' type='checkbox' name='".$field."' id='".$elem_id."' ".$checked."/>
+                                    <label for='".$elem_id."'>".$mitigation_columns[$field]."</label>
+                                </li>";
+                        }
+                    }
+                    $str .= "</ul>
+                </div>\n
+            </div>\n
+        </div>\n";
+        // review columns
+        $str .= "<div class=\"span6\">\n
+            <div class=\"well\">\n
+                <h4 class=\"collapsible--toggle clearfix\">
+                    <span><i class=\"fa fa-caret-down\"></i>" . $escaper->escapeHtml($lang['ReviewColumns']) . ":</span>
+                </h4>\n
+                <div class=\"collapsible\">
+                    <ul class=\"sortable sortable-review\">";
+                    foreach($review_columns_keys as $field){
+                        $check_val = isset($review_setting[$field])?$review_setting[$field]:0;
+                        $elem_id = "checkbox_".$field;
+                        $checked = $check_val?"checked='yes'":"";
+                        if(isset($review_columns[$field])){
+                            $str .= "<li>
+                                    <input class='hidden-checkbox' type='checkbox' name='".$field."' id='".$elem_id."' ".$checked."/>
+                                    <label for='".$elem_id."'>".$review_columns[$field]."</label>
+                                </li>";
+                        }
+                    }
+                    $str .= "</ul>
+                </div>\n
+            </div>\n
+        </div>\n
+    </div>\n";
+    $str .= "</div>\n";
+    echo $str;
+}
+function get_label_by_risk_field_name($field){
+    global $lang, $escaper;
+	// Names list of Risk columns
+	$columns = array(
+		'id' => $escaper->escapeHtml($lang['ID']),
+		'risk_status' => $escaper->escapeHtml($lang['Status']),
+		'closure_date' => $escaper->escapeHtml($lang['DateClosed']),
+		'subject' => $escaper->escapeHtml($lang['Subject']),
+		'reference_id' => $escaper->escapeHtml($lang['ExternalReferenceId']),
+		'regulation' => $escaper->escapeHtml($lang['ControlRegulation']),
+		'control_number' => $escaper->escapeHtml($lang['ControlNumber']),
+		'location' => $escaper->escapeHtml($lang['SiteLocation']),
+		'source' => $escaper->escapeHtml($lang['RiskSource']),
+		'category' => $escaper->escapeHtml($lang['Category']),
+		'team' => $escaper->escapeHtml($lang['Team']),
+		'additional_stakeholders' => $escaper->escapeHtml($lang['AdditionalStakeholders']),
+		'technology' => $escaper->escapeHtml($lang['Technology']),
+		'owner' => $escaper->escapeHtml($lang['Owner']),
+		'manager' => $escaper->escapeHtml($lang['OwnersManager']),
+		'submitted_by' => $escaper->escapeHtml($lang['SubmittedBy']),
+		'risk_tags' => $escaper->escapeHtml($lang['Tags']),
+		'scoring_method' => $escaper->escapeHtml($lang['RiskScoringMethod']),
+		'calculated_risk' => $escaper->escapeHtml($lang['InherentRisk']),
+		'residual_risk' => $escaper->escapeHtml($lang['ResidualRisk']),
+		'submission_date' => $escaper->escapeHtml($lang['SubmissionDate']),
+		'project' => $escaper->escapeHtml($lang['Project']),
+		'days_open' => $escaper->escapeHtml($lang['DaysOpen']),
+		'affected_assets' => $escaper->escapeHtml($lang['AffectedAssets']),
+		'risk_assessment' => $escaper->escapeHtml($lang['RiskAssessment']),
+		'additional_notes' => $escaper->escapeHtml($lang['AdditionalNotes']),
+
+		'mitigation_planned' => $escaper->escapeHtml($lang['MitigationPlanned']),
+		'planning_strategy' => $escaper->escapeHtml($lang['PlanningStrategy']),
+		'planning_date' => $escaper->escapeHtml($lang['MitigationPlanning']),
+		'mitigation_effort' => $escaper->escapeHtml($lang['MitigationEffort']),
+		'mitigation_cost' => $escaper->escapeHtml($lang['MitigationCost']),
+		'mitigation_owner' => $escaper->escapeHtml($lang['MitigationOwner']),
+		'mitigation_team' => $escaper->escapeHtml($lang['MitigationTeam']),
+		'mitigation_accepted' => $escaper->escapeHtml($lang['MitigationAccepted']),
+		'mitigation_date' => $escaper->escapeHtml($lang['MitigationDate']),
+		'mitigation_controls' => $escaper->escapeHtml($lang['MitigationControls']),
+		'current_solution' => $escaper->escapeHtml($lang['CurrentSolution']),
+		'security_recommendations' => $escaper->escapeHtml($lang['SecurityRecommendations']),
+		'security_requirements' => $escaper->escapeHtml($lang['SecurityRequirements']),
+
+		'management_review' => $escaper->escapeHtml($lang['ManagementReview']),
+		'review_date' => $escaper->escapeHtml($lang['ReviewDate']),
+		'next_review_date' => $escaper->escapeHtml($lang['NextReviewDate']),
+		'next_step' => $escaper->escapeHtml($lang['NextStep']),
+		'comments' => $escaper->escapeHtml($lang['Comments']),
+	);
+	return $columns[$field];
+
+}
+
+/***********************************
+ * FUNCTION: DISPLAY LICENSE CHECK *
+ ***********************************/
+function display_license_check()
+{
+	global $lang;
+	global $escaper;
+
+	// If the license check failed
+	if (isset($_SESSION['license_check']) && $_SESSION['license_check'] == "fail")
+	{
+		echo "<div class=\"license_check\" style=\"width: 100%; text-align: center; font-weight: bold; background-color: #ffcccb;\">\n";
+		echo $escaper->escapeHtml($lang['LicenseCheckFailed']);	
+		echo "</div>\n";
+	}
 }
 
 ?>
