@@ -4573,7 +4573,7 @@ function upgrade_from_20200711001($db)
     // Fix the `tag` field's length of the `tags` table 
     if (table_exists('tags')) {
         echo "Fix the `tag` field's length of the `tags` table.<br />\n";
-        $stmt = $db->prepare("ALTER TABLE `tags` CHANGE `tag` `tag` VARCHAR(500) NOT NULL;");
+        $stmt = $db->prepare("ALTER TABLE `tags` CHANGE `tag` `tag` VARCHAR(255) NOT NULL;");
         $stmt->execute();
     }
 
