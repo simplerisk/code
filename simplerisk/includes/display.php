@@ -6996,7 +6996,15 @@ function display_plan_mitigations()
     $unsort_indexs = [];
     $order_index = 0;
     $order_dir = "asc";
-    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+    // If the Customization Extra exists
+    $file = realpath(__DIR__ . '/../extras/customization/index.php');
+    if (file_exists($file))
+    {
+        // Load it
+        require_once($file);
+    }
+
     foreach($columns as $column){
         $add_column = false;
         if(($pos = stripos($column, "custom_field_")) !== false){
@@ -7183,7 +7191,15 @@ function display_management_review()
     $unsort_indexs = [];
     $order_index = 0;
     $order_dir = "asc";
-    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+    // If the Customization Extra exists
+    $file = realpath(__DIR__ . '/../extras/customization/index.php');
+    if (file_exists($file))
+    {
+        // Load it
+        require_once($file);
+    }
+
     foreach($columns as $column){
         $add_column = false;
         if(($pos = stripos($column, "custom_field_")) !== false){
@@ -7369,7 +7385,15 @@ function display_review_risks()
     $unsort_indexs = [];
     $order_index = 0;
     $order_dir = "asc";
-    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+    // If the Customization Extra exists
+    $file = realpath(__DIR__ . '/../extras/customization/index.php');
+    if (file_exists($file))
+    {
+        // Load it
+        require_once($file);
+    }
+
     foreach($columns as $column){
         $add_column = false;
         if(($pos = stripos($column, "custom_field_")) !== false){
