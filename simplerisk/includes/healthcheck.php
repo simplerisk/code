@@ -510,7 +510,7 @@ function check_mysql_permission($permission)
 function check_php_extensions()
 {
 	// List of extensions to check for
-	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom");
+	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom", "curl");
 
 	// Create an empty array
 	$array = array();
@@ -601,8 +601,11 @@ function check_api_connectivity()
 	curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 	curl_setopt($curl, CURLOPT_COOKIE, $strCookie);
+	curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
 	$json_result = curl_exec($curl);
 	$json_array = json_decode($json_result, true);
+	curl_close($curl);
 
 	// If we received a json status of 200
 	if ($json_array['status'] === 200)
