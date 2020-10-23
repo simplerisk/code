@@ -14364,8 +14364,8 @@ function large_extra($extra_name)
             // Allow
             return false;
         case 'organizational_hierarchy':
-            // Allow
-            return false;
+            // Don't Allow
+            return true;
         case 'notification':
             // Allow
             return false;

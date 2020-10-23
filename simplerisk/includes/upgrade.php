@@ -11,6 +11,7 @@ require_once(realpath(__DIR__ . '/assessments.php'));
 require_once(realpath(__DIR__ . '/reporting.php'));
 require_once(realpath(__DIR__ . '/assets.php'));
 require_once(realpath(__DIR__ . '/governance.php'));
+require_once(realpath(__DIR__ . '/permissions.php'));
 
 // Include the language file
 require_once(language_file());
