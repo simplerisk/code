@@ -214,7 +214,7 @@ function db_open()
         // Set the default options array
         $options = array(
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8, CHARACTER SET utf8, @@group_concat_max_len = 4294967295, time_zone='{$offset}'"
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8, @@group_concat_max_len = 4294967295, time_zone='{$offset}'"
         );
         
         // If a database SSL certificate path has been defined
