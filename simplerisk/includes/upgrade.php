@@ -5195,20 +5195,19 @@ function upgrade_from_20201106001($db)
         add_setting("session_absolute_timeout", 28800);
     }
 
-    // Increase the file type field to 128 in files table.
-    echo "Increase the file type field to 128 in files table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `files` CHANGE `type` `type` VARCHAR(128);");
-    $stmt->execute();
+    if (table_exists('files')) {
+        // Increase the file type field to 128 in files table.
+        echo "Increase the file type field to 128 in files table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `files` CHANGE `type` `type` VARCHAR(128);");
+        $stmt->execute();
+    }
 
-    // Increase the file type field to 128 in compliance_files table.
-    echo "Increase the file type field to 128 in compliance_files table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `compliance_files` CHANGE `type` `type` VARCHAR(128);");
-    $stmt->execute();
-
-    // Increase the file type field to 128 in questionnaire_files table.
-    echo "Increase the file type field to 128 in questionnaire_files table.<br />\n";
-    $stmt = $db->prepare("ALTER TABLE `questionnaire_files` CHANGE `type` `type` VARCHAR(128);");
-    $stmt->execute();
+    if (table_exists('compliance_files')) {
+        // Increase the file type field to 128 in compliance_files table.
+        echo "Increase the file type field to 128 in compliance_files table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `compliance_files` CHANGE `type` `type` VARCHAR(128);");
+        $stmt->execute();
+    }
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic
