@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Standaardtijd zone',
     'UserSessions' => 'Gebruikerssessies',
     'SessionActivityTimeout' => 'Time-out sessieactiviteit',
-    'SessionRenegotiationPeriod' => 'Sessie heronderhandelings periode',
     'Security' => 'Beveiligings',
     'EnableCSP' => 'Beveiligingsbeleid voor inhoud inschakelen (dit heeft Chrome in het verleden verbroken)',
     'Debugging' => 'Fout',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Huidige geleerde lessen',
     'AnswersDynamicallyCreated' => 'Voor deze vraag worden dynamisch antwoorden gecreëerd.',
     'TheRequestedAPIEndpointWasNotFound' => 'Het gevraagde API-eindpunt is niet gevonden',
+    'MaxTagLengthWarning' => 'De maximale lengte van een tag is 255 tekens.',
+    'RiskTagTruncatedWarning' => 'Risico {$risk_id}\'s tag "{$tag}" werd afgekapt omdat het langer was dan de maximaal toegestane taglengte(255 tekens)',
+    'AssetTagTruncatedWarning' => 'Tag "{$tag}" van asset "{$name}" werd afgekapt omdat deze langer was dan de maximaal toegestane taglengte(255 tekens)',
+    'FixFileEncodingIssues' => 'Problemen met het coderen van bestanden oplossen',
+    'FixFileEncodingIssuesDisclaimer' => 'We hebben een mogelijk probleem ontdekt met bestanden die zijn opgeslagen in uw SimpleRisk-database. In de onderstaande tabel ziet u welke items beschadigd bestand(en) hebben en moeten worden gecorrigeerd. Neem een kijkje op de genoemde items en opnieuw uploaden van de getroffen bestanden.',
+    'AttachmentType' => 'Bijlagetype',
+    'FileName' => 'Bestandsnaam',
+    'Upload' => 'Uploaden',
+    'YouHaveToSelectAFileToUpload' => 'Je moet een bestand selecteren om te uploaden.',
+    'InvalidUniqueName' => 'Bestand unieke naam verstrekt is ongeldig!',
+    'ref_type_exceptions' => 'Documentuitzondering',
+    'ref_type_documents' => 'Document',
+    'ref_type_test_audit' => 'Testaudit',
+    'SessionAbsoluteTimeout' => 'Absolute time-out sessie',
+
     '' => ''
 );
 

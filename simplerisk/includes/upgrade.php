@@ -2318,10 +2318,6 @@ function upgrade_from_20180104001($db){
     echo "Creating a database setting for the session last activity timeout.<br />\n";
     set_session_last_activity_timeout();
 
-    // Set the session renegotiation period 
-    echo "Creating a database setting for the session renegotiation period.<br />\n";
-    set_session_renegotiation_period();
-
     // Set the content security policy
     echo "Creating a database setting for the content security policy.<br />\n";
     set_content_security_policy();
@@ -4821,6 +4817,9 @@ function upgrade_from_20200711001($db)
         ]
     ];
 
+    $stmt = $db->prepare("DROP TABLE IF EXISTS `permissions`, `permission_to_user`, `permission_groups`, `permission_to_permission_group`;");
+    $stmt->execute();
+
     if (!table_exists('permissions')) {
         echo "Creating `permissions` table.<br />\n";
         $stmt = $db->prepare("
@@ -4931,7 +4930,7 @@ function upgrade_from_20200711001($db)
             $permission_selects[] = "SELECT value, '$permission' AS name FROM `user` WHERE `$permission` = 1 OR `admin` = 1";
         }
         $permissions_from_part = implode(" UNION ALL ", $permission_selects);
-        
+
         // The query joins the above built union query's results with the `permissions` table, this way being able to
         // return not the permission keys(which we'd have to process later), but the actual permission ids from the `permissions` table
         $stmt = $db->prepare("
@@ -4945,7 +4944,7 @@ function upgrade_from_20200711001($db)
         ");
         $stmt->execute();
         $permissions_of_users = $stmt->fetchAll(PDO::FETCH_COLUMN | PDO::FETCH_GROUP);
-        
+
         echo "Populating `permission_to_user` table.<br />\n";
         foreach($permissions_of_users as $user_id => $permissions) {
             // We can safely do that as both the user id and the keys of the permissions are coming from a safe source
@@ -5173,6 +5172,52 @@ function upgrade_from_20201005001($db)
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20201106-001 *
+ ***************************************/
+function upgrade_from_20201106001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20201106-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20201123-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Removing the unneeded setting for Session Renegotiation Period
+    echo "Removing the unneeded setting for Session Renegotiation Period<br />\n";
+    delete_setting('session_renegotiation_period');
+
+    // Adding default setting for Session Absolute Timeout
+    if (!get_setting('session_absolute_timeout')) {
+        echo "Adding default setting for Session Absolute Timeout<br />\n";
+        add_setting("session_absolute_timeout", 28800);
+    }
+
+    // Increase the file type field to 128 in files table.
+    echo "Increase the file type field to 128 in files table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `files` CHANGE `type` `type` VARCHAR(128);");
+    $stmt->execute();
+
+    // Increase the file type field to 128 in compliance_files table.
+    echo "Increase the file type field to 128 in compliance_files table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `compliance_files` CHANGE `type` `type` VARCHAR(128);");
+    $stmt->execute();
+
+    // Increase the file type field to 128 in questionnaire_files table.
+    echo "Increase the file type field to 128 in questionnaire_files table.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `questionnaire_files` CHANGE `type` `type` VARCHAR(128);");
+    $stmt->execute();
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -5368,6 +5413,10 @@ function upgrade_database()
                 break;
             case "20201005-001":
                 upgrade_from_20201005001($db);
+                upgrade_database();
+                break;
+            case "20201106-001":
+                upgrade_from_20201106001($db);
                 upgrade_database();
                 break;
             default:

@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => '默认时区',
     'UserSessions' => '用户会话',
     'SessionActivityTimeout' => '会话活动超时',
-    'SessionRenegotiationPeriod' => '会话重新协商期间',
     'Security' => '安全',
     'EnableCSP' => '启用内容安全策略 (这在过去已经打破了 Chrome)',
     'Debugging' => '调试',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => '当前经验教训',
     'AnswersDynamicallyCreated' => '将为这个问题动态创建答案。',
     'TheRequestedAPIEndpointWasNotFound' => '找不到请求的 API 终结点',
+    'MaxTagLengthWarning' => '标记的最大长度为 255 个字符。',
+    'RiskTagTruncatedWarning' => '风险 {$risk_id}标签 [{$tag}] 被截断， 因为它比允许的最大标签长度 （255 个字符） 长',
+    'AssetTagTruncatedWarning' => '标记 [{$tag}] 资产 [{$name}] 被截断， 因为它比允许的最大标签长度 （255 个字符） 长',
+    'FixFileEncodingIssues' => '修复文件编码问题',
+    'FixFileEncodingIssuesDisclaimer' => '我们已检测到存储在您的 SimpleRisk 数据库中的文件可能的问题。下表将显示哪些项目有损坏的文件，需要更正。请查看列出的项目，然后重新上传受影响的文件。',
+    'AttachmentType' => '附件类型',
+    'FileName' => '文件名',
+    'Upload' => '上传',
+    'YouHaveToSelectAFileToUpload' => '您必须选择要上载的文件。',
+    'InvalidUniqueName' => '提供的文件唯一名称无效！',
+    'ref_type_exceptions' => '文档异常',
+    'ref_type_documents' => '文档',
+    'ref_type_test_audit' => '测试审核',
+    'SessionAbsoluteTimeout' => '会话绝对超时',
+
     '' => ''
 );
 

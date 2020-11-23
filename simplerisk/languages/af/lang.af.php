@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Verstek Timezone',
     'UserSessions' => 'Gebruiker sessies',
     'SessionActivityTimeout' => 'Sessie aktiwiteit tyd verstreke',
-    'SessionRenegotiationPeriod' => 'Sessie heronderhandeling tydperk',
     'Security' => 'Sekuriteit',
     'EnableCSP' => 'Ontsper inhoud sekuriteit beleid (dit het gebreek chroom in die verlede)',
     'Debugging' => 'Ontfouting van',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Huidige lesse geleer',
     'AnswersDynamicallyCreated' => 'Antwoorde sal dinamies vir hierdie vraag geskep word.',
     'TheRequestedAPIEndpointWasNotFound' => 'Die aangevraagde API-eindpunt is nie gevind nie',
+    'MaxTagLengthWarning' => 'Die maksimum lengte van \'n merker is 255 karakters.',
+    'RiskTagTruncatedWarning' => 'Risiko {$risk_id}se merker "{$tag}" het afgekap omdat dit langer was as die maksimum toegelate merkerlengte (255 karakters)',
+    'AssetTagTruncatedWarning' => 'Tag "{$tag}" van bate "{$name}" het afgekap, aangesien dit langer was as die maksimum toegelate merkerlengte (255 karakters)',
+    'FixFileEncodingIssues' => 'Los lêerkoderingkwessies op',
+    'FixFileEncodingIssuesDisclaimer' => 'Ons het \'n moontlike probleem opgespoor met lêers wat in u SimpleRisk-databasis gestoor is. Die tabel hieronder sal jou wys watter items korrupte lêer(e) het en reggestel moet word. Kyk asseblief na die genoteerde items en laai die geaffekteerde lêers weer op.',
+    'AttachmentType' => 'Aanhegsel Tipe',
+    'FileName' => 'Lêernaam',
+    'Upload' => 'Oplaai',
+    'YouHaveToSelectAFileToUpload' => 'Jy moet \'n lêer kies om op te laai.',
+    'InvalidUniqueName' => 'Lêer unieke naam verskaf is ongeldig!',
+    'ref_type_exceptions' => 'Dokument uitsondering',
+    'ref_type_documents' => 'Dokument',
+    'ref_type_test_audit' => 'Toets oudit',
+    'SessionAbsoluteTimeout' => 'Sessie Absolute Tyduiting',
+
     '' => ''
 );
 

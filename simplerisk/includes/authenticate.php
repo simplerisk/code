@@ -965,39 +965,42 @@ function session_check()
         // Last request was more $last_activity
         if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > $session_activity_timeout))
         {
+            // unset $_SESSION variable for the run-time
+            session_unset();
+
+            // destroy session data in storage
+            session_destroy();
+
+            // Return false
+            return false;
+        }
+        // If the session created value has not been set
+        if (!isset($_SESSION['CREATED']))
+        {
+			// Set it with the current time
+			$_SESSION['CREATED'] = time();
+        }
+        // Otherwise check if it was created more than $created
+        else
+        {
+            $session_absolute_timeout = get_setting("session_absolute_timeout");
+            if (!$session_absolute_timeout) $session_absolute_timeout = "28800";
+
+            if (time() - $_SESSION['CREATED'] > $session_absolute_timeout)
+            {
                 // unset $_SESSION variable for the run-time
                 session_unset();
 
                 // destroy session data in storage
                 session_destroy();
 
-        // Return false
-        return false;
+                // Return false
+                return false;
+            }
         }
+
         // update last activity time stamp
         $_SESSION['LAST_ACTIVITY'] = time();
-
-        // If the session created value has not been set
-        if (!isset($_SESSION['CREATED']))
-        {
-                // Set it with the current time
-                $_SESSION['CREATED'] = time();
-        }
-        // Otherwise check if it was created more than $created
-        else
-        {
-                $session_renegotiation_period = get_setting("session_renegotiation_period");
-                if (!$session_renegotiation_period) $session_renegotiation_period = "600";
-
-                if (time() - $_SESSION['CREATED'] > $session_renegotiation_period)
-                {
-                        // change session ID for the current session an invalidate old session ID
-                        session_regenerate_id(true);
-
-                        // update creation time
-                        $_SESSION['CREATED'] = time();
-                }
-        }
 
 	// Return true
 	return true;

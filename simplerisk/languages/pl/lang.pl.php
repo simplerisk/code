@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Domyślna strefa czasowa',
     'UserSessions' => 'Sesje użytkownika',
     'SessionActivityTimeout' => 'Limit czasu aktywności sesji',
-    'SessionRenegotiationPeriod' => 'Okres renegocjacji sesji',
     'Security' => 'Zabezpieczeń',
     'EnableCSP' => 'Włącz politykę bezpieczeństwa treści (to ma złamaną chrom w przeszłości)',
     'Debugging' => 'Debugowania',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Aktualne wnioski wyciągnięte',
     'AnswersDynamicallyCreated' => 'Odpowiedzi będą tworzone dynamicznie dla tego pytania.',
     'TheRequestedAPIEndpointWasNotFound' => 'Nie znaleziono żądanego punktu końcowego interfejsu API',
+    'MaxTagLengthWarning' => 'Maksymalna długość znacznika wynosi 255 znaków.',
+    'RiskTagTruncatedWarning' => 'Tag {$risk_id}ryzyka "{$tag}" został obcięty, ponieważ był dłuższy niż maksymalna dozwolona długość znacznika (255 znaków)',
+    'AssetTagTruncatedWarning' => 'Tag "{$tag}" aktywów "{$name}" został obcięty, ponieważ był dłuższy niż maksymalna dozwolona długość znacznika (255 znaków)',
+    'FixFileEncodingIssues' => 'Rozwiązywanie problemów z kodowaniem plików',
+    'FixFileEncodingIssuesDisclaimer' => 'Wykryliśmy możliwy problem z plikami przechowywanymi w twojej bazie danych SimpleRisk. W poniższej tabeli pokazano, które elementy mają uszkodzone pliki i które muszą zostać poprawione. Zapoznaj się z wymienionymi elementami i prześlij ponownie pliki, których dotyczy problem.',
+    'AttachmentType' => 'Typ załącznika',
+    'FileName' => 'Nazwa pliku',
+    'Upload' => 'Przesłać',
+    'YouHaveToSelectAFileToUpload' => 'Musisz wybrać plik do przesłania.',
+    'InvalidUniqueName' => 'Podana unikatowa nazwa pliku jest nieprawidłowa!',
+    'ref_type_exceptions' => 'Wyjątek dokumentu',
+    'ref_type_documents' => 'Dokumentu',
+    'ref_type_test_audit' => 'Audyt testu',
+    'SessionAbsoluteTimeout' => 'Limit czasu bezwzględnego sesji',
+
     '' => ''
 );
 

@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Standard tidssone',
     'UserSessions' => 'Brukerøkter',
     'SessionActivityTimeout' => 'Tidsavbrudd for økt aktivitet',
-    'SessionRenegotiationPeriod' => 'Periode for reforhandling av økt',
     'Security' => 'Sikkerhets',
     'EnableCSP' => 'Aktiver policy for innholdssikkerhet (dette har brutt Chrome i det siste)',
     'Debugging' => 'Feil',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Nåværende erfaringer',
     'AnswersDynamicallyCreated' => 'Svarene opprettes dynamisk for dette spørsmålet.',
     'TheRequestedAPIEndpointWasNotFound' => 'Finner ikke det forespurte API-endepunktet',
+    'MaxTagLengthWarning' => 'Den maksimale lengden på en kode er 255 tegn.',
+    'RiskTagTruncatedWarning' => 'Risiko {$risk_id}\'s tag "{$tag}" ble avkortet som det var lengre enn maksimalt tillatt tag lengde (255 tegn)',
+    'AssetTagTruncatedWarning' => 'Tag "{$tag}" av eiendelen "{$name}" ble avkortet som det var lengre enn maksimalt tillatt tag lengde (255 tegn)',
+    'FixFileEncodingIssues' => 'Løs problemer med filkoding',
+    'FixFileEncodingIssuesDisclaimer' => 'Vi har oppdaget et mulig problem med filer som er lagret i SimpleRisk-databasen din. Tabellen nedenfor viser deg hvilke elementer som har ødelagte filer og må korrigeres. Ta en titt på de oppførte elementene og last opp de berørte filene på nytt.',
+    'AttachmentType' => 'Vedlegg Type',
+    'FileName' => 'Filnavn',
+    'Upload' => 'Laste opp',
+    'YouHaveToSelectAFileToUpload' => 'Du må velge en fil du vil laste opp.',
+    'InvalidUniqueName' => 'File Unique Name oppgitt er ugyldig!',
+    'ref_type_exceptions' => 'Dokumentunntak',
+    'ref_type_documents' => 'Dokumentet',
+    'ref_type_test_audit' => 'Testrevisjon',
+    'SessionAbsoluteTimeout' => 'Tidsavbrudd for økten',
+
     '' => ''
 );
 

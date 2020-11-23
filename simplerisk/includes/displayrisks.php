@@ -2205,6 +2205,7 @@ function display_risk_tags_edit($tags = "")
     echo "          <div class=\"row-fluid\">";
     echo "              <div class=\"span12\">";
     echo "                  <input type=\"text\" readonly id=\"tags\" name=\"tags\" value=\"\" data-selectize-value='{$tags}'>
+                            <div class='tag-max-length-warning'>" . $escaper->escapeHtml($lang['MaxTagLengthWarning']) . "</div>\n
                             <script>
                                 $('#tags').selectize({
                                     plugins: ['remove_button', 'restore_on_backspace'],

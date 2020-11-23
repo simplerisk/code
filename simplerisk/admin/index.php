@@ -373,31 +373,22 @@ require_once(language_file());
             set_alert(true, "bad", "We do not recommend setting a session activity timeout less than 300 seconds.");
         }
 
-        // Update the session renegotiation period setting
-        $session_renegotiation_period = (int)$_POST['session_renegotiation_period'];
+        // Update the session absolute timeout setting
+        $session_absolute_timeout = (int)$_POST['session_absolute_timeout'];
 
-        // If the session_renegotiation_period value is at least 5 minutes
-        if ($session_renegotiation_period >= 300)
+        // If the session_absolute_timeout value is less than the session_activity_timeout
+        if ($session_absolute_timeout > get_setting("session_activity_timeout"))
         {
-            // If the session_renegotiation_period value is less than the session_activity_timeout
-            if ($session_renegotiation_period < get_setting("session_activity_timeout"))
+            $current_session_absolute_timeout = get_setting("session_absolute_timeout");
+            if ($session_absolute_timeout != $current_session_absolute_timeout)
             {
-                $current_session_renegotiation_period = get_setting("session_renegotiation_period");
-                if ($session_renegotiation_period != $current_session_renegotiation_period)
-                {
-                    update_setting("session_renegotiation_period", $session_renegotiation_period);
-                }
-            }
-            else
-            {
-                $error = true;
-                set_alert(true, "bad", "The session renegotiation period should be less than the session activity timeout.");
+                update_setting("session_absolute_timeout", $session_absolute_timeout);
             }
         }
         else
         {
             $error = true;
-            set_alert(true, "bad", "We do not recommend setting a session renegotiation period less than 300 seconds.");
+            set_alert(true, "bad", "The session absolute timeout should be more than the session activity timeout.");
         }
 
         // Update the content security policy
@@ -1082,8 +1073,8 @@ require_once(language_file());
                           <td><input name="session_activity_timeout" id="session_activity_timeout" type="number" min="0" size="20px" value="<?php echo $escaper->escapeHtml(get_setting("session_activity_timeout")); ?>" /></td>
                         </tr>
                         <tr>
-                          <td width="300px"><?php echo $escaper->escapeHtml($lang['SessionRenegotiationPeriod']) . " (" . $escaper->escapeHtml($lang["seconds"]) . ")"; ?>:</td>
-                          <td><input name="session_renegotiation_period" id="session_renegotiation_period" type="number" min="0" size="20px" value="<?php echo $escaper->escapeHtml(get_setting("session_renegotiation_period")); ?>" /></td>
+                          <td width="300px"><?php echo $escaper->escapeHtml($lang['SessionAbsoluteTimeout']) . " (" . $escaper->escapeHtml($lang["seconds"]) . ")"; ?>:</td>
+                          <td><input name="session_absolute_timeout" id="session_absolute_timeout" type="number" min="0" size="20px" value="<?php echo $escaper->escapeHtml(get_setting("session_absolute_timeout")); ?>" /></td>
                         </tr>
                       </tbody>
                     </table>

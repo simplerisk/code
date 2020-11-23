@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Fuso orario predefinito',
     'UserSessions' => 'Sessioni utente',
     'SessionActivityTimeout' => 'Timeout attività sessione',
-    'SessionRenegotiationPeriod' => 'Periodo di rinegoziazione della sessione',
     'Security' => 'Sicurezza',
     'EnableCSP' => 'Attiva criteri di protezione del contenuto (questo ha interrotto Chrome in passato)',
     'Debugging' => 'Debug',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Lezioni attuali apprese',
     'AnswersDynamicallyCreated' => 'Le risposte verranno create dinamicamente per questa domanda.',
     'TheRequestedAPIEndpointWasNotFound' => 'L\'endpoint API richiesto non è stato trovato',
+    'MaxTagLengthWarning' => 'La lunghezza massima di un tag è di 255 caratteri.',
+    'RiskTagTruncatedWarning' => 'Il {$risk_id}del tag "{$tag}" è stato troncato perché era più lungo della lunghezza massima consentita del tag (255 caratteri)',
+    'AssetTagTruncatedWarning' => 'Tag "{$tag}" di asset "{$name}" è stato troncato in quanto era più lungo della lunghezza massima consentita del tag (255 caratteri)',
+    'FixFileEncodingIssues' => 'Risolvere i problemi di codifica dei file',
+    'FixFileEncodingIssuesDisclaimer' => 'Abbiamo rilevato un possibile problema con i file memorizzati nel database SimpleRisk. La tabella seguente ti mostrerà quali elementi hanno file danneggiati e devono essere corretti. Dai un\'occhiata agli elementi elencati e ricarica i file interessati.',
+    'AttachmentType' => 'Tipo di allegato',
+    'FileName' => 'Nome file',
+    'Upload' => 'Caricare',
+    'YouHaveToSelectAFileToUpload' => 'Devi selezionare un file da caricare.',
+    'InvalidUniqueName' => 'Nome univoco file fornito non valido.',
+    'ref_type_exceptions' => 'Eccezione documento',
+    'ref_type_documents' => 'Documento',
+    'ref_type_test_audit' => 'Controllo dei test',
+    'SessionAbsoluteTimeout' => 'Timeout assoluto sessione',
+
     '' => ''
 );
 

@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'المنطقة الزمنيه الافتراضية',
     'UserSessions' => 'جلسات عمل المستخدم',
     'SessionActivityTimeout' => 'مهله نشاط جلسة العمل',
-    'SessionRenegotiationPeriod' => 'فتره أعاده التفاوض بشان الدورة',
     'Security' => 'أمن',
     'EnableCSP' => 'تمكين نهج أمان المحتوي (هذا قد كسر كروم في الماضي)',
     'Debugging' => 'تصحيح',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'الدروس المستفادة الحالية',
     'AnswersDynamicallyCreated' => 'سيتم إنشاء إجابات بشكل حيوي لهذا السؤال.',
     'TheRequestedAPIEndpointWasNotFound' => 'لم يتم العثور على نقطة نهاية API المطلوبة',
+    'MaxTagLengthWarning' => 'الحد الأقصى لطول العلامة هو 255 حرفاً.',
+    'RiskTagTruncatedWarning' => 'خطر {$risk_id}\'ق الوسم "{$tag}" حصلت على اقتطاع لأنها كانت أطول من الحد الأقصى المسموح به طول العلامة (255 حرفا)',
+    'AssetTagTruncatedWarning' => 'علامة "{$tag}" من الأصول "{$name}" حصلت على اقتطاع كما كان أطول من الحد الأقصى المسموح به طول العلامة (255 حرفا)',
+    'FixFileEncodingIssues' => 'إصلاح مشاكل ترميز الملفات',
+    'FixFileEncodingIssuesDisclaimer' => 'لقد اكتشفنا مشكلة محتملة مع الملفات المخزنة في قاعدة بيانات SimpleRisk الخاصة بك. سوف يعرض الجدول أدناه العناصر التي تحتوي على ملفات تالفة وتحتاج إلى تصحيح. يرجى إلقاء نظرة على العناصر المدرجة وإعادة تحميل الملفات المتضررة.',
+    'AttachmentType' => 'نوع المرفق',
+    'FileName' => 'اسم الملف',
+    'Upload' => 'تحميل',
+    'YouHaveToSelectAFileToUpload' => 'يجب عليك تحديد ملف لتحميله.',
+    'InvalidUniqueName' => 'اسم فريد ملف هو غير صالح!',
+    'ref_type_exceptions' => 'استثناء المستند',
+    'ref_type_documents' => 'الوثيقه',
+    'ref_type_test_audit' => 'تدقيق الاختبار',
+    'SessionAbsoluteTimeout' => 'مهلة جلسة العمل المطلقة',
+
     '' => ''
 );
 

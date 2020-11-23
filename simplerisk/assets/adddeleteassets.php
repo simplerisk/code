@@ -48,6 +48,16 @@ require_once(language_file());
         $details    = $_POST['details'];
         $tags       = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
         
+        foreach($tags as $tag){
+            if (strlen($tag) > 255) {
+                global $lang;
+                
+                set_alert(true, "bad", $lang['MaxTagLengthWarning']);
+                refresh();
+            }
+        }
+        
+        
         if($name)
         {
             // Add the asset

@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Fus orar implicit',
     'UserSessions' => 'Sesiuni de utilizator',
     'SessionActivityTimeout' => 'Timeout activitate sesiune',
-    'SessionRenegotiationPeriod' => 'Perioada de renegociere a sesiunii',
     'Security' => 'Securitate',
     'EnableCSP' => 'Activați Politica de securitate a conținutului (acest lucru a rupt Chrome în trecut)',
     'Debugging' => 'Depanare',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Lecțiile actuale învățate',
     'AnswersDynamicallyCreated' => 'Răspunsurile vor fi create dinamic pentru această întrebare.',
     'TheRequestedAPIEndpointWasNotFound' => 'Punctul final API solicitat nu s-a găsit',
+    'MaxTagLengthWarning' => 'Lungimea maximă a unei etichete este de 255 de caractere.',
+    'RiskTagTruncatedWarning' => 'Riscul {$risk_id}\'s tag-ul "{$tag}" a fost trunchiat, deoarece a fost mai lung decât lungimea maximă permisă tag-ul (255 de caractere)',
+    'AssetTagTruncatedWarning' => 'Tag-ul "{$tag}" a activului "{$name}" a fost trunchiat, deoarece a fost mai lung decât lungimea maximă permisă tag-ul (255 de caractere)',
+    'FixFileEncodingIssues' => 'Remedierea problemelor de codificare a fișierelor',
+    'FixFileEncodingIssuesDisclaimer' => 'Am detectat o posibilă problemă cu fișierele stocate în baza de date SimpleRisk. Tabelul de mai jos vă va arăta ce elemente au fișiere deteriorate și trebuie corectate. Vă rugăm să aruncați o privire la elementele listate și să reîncărcați fișierele afectate.',
+    'AttachmentType' => 'Tip atașare',
+    'FileName' => 'Nume fișier',
+    'Upload' => 'Încărcaţi',
+    'YouHaveToSelectAFileToUpload' => 'Trebuie să selectați un fișier de încărcat.',
+    'InvalidUniqueName' => 'Numele unic al fișierului furnizat nu este valid!',
+    'ref_type_exceptions' => 'Excepție document',
+    'ref_type_documents' => 'Document',
+    'ref_type_test_audit' => 'Test Audit',
+    'SessionAbsoluteTimeout' => 'Expirare absolută sesiune',
+
     '' => ''
 );
 

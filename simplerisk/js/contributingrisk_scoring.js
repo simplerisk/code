@@ -22,7 +22,7 @@ function updateScore()
         max_contributing_likelihood = Math.max(max_contributing_likelihood, $(this).val())
     })
     
-    // Get max likelihood value
+    // Get max impact value
     var max_contributing_impact = 0;
     $(".contributing_impact option").each(function(){
         max_contributing_impact = Math.max(max_contributing_impact, $(this).val())

@@ -179,12 +179,6 @@ function add_risk_details(){
             echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['Subject']).":</div>\n";
             echo "<div class=\"span8\"><input maxlength=\"300\" title=\"".$escaper->escapeHtml($lang['Subject'])."\" required name=\"subject\" id=\"subject\" class=\"form-control\" type=\"text\"></div>\n";
         echo "</div>\n";
-        $mapping_required = get_setting('risk_mapping_required') == 1?"required":"";
-        echo "<div class=\"row-fluid padded-bottom subject-field\">\n";
-            echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
-            echo "<div class=\"span8\">".create_dropdown("risk_catalog", null, "risk_catalog_mapping", true, false, true, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} style='max-width:100%'")."</div>\n";
-        echo "</div>\n";
-
         // If customization extra is enabled
         if(customization_extra())
         {
@@ -192,6 +186,16 @@ function add_risk_details(){
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
             $active_fields = get_active_fields();
             $inactive_fields = get_inactive_fields();
+
+            foreach($active_fields as $field){
+                if($field['name'] == "RiskMapping"){
+                    $mapping_required = get_setting('risk_mapping_required') == 1?"required":"";
+                    echo "<div class=\"row-fluid padded-bottom subject-field\">\n";
+                        echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
+                        echo "<div class=\"span8\">".create_dropdown("risk_catalog", null, "risk_catalog_mapping", true, false, true, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} style='max-width:100%'")."</div>\n";
+                    echo "</div>\n";
+                }
+            }
 
             echo "<div class=\"row-fluid\">\n";
                 // Left Panel
@@ -218,6 +222,11 @@ function add_risk_details(){
         }
         else
         {
+            $mapping_required = get_setting('risk_mapping_required') == 1?"required":"";
+            echo "<div class=\"row-fluid padded-bottom subject-field\">\n";
+                echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
+                echo "<div class=\"span8\">".create_dropdown("risk_catalog", null, "risk_catalog_mapping", true, false, true, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} style='max-width:100%'")."</div>\n";
+            echo "</div>\n";
             echo "<div class=\"row-fluid\">\n";
                 echo "<!-- first coulmn -->\n";
                 echo "<div class=\"span5 left-panel\">\n";
@@ -4102,6 +4111,11 @@ function view_configure_menu($active)
     if (getTypeOfColumn('mgmt_reviews', 'next_review') == 'varchar') {
         echo ($active == "FixReviewDates" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"fix_review_dates.php\"><i class=\"fa fa-exclamation-circle\" aria-hidden=\"true\" style=\"color: " . ($active == "FixReviewDates" ? "white": "#bd081c") . "; padding-right: 5px;\"></i>" . $escaper->escapeHtml($lang['FixReviewDates']) . "</a>\n";
+        echo "</li>\n";
+    }
+    if (has_files_with_encoding_issues()) {
+        echo ($active == "FixFileEncodingIssues" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"fix_upload_encoding_issues.php\"><i class=\"fa fa-exclamation-circle\" aria-hidden=\"true\" style=\"color: " . ($active == "FixFileEncodingIssues" ? "white": "#bd081c") . "; padding-right: 5px;\"></i>" . $escaper->escapeHtml($lang['FixFileEncodingIssues']) . "</a>\n";
         echo "</li>\n";
     }
     echo ($active == "Settings" ? "<li class=\"active\">\n" : "<li>\n");

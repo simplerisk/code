@@ -352,6 +352,10 @@ function setupQuestionnaireContactUserWidget(select_tag) {
 
 function redraw_control(){
     var template_framework = $("#template_framework").val();
+    $('.risk-scoring-container').block({
+        message: 'Processing',
+        css: { border: '1px solid black', background: '#ffffff' }
+    });
     $.ajax({
         type: "POST",
         url: BASE_URL + "/api/assessment/questionnaire/template/controls",
@@ -376,6 +380,7 @@ function redraw_control(){
                 });
                 $(obj).multiselect('rebuild');
             }
+            $('.risk-scoring-container').unblock();
         },
         error: function(xhr,status,error){
             if(xhr.responseJSON && xhr.responseJSON.status_message){
@@ -384,6 +389,7 @@ function redraw_control(){
             if(!retryCSRF(xhr, this))
             {
             }
+            $('.risk-scoring-container').unblock();
         }
     })
 }

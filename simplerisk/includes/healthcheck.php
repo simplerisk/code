@@ -595,27 +595,35 @@ function check_api_connectivity()
 	// Create a cookie string with the current session ID
 	$strCookie = 'SimpleRisk=' . session_id() . '; path=/';
 
-	// Make a curl request to the whoami API endpoint using the cookie
-	$curl = curl_init();
-	curl_setopt($curl, CURLOPT_URL, $url);
-	curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-	curl_setopt($curl, CURLOPT_COOKIE, $strCookie);
-	curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-	$json_result = curl_exec($curl);
-	$json_array = json_decode($json_result, true);
-	curl_close($curl);
+        // If the curl_init function does not exist
+        if (!function_exists('curl_init'))
+        {
+                return array("result" => 0, "text" => "The php-curl library is not installed so we are unable to test the API connectivity.");
+        }
+        else
+        {
+                // Make a curl request to the whoami API endpoint using the cookie
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $url);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+                curl_setopt($curl, CURLOPT_COOKIE, $strCookie);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+                $json_result = curl_exec($curl);
+                $json_array = json_decode($json_result, true);
+                curl_close($curl);
 
-	// If we received a json status of 200
-	if ($json_array['status'] === 200)
-	{
-		return array("result" => 1, "text" => "Communicated with the SimpleRisk API successfully.");
-	}
-	else
-	{
-		return array("result" => 0, "text" => "Unable to communicate with the SimpleRisk API.");
-	}
+                // If we received a json status of 200
+                if ($json_array['status'] === 200)
+                {
+                        return array("result" => 1, "text" => "Communicated with the SimpleRisk API successfully.");
+                }
+                else
+                {
+                        return array("result" => 0, "text" => "Unable to communicate with the SimpleRisk API.");
+                }
+        }
 }
 
 /***********************************

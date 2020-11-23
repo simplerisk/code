@@ -230,6 +230,9 @@
 
         getRoute()->get('/management/tag_options_of_type', 'getTagOptionsOfType');
 
+        getRoute()->get('/upload_encoding_issue_fix/datatable', 'getFilesWithEncodingIssuesDatatableResponse');
+        getRoute()->post('/upload_encoding_issue_fix/file_upload', 'uploadFileToFixFileEncodingIssue');
+        
         // Return scoring histories
         getRoute()->get('/management/risk/scoring_history', 'scoringHistory');
         getRoute()->get('/management/risk/residual_scoring_history', 'residualScoringHistory');

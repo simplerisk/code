@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'डिफ़ॉल्ट समय क्षेत्र',
     'UserSessions' => 'उपयोगकर्ता सत्र',
     'SessionActivityTimeout' => 'सत्र गतिविधि टाइमआउट',
-    'SessionRenegotiationPeriod' => 'सत्र पुनः बातचीत की अवधि',
     'Security' => 'सुरक्षा',
     'EnableCSP' => 'सामग्री सुरक्षा नीति सक्षम करें (इससे पूर्व में Chrome टूट चुका है)',
     'Debugging' => 'डीबगिंग',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'वर्तमान सबक सीखा',
     'AnswersDynamicallyCreated' => 'उत्तर गतिशील रूप से इस प्रश्न के लिए बनाया जाएगा।',
     'TheRequestedAPIEndpointWasNotFound' => 'अनुरोध किया गया एपीआई एंडपॉइंट नहीं मिला',
+    'MaxTagLengthWarning' => 'एक टैग की अधिकतम लंबाई 255 वर्ण है।',
+    'RiskTagTruncatedWarning' => 'जोखिम {$risk_id}टैग "{$tag}" के रूप में यह अधिकतम अनुमति टैग लंबाई (२५५ अक्षर) से अधिक लंबा था काट दिया गया',
+    'AssetTagTruncatedWarning' => 'टैग "परिसंपत्ति के{$tag}"{$name}" के रूप में यह अधिकतम अनुमति टैग लंबाई (२५५ अक्षर) से अधिक लंबा था काट दिया गया',
+    'FixFileEncodingIssues' => 'फाइल एन्कोडिंग समस्याएं ठीक करें',
+    'FixFileEncodingIssuesDisclaimer' => 'हमने आपके सिंपलरिस्क डेटाबेस में संग्रहीत फ़ाइलों के साथ एक संभावित समस्या का पता लगाया है। नीचे दी गई तालिका आपको दिखाएगी कि किन वस्तुओं में भ्रष्ट फ़ाइल (ओं) है और उन्हें ठीक करने की आवश्यकता है। कृपया सूचीबद्ध वस्तुओं पर एक नज़र डालें और प्रभावित फाइलों को फिर से अपलोड करें।',
+    'AttachmentType' => 'अटैचमेंट टाइप',
+    'FileName' => 'फाइल का नाम',
+    'Upload' => 'अपलोड',
+    'YouHaveToSelectAFileToUpload' => 'अपलोड करने के लिए आपको एक फाइल चुननी होगी।',
+    'InvalidUniqueName' => 'फाइल यूनिक नाम प्रदान किया गया अमान्य है!',
+    'ref_type_exceptions' => 'दस्तावेज़ अपवाद',
+    'ref_type_documents' => 'दस्तावेज़',
+    'ref_type_test_audit' => 'टेस्ट ऑडिट',
+    'SessionAbsoluteTimeout' => 'सत्र निरपेक्ष मध्यांतर',
+
     '' => ''
 );
 

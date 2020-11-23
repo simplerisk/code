@@ -882,7 +882,7 @@ function simplerisk_license_check_purchases()
 					else
 					{
                         			// Get the number of days since the license failure
-                        			$diference = $now - $license_check_fail_date;
+                        			$difference = $now - $license_check_fail_date;
                         			$days = round($difference / (60 * 60 * 24));
 
                         			// If it has been 30 or more days since the license check failure

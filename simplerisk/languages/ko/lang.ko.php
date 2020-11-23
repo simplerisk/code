@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => '기본 시간대',
     'UserSessions' => '사용자 세션',
     'SessionActivityTimeout' => '세션 활동 시간 제한',
-    'SessionRenegotiationPeriod' => '세션 재협상 기간',
     'Security' => '보안',
     'EnableCSP' => '콘텐츠 보안 정책 사용 (이것은 과거에 크롬이 깨진 있다)',
     'Debugging' => '디버깅',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => '배운 현재의 교훈',
     'AnswersDynamicallyCreated' => '이 질문에 대한 답변은 동적으로 작성됩니다.',
     'TheRequestedAPIEndpointWasNotFound' => '요청된 API 끝점을 찾을 수 없습니다.',
+    'MaxTagLengthWarning' => '태그의 최대 길이는 255자입니다.',
+    'RiskTagTruncatedWarning' => '위험 {$risk_id}\'태그"{$tag}" 그것은 최대 허용 태그 길이보다 길었으로 잘려있어 (255 자)',
+    'AssetTagTruncatedWarning' => '태그 "{$tag}"자산 "{$name}"는 최대 허용 태그 길이 (255 자)보다 길었기 때문에 잘렸습니다.',
+    'FixFileEncodingIssues' => '파일 인코딩 문제 해결',
+    'FixFileEncodingIssuesDisclaimer' => 'SimpleRisk 데이터베이스에 저장된 파일로 가능한 문제를 발견했습니다. 아래 표에는 파일이 손상되고 수정해야 하는 항목이 표시됩니다. 나열된 항목을 살펴보고 영향을 받는 파일을 다시 업로드하십시오.',
+    'AttachmentType' => '첨부 파일 유형',
+    'FileName' => '파일 이름',
+    'Upload' => '업로드',
+    'YouHaveToSelectAFileToUpload' => '업로드할 파일을 선택해야 합니다.',
+    'InvalidUniqueName' => '제공된 파일 고유 이름은 유효하지 않습니다!',
+    'ref_type_exceptions' => '문서 예외',
+    'ref_type_documents' => '문서',
+    'ref_type_test_audit' => '테스트 감사',
+    'SessionAbsoluteTimeout' => '세션 절대 시간 아웃',
+
     '' => ''
 );
 

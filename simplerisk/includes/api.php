@@ -2692,6 +2692,16 @@ function addRisk(){
     global $lang, $escaper;
 
     $subject = get_param("POST", 'subject');
+    $tags = get_param("POST", 'tags', []);
+
+    foreach($tags as $tag){
+        if (strlen($tag) > 255) {
+            set_alert(true, "bad", $lang['MaxTagLengthWarning']);
+            json_response(400, get_alert(true), []);
+            return;
+        }
+    }
+
     if (!isset($_SESSION["submit_risks"]) || $_SESSION["submit_risks"] != 1)
     {
         $status = "401";
@@ -2819,7 +2829,7 @@ function addRisk(){
             import_assets_asset_groups_for_type($last_insert_id, $affected_assets, 'risk');
 
         //Add tags
-        updateTagsOfType($last_insert_id, 'risk', get_param("POST", 'tags', []));
+        updateTagsOfType($last_insert_id, 'risk', $tags);
 
         // If the notification extra is enabled
         if (notification_extra())
@@ -7453,7 +7463,7 @@ function get_questionnaire_result_audit_log_api() {
 
     global $lang, $escaper;
 
-    if (!check_permission_assessments()) {
+    if (!check_permission_assessments() || !assessments_extra()) {
         set_alert(true, "bad", $lang['NoPermissionForAssessments']);
         json_response(400, get_alert(true), NULL);
         return;
@@ -9074,4 +9084,189 @@ function assessment_extra_questionnaireTemplateControlsAPI(){
     }
 
 }
+
+/***********************************************************************************
+ * NEXT SECTION CONTAINS FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
+ ***********************************************************************************/
+function getFilesWithEncodingIssuesDatatableResponse() {
+
+    if (is_admin()) {
+        global $lang;
+        global $escaper;
+        
+        $draw = (int)$_GET['draw'];
+        
+        $order_column = isset($_GET['order'][0]['column']) ? (int)$_GET['order'][0]['column'] : 0;
+        $order_dir = $escaper->escapeHtml($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
+        $offset = (int)$_GET['start'];
+        $page_size = (int)$_GET['length'];
+        
+        $type = isset($_GET['type']) && in_array($_GET['type'], ['risk', 'compliance', 'incident_management']) ? $_GET['type'] : 'risk';
+
+        list($recordsTotal, $fileList) = get_files_with_encoding_issues($type, $order_column, $order_dir, $offset, $page_size);
+        
+        $data = array();
+        
+        foreach ($fileList as $file) {
+            $file_name = $file['file_name'];
+            $unique_name = $file['unique_name'];
+            
+            $row = [];
+            switch ($type) {
+                case 'risk':
+                    $row['id'] = "<div class='open-risk'><a target=\"_blank\" href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($file['risk_id'])) . "\">" . $escaper->escapeHtml(convert_id($file['risk_id'])) . "</a></div>";
+                    $row['subject'] = $escaper->escapeHtml(try_decrypt($file['subject']));
+                    $row['view_type'] = $escaper->escapeHtml($lang[(int)$file['view_type'] === 1 ? 'Risk' : 'Mitigation']);
+                break;
+                case 'compliance':
+                    
+                    if ($file['ref_type'] === 'test_audit') {
+                        
+                        $closed = ((int)$file['status'] === (int)get_setting("closed_audit_status"));
+
+                        $row['name'] = "<a target='_blank' href='../compliance/" . ($closed ? 'view_test' : 'testing') . ".php?id=" . $escaper->escapeHtml($file['id']) . "'>" . $escaper->escapeHtml($file['name']) . "</a>";
+                    } else {
+                        $row['name'] = $escaper->escapeHtml($file['name']);
+                    }
+                    
+                    
+                    $row['ref_type'] = $escaper->escapeHtml($lang['ref_type_' . $file['ref_type']]);
+                    break;
+            }
+
+            $uploader = "
+                <div class='file-uploader'>
+                    <input type='text' class='form-control readonly' style='width: 50%; margin-bottom: 0px; cursor: default; padding: 2px 10px; height: 90%;'/>
+                    <label for='file-upload-{$unique_name}' class='btn' style='padding: 2px 15px;'>" . $escaper->escapeHtml($lang['ChooseFile']) . "</label>
+                    <span class='file-size'>
+                        <label for=''></label>
+                    </span>
+                    <input type='file' id='file-upload-{$unique_name}' name='file' class='hidden-file-upload active' />
+                </div>";
+            
+            
+            $row['file_name'] = $escaper->escapeHtml($file_name);
+            $row['file_uploader'] = $uploader;
+            $row['unique_name'] = $unique_name;
+            
+            $data[] = $row;
+            
+        }
+        $result = array(
+            'draw' => $draw,
+            'data' => $data,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsTotal,
+        );
+        echo json_encode($result);
+        exit;
+    } else {
+        unauthorized_access();
+    }
+}
+
+function uploadFileToFixFileEncodingIssue() {
+    
+    // If the user is an administrator and the upload is EXACTLY one file
+    if (is_admin() && !empty($_FILES) && count($_FILES) === 1) {
+        
+        global $lang, $escaper;
+        
+        $type = isset($_POST['type']) && in_array($_POST['type'], ['risk', 'compliance', 'incident_management']) ? $_POST['type'] : false;
+        
+        if (!$type) {
+            set_alert(true, "bad", $lang['YouNeedToSpecifyATypeParameter']);
+            json_response(400, get_alert(true), NULL);
+        }
+        
+        
+        $unique_name = $_POST['unique_name'];
+
+        $file_info = get_encoding_issue_file_info($type, $unique_name);
+        
+        if (!$file_info) {
+            set_alert(true, "bad", $lang['InvalidUniqueName']);
+            json_response(400, get_alert(true), NULL);
+        }
+
+        switch($type) {
+            case 'risk':
+                $error = upload_file($file_info['risk_id'], $_FILES['file'], $file_info['view_type']);
+                if ($error === 1) {
+                    delete_db_file($unique_name);
+                } else {
+                    json_response(400, $escaper->escapeHtml($error), NULL);
+                }
+            break;
+            case 'compliance':
+                $files = array(
+                    'name' => [$_FILES['file']['name']],
+                    'type' => [$_FILES['file']['type']],
+                    'tmp_name' => [$_FILES['file']['tmp_name']],
+                    'size' => [$_FILES['file']['size']],
+                    'error' => [$_FILES['file']['error']]
+                );
+
+                if ($file_info['ref_type'] === 'test_audit') {
+
+                    list($status, $_, $errors) = upload_compliance_files($file_info['ref_id'], "test_audit", $files);
+
+                    if($status){
+                        delete_compliance_file($file_info['id']);
+                    } else {
+                        json_response(400, $escaper->escapeHtml($errors[0]), NULL);
+                        return;
+                    }
+                } elseif ($file_info['ref_type'] === 'exceptions') {
+                    
+                    list($status, $file_ids, $errors) = upload_compliance_files($file_info['ref_id'], "exceptions", $files);
+                    
+                    if (!$status) {
+                        json_response(400, $escaper->escapeHtml($errors[0]), NULL);
+                        return;
+                    } else {
+
+                        $db = db_open();
+                        
+                        $stmt = $db->prepare("UPDATE `document_exceptions` SET file_id=:file_id WHERE value=:id");
+                        $stmt->bindParam(":file_id", $file_ids[0], PDO::PARAM_INT);
+                        $stmt->bindParam(":id", $file_info['ref_id'], PDO::PARAM_INT);
+                        $stmt->execute();
+                        
+                        db_close($db);
+                        
+                        delete_compliance_file($file_info['id']);
+                    }
+                } elseif ($file_info['ref_type'] === 'documents') {
+
+                    list($status, $file_ids, $errors) = upload_compliance_files($file_info['ref_id'], "documents", $files, $file_info['version']);
+                    
+                    if (!$status) {
+                        json_response(400, $escaper->escapeHtml($errors[0]), NULL);
+                        return;
+                    } else {
+                        // Open the database connection
+                        $db = db_open();
+                        
+                        $stmt = $db->prepare("UPDATE `documents` SET file_id=:file_id WHERE id=:id");
+                        $stmt->bindParam(":file_id", $file_ids[0], PDO::PARAM_INT);
+                        $stmt->bindParam(":id", $file_info['ref_id'], PDO::PARAM_INT);
+                        $stmt->execute();
+                        
+                        db_close($db);
+                        
+                        delete_compliance_file($file_info['id']);
+                    }
+                }
+            break;
+        }
+
+    } else {
+        unauthorized_access();
+    }
+}
+/***************************************************************************************
+ * END OF SECTION CONTAINING FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
+ ***************************************************************************************/
+
 ?>

@@ -5392,6 +5392,7 @@ function get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir, 
 
     $orderColumns = ['id', 'subject', 'calculated_risk', 'residual_risk'];
     $orderColumn = $orderColumns[$orderColumn];
+    if($orderColumn == "subject" && encryption_extra()) $orderColumn = "order_by_subject";
 
     // Make the big query
     $query = "

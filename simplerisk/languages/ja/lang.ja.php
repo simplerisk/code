@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'デフォルトのタイムゾーン',
     'UserSessions' => 'ユーザーセッション',
     'SessionActivityTimeout' => 'セッションアクティビティのタイムアウト',
-    'SessionRenegotiationPeriod' => 'セッション再ネゴシエーション期間',
     'Security' => 'セキュリティ',
     'EnableCSP' => 'コンテンツセキュリティポリシーを有効にする (これは過去にクロームが壊れています)',
     'Debugging' => 'デバッグ',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => '学んだ現在の教訓',
     'AnswersDynamicallyCreated' => 'この質問に対して回答が動的に作成されます。',
     'TheRequestedAPIEndpointWasNotFound' => '要求された API エンドポイントが見つかりませんでした',
+    'MaxTagLengthWarning' => 'タグの最大長は 255 文字です。',
+    'RiskTagTruncatedWarning' => '{$risk_id}タグ "{$tag}" のリスクは、許容される最大タグ長 (255 文字) より長かったため切り捨てられました。',
+    'AssetTagTruncatedWarning' => '資産 "{$name}" のタグ "{$tag}" は、最大許容タグ長 (255 文字) より長い場合に切り捨てられました。',
+    'FixFileEncodingIssues' => 'ファイルのエンコーディングに関する問題を修正する',
+    'FixFileEncodingIssuesDisclaimer' => 'SimpleRisk データベースに保存されているファイルに関する問題が検出されました。次の表に、ファイルが破損していて修正する必要がある項目を示します。リストされた項目を見て、影響を受けたファイルを再アップロードしてください。',
+    'AttachmentType' => '添付ファイルの種類',
+    'FileName' => 'ファイル名',
+    'Upload' => 'アップロード',
+    'YouHaveToSelectAFileToUpload' => 'アップロードするファイルを選択する必要があります。',
+    'InvalidUniqueName' => '指定されたファイルの一意名が無効です!',
+    'ref_type_exceptions' => 'ドキュメントの例外',
+    'ref_type_documents' => 'ドキュメント',
+    'ref_type_test_audit' => 'テスト監査',
+    'SessionAbsoluteTimeout' => 'セッション絶対タイムアウト',
+
     '' => ''
 );
 

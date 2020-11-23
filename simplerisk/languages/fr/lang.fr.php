@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Fuseau horaire par défaut',
     'UserSessions' => 'Sessions utilisateur',
     'SessionActivityTimeout' => 'Délai d\'activité de session',
-    'SessionRenegotiationPeriod' => 'Période de renégociation de la session',
     'Security' => 'Sécurité',
     'EnableCSP' => 'Activer la stratégie de sécurité du contenu (cela a cassé chrome dans le passé)',
     'Debugging' => 'Débogage',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Leçons apprises actuelles',
     'AnswersDynamicallyCreated' => 'Les réponses seront créées dynamiquement pour cette question.',
     'TheRequestedAPIEndpointWasNotFound' => 'Le point de terminaison API demandé n’a pas été trouvé',
+    'MaxTagLengthWarning' => 'La longueur maximale d’une balise est de 255 caractères.',
+    'RiskTagTruncatedWarning' => 'Risk {$risk_id}\' s tag "{$tag}" a été tronqué car il était plus long que la longueur maximale autorisée de l’étiquette (255 caractères)',
+    'AssetTagTruncatedWarning' => 'Tag "{$tag}" de l’actif "{$name}" a été tronqué car il était plus long que la longueur maximale autorisée de l’étiquette (255 caractères)',
+    'FixFileEncodingIssues' => 'Résoudre les problèmes d’encodage de fichiers',
+    'FixFileEncodingIssuesDisclaimer' => 'Nous avons détecté un problème possible avec les fichiers stockés dans votre base de données SimpleRisk. Le tableau ci-dessous vous montrera quels éléments ont des fichiers corrompus et doivent être corrigés. S’il vous plaît jeter un oeil aux éléments énumérés et re-télécharger les fichiers affectés.',
+    'AttachmentType' => 'Type de pièce jointe',
+    'FileName' => 'Nom du fichier',
+    'Upload' => 'Télécharger',
+    'YouHaveToSelectAFileToUpload' => 'Vous devez sélectionner un fichier à télécharger.',
+    'InvalidUniqueName' => 'Le nom unique du fichier fourni est invalide!',
+    'ref_type_exceptions' => 'Document Exception',
+    'ref_type_documents' => 'Document',
+    'ref_type_test_audit' => 'Test Audit',
+    'SessionAbsoluteTimeout' => 'Session Temps d’attente absolu',
+
     '' => ''
 );
 

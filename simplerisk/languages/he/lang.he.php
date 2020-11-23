@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'אזור זמן המוגדר כברירת מחדל',
     'UserSessions' => 'הפעלות משתמש',
     'SessionActivityTimeout' => 'פעילות הקצוב להפעלה',
-    'SessionRenegotiationPeriod' => 'הפעלת משא ומתן מחדש בתקופה',
     'Security' => 'אבטחה',
     'EnableCSP' => 'להפעיל תוכן מדיניות אבטחה (זה מקולקל כרום בעבר)',
     'Debugging' => 'איתור באגים',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'הלקחים הנוכחיים שנלמדו',
     'AnswersDynamicallyCreated' => 'התשובות ייווצדו באופן דינמי עבור שאלה זו.',
     'TheRequestedAPIEndpointWasNotFound' => 'נקודת הקצה המבוקשת של ה- API לא נמצאה',
+    'MaxTagLengthWarning' => 'האורך המרבי של תג הוא 255 תווים.',
+    'RiskTagTruncatedWarning' => 'סיכון {$risk_id}\'תג \'{$tag}" נחתך כפי שהיה ארוך יותר מאורך התג המרבי המותר (255 תווים)',
+    'AssetTagTruncatedWarning' => 'תג "{$tag}" של נכס "{$name}" נחתך כפי שהיה ארוך יותר מאורך התג המרבי המותר (255 תווים)',
+    'FixFileEncodingIssues' => 'פתרון בעיות בקידוד קבצים',
+    'FixFileEncodingIssuesDisclaimer' => 'זיהינו בעיה אפשרית עם קבצים המאוחסנים במסד הנתונים SimpleRisk שלך. הטבלה שלהלן תהראה לך אילו פריטים יש קבצים פגומים ויש לתקן ם. נא הבדוק את הפריטים המפורטים והעלה מחדש את הקבצים המושפעים.',
+    'AttachmentType' => 'סוג קובץ מצורף',
+    'FileName' => 'שם קובץ',
+    'Upload' => 'להעלות',
+    'YouHaveToSelectAFileToUpload' => 'עליך לבחור קובץ להעלאה.',
+    'InvalidUniqueName' => 'שם קובץ ייחודי שסופק אינו חוקי!',
+    'ref_type_exceptions' => 'חריגת מסמך',
+    'ref_type_documents' => 'המסמך',
+    'ref_type_test_audit' => 'בדיקת ביקורת',
+    'SessionAbsoluteTimeout' => 'פסק זמן מוחלט של הפעלה',
+
     '' => ''
 );
 

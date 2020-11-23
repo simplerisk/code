@@ -986,13 +986,8 @@ function display_edit_asset_table()
 {
     global $lang;
     global $escaper;
+    $tags_active = false;
 
-    echo "<table id=\"edit-assets-table\" class=\"table table-bordered table-condensed sortable\">\n";
-
-    // Display the table header
-    echo "<thead>\n";
-    echo "<tr>\n";
-    
     // If the customization extra is enabled, shows fields by asset customization
     if (customization_extra())
     {
@@ -1001,6 +996,32 @@ function display_edit_asset_table()
 
         $active_fields = get_active_fields("asset");
 
+        foreach($active_fields as $field) {
+            if($field['is_basic'] == 1 && $field['name'] === 'Tags') {
+                $tags_active = true;
+                break;
+            }
+        }
+
+        $customization = true;
+    } else {
+        $customization = false;
+        $tags_active = true;
+    }
+
+    if ($tags_active == true) {
+        echo "<div class='tag-max-length-warning'>" . $escaper->escapeHtml($lang['MaxTagLengthWarning']) . "</div>\n";
+    }
+
+    echo "<table id=\"edit-assets-table\" class=\"table table-bordered table-condensed sortable\">\n";
+
+    // Display the table header
+    echo "<thead>\n";
+    echo "<tr>\n";
+    
+    // If the customization extra is enabled, shows fields by asset customization
+    if ($customization)
+    {
         display_main_detail_asset_fields_th($active_fields);
     }
     // If the customization extra is disabled, Show default main fields
@@ -1122,6 +1143,16 @@ function update_asset_field_value_by_field_name($id, $fieldName, $fieldValue)
         break;
         case "tags":
             $tags = empty($fieldValue) ? [] : explode("+++", $fieldValue);
+
+            foreach($tags as $tag){
+                if (strlen($tag) > 255) {
+                    global $lang;
+                    
+                    set_alert(true, "bad", $lang['MaxTagLengthWarning']);
+                    return false;
+                }
+            }
+
             return updateTagsOfType($id, 'asset', $tags);
         break;
         default:

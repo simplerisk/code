@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Alapértelmezett időzóna',
     'UserSessions' => 'Felhasználói munkamenetek',
     'SessionActivityTimeout' => 'Időtúllépés tevékenység',
-    'SessionRenegotiationPeriod' => 'Munkamenet újratárgyalását idő',
     'Security' => 'Biztonsági',
     'EnableCSP' => 'Engedélyezi a tartalom biztonsági házirend (ez tört Chrome a múltban)',
     'Debugging' => 'Hibakeresés',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Jelenlegi tanulságok',
     'AnswersDynamicallyCreated' => 'A válaszok dinamikusan jönnek létre erre a kérdésre.',
     'TheRequestedAPIEndpointWasNotFound' => 'A kért API-végpont nem található',
+    'MaxTagLengthWarning' => 'A címke maximális hossza 255 karakter.',
+    'RiskTagTruncatedWarning' => 'A risk {$risk_id}"{$tag}" címke csonkolva lett, mivel hosszabb volt, mint a maximálisan megengedett címkehossz (255 karakter)',
+    'AssetTagTruncatedWarning' => 'A "{$tag}" " címke "{$name}" csonkolva lett, mivel hosszabb volt, mint a maximálisan megengedett címkehossz (255 karakter)',
+    'FixFileEncodingIssues' => 'Fájlkódolási problémák megoldása',
+    'FixFileEncodingIssuesDisclaimer' => 'Észleltünk egy lehetséges problémát a SimpleRisk adatbázisában tárolt fájlokkal. Az alábbi táblázat megmutatja, hogy mely elemek nek vannak sérült fájljai, és amelyeket ki kell javítani. Kérjük, tekintse meg a felsorolt elemeket, és töltse fel újra az érintett fájlokat.',
+    'AttachmentType' => 'Melléklet típusa',
+    'FileName' => 'Fájlnév',
+    'Upload' => 'Feltölt',
+    'YouHaveToSelectAFileToUpload' => 'Ki kell választania egy feltöltendő fájlt.',
+    'InvalidUniqueName' => 'A megadott fájlegyedi neve érvénytelen!',
+    'ref_type_exceptions' => 'Dokumentum kivétele',
+    'ref_type_documents' => 'Dokumentum',
+    'ref_type_test_audit' => 'Teszt auditja',
+    'SessionAbsoluteTimeout' => 'Munkamenet abszolút időmeghosszabbítása',
+
     '' => ''
 );
 

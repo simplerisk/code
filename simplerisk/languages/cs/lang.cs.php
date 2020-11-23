@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Výchozí časové pásmo',
     'UserSessions' => 'Uživatelské relace',
     'SessionActivityTimeout' => 'Časový limit aktivity relace',
-    'SessionRenegotiationPeriod' => 'Období opětovného vyjednávání relace',
     'Security' => 'Zabezpečení',
     'EnableCSP' => 'Povolit zásady zabezpečení obsahu (v minulosti došlo k porušení Chromu)',
     'Debugging' => 'Ladění',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Aktuální poučení',
     'AnswersDynamicallyCreated' => 'Odpovědi budou pro tuto otázku vytvořeny dynamicky.',
     'TheRequestedAPIEndpointWasNotFound' => 'Požadovaný koncový bod rozhraní API nebyl nalezen.',
+    'MaxTagLengthWarning' => 'Maximální délka značky je 255 znaků.',
+    'RiskTagTruncatedWarning' => 'Značka rizika {$risk_id}"{$tag}" byla zkrácena, protože byla delší než maximální povolená délka značky (255 znaků)',
+    'AssetTagTruncatedWarning' => 'Značka "{$tag}" majetku "{$name}" byla zkrácena, protože byla delší než maximální povolená délka značky (255 znaků)',
+    'FixFileEncodingIssues' => 'Oprava problémů s kódováním souborů',
+    'FixFileEncodingIssuesDisclaimer' => 'Zjistili jsme možný problém se soubory uloženými v databázi SimpleRisk. V následující tabulce se zobrazí, které položky mají poškozené soubory a je třeba je opravit. Podívejte se prosím na uvedené položky a znovu nahrajte ohrožené soubory.',
+    'AttachmentType' => 'Typ přílohy',
+    'FileName' => 'Název souboru',
+    'Upload' => 'Nahrát',
+    'YouHaveToSelectAFileToUpload' => 'Musíte vybrat soubor, který chcete nahrát.',
+    'InvalidUniqueName' => 'Jedinečný název souboru je neplatný!',
+    'ref_type_exceptions' => 'Výjimka dokumentu',
+    'ref_type_documents' => 'Dokumentu',
+    'ref_type_test_audit' => 'Zkušební audit',
+    'SessionAbsoluteTimeout' => 'Absolutní časový časový stav relace',
+
     '' => ''
 );
 

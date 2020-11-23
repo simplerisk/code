@@ -72,7 +72,26 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     $assets_asset_groups = get_param("POST", "assets_asset_groups", []);
     $additional_stakeholders =  get_param("POST", "additional_stakeholders", []);
     $risk_tags = get_param("POST", "tags", "");
-    
+
+    if ($risk_tags) {
+        
+        if (!is_array($risk_tags)) {
+            $risk_tags_array = explode("+++", $risk_tags);
+        } else {
+            $risk_tags_array = $risk_tags;
+        }
+        
+        foreach($risk_tags_array as $tag){
+            if (stripos($tag, "new_tag_") !== false && (strlen($tag) > 263)) {
+                global $lang;
+                
+                set_alert(true, "bad", $lang['MaxTagLengthWarning']);
+                json_response(400, get_alert(true), NULL);
+                exit;
+            }
+        }
+    }
+
     if (jira_extra()) {
         require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
         $issue_key = strtoupper(trim($_POST['jira_issue_key']));

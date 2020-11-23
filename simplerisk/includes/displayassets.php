@@ -189,6 +189,7 @@ function display_asset_tags_add($display = true)
     echo "      <div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['Tags']).":</div>";
     echo "      <div class=\"span8\">";
     echo "          <input class=\"selectize-marker\" type=\"text\" readonly id=\"tags\" name=\"tags\">
+                    <div class='tag-max-length-warning'>" . $escaper->escapeHtml($lang['MaxTagLengthWarning']) . "</div>\n
                     <script>
                         $('#tags').selectize({
                             plugins: ['remove_button', 'restore_on_backspace'],

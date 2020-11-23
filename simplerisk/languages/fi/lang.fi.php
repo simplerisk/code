@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Oletus aika vyöhyke',
     'UserSessions' => 'Käyttäjän istunnot',
     'SessionActivityTimeout' => 'Istunnon toiminnon aika katkaisu',
-    'SessionRenegotiationPeriod' => 'Istunnon uudelleenneuvottelua',
     'Security' => 'Turva',
     'EnableCSP' => 'Ota sisällön suojaus käytäntö käyttöön (tämä on aiemmin rikkonut Chromea)',
     'Debugging' => 'Virheen',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Nykyiset saadut kokemukset',
     'AnswersDynamicallyCreated' => 'Vastaukset luodaan dynaamisesti tähän kysymykseen.',
     'TheRequestedAPIEndpointWasNotFound' => 'Pyydettyä API-päätepistettä ei löytynyt',
+    'MaxTagLengthWarning' => 'Tunnisteen enimmäispituus on 255 merkkiä.',
+    'RiskTagTruncatedWarning' => 'Riski {$risk_id}tunniste "{$tag}" katkaistiin, koska se oli pidempi kuin suurin sallittu tunnisteen pituus (255 merkkiä)',
+    'AssetTagTruncatedWarning' => 'Resurssin{$tag}"{$name}" tunniste " katkaistiin, koska se oli pidempi kuin suurin sallittu tunnisteen pituus (255 merkkiä)',
+    'FixFileEncodingIssues' => 'Korjaa tiedostojen koodausongelmat',
+    'FixFileEncodingIssuesDisclaimer' => 'Olemme havainneet mahdollisen ongelman SimpleRisk-tietokantaan tallennetuissa tiedostoissa. Alla olevasta taulukosta näet, mitkä kohteet ovat vioittuneet ja mitkä on korjattava. Tutustu lueteltuihin kohteisiin ja lataa uudelleen tiedostot, joita asia koskee.',
+    'AttachmentType' => 'Liitteen tyyppi',
+    'FileName' => 'Tiedoston nimi',
+    'Upload' => 'Ladata',
+    'YouHaveToSelectAFileToUpload' => 'Sinun on valittava ladattava tiedosto.',
+    'InvalidUniqueName' => 'Annettu tiedoston yksilöllinen nimi ei kelpaa!',
+    'ref_type_exceptions' => 'Asiakirjan poikkeus',
+    'ref_type_documents' => 'Asiakirjan',
+    'ref_type_test_audit' => 'Testin valvonta',
+    'SessionAbsoluteTimeout' => 'Istunnon absoluuttinen aikakatkaisu',
+
     '' => ''
 );
 

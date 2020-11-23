@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Standard tidszon',
     'UserSessions' => 'Användarsessioner',
     'SessionActivityTimeout' => 'Timeout för sessions aktivitet',
-    'SessionRenegotiationPeriod' => 'Omförhandlings period för sessionen',
     'Security' => 'Säkerhets',
     'EnableCSP' => 'Aktivera innehålls säkerhetsprincip (detta har brutit Chrome tidigare)',
     'Debugging' => 'Fel',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Nuvarande lärdomar',
     'AnswersDynamicallyCreated' => 'Svar kommer att skapas dynamiskt för denna fråga.',
     'TheRequestedAPIEndpointWasNotFound' => 'Den begärda API-slutpunkten hittades inte',
+    'MaxTagLengthWarning' => 'Den maximala längden på en tagg är 255 tecken.',
+    'RiskTagTruncatedWarning' => 'Risk {$risk_id}\'s tagg "{$tag}" fick trunkeras eftersom det var längre än den maximalt tillåtna tag längd(255 tecken)',
+    'AssetTagTruncatedWarning' => 'Taggen "{$tag}" of asset "{$name}" fick trunkerad eftersom den var längre än den maximalt tillåtna tagglängden(255 tecken)',
+    'FixFileEncodingIssues' => 'Åtgärda problem med filkodning',
+    'FixFileEncodingIssuesDisclaimer' => 'Vi har upptäckt ett möjligt problem med filer som lagras i din SimpleRisk databas. Tabellen nedan kommer att visa dig vilka objekt som har korrupta fil (s) och måste korrigeras. Ta gärna en titt på de listade objekten och ladda upp de berörda filerna igen.',
+    'AttachmentType' => 'Bifogad filtyp',
+    'FileName' => 'Filnamn',
+    'Upload' => 'Uppladdning',
+    'YouHaveToSelectAFileToUpload' => 'Du måste välja en fil för att ladda upp.',
+    'InvalidUniqueName' => 'File Unikt namn som tillhandahålls är Ogiltigt!',
+    'ref_type_exceptions' => 'Dokument undantag',
+    'ref_type_documents' => 'Dokument',
+    'ref_type_test_audit' => 'Test revision',
+    'SessionAbsoluteTimeout' => 'Absolut timeout för session',
+
     '' => ''
 );
 

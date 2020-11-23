@@ -1970,12 +1970,12 @@ function get_document_hierarchy_tabs($type="")
             \">";
     echo "<thead >";
     echo "<th data-options=\"field:'document_name'\" width='25%'>".$escaper->escapeHtml($lang['DocumentName'])."</th>";
-    echo "<th data-options=\"field:'document_type'\" width='15%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
+    echo "<th data-options=\"field:'document_type'\" width='10%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
     echo "<th data-options=\"field:'framework_names'\" width='20%'>".$escaper->escapeHtml($lang['ControlFrameworks'])."</th>";
     echo "<th data-options=\"field:'control_names'\" width='20%'>".$escaper->escapeHtml($lang['Controls'])."</th>";
-    echo "<th data-options=\"field:'creation_date'\" width='10%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
-    echo "<th data-options=\"field:'approval_date'\" width='10%'>".$escaper->escapeHtml($lang['ApprovalDate'])."</th>";
-    echo "<th data-options=\"field:'status'\" width='10%'>".$escaper->escapeHtml($lang['Status'])."</th>";
+    echo "<th data-options=\"field:'creation_date'\" width='9%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
+    echo "<th data-options=\"field:'approval_date'\" width='9%'>".$escaper->escapeHtml($lang['ApprovalDate'])."</th>";
+    echo "<th data-options=\"field:'status'\" width='7%'>".$escaper->escapeHtml($lang['Status'])."</th>";
     echo "</thead>\n";
 
     echo "</table>";
@@ -2016,13 +2016,13 @@ function get_document_tabular_tabs($type, $document_id=0)
     echo "<table  class='easyui-treegrid document-table' id='{$type}-table'>";
     echo "<thead >";
     echo "<th data-options=\"field:'document_name'\" width='25%'>".$escaper->escapeHtml($lang['DocumentName'])."</th>";
-    echo "<th data-options=\"field:'document_type'\" width='15%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
-    echo "<th data-options=\"field:'framework_names'\" width='20%'>".$escaper->escapeHtml($lang['ControlFrameworks'])."</th>";
-    echo "<th data-options=\"field:'control_names'\" width='20%'>".$escaper->escapeHtml($lang['Controls'])."</th>";
-    echo "<th data-options=\"field:'creation_date'\" width='10%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
-    echo "<th data-options=\"field:'approval_date'\" width='10%'>".$escaper->escapeHtml($lang['ApprovalDate'])."</th>";
-    echo "<th data-options=\"field:'status'\" width='10%'>".$escaper->escapeHtml($lang['Status'])."</th>";
-    echo "<th data-options=\"field:'actions'\" width='10%'>&nbsp;</th>";
+    echo "<th data-options=\"field:'document_type'\" width='10%'>".$escaper->escapeHtml($lang['DocumentType'])."</th>";
+    echo "<th data-options=\"field:'framework_names'\" width='18%'>".$escaper->escapeHtml($lang['ControlFrameworks'])."</th>";
+    echo "<th data-options=\"field:'control_names'\" width='18%'>".$escaper->escapeHtml($lang['Controls'])."</th>";
+    echo "<th data-options=\"field:'creation_date'\" width='9%'>".$escaper->escapeHtml($lang['CreationDate'])."</th>";
+    echo "<th data-options=\"field:'approval_date'\" width='9%'>".$escaper->escapeHtml($lang['ApprovalDate'])."</th>";
+    echo "<th data-options=\"field:'status'\" width='6%'>".$escaper->escapeHtml($lang['Status'])."</th>";
+    echo "<th data-options=\"field:'actions'\" width='5%'>&nbsp;</th>";
     echo "</thead>\n";
 
     echo "</table>";

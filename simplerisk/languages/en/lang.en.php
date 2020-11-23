@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Default Timezone',
     'UserSessions' => 'User Sessions',
     'SessionActivityTimeout' => 'Session Activity Timeout',
-    'SessionRenegotiationPeriod' => 'Session Renegotiation Period',
     'Security' => 'Security',
     'EnableCSP' => 'Enable Content Security Policy (This has broken Chrome in the past)',
     'Debugging' => 'Debugging',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Current Lessons Learned',
     'AnswersDynamicallyCreated' => 'Answers will be dynamically created for this question.',
     'TheRequestedAPIEndpointWasNotFound' => 'The requested API endpoint was not found',
+    'MaxTagLengthWarning' => 'The maximum length of a tag is 255 characters.',
+    'RiskTagTruncatedWarning' => 'Risk {$risk_id}\'s tag "{$tag}" got truncated as it was longer than the maximum allowed tag length(255 characters)',
+    'AssetTagTruncatedWarning' => 'Tag "{$tag}" of asset "{$name}" got truncated as it was longer than the maximum allowed tag length(255 characters)',
+    'FixFileEncodingIssues' => 'Fix File Encoding Issues',
+    'FixFileEncodingIssuesDisclaimer' => 'We have detected a possible issue with files stored in your SimpleRisk database. The table below will show you which items have corrupt file(s) and need to be corrected. Please take a look at the listed items and re-upload the affected files.',
+    'AttachmentType' => 'Attachment Type',
+    'FileName' => 'File Name',
+    'Upload' => 'Upload',
+    'YouHaveToSelectAFileToUpload' => 'You have to select a file to upload.',
+    'InvalidUniqueName' => 'File Unique Name provided is Invalid!',
+    'ref_type_exceptions' => 'Document Exception',
+    'ref_type_documents' => 'Document',
+    'ref_type_test_audit' => 'Test Audit',
+    'SessionAbsoluteTimeout' => 'Session Absolute Timeout',
+
     '' => ''
 );
 

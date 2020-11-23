@@ -197,12 +197,13 @@ $junction_config = array(
  ******************************/
 function db_open()
 {
-    if(isset($GLOBALS['db']) && $GLOBALS['db']){
-        return $GLOBALS['db'];
+    if(isset($GLOBALS['db_global']) && $GLOBALS['db_global']){
+        return $GLOBALS['db_global'];
     }
     // Connect to the database
     try {
-        
+
+        // Set the simplerisk timezone for any datetime functions
         $now = new DateTime();
         $mins = $now->getOffset() / 60;
         $sgn = ($mins < 0 ? -1 : 1);
@@ -216,32 +217,29 @@ function db_open()
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8, @@group_concat_max_len = 4294967295, time_zone='{$offset}'"
         );
-        
+
         // If a database SSL certificate path has been defined
         if (defined("DB_SSL_CERTIFICATE_PATH") && DB_SSL_CERTIFICATE_PATH != '') {
             // Add the SSL certificate to the options array
             $options[PDO::MYSQL_ATTR_SSL_CA] = DB_SSL_CERTIFICATE_PATH;
         }
-        
+
         // Create the PDO object
-        $GLOBALS['db'] = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, $options);
+        $GLOBALS['db_global'] = new PDO("mysql:charset=UTF8;dbname=".DB_DATABASE.";host=".DB_HOSTNAME.";port=".DB_PORT,DB_USERNAME,DB_PASSWORD, $options);
 
-
-        // Set the simplerisk timezone for any datetime functions
-        
         // Get the value set for the timezone in the database
-        $stmt = $GLOBALS['db']->prepare("SELECT `value` FROM `settings` WHERE `name` = 'default_timezone';");
+        $stmt = $GLOBALS['db_global']->prepare("SELECT `value` FROM `settings` WHERE `name` = 'default_timezone';");
         $stmt->execute();
-        
+
         // Store the list in the array
         $default_timezone = $stmt->fetch(PDO::FETCH_COLUMN);
-        
+
         // If no timezone is set, set it to CST
         if (!$default_timezone) $default_timezone = "America/Chicago";
-        
+
         // Set the timezone for PHP date functions
         date_default_timezone_set($default_timezone);
-        
+
     	// FOR DEBUGGING DATABASE CONNECTIONS ONLY
     	/*
     	$log_file = "/tmp/debug_log";
@@ -258,7 +256,7 @@ function db_open()
     	$connection = null;
     	*/
 
-        return $GLOBALS['db'];
+        return $GLOBALS['db_global'];
     }
     catch (PDOException $e)
     {
@@ -276,7 +274,7 @@ function db_close($db)
 {
         // Close the DB connection
         $db = null;
-        $GLOBALS['db'] = null;
+        // $GLOBALS['db_global'] = null;
 }
 
 /*****************************
@@ -645,10 +643,10 @@ function get_custom_table($type)
                     `u`.*, GROUP_CONCAT(DISTINCT `t`.`value`) as teams
                 FROM
                     `user` u
-                    INNER JOIN `user_to_team` u2t_bu ON `u2t_bu`.`user_id` = `u`.`value` OR `u`.`admin` = 1
-                    INNER JOIN `business_unit_to_team` bu2t ON `u2t_bu`.`team_id` = `bu2t`.`team_id` OR `u`.`admin` = 1
+                    INNER JOIN `user_to_team` u2t_bu ON `u2t_bu`.`user_id` = `u`.`value`
+                    INNER JOIN `business_unit_to_team` bu2t ON `u2t_bu`.`team_id` = `bu2t`.`team_id`
                     LEFT JOIN `user_to_team` u2t ON `u2t`.`user_id` = `u`.`value`
-                    LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value` OR `u`.`admin` = 1
+                    LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value`
                 WHERE
                     `bu2t`.`business_unit_id` = :selected_business_unit
                     AND `u`.`enabled` = " . ($type == "enabled_users" ? "1": "0") . "
@@ -665,6 +663,7 @@ function get_custom_table($type)
             }
 
             $stmt->bindParam(":selected_business_unit", $selected_business_unit, PDO::PARAM_INT);
+
         } else {
             $stmt = $db->prepare("
                 SELECT
@@ -672,7 +671,7 @@ function get_custom_table($type)
                 FROM
                     `user` u
                     LEFT JOIN `user_to_team` u2t ON `u2t`.`user_id` = `u`.`value`
-                    LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value` OR `u`.`admin` = 1
+                    LEFT JOIN `team` t ON `u2t`.`team_id` = `t`.`value`
                 WHERE
                     `u`.`enabled` = " . ($type == "disabled_users" ? "0": "1") . "
                 GROUP BY 
@@ -4445,6 +4444,19 @@ function update_risk($risk_id, $is_api = false)
     // Subtract 1000 from risk_id
     $id = (int)$risk_id - 1000;
 
+    $tags = get_param("POST", "tags", "");
+    
+    if ($tags) {
+        foreach(explode("+++", $tags) as $tag){
+            if (stripos($tag, "new_tag_") !== false && (strlen($tag) > 263)) {
+                global $lang;
+
+                return $lang['MaxTagLengthWarning'];
+            }
+        }
+    }
+    
+    
     // If customization extra is enabled
     if(customization_extra())
     {
@@ -4568,9 +4580,7 @@ function update_risk($risk_id, $is_api = false)
 //    if (!is_array($tags))
 //        $tags = explode(",", $tags);
 //    add_tagges($tags, $id, 'risk');
-    $tags = get_param("POST", "tags", "");
-    if (is_array($tags))
-        $tags = implode("+++", $tags);
+
     create_new_tag_from_string($tags, "+++", "risk", $id);
 
     if($is_api === false){
@@ -12681,35 +12691,6 @@ function set_session_last_activity_timeout()
         }
 }
 
-/**********************************************
- * FUNCTION: SET SESSION RENEGOTIATION PERIOD *
- **********************************************/
-function set_session_renegotiation_period()
-{
-        // Get the setting for the session renegotiation period
-        $session_renegotiation_period = get_setting("session_renegotiation_period");
-
-        // If the setting doesn't exist
-        if (!$session_renegotiation_period)
-        {
-                // Set the session renegotiation period to the value in the config file
-                $session_renegotiation_period = SESSION_RENEG_TIMEOUT;
-
-                // If the session renegotiation period isn't null
-                if ($session_renegotiation_period != null)
-                {
-                        // Add the value to the settings table
-                        add_setting("session_renegotiation_period", $session_renegotiation_period);
-                }
-                // Otherwise
-                else
-                {
-                        // Set the session renegotiation period to a default of 600 (10 minutes)
-                        add_setting("session_renegotiation_period", "600");
-                }
-        }
-}
-
 /*************************
  * FUNCTION: CSP ENABLED *
  *************************/
@@ -14164,6 +14145,8 @@ function restricted_extra($extra_name)
     {
         switch ($hosting_tier)
         {
+            case 'internal':
+                return internal_extra($extra_name);
             case 'trial':
                 return trial_extra($extra_name);
             case 'small':
@@ -14178,54 +14161,22 @@ function restricted_extra($extra_name)
     }
 }
 
+/****************************
+ * FUNCTION: INTERNAL EXTRA *
+ ****************************/
+function internal_extra($extra_name)
+{
+	// Allow all Extras for internal
+	return false;
+}
+
 /*************************
  * FUNCTION: TRIAL EXTRA *
  *************************/
 function trial_extra($extra_name)
 {
-    // Check the Extra permission
-    switch($extra_name)
-    {
-        case 'advanced_search':
-            // Allow
-            return false;
-        case 'api':
-            // Allow
-            return false;
-        case 'complianceforgescf':
-            // Allow
-            return false;
-        case 'customauth':
-            // Allow
-            return false;
-        case 'customization':
-            // Allow
-            return false;
-        case 'encryption':
-            // Allow
-            return false;
-        case 'importexport':
-            // Allow
-            return false;
-	   case 'incident_management':
-            // Allow
-            return false;
-	   case 'jira':
-            // Allow
-            return false;
-        case 'notification':
-            // Allow
-            return false;
-        case 'organizational_hierarchy':
-            // Allow
-            return false;
-        case 'riskassessment':
-            // Allow
-            return false;
-        case 'separation':
-            // Allow
-            return false;
-    }
+	// Allow all Extras for trials
+	return false;
 }
 
 /*************************
@@ -16686,4 +16637,348 @@ function get_user_name($user_id) {
     
     return $name;
 }
+
+/***********************************************************************************
+ * NEXT SECTION CONTAINS FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
+ ***********************************************************************************/
+function has_files_with_encoding_issues($type = 'all') {
+    $db = db_open();
+    
+    switch($type) {
+        case 'compliance':
+            $sql = "SELECT count(1) AS cnt FROM `compliance_files` WHERE `size` <> LENGTH(`content`);";
+        break;
+        case 'risk':
+            $sql = "SELECT count(1) AS cnt FROM `files` WHERE `size` <> LENGTH(`content`);";
+        break;
+        case 'all':
+        default:
+            $sql = "
+                SELECT sum(u.cnt) FROM
+                    (SELECT count(1) AS cnt FROM `compliance_files` WHERE `size` <> LENGTH(`content`)
+                    UNION ALL
+                    SELECT count(1) AS cnt FROM `files` WHERE `size` <> LENGTH(`content`)
+                ) u;
+            ";
+        break;
+    }
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+    
+    $results = $stmt->fetch(PDO::FETCH_COLUMN);
+    
+    db_close($db);
+    
+    return $results && (int)$results > 0;
+}
+
+function get_files_with_encoding_issues($type = 'risk', $order_column = 0, $order_dir = "asc", $offset = 0, $page_size = -1) {
+    
+    $limit =  $page_size>0 ? " LIMIT {$offset}, {$page_size}" : "";
+
+    $db = db_open();
+    
+    switch($type) {
+        case 'compliance':
+
+            if ($order_column == 2) {
+                $order_column = "`u`.`name` {$order_dir}, `u`.`id` ASC";
+            } elseif ($order_column == 1) {
+                $order_column = "`u`.`ref_type` {$order_dir}";
+            } else $order_column = "`u`.`name` {$order_dir}";
+
+            $sql = "
+                SELECT * FROM (
+                    SELECT
+                    	`f`.`ref_id` AS id,
+                        `f`.`name` AS file_name,
+                        `f`.`ref_type`,
+                        `f`.`unique_name`,
+                        `t`.`name`,
+                        `t`.`status`
+                    FROM
+                    	`compliance_files` f
+                    	INNER JOIN `framework_control_test_audits` t ON `f`.`ref_type` = 'test_audit' AND `f`.`ref_id` = `t`.`id`
+                    WHERE
+                    	`f`.`size` <> LENGTH(`content`)
+                    UNION ALL
+                    SELECT
+                    	`f`.`ref_id` AS id,
+                        `f`.`name` AS file_name,
+                        `f`.`ref_type`,
+                        `f`.`unique_name`,
+                        `e`.`name`,
+                        0 AS status
+                    FROM
+                    	`compliance_files` f
+                    	INNER JOIN `document_exceptions` e ON `f`.`ref_type` = 'exceptions' AND `f`.`ref_id` = `e`.`value`
+                    WHERE
+                    	`f`.`size` <> LENGTH(`content`)
+                    UNION ALL
+                    SELECT
+                    	`f`.`ref_id` AS id,
+                        `f`.`name` AS file_name,
+                        `f`.`ref_type`,
+                        `f`.`unique_name`,
+                        `d`.`document_name` AS name,
+                        0 AS status
+                    FROM
+                    	`compliance_files` f
+                    	INNER JOIN `documents` d ON `f`.`ref_type` = 'documents' AND `f`.`ref_id` = `d`.`id`
+                    WHERE
+                    	`f`.`size` <> LENGTH(`content`)
+                ) u
+                ORDER BY {$order_column}
+            ";
+
+        break;
+        case 'risk':
+            if ($order_column == 3) {
+                $order_column = "`f`.`name` {$order_dir}, `r`.`id` ASC";
+            } elseif ($order_column == 2) {
+                $order_column = "`f`.`view_type` {$order_dir}";
+            } elseif ($order_column == 1) {
+                $order_column = encryption_extra() ? "`r`.`order_by_subject` {$order_dir}" : "`r`.`subject` {$order_dir}";
+            } else $order_column = "`r`.`id` {$order_dir}";
+
+            $sql = "
+                SELECT
+                    `r`.`id` as risk_id,
+                    `r`.`subject`,
+                    `f`.`unique_name`,
+                    `f`.`name` AS file_name,
+                    `f`.`view_type`
+                FROM
+                    `files` f
+                    INNER JOIN `risks` r ON `r`.`id` = f.risk_id
+                WHERE
+                    `f`.`size` <> LENGTH(`f`.`content`)
+                ORDER BY {$order_column}
+            "; 
+        break;
+    }
+    
+    $stmt = $db->prepare("
+        SELECT SQL_CALC_FOUND_ROWS t1.*
+        FROM (
+            {$sql}
+        ) t1
+        {$limit}
+    ");
+    $stmt->execute();
+    
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $stmt = $db->prepare("SELECT FOUND_ROWS();");
+    $stmt->execute();
+    $recordsTotal = $stmt->fetch()[0];
+    
+    db_close($db);
+    
+    return array($recordsTotal, $results);
+}
+
+function display_file_encoding_issues($type) {
+    global $lang, $escaper;
+    
+    $tableID = "upload-encoding-issues-$type";
+    
+    echo "
+        <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
+            <thead>
+                <tr>";
+    switch($type) {
+        case 'risk':
+            echo "
+                    <th align='left' valign='top' width='5%'>".$escaper->escapeHtml($lang['ID'])."</th>
+                    <th align='left' valign='top'>".$escaper->escapeHtml($lang['Subject'])."</th>
+                    <th align='left' valign='top' width='10%'>".$escaper->escapeHtml($lang['AttachmentType'])."</th>";
+            $data_list = ['id', 'subject', 'view_type'];
+        break;
+        case 'compliance':
+            echo "
+                    <th align='left' valign='top'>".$escaper->escapeHtml($lang['Name'])."</th>
+                    <th align='left' valign='top' width='12%'>".$escaper->escapeHtml($lang['AttachmentType'])."</th>";
+            $data_list = ['name', 'ref_type'];
+        break;
+    }
+    
+    echo "
+                    <th align='left' valign='top' width='20%'>".$escaper->escapeHtml($lang['FileName'])."</th>
+                    <th align='left' valign='top' width='17%'></th>
+                    <th align='center' valign='top' width='5%'></th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <br>
+        <script>
+            var pageLength = 10;
+            var datatableInstance_{$type} = $('#{$tableID}').DataTable({
+                bFilter: false,
+                bLengthChange: false,
+                processing: true,
+                serverSide: true,
+                bSort: true,
+                pagingType: \"full_numbers\",
+                dom : \"flrtip\",
+                pageLength: pageLength,
+                dom : \"flrti<'#view-all.view-all'>p\",
+                createdRow: function(row, data, index){
+                    var background = $('.background-class', $(row)).data('background');
+                    $(row).find('td').addClass(background)
+                },
+                order: [[0, 'asc']],
+                ajax: {
+                    url: BASE_URL + '/api/upload_encoding_issue_fix/datatable?type=$type',
+                    data: function(d){ },
+                    complete: function(response){ }
+                },
+                columnDefs : [";
+    foreach ($data_list as $target => $data) {
+        echo "
+                    {
+                        'targets': [$target],
+                        'data': '$data'
+                    },";
+    }
+
+    echo "
+                    {
+                        'targets': [-3],
+                        'data': 'file_name'
+                    },
+                    {
+                        'targets': [-2],
+                        'data': 'file_uploader',
+                        'orderable': false
+                    },
+                    {
+                        'targets': -1,
+                        'data': null,
+                        'defaultContent': '<button class=\"confirm upload-button\" style=\"padding: 2px 15px;\">" . $escaper->escapeHtml($lang['Upload']) . "</button>',
+                        'orderable': false
+                    }
+                ]
+            });
+            
+            // Add paginate options
+            datatableInstance_{$type}.on('draw', function(e, settings){
+                $('.paginate_button.first').html('<i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i>');
+                $('.paginate_button.previous').html('<i class=\"fa fa-chevron-left\"></i>');
+                
+                $('.paginate_button.last').html('<i class=\"fa fa-chevron-right\"></i><i class=\"fa fa-chevron-right\"></i>');
+                $('.paginate_button.next').html('<i class=\"fa fa-chevron-right\"></i>');
+                
+                if (datatableInstance_{$type}.page() == 0) {
+                    // Reload the page when no more issues left so the page load code can
+                    // run the wrap-up logic
+                    if (datatableInstance_{$type}.rows( {page:'current'} ).count() == 0) {
+                        setTimeout(function(){window.location=window.location;}, 1);
+                    }
+                } else {// get to the previous page in case we confirmed the last one from the page and it's not the first page
+                    if (datatableInstance_{$type}.rows( {page:'current'} ).count() == 0) {
+                        setTimeout(function(){datatableInstance_{$type}.page('previous').draw('page');}, 1);
+                    }
+                }
+                
+                $('#{$tableID} tbody').off('click', 'button.confirm');
+                $('#{$tableID} tbody').on('click', 'button.confirm', function () {
+                    var data = datatableInstance_{$type}.row($(this).closest('tr')).data();
+                    var unique_name = data['unique_name'];
+                    var file_upload = $('#file-upload-' + unique_name)[0];
+
+                    if (!file_upload.files[0]) {
+                        alert('" . $escaper->escapeHtml($lang['YouHaveToSelectAFileToUpload']) . "');
+                        return false;
+                    }
+
+                    if (file_upload.files[0].size > " . (int)get_setting('max_upload_size') . ") {
+                        alert('" . $escaper->escapeHtml($lang['UploadingFileTooBig']) . "');
+                        return false;
+                    }
+
+                    var form_data = new FormData();
+                    form_data.append('file', file_upload.files[0]);
+                    form_data.append('type', '{$type}');
+                    form_data.append('unique_name', unique_name);
+
+                    $.ajax({
+                        type: 'POST',
+                        url: BASE_URL + '/api/upload_encoding_issue_fix/file_upload',
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        data : form_data,
+                        success: function(data) {
+                            if(data.status_message) {
+                                showAlertsFromArray(data.status_message);
+                            }
+                            datatableInstance_{$type}.ajax.reload(null, false);
+                        },
+                        error: function(xhr,status,error) {
+                            if(!retryCSRF(xhr, this)) {
+                                if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+
+            // Add all text to View All button on bottom
+            $('#{$tableID}_wrapper .view-all').html('".$escaper->escapeHtml($lang['ALL'])."');
+
+            // View All
+            $('#{$tableID}_wrapper .view-all').click(function() {
+                var oSettings =  datatableInstance_{$type}.settings();
+                oSettings[0]._iDisplayLength = -1;
+                datatableInstance_{$type}.draw();
+                $(this).addClass('current');
+            });
+                
+            // Page event
+            $('body').on('click', '#{$tableID}_paginate span > .paginate_button', function(){
+                var index = $(this).attr('aria-controls').replace('DataTables_Table_', '');
+                
+                var oSettings =  datatableInstance_{$type}.settings();
+                if(oSettings[0]._iDisplayLength == -1){
+                    $(this).parents(\".dataTables_wrapper\").find('#{$tableID}_wrapper .view-all').removeClass('current');
+                    oSettings[0]._iDisplayLength = pageLength;
+                    datatableInstance_{$type}.draw();
+                }
+            });
+        </script>
+    ";
+}
+
+function get_encoding_issue_file_info($type, $unique_name) {
+    $db = db_open();
+    
+    switch($type) {
+        case 'compliance':
+            $sql = "SELECT `id`, `ref_id`, `ref_type`, `version` FROM `compliance_files` WHERE `unique_name` = :unique_name;";
+            break;
+        case 'risk':
+            $sql = "SELECT `risk_id`, `view_type` FROM `files` WHERE `unique_name` = :unique_name;";
+            break;
+    }
+
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR);
+    $stmt->execute();
+    
+    $results = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    db_close($db);
+    
+    return $results;
+}
+/***************************************************************************************
+ * END OF SECTION CONTAINING FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
+ ***************************************************************************************/
+
 ?>

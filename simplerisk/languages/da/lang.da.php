@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Standardtidszone',
     'UserSessions' => 'Brugersessioner',
     'SessionActivityTimeout' => 'Timeout for sessionsaktivitet',
-    'SessionRenegotiationPeriod' => 'Periode for genforhandling af session',
     'Security' => 'Sikkerheds',
     'EnableCSP' => 'Aktiver indholds sikkerhedspolitik (dette har tidligere brudt Chrome)',
     'Debugging' => 'Fejlfinding',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'De aktuelle erfaringer',
     'AnswersDynamicallyCreated' => 'Der oprettes dynamisk svar på dette spørgsmål.',
     'TheRequestedAPIEndpointWasNotFound' => 'Det anmodede API-slutpunkt blev ikke fundet',
+    'MaxTagLengthWarning' => 'Den maksimale længde på et mærke er 255 tegn.',
+    'RiskTagTruncatedWarning' => 'Risiko {$risk_id}\'s tag "{$tag}" blev afkortet, da det var længere end den maksimalt tilladte taglængde(255 tegn)',
+    'AssetTagTruncatedWarning' => 'Tag "{$tag}" af aktivet "{$name}" blev afkortet, da det var længere end den maksimalt tilladte taglængde(255 tegn)',
+    'FixFileEncodingIssues' => 'Løs problemer med filkodning',
+    'FixFileEncodingIssuesDisclaimer' => 'Vi har opdaget et muligt problem med filer gemt i din SimpleRisk database. Tabellen nedenfor viser dig, hvilke elementer der har beskadigede filer og skal rettes. Tag et kig på de anførte elementer og re-uploade de berørte filer.',
+    'AttachmentType' => 'Tekst af vedhæftede filer',
+    'FileName' => 'Filnavn',
+    'Upload' => 'Uploade',
+    'YouHaveToSelectAFileToUpload' => 'Du skal vælge en fil, der skal overføres.',
+    'InvalidUniqueName' => 'Det angivne entydige filnavn er ugyldigt!',
+    'ref_type_exceptions' => 'Dokument undtagelse',
+    'ref_type_documents' => 'Dokument',
+    'ref_type_test_audit' => 'Test overvågning',
+    'SessionAbsoluteTimeout' => 'Session absolut timeout',
+
     '' => ''
 );
 

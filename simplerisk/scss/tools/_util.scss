@@ -296,3 +296,9 @@ input[type=checkbox][readonly] + label:before {
     cursor: not-allowed;
     pointer-events: none;
 }
+
+.tag-max-length-warning {
+	color: $color-3 !important;
+	margin-top: -15px;
+	float: right;
+}

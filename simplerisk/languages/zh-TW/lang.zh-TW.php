@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => '預設時區',
     'UserSessions' => '使用者會話',
     'SessionActivityTimeout' => '會話活動超時',
-    'SessionRenegotiationPeriod' => '會話重新協商期間',
     'Security' => '安全',
     'EnableCSP' => '啟用內容安全性原則 (這在過去已經打破了 Chrome)',
     'Debugging' => '調試',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => '當前經驗教訓。',
     'AnswersDynamicallyCreated' => '將為這個問題動態創建答案。',
     'TheRequestedAPIEndpointWasNotFound' => '找不到請求的 API 終結點。',
+    'MaxTagLengthWarning' => '標記的最大長度為 255 個字元。',
+    'RiskTagTruncatedWarning' => '風險 {$risk_id}標籤 [{$tag}] 被截斷， 因為它比允許的最大標籤長度 （255 個字元） 長',
+    'AssetTagTruncatedWarning' => '標記 [{$tag}] 資產 [{$name}] 被截斷， 因為它比允許的最大標籤長度 （255 個字元） 長',
+    'FixFileEncodingIssues' => '修復文件編碼問題',
+    'FixFileEncodingIssuesDisclaimer' => '我們已檢測到存儲在您的 SimpleRisk 資料庫中的檔案可能的問題。下表將顯示哪些項目有損壞的檔，需要更正。請查看列出的項目，然後重新上傳受影響的檔。',
+    'AttachmentType' => '附件類型',
+    'FileName' => '檔名',
+    'Upload' => '上傳',
+    'YouHaveToSelectAFileToUpload' => '您必須選擇要上載的檔案。',
+    'InvalidUniqueName' => '提供的檔唯一名稱無效！',
+    'ref_type_exceptions' => '文檔異常',
+    'ref_type_documents' => '文檔',
+    'ref_type_test_audit' => '測試審核',
+    'SessionAbsoluteTimeout' => '會話絕對超時',
+
     '' => ''
 );
 

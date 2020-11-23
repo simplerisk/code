@@ -58,6 +58,11 @@ require_once(language_file());
       setup_favicon("..");
       setup_alert_requirements("..");
   ?>
+  <style>
+    .tag-max-length-warning {
+        margin-top: 0px;
+    }
+  </style>
 
 </head>
 

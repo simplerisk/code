@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Per defecte el fus horari',
     'UserSessions' => 'Sessions d\'usuari',
     'SessionActivityTimeout' => 'Temps d\'espera de sessió activitat',
-    'SessionRenegotiationPeriod' => 'Període de renegociació de sessió',
     'Security' => 'Seguretat',
     'EnableCSP' => 'Permetre contingut política de seguretat (això ha trencat Chrome en el passat)',
     'Debugging' => 'Depuració',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Lliçons actuals apreses',
     'AnswersDynamicallyCreated' => 'Les respostes es crearan dinàmicament per a aquesta pregunta.',
     'TheRequestedAPIEndpointWasNotFound' => 'No s\'ha trobat l\'extrem de l\'API sol·licitat',
+    'MaxTagLengthWarning' => 'La longitud màxima d\'una etiqueta és de 255 caràcters.',
+    'RiskTagTruncatedWarning' => 'El {$risk_id}\'s etiqueta\'{$tag}" es va truncar, ja que era més llarg que la longitud màxima permesa de l\'etiqueta (255 caràcters)',
+    'AssetTagTruncatedWarning' => 'Etiqueta "{$tag}" d\'actiu "{$name}" es va truncar, ja que era més llarg que la longitud màxima permesa de l\'etiqueta (255 caràcters)',
+    'FixFileEncodingIssues' => 'Soluciona els problemes de codificació de fitxers',
+    'FixFileEncodingIssuesDisclaimer' => 'Hem detectat un possible problema amb els fitxers emmagatzemats a la vostra base de dades De SimpleRisk. La taula següent us mostrarà quins elements tenen fitxers corruptes i heu de ser corregits. Feu un cop d\'ull als elements de la llista i torneu a carregar els fitxers afectats.',
+    'AttachmentType' => 'Tipus de fitxer adjunt',
+    'FileName' => 'Nom del fitxer',
+    'Upload' => 'Carregar',
+    'YouHaveToSelectAFileToUpload' => 'Heu de seleccionar un fitxer per carregar-lo.',
+    'InvalidUniqueName' => 'El nom únic del fitxer proporcionat no és vàlid!',
+    'ref_type_exceptions' => 'Excepció del document',
+    'ref_type_documents' => 'Document',
+    'ref_type_test_audit' => 'Auditoria de proves',
+    'SessionAbsoluteTimeout' => 'Temps d\'espera absolut de la sessió',
+
     '' => ''
 );
 

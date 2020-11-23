@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Zona horaria predeterminada',
     'UserSessions' => 'Sesiones de usuario',
     'SessionActivityTimeout' => 'Tiempo de espera de actividad de sesión',
-    'SessionRenegotiationPeriod' => 'Período de renegociación de sesión',
     'Security' => 'Seguridad',
     'EnableCSP' => 'Habilitar la política de seguridad de contenido (esto ha roto Chrome en el pasado)',
     'Debugging' => 'Depuración',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Lecciones actuales aprendidas',
     'AnswersDynamicallyCreated' => 'Las respuestas se crearán dinámicamente para esta pregunta.',
     'TheRequestedAPIEndpointWasNotFound' => 'No se encontró el punto de conexión de API solicitado',
+    'MaxTagLengthWarning' => 'La longitud máxima de una etiqueta es de 255 caracteres.',
+    'RiskTagTruncatedWarning' => 'El riesgo {$risk_id}etiqueta "{$tag}" se truncó ya que era más largo que la longitud máxima permitida de la etiqueta (255 caracteres)',
+    'AssetTagTruncatedWarning' => 'La etiqueta "{$tag}" del activo "{$name}" se truncó ya que era más larga que la longitud máxima permitida de la etiqueta (255 caracteres)',
+    'FixFileEncodingIssues' => 'Solucionar problemas de codificación de archivos',
+    'FixFileEncodingIssuesDisclaimer' => 'Hemos detectado un posible problema con los archivos almacenados en su base de datos SimpleRisk. La siguiente tabla le mostrará qué elementos tienen archivos dañados y necesitan ser corregidos. Por favor, eche un vistazo a los elementos enumerados y vuelva a cargar los archivos afectados.',
+    'AttachmentType' => 'Tipo de archivo adjunto',
+    'FileName' => 'Nombre de archivo',
+    'Upload' => 'Subir',
+    'YouHaveToSelectAFileToUpload' => 'Debe seleccionar un archivo para cargarlo.',
+    'InvalidUniqueName' => '¡El nombre único del archivo proporcionado no es válido!',
+    'ref_type_exceptions' => 'Excepción de documento',
+    'ref_type_documents' => 'Documento',
+    'ref_type_test_audit' => 'Auditoría de prueba',
+    'SessionAbsoluteTimeout' => 'Tiempo de espera absoluto de sesión',
+
     '' => ''
 );
 

@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Mặc định Timezone',
     'UserSessions' => 'Phiên người dùng',
     'SessionActivityTimeout' => 'Thời gian chờ phiên hoạt động',
-    'SessionRenegotiationPeriod' => 'Phiên họp thương lượng thời gian',
     'Security' => 'An ninh',
     'EnableCSP' => 'Sử nội dung chính sách bảo mật (điều này đã phá vỡ Chrome trong quá khứ)',
     'Debugging' => 'Gỡ lỗi',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Bài học hiện tại đã học',
     'AnswersDynamicallyCreated' => 'Câu trả lời sẽ được tạo động cho câu hỏi này.',
     'TheRequestedAPIEndpointWasNotFound' => 'Không tìm thấy điểm cuối API được yêu cầu',
+    'MaxTagLengthWarning' => 'Độ dài tối đa của thẻ là 255 ký tự.',
+    'RiskTagTruncatedWarning' => 'Thẻ {$risk_id}rủi ro "{$tag}" bị cắt ngắn vì nó dài hơn độ dài thẻ tối đa cho phép (255 ký tự)',
+    'AssetTagTruncatedWarning' => 'Tag "{$tag}" của tài sản "{$name}" đã bị cắt ngắn vì nó dài hơn độ dài thẻ tối đa cho phép(255 ký tự)',
+    'FixFileEncodingIssues' => 'Khắc phục Sự cố Mã hóa Tệp',
+    'FixFileEncodingIssuesDisclaimer' => 'Chúng tôi đã phát hiện một vấn đề có thể với các tập tin được lưu trữ trong cơ sở dữ liệu SimpleRisk của bạn. Bảng dưới đây sẽ cho bạn biết những mục nào có (các) tệp bị hỏng và cần được sửa chữa. Vui lòng xem các mục được liệt kê và tải lên lại các tệp bị ảnh hưởng.',
+    'AttachmentType' => 'Loại Phần đính kèm',
+    'FileName' => 'Tên Tệp',
+    'Upload' => 'Tải lên',
+    'YouHaveToSelectAFileToUpload' => 'Bạn phải chọn một tệp để tải lên.',
+    'InvalidUniqueName' => 'Tên Duy nhất tệp được cung cấp là Không hợp lệ!',
+    'ref_type_exceptions' => 'Ngoại lệ Tài liệu',
+    'ref_type_documents' => 'Tài liệu',
+    'ref_type_test_audit' => 'Kiểm toán kiểm tra',
+    'SessionAbsoluteTimeout' => 'Thời gian chờ tuyệt đối phiên',
+
     '' => ''
 );
 

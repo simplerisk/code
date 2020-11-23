@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Varsayılan saat dilimi',
     'UserSessions' => 'Kullanıcı oturumları',
     'SessionActivityTimeout' => 'Oturum etkinliği zaman aşımı',
-    'SessionRenegotiationPeriod' => 'Oturum yeniden müzakere süresi',
     'Security' => 'Güvenlik',
     'EnableCSP' => 'İçerik güvenlik ilkesini etkinleştir (Bu geçmişte krom kırdı)',
     'Debugging' => 'Hata',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Öğrenilen Güncel Dersler',
     'AnswersDynamicallyCreated' => 'Cevaplar bu soru için dinamik olarak oluşturulacaktır.',
     'TheRequestedAPIEndpointWasNotFound' => 'İstenen API bitiş noktası bulunamadı',
+    'MaxTagLengthWarning' => 'Bir etiketin maksimum uzunluğu 255 karakterdir.',
+    'RiskTagTruncatedWarning' => 'Risk {$risk_id}\'nin etiketi "{$tag}" izin verilen maksimum etiket uzunluğundan daha uzun olduğu için kesildi(255 karakter)',
+    'AssetTagTruncatedWarning' => 'Tag "{$tag}" of asset "{$name}" izin verilen maksimum etiket uzunluğundan daha uzun olduğu için kesildi(255 karakter)',
+    'FixFileEncodingIssues' => 'Dosya Kodlama Sorunlarını Düzeltme',
+    'FixFileEncodingIssuesDisclaimer' => 'SimpleRisk veritabanınızda depolanan dosyalarla ilgili olası bir sorun tespit ettik. Aşağıdaki tabloda hangi öğelerin bozuk dosya(lar) olduğunu ve düzeltilmesi gerekir gösterecektir. Lütfen listelenen öğelere bir göz atın ve etkilenen dosyaları yeniden yükleyin.',
+    'AttachmentType' => 'Ek Türü',
+    'FileName' => 'Dosya Adı',
+    'Upload' => 'Yüklemek',
+    'YouHaveToSelectAFileToUpload' => 'Yüklemek için bir dosya seçmeniz gerekir.',
+    'InvalidUniqueName' => 'Dosya Benzersiz Adı sağlanan Geçersizdir!',
+    'ref_type_exceptions' => 'Belge Özel Durumu',
+    'ref_type_documents' => 'Belge',
+    'ref_type_test_audit' => 'Test Denetimi',
+    'SessionAbsoluteTimeout' => 'Oturum Mutlak Zaman Ası',
+
     '' => ''
 );
 

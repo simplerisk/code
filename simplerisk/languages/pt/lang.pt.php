@@ -828,7 +828,6 @@ $lang = array(
     'DefaultTimezone' => 'Fuso horário padrão',
     'UserSessions' => 'Sessões de usuário',
     'SessionActivityTimeout' => 'Tempo limite de atividade de sessão',
-    'SessionRenegotiationPeriod' => 'Período de renegociação de sessão',
     'Security' => 'Segurança',
     'EnableCSP' => 'Habilitar a diretiva de segurança de conteúdo (isso tem quebrado Chrome no passado)',
     'Debugging' => 'Depuração',
@@ -1889,6 +1888,21 @@ $lang = array(
     'CurrentLessonsLearned' => 'Lições atuais aprendidas',
     'AnswersDynamicallyCreated' => 'As respostas serão criadas dinamicamente para esta pergunta.',
     'TheRequestedAPIEndpointWasNotFound' => 'O ponto final solicitado da API não foi encontrado',
+    'MaxTagLengthWarning' => 'O comprimento máximo de uma tag é de 255 caracteres.',
+    'RiskTagTruncatedWarning' => 'Risco {$risk_id}tag "{$tag}" foi truncado, pois era mais longo do que o comprimento máximo permitido da tag (255 caracteres)',
+    'AssetTagTruncatedWarning' => 'Tag "{$tag}" de ativo "{$name}" foi truncado, pois era mais longo do que o comprimento máximo permitido da tag (255 caracteres)',
+    'FixFileEncodingIssues' => 'Corrigir problemas de codificação de arquivos',
+    'FixFileEncodingIssuesDisclaimer' => 'Detectamos um possível problema com arquivos armazenados no seu banco de dados SimpleRisk. A tabela abaixo mostrará quais itens têm arquivos corrompidos e precisam ser corrigidos. Por favor, dê uma olhada nos itens listados e re-carregue os arquivos afetados.',
+    'AttachmentType' => 'Tipo de anexo',
+    'FileName' => 'Nome do arquivo',
+    'Upload' => 'Carregar',
+    'YouHaveToSelectAFileToUpload' => 'Você tem que selecionar um arquivo para carregar.',
+    'InvalidUniqueName' => 'Nome exclusivo do arquivo fornecido é inválido!',
+    'ref_type_exceptions' => 'Exceção documental',
+    'ref_type_documents' => 'Documento',
+    'ref_type_test_audit' => 'Auditoria de teste',
+    'SessionAbsoluteTimeout' => 'Tempo limite absoluto da sessão',
+
     '' => ''
 );
 
