@@ -2084,37 +2084,37 @@ function get_documents_as_treegrid($type){
                 switch($filter['field']){
                     case "document_name":
                         if( stripos($document['document_name'], $value) === false ){
-                            continue 3;
+                            continue 2;
                         }
                         break;
                     case "document_type":
                         if( stripos($document['document_type'], $value) === false ){
-                            continue 3;
+                            continue 2;
                         }
                         break;
                     case "framework_names":
                         if( stripos($framework_names, $value) === false ){
-                            continue 3;
+                            continue 2;
                         }
                         break;
                     case "control_names":
                         if( stripos($control_names, $value) === false ){
-                            continue 3;
+                            continue 2;
                         }
                         break;
                     case "creation_date":
                         if( stripos(format_date($document['creation_date']), $value) === false ){
-                            continue 3;
+                            continue 2;
                         }
                         break;
                     case "approval_date":
                         if( stripos(format_date($document['approval_date']), $value) === false ){
-                            continue 3;
+                            continue 2;
                         }
                         break;
                     case "status":
                         if( stripos($document['status'], $value) === false ){
-                            continue 3;
+                            continue 2;
                         }
                         break;
                 }

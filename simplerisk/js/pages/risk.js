@@ -524,7 +524,10 @@ $(document).ready(function(){
                 form.append('file['+j+']', file);
             })
         });
-        
+        $('.risk-session').block({
+            message: 'Processing',
+            css: { border: '1px solid black', background: '#ffffff' }
+        });
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/management/risk/saveSubject?id=" + risk_id,
@@ -1252,6 +1255,10 @@ $(document).ready(function(){
         
         var getForm = $this.parents('form', tabContainer);
         var form = new FormData($(getForm)[0]);
+        $('#comment').parents('.well').block({
+            message: 'Processing',
+            css: { border: '1px solid black', background: '#ffffff' }
+        });
 
         $.ajax({
             type: "POST",
@@ -1268,6 +1275,7 @@ $(document).ready(function(){
                 if(data.status_message){
                     showAlertsFromArray(data.status_message);
                 }
+                $('#comment').parents('.well').unblock();
             }
         })
         .fail(function(xhr, textStatus){

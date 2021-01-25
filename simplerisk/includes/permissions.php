@@ -592,4 +592,35 @@ function get_permission_ids_of_user($user_id) {
     return $perms;
 }
 
+/*********************************
+ * FUNCTION: USER HAS PERMISSION *
+ *********************************/
+function user_has_permission($user_id, $permission_key) {
+
+    // Open the database connection
+    $db = db_open();
+    
+    $stmt = $db->prepare("
+        SELECT
+            5
+        FROM
+            `permissions` p
+            INNER JOIN `permission_to_user` p2u ON `p`.`id` = `p2u`.`permission_id`
+        WHERE
+            `p2u`.`user_id` = :user_id
+            AND `p`.`key` = :permission_key;
+    ");
+    $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->bindParam(":permission_key", $permission_key, PDO::PARAM_STR);
+    
+    $stmt->execute();
+
+    $result = $stmt->fetchColumn();
+
+    // Close the database connection
+    db_close($db);
+
+    return isset($result) && (int)$result === 5;
+    
+}
 ?>

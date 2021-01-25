@@ -229,7 +229,7 @@ function risk_distribution_analysis()
                     echo "<tr>\n";
                     echo "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>\n";
                     echo "<td align=\"right\">" . $counter . ")</td>\n";
-                    echo "<td><a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "\">" . $escaper->escapeHtml($subject) . "</a></td>\n";
+                    echo "<td><a href=\"../management/view.php?id=" . $escaper->escapeHtml($risk_id) . "\">" .$subject. "</a></td>\n";
                     echo "<td>\n";
                     echo "<table width=\"100%\" height=\"100%\" border=\"2\" style=\"background-color:white\"><tr><td valign=\"middle\" halign=\"center\"><center><font size=\"2\">" . $escaper->escapeHtml(get_name_by_value("mitigation_effort", $mitigation_effort)) . "</font></center></td></tr></table>\n";
                     echo "</td>\n";

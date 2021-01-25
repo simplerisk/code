@@ -71,24 +71,15 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     $notes = get_param("POST", "notes");
     $assets_asset_groups = get_param("POST", "assets_asset_groups", []);
     $additional_stakeholders =  get_param("POST", "additional_stakeholders", []);
-    $risk_tags = get_param("POST", "tags", "");
+    $risk_tags = get_param("POST", "tags", []);
 
-    if ($risk_tags) {
-        
-        if (!is_array($risk_tags)) {
-            $risk_tags_array = explode("+++", $risk_tags);
-        } else {
-            $risk_tags_array = $risk_tags;
-        }
-        
-        foreach($risk_tags_array as $tag){
-            if (stripos($tag, "new_tag_") !== false && (strlen($tag) > 263)) {
-                global $lang;
-                
-                set_alert(true, "bad", $lang['MaxTagLengthWarning']);
-                json_response(400, get_alert(true), NULL);
-                exit;
-            }
+    foreach($risk_tags as $tag){
+        if (strlen($tag) > 255) {
+            global $lang;
+            
+            set_alert(true, "bad", $lang['MaxTagLengthWarning']);
+            json_response(400, get_alert(true), NULL);
+            exit;
         }
     }
 
@@ -185,19 +176,21 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
 
     // Process the data from the Affected Assets widget
-    if (!empty($assets_asset_groups))
+    if (!empty($assets_asset_groups)) {
         process_selected_assets_asset_groups_of_type($last_insert_id, $assets_asset_groups, 'risk');
+    }
 
-    if (is_array($risk_tags))
-        $risk_tags = implode("+++", $risk_tags);
-    create_new_tag_from_string($risk_tags, "+++", "risk", $last_insert_id);
-//    if (!is_array($risk_tags))
-//        $risk_tags = explode(",", $risk_tags);
-//    add_tagges($risk_tags, $last_insert_id, 'risk');
-    
+    updateTagsOfType($last_insert_id, 'risk', $risk_tags);
+
     // Create the connection between the risk and the jira issue
-    if (jira_extra() && $issue_key && jira_update_risk_issue_connection($last_insert_id, $issue_key)) {
-        jira_push_changes($issue_key, $last_insert_id);
+    if (jira_extra()) {
+        if ($issue_key) {
+            if (jira_update_risk_issue_connection($last_insert_id, $issue_key)) {
+                jira_push_changes($issue_key, $last_insert_id);
+            }
+        } else {
+            CreateIssueForRisk($last_insert_id);
+        }
     }
 
     $error = 1;
@@ -223,7 +216,6 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                 */
                 break;
             }
-            
         }
     }
     // Otherwise, success
@@ -288,7 +280,6 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                 risk: "<?php echo $lang['Risk']; ?>",
 	            newrisk: "<?php echo $lang['NewRisk']; ?>"
             }
-            
         </script>
         <!--script src="../js/jquery.min.js"></script>
         <script src="../js/jquery-ui.min.js"></script -->
@@ -394,7 +385,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <input type="hidden" id="enable_popup" value="<?php echo $escaper->escapeHtml(get_setting('enable_popup')); ?>">
         <script>
             $(document).ready(function() {
-                
+
                 setupAssetsAssetGroupsWidget($('#tab-container select.assets-asset-groups-select'));
                 
                 window.onbeforeunload = function() {
@@ -455,7 +446,6 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
                 focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container"));
                 focus_add_css_class("#NotesTitle", "#notes", $("#tab-container"));
-                
             });
 
         </script>

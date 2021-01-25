@@ -96,6 +96,58 @@ if (!function_exists('table_exists')) {
     }
 }
 
+global $releases;
+$releases = array(
+	"20140728-001",
+	"20141013-001",
+	"20141129-001",
+	"20141214-001",
+	"20150202-001",
+	"20150321-001",
+	"20150531-001",
+	"20150729-001",
+	"20150920-001",
+	"20150928-001",
+	"20150930-001",
+	"20151108-001",
+	"20151219-001",
+	"20160124-001",
+	"20160331-001",
+	"20160612-001",
+	"20161023-001",
+	"20161030-001",
+	"20161122-001",
+	"20170102-001",
+	"20170108-001",
+	"20170312-001",
+	"20170416-001",
+	"20170614-001",
+	"20170723-001",
+	"20170724-001",
+	"20180104-001",
+	"20180301-001",
+	"20180527-001",
+	"20180627-001",
+	"20180812-001",
+	"20180814-001",
+	"20180830-001",
+	"20180916-001",
+	"20181103-001",
+	"20190105-001",
+	"20190210-001",
+	"20190331-001",
+	"20190630-001",
+	"20190930-001",
+	"20191130-001",
+	"20200328-001",
+	"20200401-001",
+	"20200711-001",
+	"20201005-001",
+	"20201106-001",
+	"20201123-001",
+	"20210121-001",
+);
+
 /*************************
  * FUNCTION: GET API KEY *
  *************************/
@@ -236,7 +288,7 @@ function convert_tables_to_innodb()
     foreach ($array as $value)
     {
         // Get the table name
-        $table_name = $value['TABLE_NAME'];
+        $table_name = $value['table_name'];
 
         // We cannot convert the session table due to id characters
         if ($table_name != "sessions")
@@ -3581,6 +3633,12 @@ function upgrade_from_20190331001($db){
         ");
         $stmt->execute();
     }
+
+    if (field_exists_in_table('team', 'assets')) {
+        echo "Updating `team` field in `assets` table to string type.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `assets` CHANGE `team` `teams` VARCHAR(1000) NULL;  ");
+        $stmt->execute();
+    }
     
     if (field_exists_in_table('assets', 'assessment_answers')
         && table_exists('assessment_answers_to_asset_groups')
@@ -5217,6 +5275,39 @@ function upgrade_from_20201106001($db)
     update_database_version($db, $version_to_upgrade, $version_upgrading_to);
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20201123-001 *
+ ***************************************/
+function upgrade_from_20201123001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20201123-001';
+    
+    // Database version upgrading to
+    $version_upgrading_to = '20210121-001';
+    
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    
+    // Add new language translations
+    echo "Adding new language translations.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `languages` (name, full) VALUES ('si', 'Sinhala');");
+    $stmt->execute();
+    
+    // Updating the length of the `tags` table's `type` column
+    echo "Updating the length of the `tags` table's `type` column to 40 characters.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `tags_taggees` CHANGE `type` `type` VARCHAR(40);");
+    $stmt->execute();
+    
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -5228,198 +5319,36 @@ function upgrade_database()
     // If the grant check for the database user is successful
     if (check_grants($db))
     {
-        // Get the current database version
+        // Get the current application and database versions
+        $app_version = current_version("app");
         $db_version = current_version("db");
-
-        // Run the upgrade for the appropriate current version
-        switch ($db_version)
+        
+        // If the application version is not the same as the database version
+        if ($app_version != $db_version)
         {
-            case "20140728-001":
-                upgrade_from_20140728001($db);
-                upgrade_database();
-                break;
-            case "20141013-001":
-                upgrade_from_20141013001($db);
-                upgrade_database();
-                break;
-            case "20141129-001":
-                upgrade_from_20141129001($db);
-                upgrade_database();
-                break;
-            case "20141214-001":
-                upgrade_from_20141214001($db);
-                upgrade_database();
-                break;
-            case "20150202-001":
-                upgrade_from_20150202001($db);
-                upgrade_database();
-                break;
-            case "20150321-001":
-                upgrade_from_20150321001($db);
-                upgrade_database();
-                break;
-            case "20150531-001":
-                upgrade_from_20150531001($db);
-                upgrade_database();
-                break;
-            case "20150729-001":
-                upgrade_from_20150729001($db);
-                upgrade_database();
-                break;
-            case "20150920-001":
-                upgrade_from_20150920001($db);
-                upgrade_database();
-                break;
-            case "20150928-001":
-                upgrade_from_20150928001($db);
-                upgrade_database();
-                break;
-            case "20150930-001":
-                upgrade_from_20150930001($db);
-                upgrade_database();
-                break;
-            case "20151108-001":
-                upgrade_from_20151108001($db);
-                upgrade_database();
-                break;
-            case "20151219-001":
-                upgrade_from_20151219001($db);
-                upgrade_database();
-                break;
-            case "20160124-001":
-                upgrade_from_20160124001($db);
-                upgrade_database();
-                break;
-            case "20160331-001":
-                upgrade_from_20160331001($db);
-                upgrade_database();
-                break;
-            case "20160612-001":
-                upgrade_from_20160612001($db);
-                upgrade_database();
-                break;
-            case "20161023-001":
-                upgrade_from_20161023001($db);
-                upgrade_database();
-                break;
-            case "20161030-001":
-                upgrade_from_20161030001($db);
-                upgrade_database();
-                break;
-            case "20161122-001":
-                upgrade_from_20161122001($db);
-                upgrade_database();
-                break;
-            case "20170102-001":
-                upgrade_from_20170102001($db);
-                upgrade_database();
-                break;
-            case "20170108-001":
-                upgrade_from_20170108001($db);
-                upgrade_database();
-                break;
-            case "20170312-001":
-                upgrade_from_20170312001($db);
-                upgrade_database();
-                break;
-            case "20170416-001":
-                upgrade_from_20170416001($db);
-                upgrade_database();
-                break;
-            case "20170614-001":
-                upgrade_from_20170614001($db);
-                upgrade_database();
-                break;
-            case "20170723-001":
-                upgrade_from_20170723001($db);
-                upgrade_database();
-                break;
-            case "20170724-001":
-                upgrade_from_20170724001($db);
-                upgrade_database();
-                break;
-            case "20180104-001":
-                upgrade_from_20180104001($db);
-                upgrade_database();
-                break;
-            case "20180301-001":
-                upgrade_from_20180301001($db);
-                upgrade_database();
-                break;
-            case "20180527-001":
-                upgrade_from_20180527001($db);
-                upgrade_database();
-                break;
-            case "20180627-001":
-                upgrade_from_20180627001($db);
-                upgrade_database();
-                break;
-            case "20180812-001":
-                upgrade_from_20180812001($db);
-                upgrade_database();
-                break;
-            case "20180814-001":
-                upgrade_from_20180814001($db);
-                upgrade_database();
-                break;
-            case "20180830-001":
-                upgrade_from_20180830001($db);
-                upgrade_database();
-                break;
-            case "20180916-001":
-                upgrade_from_20180916001($db);
-                upgrade_database();
-                break;
-            case "20181103-001":
-                upgrade_from_20181103001($db);
-                upgrade_database();
-                break;
-            case "20190105-001":
-                upgrade_from_20190105001($db);
-                upgrade_database();
-                break;
-            case "20190210-001":
-                upgrade_from_20190210001($db);
-                upgrade_database();
-                break;
-            case "20190331-001":
-                upgrade_from_20190331001($db);
-                upgrade_database();
-                break;                
-            case "20190630-001":
-                upgrade_from_20190630001($db);
-                upgrade_database();
-                break;                
-            case "20190930-001":
-                upgrade_from_20190930001($db);
-                upgrade_database();
-                break;                
-            case "20191130-001":
-                upgrade_from_20191130001($db);
-                upgrade_database();
-                break;                
-            case "20200328-001":
-                upgrade_from_20200328001($db);
-                upgrade_database();
-                break;
-            case "20200401-001":
-                upgrade_from_20200401001($db);
-                upgrade_database();
-                break;
-            case "20200711-001":
-                upgrade_from_20200711001($db);
-                upgrade_database();
-                break;
-            case "20201005-001":
-                upgrade_from_20201005001($db);
-                upgrade_database();
-                break;
-            case "20201106-001":
-                upgrade_from_20201106001($db);
-                upgrade_database();
-                break;
-            default:
-                echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
+            // Get the upgrade function to call for this release version
+            $release_function_name = get_database_upgrade_function_for_release($db_version);
+
+            // If a release function name was provided
+            if ($release_function_name != false)
+            {
+                // If the release function exists
+                if (function_exists($release_function_name))
+                {
+                    // Call the release function
+                    call_user_func($release_function_name, $db);
+
+                    // Recursively run the database upgrade for the next release
+                    upgrade_database();
+                }
+                else echo "The specified database upgrade function could not be found.<br />\n";
+            }
+            else echo "Unable to find an upgrade function for the current SimpleRisk database version.<br />\n";
+        }
+        // The applicaton and database are updated to the same version
+        else
+        {
+            echo "You are currently running the version of the SimpleRisk database that goes along with your application version.<br />\n";
         }
     }
     // If the grant check was not successful
@@ -5441,6 +5370,29 @@ function display_cache_clear_warning()
 	global $escaper;
 
 	echo "<image src=\"../images/exclamation_warning.png\" width=\"30\" height=\"30\" />&nbsp;&nbsp;" . $escaper->escapeHtml($lang['CacheClearWarning']);
+}
+
+/*******************************************************
+ * FUNCTION: GET DATABASE UPGRADE FUNCTION FOR RELEASE *
+ *******************************************************/
+function get_database_upgrade_function_for_release($release)
+{
+	global $releases;
+
+	// If the release is in the releases array
+	if (in_array($release, $releases))
+	{
+		// Remove the hyphen from the release
+		$release = str_replace("-", "", $release);
+
+		// Get the release function name
+		$release_function_name = "upgrade_from_" . $release;
+
+		// Return the release function name
+		return $release_function_name;
+	}
+	// The release is not a valid release
+	else return false;
 }
 
 ?>

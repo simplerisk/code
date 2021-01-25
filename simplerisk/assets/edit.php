@@ -76,7 +76,7 @@ require_once(language_file());
   ?>
   <script>
     $(document).ready(function() {
-        $('#edit-assets-table select:not(.multiselect)').change(updateAsset);
+        $('#edit-assets-table select:not(.multiselect):not(.selectize-marker)').change(updateAsset);
 
         var oldValue = "";
         $('#edit-assets-table textarea, #edit-assets-table input').bind('focusin', function(){

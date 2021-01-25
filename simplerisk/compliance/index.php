@@ -137,10 +137,10 @@ if(isset($_POST['update_test'])){
         if (!$next_date)
             $next_date = false;
         else {
-            if (strtotime($next_date) < $today_dt) {
-                $error = true;
-                $error_msg = $lang['InvalidNextTestDate'];
-            }
+//            if (strtotime($next_date) < $today_dt) {
+//                $error = true;
+//                $error_msg = $lang['InvalidNextTestDate'];
+//            }
         }
         
         if ($last_date && $next_date && strtotime($next_date) < strtotime($last_date)) {

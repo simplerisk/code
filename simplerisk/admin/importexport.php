@@ -187,7 +187,7 @@ require_once(language_file());
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
-    ?>     
+    ?>
   </head>
 
   <body>

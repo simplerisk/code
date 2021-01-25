@@ -231,7 +231,7 @@ function add_asset_by_name_with_forced_verification($name, $verified = false) {
 /***********************
  * FUNCTION: ADD ASSET *
  ***********************/
-function add_asset($ip, $name, $value=5, $location=0, $teams=[], $details = "", $tags = "", $verified = false, $imported = false)
+function add_asset($ip, $name, $value=5, $location=0, $teams="", $details = "", $tags = "", $verified = false, $imported = false)
 {
     global $lang;
 
@@ -242,7 +242,7 @@ function add_asset($ip, $name, $value=5, $location=0, $teams=[], $details = "", 
         $ip     = trim($ip);
         $value  = trim($value);
         $location = (int)$location;
-        $teams   = is_array($teams) ? implode(',', $teams) : "";
+        $teams   = is_array($teams) ? implode(',', $teams) : $teams;
         
         if (!$name)
             return false;
@@ -835,7 +835,7 @@ function get_entered_assets($verified=null)
     $stmt = $db->prepare("
         SELECT
             a.*,
-            GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR '+++') as tags
+            GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR '|') as tags
         FROM
             `assets` a
             LEFT JOIN tags_taggees tt ON tt.taggee_id = a.id AND tt.type = 'asset'
@@ -1142,7 +1142,7 @@ function update_asset_field_value_by_field_name($id, $fieldName, $fieldValue)
             $fieldValue = try_encrypt($fieldValue);
         break;
         case "tags":
-            $tags = empty($fieldValue) ? [] : explode("+++", $fieldValue);
+            $tags = empty($fieldValue) ? [] : $fieldValue;
 
             foreach($tags as $tag){
                 if (strlen($tag) > 255) {

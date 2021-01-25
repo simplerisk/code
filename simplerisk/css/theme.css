@@ -1306,6 +1306,15 @@ form#comment {
   writing-mode: vertical-lr;
   width: 25px; }
 
+.import-export-tag-warning {
+  display: inline-block;
+  font-size: 0.8em;
+  color: red;
+  position: relative;
+  top: -5px;
+  line-height: 1.2;
+  padding-bottom: 15px; }
+
 #template-container .left-panel, #template-container .right-panel, #template-container .bottom-panel {
   min-height: 50px;
   border: 1px dotted;

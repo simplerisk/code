@@ -58,6 +58,9 @@ if (assessments_extra())
         // If the token is valid
         if (is_valid_questionnaire_token($_GET['token']))
         {
+            // To make sure the questionnaire processing has enough time
+            set_time_limit(600);
+            
             // Process action
             if(process_questionnaire_index()){
                 refresh();
@@ -125,7 +128,7 @@ else
       setup_favicon("..");
       setup_alert_requirements("..");
       echo "<script>\n";
-      echo "var BASE_URL = '". (isset($_SESSION['base_url']) ? $_SESSION['base_url'] : "") ."'; \n";
+      echo "var BASE_URL = '". (isset($_SESSION['base_url']) ? $escaper->escapeHtml($_SESSION['base_url']) : "") ."'; \n";
       echo "</script>\n";
   ?>  
 </head>

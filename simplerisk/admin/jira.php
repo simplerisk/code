@@ -106,11 +106,13 @@ require_once(language_file());
         <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
         <script src="../js/jquery.min.js"></script>
         <script src="../js/bootstrap.min.js"></script>
+        <script src="../js/bootstrap-multiselect.js"></script>
         <title>SimpleRisk: Enterprise Risk Management Simplified</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
         <link rel="stylesheet" href="../css/bootstrap.css">
         <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+        <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
 
         <link rel="stylesheet" href="../css/divshot-util.css">
         <link rel="stylesheet" href="../css/divshot-canvas.css">
@@ -162,6 +164,15 @@ require_once(language_file());
             }
 
         </style>
+        <script>
+            $(document).ready(function() {
+                $("#JiraScanProjectsForNewIssues").multiselect({
+                    enableFiltering: true,
+                    enableCaseInsensitiveFiltering: true,
+                    buttonWidth: '100%'
+                });
+            });
+        </script>
         <?php
             setup_favicon("..");
             setup_alert_requirements("..");

@@ -46,8 +46,8 @@ require_once(language_file());
         $location   = (int)$_POST['location'];
         $teams      = empty($_POST['team']) ? [] : $_POST['team'];
         $details    = $_POST['details'];
-        $tags       = empty($_POST['tags']) ? array() : explode(",", $_POST['tags']);
-        
+        $tags       = empty($_POST['tags']) ? [] : $_POST['tags'];
+
         foreach($tags as $tag){
             if (strlen($tag) > 255) {
                 global $lang;

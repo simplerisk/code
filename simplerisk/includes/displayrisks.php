@@ -2196,6 +2196,7 @@ function display_risk_tags_edit($tags = "")
 {
     
     global $lang, $escaper;
+    $tags_placeholder = $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);
 
     echo "  <div class=\"row-fluid\">";
     echo "      <div class=\"span10 hero-unit\">";
@@ -2204,36 +2205,26 @@ function display_risk_tags_edit($tags = "")
     echo "          </div>";
     echo "          <div class=\"row-fluid\">";
     echo "              <div class=\"span12\">";
-    echo "                  <input type=\"text\" readonly id=\"tags\" name=\"tags\" value=\"\" data-selectize-value='{$tags}'>
+    echo "                  <select readonly id='tags' name='tags[]' multiple placeholder='{$tags_placeholder}'>";
+    if ($tags) {
+        foreach(explode("|", $tags) as $tag) {
+            $tag = $escaper->escapeHtml($tag);
+            echo "              <option selected value='{$tag}'>{$tag}</option>";
+        }
+    }
+    echo "
+                            </select>
                             <div class='tag-max-length-warning'>" . $escaper->escapeHtml($lang['MaxTagLengthWarning']) . "</div>\n
                             <script>
                                 $('#tags').selectize({
                                     plugins: ['remove_button', 'restore_on_backspace'],
-                                    delimiter: '+++',
-                                    create: function (input){
-                                        return {value: 'new_tag_' + input, label:input};
-                                    },
-                                    valueField: 'value',
+                                    delimiter: '|',
+                                    create: true,
+                                    valueField: 'label',
                                     labelField: 'label',
                                     searchField: 'label',
+                                    createFilter: function(input) { return input.length <= 255; },
                                     preload: true,
-                                    onInitialize: function() {
-                                        var json_string = this.\$input.attr('data-selectize-value');
-                                        if(!json_string)
-                                            return;
-                                        var existingOptions = JSON.parse(json_string);
-                                        var self = this;
-                                        if(Object.prototype.toString.call( existingOptions ) === \"[object Array]\") {
-                                            existingOptions.forEach( function (existingOption) {
-                                                self.addOption(existingOption);
-                                                self.addItem(existingOption[self.settings.valueField]);
-                                            });
-                                        }
-                                        else if (typeof existingOptions === 'object') {
-                                            self.addOption(existingOptions);
-                                            self.addItem(existingOptions[self.settings.valueField]);
-                                        }
-                                    },
                                     load: function(query, callback) {
                                         if (query.length) return callback();
                                         $.ajax({
@@ -2272,7 +2263,7 @@ function display_risk_tags_view($tags)
     echo "          <div class=\"row-fluid\">";
     echo "              <div class=\"span12\">";
     if ($tags) {
-        foreach(explode("+++", $tags) as $tag) {
+        foreach(explode("|", $tags) as $tag) {
             echo "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin-right:2px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
         }
     } else {

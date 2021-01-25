@@ -84,6 +84,8 @@
         getRoute()->post('/reports/dynamic_unique_column_data', 'dynamicriskUniqueColumnDataAPI');
         getRoute()->post('/reports/save-dynamic-selections', 'saveDynamicSelectionsForm');
         getRoute()->post('/reports/delete-dynamic-selection', 'deleteDynamicSelectionForm');
+        getRoute()->post('/reports/my_open_risk', 'my_open_risk_datatable');
+        getRoute()->post('/reports/recent_commented_risk', 'recent_commented_risk_datatable');
         getRoute()->get('/management/risk/viewhtml', 'viewriskHtmlForm');
 
         getRoute()->get('/management/risk/closerisk', 'closeriskHtmlForm');
@@ -229,6 +231,7 @@
         /***********************************************************/
 
         getRoute()->get('/management/tag_options_of_type', 'getTagOptionsOfType');
+        getRoute()->get('/management/tag_options_of_types', 'getTagOptionsOfTypes');
 
         getRoute()->get('/upload_encoding_issue_fix/datatable', 'getFilesWithEncodingIssuesDatatableResponse');
         getRoute()->post('/upload_encoding_issue_fix/file_upload', 'uploadFileToFixFileEncodingIssue');
@@ -512,6 +515,23 @@
 			get_ucf_routes();
                 }
         }
+
+	// If the instance is registered
+	if (get_setting('registration_registered') != 0)
+	{
+		// Require file
+		$required_file = realpath(__DIR__ . '/../extras/upgrade/includes/api.php');
+
+		// If the file exists
+                if (file_exists($required_file))
+                {
+                        // Include the required file
+                        require_once($required_file);
+
+                        // Get the upgrade routes
+			get_upgrade_routes();
+		}
+	}
 
         /**************************************************************************************/
 

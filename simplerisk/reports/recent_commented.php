@@ -21,6 +21,7 @@ add_session_check();
 // Include the CSRF Magic library
 include_csrf_magic();
 
+
 // Include the SimpleRisk language file
 require_once(language_file());
 
@@ -31,11 +32,11 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 <!doctype html>
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
-<head> 
+<head>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    
+
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/sorttable.js"></script>
@@ -50,12 +51,12 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
     <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/side-navigation.css">
-
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
     ?>
 </head>
+
 <body>
     <?php
         view_top_menu("Reporting");
@@ -67,8 +68,8 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
     </style>
     <script>
         $(document).ready(function(){
-            $('#my-risk-datatable thead tr').clone(true).appendTo( '#my-risk-datatable thead');
-            $('#my-risk-datatable thead tr:eq(1) th').each( function (i) {
+            $('#risk-datatable thead tr').clone(true).appendTo( '#risk-datatable thead');
+            $('#risk-datatable thead tr:eq(1) th').each( function (i) {
                 var title = $(this).text();
                 var data_name = $(this).attr("data-name");
                 if(data_name == "mitigation_planned") {
@@ -85,7 +86,7 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
                     }
                 });
             });
-            var riskTable = $('#my-risk-datatable').DataTable( {
+            var riskTable = $('#risk-datatable').DataTable( {
                 //bFilter: false,
                 bLengthChange: false,
                 processing: true,
@@ -96,15 +97,16 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
                 dom : "flrti<'#view-all.view-all'>p",
                 pageLength: 10,
                 ajax: {
-                    url: BASE_URL + '/api/reports/my_open_risk',
+                    url: BASE_URL + '/api/reports/recent_commented_risk',
                     type: "POST",
                     error: function(xhr,status,error){
                         retryCSRF(xhr, this);
                     }
                 },
+                order: [[5, 'desc']],
                 columnDefs : [
                     {
-                        'targets' : [3],
+                        'targets' : [3,4],
                         'className' : 'risk-cell',
                     }
                 ]
@@ -118,15 +120,13 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
                 $('.paginate_button.next').html('<i class="fa fa-chevron-right"></i>');
             });
             // Add all text to View All button on bottom
-            $('.view-all').html("<?php echo $escaper->escapeHtml($lang['ALL']); ?>");
-
-            // View All
-            $(".view-all").click(function(){
+            $('.view-all').html("<?php echo $escaper->escapeHtml($lang['ALL']); ?>").click(function(){
                 var oSettings =  riskTable.settings();
                 oSettings[0]._iDisplayLength = -1;
                 riskTable.draw();
                 $(this).addClass("current");
             });
+
             // Page event
             $("body").on("click", "span > .paginate_button", function(){
                 var index = $(this).attr('aria-controls').replace("DataTables_Table_", "");
@@ -143,27 +143,25 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
     <div class="container-fluid">
         <div class="row-fluid">
              <div class="span3">
-                <?php view_reporting_menu("AllOpenRisksAssignedToMeByRiskLevel"); ?>
+                <?php view_reporting_menu("CurrentRiskComments"); ?>
             </div>
             <div class="span9">
-                <div class="row-fluid"><p><?php echo $escaper->escapeHtml($lang['ReportMyOpenHelp']); ?>.</p></div>
-                <table id="my-risk-datatable" width="100%" class="risk-datatable table table-bordered table-striped table-condensed">
-                      <thead>
-                          <tr>
-                              <th data-name='id' align="left" width="50px" valign="top"><?php echo $escaper->escapeHtml($lang['ID']); ?></th>
-                              <th data-name='risk_status' align="left" width="150px" valign="top"><?php echo $escaper->escapeHtml($lang['Status']); ?></th>
-                              <th data-name='subject' align="left" width="300px" valign="top"><?php echo $escaper->escapeHtml($lang['Subject']); ?></th>
-                              <th data-name='score' align="center" width="80px" valign="top"><?php echo $escaper->escapeHtml($lang['InherentRisk']); ?></th>
-                              <th data-name='submission_date' align="center" width="150px" valign="top"><?php echo $escaper->escapeHtml($lang['Submitted']); ?></th>
-                              <th data-name='mitigation_planned' align="center" width="150px" valign="top"><?php echo $escaper->escapeHtml($lang['MitigationPlanned']); ?></th>
-                              <th data-name='management_review' align="center" width="160px" valign="top"><?php echo $escaper->escapeHtml($lang['ManagementReview']); ?></th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                      </tbody>
+                <div class="row-fluid"><p><?php echo $escaper->escapeHtml($lang['ReportRecentCommentedHelp']); ?>.</p></div>
+                <table id="risk-datatable" width="100%" class="risk-datatable table table-bordered table-striped table-condensed">
+                    <thead>
+                        <tr>
+                            <th data-name='id' align="left" width="50px" valign="top"><?php echo $escaper->escapeHtml($lang['ID']); ?></th>
+                            <th data-name='risk_status' align="left" width="150px" valign="top"><?php echo $escaper->escapeHtml($lang['Status']); ?></th>
+                            <th data-name='subject' align="left" width="300px" valign="top"><?php echo $escaper->escapeHtml($lang['Subject']); ?></th>
+                            <th data-name='score' align="center" width="80px" valign="top"><?php echo $escaper->escapeHtml($lang['InherentRisk']); ?></th>
+                            <th data-name='residual_risk' align=\"center\" width="80px"  valign=\"top\"><?php echo $escaper->escapeHtml($lang['ResidualRisk']); ?></th>
+                            <th data-name='comment_date' align="center" width="150px" valign="top"><?php echo $escaper->escapeHtml($lang['CommentDate']); ?></th>
+                            <th data-name='comment' align="center" width="150px" valign="top"><?php echo $escaper->escapeHtml($lang['Comment']); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
                 </table>
-                <br>
-                <?php //get_risk_table(8); ?>
             </div>
         </div>
     </div>

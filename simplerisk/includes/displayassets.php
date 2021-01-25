@@ -182,23 +182,24 @@ function display_asset_details_edit($display = true)
 function display_asset_tags_add($display = true)
 {
     global $lang, $escaper;
+    $tags_placeholder = $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);
 
     $display ? $displayString = "" : $displayString = " style=\"display: none;\"";
 
     echo "  <div class=\"row-fluid\"{$displayString}>";
     echo "      <div class=\"wrap-text span2 text-right\">".$escaper->escapeHtml($lang['Tags']).":</div>";
     echo "      <div class=\"span8\">";
-    echo "          <input class=\"selectize-marker\" type=\"text\" readonly id=\"tags\" name=\"tags\">
+    echo "          <select class=\"selectize-marker\" readonly id=\"tags\" name=\"tags[]\" multiple placeholder='{$tags_placeholder}'></select>
                     <div class='tag-max-length-warning'>" . $escaper->escapeHtml($lang['MaxTagLengthWarning']) . "</div>\n
                     <script>
                         $('#tags').selectize({
                             plugins: ['remove_button', 'restore_on_backspace'],
-                            delimiter: ',',
+                            delimiter: '|',
                             create: true,
                             valueField: 'label',
                             labelField: 'label',
                             searchField: 'label',
-                            sortField: [{ field: 'label', direction: 'asc' }],
+                            sortField: [{ field: 'label', direction: 'asc' }]
                         });
                     </script>";
     echo "      </div>";
@@ -476,7 +477,15 @@ function display_asset_tags_td($asset_tags)
 {
     global $lang, $escaper;
 
-    echo "<td align=\"left\">" . $escaper->escapeHtml(str_replace ([",", "+++"], ", ", $asset_tags)) . "</td>\n";
+    echo "<td align=\"left\">";
+    if ($asset_tags) {
+        foreach(explode("|", $asset_tags) as $tag) {
+            echo "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none; margin:1px; padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
+        }
+    } else {
+        echo $escaper->escapeHtml($lang['NoTagAssigned']);
+    }
+    echo "</td>\n";
 }
 
 /*****************************************
@@ -583,14 +592,22 @@ function display_asset_details_td_edit($asset_id, $asset_details)
 function display_asset_tags_td_edit($asset_id, $asset_tags)
 {
     global $lang, $escaper;
+    $tags_placeholder = $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);
 
     $id="tags-" . $escaper->escapeHtml($asset_id);
     echo "<td>\n";
-    echo "  <input type=\"text\" class=\"selectize-marker\" readonly id='{$id}' value=\"". $escaper->escapeHtml($asset_tags) ."\">
+    echo "  <select class='selectize-marker' readonly id='{$id}' name='tags[]' multiple placeholder='{$tags_placeholder}'>";
+    if ($asset_tags) {
+        foreach(explode("|", $asset_tags) as $tag) {
+            $tag = $escaper->escapeHtml($tag);
+            echo "<option selected value='{$tag}'>{$tag}</option>";
+        }
+    }    
+    echo "  </select>
             <script>
                 $('#{$id}').selectize({
                     plugins: ['remove_button', 'restore_on_backspace'],
-                    delimiter: '+++',
+                    delimiter: '|',
                     create: true,
                     valueField: 'label',
                     labelField: 'label',

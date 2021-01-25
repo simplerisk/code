@@ -43,9 +43,6 @@ else
 	header("Location: ../admin/incidentmanagement.php");
 }
 
-if(isset($_GET["action"]) && $_GET["action"] == "download"){
-    if(isset($_GET["id"])) download_evidence_file($_GET["id"]);
-}
 ?>
 
 <!doctype html>
@@ -59,7 +56,6 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
         <script src="../js/jquery-ui.min.js"></script>
         <script src="../js/jquery.dataTables.js"></script>
         <script src="../js/jquery.blockUI.min.js"></script>
-        <script src="../js/highcharts/code/highcharts.js"></script>
         <script src="../js/bootstrap.min.js"></script>
         <script src="../js/bootstrap-multiselect.js"></script>
         <script src="../js/selectize.min.js"></script>
@@ -116,7 +112,7 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
 	// If the Incident Management Extra is enabled
 	if (incident_management_extra())
 	{
-                view_incident_management_top_menu("Incidents");
+		view_incident_management_top_menu("Reporting");
 	}
 
             // Get any alert messages
@@ -132,21 +128,22 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
 		// If the Incident Management Extra is enabled
 		if (incident_management_extra())
 		{
-			// Display the Incidents menu items
-			view_incident_management_menu();
+			// Display the Reporting menu items
+			view_incident_management_reporting_menu();
 		}
               ?>
             </div>
             <div class="span4">
               <div class="container-fluid">
                 <div class="row-fluid">
-                  <div class="span9">
+                  <div class="span12">
+                    <br />
               <?php 
                 // If the Incident Management Extra is enabled
                 if (incident_management_extra())
                 {
-			// Display the Incidents content
-			display_incident_management();
+			// Display the Reporting content
+			display_incident_management_reporting();
 		}
               ?>
                   </div>
@@ -156,6 +153,8 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
           </div>
 
 	<script>
+		$ = jQuery.noConflict();
+		$.noConflict();
         (function($) {
 
         var tabs =  $(".tabs li a");
@@ -171,6 +170,5 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
         })(jQuery);
 
 	</script>
-        <?php display_set_default_date_format_script(); ?>
     </body>
 </html>

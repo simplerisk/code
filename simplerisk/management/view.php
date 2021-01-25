@@ -383,6 +383,19 @@ if (isset($_GET['id']))
         view_top_menu("RiskManagement");
         // Get any alert messages
         get_alert();
+        $active = isset($_GET['active']) ? $_GET['active'] : "ReviewRisksRegularly";
+        switch($active){
+            default:
+            case "ReviewRisksRegularly":
+                $list_href = "review_risks.php";
+                break;
+            case "PerformManagementReviews":
+                $list_href = "management_review.php";
+                break;
+            case "PlanYourMitigations":
+                $list_href = "plan_mitigations.php";
+                break;
+        }
       ?>
       <div class="tabs new-tabs">
         <div class="container-fluid">
@@ -390,9 +403,9 @@ if (isset($_GET['id']))
             <div class="span3"> </div>
             <div class="span9">
               <div class="tab-append">
-                <div class="tab selected form-tab tab-show" id="tab"><div><span><a href="plan_mitigations.php">Risk list</a></span></div>
+                <div class="tab selected form-tab tab-show" id="risk_list"><div><span><a href="<?php echo $list_href;?>">Risk list</a></span></div>
                 </div>
-                <div class="tab selected form-tab tab-show" id="tab"><div><span><strong>ID: <?php echo $id.'</strong>  '.$escaper->escapeHtml(try_decrypt($subject)); ?></span></div>
+                <div class="tab selected form-tab tab-show" id="risk_detail"><div><span><strong>ID: <?php echo $id.'</strong>  '.$escaper->escapeHtml(try_decrypt($subject)); ?></span></div>
                 </div>
               </div>
             </div>
@@ -404,7 +417,6 @@ if (isset($_GET['id']))
         <div class="row-fluid">
           <div class="span3">
             <?php 
-                $active = isset($_GET['active']) ? $_GET['active'] : "ReviewRisksRegularly";
                 view_risk_management_menu($active); 
             ?>
           </div>

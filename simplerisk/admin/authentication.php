@@ -51,6 +51,7 @@ require_once(language_file());
         {
             // Enable the Authentication Extra
             enable_authentication_extra();
+            refresh();
         }
 
         // If the user wants to deactivate the extra
@@ -58,6 +59,7 @@ require_once(language_file());
         {
             // Disable the Authentication Extra
             disable_authentication_extra();
+            refresh();
         }
         
         // If the user maps Team and LDAP Group

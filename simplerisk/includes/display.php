@@ -3509,7 +3509,7 @@ function view_top_menu($active)
     global $lang, $escaper;
 
     echo "<script>\n";
-    echo "var BASE_URL = '". (isset($_SESSION['base_url']) ? $_SESSION['base_url'] : "") ."'; \n";
+    echo "var BASE_URL = '". (isset($_SESSION['base_url']) ? $escaper->escapeHtml($_SESSION['base_url']) : "") ."'; \n";
     echo "var field_required_lang = '". $escaper->escapeHtml($lang['FieldIsRequired']) ."'; \n";
     echo "</script>\n";
 
@@ -3668,7 +3668,7 @@ function view_top_menu($active)
 
 			                		var business_unit_id = $this.data("id");
 			                		$.ajax({
-    			                        url: BASE_URL + "/api/org_hierarchy/business_unit/select?id=" + business_unit_id,
+    			                        url: BASE_URL + "/api/organizational_hierarchy/business_unit/select?id=" + business_unit_id,
     			                        type: "GET",
     			                        success : function (response) {
     			                        	window.location.href = window.location.pathname + window.location.search;
@@ -4048,6 +4048,9 @@ function view_reporting_menu($active)
     echo ($active == "DynamicRiskReport" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"dynamic_risk_report.php\">" . $escaper->escapeHtml($lang['DynamicRiskReport']) . "</a>\n";
     echo "</li>\n";
+    echo ($active == "ConnectivityVisualizer" ? "<li class=\"active\">\n" : "<li>\n");
+    echo "<a href=\"connectivity_visualizer.php\">" . $escaper->escapeHtml($lang['ConnectivityVisualizer']) . "</a>\n";
+    echo "</li>\n";
     echo ($active == "RiskAverageOverTime" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"risk_average_baseline_metric.php\">" . $escaper->escapeHtml($lang['RiskAverageOverTime']) . "</a>\n";
     echo "</li>\n";
@@ -4087,7 +4090,9 @@ function view_reporting_menu($active)
     echo ($active == "ClosedRisksByDate" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"closed_by_date.php\">" . $escaper->escapeHtml($lang['ClosedRisksByDate']) . "</a>\n";
     echo "</li>\n";
-
+    echo ($active == "CurrentRiskComments" ? "<li class=\"active\">\n" : "<li>\n");
+    echo "<a href=\"recent_commented.php\">" . $escaper->escapeHtml($lang['CurrentRiskComments']) . "</a>\n";
+    echo "</li>\n";
     // If User has permission for complicance menu, shows Audit Timeline report
     if(!empty($_SESSION['compliance']))
     {
@@ -4666,7 +4671,7 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
                                     echo "<tr>
                                         <td>
                                         <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$risk_field['id']}\" id=\"checkbox_custom_field_{$risk_field['id']}\"" . (!empty($custom_values["custom_field_{$risk_field['id']}"]) == true ? " checked=\"yes\"" : "") . "  />
-                                        <label for=\"checkbox_custom_field_{$risk_field['id']}\">". $risk_field['name'] ."</label>
+                                        <label for=\"checkbox_custom_field_{$risk_field['id']}\">". $escaper->escapeHtml($risk_field['name']) ."</label>
                                     </tr>\n";
                                 }
                             }
@@ -4720,7 +4725,7 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
                                     echo "<tr>
                                         <td>
                                         <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$risk_field['id']}\" id=\"checkbox_custom_field_{$risk_field['id']}\"" . (!empty($custom_values["custom_field_{$risk_field['id']}"]) == true ? " checked=\"yes\"" : "") . "  />
-                                        <label for=\"checkbox_custom_field_{$risk_field['id']}\">". $risk_field['name'] ."</label>
+                                        <label for=\"checkbox_custom_field_{$risk_field['id']}\">". $escaper->escapeHtml($risk_field['name']) ."</label>
                                     </tr>\n";
                                 }
                             }
@@ -4752,7 +4757,7 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
                                     echo "<tr>
                                         <td>
                                         <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$risk_field['id']}\" id=\"checkbox_custom_field_{$risk_field['id']}\"" . (!empty($custom_values["custom_field_{$risk_field['id']}"]) ? " checked=\"yes\"" : "") . "  />
-                                        <label for=\"checkbox_custom_field_{$risk_field['id']}\">". $risk_field['name'] ."</label>
+                                        <label for=\"checkbox_custom_field_{$risk_field['id']}\">". $escaper->escapeHtml($risk_field['name']) ."</label>
                                     </tr>\n";
                                 }
                             }
@@ -4802,7 +4807,7 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
                                 echo "<tr>
                                     <td>
                                     <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$mitigation_field['id']}\" id=\"checkbox_custom_field_{$mitigation_field['id']}\"" . (!empty($custom_values["custom_field_{$mitigation_field['id']}"]) == true ? " checked=\"yes\"" : "") . "  />
-                                    <label for=\"checkbox_custom_field_{$mitigation_field['id']}\">". $mitigation_field['name'] ."</label>
+                                    <label for=\"checkbox_custom_field_{$mitigation_field['id']}\">". $escaper->escapeHtml($mitigation_field['name']) ."</label>
                                 </tr>\n";
                             }
                         }
@@ -4845,7 +4850,7 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
                                 echo "<tr>
                                     <td>
                                     <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$review_field['id']}\" id=\"checkbox_custom_field_{$review_field['id']}\"" . (!empty($custom_values["custom_field_{$review_field['id']}"]) ? " checked=\"yes\"" : "") . "  />
-                                    <label for=\"checkbox_custom_field_{$review_field['id']}\">". $review_field['name'] ."</label>
+                                    <label for=\"checkbox_custom_field_{$review_field['id']}\">". $escaper->escapeHtml($review_field['name']) ."</label>
                                 </tr>\n";
                             }
                         }
@@ -6020,7 +6025,6 @@ function risk_average_baseline_metric($time = "day", $title = ""){
 
     // Get the opened risks array by month
     $risk_scores = get_risks_score_averages($time);
-    list($date) = array_keys($risk_scores);
 
         // If the opened risks array is empty
         if (empty($risk_scores))
@@ -7585,6 +7589,7 @@ function display_audit_timeline()
                         <th data-name='test_name' align=\"left\" width=\"200px\" valign=\"top\">".$escaper->escapeHtml($lang['TestName'])."</th>
                         <th data-name='associated_frameworks' align=\"left\" valign=\"top\">".$escaper->escapeHtml($lang['AssociatedFrameworks'])."</th>
                         <th data-name='last_test_date' align=\"left\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['LastTestDate'])."</th>
+                        <th data-name='last_test_result' align=\"left\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['LastTestResult'])."</th>
                         <th data-name='next_test_date' align=\"center\" width=\"150px\" valign=\"top\">".$escaper->escapeHtml($lang['NextTestDate'])."</th>
                     </tr>
                 </thead>
@@ -8033,7 +8038,7 @@ function display_custom_risk_columns($custom_setting_field = "custom_plan_mitiga
                 } else continue;
             } else {
                 $field = "custom_field_{$active_field['id']}";
-                $label = $active_field['name'];
+                $label = $escaper->escapeHtml($active_field['name']);
             }
             $active_field["field"] = $field;
             $active_field["label"] = $label;

@@ -1774,7 +1774,7 @@ function get_review_needed_table()
             if (!preg_match('/\d{4}/', $review_status))
             {
                 // Start the new table
-                echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+                echo "<table class=\"table table-bordered table-condensed sortable risk-table\">\n";
                 echo "<thead>\n";
                 echo "<tr>\n";
                 echo "<th bgcolor=\"#0088CC\" colspan=\"6\"><center>". $escaper->escapeHtml($review_status) ."</center></th>\n";
@@ -1804,6 +1804,30 @@ function get_review_needed_table()
             echo "</tr>\n";
         }
     }
+    echo "
+    <script>
+        $(document).ready(function(){
+            $('.risk-table').each(function(i){
+                $(this).find('thead tr:eq(1)').clone(true).appendTo($(this).find('thead'));
+                $(this).find('thead tr:eq(2) th').each( function (i) {
+                    var title = $(this).text();
+                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $( 'input, select', this ).on( 'keyup change', function () {
+                        if ( riskTable.column(i).search() !== this.value ) {
+                            riskTable.column(i).search( this.value ).draw();
+                        }
+                    });
+                });
+                var riskTable = $(this).DataTable( {
+                    paging: false,
+                    orderCellsTop: true,
+                    fixedHeader: true
+                });
+            });
+
+         });
+    </script>
+    ";
 }
 
 /************************************
@@ -2692,6 +2716,14 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
         $class = $index%2?"odd":"even";
         $str .= "<tr class='{$class}'>\n";
         $row['id'] = (int)$row['id'] + 1000;
+        
+        $tags = "";
+        if ($row['risk_tags']) {
+            foreach(explode("|", $row['risk_tags']) as $tag) {
+                $tags .= "<button class=\"btn btn-secondary btn-sm\" style=\"pointer-events: none;margin: 1px;padding: 4px 12px;\" role=\"button\" aria-disabled=\"true\">" . $escaper->escapeHtml($tag) . "</button>";
+            }
+        }
+
         $data_row = [];
         if(in_array("id", $display_columns)) $data_row[] = "<a href=\"../management/view.php?id=" . $escaper->escapeHtml($row['id']) . "\" target=\"_blank\">".$escaper->escapeHtml($row['id'])."</a>";
         if(in_array("risk_status", $display_columns)) $data_row[] = $escaper->escapeHtml($row['status']);
@@ -2734,7 +2766,7 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
         if(in_array("mitigation_accepted", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_accepted']);
         if(in_array("mitigation_date", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_date']);
         if(in_array("mitigation_controls", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_control_names']);
-        if(in_array("risk_tags", $display_columns)) $data_row[] = $escaper->escapeHtml($row['risk_tags']);
+        if(in_array("risk_tags", $display_columns)) $data_row[] = $tags;
         if(in_array("closure_date", $display_columns)) $data_row[] = $escaper->escapeHtml(format_datetime($row['closure_date'], "", "H:i"));
         if(in_array("comments", $display_columns)) $data_row[] = $escaper->escapeHtml($row['comments']);
         foreach($data_row as $col){
@@ -3250,7 +3282,7 @@ function risks_query_select($column_filters)
 
         (
             SELECT
-                GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
             FROM
                 tags t, tags_taggees tt 
             WHERE
@@ -3444,7 +3476,7 @@ function risks_unique_column_query_select()
 
         (
             SELECT
-                GROUP_CONCAT(DISTINCT CONCAT(t.tag, '{$delimiter}', t.id) ORDER BY t.tag ASC SEPARATOR ';')
+                GROUP_CONCAT(DISTINCT CONCAT(t.tag, '{$delimiter}', t.id) ORDER BY t.tag ASC SEPARATOR '|')
             FROM
                 tags t, tags_taggees tt 
             WHERE
@@ -3843,7 +3875,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
             if(!$column_filter) continue;
             $empty_filter = false;
             // If encryption extra is enabled and Column is a encrypted field
-            if((encryption_extra() && in_array($name, $encrypt_column_names)) || $name == "next_review_date" || $name == "management_review" || in_array($name, $date_fields))
+            if((encryption_extra() && in_array($name, $encrypt_column_names)) || $name == "next_review_date" || $name == "management_review" || $name == "id" || in_array($name, $date_fields))
             {
                 $requested_manual_column_filters[$name] = $column_filter;
             }
@@ -3951,10 +3983,10 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                 $bind_param_name = "column_filter_". md5($name);
 
                 switch($name){
-                    case "id":
-                        $wheres[] = " a.id+1000 = :{$bind_param_name} ";
-                        $bind_params[$bind_param_name] = $column_filter;
-                    break;
+                    // case "id":
+                    //     $wheres[] = " a.id+1000 = :{$bind_param_name} ";
+                    //     $bind_params[$bind_param_name] = $column_filter;
+                    // break;
                     case "risk_status":
                         if($empty_filter) $wheres[] = "(FIND_IN_SET(a.status, :{$bind_param_name}) OR a.status IS NULL)";
                         else $wheres[] = " FIND_IN_SET(a.status, :{$bind_param_name}) ";
@@ -4249,6 +4281,13 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                         break;
                     }
                 }
+                elseif($column_name == "id")
+                {
+                    if( stripos($risk['id'] + 1000, $val) === false ){
+                        $success = false;
+                        break;
+                    }
+                }
                 elseif($column_name == "subject")
                 {
                     if($val != "" && stripos(try_decrypt($risk['subject']), $val) === false ){
@@ -4373,9 +4412,9 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
             $GLOBALS['orderDir'] = $orderDir;
             usort($filtered_risks, function($a, $b) {
                 if($GLOBALS['orderDir'] == "asc") 
-                    return strcmp($a['encryption_order'], $b['encryption_order']);
+                    return strcasecmp($a['encryption_order'], $b['encryption_order']);
                 else 
-                    return strcmp($b['encryption_order'], $a['encryption_order']);
+                    return strcasecmp($b['encryption_order'], $a['encryption_order']);
             });
         }
         $risks_by_page = [];
@@ -5376,16 +5415,13 @@ function get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir, 
     $manual_column_filters = [];
     $having_query = "";
     foreach($column_filters as $name => $column_filter){
-        if($name == "id"){
-            $separation_query .= " AND a.id LIKE :id ";
-            $bind_params[$name] = "%{$column_filter}%";
-        } elseif($name == "calculated_risk"){
+        if($name == "calculated_risk"){
             $separation_query .= " AND b.calculated_risk LIKE :calculated_risk ";
             $bind_params[$name] = "%{$column_filter}%";
         } elseif($name == "residual_risk"){
             $having_query .= " AND residual_risk LIKE :residual_risk ";
             $bind_params[$name] = "%{$column_filter}%";
-        } elseif($name == "subject"){
+        } else{
             $manual_column_filters[$name] = $column_filter;
         }
     }
@@ -5461,7 +5497,12 @@ function get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir, 
         $residual_risk = (float)$risk['residual_risk'];
         $success = true;
         foreach($manual_column_filters as $column_name => $val){
-            if($column_name == "subject") {
+            if($column_name == "id") {
+                if( stripos($risk_id, $val) === false ){
+                    $success = false;
+                    break;
+                }
+            } else if($column_name == "subject") {
                 if( stripos($subject, $val) === false ){
                     $success = false;
                     break;
@@ -5900,6 +5941,832 @@ function get_user_management_reports_report_data($type, $mode = 'normal', $start
         // Return the raw result array
         return $data;
     }
+}
+
+/************************************
+ * FUNCTION: GET CONNECTIVITY GRAPH *
+ ************************************/
+function get_connectivity_graph()
+{
+	global $lang, $escaper;
+
+	// Begin the filter by form
+	echo "<form name=\"filter\" method=\"post\" action=\"\">\n";
+
+	// Create a filter by 
+	echo $escaper->escapeHtml($lang['FilterBy']) . ":&nbsp;&nbsp;";
+
+	// If no filter was posted
+	if (!isset($_POST['filter']))
+	{
+		// Set the filter option to None Selected
+		$filter = 0;
+	}
+	else $filter = (int)$_POST['filter'];
+
+	// If no selected was posted
+	if (!isset($_POST['selected']))
+	{
+		// Set the selected option to None Selected
+		$selected = 0;
+	}
+	else $selected = (int)$_POST['selected'];
+
+	// Create the dropdown
+	echo "<select name=\"filter\" onchange=\"javascript: submit()\">\n";
+	echo "  <option value=\"0\"" . ($filter == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['NoneSelected']) . "</option>\n";
+	echo "  <option value=\"1\"" . ($filter == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Risk']) . "</option>\n";
+	echo "  <option value=\"2\"" . ($filter == 2 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Asset']) . "</option>\n";
+	echo "  <option value=\"3\"" . ($filter == 3 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Control']) . "</option>\n";
+	echo "  <option value=\"4\"" . ($filter == 4 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['Framework']) . "</option>\n";
+	echo "</select>\n";
+
+	// If the filter is not zero
+	if ($filter != 0)
+	{
+		echo "<br />\n";
+
+		// Script to make dropdown searchable
+		echo "<script>\n";
+		echo "$(document).ready(function() {\n";
+		echo "  $('.searchable-single-select-dropdown').select2();\n";
+		echo "});\n";
+		echo "</script>\n";
+
+		echo $escaper->escapeHtml($lang['Selected']) . ":&nbsp;&nbsp;";
+
+		// Create the dropdown
+		echo "<select class=\"searchable-single-select-dropdown\" name=\"selected\" onchange=\"javascript: submit()\">\n";
+		echo "  <option value=\"0\"" . ($selected == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['NoneSelected']) . "</option>\n";
+
+		// Get the query based on the filter
+		switch ($filter)
+		{
+			// If the filter is risks
+			case 1:
+				$sql = "SELECT id, subject FROM risks ORDER BY id;";
+				break;
+			case 2:
+				$sql = "SELECT id, name FROM assets WHERE verified=1 ORDER BY order_by_name;";
+				break;
+			case 3:
+				$sql = "SELECT id, short_name FROM framework_controls ORDER BY short_name;";
+				break;
+			case 4:
+				$sql = "SELECT value, name FROM frameworks ORDER BY name;";
+				break;
+			default:
+				$sql = null;
+				break;
+		}
+
+		// If the sql is not null
+		if ($sql != null)
+		{
+			// Open the database connection
+			$db = db_open();
+
+			// Query the database
+			$stmt = $db->prepare($sql);
+			$stmt->execute();
+
+			// Store the list in the array
+			$array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+			// Close the database connection
+			db_close($db);
+
+			// If we are filtering by risk
+			if ($filter == 1)
+			{
+                                // Set the radius values
+                                $risk_radius = 20;
+                                $asset_radius = 10;
+                                $control_radius = 10;
+                                $framework_radius = 10;
+
+				// If team separation is enabled
+				if (team_separation_extra())
+				{
+					//Include the team separation extra
+					require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+					// Strip risks that the user shouldn't have access to
+					$array = strip_no_access_risks($array, null, "id");
+				}
+
+				// For each value in the array
+				foreach ($array as $key => $value)
+				{
+					// Get the risk ID and subject
+					$risk_id = $value['id']+1000;
+					$subject = try_decrypt($value['subject']);
+
+					// If this is the selected value
+					if ($selected == $risk_id)
+					{
+						// Set the selected values
+						$selected_risk_id = $risk_id;
+						$selected_subject = $subject;
+
+						// If the subject is more than 50 characters
+						if (strlen($selected_subject) > 50)
+						{
+							// Truncate the selected subject to 50 characters
+							$selected_subject = "[" . $selected_risk_id . "] " . substr($selected_subject, 0, 50) . "...";
+						}
+						else $selected_subject = "[" . $selected_risk_id . "] " . $selected_subject;
+					}
+
+					// Display the value
+					echo "<option value=\"" . $escaper->escapeHtml($risk_id) . "\"" . ($selected == $risk_id ? " selected" : "") . ">[" . $escaper->escapeHtml($risk_id) . "] " . $escaper->escapeHtml($subject) . "</option>\n";
+				}
+
+                                // Get the connectivity for the risk
+                                $asset_associations = get_asset_connectivity_for_risk($selected_risk_id, $selected_subject);
+                                $control_associations = get_control_connectivity_for_risk($selected_risk_id, $selected_subject);
+
+                                // For each control association
+                                foreach ($control_associations as $key => $value)
+                                {
+                                        // If this is a control
+                                        if ($value['association_header_1'] == $lang['Control'])
+                                        {
+                                                // Get the connectivity for the control
+                                                $framework_associations = array_merge((array)$framework_associations, (array)get_framework_connectivity_for_control($value['association_id_1'], $value['association_name_1']));
+                                        }
+                                }
+
+				// Merge the association arrays
+				$all_associations = array_merge((array)$asset_associations, (array)$control_associations, (array)$framework_associations);
+			}
+			// If we are filtering by asset
+			else if ($filter == 2)
+			{
+                                // Set the radius values
+                                $risk_radius = 10;
+                                $asset_radius = 20;
+                                $control_radius = 10;
+                                $framework_radius = 10;
+
+				// For each value in the array
+				foreach ($array as $key => $value)
+				{
+					// Get the asset id and name
+					$asset_id = $value['id'];
+					$asset_name = try_decrypt($value['name']);
+
+					// If this is the selected value
+					if ($selected == $asset_id)
+					{
+						// Set the selected values
+						$selected_asset_id = $asset_id;
+						$selected_asset_name = $asset_name;
+					}
+
+					// Display the value
+					echo "<option value=\"" . $escaper->escapeHtml($asset_id) . "\"" . ($selected == $asset_id ? " selected" : "") . ">" . $escaper->escapeHtml($asset_name) . "</option>\n";
+				}
+
+                                // Get the the connectivity for the asset
+                                $risk_associations = get_risk_connectivity_for_asset($selected_asset_id, $selected_asset_name);
+
+				//  For each risk association
+				foreach ($risk_associations as $key => $value)
+				{
+					// If this is a risk
+					if ($value['association_header_1'] == $lang['Risk'])
+					{
+						// Get the control associations for that risk
+						$control_associations = array_merge((array)$control_associations, (array)get_control_connectivity_for_risk($value['association_id_1'], $value['association_name_1']));
+					}
+				}
+
+				// For each control association
+				foreach ($control_associations as $key => $value)
+				{
+					// If this is a control
+					if ($value['association_header_1'] == $lang['Control'])
+					{
+						// Get the connectivity for the control
+						$framework_associations = array_merge((array)$framework_associations, (array)get_framework_connectivity_for_control($value['association_id_1'], $value['association_name_1']));
+					}
+				}
+
+				// Merge the associations array
+				$all_associations = array_merge((array)$risk_associations, (array)$control_associations, (array)$framework_associations);
+			}
+			// If we are filtering by control
+			else if ($filter == 3)
+			{
+                                // Set the radius values
+                                $risk_radius = 10;
+                                $asset_radius = 10;
+                                $control_radius = 20;
+                                $framework_radius = 10;
+
+                                // For each value in the array
+                                foreach ($array as $key => $value)
+                                {
+                                        // Get the control id and name
+                                        $control_id = $value['id'];
+                                        $control_name = $value['short_name'];
+
+                                        // If this is the selected value
+                                        if ($selected == $control_id)
+                                        {
+                                                // Set the selected values
+                                                $selected_control_id = $control_id;
+                                                $selected_control_name = $control_name;
+                                        }
+
+                                        // Display the value
+                                        echo "<option value=\"" . $escaper->escapeHtml($control_id) . "\"" . ($selected == $control_id ? " selected" : "") . ">" . $escaper->escapeHtml($control_name) . "</option>\n";
+                                }
+
+				// Get the connectivity for the control
+				$framework_associations = get_framework_connectivity_for_control($selected_control_id, $selected_control_name);
+
+				// Get the risk connectivity for the control
+				$risk_associations = get_risk_connectivity_for_control($selected_control_id, $selected_control_name);
+
+				// For each risk association
+				foreach ($risk_associations as $key => $value)
+				{
+					// If this is a risk
+					if ($value['association_header_1'] == $lang['Risk'])
+					{
+						// Get the asset connectivity for the risk
+						$asset_associations = array_merge((array)$asset_associations, (array)get_asset_connectivity_for_risk($value['association_id_1'], $value['association_name_1']));
+					}
+				}
+
+				// Merge the associations array
+				$all_associations = array_merge((array)$framework_associations, (array)$risk_associations, (array)$asset_associations);
+			}
+			// If we are filtering by framework
+			else if ($filter == 4)
+			{
+                                // Set the radius values
+                                $risk_radius = 10;
+                                $asset_radius = 10;
+                                $control_radius = 10;
+                                $framework_radius = 20;
+
+                                // For each value in the array
+                                foreach ($array as $key => $value)
+                                {       
+                                        // Get the control id and name
+                                        $framework_id = $value['value'];
+                                        $framework_name = try_decrypt($value['name']);
+                                        
+                                        // If this is the selected value
+                                        if ($selected == $framework_id)
+                                        {       
+                                                // Set the selected values
+                                                $selected_framework_id = $framework_id;
+                                                $selected_framework_name = $framework_name;
+                                        }
+                                        
+                                        // Display the value
+                                        echo "<option value=\"" . $escaper->escapeHtml($framework_id) . "\"" . ($selected == $framework_id ? " selected" : "") . ">" . $escaper->escapeHtml($framework_name) . "</option>\n";                          
+                                }
+
+				// Get the control connectivity for the framework
+				$control_associations = get_control_connectivity_for_framework($selected_framework_id, $selected_framework_name);
+
+				// For each control association
+				foreach ($control_associations as $key => $value)
+				{
+					// If this is a control
+					if ($value['association_header_1'] == $lang['Control'])
+					{
+						// Get the risk connectivity for the control
+						$risk_associations = array_merge((array)$risk_associations, (array)get_risk_connectivity_for_control($value['association_id_1'], $value['association_name_1']));
+					}
+				}
+
+				// For each risk association
+                                foreach ($risk_associations as $key => $value)
+                                {
+                                        // If this is a risk
+                                        if ($value['association_header_1'] == $lang['Risk'])
+                                        {
+                                                // Get the asset connectivity for the risk
+                                                $asset_associations = array_merge((array)$asset_associations, (array)get_asset_connectivity_for_risk($value['association_id_1'], $value['association_name_1']));
+                                        }
+                                }
+
+                                // Merge the associations array
+                                $all_associations = array_merge((array)$control_associations, (array)$risk_associations, (array)$asset_associations);
+			}
+		}
+
+		echo "</select>\n";
+
+		// If the selected value is not 0 and we have associations
+		if ($selected != 0 && !empty($all_associations))
+		{
+			echo "<figure class=\"highcharts-figure\">\n";
+			echo "  <div id=\"container\"></div>\n";
+			echo "</figure>\n";
+
+			echo "<script>
+		        Highcharts.addEvent(
+                          Highcharts.Series,
+                          'afterSetOptions',
+                          function (e) {
+                            var colors = Highcharts.getOptions().colors,
+                            i = 0,
+                            nodes = {};
+
+                            if (
+                              this instanceof Highcharts.seriesTypes.networkgraph &&
+                              e.options.id === 'connectivity-graph'
+                            ) {
+                              e.options.data.forEach(function (link) {
+
+                                if (link[0].startsWith('" . js_string_escape($lang['Risk']) . "')) {
+                                  nodes[link[0]] = {
+                                    id: link[0],
+                                    marker: {
+                                      radius: " . js_string_escape($risk_radius) . "
+                                    },
+                                    color: colors[1]
+                                  }
+                                } else if (link[0].startsWith('" . js_string_escape($lang['Asset']) . "')) {
+                                  nodes[link[0]] = {
+                                    id: link[0],
+                                    marker: {
+                                      radius: " . js_string_escape($asset_radius) . "
+                                    },
+                                    color: colors[2]
+                                  }
+                                } else if (link[0].startsWith('" . js_string_escape($lang['Control']) . "')) {
+                                  nodes[link[0]] = {
+                                    id: link[0],
+                                    marker: {
+                                      radius: " . js_string_escape($control_radius) . "
+                                    },
+                                    color: colors[3]
+                                  }
+                                } else if (link[0].startsWith('" . js_string_escape($lang['Framework']) . "')) {
+                                  nodes[link[0]] = {
+                                    id: link[0],
+                                    marker: {
+                                      radius: " . js_string_escape($framework_radius) . "
+                                    },
+                                    color: colors[4]
+                                  }
+                                }
+                              });
+
+                              e.options.nodes = Object.keys(nodes).map(function (id) {
+                                return nodes[id];
+                              });
+                            }
+                          }
+                        );
+
+                        Highcharts.chart('container', {
+                          chart: {
+                            type: 'networkgraph',
+                          },
+                          title: {
+                            text: null
+                          },
+                          credits: {
+                            enabled: false
+                          },
+                          plotOptions: {
+                            networkgraph: {
+                              keys: ['from', 'to'],
+                              layoutAlgorithm: {
+                                linkLength: 50,
+                                enableSimulation: true,
+                                //friction: -0.9
+                              }
+                            }
+                          },
+                          series: [{
+                          dataLabels: {
+                            enabled: true,
+                            linkFormat: ''
+                          },
+                          id: 'connectivity-graph',
+                            data: [\n";
+
+			// For each association
+			foreach ($all_associations as $value)
+			{
+				// Display the association in the data
+				echo "['" . (isset($value['association_header_1']) ? $value['association_header_1'] . ": " : "") . $value['association_name_1'] . "', '" . (isset($value['association_header_2']) ? $value['association_header_2'] . ": " : "") . $value['association_name_2'] . "'],\n";
+			}
+
+                      echo "]
+                          }]
+                        });
+			</script>\n";
+		}
+                // If the selected value is not 0 and we don't  have any associations
+                else if (empty($all_associations))
+                {
+			echo "<br><br><br>\n";
+			echo "<font style=\"font-weight: bold; color: red;\">" . $lang['ThereAreNoConnectionsAssociatedWithTheSelectedValue'] . "</font>";
+		}
+	}
+	
+	echo "</form>\n";
+}
+
+/*********************************************
+ * FUNCTION: GET ASSET CONNECTIVITY FOR RISK *
+ *********************************************/
+function get_asset_connectivity_for_risk($risk_id, $subject)
+{
+	global $lang, $escaper;
+
+	// Get the id
+	$id = $risk_id - 1000;
+
+	// Open the database connection
+	$db = db_open();
+
+	// Get the assets
+	$stmt = $db->prepare("SELECT id, name FROM assets a LEFT JOIN risks_to_assets rta ON a.id = rta.asset_id WHERE rta.risk_id = :risk_id;");
+	$stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+	$stmt->execute();
+
+	// Store the list in the array
+	$array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+	// For each item in the array
+	foreach ($array as $key => $value)
+	{
+		// Get the asset name and id
+		$asset_id = $value['id'];
+		$asset_name = try_decrypt($value['name']);
+
+	        // Create the asset to risk association
+	        $associations[] = array(
+	                "association_id_1" => $risk_id,
+	                "association_header_1" => $lang['Risk'],
+	                "association_name_1" => $subject,
+	                "association_id_2" => $asset_id,
+	                "association_header_2" => $lang['Asset'],
+	                "association_name_2" => $asset_name
+	        );
+	        $associations[] = array(
+	                "association_id_1" => $asset_id,
+	                "association_header_1" => $lang['Asset'],
+	                "association_name_1" => $asset_name,
+	                "association_id_2" => $risk_id,
+	                "association_header_2" => $lang['Risk'],
+	                "association_name_2" => $subject
+	        );
+	}
+
+	// Get the asset groups
+	$stmt = $db->prepare("SELECT a.id, a.name FROM risks_to_asset_groups rtag LEFT JOIN risks r ON rtag.risk_id = r.id LEFT JOIN assets_asset_groups aag ON aag.asset_group_id = rtag.asset_group_id LEFT JOIN assets a ON a.id = aag.asset_id WHERE rtag.risk_id = :risk_id;");
+	$stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+	$stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // For each item in the array
+        foreach ($array as $key => $value)
+        {
+                // Get the asset name and id
+		$asset_id = $value['id'];
+                $asset_name = try_decrypt($value['name']);
+
+                // If the asset name is not empty or null
+                if ($asset_name != null && $asset_name != '')
+                {
+	                // Create the asset to risk association
+	                $associations[] = array(
+	                        "association_id_1" => $risk_id,
+	                        "association_header_1" => $lang['Risk'],
+	                        "association_name_1" => $subject,
+	                        "association_id_2" => $asset_id,
+	                        "association_header_2" => $lang['Asset'],
+	                        "association_name_2" => $asset_name
+	                );
+	                $associations[] = array(
+	                        "association_id_1" => $asset_id,
+	                        "association_header_1" => $lang['Asset'],
+	                        "association_name_1" => $asset_name,
+	                        "association_id_2" => $risk_id,
+	                        "association_header_2" => $lang['Risk'],
+	                        "association_name_2" => $subject
+	                );
+		}
+        }
+
+	// Close the database connection
+	db_close($db);
+
+        // Return the associations
+        return $associations;
+}
+
+/***********************************************
+ * FUNCTION: GET CONTROL CONNECTIVITY FOR RISK *
+ ***********************************************/
+function get_control_connectivity_for_risk($risk_id, $subject)
+{
+        global $lang, $escaper;
+
+        // Get the id
+        $id = $risk_id - 1000;
+
+        // Open the database connection
+        $db = db_open();
+
+        // Query the database
+	$stmt = $db->prepare("SELECT fc.id, fc.short_name FROM mitigations m LEFT JOIN mitigation_to_controls mtc ON m.id = mtc.mitigation_id LEFT JOIN framework_controls fc ON mtc.control_id = fc.id WHERE m.risk_id = :risk_id;");
+        $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // For each item in the array
+        foreach ($array as $key => $value)
+        {
+                // Get the control name and id
+		$control_name = $value['short_name'];
+		$control_id = $value['id'];
+
+		// If the control name is not empty or null
+		if ($control_name != null && $control_name != '')
+		{
+		        // Create the control to risk association
+		        $associations[] = array(
+		                "association_id_1" => $risk_id,
+		                "association_header_1" => $lang['Risk'],
+		                "association_name_1" => $subject,
+		                "association_id_2" => $control_id,
+		                "association_header_2" => $lang['Control'],
+		                "association_name_2" => $control_name
+		        );
+		        $associations[] = array(
+		                "association_id_1" => $control_id,
+		                "association_header_1" => $lang['Control'],
+		                "association_name_1" => $control_name,
+		                "association_id_2" => $risk_id,
+		                "association_header_2" => $lang['Risk'],
+		                "association_name_2" => $subject
+		        );
+		}
+        }
+
+        // Close the database connection
+        db_close($db);
+
+        // Return the associations
+        return $associations;
+}
+
+/*********************************************
+ * FUNCTION: GET RISK CONNECTIVITY FOR ASSET *
+ *********************************************/
+function get_risk_connectivity_for_asset($asset_id, $asset_name)
+{
+        global $lang, $escaper;
+
+        // Open the database connection
+        $db = db_open();
+
+        // Get the assets
+	$stmt = $db->prepare("SELECT id, subject FROM risks r LEFT JOIN risks_to_assets rta ON r.id = rta.risk_id WHERE rta.asset_id = :asset_id;");
+	$stmt->bindParam(":asset_id", $asset_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Store the list in the array
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+	// If team separation is enabled
+	if (team_separation_extra())
+	{       
+		//Include the team separation extra
+		require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+                                        
+		// Strip risks that the user shouldn't have access to
+		$array = strip_no_access_risks($array, null, "id");
+	}
+
+        // For each item in the array
+        foreach ($array as $key => $value)
+        {
+                // Get the risk id and subject
+		$risk_id = $value['id']+1000;
+                $subject = try_decrypt($value['subject']);
+
+		// If the subject is more than 50 characters
+		if (strlen($subject) > 50)
+		{
+			// Truncate the selected subject to 50 characters
+			$subject = "[" . $risk_id . "] " . substr($subject, 0, 50) . "...";
+		}
+		else $subject = "[" . $risk_id . "] " . $subject;
+
+	        // Create the risk to asset association
+	        $associations[] = array(
+	                "association_id_1" => $asset_id,
+	                "association_header_1" => $lang['Asset'],
+	                "association_name_1" => $asset_name,
+	                "association_id_2" => $risk_id,
+	                "association_header_2" => $lang['Risk'],
+	                "association_name_2" => $subject
+	        );
+	        $associations[] = array(
+	                "association_id_1" => $risk_id,
+	                "association_header_1" => $lang['Risk'],
+	                "association_name_1" => $subject,
+	                "association_id_2" => $asset_id,
+	                "association_header_2" => $lang['Asset'],
+	                "association_name_2" => $asset_name
+	        );
+        }
+
+        // Close the database connection
+        db_close($db);
+
+	// Return the associations
+	return $associations;
+}
+
+/****************************************************
+ * FUNCTION: GET FRAMEWORK CONNECTIVITY FOR CONTROL *
+ ****************************************************/
+function get_framework_connectivity_for_control($control_id, $control_name)
+{
+        global $lang, $escaper;
+
+        // Open the database connection
+        $db = db_open();
+
+	// Get the frameworks for this control
+	$stmt = $db->prepare("SELECT f.value, f.name FROM framework_control_mappings fcm LEFT JOIN frameworks f ON f.value = fcm.framework WHERE fcm.control_id = :control_id;");
+	$stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+	$stmt->execute();
+
+	// Store the list in the array
+	$frameworks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+	// For each framework
+	foreach ($frameworks as $key => $value)
+	{
+		// Get the framework name and id
+		$framework_id = $value['value'];
+		$framework_name = try_decrypt($value['name']);
+
+		// Display the connectivity to frameworks
+		$associations[] = array(
+			"association_id_1" => $control_id,
+			"association_header_1" => $lang['Control'],
+			"association_name_1" => $control_name,
+			"association_id_2" => $framework_id,
+			"association_header_2" => $lang['Framework'],
+			"association_name_2" => $framework_name
+		);
+		$associations[] = array(
+			"association_id_1" => $framework_id,
+			"association_header_1" => $lang['Framework'],
+			"association_name_1" => $framework_name,
+			"association_id_2" => $control_id,
+			"association_header_2" => $lang['Control'],
+			"association_name_2" => $control_name
+		);
+	}
+
+        // Close the database connection
+        db_close($db);
+
+        // Return the associations
+        return $associations;
+}
+
+/***********************************************
+ * FUNCTION: GET RISK CONNECTIVITY FOR CONTROL *
+ ***********************************************/
+function get_risk_connectivity_for_control($control_id, $control_name)
+{
+        global $lang, $escaper;
+
+        // Open the database connection
+        $db = db_open();
+
+        // Get the risks for this control
+	$stmt = $db->prepare("SELECT r.id, r.subject FROM risks r LEFT JOIN mitigations m ON r.id = m.risk_id LEFT JOIN mitigation_to_controls mtc ON m.id = mtc.mitigation_id WHERE mtc.control_id = :control_id;");
+	$stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+	$stmt->execute();
+
+	// Store the list in the array
+	$risks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // If team separation is enabled
+        if (team_separation_extra())
+        {                       
+                //Include the team separation extra
+                require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+                // Strip risks that the user shouldn't have access to
+                $risks = strip_no_access_risks($risks, null, "id");
+        }
+
+	// For each risk
+	foreach ($risks as $key => $value)
+	{
+                // Get the risk id and subject
+                $risk_id = $value['id']+1000;
+                $subject = try_decrypt($value['subject']);
+
+                // If the subject is more than 50 characters
+                if (strlen($subject) > 50)
+                {
+                        // Truncate the selected subject to 50 characters
+                        $subject = "[" . $risk_id . "] " . substr($subject, 0, 50) . "...";
+                }
+                else $subject = "[" . $risk_id . "] " . $subject;
+
+		// Display the connectivity to risks
+                $associations[] = array(
+                        "association_id_1" => $control_id,
+                        "association_header_1" => $lang['Control'],
+                        "association_name_1" => $control_name,
+                        "association_id_2" => $risk_id,
+                        "association_header_2" => $lang['Risk'],
+                        "association_name_2" => $subject
+                );
+                $associations[] = array(
+                        "association_id_1" => $risk_id,
+                        "association_header_1" => $lang['Risk'],
+                        "association_name_1" => $subject,
+                        "association_id_2" => $control_id,
+                        "association_header_2" => $lang['Control'],
+                        "association_name_2" => $control_name
+                );
+        }
+
+        // Close the database connection
+        db_close($db);
+
+        // Return the associations
+        return $associations;
+}
+
+/****************************************************
+ * FUNCTION: GET CONTROL CONNECTIVITY FOR FRAMEWORK *
+ ****************************************************/
+function get_control_connectivity_for_framework($framework_id, $framework_name)
+{
+        global $lang, $escaper;
+
+        // Open the database connection
+        $db = db_open();
+
+        // Get the controls for this framework
+	$stmt = $db->prepare("SELECT fc.id, fc.short_name FROM framework_controls fc LEFT JOIN framework_control_mappings fcm ON fc.id = fcm.control_id WHERE fcm.framework = :framework_id;");
+        $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Store the list in the array
+        $controls = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // For each control
+        foreach ($controls as $key => $value)
+        {
+                // Get the control name and id
+                $control_id = $value['id'];
+                $control_name = $value['short_name'];
+
+                // Display the connectivity to frameworks
+                $associations[] = array(
+                        "association_id_1" => $control_id,
+                        "association_header_1" => $lang['Control'],
+                        "association_name_1" => $control_name,
+                        "association_id_2" => $framework_id,
+                        "association_header_2" => $lang['Framework'],
+                        "association_name_2" => $framework_name
+                );
+                $associations[] = array(
+                        "association_id_1" => $framework_id,
+                        "association_header_1" => $lang['Framework'],
+                        "association_name_1" => $framework_name,
+                        "association_id_2" => $control_id,
+                        "association_header_2" => $lang['Control'],
+                        "association_name_2" => $control_name
+                );
+        }
+
+        // Close the database connection
+        db_close($db);
+
+        // Return the associations
+        return $associations;
 }
 
 ?>

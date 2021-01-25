@@ -19,7 +19,11 @@ $escaper = new Zend\Escaper\Escaper('utf-8');
 function simplerisk_service_call($data)
 {
     // Configuration for the SimpleRisk service call
-    $url = "https://services.simplerisk.com/index.php";
+    if (defined('SERVICES_URL'))
+    {
+        $url = SERVICES_URL . "/index.php";
+    }
+    else $url = "https://services.simplerisk.com/index.php";
     $method = "POST";
     $header = "Content-Type: application/x-www-form-urlencoded";
     $content = http_build_query($data);
@@ -337,6 +341,98 @@ function json_response($status, $status_message, $data=array())
 	// Display the response
 	echo $json_response;
     exit;
+}
+
+
+/******************************************
+ * FUNCTION: UPGRADE EXTRA DB THROUGH API *
+ ******************************************/
+function call_extra_api_functionality($extra, $functionality, $target) {
+    
+    $uri = "";
+    
+    if ($extra === 'upgrade') {
+        if ($functionality === 'upgrade') {
+            $uri .= 'upgrade/';
+            switch($target) {
+                case 'app':
+                    $uri .= 'app';
+                    break;
+                case 'core_app':
+                    $uri .= 'simplerisk/app';
+                    break;
+                case 'core_db':
+                    $uri .= 'simplerisk/db';
+                    break;
+                default: // return false on invalid target
+                    return false;
+            }
+        } elseif ($functionality === 'backup') {
+            $uri .= 'backup/';
+            switch($target) {
+                case 'app':
+                    $uri .= 'app';
+                    break;
+                case 'db':
+                    $uri .= 'db';
+                    break;
+                default: // return false on invalid target
+                    return false;
+            }
+        } else {
+            // return false on invalid functionality
+            return false;
+        }
+    } else {
+        if ($functionality === 'upgrade') {
+            $uri .= 'upgrade/';
+            switch($target) {
+                case 'app':
+                    $uri .= 'app';
+                    break;
+                case 'db':
+                    $uri .= 'db';
+                    break;
+                default: // return false on invalid target
+                    return false;
+            }
+        } else {
+            // extras other than the 'upgrade' only have the upgrade functionality
+            return false;
+        }
+    }
+    
+    // Get the simplerisk_base_url from the settings table
+    $url = get_setting("simplerisk_base_url");
+    $url .= (endsWith($url, '/') ? '' : '/') . "api/$extra/$uri";
+    //error_log("URL: " . json_encode($url));
+    $opts = array(
+        'http' => array(
+            'method'  => 'GET',
+            'header'  =>
+            // 'Cookie: ' . $_SERVER['HTTP_COOKIE']."\r\n".
+            "Cookie: " . session_name() . "=" . session_id() . "\r\n".
+            "Content-Type: application/json\r\n".
+            "Accept: application/json\r\n",
+            'ignore_errors' => true,
+            'timeout' => 600,
+        ),
+        'ssl' => array(
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+            'allow_self_signed' => true
+        )
+    );
+    $context = stream_context_create($opts);
+    //error_log("url: " . json_encode($url));
+    
+    $result = file_get_contents($url, false, $context);
+    //error_log("header: " . json_encode($http_response_header));
+    //error_log("result: " . json_encode($result));
+    
+    preg_match('{HTTP\/\S*\s(\d{3})}', $http_response_header[0], $match);
+    
+    return [(int)$match[1], json_decode($result, true)];
 }
 
 ?>

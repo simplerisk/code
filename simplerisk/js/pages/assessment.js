@@ -393,3 +393,79 @@ function redraw_control(){
         }
     })
 }
+
+// This function can handle using the preloaded options or if that parameter isn't provided
+// or empty it can load the available tags
+function createTagsInstance(tag, options) {
+
+	var selectize_setup = {
+        plugins: ['remove_button', 'restore_on_backspace'],
+        delimiter: '|',
+        createFilter: function(input) { return input.length <= 255; },
+        create: true,
+        valueField: 'label',
+        labelField: 'label',
+        searchField: 'label'
+    };
+	// If options aren't provided, setup the selectize's preload to load them
+	if (typeof options === 'undefined' || options.length == 0) {
+		selectize_setup.preload = true;
+		selectize_setup.load = function(query, callback) {
+            if (query.length) return callback();
+            
+            $.ajax({
+                url: BASE_URL + '/api/management/tag_options_of_types?type=risk,questionnaire_answer',
+                type: 'GET',
+                dataType: 'json',
+                error: function() {
+                    console.log('Error loading!');
+                    callback();
+                },
+                success: function(res) {
+                    callback(res.data);
+                }
+            });
+        };
+	} else {
+		selectize_setup.options = options;
+	}
+
+    tag.selectize(selectize_setup);
+}
+
+// Updates the indexes of the answer tags/asset groups
+// In case of editing a question we only have to update the indexes for newly created answers
+// existing ones have ids
+function refresh_questionnaire_question_selectize_widget_names(edit) {
+	if (edit) {
+	    $('#questionnaire_edit_form select.assets-asset-groups-select-template').each(function(index, element){
+	        $(element).attr('name', 'answers[assets_asset_groups][' + index + '][]');
+	    });
+
+	    $('#questionnaire_edit_form select.tags-template').each(function(index, element){
+	        $(element).attr('name', 'answers[tags][' + index + '][]');
+	    });
+	} else {
+	    $('#questionnaire_new_question_form select.assets-asset-groups-select').each(function(index, element){
+	        $(element).attr('name', 'answers[assets_asset_groups][' + index + '][]');
+	    });
+
+	    $('#questionnaire_new_question_form select.tags').each(function(index, element){
+	        $(element).attr('name', 'answers[tags][' + index + '][]');
+	    });
+	}
+}
+
+function refreshSelectizeOptions(selector, data) {
+    $(selector).each(function() {
+        if (this.selectize) {
+            this.selectize.clearOptions();
+            if (data && data.length) {
+                this.selectize.addOption(data);
+                this.selectize.refreshOptions(false);
+            } else {
+                this.selectize.close();
+            }
+        }
+    });
+}

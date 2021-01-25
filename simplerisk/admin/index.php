@@ -30,6 +30,13 @@ include_csrf_magic();
 // Include the SimpleRisk language file
 require_once(language_file());
 
+// Validates the base url
+// The protocol is required and it doesn't allow anchors/query parameters/any kind of special characters, but allows the usage of ports
+// In the URL only allows word characters(a-zA-Z0-9_), dashes(-) and dots(as a separator between domain/subdomains)
+function is_valid_base_url($url) {
+    return preg_match('/^(https?:\/\/)([\w-]+(?:\.[\w-]+)*)(:\d+)?((?:\/[\w-]*)*)$/', $url);
+}
+
     // If the General tab was submitted
     if (isset($_POST['update_general_settings']))
     {
@@ -200,12 +207,15 @@ require_once(language_file());
         if ($simplerisk_base_url != $current_simplerisk_base_url)
         {
             // If the base url is not empty
-            if ($simplerisk_base_url != "")
+            if ($simplerisk_base_url != "" && is_valid_base_url($simplerisk_base_url))
             {
                 // Update the base url
                 update_setting("simplerisk_base_url", $simplerisk_base_url);
 
                 $_SESSION['base_url'] = $simplerisk_base_url;
+            } else {
+                set_alert(true, "bad", $escaper->escapeHtml($lang['InvalidSimpleriskBaseUrl']));
+                $error = true;
             }
         }
 

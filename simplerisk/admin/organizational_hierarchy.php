@@ -183,7 +183,7 @@ require_once(language_file());
                             <script>
 								function refresh_business_unit_menu_items() {
     			                    $.ajax({
-    			                        url: BASE_URL + '/api/org_hierarchy/business_unit/available_business_unit_menu_items',
+    			                        url: BASE_URL + '/api/organizational_hierarchy/business_unit/available_business_unit_menu_items',
     			                        type: 'GET',
     			                        success : function (response) {
 											console.log(response);
@@ -211,7 +211,7 @@ require_once(language_file());
         				                animate: false,
         				                collapsible: true,
         				                fitColumns: true,
-        				                url: BASE_URL + '/api/org_hierarchy/business_unit/tree',
+        				                url: BASE_URL + '/api/organizational_hierarchy/business_unit/tree',
         				                method: 'get',
         				                idField: 'value',
         				                treeField: 'name',
@@ -260,7 +260,7 @@ require_once(language_file());
 
         			                    $.ajax({
         			                        type: "POST",
-        			                        url: BASE_URL + "/api/org_hierarchy/business_unit/create",
+        			                        url: BASE_URL + "/api/organizational_hierarchy/business_unit/create",
         			                        data: data,
         			                        async: true,
         			                        cache: false,
@@ -302,7 +302,7 @@ require_once(language_file());
         			                    $('#business-unit-update-form .select-list-available select option').remove();
 
         			                    $.ajax({
-        			                        url: BASE_URL + '/api/org_hierarchy/business_unit?id=' + business_unit_id,
+        			                        url: BASE_URL + '/api/organizational_hierarchy/business_unit?id=' + business_unit_id,
         			                        type: 'GET',
         			                        success : function (response) {
         			                            var data = response.data;
@@ -337,7 +337,7 @@ require_once(language_file());
 
         			                    $.ajax({
         			                        type: "POST",
-        			                        url: BASE_URL + "/api/org_hierarchy/business_unit/update",
+        			                        url: BASE_URL + "/api/organizational_hierarchy/business_unit/update",
         			                        data: data,
         			                        async: true,
         			                        cache: false,
@@ -384,7 +384,7 @@ require_once(language_file());
 
         			                    $.ajax({
         			                        type: "POST",
-        			                        url: BASE_URL + "/api/org_hierarchy/business_unit/delete",
+        			                        url: BASE_URL + "/api/organizational_hierarchy/business_unit/delete",
         			                        data: data,
         			                        async: true,
         			                        cache: false,
@@ -435,7 +435,7 @@ require_once(language_file());
 
         			                    $.ajax({
         			                        type: "POST",
-        			                        url: BASE_URL + "/api/org_hierarchy/business_unit/remove-team",
+        			                        url: BASE_URL + "/api/organizational_hierarchy/business_unit/remove-team",
         			                        data: data,
         			                        async: true,
         			                        cache: false,
@@ -512,7 +512,7 @@ require_once(language_file());
                                             <label for=""><?php echo $escaper->escapeHtml($lang['AvailableTeams']); ?></label>
                                             <select multiple="multiple" class="form-control">
                                             	<?php foreach (get_all_teams() as $team) {?>
-                                            		<option value="<?php echo $team['value'];?>"><?php echo $team['name'];?></option>
+                                            		<option value="<?php echo (int)$team['value'];?>"><?php echo $escaper->escapeHtml($team['name']);?></option>
                                             	<?php }?>
                                             </select>
                                         </div>

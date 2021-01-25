@@ -24,21 +24,21 @@ function available_extras()
 {
     // The available SimpleRisk Extras
     $extras = array(
-        array("short_name" => "upgrade", "long_name" => "Upgrade Extra"),
-	array("short_name" => "complianceforgescf", "long_name" => "ComplianceForge SCF Extra"),
-	array("short_name" => "advanced_search", "long_name" => "Advanced Search Extra"),
-	array("short_name" => "api", "long_name" => "API Extra"),
+        array("short_name" => "advanced_search", "long_name" => "Advanced Search Extra"),
+        array("short_name" => "api", "long_name" => "API Extra"),
+        array("short_name" => "assessments", "long_name" => "Risk Assessment Extra"),
         array("short_name" => "authentication", "long_name" => "Custom Authentication Extra"),
-	array("short_name" => "customization", "long_name" => "Customization Extra"),
-	array("short_name" => "notification", "long_name" => "Email Notification Extra"),
+        array("short_name" => "complianceforgescf", "long_name" => "ComplianceForge SCF Extra"),
+        array("short_name" => "customization", "long_name" => "Customization Extra"),
         array("short_name" => "encryption", "long_name" => "Encrypted Database Extra"),
         array("short_name" => "import-export", "long_name" => "Import-Export Extra"),
-	array("short_name" => "incident_management", "long_name" => "Incident Management Extra"),
-	array("short_name" => "jira", "long_name" => "Jira Integration Extra"),
-	array("short_name" => "organizational_hierarchy", "long_name" => "Organizational Hierarchy Extra"),
-	array("short_name" => "assessments", "long_name" => "Risk Assessment Extra"),
+        array("short_name" => "incident_management", "long_name" => "Incident Management Extra"),
+        array("short_name" => "jira", "long_name" => "Jira Integration Extra"),
+        array("short_name" => "notification", "long_name" => "Email Notification Extra"),
+        array("short_name" => "organizational_hierarchy", "long_name" => "Organizational Hierarchy Extra"),
         array("short_name" => "separation", "long_name" => "Team-Based Separation Extra"),
         array("short_name" => "ucf", "long_name" => "Unified Compliance Framework (UCF) Extra"),
+        array("short_name" => "upgrade", "long_name" => "Upgrade Extra"),
     );
 
     // Return the array of available Extras
@@ -419,7 +419,11 @@ function core_check_all_purchases()
     write_debug_log("Checking for all purchases for instance ID " . $instance_id);
 
     // Configuration for the SimpleRisk service call
-    $url = "https://services.simplerisk.com/index.php";
+    if (defined('SERVICES_URL'))
+    {
+        $url = SERVICES_URL . "/index.php";
+    } 
+    else $url = "https://services.simplerisk.com/index.php";
     $method = "POST";
     $header = "Content-Type: application/x-www-form-urlencoded";
     $content = http_build_query($data);
@@ -645,7 +649,11 @@ function extra_simplerisk_version_compatible($extra)
 	else
 	{
 		// URL for extra compatibility checks
-		$url = 'https://updates.simplerisk.com/extra_compatibility.xml';
+		if (defined('UPDATES_URL'))
+		{   
+			$url = UPDATES_URL . '/extra_compatibility.xml';
+		}
+		else $url = 'https://updates.simplerisk.com/extra_compatibility.xml';
 
 		// Get the current version of SimpleRisk
 		$simplerisk_version = current_version("app");

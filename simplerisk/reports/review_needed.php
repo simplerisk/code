@@ -33,50 +33,55 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
 <head>
-  <script src="../js/jquery.min.js"></script>
-  <script src="../js/bootstrap.min.js"></script>
-  <script src="../js/jquery.tablesorter.js"></script>
-<!--  <script src="../js/sorttable.js"></script>-->
-  <script src="../js/obsolete.js"></script>
-  <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <title>SimpleRisk: Enterprise Risk Management Simplified</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <!--<script src="../js/jquery.tablesorter.js"></script>
+    <script src="../js/sorttable.js"></script>-->
+    <script src="../js/jquery.dataTables.js"></script>
+    <script src="../js/obsolete.js"></script>
 
-  <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="../css/theme.css">
-  <link rel="stylesheet" href="../css/side-navigation.css">
-  <?php
-    setup_favicon("..");
-    setup_alert_requirements("..");
-  ?>
+    <link rel="stylesheet" href="../css/bootstrap.css">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+
+    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/theme.css">
+    <link rel="stylesheet" href="../css/side-navigation.css">
+    <?php
+        setup_favicon("..");
+        setup_alert_requirements("..");
+    ?>
 </head>
 
 <body>
+    <?php
+        view_top_menu("Reporting");
+        // Get any alert messages
+        get_alert();
+    ?>
+    <style>
+        .dataTables_filter, .dataTables_info { display: none; }
+    </style>
 
-  <?php
-    view_top_menu("Reporting");
-    // Get any alert messages
-    get_alert();
-  ?>
-
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span3">
-        <?php view_reporting_menu("AllOpenRisksNeedingReview"); ?>
-      </div>
-      <div class="span9">
-        <div class="row-fluid"><p><?php echo $escaper->escapeHtml($lang['ReportReviewNeededHelp']); ?>.</p></div>
-        <?php get_review_needed_table(); ?>
-      </div>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span3">
+                <?php view_reporting_menu("AllOpenRisksNeedingReview"); ?>
+            </div>
+            <div class="span9">
+                <div class="row-fluid"><p><?php echo $escaper->escapeHtml($lang['ReportReviewNeededHelp']); ?>.</p></div>
+                <?php get_review_needed_table(); ?>
+            </div>
+        </div>
     </div>
-  </div>
-  <script type="">
-    $(document).ready(function(){
-        $('table').tablesorter();
-    })
-  </script>
+    <script>
+        $(document).ready(function(){
+            //$('table').tablesorter();
+        });
+    </script>
 </body>
 
 </html>

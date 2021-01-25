@@ -108,7 +108,8 @@ jQuery(document).ready(function($){
           $(document).on('click', '.control-block--add-mapping', function(event) {
             event.preventDefault();
             var form = $(this).closest('form');
-            $(".mapping_framework_table tbody", form).append($("#add_mapping_row").val());
+            // To get the html of the <tr> tag
+            $(".mapping_framework_table tbody", form).append($("#add_mapping_row table tr:first-child").parent().html());
           });
           $(document).on('click', '.control-block--delete-mapping', function(event) {
             event.preventDefault();

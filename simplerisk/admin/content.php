@@ -92,6 +92,7 @@ global $escaper, $lang;
 	// If this is not on the hosted platform and the Import-Export Extra is either not purchased, not installed or not activated
 	if (get_setting('hosting_tier') == false && (!core_is_purchased("import-export") || !core_is_installed("import-export") || !core_extra_activated("import-export")))
 	{
+		$import_export_check = false;
                 // URL for the frameworks
                 $url = "https://github.com/simplerisk/import-content/raw/master/Control%20Frameworks/frameworks.xml";
                 

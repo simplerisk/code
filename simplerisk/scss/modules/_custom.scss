@@ -46,3 +46,13 @@
         
     }
 }
+
+.import-export-tag-warning {
+    display: inline-block;
+    font-size: 0.8em;
+    color: red;
+    position: relative;
+    top: -5px;
+    line-height: 1.2;
+    padding-bottom: 15px; 
+}

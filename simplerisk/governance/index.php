@@ -900,13 +900,15 @@ if (isset($_POST['delete_controls']))
 
         </div>
     </div>
-    <textarea id="add_mapping_row" class="hide">
-        <tr>
-            <td><?php create_dropdown("frameworks", NULL,"map_framework_id[]", true, false, false, "required"); ?></td>
-            <td><input type="text" name="reference_name[]" value="" class="form-control" maxlength="100" required></td>
-            <td><a href="javascript:void(0);" class="control-block--delete-mapping" title="<?php echo $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a></td>
-        </tr>
-    </textarea>
+    <div id="add_mapping_row" class="hide">
+    	<table>
+            <tr>
+                <td><?php create_dropdown("frameworks", NULL,"map_framework_id[]", true, false, false, "required"); ?></td>
+                <td><input type="text" name="reference_name[]" value="" class="form-control" maxlength="100" required></td>
+                <td><a href="javascript:void(0);" class="control-block--delete-mapping" title="<?php echo $escaper->escapeHtml($lang["Delete"]);?>"><i class="fa fa-trash"></i></a></td>
+            </tr>
+        </table>
+    </div>
     <?php display_set_default_date_format_script(); ?>
 </body>
 </html>

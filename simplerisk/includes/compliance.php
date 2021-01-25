@@ -143,7 +143,10 @@ function display_framework_controls_in_compliance()
                         $('[name=approximate_time]', form).val(data['approximate_time']);
                         $('[name=expected_results]', form).val(data['expected_results']);
                         $('[name=last_date]', form).datepicker({maxDate: new Date});
-                        $('[name=next_date]', form).datepicker({minDate: new Date});
+                        if(data['last_date'] != '') {
+                            min_next_date = new Date(data['last_date']);
+                        } else min_next_date = null;
+                        $('[name=next_date]', form).datepicker({minDate: min_next_date});
 
                         $('#test--edit').modal();
                     },
@@ -175,11 +178,11 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
         }
     }
 
-    $created_at = date("Y-m-d");
-
     // Open the database connection
     $db = db_open();
-    
+
+    $created_at = date("Y-m-d");
+
     // Create test
     $stmt = $db->prepare("INSERT INTO `framework_control_tests` (`tester`, `test_frequency`, `last_date`, `next_date`, `name`, `objective`, `test_steps`, `approximate_time`, `expected_results`, `framework_control_id`, `created_at`, `additional_stakeholders`) VALUES (:tester, :test_frequency, :last_date, :next_date, :name, :objective, :test_steps, :approximate_time, :expected_results, :framework_control_id, :created_at, :additional_stakeholders)");
     
@@ -1716,11 +1719,12 @@ function save_test_result($test_audit_id, $status, $test_result, $tester, $test_
     $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
     
     $submitted_by = $_SESSION['uid'];
-    $submission_date = date("Y-m-d H:i:s");
-    
+
     // Open the database connection
     $db = db_open();
-    
+
+    $submission_date = date("Y-m-d H:i:s");
+
     // Check submitted result is existing
     if(!$test_audit['result_id']){
         $sql = "INSERT INTO framework_control_test_results(`test_audit_id`, `test_result`, `summary`, `test_date`, `submitted_by`, `submission_date`) VALUES(:test_audit_id, :test_result, :summary, :test_date, :submitted_by, :submission_date);";
@@ -2822,7 +2826,12 @@ function get_audit_tests($order_field=false, $order_dir=false)
     $db = db_open();
 
     $sql = "
-        SELECT t1.id, t1.name, t1.last_date, t1.next_date, IFNULL(GROUP_CONCAT(DISTINCT t3.name), '') framework_names
+        SELECT t1.id, t1.name, t1.last_date, t1.next_date, IFNULL(GROUP_CONCAT(DISTINCT t3.name), '') framework_names,
+        (SELECT tr.test_result
+        FROM `framework_control_test_audits` ta
+        LEFT JOIN `framework_control_test_results` tr ON ta.id=tr.test_audit_id 
+        WHERE  ta.test_id = t1.id 
+        ORDER BY tr.last_updated DESC LIMIT 1 ) last_test_result 
         FROM `framework_control_tests` t1
             INNER JOIN `framework_controls` t2 ON t1.framework_control_id=t2.id
             LEFT JOIN `framework_control_mappings` m ON t2.id=m.control_id
@@ -2848,6 +2857,9 @@ function get_audit_tests($order_field=false, $order_dir=false)
         break;
         case "next_test_date";
             $sql .= " ORDER BY t1.next_date {$order_dir} ";
+        break;
+        case "last_test_result";
+            $sql .= " ORDER BY last_test_result {$order_dir} ";
         break;
     }
     $sql .= ";";

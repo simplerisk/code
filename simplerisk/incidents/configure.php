@@ -17,6 +17,7 @@ add_security_headers();
 // Add the session
 $permissions = array(
         "check_access" => true,
+        "check_admin" => true,
 );
 add_session_check($permissions);
 
@@ -36,6 +37,10 @@ if (incident_management_extra())
 	enforce_permission_incident_management();
 
         process_incident_management();
+	// If the page received an XML HTTP Request
+	if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){
+		crud_post_action(); exit;
+	}
 }
 else
 {
@@ -43,9 +48,6 @@ else
 	header("Location: ../admin/incidentmanagement.php");
 }
 
-if(isset($_GET["action"]) && $_GET["action"] == "download"){
-    if(isset($_GET["id"])) download_evidence_file($_GET["id"]);
-}
 ?>
 
 <!doctype html>
@@ -63,6 +65,8 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
         <script src="../js/bootstrap.min.js"></script>
         <script src="../js/bootstrap-multiselect.js"></script>
         <script src="../js/selectize.min.js"></script>
+	<script src='../js/alerts/toastr.min.js'></script>
+	<script src='../js/alerts/alert-helper.js'></script>
 <?php
         // If the Incident Management Extra is enabled
         if (incident_management_extra())
@@ -75,6 +79,8 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
         }
 ?>
         <script>
+	    toastr.options.timeOut = 5000;
+
             var simplerisk = {
                 incident: "<?php echo $lang['Incident']; ?>",
 	            newincident: "<?php echo $lang['NewIncident']; ?>"
@@ -91,7 +97,6 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
         <link rel="stylesheet" href="../css/divshot-canvas.css">
 	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
         <link rel="stylesheet" href="../css/jquery.dataTables.css">
-        <link rel="stylesheet" href="../css/style.css">
         <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
         <link rel="stylesheet" href="../css/side-navigation.css">
@@ -101,6 +106,14 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
            .tabs li:focus {
                outline: none;
            }
+
+	   .toast-top-right {
+	       top: 75px;
+	       right: 12px;
+	   }
+	   #toast-container > div {
+	       opacity:1;
+	   }
 	</style>
 
         <?php
@@ -116,7 +129,7 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
 	// If the Incident Management Extra is enabled
 	if (incident_management_extra())
 	{
-                view_incident_management_top_menu("Incidents");
+                view_incident_management_top_menu("Configure");
 	}
 
             // Get any alert messages
@@ -132,8 +145,8 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
 		// If the Incident Management Extra is enabled
 		if (incident_management_extra())
 		{
-			// Display the Incidents menu items
-			view_incident_management_menu();
+			// Display the Configure menu items
+			view_incident_management_configure_menu();
 		}
               ?>
             </div>
@@ -145,8 +158,8 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
                 // If the Incident Management Extra is enabled
                 if (incident_management_extra())
                 {
-			// Display the Incidents content
-			display_incident_management();
+			// Display the Configure content
+			display_incident_management_configure();
 		}
               ?>
                   </div>

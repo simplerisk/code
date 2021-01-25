@@ -67,6 +67,7 @@ Structure of the table configuration through an example:
     // Added part of another table's configuration to show how the junction table should be added to both side's configuration
     'risks' => array(
         'id_field' => 'id',
+        'tag_type' => 'risk', // the tag type as found in the $tag_types array. You can skip it if the table has no tags assigned
         'junctions' => array(
             'risk_to_location' => 'risk_id',
             // ...
@@ -97,6 +98,7 @@ $junction_config = array(
     ),
     'risks' => array(
         'id_field' => 'id',
+        'tag_type' => 'risk',
         'junctions' => array(
             'risk_to_additional_stakeholder' => 'risk_id',
             'risk_to_location' => 'risk_id',
@@ -120,6 +122,7 @@ $junction_config = array(
     ),
     'assets' => array(
         'id_field' => 'id',
+        'tag_type' => 'asset',
         'junctions' => array(
             'risks_to_assets' => 'asset_id',
             'questionnaire_answers_to_assets' => 'asset_id',
@@ -152,6 +155,7 @@ $junction_config = array(
     ),
     'questionnaire_answers' => array(
         'id_field' => 'id',
+        'tag_type' => 'questionnaire_answer',
         'junctions' => array(
             'questionnaire_answers_to_assets' => 'questionnaire_answer_id',
             'questionnaire_answers_to_asset_groups' => 'questionnaire_answer_id'
@@ -191,6 +195,13 @@ $junction_config = array(
     ),
 );
 
+// Add new supported tag types here
+// After adding a new supported type here, you also have to edit the getTagOptionsOfType and getTagOptionsOfTypes functions in the api.php
+// as those have per type access permission checks.
+// Also have to:
+//      -add localization for tag types(example: 'TagType_risk' => 'Risk')
+//      -add it to the $junction_config 
+$tag_types = ['risk', 'asset', 'questionnaire_answer', 'questionnaire_pending_risk', 'incident_management_source', 'incident_management_destination'];
 
 /******************************
  * FUNCTION: DATABASE CONNECT *
@@ -1733,6 +1744,9 @@ function update_table($table, $name, $value, $length=20)
                 write_log($risk_id, $_SESSION['uid'], $message);
                 break;
             default:
+                $risk_id = 1000;
+                $message = "The \"".$table."\" naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+                write_log($risk_id, $_SESSION['uid'], $message);
                 break;
         }
     }
@@ -2147,6 +2161,9 @@ function add_name($table, $name, $size=20)
             write_log($risk_id, $_SESSION['uid'], $message);
             break;
         default:
+            $risk_id = 1000;
+            $message = "A new " . $table . " \"" . $name . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
             break;
     }
 
@@ -2154,104 +2171,6 @@ function add_name($table, $name, $size=20)
     db_close($db);
 
     return $insertedId;
-}
-
-/********************************
- * FUNCTION: GET TAG ID BY TEXT *
- ********************************/
-function get_tag_id_by_text($tag)
-{
-    // Open the database connection
-    $db = db_open();
-
-    $stmt = $db->prepare("SELECT `id` FROM `tags` where `tag`=:tag; ");
-    $stmt->bindParam(":tag", $tag, PDO::PARAM_STR);
-    $stmt->execute();
-
-    $tag_id = $stmt->fetch(PDO::FETCH_COLUMN);
-
-    // closed the database connection
-    db_close($db);
-    return $tag_id;
-}
-
-/*******************************************
- * FUNCTION: ADD RELATION FOR TAG AND TYPE *
- *******************************************/
-function add_tagges($tag_ids=[], $taggee_id, $type='risk')
-{
-//    if(!$tag_ids)
-//    {
-//        return false;
-//    }
-    
-    $tag_ids_string = implode(",", $tag_ids);
-    // Open the database connection
-    $db = db_open();
-
-    // Get the risk levels
-    $stmt = $db->prepare("DELETE FROM `tags_taggees` WHERE type=:type AND taggee_id=:taggee_id; ");
-    $stmt->bindParam(":type", $type, PDO::PARAM_STR);
-    $stmt->bindParam(":taggee_id", $taggee_id, PDO::PARAM_INT);
-    $stmt->execute();
-
-    foreach($tag_ids as $tag_id)
-    {
-        $stmt = $db->prepare("
-            INSERT INTO 
-                `tags_taggees` (`tag_id`, `taggee_id`, `type`)  
-            VALUES
-                (:tag_id, :taggee_id, :type);
-        ");
-        $stmt->bindParam(":tag_id", $tag_id, PDO::PARAM_INT);
-        $stmt->bindParam(":taggee_id", $taggee_id, PDO::PARAM_INT);
-        $stmt->bindParam(":type", $type, PDO::PARAM_STR);
-        $stmt->execute();
-    }
-
-    // closed the database connection
-    db_close($db);
-}
-
-/*********************
- * FUNCTION: ADD TAG *
- *********************/
-function add_tag($tag, $type="risk")
-{
-    if(!$tag){
-        return false;
-    }
-
-    // Open the database connection
-    $db = db_open();
-    
-    $tag = trim($tag);
-    
-    $tag_id = get_tag_id_by_text($tag);
-    if(!$tag_id)
-    {
-        // Get the risk levels
-        $stmt = $db->prepare("INSERT INTO `tags` (`tag`) VALUES (:tag); ");
-        $stmt->bindParam(":tag", $tag, PDO::PARAM_STR);
-        $stmt->execute();
-        $tag_id = $db->lastInsertId();
-
-        if($type !== NULL)
-        {
-            $stmt = $db->prepare("INSERT INTO `tags_taggees` (`tag_id`, `taggee_id`, `type`) VALUES (:tag_id, -1, :type); ");
-            $stmt->bindParam(":tag_id", $tag, PDO::PARAM_INT);
-            $stmt->bindParam(":type", $type, PDO::PARAM_STR);
-        }
-
-        $risk_id = 1000;
-        $message = "A new tag \"" . $tag . "\" was added by the \"" . $_SESSION['user'] . "\" user.";
-        write_log($risk_id, $_SESSION['uid'], $message);
-
-    }
-    // Close the database connection
-    db_close($db);
-
-    return $tag_id;
 }
 
 /**********************************
@@ -2370,6 +2289,9 @@ function delete_value($table, $value)
 
             break;
         default:
+            $risk_id = 1000;
+            $message = "The existing " . $table . " \"" . $name . "\" was removed by the \"" . $_SESSION['user'] . "\" user.";
+            write_log($risk_id, $_SESSION['uid'], $message);
             break;
     }
 
@@ -3120,9 +3042,10 @@ function update_password($user, $hash)
 /*************************
  * FUNCTION: SUBMIT RISK *
  *************************/
-function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders=[],$risk_catalog_mapping=0)
+function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders=[], $risk_catalog_mapping=0)
 {
-    $submitted_by || ($submitted_by = $_SESSION['uid']);
+    // In the database `submitted_by` is defaulted to 1 as that's the id of the pre-created Admin user, so it's defaulted to 1 here as well
+    $submitted_by || ($submitted_by = $_SESSION['uid']) || ($submitted_by = 1);
 
     $owner || $owner = 0;
     
@@ -3195,8 +3118,20 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
         CreateIssueForRisk($last_insert_id);
     }
 
+    // If the encryption extra is enabled, updates order_by_subject
+    if (encryption_extra())
+    {
+        // Load the extra
+        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-    $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $_SESSION['user'] . "\".";
+        create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? base64_decode($_SESSION['encrypted_pass']) : fetch_key());
+    }
+
+
+    // If there's no session we get the name of the submitter from the database
+    $username = (isset($_SESSION) && !empty($_SESSION['user']) ? $_SESSION['user'] : get_name_by_value("user", $submitted_by));
+
+    $message = "A new risk ID \"" . $risk_id . "\" was submitted by username \"" . $username . "\".";
     write_log($risk_id, $submitted_by, $message);
 
     // Close the database connection
@@ -4358,10 +4293,6 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
         $next_review = "0000-00-00";
     }
 
-    if(!$submission_date || !validate_date($submission_date)){
-        $submission_date = date("Y-m-d H:i:s");
-    }
-
     // Subtract 1000 from risk_id
     $id = (int)$risk_id - 1000;
 
@@ -4370,6 +4301,10 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
 
     // Open the database connection
     $db = db_open();
+
+    if(!$submission_date || !validate_date($submission_date)){
+        $submission_date = date("Y-m-d H:i:s");
+    }
 
     // Add the review
     $stmt = $db->prepare("INSERT INTO mgmt_reviews (`risk_id`, `review`, `reviewer`, `next_step`, `comments`, `next_review`, `submission_date`) VALUES (:risk_id, :review, :reviewer, :next_step, :comments, :next_review, :submission_date)");
@@ -4444,11 +4379,11 @@ function update_risk($risk_id, $is_api = false)
     // Subtract 1000 from risk_id
     $id = (int)$risk_id - 1000;
 
-    $tags = get_param("POST", "tags", "");
-    
+    $tags = get_param("POST", "tags", []);
+
     if ($tags) {
-        foreach(explode("+++", $tags) as $tag){
-            if (stripos($tag, "new_tag_") !== false && (strlen($tag) > 263)) {
+        foreach($tags as $tag){
+            if (strlen($tag) > 255) {
                 global $lang;
 
                 return $lang['MaxTagLengthWarning'];
@@ -4576,14 +4511,9 @@ function update_risk($risk_id, $is_api = false)
     // Save additional stakeholders
     save_junction_values("risk_to_additional_stakeholder", "risk_id", $id, "user_id", $additional_stakeholders);
 
-//    $tags = empty($_POST['tags']) ? array() : $_POST['tags'];
-//    if (!is_array($tags))
-//        $tags = explode(",", $tags);
-//    add_tagges($tags, $id, 'risk');
+    updateTagsOfType($id, 'risk', $tags);
 
-    create_new_tag_from_string($tags, "+++", "risk", $id);
-
-    if($is_api === false){
+    if($is_api === false) {
         if (isset($_POST['assets_asset_groups'])) {
             $assets_asset_groups = is_array($_POST['assets_asset_groups']) ? $_POST['assets_asset_groups'] : [];
             // Update affected assets and asset groups
@@ -4715,11 +4645,11 @@ function update_risk_subject($risk_id, $subject)
     // Subtract 1000 from risk_id
     $id = (int)$risk_id - 1000;
 
-    // Get current datetime for last_update
-    $current_datetime = date("Y-m-d H:i:s");
-
     // Open the database connection
     $db = db_open();
+
+    // Get current datetime for last_update
+    $current_datetime = date("Y-m-d H:i:s");
 
     // Update the risk
     $stmt = $db->prepare("UPDATE risks SET subject=:subject, last_update=:date WHERE id = :id");
@@ -4741,7 +4671,7 @@ function update_risk_subject($risk_id, $subject)
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
 
-//        create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? $_SESSION['encrypted_pass'] : fetch_key());
+        create_subject_order(isset($_SESSION['encrypted_pass']) && $_SESSION['encrypted_pass'] ? base64_decode($_SESSION['encrypted_pass']) : fetch_key());
     }
 
     // If notification is enabled
@@ -4850,8 +4780,7 @@ function get_risk_by_id($id)
             b.*,cat.name risk_catalog_name,
             c.next_review,
             ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
-            GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR '+++') as risk_tags,
-            GROUP_CONCAT(DISTINCT CONCAT(t.id, '---', t.tag) SEPARATOR '+++') risk_tag_string
+            GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR '|') as risk_tags
             " . (jira_extra() ?
             ",ji.issue_key as jira_issue_key,
             ji.last_sync as jira_last_sync,
@@ -5419,7 +5348,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     i.name AS submitted_by,
                     (
                         SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
                         FROM
                             tags t, tags_taggees tt 
                         WHERE
@@ -5558,7 +5487,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     i.name AS submitted_by,
                     (
                         SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
                         FROM
                             tags t, tags_taggees tt 
                         WHERE
@@ -5707,7 +5636,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     i.name AS submitted_by,
                     (
                         SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
                         FROM
                             tags t, tags_taggees tt 
                         WHERE
@@ -5847,7 +5776,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     i.name AS submitted_by,
                     (
                         SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
                         FROM
                             tags t, tags_taggees tt 
                         WHERE
@@ -6000,7 +5929,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     i.name AS submitted_by,
                     (
                         SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
                         FROM
                             tags t, tags_taggees tt 
                         WHERE
@@ -6140,7 +6069,7 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                     i.name AS submitted_by,
                     (
                         SELECT
-                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '; ')
+                            GROUP_CONCAT(t.tag ORDER BY t.tag ASC SEPARATOR '|')
                         FROM
                             tags t, tags_taggees tt 
                         WHERE
@@ -7136,7 +7065,7 @@ function get_submitted_risks_table()
         // Get risks
         $risks = get_risks(11);
 
-        echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        echo "<table id=\"submitted_risk\" class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
         echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -7169,6 +7098,27 @@ function get_submitted_risks_table()
 
         echo "</tbody>\n";
         echo "</table>\n";
+        echo "
+        <script>
+            $(document).ready(function(){
+                $('#submitted_risk thead tr:eq(0)').clone(true).appendTo($('#submitted_risk thead'));
+                $('#submitted_risk  thead tr:eq(1) th').each( function (i) {
+                    var title = $(this).text();
+                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $( 'input, select', this ).on( 'keyup change', function () {
+                        if ( riskTable.column(i).search() !== this.value ) {
+                            riskTable.column(i).search( this.value ).draw();
+                        }
+                    });
+                });
+                var riskTable = $('#submitted_risk').DataTable( {
+                    paging: false,
+                    orderCellsTop: true,
+                    fixedHeader: true
+                });
+             });
+        </script>
+        ";
 
         return true;
 }
@@ -7184,7 +7134,7 @@ function get_mitigations_table()
         // Get risks
         $risks = get_risks(13);
 
-        echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        echo "<table id=\"mitigations_risk\" class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
         echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -7192,9 +7142,9 @@ function get_mitigations_table()
         echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationDate']) ."</th>\n";
         echo "<th align=\"left\" width=\"150px\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."</th>\n";
         echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationEffort']) ."</th>\n";
-    echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationCost']) ."</th>\n";
-    echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationOwner']) ."</th>\n";
-    echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationCost']) ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationOwner']) ."</th>\n";
+        echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</th>\n";
         echo "<th align=\"center\" width=\"150px\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</th>\n";
         echo "</tr>\n";
         echo "</thead>\n";
@@ -7218,6 +7168,27 @@ function get_mitigations_table()
 
         echo "</tbody>\n";
         echo "</table>\n";
+        echo "
+        <script>
+            $(document).ready(function(){
+                $('#mitigations_risk thead tr:eq(0)').clone(true).appendTo($('#mitigations_risk thead'));
+                $('#mitigations_risk  thead tr:eq(1) th').each( function (i) {
+                    var title = $(this).text();
+                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $( 'input, select', this ).on( 'keyup change', function () {
+                        if ( riskTable.column(i).search() !== this.value ) {
+                            riskTable.column(i).search( this.value ).draw();
+                        }
+                    });
+                });
+                var riskTable = $('#mitigations_risk').DataTable( {
+                    paging: false,
+                    orderCellsTop: true,
+                    fixedHeader: true
+                });
+             });
+        </script>
+        ";
 
         return true;
 }
@@ -7233,7 +7204,7 @@ function get_reviewed_risk_table($sort_order=12)
         // Get risks
         $risks = get_risks($sort_order);
 
-        echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+        echo "<table id=\"reviewed_risk\" class=\"table table-bordered table-condensed sortable\">\n";
         echo "<thead>\n";
         echo "<tr>\n";
         echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -7261,6 +7232,27 @@ function get_reviewed_risk_table($sort_order=12)
 
         echo "</tbody>\n";
         echo "</table>\n";
+        echo "
+        <script>
+            $(document).ready(function(){
+                $('#reviewed_risk thead tr:eq(0)').clone(true).appendTo($('#reviewed_risk thead'));
+                $('#reviewed_risk  thead tr:eq(1) th').each( function (i) {
+                    var title = $(this).text();
+                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $( 'input, select', this ).on( 'keyup change', function () {
+                        if ( riskTable.column(i).search() !== this.value ) {
+                            riskTable.column(i).search( this.value ).draw();
+                        }
+                    });
+                });
+                var riskTable = $('#reviewed_risk').DataTable( {
+                    paging: false,
+                    orderCellsTop: true,
+                    fixedHeader: true
+                });
+             });
+        </script>
+        ";
 
         return true;
 }
@@ -7276,7 +7268,7 @@ function get_closed_risks_table($sort_order=17)
     // Get risks
     $risks = get_risks($sort_order);
 
-    echo "<table class=\"table table-bordered table-condensed sortable\">\n";
+    echo "<table id=\"closeded_risk\" class=\"table table-bordered table-condensed sortable\">\n";
     echo "<thead>\n";
     echo "<tr>\n";
     echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -7310,6 +7302,27 @@ function get_closed_risks_table($sort_order=17)
 
     echo "</tbody>\n";
     echo "</table>\n";
+    echo "
+        <script>
+            $(document).ready(function(){
+                $('#closeded_risk thead tr:eq(0)').clone(true).appendTo($('#closeded_risk thead'));
+                $('#closeded_risk  thead tr:eq(1) th').each( function (i) {
+                    var title = $(this).text();
+                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $( 'input, select', this ).on( 'keyup change', function () {
+                        if ( riskTable.column(i).search() !== this.value ) {
+                            riskTable.column(i).search( this.value ).draw();
+                        }
+                    });
+                });
+                var riskTable = $('#closeded_risk').DataTable( {
+                    paging: false,
+                    orderCellsTop: true,
+                    fixedHeader: true
+                });
+             });
+        </script>
+        ";
 
     return true;
 }
@@ -8840,11 +8853,11 @@ function close_risk($risk_id, $user_id, $status, $close_reason, $note, $closure_
     // Subtract 1000 from risk_id
     $id = (int)$risk_id - 1000;
 
-    // Get current datetime for last_update
-    $current_datetime = date('Y-m-d H:i:s');
-
     // Open the database connection
     $db = db_open();
+
+    // Get current datetime for last_update
+    $current_datetime = date('Y-m-d H:i:s');
 
     // Add the closure
     if($closure_date !== false){
@@ -8957,20 +8970,21 @@ function add_comment($risk_id, $user_id, $comment)
     // Subtract 1000 from id
     $id = (int)$risk_id - 1000;
 
-    // Get current datetime for last_update
-    $current_datetime = date('Y-m-d H:i:s');
-    
     $try_encrypt_comments = try_encrypt($comment);
 
     // Open the database connection
     $db = db_open();
 
+     // Get current datetime for last_update
+    $current_datetime = date('Y-m-d H:i:s');
+
     // Add the closure
-    $stmt = $db->prepare("INSERT INTO comments (`risk_id`, `user`, `comment`) VALUES (:risk_id, :user, :comment)");
+    $stmt = $db->prepare("INSERT INTO comments (`risk_id`, `user`, `comment`, `date`) VALUES (:risk_id, :user, :comment, :date)");
 
     $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
     $stmt->bindParam(":user", $user_id, PDO::PARAM_INT);
     $stmt->bindParam(":comment", $try_encrypt_comments, PDO::PARAM_STR);
+    $stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
 
     $stmt->execute();
 
@@ -9197,11 +9211,11 @@ function update_mitigation($risk_id, $post)
     // To be able to import submission date
     $submission_date = isset($post['mitigation_date']) && validate_date($post['mitigation_date'], get_default_datetime_format()) ? get_standard_date_from_default_format($post['mitigation_date'], true) : false;
 
-    // Get current datetime for last_update
-    $current_datetime = date("Y-m-d H:i:s");
-
     // Open the database connection
     $db = db_open();
+
+    // Get current datetime for last_update
+    $current_datetime = date("Y-m-d H:i:s");
 
     // Update the risk
     $stmt = $db->prepare("
@@ -9437,7 +9451,11 @@ function latest_versions() {
     }
 
     // Url for SimpleRisk current versions
-    $url = 'https://updates.simplerisk.com/Current_Version.xml';
+    if (defined('UPDATES_URL'))
+    {   
+        $url = UPDATES_URL . '/Current_Version.xml';
+    }
+    else $url = 'https://updates.simplerisk.com/Current_Version.xml';
     write_debug_log("Checking latest versions at " . $url);
 
     // Configure the proxy server if one exists
@@ -9466,7 +9484,11 @@ function latest_versions() {
         write_debug_log("SimpleRisk connected to " . $url);
 
         // Load the versions file
-        $version_page = file_get_contents('https://updates.simplerisk.com/Current_Version.xml', null, $context);
+        if (defined('UPDATES_URL'))
+        {   
+            $version_page = file_get_contents(UPDATES_URL . '/Current_Version.xml', null, $context);
+        }
+        else $version_page = file_get_contents('https://updates.simplerisk.com/Current_Version.xml', null, $context);
 
         // Convert it to be an array
         $latest_versions = json_decode(json_encode(new SimpleXMLElement($version_page)), true);
@@ -9530,10 +9552,10 @@ function write_log($risk_id, $user_id, $message, $log_type="risk")
     
     $user_id = (int)$user_id;
 
-    $current_time = date("Y-m-d H:i:s");
-
     // Open the database connection
     $db = db_open();
+
+    $current_time = date("Y-m-d H:i:s");
 
     // Get the comments
     $stmt = $db->prepare("INSERT INTO audit_log (timestamp, risk_id, user_id, message, log_type) VALUES (:timestamp, :risk_id, :user_id, :message, :log_type)");
@@ -9587,22 +9609,26 @@ function get_announcements()
 
     $announcements = "<ul>\n";
 
-        $announcement_file = file('https://updates.simplerisk.com/announcements.xml');
+    if (defined('UPDATES_URL'))
+    {   
+        $announcement_file = file(UPDATES_URL . '/announcements.xml');
+    }
+    else $announcement_file = file('https://updates.simplerisk.com/announcements.xml');
 
     $regex_pattern = "/<announcement>(.*)<\/announcement>/";
 
-        foreach ($announcement_file as $line)
+    foreach ($announcement_file as $line)
+    {
+        if (preg_match($regex_pattern, $line, $matches))
         {
-                if (preg_match($regex_pattern, $line, $matches))
-                {
-                        $announcements .= "<li>" . $escaper->escapeHtml($matches[1]) . "</li>\n";
-                }
+            $announcements .= "<li>" . $escaper->escapeHtml($matches[1]) . "</li>\n";
         }
+    }
 
     $announcements .= "</ul>";
 
-        // Return the announcement
-        return $announcements;
+    // Return the announcement
+    return $announcements;
 }
 
 /***************************
@@ -13247,7 +13273,7 @@ function add_security_headers($x_frame_options = true, $x_xss_protection = true,
 			if (filter_var($simplerisk_base_url, FILTER_VALIDATE_URL))
 			{
 				// Add the Content-Security-Policy header with the simplerisk base url
-				header("Content-Security-Policy: default-src 'self'; style-src-elem 'unsafe-inline' *.googleapis.com " . $simplerisk_base_url . "; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.highcharts.com *.jquery.com; font-src *.gstatic.com " . $simplerisk_base_url . "; img-src 'self' " . $simplerisk_base_url . " data:; connect-src 'self' *.simplerisk.com;");
+				header("Content-Security-Policy: default-src 'self'; style-src-elem 'unsafe-inline' *.googleapis.com " . $simplerisk_base_url . "; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.highcharts.com *.jquery.com; font-src *.gstatic.com " . $simplerisk_base_url . "; img-src 'self' *.googleapis.com " . $simplerisk_base_url . " data:; connect-src 'self' *.simplerisk.com;");
 			}
 			// Otherwise add the Content-Security-Policy header without it
 			else header("Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' data:");
@@ -14932,7 +14958,9 @@ function getTypeOfColumn($table, $column) {
  ********************************/
 function getTagsOfTaggee($taggee_id, $type) {
 
-    if (!$taggee_id || ($type !== "risk" && $type !== "asset"))
+    global $tag_types;
+
+    if (!$taggee_id || !in_array($type, $tag_types))
         return;
 
     $db = db_open();
@@ -14963,7 +14991,9 @@ function getTagsOfTaggee($taggee_id, $type) {
  **********************/
 function hasTags($taggee_id, $type) {
 
-    if (!$taggee_id || ($type !== "risk" && $type !== "asset"))
+    global $tag_types;
+
+    if (!$taggee_id || !in_array($type, $tag_types))
         return;
 
     $db = db_open();
@@ -14996,7 +15026,9 @@ function hasTags($taggee_id, $type) {
  ****************************************************************************/
 function updateTagsOfType($taggee_id, $type, $tags) {
 
-    if (!$taggee_id || ($type !== "risk" && $type !== "asset") || !is_array($tags))
+    global $tag_types;
+
+    if (!$taggee_id || !in_array($type, $tag_types) || !is_array($tags))
         return false;
 
     //Get the actual tag values(the $result array contains other info as well)
@@ -15115,7 +15147,8 @@ function updateTagsOfType($taggee_id, $type, $tags) {
     db_close($db);
 
     // No audit logging is needed if nothing changed
-    if ($tags_to_add || $tags_to_remove) {
+    // Also no audit logging is done when there's no session(like when a questionnaire is filled without a user actually logging in)
+    if (isset($_SESSION) && isset($_SESSION['user']) && isset($_SESSION['uid']) && ($tags_to_add || $tags_to_remove)) {
         global $lang;
 
         $tag_changes = [];
@@ -15147,7 +15180,9 @@ function updateTagsOfType($taggee_id, $type, $tags) {
  *******************************************/
 function getTagsOfType($type) {
 
-    if ($type !== "risk" && $type !== "asset")
+    global $tag_types;
+
+    if (!in_array($type, $tag_types))
         return [];
 
     $db = db_open();
@@ -15174,6 +15209,46 @@ function getTagsOfType($type) {
     return $tags;
 }
 
+/************************************************
+ * FUNCTION: GET TAGS OF TYPES                  *
+ * Gets tags assigned to list of taggee types.  *
+ ************************************************/
+function getTagsOfTypes($types = []) {
+    
+    global $tag_types;
+    
+    // Making sure we only accept the types we can work with
+    $types = array_intersect($types, $tag_types);
+    
+    // If there's no type left
+    if (empty($types)) {
+        return [];
+    }
+        
+    $db = db_open();
+    
+    //Load tags currently assigned to a type of taggee
+    $stmt = $db->prepare("
+        SELECT
+            `t`.`tag`, t.id
+        FROM
+            `tags` t
+            INNER JOIN `tags_taggees` tt ON `tt`.`tag_id` = `t`.`id`
+        WHERE
+            `tt`.`type` in ('" . implode("','", $types) . "')
+        GROUP BY
+            t.id
+        ORDER BY `t`.`tag` ASC;
+    ");
+    
+    $stmt->execute();
+    $tags = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    db_close($db);
+    
+    return $tags;
+}
+
 /*********************************************
  * FUNCTION: ARE TAGS EQUAL                  *
  * Gets tags assigned to a type of taggee    *
@@ -15182,7 +15257,9 @@ function getTagsOfType($type) {
  *********************************************/
 function areTagsEqual($taggee_id, $type, $tags) {
 
-    if (!$taggee_id || ($type !== "risk" && $type !== "asset") || !is_array($tags))
+    global $tag_types;
+
+    if (!$taggee_id || !in_array($type, $tag_types) || !is_array($tags))
         return false;
 
     $db = db_open();
@@ -15214,8 +15291,10 @@ function areTagsEqual($taggee_id, $type, $tags) {
  *********************************/
 function removeTagsOfTaggee($taggee_id, $type) {
 
+    global $tag_types;
+
     if (!$taggee_id
-        || ($type !== "risk" && $type !== "asset")
+        || !in_array($type, $tag_types)
         || !hasTags($taggee_id, $type))
         return;
 
@@ -15277,9 +15356,8 @@ function update_risk_level($field, $value, $name) {
 function include_csrf_magic() {
 
     function csrf_startup() {
-        $base_url = get_base_url();
-        //csrf_conf('rewrite-js', $base_url.'/includes/csrf-magic/csrf-magic.js');
-	csrf_conf('rewrite-js', get_setting('simplerisk_base_url').'/includes/csrf-magic/csrf-magic.js');
+        global $escaper;
+        csrf_conf('rewrite-js', $escaper->escapeHtml(get_setting('simplerisk_base_url')).'/includes/csrf-magic/csrf-magic.js');
     }
 
     require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
@@ -15940,47 +16018,6 @@ function check_closed_risk_by_id($id)
     }
 }
 
-/**************************************************************
- * FUNCTION: CREATE NEW TAG FROM STRING SPLITTED BY DELIMITER *
- **************************************************************/
-function create_new_tag_from_string($tags_string, $delimiter=",", $type=NULL, $taggee_id=NULL)
-{
-    if(!$tags_string)
-    {
-        add_tagges([], $taggee_id, $type);
-        return "";
-    }
-    $tags = explode($delimiter, $tags_string);
-    $new_tags = array_filter($tags, function($label){
-        if(stripos($label, "new_tag") !== false){
-            return true;
-        }else{
-            return false;
-        }
-    });
-    $old_tags = array_filter($tags, function($label){
-        if(stripos($label, "new_tag") !== false){
-            return false;
-        }else{
-            return true;
-        }
-    });
-    foreach($new_tags as $new_tag){
-        $new_tag = str_ireplace("new_tag_", "", $new_tag);
-        if($tag_id = add_tag($new_tag, $type)){
-            $old_tags[] = $tag_id;
-        }
-    }
-    $old_tags = array_unique($old_tags);
-    
-    if($type !== NULL && $taggee_id !== NULL)
-    {
-        add_tagges($old_tags, $taggee_id, $type);
-    }
-    
-    return implode(",", $old_tags);
-}
-
 /*
     Checking if the extra is already installed
 */
@@ -16287,15 +16324,18 @@ function cleanup_after_delete($deleted_item_table) {
     // Getting the name of its id field
     $deleted_item_table_id_field = $config['id_field'];
     
+    $has_tags = isset($config['tag_type']) && !empty($config['tag_type']);
+
     // Iterating through the related junction tables
     foreach($config['junctions'] as $junction_table_name => $junction_deleted_item_id_field) {
         
         // It's possible that there're tables that are only present when an extra is installed/enabled
-        if (!table_exists($junction_table_name))
+        if (!table_exists($junction_table_name)) {
             continue;
-        
-        // Clean up every junction entries that aren't tied to a value in their respective tables
-        $sql = "
+        }
+
+        // Clean up every junction entries that aren't tied to a value in the configued table
+        $stmt = $db->prepare("
             DELETE
                 `junction`
             FROM
@@ -16303,13 +16343,40 @@ function cleanup_after_delete($deleted_item_table) {
                 LEFT JOIN `{$deleted_item_table}` `tbl` ON `junction`.`{$junction_deleted_item_id_field}` = `tbl`.`{$deleted_item_table_id_field}`
             WHERE
                 `tbl`.`{$deleted_item_table_id_field}` IS NULL;
-        ";
-
-        $stmt = $db->prepare($sql);
-
+        ");
         $stmt->execute();
     }
 
+    if ($has_tags) {
+        
+        $tag_type = $config['tag_type'];
+        // Clean up every tag junction entries that aren't tied to a value in the configued table
+        // but make sure we're not deleting other types' junction entries
+        $stmt = $db->prepare("
+            DELETE
+                `tt`
+            FROM
+                `tags_taggees` `tt`
+                LEFT JOIN `{$deleted_item_table}` `tbl` ON `tt`.`type` = '{$tag_type}' AND `tt`.`taggee_id` = `tbl`.`{$deleted_item_table_id_field}`
+            WHERE
+                `tbl`.`{$deleted_item_table_id_field}` IS NULL
+                AND `tt`.`type` = '{$tag_type}';
+        ");
+        $stmt->execute();
+        
+        // Clean up every tags that aren't referenced by the junction table
+        $stmt = $db->prepare("
+            DELETE
+                `t`
+            FROM
+                `tags` `t`
+                LEFT JOIN `tags_taggees` `tt` ON `tt`.`tag_id` = `t`.`id`
+            WHERE
+                `tt`.`taggee_id` IS NULL;
+        ");
+        $stmt->execute();
+    }
+    
     db_close($db);
 }
 
@@ -16636,6 +16703,74 @@ function get_user_name($user_id) {
     db_close($db);
     
     return $name;
+}
+
+/************************************************************************
+ * FUNCTION: GET USER WITH PERMISSION                                   *
+ * Getting users with a permission, specified by the $permission_key    *
+ ************************************************************************/
+function get_users_with_permission($permission_key) {
+    
+    // Open the database connection
+    $db = db_open();
+    
+    if (!is_admin() && organizational_hierarchy_extra()) {
+        $stmt = $db->prepare("
+            SELECT
+                `u`.*
+            FROM
+                `user` u
+                INNER JOIN `user_to_team` u2t_bu ON `u2t_bu`.`user_id` = `u`.`value`
+                INNER JOIN `business_unit_to_team` bu2t ON `u2t_bu`.`team_id` = `bu2t`.`team_id`
+                INNER JOIN `permission_to_user` p2u ON `u`.`value` = `p2u`.`user_id`
+                INNER JOIN `permissions` p ON `p`.`id` = `p2u`.`permission_id`
+            WHERE
+                `bu2t`.`business_unit_id` = :selected_business_unit
+                AND `u`.`enabled` = 1
+                AND `p`.`key` = :permission_key
+            GROUP BY
+                `u`.`value`
+            ORDER BY
+                `u`.`name`;
+        ");
+
+        if (!isset($_SESSION['selected_business_unit'])) {
+            $selected_business_unit = get_selected_business_unit($_SESSION['uid']);
+        } else {
+            $selected_business_unit = $_SESSION['selected_business_unit'];
+        }
+
+        $stmt->bindParam(":selected_business_unit", $selected_business_unit, PDO::PARAM_INT);
+        $stmt->bindParam(":permission_key", $permission_key, PDO::PARAM_STR);
+    } else {
+        $stmt = $db->prepare("
+            SELECT
+                `u`.*
+            FROM
+                `user` u
+                INNER JOIN `permission_to_user` p2u ON `u`.`value` = `p2u`.`user_id`
+                INNER JOIN `permissions` p ON `p`.`id` = `p2u`.`permission_id`
+            WHERE
+                `u`.`enabled` = 1
+                AND `p`.`key` = :permission_key
+            GROUP BY 
+                `u`.`value`
+            ORDER BY
+                `u`.`name`;
+        ");
+
+        $stmt->bindParam(":permission_key", $permission_key, PDO::PARAM_STR);
+    }
+    
+    $stmt->execute();
+
+    // Store the list in the array
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+    
+    return $users;
 }
 
 /***********************************************************************************
@@ -16980,5 +17115,27 @@ function get_encoding_issue_file_info($type, $unique_name) {
 /***************************************************************************************
  * END OF SECTION CONTAINING FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
  ***************************************************************************************/
+
+/********************************************************************************
+ * FUNCTION: ARRAY ORDERBY                                                      *
+ * Reorders an array based on a column value                                    *
+ * Ex: $sorted = array_orderby($data, 'volume', SORT_DESC, 'edition', SORT_ASC) *
+ ********************************************************************************/
+function array_orderby()
+{
+    $args = func_get_args();
+    $data = array_shift($args);
+    foreach ($args as $n => $field) {
+        if (is_string($field)) {
+            $tmp = array();
+            foreach ($data as $key => $row)
+                $tmp[$key] = $row[$field];
+            $args[$n] = $tmp;
+            }
+    }
+    $args[] = &$data;
+    call_user_func_array('array_multisort', $args);
+    return array_pop($args);
+}
 
 ?>
