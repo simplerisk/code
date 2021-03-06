@@ -392,7 +392,7 @@ function get_unique_values_from_text_array($all_values, $text_array)
  *          ...
  *      ]
  **************************************************************************/
-function get_name_value_array_from_text_array($text_array, $delimiter1=",", $delimiter2="---", $decrypt=false)
+function get_name_value_array_from_text_array($text_array, $delimiter1=",", $delimiter2="---", $decrypt=false, $sort_by_key=false)
 {
     global $escaper, $lang;
     
@@ -416,7 +416,7 @@ function get_name_value_array_from_text_array($text_array, $delimiter1=",", $del
                 $text = $escaper->escapeHtml(try_decrypt($arr[0]));
             else
                 $text = $escaper->escapeHtml($arr[0]);
-            $results[] = [
+            $results[$arr[1]] = [
                 "value" => base64_encode($arr[1]),
                 "text" => $text,
             ];
@@ -427,16 +427,16 @@ function get_name_value_array_from_text_array($text_array, $delimiter1=",", $del
                 $text = $escaper->escapeHtml(try_decrypt($arr[0]));
             else
                 $text = $escaper->escapeHtml($arr[0]);
-            $results[] = [
+            $results[$arr[0]] = [
                 "value" => base64_encode($arr[0]),
                 "text" => $text,
             ];
             $texts[] = $text;
         }
     }
-    
-    array_multisort($texts, SORT_ASC, $results);
-    
+    if($sort_by_key) ksort($results);
+    else array_multisort($texts, SORT_ASC, $results);
+
     return $results;
 }
 
@@ -1232,7 +1232,7 @@ function create_multiusers_dropdown($name, $selected = "", $custom_html = ""){
 /*****************************
  * FUNCTION: CREATE DROPDOWN *
  *****************************/
-    function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false, $customHtml="", $blankText="--", $blankValue="", $useValue=true, $alphabetical_order=0)
+function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true, $help = false, $returnHtml=false, $customHtml="", $blankText="--", $blankValue="", $useValue=true, $alphabetical_order = 0, $options = null)
 {
 
     global $escaper;
@@ -1250,8 +1250,11 @@ function create_multiusers_dropdown($name, $selected = "", $custom_html = ""){
     }
     else $str .= "<select {$customHtml} id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "\" class=\"form-field\" style=\"width:auto;\"" . $helper . ">\n";
 
-    $options = get_options_from_table($name);
-    if($alphabetical_order == 1) usort($options, function($a, $b){return strcmp($a["name"], $b["name"]);});
+    // Get the list of options
+    if($options === NULL){
+        $options = get_options_from_table($name);
+        if($alphabetical_order == 1) usort($options, function($a, $b){return strcmp($a["name"], $b["name"]);});
+    }
 
     // If the blank is true
     if ($blank == true)
@@ -2676,6 +2679,14 @@ function update_password_policy($strict_user_validation, $pass_policy_enabled, $
  **********************/
 function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions)
 {
+    $custom_display_settings = json_encode(array(
+        'id',
+        'subject',
+        'calculated_risk',
+        'submission_date',
+        'mitigation_planned',
+        'management_review'
+    ));
     // Open the database connection
     $db = db_open();
 
@@ -2708,7 +2719,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
             :multi_factor,
             :change_password,
             :manager,
-            ''
+            :custom_display_settings
         );
     ");
     $stmt->bindParam(":type", $type, PDO::PARAM_STR);
@@ -2722,6 +2733,7 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     $stmt->bindParam(":multi_factor", $multi_factor, PDO::PARAM_INT);
     $stmt->bindParam(":change_password", $change_password, PDO::PARAM_INT);
     $stmt->bindParam(":manager", $manager, PDO::PARAM_INT);
+    $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR);
 
     $stmt->execute();
     
@@ -3274,15 +3286,82 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
 
         // Average the threat agent and vulnerability factors to get the likelihood
         $OWASP_likelihood = ($threat_agent_factors + $vulnerability_factors)/2;
+	if ($OWASP_likelihood >= 0 && $OWASP_likelihood < 3)
+	{
+		$OWASP_likelihood_name = "LOW";
+	}
+	else if ($OWASP_likelihood >= 3 && $OWASP_likelihood < 6)
+	{
+		$OWASP_likelihood_name = "MEDIUM";
+	}
+	else if ($OWASP_likelihood >= 6)
+	{
+		$OWASP_likelihood_name = "HIGH";
+	}
 
         $technical_impact = ($OWASPLossOfConfidentiality + $OWASPLossOfIntegrity + $OWASPLossOfAvailability + $OWASPLossOfAccountability)/4;
         $business_impact = ($OWASPFinancialDamage + $OWASPReputationDamage + $OWASPNonCompliance + $OWASPPrivacyViolation)/4;
 
         // Average the technical and business impacts to get the impact
         $OWASP_impact = ($technical_impact + $business_impact)/2;
+        if ($OWASP_impact >= 0 && $OWASP_impact < 3)
+        {
+                $OWASP_impact_name = "LOW";
+        }
+        else if ($OWASP_impact >= 3 && $OWASP_impact < 6)
+        {
+                $OWASP_impact_name = "MEDIUM";
+        }
+        else if ($OWASP_impact >= 6)
+        {
+                $OWASP_impact_name = "HIGH";
+        }
+
+	// Get the overall risk severity
+	if ($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "LOW")
+	{
+		// Set the calculated risk for a "Note" severity
+		$severity = "Note";
+		$calculated_risk = 0;
+	}
+	else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "LOW"))
+	{
+		// Set the calculated risk for a "Low" severity as the average between Low and Medium
+		$severity = "Low";
+		$stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='Low' OR name='Medium') AS risk_level;");
+		$stmt->execute();
+		$risk_level = $stmt->fetch();
+		$calculated_risk = $risk_level['calculated_risk'];
+		$calculated_risk = round($risk_level['calculated_risk'], 1);
+	}
+	else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "LOW"))
+	{
+		// Set the calculated risk for a "Medium" severity as the average between Medium and High
+		$severity = "Medium";
+		$stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='Medium' OR name='High') AS risk_level;");
+		$stmt->execute();
+		$risk_level = $stmt->fetch();
+		$calculated_risk = $risk_level['calculated_risk'];
+		$calculated_risk = round($risk_level['calculated_risk'], 1);
+	}
+	else if (($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "MEDIUM"))
+	{
+		// Set the calculated risk for a "High" severity as the average between High and Very High
+		$severity = "High";
+		$stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='High' OR name='Very High') AS risk_level;");
+		$stmt->execute();
+		$risk_level = $stmt->fetch();
+		$calculated_risk = round($risk_level['calculated_risk'], 1);
+	}
+	else if ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "HIGH")
+	{
+		// Set the calculated risk for a "Critical" severity
+		$severity = "Critical";
+		$calculated_risk = 10;
+	}
 
         // Calculate the overall OWASP risk score
-        $calculated_risk = round((($OWASP_impact * $OWASP_likelihood) / 10), 1);
+        //$calculated_risk = round((($OWASP_impact * $OWASP_likelihood) / 10), 1);
 
         // Create the database query
         $stmt = $db->prepare("INSERT INTO risk_scoring (`id`, `scoring_method`, `calculated_risk`, `OWASP_SkillLevel`, `OWASP_Motive`, `OWASP_Opportunity`, `OWASP_Size`, `OWASP_EaseOfDiscovery`, `OWASP_EaseOfExploit`, `OWASP_Awareness`, `OWASP_IntrusionDetection`, `OWASP_LossOfConfidentiality`, `OWASP_LossOfIntegrity`, `OWASP_LossOfAvailability`, `OWASP_LossOfAccountability`, `OWASP_FinancialDamage`, `OWASP_ReputationDamage`, `OWASP_NonCompliance`, `OWASP_PrivacyViolation`) VALUES (:last_insert_id, :scoring_method, :calculated_risk, :OWASP_SkillLevel, :OWASP_Motive, :OWASP_Opportunity, :OWASP_Size, :OWASP_EaseOfDiscovery, :OWASP_EaseOfExploit, :OWASP_Awareness, :OWASP_IntrusionDetection, :OWASP_LossOfConfidentiality, :OWASP_LossOfIntegrity, :OWASP_LossOfAvailability, :OWASP_LossOfAccountability, :OWASP_FinancialDamage, :OWASP_ReputationDamage, :OWASP_NonCompliance, :OWASP_PrivacyViolation)");
@@ -3648,15 +3727,82 @@ function update_owasp_score($risk_id, $OWASPSkill, $OWASPMotive, $OWASPOpportuni
 
     // Average the threat agent and vulnerability factors to get the likelihood
     $OWASP_likelihood = ($threat_agent_factors + $vulnerability_factors)/2;
+        if ($OWASP_likelihood >= 0 && $OWASP_likelihood < 3)
+        {
+                $OWASP_likelihood_name = "LOW";
+        }
+        else if ($OWASP_likelihood >= 3 && $OWASP_likelihood < 6)
+        {
+                $OWASP_likelihood_name = "MEDIUM";
+        }
+        else if ($OWASP_likelihood >= 6)
+        {
+                $OWASP_likelihood_name = "HIGH";
+        }
 
     $technical_impact = ($OWASPLossOfConfidentiality + $OWASPLossOfIntegrity + $OWASPLossOfAvailability + $OWASPLossOfAccountability)/4;
     $business_impact = ($OWASPFinancialDamage + $OWASPReputationDamage + $OWASPNonCompliance + $OWASPPrivacyViolation)/4;
 
     // Average the technical and business impacts to get the impact
     $OWASP_impact = ($technical_impact + $business_impact)/2;
+        if ($OWASP_impact >= 0 && $OWASP_impact < 3)
+        {
+                $OWASP_impact_name = "LOW";
+        }
+        else if ($OWASP_impact >= 3 && $OWASP_impact < 6)
+        {
+                $OWASP_impact_name = "MEDIUM";
+        }
+        else if ($OWASP_impact >= 6)
+        {
+                $OWASP_impact_name = "HIGH";
+        }
+
+        // Get the overall risk severity
+        if ($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "LOW")
+        {
+                // Set the calculated risk for a "Note" severity
+                $severity = "Note";
+                $calculated_risk = 0;
+        }
+        else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "LOW"))
+        {
+                // Set the calculated risk for a "Low" severity as the average between Low and Medium
+                $severity = "Low";
+                $stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='Low' OR name='Medium') AS risk_level;");
+                $stmt->execute();
+                $risk_level = $stmt->fetch();
+                $calculated_risk = $risk_level['calculated_risk'];
+                $calculated_risk = round($risk_level['calculated_risk'], 1);
+        }
+        else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "LOW"))
+        {
+                // Set the calculated risk for a "Medium" severity as the average between Medium and High
+                $severity = "Medium";
+                $stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='Medium' OR name='High') AS risk_level;");
+                $stmt->execute();
+                $risk_level = $stmt->fetch();
+                $calculated_risk = $risk_level['calculated_risk'];
+                $calculated_risk = round($risk_level['calculated_risk'], 1);
+        }
+        else if (($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "MEDIUM"))
+        {
+                // Set the calculated risk for a "High" severity as the average between High and Very High
+                $severity = "High";
+                $stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='High' OR name='Very High') AS risk_level;");
+                $stmt->execute();
+                $risk_level = $stmt->fetch();
+                $calculated_risk = round($risk_level['calculated_risk'], 1);
+        }
+        else if ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "HIGH")
+        {
+                // Set the calculated risk for a "Critical" severity
+                $severity = "Critical";
+                $calculated_risk = 10;
+        }
 
     // Calculate the overall OWASP risk score
-    $calculated_risk = round((($OWASP_impact * $OWASP_likelihood) / 10), 1);
+    //$calculated_risk = round((($OWASP_impact * $OWASP_likelihood) / 10), 1);
 
     // Create the database query
     $stmt = $db->prepare("UPDATE risk_scoring SET calculated_risk=:calculated_risk, OWASP_SkillLevel=:OWASP_SkillLevel, OWASP_Motive=:OWASP_Motive, OWASP_Opportunity=:OWASP_Opportunity, OWASP_Size=:OWASP_Size, OWASP_EaseOfDiscovery=:OWASP_EaseOfDiscovery, OWASP_EaseOfExploit=:OWASP_EaseOfExploit, OWASP_Awareness=:OWASP_Awareness, OWASP_IntrusionDetection=:OWASP_IntrusionDetection, OWASP_LossOfConfidentiality=:OWASP_LossOfConfidentiality, OWASP_LossOfIntegrity=:OWASP_LossOfIntegrity, OWASP_LossOfAvailability=:OWASP_LossOfAvailability, OWASP_LossOfAccountability=:OWASP_LossOfAccountability, OWASP_FinancialDamage=:OWASP_FinancialDamage, OWASP_ReputationDamage=:OWASP_ReputationDamage, OWASP_NonCompliance=:OWASP_NonCompliance, OWASP_PrivacyViolation=:OWASP_PrivacyViolation WHERE id=:id");
@@ -3961,15 +4107,82 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
 
         // Average the threat agent and vulnerability factors to get the likelihood
         $OWASP_likelihood = ($threat_agent_factors + $vulnerability_factors)/2;
+        if ($OWASP_likelihood >= 0 && $OWASP_likelihood < 3)
+        {
+                $OWASP_likelihood_name = "LOW";
+        }
+        else if ($OWASP_likelihood >= 3 && $OWASP_likelihood < 6)
+        {
+                $OWASP_likelihood_name = "MEDIUM";
+        }
+        else if ($OWASP_likelihood >= 6)
+        {
+                $OWASP_likelihood_name = "HIGH";
+        }
 
         $technical_impact = ($OWASPLossOfConfidentiality + $OWASPLossOfIntegrity + $OWASPLossOfAvailability + $OWASPLossOfAccountability)/4;
         $business_impact = ($OWASPFinancialDamage + $OWASPReputationDamage + $OWASPNonCompliance + $OWASPPrivacyViolation)/4;
 
         // Average the technical and business impacts to get the impact
         $OWASP_impact = ($technical_impact + $business_impact)/2;
+        if ($OWASP_impact >= 0 && $OWASP_impact < 3)
+        {
+                $OWASP_impact_name = "LOW";
+        }
+        else if ($OWASP_impact >= 3 && $OWASP_impact < 6)
+        {
+                $OWASP_impact_name = "MEDIUM";
+        }
+        else if ($OWASP_impact >= 6)
+        {
+                $OWASP_impact_name = "HIGH";
+        }
+
+        // Get the overall risk severity
+        if ($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "LOW")
+        {
+                // Set the calculated risk for a "Note" severity
+                $severity = "Note";
+                $calculated_risk = 0;
+        }
+        else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "LOW"))
+        {
+                // Set the calculated risk for a "Low" severity as the average between Low and Medium
+                $severity = "Low";
+                $stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='Low' OR name='Medium') AS risk_level;");
+                $stmt->execute();
+                $risk_level = $stmt->fetch();
+                $calculated_risk = $risk_level['calculated_risk'];
+                $calculated_risk = round($risk_level['calculated_risk'], 1);
+        }
+        else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "LOW"))
+        {
+                // Set the calculated risk for a "Medium" severity as the average between Medium and High
+                $severity = "Medium";
+                $stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='Medium' OR name='High') AS risk_level;");
+                $stmt->execute();
+                $risk_level = $stmt->fetch();
+                $calculated_risk = $risk_level['calculated_risk'];
+                $calculated_risk = round($risk_level['calculated_risk'], 1);
+        }
+        else if (($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "MEDIUM"))
+        {
+                // Set the calculated risk for a "High" severity as the average between High and Very High
+                $severity = "High";
+                $stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='High' OR name='Very High') AS risk_level;");
+                $stmt->execute();
+                $risk_level = $stmt->fetch();
+                $calculated_risk = round($risk_level['calculated_risk'], 1);
+        }
+        else if ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "HIGH")
+        {
+                // Set the calculated risk for a "Critical" severity
+                $severity = "Critical";
+                $calculated_risk = 10;
+        }
 
         // Calculate the overall OWASP risk score
-        $calculated_risk = round((($OWASP_impact * $OWASP_likelihood) / 10), 1);
+        //$calculated_risk = round((($OWASP_impact * $OWASP_likelihood) / 10), 1);
 
         // Create the database query
         $stmt = $db->prepare("UPDATE risk_scoring SET scoring_method=:scoring_method, calculated_risk=:calculated_risk, OWASP_SkillLevel=:OWASP_SkillLevel, OWASP_Motive=:OWASP_Motive, OWASP_Opportunity=:OWASP_Opportunity, OWASP_Size=:OWASP_Size, OWASP_EaseOfDiscovery=:OWASP_EaseOfDiscovery, OWASP_EaseOfExploit=:OWASP_EaseOfExploit, OWASP_Awareness=:OWASP_Awareness, OWASP_IntrusionDetection=:OWASP_IntrusionDetection, OWASP_LossOfConfidentiality=:OWASP_LossOfConfidentiality, OWASP_LossOfIntegrity=:OWASP_LossOfIntegrity, OWASP_LossOfAvailability=:OWASP_LossOfAvailability, OWASP_LossOfAccountability=:OWASP_LossOfAccountability, OWASP_FinancialDamage=:OWASP_FinancialDamage, OWASP_ReputationDamage=:OWASP_ReputationDamage, OWASP_NonCompliance=:OWASP_NonCompliance, OWASP_PrivacyViolation=:OWASP_PrivacyViolation WHERE id=:id; ");
@@ -4458,6 +4671,11 @@ function update_risk($risk_id, $is_api = false)
     $submission_date        = get_param("post", "submission_date", false);
     if($submission_date != false){
         $submission_date        =  get_standard_date_from_default_format($submission_date);
+        $risk = get_risk_by_id($risk_id);
+        if($risk[0]){
+            $existing_submission_date = date('Y-m-d', strtotime($risk[0]['submission_date']));
+            if($existing_submission_date == $submission_date) $submission_date = $risk[0]['submission_date'];
+        }
     } elseif($submission_date == ""){
         $submission_date = $current_datetime;
     }
@@ -4867,7 +5085,7 @@ function get_risk_teams($id) {
     // Close the database connection
     db_close($db);
     
-    return $result && $result[0] ? explode(',', $result) : [];
+    return $result && $result[0] ? implode(',', $result) : [];
 }
 
 /**********************************
@@ -5217,7 +5435,11 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
                 $sort_query = " ORDER BY i.name {$order_dir} ";
             break;
             case "next_review_date":
+            case "management_review":
                 $sort_query = "";
+            break;
+            case "mitigation_planned":
+                $sort_query = " ORDER BY b.mitigation_id != 0 {$order_dir}, b.id ASC";
             break;
             default: 
                 if (stripos($order_field, "custom_field_") === false)
@@ -12056,7 +12278,7 @@ function save_custom_display_settings()
 
     // Update user
     $stmt = $db->prepare("UPDATE user SET custom_display_settings=:custom_display_settings WHERE value=:value");
-    $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR, 100);
+    $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":value", $_SESSION['uid'], PDO::PARAM_INT);
     $stmt->execute();
 
@@ -12975,14 +13197,23 @@ function save_role_responsibilities($role_id, $admin, $default, $responsibilitie
     
     $db = db_open();
     
+    // Store if the admin status of the role is changed
+    $stmt = $db->prepare("SELECT `admin` FROM `role` WHERE `value` = :role_id;");
+    $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $admin_old = $stmt->fetchColumn();
+    $role_admin_status_changed = ($admin_old !== null && $admin_old === '1') !== $admin;
+
     if ($default) {
         set_default_role($role_id);
     }
 
-    $stmt = $db->prepare("UPDATE `role` SET `admin` = :admin WHERE `value` = :role_id;");
-    $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
-    $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
-    $stmt->execute();
+    if ($role_admin_status_changed) {
+        $stmt = $db->prepare("UPDATE `role` SET `admin` = :admin WHERE `value` = :role_id;");
+        $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
+        $stmt->bindParam(":role_id", $role_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
 
     if ($admin) {
         // Admins have ALL the responsibilities
@@ -13022,11 +13253,37 @@ function save_role_responsibilities($role_id, $admin, $default, $responsibilitie
                 $permissions = [];
             }
 
+            // If the admin status of the role changed
+            if ($role_admin_status_changed) {
+                // Update the user's admin status
+                $stmt = $db->prepare("
+                    UPDATE
+                        `user`
+                    SET
+                        `admin`=:admin
+                    WHERE
+                        `value`=:user_id;
+                ");
+
+                $stmt->bindParam(":user_id", $user_id, PDO::PARAM_INT);
+                $stmt->bindParam(":admin", $admin, PDO::PARAM_INT);
+
+                $stmt->execute();
+            }
+
             // Add the new responsibilities and remove what needs to be removed
             $new_responsibilities = array_unique(array_diff(array_merge($permissions, $responsibilities_to_add), $responsibilities_to_remove));
 
             // Update the user's permissions
             update_permissions($user_id, $new_responsibilities);
+
+            // If the update affects the current logged in user
+            if ($_SESSION['uid'] == $user_id) {
+                set_user_permissions($user_id);
+            }
+
+            // Refresh the permissions in the active sessions of the user
+            refresh_permissions_in_sessions_of_user($user_id);
         }
     }
 
@@ -16466,6 +16723,7 @@ function get_mitigation_team_query_string($user_teams, $field_name)
     // Return the string
     return $string;
 }
+
 /********************************************
  * FUNCTION: GET mitigation_to_controls    *
  ********************************************/
@@ -16486,6 +16744,7 @@ function get_mitigation_to_controls($mitigation_id,$control_id)
 
     return $frameworks;
 }
+
 /*******************************
  * FUNCTION: GET RISK CATALOGS *
  *******************************/
@@ -16506,6 +16765,27 @@ function get_risk_catalogs()
     db_close($db);
     return $result;
 }
+
+/*********************************
+ * FUNCTION: GET THREAT CATALOGS *
+ *********************************/
+function get_threat_catalogs()
+{
+    // Open the database connection
+    $db = db_open();
+    // Query the database
+    $stmt = $db->prepare("
+        SELECT t1.*,g.name grouping_name FROM `threat_catalog` t1
+            LEFT JOIN `threat_grouping` g ON t1.`grouping` = g.`value`
+        WHERE 1
+        ORDER By g.name,t1.order
+    ");
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    db_close($db);
+    return $result;
+}
+
 /*******************************
  * FUNCTION: GET RISK CATALOG  *
  *******************************/
@@ -16521,6 +16801,23 @@ function get_risk_catalog($id)
     db_close($db);
     return $result;
 }
+
+/*********************************
+ * FUNCTION: GET THREAT CATALOG  *
+ *********************************/
+function get_threat_catalog($id)
+{
+    // Open the database connection
+    $db = db_open();
+    $stmt = $db->prepare("SELECT * FROM `threat_catalog` WHERE `id` = :id");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Close the database connection
+    db_close($db);
+    return $result;
+}
+
 /***************************************
  * FUNCTION: UPDATE RISK CATALOG ORDER *
  ***************************************/
@@ -16539,6 +16836,26 @@ function update_risk_catalog_order($orders)
     db_close($db);
     return true;
 }
+
+/*****************************************
+ * FUNCTION: UPDATE THREAT CATALOG ORDER *
+ *****************************************/
+function update_threat_catalog_order($orders)
+{
+    // Open the database connection
+    $db = db_open();
+    foreach ($orders as $index => $row)
+    {
+        $stmt = $db->prepare("UPDATE `threat_catalog` SET `order` = :order WHERE `id` = :id");
+        $stmt->bindParam(":order", $row[1], PDO::PARAM_INT);
+        $stmt->bindParam(":id", $row[0], PDO::PARAM_INT);
+        $stmt->execute();
+    }
+    // Close the database connection
+    db_close($db);
+    return true;
+}
+
 /******************************
  * FUNCTION: ADD RISK CATALOG *
  ******************************/
@@ -16563,6 +16880,31 @@ function add_risk_catalog($data)
     db_close($db);
     return true;
 }
+
+/********************************
+ * FUNCTION: ADD THREAT CATALOG *
+ ********************************/
+function add_threat_catalog($data)
+{
+    // Open the database connection
+    $db = db_open();
+    $stmt = $db->prepare("SELECT MAX(`order`) + 1 as new_order FROM `threat_catalog` WHERE 1");
+    $stmt->execute();
+    $result = $stmt->fetch();
+    $new_order = $result["new_order"];
+    $stmt = $db->prepare("INSERT INTO `threat_catalog` (`number`, `grouping`, `name`, `description`, `order`) VALUES (:number, :grouping, :name, :description, :order)");
+    $stmt->bindParam(":number", $data["number"], PDO::PARAM_STR);
+    $stmt->bindParam(":grouping", $data["grouping"], PDO::PARAM_INT);
+    $stmt->bindParam(":name", $data["name"], PDO::PARAM_STR);
+    $stmt->bindParam(":description", $data["description"], PDO::PARAM_STR);
+    $stmt->bindParam(":order", $new_order, PDO::PARAM_INT);
+    $stmt->execute();
+    $threat_id = $db->lastInsertId();
+    // Close the database connection
+    db_close($db);
+    return true;
+}
+
 /*********************************
  * FUNCTION: UPDATE RISK CATALOG *
  *********************************/
@@ -16583,9 +16925,30 @@ function update_risk_catalog($data)
     db_close($db);
     return true;
 }
-/*********************************
- * FUNCTION: DLETE RISK CATALOG  *
- *********************************/
+
+/***********************************
+ * FUNCTION: UPDATE THREAT CATALOG *
+ ***********************************/
+function update_threat_catalog($data)
+{
+    // Open the database connection
+    $db = db_open();
+    $stmt = $db->prepare("UPDATE `threat_catalog` SET `number` = :number, `grouping` = :grouping, `name` = :name, `description` = :description WHERE `id` = :id;");
+    $stmt->bindParam(":id", $data["id"], PDO::PARAM_INT);
+    $stmt->bindParam(":number", $data["number"], PDO::PARAM_STR);
+    $stmt->bindParam(":grouping", $data["grouping"], PDO::PARAM_INT);
+    $stmt->bindParam(":name", $data["name"], PDO::PARAM_STR);
+    $stmt->bindParam(":description", $data["description"], PDO::PARAM_STR);
+    $stmt->execute();
+    $threat_id = $db->lastInsertId();
+    // Close the database connection
+    db_close($db);
+    return true;
+}
+
+/**********************************
+ * FUNCTION: DELETE RISK CATALOG  *
+ **********************************/
 function delete_risk_catalog($id)
 {
     // Open the database connection
@@ -16598,6 +16961,23 @@ function delete_risk_catalog($id)
     db_close($db);
     return true;
 }
+
+/************************************
+ * FUNCTION: DELETE THREAT CATALOG  *
+ ************************************/
+function delete_threat_catalog($id)
+{
+    // Open the database connection
+    $db = db_open();
+    $stmt = $db->prepare("DELETE FROM `threat_catalog` WHERE `id` = :id;");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $threat_id = $db->lastInsertId();
+    // Close the database connection
+    db_close($db);
+    return true;
+}
+
 /*****************************
  * FUNCTION: GET RISK STATUS *
  *****************************/
@@ -16786,14 +17166,19 @@ function has_files_with_encoding_issues($type = 'all') {
         case 'risk':
             $sql = "SELECT count(1) AS cnt FROM `files` WHERE `size` <> LENGTH(`content`);";
         break;
+        case 'questionnaire':
+            $sql = "SELECT count(1) AS cnt FROM `questionnaire_files` WHERE `size` <> LENGTH(`content`);";
+        break;
         case 'all':
         default:
             $sql = "
                 SELECT sum(u.cnt) FROM
                     (SELECT count(1) AS cnt FROM `compliance_files` WHERE `size` <> LENGTH(`content`)
                     UNION ALL
-                    SELECT count(1) AS cnt FROM `files` WHERE `size` <> LENGTH(`content`)
-                ) u;
+                    SELECT count(1) AS cnt FROM `files` WHERE `size` <> LENGTH(`content`)" .
+                    (table_exists('questionnaire_files') ? "UNION ALL
+                    SELECT count(1) AS cnt FROM `questionnaire_files` WHERE `size` <> LENGTH(`content`)" : "") . 
+                ") u;
             ";
         break;
     }
@@ -16892,6 +17277,29 @@ function get_files_with_encoding_issues($type = 'risk', $order_column = 0, $orde
                 ORDER BY {$order_column}
             "; 
         break;
+        case 'questionnaire':
+            if ($order_column == 2) {
+                $order_column = "`q`.`name` {$order_dir}, `t`.`id` ASC";
+            } elseif ($order_column == 1) {
+                $order_column = "`type` {$order_dir}";
+            } else $order_column = "`q`.`name` {$order_dir}, `t`.`id` ASC";
+            
+            $sql = "
+                SELECT
+                    `t`.`token`,
+                    `q`.`name`,
+                    `f`.`unique_name`,
+                    `f`.`name` AS file_name,
+                    IF(`f`.`template_id` = 0 AND `f`.`question_id` = 0, 'Questionnaire', 'Answer') AS `type`
+                FROM
+                    `questionnaire_files` f
+                    INNER JOIN `questionnaire_tracking` t ON `f`.`tracking_id` = `t`.`id`
+                    INNER JOIN `questionnaires` q ON `t`.`questionnaire_id` = `q`.`id`
+                WHERE
+                    `f`.`size` <> LENGTH(`f`.`content`)
+                ORDER BY {$order_column}
+            ";
+        break;
     }
     
     $stmt = $db->prepare("
@@ -16936,6 +17344,12 @@ function display_file_encoding_issues($type) {
                     <th align='left' valign='top'>".$escaper->escapeHtml($lang['Name'])."</th>
                     <th align='left' valign='top' width='12%'>".$escaper->escapeHtml($lang['AttachmentType'])."</th>";
             $data_list = ['name', 'ref_type'];
+        break;
+        case 'questionnaire':
+            echo "
+                    <th align='left' valign='top'>".$escaper->escapeHtml($lang['QuestionnaireName'])."</th>
+                    <th align='left' valign='top' width='12%'>".$escaper->escapeHtml($lang['AttachmentType'])."</th>";
+            $data_list = ['name', 'type'];
         break;
     }
     
@@ -17096,10 +17510,13 @@ function get_encoding_issue_file_info($type, $unique_name) {
     switch($type) {
         case 'compliance':
             $sql = "SELECT `id`, `ref_id`, `ref_type`, `version` FROM `compliance_files` WHERE `unique_name` = :unique_name;";
-            break;
+        break;
         case 'risk':
             $sql = "SELECT `risk_id`, `view_type` FROM `files` WHERE `unique_name` = :unique_name;";
-            break;
+        break;
+        case 'questionnaire':
+            $sql = "SELECT `id`, `tracking_id`, `template_id`, `parent_question_id`, `question_id` FROM `questionnaire_files` WHERE `unique_name` = :unique_name;";
+        break;
     }
 
     $stmt = $db->prepare($sql);

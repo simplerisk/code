@@ -531,7 +531,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
     // Open the database connection
     $db = db_open();
     $sql = "
-        SELECT t1.*, GROUP_CONCAT(DISTINCT f.value) framework_ids, GROUP_CONCAT(DISTINCT f.name) framework_names, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.name family_short_name, t6.name control_owner_name
+        SELECT t1.*, GROUP_CONCAT(DISTINCT f.value) framework_ids, GROUP_CONCAT(DISTINCT f.name) framework_names, t2.name control_class_name, t3.name control_phase_name, t4.name control_priority_name, t5.name family_short_name, t6.name control_owner_name, t7.name control_maturity_name, t8.name desired_maturity_name
         FROM `framework_controls` t1 
             LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
             LEFT JOIN `frameworks` f on m.framework=f.value AND f.status=1
@@ -541,6 +541,8 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
             LEFT JOIN `control_priority` t4 on t1.control_priority=t4.value
             LEFT JOIN `family` t5 on t1.family=t5.value
             LEFT JOIN `user` t6 on t1.control_owner=t6.value
+            LEFT JOIN `control_maturity` t7 on t1.control_maturity=t7.value
+            LEFT JOIN `control_maturity` t8 on t1.desired_maturity=t8.value
         WHERE t1.deleted=0
     ";
     
@@ -1070,6 +1072,8 @@ function add_framework_control($control){
     $control_class = isset($control['control_class']) ? (int)$control['control_class'] : 0;
     $control_phase = isset($control['control_phase']) ? (int)$control['control_phase'] : 0;
     $control_number = isset($control['control_number']) ? $control['control_number'] : "";
+    $control_current_maturity = isset($control['control_current_maturity']) ? $control['control_current_maturity'] : 0;
+    $control_desired_maturity = isset($control['control_desired_maturity']) ? $control['control_desired_maturity'] : 0;
     $control_priority = isset($control['control_priority']) ? (int)$control['control_priority'] : 0;
     $family = isset($control['family']) ? (int)$control['family'] : 0;
     $mitigation_percent = isset($control['mitigation_percent']) ? (int)$control['mitigation_percent'] : 0;
@@ -1078,8 +1082,8 @@ function add_framework_control($control){
     $db = db_open();
 
     // Create a framework
-    $stmt = $db->prepare("INSERT INTO `framework_controls` (`short_name`, `long_name`, `description`, `supplemental_guidance`, `control_owner`, `control_class`, `control_phase`, `control_number`, `control_priority`, `family`, `mitigation_percent`) VALUES (:short_name, :long_name, :description, :supplemental_guidance, :control_owner, :control_class, :control_phase, :control_number, :control_priority, :family, :mitigation_percent)");
-    $stmt->bindParam(":short_name", $short_name, PDO::PARAM_STR, 100);
+    $stmt = $db->prepare("INSERT INTO `framework_controls` (`short_name`, `long_name`, `description`, `supplemental_guidance`, `control_owner`, `control_class`, `control_phase`, `control_number`, `control_maturity`, `desired_maturity`, `control_priority`, `family`, `mitigation_percent`) VALUES (:short_name, :long_name, :description, :supplemental_guidance, :control_owner, :control_class, :control_phase, :control_number, :control_current_maturity, :control_desired_maturity, :control_priority, :family, :mitigation_percent)");
+    $stmt->bindParam(":short_name", $short_name, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":long_name", $long_name, PDO::PARAM_STR);
     $stmt->bindParam(":description", $description, PDO::PARAM_STR);
     $stmt->bindParam(":supplemental_guidance", $supplemental_guidance, PDO::PARAM_STR);
@@ -1087,6 +1091,8 @@ function add_framework_control($control){
     $stmt->bindParam(":control_class", $control_class, PDO::PARAM_INT);
     $stmt->bindParam(":control_phase", $control_phase, PDO::PARAM_INT);
     $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR);
+    $stmt->bindParam(":control_current_maturity", $control_current_maturity, PDO::PARAM_INT);
+    $stmt->bindParam(":control_desired_maturity", $control_desired_maturity, PDO::PARAM_INT);
     $stmt->bindParam(":control_priority", $control_priority, PDO::PARAM_INT);
     $stmt->bindParam(":family", $family, PDO::PARAM_INT);
     $stmt->bindParam(":mitigation_percent", $mitigation_percent, PDO::PARAM_INT);
@@ -1120,6 +1126,8 @@ function update_framework_control($control_id, $control){
     $control_class = isset($control['control_class']) ? (int)$control['control_class'] : 0;
     $control_phase = isset($control['control_phase']) ? (int)$control['control_phase'] : 0;
     $control_number = isset($control['control_number']) ? $control['control_number'] : "";
+    $control_current_maturity = isset($control['control_current_maturity']) ? (int)$control['control_current_maturity'] : 0;
+    $control_desired_maturity = isset($control['control_desired_maturity']) ? (int)$control['control_desired_maturity'] : 0;
     $control_priority = isset($control['control_priority']) ? (int)$control['control_priority'] : 0;
     $family = isset($control['family']) ? (int)$control['family'] : 0;
     $mitigation_percent = isset($control['mitigation_percent']) ? (int)$control['mitigation_percent'] : 0;
@@ -1127,7 +1135,7 @@ function update_framework_control($control_id, $control){
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("UPDATE `framework_controls` SET `short_name`=:short_name, `long_name`=:long_name, `description`=:description, `supplemental_guidance`=:supplemental_guidance, `control_owner`=:control_owner, `control_class`=:control_class, `control_phase`=:control_phase, `control_number`=:control_number, `control_priority`=:control_priority, `family`=:family, `mitigation_percent`=:mitigation_percent WHERE id=:id;");
+    $stmt = $db->prepare("UPDATE `framework_controls` SET `short_name`=:short_name, `long_name`=:long_name, `description`=:description, `supplemental_guidance`=:supplemental_guidance, `control_owner`=:control_owner, `control_class`=:control_class, `control_phase`=:control_phase, `control_number`=:control_number, `control_maturity`=:control_current_maturity, `desired_maturity`=:control_desired_maturity, `control_priority`=:control_priority, `family`=:family, `mitigation_percent`=:mitigation_percent WHERE id=:id;");
     $stmt->bindParam(":short_name", $short_name, PDO::PARAM_STR, 100);
     $stmt->bindParam(":long_name", $long_name, PDO::PARAM_STR);
     $stmt->bindParam(":description", $description, PDO::PARAM_STR);
@@ -1136,6 +1144,8 @@ function update_framework_control($control_id, $control){
     $stmt->bindParam(":control_class", $control_class, PDO::PARAM_INT);
     $stmt->bindParam(":control_phase", $control_phase, PDO::PARAM_INT);
     $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR);
+    $stmt->bindParam(":control_current_maturity", $control_current_maturity, PDO::PARAM_INT);
+    $stmt->bindParam(":control_desired_maturity", $control_desired_maturity, PDO::PARAM_INT);
     $stmt->bindParam(":control_priority", $control_priority, PDO::PARAM_INT);
     $stmt->bindParam(":family", $family, PDO::PARAM_INT);
     $stmt->bindParam(":mitigation_percent", $mitigation_percent, PDO::PARAM_INT);
@@ -1774,7 +1784,7 @@ function make_tree_options_html($options, $parent, &$html, $indent="", $selected
 /******************************
  * FUNCTION: ADD NEW DOCUMENT *
  ******************************/
-function add_document($document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver){
+function add_document($document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver, $team_ids){
     global $lang, $escaper;
     
     // Open the database connection
@@ -1791,7 +1801,7 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
         return false;
     }
     // Create a document
-    $stmt = $db->prepare("INSERT INTO `documents` (`document_type`, `document_name`, `control_ids`, `framework_ids`, `parent`, `status`, `file_id`, `creation_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `additional_stakeholders`, `approver`) VALUES (:document_type, :document_name, :control_ids, :framework_ids, :parent, :status, :file_id, :creation_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :additional_stakeholders, :approver)");
+    $stmt = $db->prepare("INSERT INTO `documents` (`document_type`, `document_name`, `control_ids`, `framework_ids`, `parent`, `status`, `file_id`, `creation_date`, `last_review_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `additional_stakeholders`, `approver`, `team_ids`) VALUES (:document_type, :document_name, :control_ids, :framework_ids, :parent, :status, :file_id, :creation_date, :last_review_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :additional_stakeholders, :approver, :team_ids)");
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":control_ids", $control_ids, PDO::PARAM_STR);
@@ -1801,12 +1811,14 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
     $init_file_id = 0;
     $stmt->bindParam(":file_id", $init_file_id, PDO::PARAM_INT);
     $stmt->bindParam(":creation_date", $creation_date, PDO::PARAM_STR);
+    $stmt->bindParam(":last_review_date", $last_review_date, PDO::PARAM_STR);
     $stmt->bindParam(":review_frequency", $review_frequency, PDO::PARAM_INT);
     $stmt->bindParam(":next_review_date", $next_review_date, PDO::PARAM_STR);
     $stmt->bindParam(":approval_date", $approval_date, PDO::PARAM_STR);
     $stmt->bindParam(":document_owner", $document_owner, PDO::PARAM_INT);
     $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR);
     $stmt->bindParam(":approver", $approver, PDO::PARAM_INT);
+    $stmt->bindParam(":team_ids", $team_ids, PDO::PARAM_STR);
 
     $stmt->execute();
 
@@ -1854,7 +1866,7 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
 /*****************************
  * FUNCTION: UPDATE DOCUMENT *
  *****************************/
-function update_document($document_id, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver){
+function update_document($document_id, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver, $team_ids){
     global $lang, $escaper;
     
     // Open the database connection
@@ -1873,7 +1885,7 @@ function update_document($document_id, $document_type, $document_name, $control_
     }
 
     // Update a document
-    $stmt = $db->prepare("UPDATE `documents` SET `document_type`=:document_type, `document_name`=:document_name, `control_ids`=:control_ids, `framework_ids`=:framework_ids, `parent`=:parent, `status`=:status, `creation_date`=:creation_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `additional_stakeholders`=:additional_stakeholders , `approver`=:approver WHERE id=:document_id; ");
+    $stmt = $db->prepare("UPDATE `documents` SET `document_type`=:document_type, `document_name`=:document_name, `control_ids`=:control_ids, `framework_ids`=:framework_ids, `parent`=:parent, `status`=:status, `creation_date`=:creation_date, `last_review_date`=:last_review_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `additional_stakeholders`=:additional_stakeholders , `approver`=:approver, `team_ids`=:team_ids WHERE id=:document_id; ");
     $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
@@ -1882,12 +1894,14 @@ function update_document($document_id, $document_type, $document_name, $control_
     $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
     $stmt->bindParam(":status", $status, PDO::PARAM_STR);
     $stmt->bindParam(":creation_date", $creation_date, PDO::PARAM_STR);
+    $stmt->bindParam(":last_review_date", $last_review_date, PDO::PARAM_STR);
     $stmt->bindParam(":review_frequency", $review_frequency, PDO::PARAM_INT);
     $stmt->bindParam(":next_review_date", $next_review_date, PDO::PARAM_STR);
     $stmt->bindParam(":approval_date", $approval_date, PDO::PARAM_STR);
     $stmt->bindParam(":document_owner", $document_owner, PDO::PARAM_STR);
     $stmt->bindParam(":additional_stakeholders", $additional_stakeholders, PDO::PARAM_STR);
     $stmt->bindParam(":approver", $approver, PDO::PARAM_INT);
+    $stmt->bindParam(":team_ids", $team_ids, PDO::PARAM_STR);
     $stmt->execute();
 
     // Close the database connection
@@ -2999,6 +3013,81 @@ function get_exist_mapping_control_framework($control_id, $framework_id)
 
     db_close($db);
     return $mappings;
+}
+
+/******************************
+ * FUNCTION: GET CONTROL GAPS *
+ ******************************/
+function get_control_gaps($framework_id = null, $maturity = "all_maturity", $order_field=false, $order_dir=false)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $sql = "
+        SELECT t1.control_number, t1.short_name, t2.name control_class_name, t3.name control_phase_name, t5.name family_short_name, t7.name control_maturity_name, t8.name desired_maturity_name
+        FROM `framework_controls` t1 
+            LEFT JOIN `control_class` t2 on t1.control_class=t2.value
+            LEFT JOIN `control_phase` t3 on t1.control_phase=t3.value
+            LEFT JOIN `family` t5 on t1.family=t5.value
+            LEFT JOIN `control_maturity` t7 on t1.control_maturity=t7.value
+            LEFT JOIN `control_maturity` t8 on t1.desired_maturity=t8.value
+            LEFT JOIN `framework_control_mappings` m on t1.id=m.control_id
+    ";
+
+    // Change the query based on the requested maturity
+    switch($maturity)
+    {
+        case "below_maturity":
+            $sql .= " WHERE t1.deleted=0 AND t1.control_maturity < t1.desired_maturity AND m.framework=:framework_id";
+            break;
+        case "at_maturity":
+            $sql .= " WHERE t1.deleted=0 AND t1.control_maturity = t1.desired_maturity AND m.framework=:framework_id";
+            break;
+        case "above_maturity":
+            $sql .= " WHERE t1.deleted=0 AND t1.control_maturity > t1.desired_maturity AND m.framework=:framework_id";
+            break;
+        default:
+            $sql .= " WHERE t1.deleted=0 AND m.framework=:framework_id";
+            break;
+    }
+
+    switch($order_field)
+    {
+        case "control_number";
+            $sql .= " ORDER BY control_number {$order_dir} ";
+        break;
+        case "associated_frameworks";
+            // If encryption extra is disabled, sort by query
+            if(!encryption_extra())
+            {
+                $sql .= " ORDER BY framework_names {$order_dir} ";
+            }
+        break;
+        case "control_family";
+            $sql .= " ORDER BY t5.name {$order_dir} ";
+        break;
+        case "control_phase";
+            $sql .= " ORDER BY t3.name {$order_dir} ";
+        break;
+        case "control_current_maturity";
+            $sql .= " ORDER BY t7.name {$order_dir} ";
+        break;
+        case "control_desired_maturity";
+            $sql .= " ORDER BY t8.name {$order_dir} ";
+        break;
+    }
+    $sql .= ";";
+
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":framework_id", $framework_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $control_gaps = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // closed the database connection
+    db_close($db);
+
+    return $control_gaps;
 }
 
 ?>

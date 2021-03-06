@@ -1,0 +1,9 @@
+source 'https://rubygems.org' do
+  group :build do
+    gem 'compass', '>= 1.0', '< 1.1'
+    gem 'compass-import-once', '>= 1.0', '< 1.1', :require => "compass/import-once/activate"
+    gem 'sass-globbing', '>= 1.1', '< 1.2'
+    gem 'license_finder', '>= 6.10', '< 6.11'
+    gem 'bundler-audit', '>= 0.7', '< 0.8'
+  end
+end

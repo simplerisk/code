@@ -1396,7 +1396,7 @@ function reset_password($user_id, $current_password, $new_password, $confirm_pas
 	if (is_valid_user($username, $current_password))
 	{
 		// Check if the new password is valid
-        $error_code = valid_password($new_password, $confirm_password, $user_id);
+		$error_code = valid_password($new_password, $confirm_password, $user_id);
 
 		// If the new password is valid
 		if ($error_code == 1)

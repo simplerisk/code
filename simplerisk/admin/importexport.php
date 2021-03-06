@@ -113,6 +113,13 @@ require_once(language_file());
             // Export the CSV file
             export_csv("controls");
         }
+
+	// If the user selected to do a user export
+	if (isset($_POST['users_export']))
+	{
+	    // Export the CSV file
+	    export_csv("users");
+	}
     }
 
     /*********************

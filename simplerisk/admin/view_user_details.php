@@ -260,7 +260,7 @@ require_once(language_file());
     $(document).ready(function(){
 
     	if ($("#admin").is(':checked')) {
-    		check_indeterminate_checkboxes($('.permissions-widget #check_all'));
+    		//check_indeterminate_checkboxes($('.permissions-widget #check_all'));
         	$(".permissions-widget input[type=checkbox]").prop("readonly", true);
     	}
     	

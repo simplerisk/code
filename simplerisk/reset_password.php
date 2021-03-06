@@ -47,6 +47,9 @@ if (isset($_POST['password_reset']))
 	$new_password       = $_POST['new_password'];
 	$confirm_password    = $_POST['confirm_password'];
 
+	// Remove the current password from the session
+	unset($_SESSION['first_login_pass']);
+
 	// If a password reset was submitted
 	reset_password($user_id, $current_password, $new_password, $confirm_password);
 }
@@ -111,7 +114,7 @@ if (isset($_POST['password_reset']))
                                 echo "</td>\n";
                             echo "</tr>\n";
                             
-                                                    echo "<tr><td width=\"30%\">" . $escaper->escapeHtml($lang['CurrentPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"current_password\" id=\"current_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
+                                                    echo "<tr><td width=\"30%\">" . $escaper->escapeHtml($lang['CurrentPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"current_password\" id=\"current_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" value=\"" . $_SESSION['first_login_pass'] . "\" /></td></tr>\n";
 						    echo "<tr><td width=\"30%\">" . $escaper->escapeHtml($lang['NewPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"new_password\" id=\"new_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
 						    echo "<tr><td width=\"30%\">" . $escaper->escapeHtml($lang['ConfirmPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"confirm_password\" id=\"confirm_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
 						    echo "</table>\n";

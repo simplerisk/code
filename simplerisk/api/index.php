@@ -86,6 +86,7 @@
         getRoute()->post('/reports/delete-dynamic-selection', 'deleteDynamicSelectionForm');
         getRoute()->post('/reports/my_open_risk', 'my_open_risk_datatable');
         getRoute()->post('/reports/recent_commented_risk', 'recent_commented_risk_datatable');
+	getRoute()->get('/reports/governance/control_gap_analysis', 'controlGapAnalysisResponse');
         getRoute()->get('/management/risk/viewhtml', 'viewriskHtmlForm');
 
         getRoute()->get('/management/risk/closerisk', 'closeriskHtmlForm');
@@ -275,6 +276,14 @@
         getRoute()->post('/admin/risk_catalog/add_risk_catalog', 'addRiskCatalogAPI');
         getRoute()->post('/admin/risk_catalog/update_risk_catalog', 'updateRiskCatalogAPI');
         getRoute()->post('/admin/risk_catalog/delete_risk_catalog', 'deleteRiskCatalogAPI');
+
+	// Get threat catalog table data
+	getRoute()->get('/admin/threat_catalog/datatable', 'getThreatCatalogDatatableAPI');
+	getRoute()->get('/admin/threat_catalog/detail', 'getThreatCatalogAPI');
+	getRoute()->post('/admin/threat_catalog/update_order', 'updateThreatCatalogOrderAPI');
+	getRoute()->post('/admin/threat_catalog/add_threat_catalog', 'addThreatCatalogAPI');
+	getRoute()->post('/admin/threat_catalog/update_threat_catalog', 'updateThreatCatalogAPI');
+	getRoute()->post('/admin/threat_catalog/delete_threat_catalog', 'deleteThreatCatalogAPI');
 
 	/************************** SIMPLERISK EXTRAS APIS ************************************/
 

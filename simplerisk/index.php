@@ -64,6 +64,9 @@ if (isset($_POST['submit']))
                 check_user_enc($user, $pass);
             }
 
+            // Put the posted password in the session before redirecting them to the reset page
+            $_SESSION['first_login_pass'] = $pass;
+
             header("location: reset_password.php");
             exit;
         }

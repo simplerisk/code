@@ -54,7 +54,9 @@ function display_framework_controls_in_compliance()
                 ajax: {
                     url: BASE_URL + '/api/compliance/define_tests',
                     data: function(d){
-                        d.control_framework = \$(\"#filter_by_control_framework\").val();
+                        d.control_framework = $(\"#filter_by_control_framework\").val();
+                        d.control_family = $(\"#filter_by_control_family\").val();
+                        d.control_name = $(\"#filter_by_control_text\").val();
                     },
                     complete: function(response){
                     }
@@ -94,17 +96,25 @@ function display_framework_controls_in_compliance()
             })
             
             // View All
-            $(\"#filter_by_control_framework\").change(function(){
-                \$(\"#{$tableID}\").DataTable().draw();
+            $(\"#filter_by_control_framework, #filter_by_control_family, #filter_by_control_text\").change(function(){
+                $(\"#{$tableID}\").DataTable().draw();
             })
 
             $('#filter_by_control_framework').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
                 enableFiltering: true,
+                maxHeight: 250,
                 buttonWidth: '400px',
                 includeSelectAllOption: true
             });
-            
+            $('#filter_by_control_family').multiselect({
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                enableFiltering: true,
+                maxHeight: 250,
+                buttonWidth: '400px',
+                includeSelectAllOption: true
+            });
+           
             $(\"body\").on(\"click\", \".add-test\", function(){
                 $(\"#test-new-form\")[0].reset();
                 $(\"[name=framework_control_id]\", $(\"#test-new-form\")).val($(this).data('control-id'));
@@ -689,6 +699,9 @@ function display_active_audits(){
             </tbody>
         </table>
         <br>
+        <style>
+            .dataTables_filter, .dataTables_info { display: none; }
+        </style>
     <script>
         $(document).ready(function(){
             var pageLength = 10;
@@ -697,12 +710,31 @@ function display_active_audits(){
             $('#filter-container input.hidden-checkbox').each(function(index){
                 if(!$(this).is(':checked')) columnOptions.push(index);
             });
+            $('#{$tableID} thead tr').clone(true).appendTo( '#{$tableID} thead');
+            $('#{$tableID} thead tr:eq(1) th').each( function (i) {
+                var title = $(this).text();
+                var data_name = $(this).attr('data-name');
+                if(data_name != 'actions') {
+                    if(data_name == 'test_frequency') {
+                        $(this).html( '<input type=\"number\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    } else {
+                        $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    }
+                }
+         
+                $( 'input, select', this ).on( 'keyup change', function () {
+                    if ( datatableInstance.column(i).search() !== this.value ) {
+                        datatableInstance.column(i).search( this.value ).draw();
+                    }
+                });
+            });
             var datatableInstance = $('#{$tableID}').DataTable({
-                bFilter: false,
+                bFilter: true,
                 bLengthChange: false,
                 processing: true,
                 serverSide: true,
                 bSort: true,
+                orderCellsTop: true,
                 columnDefs : [
                     {
                         'targets' : columnOptions,
@@ -1042,7 +1074,7 @@ function initiate_test_audit($test_id, $initiated_audit_status) {
 /***********************************************
  * FUNCTION: GET FRAMEWORK CONTROL TEST AUDITS *
  ***********************************************/
-function get_framework_control_test_audits($active, $columnName=false, $columnDir=false, $filters=false){
+function get_framework_control_test_audits($active, $columnName=false, $columnDir=false, $filters=false, $column_filters=[]){
     global $escaper;
 
     // Open the database connection
@@ -1193,6 +1225,38 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
         }
     }
 
+    $bind_params = [];
+    $manual_column_filters = [];
+    foreach($column_filters as $name => $column_filter){
+        if($name == "test_name"){
+            $wheres[] = "t1.name LIKE :test_name ";
+            $bind_params[$name] = "%{$column_filter}%";
+        } else if($name == "test_frequency"){
+            $wheres[] = "t1.test_frequency LIKE :test_frequency ";
+            $bind_params[$name] = "%{$column_filter}%";
+        } else if($name == "tester") {
+            $wheres[] = "t2.name LIKE :tester ";
+            $bind_params[$name] = "%{$column_filter}%";
+        } else if($name == "additional_stakeholders") {
+            $wheres[] = "t7.additional_stakeholders LIKE :additional_stakeholders ";
+            $bind_params[$name] = "%{$column_filter}%";
+        } else if($name == "objective") {
+            $wheres[] = "t1.objective LIKE :objective ";
+            $bind_params[$name] = "%{$column_filter}%";
+        } else if($name == "control_name") {
+            $wheres[] = "t3.short_name LIKE :control_name ";
+            $bind_params[$name] = "%{$column_filter}%";
+        } else if($name == "test_result") {
+            $wheres[] = "t8.name LIKE :test_result ";
+            $bind_params[$name] = "%{$column_filter}%";
+        } else if($name == "status") {
+            $wheres[] = "t6.name LIKE :status ";
+            $bind_params[$name] = "%{$column_filter}%";
+        } else {
+            $manual_column_filters[$name] = $column_filter;
+        }
+    }
+
     $sql .= " WHERE ".implode(" AND ", $wheres);
 
     $sql .= " GROUP BY t1.id ";
@@ -1252,6 +1316,9 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
             $stmt->bindParam(":filter_end_audit_date", $filters['filter_end_audit_date'], PDO::PARAM_STR, 10);
         }
     }
+    foreach($bind_params as $name => $bind_param){
+        $stmt->bindParam(":{$name}", $bind_param);
+    }
 
     $stmt->execute();
 
@@ -1288,7 +1355,8 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
         }
         
         $test_audit['framework_name'] = implode(", ", $decrypted_framework_names);
-
+        $test_audit['last_date'] = format_date($test_audit['last_date']);
+        $test_audit['next_date'] = format_date($test_audit['next_date']);
         // Filter by search text
         if(
             empty($filters['filter_text']) 
@@ -1301,7 +1369,26 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
             || (stripos($test_audit['objective'], $filters['filter_text']) !== false) 
         )
         {
-            $filtered_test_audits[] = $test_audit;
+            $success = true;
+            foreach($manual_column_filters as $column_name => $val){
+                if($column_name == "last_date") {
+                    if( stripos($test_audit['last_date'], $val) === false ){
+                        $success = false;
+                        break;
+                    }
+                } else if($column_name == "next_date") {
+                    if( stripos($test_audit['next_date'], $val) === false ){
+                        $success = false;
+                        break;
+                    }
+                } else if($column_name == "framework_name") {
+                    if( stripos($test_audit['framework_name'], $val) === false ){
+                        $success = false;
+                        break;
+                    }
+                }
+            }
+            if($success) $filtered_test_audits[] = $test_audit;
         }
     }
 
@@ -2053,13 +2140,13 @@ function display_past_audits()
         <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
             <thead >
                 <tr >
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['TestName'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['AuditDate'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['ControlName'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['FrameworkName'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['Status'])."</th>
-                    <th valign=\"top\">".$escaper->escapeHtml($lang['TestResult'])."</th>
-                    <th valign=\"top\"></th>
+                    <th data-name='test_name' valign=\"top\">".$escaper->escapeHtml($lang['TestName'])."</th>
+                    <th data-name='last_date' valign=\"top\">".$escaper->escapeHtml($lang['AuditDate'])."</th>
+                    <th data-name='control_name' valign=\"top\">".$escaper->escapeHtml($lang['ControlName'])."</th>
+                    <th data-name='framework_name' valign=\"top\">".$escaper->escapeHtml($lang['FrameworkName'])."</th>
+                    <th data-name='status' valign=\"top\">".$escaper->escapeHtml($lang['Status'])."</th>
+                    <th data-name='test_result' valign=\"top\">".$escaper->escapeHtml($lang['TestResult'])."</th>
+                    <th data-name='actions' valign=\"top\"></th>
                 </tr>
             </thead>
             <tbody>
@@ -2100,12 +2187,27 @@ function display_past_audits()
 
             var pageLength = 10;
             var form = $('#{$tableID}').parents('form');
+            $('#{$tableID} thead tr').clone(true).appendTo( '#{$tableID} thead');
+            $('#{$tableID} thead tr:eq(1) th').each( function (i) {
+                var title = $(this).text();
+                var data_name = $(this).attr('data-name');
+                if(data_name != 'actions') {
+                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                }
+         
+                $( 'input, select', this ).on( 'keyup change', function () {
+                    if ( datatableInstance.column(i).search() !== this.value ) {
+                        datatableInstance.column(i).search( this.value ).draw();
+                    }
+                });
+            });
             var datatableInstance = $('#{$tableID}').DataTable({
-                bFilter: false,
+                bFilter: true,
                 bLengthChange: false,
                 processing: true,
                 serverSide: true,
                 bSort: true,
+                orderCellsTop: true,
                 pagingType: \"full_numbers\",
                 dom : \"flrtip\",
                 pageLength: pageLength,

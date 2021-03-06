@@ -58,7 +58,9 @@ enforce_permission_riskmanagement();
         
         <div class="content-container">
             <?php
-                include(realpath(__DIR__ . '/details.php'));
+                if($display_risk == true) {
+                    include(realpath(__DIR__ . '/details.php'));
+                }
             ?>
         </div>
 

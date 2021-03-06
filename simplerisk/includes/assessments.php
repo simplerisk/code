@@ -340,6 +340,11 @@ function push_pending_risk() {
         upload_file($last_insert_id, $_FILES['file'], 1);
     }
 
+    // Create the jira issue if the jira extra is activated and set up to do that
+    if (jira_extra()) {
+        CreateIssueForRisk($last_insert_id);
+    }
+
     // If the notification extra is enabled
     if (notification_extra())
     {

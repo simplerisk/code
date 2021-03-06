@@ -480,7 +480,6 @@ function get_grouped_permissions($user_id = false) {
 }
 
 function update_permissions($user_id, $permissions) {
-    
     $current_permissions = get_permission_ids_of_user($user_id);
     
     if (save_junction_values('permission_to_user', 'user_id', $user_id, 'permission_id', $permissions)) {

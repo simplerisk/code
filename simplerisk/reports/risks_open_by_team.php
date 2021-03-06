@@ -84,6 +84,7 @@ $columns = array(
     'mitigation_effort',
     'mitigation_cost',
     'mitigation_owner',
+    'mitigation_percent',
     'mitigation_team',
     'mitigation_accepted',
     'mitigation_date',
@@ -243,7 +244,7 @@ if(is_array($custom_display_settings = $_SESSION['custom_display_settings']) && 
                             
                                 <input type="hidden" value="<?php echo (int)$currentpage; ?>" name="currentpage" id="currentpage" >
                                 <div class="colums-select-container">
-                                    <?php echo display_risk_columns($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values) ?>
+                                    <?php echo display_risk_columns($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values) ?>
                                 </div>
                             
 
@@ -252,7 +253,7 @@ if(is_array($custom_display_settings = $_SESSION['custom_display_settings']) && 
                 </form>
 
                 <div class="row-fluid" id="risks-open-by-team-container">
-                    <?php risk_table_open_by_team($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values); ?>
+                    <?php risk_table_open_by_team($id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values); ?>
                 </div>
             </div>
         </div>

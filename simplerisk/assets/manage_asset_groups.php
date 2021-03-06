@@ -38,6 +38,7 @@ require_once(language_file());
         <script src="../js/jquery.easyui.min.js"></script>
         <script src="../js/jquery-ui.min.js"></script>
         <script src="../js/bootstrap.min.js"></script>
+        <script src="../js/selectlist.js"></script>
 
         <title>SimpleRisk: Enterprise Risk Management Simplified</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -333,65 +334,6 @@ require_once(language_file());
                     $(this).find('.modal-body').scrollTop(0);
                 });
 
-                $('.btnRight').click(function (e) {
-                    var selectedOpts = $(this).parent().parent().find('.select-list-selected select option:selected');
-                    if (selectedOpts.length == 0) {
-                        //alert("Nothing to move.");
-                        e.preventDefault();
-                    }
-
-                    var target = $(this).parent().parent().find('.select-list-available select');
-                    target.append($(selectedOpts).clone());
-                    sortOptions(target);
-
-                    $(selectedOpts).remove();
-                    e.preventDefault();
-                });
-
-                $('.btnAllRight').click(function (e) {
-                    var selectedOpts = $(this).parent().parent().find('.select-list-selected select option');
-                    if (selectedOpts.length == 0) {
-                        //alert("Nothing to move.");
-                        e.preventDefault();
-                    }
-
-                    var target = $(this).parent().parent().find('.select-list-available select');
-                    target.append($(selectedOpts).clone());
-                    sortOptions(target);
-
-                    $(selectedOpts).remove();
-                    e.preventDefault();
-                });
-
-                $('.btnLeft').click(function (e) {
-                    var selectedOpts = $(this).parent().parent().find('.select-list-available select option:selected');
-                    if (selectedOpts.length == 0) {
-                        //alert("Nothing to move.");
-                        e.preventDefault();
-                    }
-
-                    var target = $(this).parent().parent().find('.select-list-selected select');
-                    target.append($(selectedOpts).clone());
-                    sortOptions(target);
-
-                    $(selectedOpts).remove();
-                    e.preventDefault();
-                });
-
-                $('.btnAllLeft').click(function (e) {
-                    var selectedOpts = $(this).parent().parent().find('.select-list-available select option');
-                    if (selectedOpts.length == 0) {
-                        //alert("Nothing to move.");
-                        e.preventDefault();
-                    }
-
-                    var target = $(this).parent().parent().find('.select-list-selected select');
-                    target.append($(selectedOpts).clone());
-                    sortOptions(target);
-
-                    $(selectedOpts).remove();
-                    e.preventDefault();
-                });
             });
         </script>
     </head>
@@ -441,22 +383,23 @@ require_once(language_file());
                         <input type="text" required name="name" value="" class="form-control" autocomplete="off">
 
                         <div class="select-list-wrapper" >
-                            <div class="select-list-selected">
-                                <label for=""><?php echo $escaper->escapeHtml($lang['SelectedAssets']); ?></label>
-                                <select name="selected-asset-groups" multiple="multiple" class="form-control">
-                                </select>
-                            </div>
-
-                            <div class="select-list-arrows text-center">
-                                <input type='button' value='>>' class="btn btn-default btnAllRight" /><br />
-                                <input type='button' value='>' class="btn btn-default btnRight" /><br />
-                                <input type='button' value='<' class="btn btn-default btnLeft" /><br />
-                                <input type='button' value='<<' class="btn btn-default btnAllLeft" />
-                            </div>
 
                             <div class="select-list-available">
                                 <label for=""><?php echo $escaper->escapeHtml($lang['AvailableAssets']); ?></label>
                                 <select multiple="multiple" class="form-control">
+                                </select>
+                            </div>
+
+                            <div class="select-list-arrows text-center">
+                                <input type='button' value='&gt;&gt;' class="btn btn-default btnAllRight" /><br />
+                                <input type='button' value='&gt;' class="btn btn-default btnRight" /><br />
+                                <input type='button' value='&lt;' class="btn btn-default btnLeft" /><br />
+                                <input type='button' value='&lt;&lt;' class="btn btn-default btnAllLeft" />
+                            </div>
+
+                            <div class="select-list-selected">
+                                <label for=""><?php echo $escaper->escapeHtml($lang['SelectedAssets']); ?></label>
+                                <select name="selected-asset-groups" multiple="multiple" class="form-control">
                                 </select>
                             </div>
 
@@ -486,22 +429,23 @@ require_once(language_file());
                         <input type="text" required name="name" value="" class="form-control" autocomplete="off">
 
                         <div class="select-list-wrapper" >
-                            <div class="select-list-selected">
-                                <label for=""><?php echo $escaper->escapeHtml($lang['SelectedAssets']); ?></label>
-                                <select name="selected-asset-groups" multiple="multiple" class="form-control">
-                                </select>
-                            </div>
-
-                            <div class="select-list-arrows text-center">
-                                <input type='button' value='>>' class="btn btn-default btnAllRight" /><br />
-                                <input type='button' value='>' class="btn btn-default btnRight" /><br />
-                                <input type='button' value='<' class="btn btn-default btnLeft" /><br />
-                                <input type='button' value='<<' class="btn btn-default btnAllLeft" />
-                            </div>
 
                             <div class="select-list-available">
                                 <label for=""><?php echo $escaper->escapeHtml($lang['AvailableAssets']); ?></label>
                                 <select multiple="multiple" class="form-control">
+                                </select>
+                            </div>
+
+                            <div class="select-list-arrows text-center">
+                                <input type='button' value='&gt;&gt;' class="btn btn-default btnAllRight" /><br />
+                                <input type='button' value='&gt;' class="btn btn-default btnRight" /><br />
+                                <input type='button' value='&lt;' class="btn btn-default btnLeft" /><br />
+                                <input type='button' value='&lt;&lt;' class="btn btn-default btnAllLeft" />
+                            </div>
+
+                            <div class="select-list-selected">
+                                <label for=""><?php echo $escaper->escapeHtml($lang['SelectedAssets']); ?></label>
+                                <select name="selected-asset-groups" multiple="multiple" class="form-control">
                                 </select>
                             </div>
 

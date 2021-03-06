@@ -67,6 +67,8 @@ jQuery(document).ready(function($){
                     $('[name=control_phase]', modal).val(Number(control.control_phase) ? control.control_phase : "");
                     $('[name=control_owner]', modal).val(Number(control.control_owner) ? control.control_owner : "");
                     $('[name=control_number]', modal).val(control.control_number);
+                    $('[name=control_current_maturity]', modal).val(Number(control.control_maturity) ? control.control_maturity : 0);
+                    $('[name=control_desired_maturity]', modal).val(Number(control.desired_maturity) ? control.desired_maturity : 0);
                     $('[name=control_priority]', modal).val(Number(control.control_priority) ? control.control_priority : "");
                     $('[name=family]', modal).val(Number(control.family) ? control.family : "");
                     $('[name=mitigation_percent]', modal).val(Number(control.mitigation_percent) ? control.mitigation_percent : "");
@@ -97,6 +99,8 @@ jQuery(document).ready(function($){
                     $('[name=control_phase]', modal).val(Number(control.control_phase) ? control.control_phase : "");
                     $('[name=control_owner]', modal).val(Number(control.control_owner) ? control.control_owner : "");
                     $('[name=control_number]', modal).val(control.control_number);
+                    $('[name=control_current_maturity]', modal).val(Number(control.control_current_maturity) ? control.control_current_maturity : "");
+                    $('[name=control_desired_maturity]', modal).val(Number(control.control_desired_maturity) ? control.control_desired_maturity : "");
                     $('[name=control_priority]', modal).val(Number(control.control_priority) ? control.control_priority : "");
                     $('[name=family]', modal).val(Number(control.family) ? control.family : "");
                     $('[name=mitigation_percent]', modal).val(Number(control.mitigation_percent) ? control.mitigation_percent : "");

@@ -158,6 +158,9 @@ $(document).ready(function(){
                 field_values[column_filters[i][0]] = column_filters[i][1];
             }
         } else column_filters = [];
+        var columnFilters = [];
+        var orderColumnName = "";
+        var orderDir = "";
         $(".risk-datatable").each(function(index){
             var $this = $(this);
             var riskDatatable = $(this).DataTable({
@@ -345,6 +348,12 @@ $(document).ready(function(){
                 $('.paginate_button.next').html('<i class="fa fa-chevron-right"></i>');
             })
             riskDataTables.push(riskDatatable);
+            riskDatatable.on( 'xhr', function () {
+                columnFilters = riskDatatable.ajax.params().columnFilters;
+                var orderColumnIndex = riskDatatable.ajax.params().order[0].column;
+                orderColumnName = riskDatatable.ajax.params().columns[orderColumnIndex].name;
+                orderDir = riskDatatable.ajax.params().order[0].dir;
+            });
         });
 
         $('.view-all').html("All");
@@ -442,8 +451,12 @@ $(document).ready(function(){
             
         $("body").on("click", '.download-by-group', function(){
             // $("#get_risks_by").attr('target', '_blank');
+            var filter_params = {
+                column_filters : columnFilters
+            }
+            var filter_uri = $.param( filter_params);
             var group_value = $(this).closest('.dataTables_wrapper').find(".risk-datatable").data('group');
-            document.get_risks_by.action += "?option=download-by-group&group_value=" + group_value;
+            document.get_risks_by.action += "?option=download-by-group&group_value=" + group_value + "&order_column=" + orderColumnName + "&order_dir=" + orderDir + "&" + filter_uri;
             document.get_risks_by.submit();
             document.get_risks_by.action = "";
             // $("#get_risks_by").attr('target', '');
@@ -454,17 +467,25 @@ $(document).ready(function(){
             var status = $("#status").val();
             var group = $("#group").val();
             var sort = $("#sort").val();
-            var url = "print_by_group.php?group=" + group + "&status=" + status + "&sort=" + sort + "&group_value=" + group_value;
+            var filter_params = {
+                column_filters : columnFilters
+            }
+            var filter_uri = $.param( filter_params);
+            var url = "print_by_group.php?group=" + group + "&status=" + status + "&sort=" + sort + "&group_value=" + group_value + "&order_column=" + orderColumnName + "&order_dir=" + orderDir + "&" + filter_uri;
             window.open(url,'_blank');
-        })
+        });
     }
     
     $("#export-dynamic-risk-report").click(function(e){
         // $("#get_risks_by").attr('target', '_blank');
-        document.get_risks_by.action += (document.get_risks_by.action.indexOf('?') !== -1  ? "&" : "?") + "option=download";
+        var filter_params = {
+            column_filters : columnFilters
+        }
+        var filter_uri = $.param( filter_params);
+        document.get_risks_by.action += (document.get_risks_by.action.indexOf('?') !== -1  ? "&" : "?") + "option=download&order_column=" + orderColumnName + "&order_dir=" + orderDir + "&" + filter_uri;
         document.get_risks_by.submit();
         document.get_risks_by.action = "";
         // $("#get_risks_by").attr('target', '');
-    })
+    });
     
 })

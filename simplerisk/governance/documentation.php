@@ -44,12 +44,14 @@ if (isset($_POST['add_document']))
       $status        = $_POST['status'];
       $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
       $creation_date = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
+      $last_review_date   = get_standard_date_from_default_format($_POST['last_review_date']);
       $review_frequency = (int)$_POST['review_frequency'];
       $next_review_date   = get_standard_date_from_default_format($_POST['next_review_date']);
       $approval_date   = get_standard_date_from_default_format($_POST['approval_date']);
       $document_owner = (int)$_POST['document_owner'];
       $additional_stakeholders   = empty($_POST['additional_stakeholders']) ? [] : $_POST['additional_stakeholders'];
       $approver = (int)$_POST['approver'];
+      $team_ids     = empty($_POST['team_ids']) ? [] : $_POST['team_ids'];
 
       // Check if the document name is null
       if (!$document_type || !$document_name)
@@ -66,7 +68,7 @@ if (isset($_POST['add_document']))
                 set_alert(true, "bad", $escaper->escapeHtml($lang['NoAddDocumentationPermission']));
             }
             // Insert a new document
-            elseif($errors = add_document($document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver))
+            elseif($errors = add_document($document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids)))
             {
                 // Display an alert
                 set_alert(true, "good", $escaper->escapeHtml($lang['DocumentAdded']));
@@ -87,12 +89,14 @@ if (isset($_POST['update_document']))
       $status        = $_POST['status'];
       $creation_date = get_standard_date_from_default_format($_POST['creation_date']);
       $creation_date = ($creation_date && $creation_date!="0000-00-00") ? $creation_date : date("Y-m-d");
+      $last_review_date   = get_standard_date_from_default_format($_POST['last_review_date']);
       $review_frequency = (int)$_POST['review_frequency'];
       $next_review_date   = get_standard_date_from_default_format($_POST['next_review_date']);
       $approval_date   = get_standard_date_from_default_format($_POST['approval_date']);
       $document_owner = (int)$_POST['document_owner'];
       $additional_stakeholders   = empty($_POST['additional_stakeholders']) ? [] : $_POST['additional_stakeholders'];
       $approver = (int)$_POST['approver'];
+      $team_ids     = empty($_POST['team_ids']) ? [] : $_POST['team_ids'];
 
       // Check if the document name is null
       if (!$document_type || !$document_name)
@@ -109,7 +113,7 @@ if (isset($_POST['update_document']))
                 set_alert(true, "bad", $escaper->escapeHtml($lang['NoModifyDocumentationPermission']));
             }
             // Update document
-            elseif($errors = update_document($id, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver))
+            elseif($errors = update_document($id, $document_type, $document_name, implode(',', $control_ids), implode(',', $framework_ids), $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, implode(',', $additional_stakeholders), $approver, implode(',', $team_ids)))
             {
                 // Display an alert
                 set_alert(true, "good", $escaper->escapeHtml($lang['DocumentUpdated']));
@@ -277,8 +281,12 @@ if (isset($_POST['delete_document']))
             <?php create_multiusers_dropdown("additional_stakeholders"); ?>
             <label for=""><?php echo $escaper->escapeHtml($lang['DocumentOwner']); ?>:</label>
             <?php create_dropdown("enabled_users", NULL, "document_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']),0); ?>
+            <label for=""><?php echo $escaper->escapeHtml($lang['Team']); ?>:</label>
+            <?php create_multiple_dropdown("team", NULL, "team_ids"); ?>
             <label for=""><?php echo $escaper->escapeHtml($lang['CreationDate']); ?></label>
             <input type="text" class="form-control datepicker" name="creation_date" value="<?php echo $escaper->escapeHtml(date(get_default_date_format())); ?>">
+            <label for=""><?php echo $escaper->escapeHtml($lang['LastReview']); ?></label>
+            <input type="text" class="form-control datepicker" name="last_review_date">
             <label for=""><?php echo $escaper->escapeHtml($lang['ReviewFrequency']); ?></label>
             <input type="number" min="0" name="review_frequency" value="0" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
             <label for=""><?php echo $escaper->escapeHtml($lang['NextReviewDate']); ?></label>
@@ -343,8 +351,12 @@ if (isset($_POST['delete_document']))
             <?php create_multiusers_dropdown("additional_stakeholders"); ?>
             <label for=""><?php echo $escaper->escapeHtml($lang['DocumentOwner']); ?>:</label>
             <?php create_dropdown("enabled_users", NULL, "document_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']),0); ?>
+            <label for=""><?php echo $escaper->escapeHtml($lang['Team']); ?>:</label>
+            <?php create_multiple_dropdown("team", NULL, "team_ids"); ?>
             <label for=""><?php echo $escaper->escapeHtml($lang['CreationDate']); ?></label>
             <input type="text" class="form-control datepicker" name="creation_date">
+            <label for=""><?php echo $escaper->escapeHtml($lang['LastReview']); ?></label>
+            <input type="text" class="form-control datepicker" name="last_review_date">
             <label for=""><?php echo $escaper->escapeHtml($lang['ReviewFrequency']); ?></label>
             <input type="number" min="0" name="review_frequency" value="0" class="form-control"> <span class="white-labels">(<?php echo $escaper->escapeHtml($lang['days']); ?>)</span>
             <label for=""><?php echo $escaper->escapeHtml($lang['NextReviewDate']); ?></label>
@@ -463,7 +475,7 @@ if (isset($_POST['delete_document']))
 
         // Build multiselect
         $(document).ready(function(){
-            $("[name='framework_ids[]'], [name='control_ids[]']").multiselect({
+            $("[name='framework_ids[]'], [name='control_ids[]'], [name='team_ids[]']").multiselect({
                 enableFiltering: true,
                 enableCaseInsensitiveFiltering: true,
                 buttonWidth: '100%',
@@ -547,6 +559,7 @@ if (isset($_POST['delete_document']))
                         $("#document-update-modal [name='framework_ids[]']").multiselect('select', data.framework_ids);
                         sets_controls_by_framework_ids($("#document-update-modal [name='framework_ids[]']"));
                         $("#document-update-modal [name=creation_date]").val(data.creation_date);
+                        $("#document-update-modal [name=last_review_date]").val(data.last_review_date);
                         $("#document-update-modal [name=review_frequency]").val(data.review_frequency);
                         $("#document-update-modal [name=next_review_date]").val(data.next_review_date);
                         $("#document-update-modal [name=approval_date]").val(data.approval_date);
@@ -554,6 +567,7 @@ if (isset($_POST['delete_document']))
                         $("#document-update-modal [name=document_owner]").val(data.document_owner);
                         $("#document-update-modal [name='additional_stakeholders[]']").multiselect('select', data.additional_stakeholders);
                         $("#document-update-modal [name=approver]").val(data.approver);
+                        $("#document-update-modal [name='team_ids[]']").multiselect('select', data.team_ids);
                         $("#document-update-modal").modal();
                     }
                 });
@@ -615,7 +629,34 @@ if (isset($_POST['delete_document']))
                 $("input.readonly").remove();
                 $('#file-upload').prop('required',true);
             }
+            $("body").on("change keypress", "input[name=review_frequency], input[name=last_review_date]", function(){
+            //$("input[name=review_frequency], input[name=last_review_date]").change(function(){
+                var form = $(this).closest("form");
+                var last_review_date = $(form).find("input[name=last_review_date]").val();
+                var review_frequency = $(form).find("input[name=review_frequency]").val();
+                if(last_review_date != "" && review_frequency != ""){
+                    var next_review_date = new Date(last_review_date);
+                    next_review_date.setDate(next_review_date.getDate() + parseInt(review_frequency));
+                    console.log(next_review_date);
+                    var next_review_date_str = formatDate(next_review_date)
+                    $(form).find("input[name=next_review_date]").val(next_review_date_str);
+                }
+                return true;
+            });
         });
+        function formatDate(date) {
+            //var d = new Date(dateStr),
+                month = '' + (date.getMonth() + 1),
+                day = '' + date.getDate(),
+                year = date.getFullYear();
+
+            if (month.length < 2) 
+                month = '0' + month;
+            if (day.length < 2) 
+                day = '0' + day;
+
+            return [month, day, year].join('/');
+        }
     </script>
     
     <style type="">

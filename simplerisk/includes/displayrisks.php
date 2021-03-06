@@ -828,7 +828,7 @@ function display_supporting_documentation_edit($risk_id, $view_type)
 /**********************************
 * FUNCTION: DISPLAY CATEGORY EDIT *
 ***********************************/
-function display_risk_mapping_edit($risk_catalog_mapping)
+function display_risk_mapping_edit($risk_catalog_mapping=[])
 {
     global $lang, $escaper;
     $mapping_required = get_setting('risk_mapping_required') == 1?"required":"";
@@ -2364,6 +2364,10 @@ function display_main_detail_fields_by_panel_add($panel_name, $fields)
 
                     case 'Tags':
                         display_risk_tags_edit();
+                    break;
+
+                    case 'RiskMapping':
+                        display_risk_mapping_edit();
                     break;
                 }
 

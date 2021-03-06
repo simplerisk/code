@@ -52,7 +52,7 @@ enforce_permission_riskmanagement();
     <div class="row-fluid">
         <div class="risk-session overview clearfix">
             <div class="row-fluid">
-                <?php view_top_table($id, $calculated_risk, $subject, $status, true, $mitigation_percent); ?>
+                <?php view_top_table($id, $calculated_risk, $subject, $status, true, $mitigation_percent, $display_risk); ?>
             </div>
             
             <!-- Risk soring form -->

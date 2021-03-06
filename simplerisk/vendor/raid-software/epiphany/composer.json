@@ -1,0 +1,11 @@
+{
+    "name": "raid-software/epiphany",
+    "type": "library",
+    "homepage": "https://github.com/raid-software/epiphany",
+    "require": {
+        "php": ">=5.2.0"
+    },
+    "autoload": {
+        "classmap": ["src"]
+    }
+}

@@ -43,7 +43,7 @@ function view_score_html($risk_id, $calculated_risk, $mitigation_percent)
 /****************************
 * FUNCTION: VIEW TOP TABLE *
 ****************************/
-function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_details = false, $mitigation_percent = 0)
+function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_details = false, $mitigation_percent = 0, $display_risk = true)
 {
     global $lang, $escaper;
 
@@ -59,7 +59,8 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
         echo "<div class=\"row-fluid\">";
             echo "<div class=\"span3\"><label>" . $escaper->escapeHtml($lang['IDNumber']) . ": <span class=\"large-text risk-id\">".$escaper->escapeHtml($risk_id)."</span></label></div>";
             echo "<div class=\"span5\"><label>" . $escaper->escapeHtml($lang['Status']) . ": <span class=\"large-text status-text\">".$escaper->escapeHtml($status)."</span></label></div>";
-            echo "<div class=\"span4\">";
+            if($display_risk == true){
+                echo "<div class=\"span4\">";
 
                     echo "<div class=\"btn-group pull-right\">\n";
                         echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">". $escaper->escapeHtml($lang['RiskActions']) ."<span class=\"caret\"></span></a>\n";
@@ -81,13 +82,18 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
                         echo "<li><a class='printable-veiw' href=\"print_view.php?id=" . $escaper->escapeHtml($risk_id) . "\" target=\"_blank\">". $escaper->escapeHtml($lang['PrintableView']) ."</a></li>\n";
                         echo "</ul>\n";
                     echo "</div>\n";
-
-
-            echo "</div>";
+                echo "</div>";
+            }
         echo "</div>";
 
         echo "<div class=\"row-fluid border-top\">";
-            echo "<div class=\"span12\"><div id=\"static-subject\" class='static-subject'><label>Subject : <span class=\"large-text\">".$escaper->escapeHtml($subject)."</span> <div id=\"edit-subject\" class='edit-subject-btn' style=\"display:inline;margin:0 0 0 10px; font-size:20px;\"><i class=\"fa fa-pencil-square-o\" aria-hidden=\"true\"></i></div></label></div>";
+            echo "<div class=\"span12\">";
+                echo "<div id=\"static-subject\" class='static-subject'><label>Subject : <span class=\"large-text\">".$escaper->escapeHtml($subject)."</span>";
+                if($display_risk == true){
+                    echo "<div id=\"edit-subject\" class='edit-subject-btn' style=\"display:inline;margin:0 0 0 10px; font-size:20px;\"><i class=\"fa fa-pencil-square-o\" aria-hidden=\"true\"></i></div>";
+                }
+                echo "</label></div>";
+            
                 echo "<form name=\"details\" method=\"post\" action=\"\">";
                     echo "<div class=\"edit-subject row-fluid\">";
                         echo "<div class=\"span9\">";
@@ -186,16 +192,6 @@ function add_risk_details(){
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
             $active_fields = get_active_fields();
             $inactive_fields = get_inactive_fields();
-
-            foreach($active_fields as $field){
-                if($field['name'] == "RiskMapping"){
-                    $mapping_required = get_setting('risk_mapping_required') == 1?"required":"";
-                    echo "<div class=\"row-fluid padded-bottom subject-field\">\n";
-                        echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
-                        echo "<div class=\"span8\">".create_dropdown("risk_catalog", null, "risk_catalog_mapping", true, false, true, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} style='max-width:100%'")."</div>\n";
-                    echo "</div>\n";
-                }
-            }
 
             echo "<div class=\"row-fluid\">\n";
                 // Left Panel
@@ -4093,13 +4089,22 @@ function view_reporting_menu($active)
     echo ($active == "CurrentRiskComments" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"recent_commented.php\">" . $escaper->escapeHtml($lang['CurrentRiskComments']) . "</a>\n";
     echo "</li>\n";
-    // If User has permission for complicance menu, shows Audit Timeline report
+
+    // If User has permission for compliance menu, shows Audit Timeline report
     if(!empty($_SESSION['compliance']))
     {
         echo ($active == "AuditTimeline" ? "<li class=\"active\">\n" : "<li>\n");
         echo "<a href=\"audit_timeline.php\">" . $escaper->escapeHtml($lang['AuditTimeline']) . "</a>\n";
         echo "</li>\n";
     } 
+
+    // If User has permission for governance menu, show Control Gap Analysis report
+    if(!empty($_SESSION['governance']))
+    {
+        echo ($active == "ControlGapAnalysis" ? "<li class=\"active\">\n" : "<li>\n");
+        echo "<a href=\"control_gap_analysis.php\">" . $escaper->escapeHtml($lang['ControlGapAnalysis']) . "</a>\n";
+        echo "</li>\n";
+    }
 
     echo "</ul>\n";
 }
@@ -4129,8 +4134,8 @@ function view_configure_menu($active)
     echo ($active == "Content" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"content.php\">" . $escaper->escapeHtml($lang['Content']) . "</a>\n";
     echo "</li>\n";
-    echo ($active == "RiskCatalog" ? "<li class=\"active\">\n" : "<li>\n");
-    echo "<a href=\"risk_catalog.php\">" . $escaper->escapeHtml($lang['RiskCatalog']) . "</a>\n";
+    echo ($active == "RiskAndThreatCatalog" ? "<li class=\"active\">\n" : "<li>\n");
+    echo "<a href=\"risk_catalog.php\">" . $escaper->escapeHtml($lang['RiskAndThreatCatalog']) . "</a>\n";
     echo "</li>\n";
     echo ($active == "ConfigureRiskFormula" ? "<li class=\"active\">\n" : "<li>\n");
     echo "<a href=\"configure_risk_formula.php\">" . $escaper->escapeHtml($lang['ConfigureRiskFormula']) . "</a>\n";
@@ -4259,7 +4264,7 @@ function view_risks_and_assets_selections($report, $sortby, $asset_tags)
 /******************************************
 * FUNCTION: VIEW GET RISKS BY SELECTIONS *
 ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_accepted=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $closure_date=false,$comments=false, $custom_values=[])
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_percent=false, $mitigation_team=false, $mitigation_accepted=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $closure_date=false,$comments=false, $custom_values=[])
 {
     global $lang, $escaper;
     
@@ -4332,7 +4337,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $r
     echo "</div></div>\n";
 
     // Risk columns
-    echo display_risk_columns( $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values);
+    echo display_risk_columns( $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values);
     
     echo "</form>\n";
     echo "<script>
@@ -4583,7 +4588,7 @@ function display_save_dynamic_risk_selections()
 /*********************************
 * FUNCTION: DISPLAY RISK COLUMNS *
 **********************************/
-function display_risk_columns( $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_team=false, $mitigation_accepted=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $closure_date=false, $comments=false, $custom_values=[]){
+function display_risk_columns( $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_percent=false, $mitigation_team=false, $mitigation_accepted=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $closure_date=false, $comments=false, $custom_values=[]){
     global $escaper, $lang;
     echo "
         <div class=\"well\" id='column-selections-container'>
@@ -5071,6 +5076,12 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
         </tr>\n";
         echo "<tr>
         <td>
+        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_percent\" id=\"checkbox_mitigation_percent\"" . ($mitigation_percent == true ? " checked=\"yes\"" : "") . " />
+        <label for=\"checkbox_mitigation_percent\">". $escaper->escapeHtml($lang['MitigationPercent']) ."</label>
+        </td>
+        </tr>\n";
+        echo "<tr>
+        <td>
         <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_team\" id=\"checkbox_mitigation_team\"" . ($mitigation_team == true ? " checked=\"yes\"" : "") . " />
         <label for=\"checkbox_mitigation_team\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</label>
         </td>
@@ -5297,6 +5308,11 @@ function get_dynamic_names_by_main_field_name($field_name)
             [
                 'name' => "mitigation_owner",
                 'text' => $escaper->escapeHtml($lang['MitigationOwner']),
+            ],
+        'MitigationPercent' => 
+            [
+                'name' => "mitigation_percent",
+                'text' => $escaper->escapeHtml($lang['MitigationPercent']),
             ],
         'MitigationTeam' => 
             [
@@ -7000,7 +7016,7 @@ function display_plan_mitigations()
     $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
     $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
     $columns = [];
-    $unsort_columns = array("regulation", "project", "affected_assets", "risk_assessment", "additional_notes", "mitigation_planned", "management_review", "current_solution", "security_recommendations", "security_requirements", "next_review_date", "comments");
+    $unsort_columns = array("regulation", "project", "affected_assets", "risk_assessment", "additional_notes", "current_solution", "security_recommendations", "security_requirements", "next_review_date", "comments");
     foreach($columns_setting as $column){
         if(stripos($column[0], "custom_field_") !== false){
             if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
@@ -7061,12 +7077,29 @@ function display_plan_mitigations()
         <script>
             var pageLength = 10;
             var form = $('#{$tableID}').parents('form');
+            $('#{$tableID} thead tr').clone(true).appendTo( '#{$tableID} thead');
+            $('#{$tableID} thead tr:eq(1) th').each( function (i) {
+                var title = $(this).text();
+                var data_name = $(this).attr('data-name');
+                if(data_name == 'mitigation_planned') {
+                    $(this).html( '<select name=\"mitigation_planned\"><option value=\"\">--</option><option value=\"yes\">Yes</option><option value=\"no\">No</option></select>' );
+                } else {
+                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                }
+         
+                $( 'input, select', this ).on( 'keyup change', function () {
+                    if ( datatableInstance.column(i).search() !== this.value ) {
+                        datatableInstance.column(i).search( this.value ).draw();
+                    }
+                });
+            });
             var datatableInstance = $('#{$tableID}').DataTable({
-                bFilter: false,
+                bFilter: true,
                 bLengthChange: false,
                 processing: true,
                 serverSide: true,
                 bSort: true,
+                orderCellsTop: true,
                 pagingType: \"full_numbers\",
                 dom : \"flrtip\",
                 pageLength: pageLength,
@@ -7195,7 +7228,7 @@ function display_management_review()
     $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
     $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
     $columns = [];
-    $unsort_columns = array("regulation", "project", "affected_assets", "risk_assessment", "additional_notes", "mitigation_planned", "management_review", "current_solution", "security_recommendations", "security_requirements", "next_review_date", "comments");
+    $unsort_columns = array("regulation", "project", "affected_assets", "risk_assessment", "additional_notes", "current_solution", "security_recommendations", "security_requirements", "next_review_date", "comments");
     foreach($columns_setting as $column){
         if(stripos($column[0], "custom_field_") !== false){
             if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
@@ -7256,12 +7289,29 @@ function display_management_review()
         <script>
             var pageLength = 10;
             var form = $('#{$tableID}').parents('form');
+            $('#{$tableID} thead tr').clone(true).appendTo( '#{$tableID} thead');
+            $('#{$tableID} thead tr:eq(1) th').each( function (i) {
+                var title = $(this).text();
+                var data_name = $(this).attr('data-name');
+                if(data_name == 'mitigation_planned') {
+                    $(this).html( '<select name=\"mitigation_planned\"><option value=\"\">--</option><option value=\"yes\">Yes</option><option value=\"no\">No</option></select>' );
+                } else {
+                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                }
+         
+                $( 'input, select', this ).on( 'keyup change', function () {
+                    if ( datatableInstance.column(i).search() !== this.value ) {
+                        datatableInstance.column(i).search( this.value ).draw();
+                    }
+                });
+            });
             var datatableInstance = $('#{$tableID}').DataTable({
-                bFilter: false,
+                bFilter: true,
                 bLengthChange: false,
                 processing: true,
                 serverSide: true,
                 bSort: true,
+                orderCellsTop: true,
                 pagingType: \"full_numbers\",
                 dom : \"flrtip\",
                 pageLength: pageLength,
@@ -7389,7 +7439,7 @@ function display_review_risks()
     $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
     $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
     $columns = [];
-    $unsort_columns = array("regulation", "project", "affected_assets", "risk_assessment", "additional_notes", "mitigation_planned", "management_review", "current_solution", "security_recommendations", "security_requirements", "comments");
+    $unsort_columns = array("regulation", "project", "affected_assets", "risk_assessment", "additional_notes", "current_solution", "security_recommendations", "security_requirements", "comments");
     foreach($columns_setting as $column){
         if(stripos($column[0], "custom_field_") !== false){
             if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
@@ -7450,12 +7500,29 @@ function display_review_risks()
         <script>
             var pageLength = 10;
             var form = $('#{$tableID}').parents('form');
-            var datatableInstance = $('#{$tableID}').DataTable({
-                bFilter: false,
+            $('#{$tableID} thead tr').clone(true).appendTo( '#{$tableID} thead');
+            $('#{$tableID} thead tr:eq(1) th').each( function (i) {
+                var title = $(this).text();
+                var data_name = $(this).attr('data-name');
+                if(data_name == 'mitigation_planned') {
+                    $(this).html( '<select name=\"mitigation_planned\"><option value=\"\">--</option><option value=\"yes\">Yes</option><option value=\"no\">No</option></select>' );
+                } else {
+                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                }
+         
+                $( 'input, select', this ).on( 'keyup change', function () {
+                    if ( datatableInstance.column(i).search() !== this.value ) {
+                        datatableInstance.column(i).search( this.value ).draw();
+                    }
+                });
+            });
+             var datatableInstance = $('#{$tableID}').DataTable({
+                bFilter: true,
                 bLengthChange: false,
                 processing: true,
                 serverSide: true,
                 bSort: true,
+                orderCellsTop: true,
                 pagingType: \"full_numbers\",
                 dom : \"flrtip\",
                 pageLength: pageLength,
@@ -8274,6 +8341,169 @@ function display_license_check()
 		echo $escaper->escapeHtml($lang['LicenseCheckFailed']);	
 		echo "</div>\n";
 	}
+}
+
+/******************************************
+ * FUNCTION: DISPLAY CONTROL GAP ANALYSIS *
+ ******************************************/
+function display_control_gap_analysis()
+{
+    global $lang, $escaper;
+
+    // If User has permission for governance menu, shows Control Gap Analysis report
+    if(!empty($_SESSION['governance']))
+    {
+        // Begin the framework filter form
+        echo "<form id=\"framework_form\" name=\"framework_form\" method=\"post\" action=\"\">\n";
+
+	// Add the filter
+	echo $escaper->escapeHtml($lang['ControlFramework']) . ":&nbsp;&nbsp;";
+
+        // If no framework was posted
+        if (!isset($_POST['framework']))
+        {
+                // Set the filter option to None Selected
+                $framework = null;
+        }
+        else $framework = (int)$_POST['framework'];
+
+        // Create the dropdown
+	create_dropdown("frameworks", $framework, "framework");
+
+	echo "</form>\n";
+
+	// If a framework id was posted
+	if ($framework != null)
+	{
+
+		// Display the control maturity spider chart
+		display_control_maturity_spider_chart($framework);
+
+        echo "
+            <div class=\"span10\">
+              <div class=\"wrap\">
+                <ul class=\"tabs group\">
+                  <li><a class=\"active\" href=\"#/below_maturity\">" . $escaper->escapeHtml($lang['BelowMaturity']) . "</a></li>
+                  <li><a href=\"#/at_maturity\">" . $escaper->escapeHtml($lang['AtMaturity']) . "</a></li>
+                  <li><a href=\"#/above_maturity\">" . $escaper->escapeHtml($lang['AboveMaturity']) . "</a></li>
+                </ul>
+                <div id=\"content\">
+                  <div id=\"below_maturity\" class=\"settings_tab\">
+        ";
+
+			display_gap_analysis_table($framework, "below_maturity");
+
+        echo "
+                  </div>
+                  <div id=\"at_maturity\" class=\"settings_tab\" style=\"display: none\">
+        ";
+
+			display_gap_analysis_table($framework, "at_maturity");
+
+        echo "
+                  </div>
+                  <div id=\"above_maturity\" class=\"settings_tab\" style=\"display: none\">
+        ";
+
+			display_gap_analysis_table($framework, "above_maturity");
+
+        echo "
+                  </div>
+                </div>
+              </div>
+            </div>
+        ";
+
+	}
+    }
+}
+
+/****************************************
+ * FUNCTION: DISPLAY GAP ANALYSIS TABLE *
+ ****************************************/
+function display_gap_analysis_table($framework, $maturity)
+{
+	global $lang, $escaper;
+
+	$tableID = "control-gap-analysis-" . $maturity;
+
+	echo "
+            <table id=\"{$tableID}\" width=\"100%\" class=\"risk-datatable table table-bordered table-striped table-condensed\">
+                <thead >
+                    <tr >
+                        <th data-name='control_number' align=\"left\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['ControlNumber'])."</th>
+                        <th data-name='control_short_name' align=\"left\" width=\"200px\" valign=\"top\">".$escaper->escapeHtml($lang['ControlShortName'])."</th>
+                        <th data-name='control_phase' align=\"left\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['ControlPhase'])."</th>
+                        <th data-name='control_family' align=\"left\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['ControlFamily'])."</th>
+                        <th data-name='control_current_maturity' align=\"left\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['CurrentControlMaturity'])."</th>
+                        <th data-name='control_desired_maturity' align=\"center\" width=\"50px\" valign=\"top\">".$escaper->escapeHtml($lang['DesiredControlMaturity'])."</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <br>
+            <script>
+                var pageLength = 25;
+                var form = $('#{$tableID}').parents('form');
+                var datatableInstance_{$maturity} = $('#{$tableID}').DataTable({
+                    bFilter: false,
+                    bLengthChange: false,
+                    processing: true,
+                    serverSide: true,
+                    bSort: true,
+                    pagingType: \"full_numbers\",
+                    dom : \"flrtip\",
+                    pageLength: pageLength,
+                    dom : \"flrti<'#view-all.view-all'>p\",
+                    createdRow: function(row, data, index){
+                        var background = $('.background-class', $(row)).data('background');
+                        $(row).find('td').addClass(background)
+                    },
+                    order: [[1, 'asc']],
+                    ajax: {
+                        url: BASE_URL + '/api/reports/governance/control_gap_analysis?framework_id=" . $escaper->escapeHtml($framework) . "&maturity=" . $escaper->escapeHtml($maturity) . "',
+                        data: function(d){
+                        },
+                        complete: function(response){
+                        }
+                    }
+                });
+
+                // Add paginate options
+                datatableInstance_{$maturity}.on('draw', function(e, settings){
+                    $('.paginate_button.first').html('<i class=\"fa fa-chevron-left\"></i><i class=\"fa fa-chevron-left\"></i>');
+                    $('.paginate_button.previous').html('<i class=\"fa fa-chevron-left\"></i>');
+
+                    $('.paginate_button.last').html('<i class=\"fa fa-chevron-right\"></i><i class=\"fa fa-chevron-right\"></i>');
+                    $('.paginate_button.next').html('<i class=\"fa fa-chevron-right\"></i>');
+                })
+                
+                // Add all text to View All button on bottom
+                $('.view-all').html(\"".$escaper->escapeHtml($lang['ALL'])."\");
+
+                // View All
+                $(\"#{$maturity}\").find(\".view-all\").click(function(){
+                    var oSettings =  datatableInstance_{$maturity}.settings();
+                    oSettings[0]._iDisplayLength = -1;
+                    datatableInstance_{$maturity}.draw()
+                    $(this).addClass(\"current\");
+                })
+                
+                // Page event
+                $(\"body #{$maturity}\").on(\"click\", \"span > .paginate_button\", function(){
+                    var index = $(this).attr('aria-controls').replace(\"DataTables_Table_\", \"\");
+
+                    var oSettings =  datatableInstance_{$maturity}.settings();
+                    if(oSettings[0]._iDisplayLength == -1){
+                        $(this).parents(\".dataTables_wrapper\").find('.view-all').removeClass('current');
+                        oSettings[0]._iDisplayLength = pageLength;
+                        datatableInstance_{$maturity}.draw()
+                    }
+                })
+                
+            </script>
+        ";
 }
 
 ?>

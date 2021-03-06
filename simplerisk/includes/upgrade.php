@@ -146,6 +146,7 @@ $releases = array(
 	"20201106-001",
 	"20201123-001",
 	"20210121-001",
+	"20210305-001",
 );
 
 /*************************
@@ -5299,6 +5300,213 @@ function upgrade_from_20201123001($db)
     $stmt = $db->prepare("ALTER TABLE `tags_taggees` CHANGE `type` `type` VARCHAR(40);");
     $stmt->execute();
     
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20210121-001 *
+ ***************************************/
+function upgrade_from_20210121001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20210121-001';
+    
+    // Database version upgrading to
+    $version_upgrading_to = '20210305-001';
+    
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+    
+    // Add control_maturity field to framework_controls table
+    if (!field_exists_in_table('control_maturity', 'framework_controls')) {
+        echo "Adding control_maturity field to framework_controls table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `control_maturity` INT NOT NULL DEFAULT '0' AFTER `control_number`;");
+        $stmt->execute();
+    }
+
+    // Add desired_maturity field to framework_controls table
+    if (!field_exists_in_table('desired_maturity', 'framework_controls')) {
+      echo "Adding desired_maturity field to framework_controls table.<br />\n";
+      $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `desired_maturity` INT NOT NULL DEFAULT '0' AFTER `control_maturity`;");
+      $stmt->execute();
+    }
+
+    // Creating a control_maturity table.
+    echo "Creating a control_maturity table.<br />\n";
+    $stmt = $db->prepare("
+        CREATE TABLE IF NOT EXISTS `control_maturity` (
+          `value` INT NOT NULL PRIMARY KEY,
+          `name` MEDIUMTEXT NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    ");
+    $stmt->execute();
+
+    // Add the control maturity level to control_maturity table
+    echo "Adding the control maturity level to control_maturity table.<br />\n";
+    $stmt = $db->prepare("INSERT IGNORE INTO `control_maturity` (`value`, `name`) VALUES (0, 'Not Performed'),(1, 'Performed'), (2, 'Documented'), (3, 'Managed'), (4, 'Reviewed'),(5, 'Optimizing');");
+    $stmt->execute();
+
+    // Update framework_controls to be able to allow for longer short_name
+    echo "Updating the framework_controls to be able to allow for longer short_name.<br />\n";
+    $stmt = $db->prepare("ALTER TABLE `framework_controls` MODIFY `short_name` VARCHAR(1000)");
+    $stmt->execute();
+
+    // Add a last review date field to documents table
+    if (!field_exists_in_table('last_review_date', 'documents')) {
+        echo "Add `last_review_date` field to the `documents` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `last_review_date` date AFTER `creation_date`;");
+        $stmt->execute();
+    }
+
+    // Add a team_ids field to documents table.
+    if (!field_exists_in_table('team_ids', 'documents')) {
+        echo "Adding `team_ids` field to `documents` table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `team_ids` VARCHAR(500) NOT NULL;");
+        $stmt->execute();
+    }
+
+    // Update complianceforge risk catalog
+    if (table_exists('risk_catalog'))
+    {
+        echo "Updating the risk catalog values to match with ComplianceForge.<br />\n";
+        // R-BC-3 => R-IR-2
+        $stmt = $db->prepare("UPDATE `risks` r LEFT JOIN `risk_catalog` rc ON r.risk_catalog_mapping = rc.id JOIN (SELECT id FROM `risk_catalog` WHERE number = 'R-IR-2') rcm SET r.risk_catalog_mapping = rcm.id WHERE rc.number = 'R-BC-3';");
+        $stmt->execute();
+        $stmt = $db->prepare("DELETE FROM `risk_catalog` WHERE number = 'R-BC-3';");
+        $stmt->execute();
+        // R-BC-4 => R-IR-1
+        $stmt = $db->prepare("UPDATE `risks` r LEFT JOIN `risk_catalog` rc ON r.risk_catalog_mapping = rc.id JOIN (SELECT id FROM `risk_catalog` WHERE number = 'R-IR-1') rcm SET r.risk_catalog_mapping = rcm.id WHERE rc.number = 'R-BC-4';");
+        $stmt->execute();
+        $stmt = $db->prepare("DELETE FROM `risk_catalog` WHERE number = 'R-BC-4';");
+        $stmt->execute();
+        // R-BC-5 => R-IR-4
+        $stmt = $db->prepare("UPDATE `risks` r LEFT JOIN `risk_catalog` rc ON r.risk_catalog_mapping = rc.id JOIN (SELECT id FROM `risk_catalog` WHERE number = 'R-IR-4') rcm SET r.risk_catalog_mapping = rcm.id WHERE rc.number = 'R-BC-5';");
+        $stmt->execute();
+        $stmt = $db->prepare("DELETE FROM `risk_catalog` WHERE number = 'R-BC-5';");
+        $stmt->execute();
+        // R-GV-2 => R-IR-3
+        $stmt = $db->prepare("UPDATE `risks` r LEFT JOIN `risk_catalog` rc ON r.risk_catalog_mapping = rc.id JOIN (SELECT id FROM `risk_catalog` WHERE number = 'R-IR-3') rcm SET r.risk_catalog_mapping = rcm.id WHERE rc.number = 'R-GV-2';");
+        $stmt->execute();
+        $stmt = $db->prepare("DELETE FROM `risk_catalog` WHERE number = 'R-GV-2';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET description = 'There is a failure to implement least privileges.' WHERE number = 'R-AC-2';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET description = 'Access to privileged functions is inadequate or cannot be controlled.' WHERE number = 'R-AC-3';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET description = 'Access is granted to unauthorized individuals, groups or services.' WHERE number = 'R-AC-4';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET description = 'Asset(s) is/are lost, damaged or stolen.' WHERE number = 'R-AM-1';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET description = 'Unauthorized changes corrupt the integrity of the system / application / service.' WHERE number = 'R-AM-2';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET description = 'There is increased latency or a service outage that negatively impacts business operations.' WHERE number = 'R-BC-1';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET number = 'R-BC-3', description = 'User productivity is negatively affected by the incident.' WHERE number = 'R-BC-6';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` JOIN (SELECT value FROM `risk_grouping` WHERE name = 'Business Continuity') risk_grouping SET `grouping` = risk_grouping.value, number = 'R-BC-4', name = 'Information loss / corruption or system compromise due to technical attack', description = 'Malware, phishing, hacking or other technical attacks compromise data, systems, applications or services.' WHERE number = 'R-EX-8';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` JOIN (SELECT value FROM `risk_grouping` WHERE name = 'Business Continuity') risk_grouping SET `grouping` = risk_grouping.value, number = 'R-BC-5', name = 'Information loss / corruption or system compromise due to non‐technical attack ', description = 'Social engineering, sabotage or other non-technical attack compromises data, systems, applications or services.' WHERE number = 'R-EX-9';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET description = 'Legal and/or financial damages result from statutory / regulatory / contractual non-compliance.' WHERE number = 'R-EX-5';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET description = 'Umitigated technical vulnerabilities exist without compensating controls or other mitigation actions.' WHERE number = 'R-EX-6';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET description = 'System / application / service is compromised affects its confidentiality, integrity,  availability and/or safety.' WHERE number = 'R-EX-7';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET name = 'Inability to support business processes', description = 'Implemented security /privacy practices are insufficient to support the organization\'s secure technologies & processes requirements.', `order` = 1 WHERE number = 'R-GV-1';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET number = 'R-GV-2', name = 'Incorrect controls scoping', description = 'There is incorrect or inadequate controls scoping, which leads to a potential gap or lapse in security / privacy controls coverage.', `order` = 2 WHERE number = 'R-GV-6';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET number = 'TMP', name = 'Lack of roles & responsibilities', description = 'Documented security / privacy roles & responsibilities do not exist or are inadequate.' 
+WHERE number = 'R-GV-5';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET number = 'R-GV-5', name = 'Inadequate third-party practices', description = 'Third-party practices do not exist or are inadequate. Procedures fail to meet \"reasonable practices\" expected by industry standards.', `order` = 5 WHERE number = 'R-GV-4';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET number = 'R-GV-4', name = 'Inadequate internal practices ', description = 'Internal practices do not exist or are inadequate. Procedures fail to meet \"reasonable practices\" expected by industry standards.', `order` = 4 WHERE number = 'R-GV-3';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET number = 'R-GV-3', `order` = 3 WHERE number = 'TMP';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` SET number = 'R-GV-8', name = 'Illegal content or abusive action', description = 'There is abusive content / harmful speech / threats of violence / illegal content that negatively affect business operations.', `order` = 8 WHERE number = 'R-GV-7';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` JOIN (SELECT value FROM `risk_grouping` WHERE name = 'Governance') risk_grouping SET `grouping` = risk_grouping.value, number = 'R-GV-6', name = 'Lack of oversight of internal controls', `order` = 6 WHERE number = 'R-SA-3';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `risk_catalog` JOIN (SELECT value FROM `risk_grouping` WHERE name = 'Governance') risk_grouping SET `grouping` = risk_grouping.value, number = 'R-GV-7', name = 'Lack of oversight of third-party controls', `order` = 7 WHERE number = 'R-SA-4';");
+        $stmt->execute();
+    }
+
+    // If the threat grouping table does not exist
+    if (!table_exists('threat_grouping'))
+    {
+        // Add a table for threat grouping
+        echo "Adding a table for threat grouping.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `threat_grouping` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(50) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+
+        // Add new group to threat grouping table
+        echo "Add new group to threat grouping table.<br />\n";
+        $stmt = $db->prepare("INSERT IGNORE INTO `threat_grouping` (`value`, `name`) VALUES
+            (1, 'Natural Threat'),
+            (2, 'Man-Made Threat');");
+        $stmt->execute();
+    }
+
+    // If the threat catalog table does not exist
+    if (!table_exists('threat_catalog'))
+    {
+        // Add a table for threat catalog
+        echo "Adding a table for threat catalog.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `threat_catalog` ( `id` int(11) NOT NULL AUTO_INCREMENT, `number` varchar(20) NOT NULL, `grouping` int(11) NOT NULL, `name` varchar(1000) NOT NULL, `description` text NOT NULL, `order` int(11) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+
+        // Add new rows to threat catalog table
+        echo "Add new rows to threat catalog table.<br />\n";
+        $stmt = $db->prepare("INSERT IGNORE INTO `threat_catalog` (`id`, `number`, `grouping`, `name`, `description`, `order`) VALUES
+            (1, 'NT-1', 1, 'Drought & Water Shortage', 'Regardless of geographic location, periods of reduced rainfall are expected. For non-agricultural industries, drought may not be impactful to operations until it reaches the extent of water rationing.', 1),
+            (2, 'NT-2', 1, 'Earthquakes', 'Earthquakes are sudden rolling or shaking events caused by movement under the earth’s surface. Although earthquakes usually last less than one minute, the scope of devastation can be widespread and have long-lasting impact.', 2),
+            (3, 'NT-3', 1, 'Fire & Wildfires', 'Regardless of geographic location or even building material, fire is a concern for every business. When thinking of a fire in a building, envision a total loss to all technology hardware, including backup tapes, and all paper files being consumed in the fire.', 3),
+            (4, 'NT-4', 1, 'Floods', 'Flooding is the most common of natural hazards and requires an understanding of the local environment, including floodplains and the frequency of flooding events. Location of critical technologies should be considered (e.g., server room is in the basement or first floor of the facility).', 4),
+            (5, 'NT-5', 1, 'Hurricanes & Tropical Storms', 'Hurricanes and tropical storms are among the most powerful natural disasters because of their size and destructive potential. In addition to high winds, regional flooding and infrastructure damage should be considered when assessing hurricanes and tropical storms.', 5),
+            (6, 'NT-6', 1, 'Landslides & Debris Flow', 'Landslides occur throughout the world and can be caused by a variety of factors including earthquakes, storms, volcanic eruptions, fire, and by human modification of land. Landslides can occur quickly, often with little notice. Location of critical technologies should be considered (e.g., server room is in the basement or first floor of the facility).', 6),
+            (7, 'NT-7', 1, 'Pandemic (Disease) Outbreaks', 'Due to the wide variety of possible scenarios, consideration should be given both to the magnitude of what can reasonably happen during a pandemic outbreak (e.g., COVID-19, Influenza, SARS, Ebola, etc.) and what actions the business can be taken to help lessen the impact of a  pandemic on operations.', 7),
+            (8, 'NT-8', 1, 'Severe Weather', 'Severe weather is a broad category of meteorological events that include events that range from damaging winds to hail.', 8),
+            (9, 'NT-9', 1, 'Space Weather', 'Space weather includes natural events in space that can affect the near-earth environment and satellites. Most commonly, this is associated with solar flares from the Sun, so an understanding of how solar flares may impact the business is of critical importance in assessing this threat.', 9),
+            (10, 'NT-10', 1, 'Thunderstorms & Lightning', 'Thunderstorms are most prevalent in the spring and summer months and generally occur during the afternoon and evening hours, but they can occur year-round and at all hours. Many hazardous weather events are associated with thunderstorms. Under the right conditions, rainfall from thunderstorms causes flash flooding and lightning is responsible for equipment damage, fires and fatalities.', 10),
+            (11, 'NT-11', 1, 'Tornadoes', 'Tornadoes occur in many parts of the world, including the US, Australia, Europe, Africa, Asia, and South America. Tornadoes can happen at any time of year and occur at any time of day or night, but most tornadoes occur between 4–9 p.m. Tornadoes (with winds up to about 300 mph) can destroy all but the best-built man-made structures.', 11),
+            (12, 'NT-12', 1, 'Tsunamis', 'All tsunamis are potentially dangerous, even though they may not damage every coastline they strike. A tsunami can strike anywhere along most of the US coastline. The most destructive tsunamis have occurred along the coasts of California, Oregon, Washington, Alaska and Hawaii.', 12),
+            (13, 'NT-13', 1, 'Volcanoes', 'While volcanoes are geographically fixed objects, volcanic fallout can have significant downwind impacts for thousands of miles. Far outside of the blast zone, volcanoes can significantly damage or degrade transportation systems and also cause electrical grids to fail.', 13),
+            (14, 'NT-14', 1, 'Winter Storms & Extreme Cold', 'Winter storms is a broad category of meteorological events that include events that range from ice storms, to heavy snowfall, to unseasonably (e.g., record breaking) cold temperatures. Winter storms can significantly impact business operations and transportation systems over a wide geographic region.', 14),
+            (15, 'MT-1', 2, 'Civil or Political Unrest', 'Civil or political unrest can be singular or wide-spread events that can be unexpected and unpredictable. These events can occur anywhere, at any time.', 15),
+            (16, 'MT-2', 2, 'Hacking & Other Cybersecurity Crimes', 'Unlike physical threats that prompt immediate action (e.g., \"stop, drop, and roll\" in the event of a fire), cyber incidents are often difficult to identify as the incident is occurring. Detection generally occurs after the incident has occurred, with the exception of \"denial of service\" attacks. The spectrum of cybersecurity risks is limitless and threats can have wide-ranging effects on the individual, organizational, geographic, and national levels.', 16),
+            (17, 'MT-3', 2, 'Hazardous Materials Emergencies', 'Hazardous materials emergencies are focused on accidental disasters that occur in industrialized nations. These incidents can range from industrial chemical spills to groundwater contamination.', 17),
+            (18, 'MT-4', 2, 'Nuclear, Biological and Chemical (NBC) Weapons', 'The use of NBC weapons are in the possible arsenals of international terrorists and it must be a consideration. Terrorist use of a “dirty bomb” — is considered far more likely than use of a traditional nuclear explosive device. This may be a combination a conventional explosive device with radioactive / chemical / biological material and be designed to scatter lethal and sub-lethal amounts of material over a wide area.', 18),
+            (19, 'MT-5', 2, 'Physical Crime', 'Physical crime includes \"traditional\" crimes of opportunity. These incidents can range from theft, to vandalism, riots, looting, arson and other forms of criminal activities.', 19),
+            (20, 'MT-6', 2, 'Terrorism & Armed Attacks', 'Armed attacks, regardless of the motivation of the attacker, can impact a businesses. Scenarios can range from single actors (e.g., \"disgruntled\" employee) all the way to a coordinated terrorist attack by multiple assailants. These incidents can range from the use of blade weapons (e.g., knives), blunt objects (e.g., clubs), to firearms and explosives.', 20),
+            (21, 'MT-7', 2, 'Utility Service Disruption', 'Utility service disruptions are focused on the sustained loss of electricity, Internet, natural gas, water, and/or sanitation services. These incidents can have a variety of causes but  directly impact the fulfillment of utility services that your business needs to operate.', 21);
+        ");
+        $stmt->execute();
+    }
+
+    // Set default custom_display_settings value to user table.
+    if (!field_exists_in_table('custom_display_settings', 'user')) {
+        echo "Set default custom_display_settings value to user table.<br />\n";
+        $custom_display_settings = json_encode(array(
+            'id',
+            'subject',
+            'calculated_risk',
+            'submission_date',
+            'mitigation_planned',
+            'management_review'
+        ));
+        $stmt = $db->prepare("UPDATE user SET custom_display_settings=:custom_display_settings WHERE custom_display_settings=''");
+        $stmt->bindParam(":custom_display_settings", $custom_display_settings, PDO::PARAM_STR, 1000);
+        $stmt->execute();
+    }
+
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic
     $_SESSION['latest_version_app'] = latest_version('app');

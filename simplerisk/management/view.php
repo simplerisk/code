@@ -136,6 +136,7 @@ if (isset($_GET['id']))
         }else{
             $ContributingImpacts = [];
         }
+        $display_risk = true;
     }
     // If the risk was not found use null values
     else
@@ -223,6 +224,7 @@ if (isset($_GET['id']))
 
         $ContributingLikelihood  = "";
         $ContributingImpacts = [];
+        $display_risk = false;
     }
 
     $submission_date = format_date($submission_date, "N/A");

@@ -105,6 +105,7 @@ $columns = array(
     'mitigation_effort',
     'mitigation_cost',
     'mitigation_owner',
+    'mitigation_percent',
     'mitigation_team',
     'mitigation_accepted',
     'mitigation_date',
@@ -220,14 +221,20 @@ if (import_export_extra()){
     // if download request, download all risks
     if (isset($_POST['status']) && isset($_GET['option']) && $_GET['option'] == "download")
     {
-        download_risks_by_table($status, $group, $sort, NULL, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $custom_values);
+        $column_filters = isset($_GET["column_filters"])?$_GET["column_filters"]:[];
+        $order_column = isset($_GET["order_column"])?$_GET["order_column"]:null;
+        $order_dir = isset($_GET["order_dir"])?$_GET["order_dir"]:"asc";
+        download_risks_by_table($status, $group, $sort, NULL, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values, $column_filters, $order_column, $order_dir);
     }
 
     // if group download request, download risks by the group
     if(isset($_GET['option']) && $_GET['option'] == "download-by-group")
     {
         $group_value = $_GET['group_value'];
-        download_risks_by_table($status, $group, $sort, $group_value, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $custom_values);
+        $column_filters = isset($_GET["column_filters"])?$_GET["column_filters"]:[];
+        $order_column = isset($_GET["order_column"])?$_GET["order_column"]:null;
+        $order_dir = isset($_GET["order_dir"])?$_GET["order_dir"]:"asc";
+        download_risks_by_table($status, $group, $sort, $group_value, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values, $column_filters, $order_column, $order_dir);
     }
 }
 
@@ -283,7 +290,7 @@ if (import_export_extra()){
           <div id="selections" class="span12">
             <div class="well">
                 <div id="selection-container">
-                  <?php view_get_risks_by_selections($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values); ?>
+                  <?php view_get_risks_by_selections($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values); ?>
                 </div>
                 <div id="save-container">
                     <?php
@@ -316,7 +323,7 @@ if (import_export_extra()){
         <div class="row-fluid">
           <div class="span12">
             <div id="risk-table-container">
-                <?php get_risks_by_table($status, $sort, $group, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values); ?>
+                <?php get_risks_by_table($status, $sort, $group, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values); ?>
             </div>
           </div>
         </div>

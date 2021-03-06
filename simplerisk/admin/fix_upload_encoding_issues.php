@@ -42,6 +42,10 @@
         $affected_types[] = 'compliance';
     }
 
+    if (table_exists('questionnaire_files') && has_files_with_encoding_issues('questionnaire')) {
+        $affected_types[] = 'questionnaire';
+    }
+
     if (empty($affected_types)) {
         refresh("index.php");
     }
@@ -175,7 +179,14 @@
 ?>
                         </div>
                     </div>
-<?php foreach ($affected_types as $type) { ?>                    
+<?php foreach ($affected_types as $type) { ?>
+                    <div class="row-fluid">
+                        <div class="span12 ">
+                            <h3>
+								<?php echo $escaper->escapeHtml($lang['FileEncodingFixHeader_' . $type]); ?>
+                            </h3>
+                        </div>
+                    </div>
                     <div class="row-fluid">
                         <div class="span12 ">
                             <?php display_file_encoding_issues($type); ?>

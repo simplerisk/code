@@ -171,7 +171,8 @@ require_once(language_file());
                         $('#high-risk-datatable thead tr').clone(true).appendTo( '#high-risk-datatable thead' );
                         $('#high-risk-datatable thead tr:eq(1) th').each( function (i) {
                             var title = $(this).text();
-                            if(title == "Mitigation Planned") {
+                            var data_name = $(this).attr("data-name");
+                            if(data_name == "mitigation_planned") {
                                 $(this).html( '<select name="mitigation_planned"><option value="">--</option><option value="yes">Yes</option><option value="no">No</option></select>' );
                             } else {
                                 $(this).html( '<input type="text" name="'+title+'" placeholder="'+title+'" />' );

@@ -241,26 +241,49 @@ if(isset($_POST['delete_test'])){
             </div>
             <div class="span9 compliance-content-container">
                 <div class="row-fluid">
-                    <div class="span12">
-                        <span><?php echo $escaper->escapeHtml($lang['ControlFramework']);?>: &nbsp;</span>
-                        <select id="filter_by_control_framework" class="form-field form-control" multiple="multiple">
-                            <?php 
-                                $filter_by_control = array();
-                                if(isset($_POST['filter_by_control'])) $filter_by_control = explode(",",$_POST['filter_by_control']);
-                                if(in_array("-1",$filter_by_control) || count($filter_by_control)== 0) 
-                                    echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
-                                else 
-                                    echo "<option value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
-                                $options = getAvailableControlFrameworkList(true);
-                                is_array($options) || $options = array();
-                                foreach($options as $option){
-                                    if(in_array($option['value'],$filter_by_control) || count($filter_by_control)== 0)
-                                        echo "<option selected value=\"".(int)$option['value']."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                    <div class="span4">
+                        <div class="well">
+                            <h4><?php echo $escaper->escapeHtml($lang['ControlFramework']);?>:</h4>
+                            <select id="filter_by_control_framework" class="form-field form-control" multiple="multiple">
+                                <?php 
+                                    $filter_by_control = array();
+                                    if(isset($_POST['filter_by_control'])) $filter_by_control = explode(",",$_POST['filter_by_control']);
+                                    if(in_array("-1",$filter_by_control) || count($filter_by_control)== 0) 
+                                        echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
                                     else 
-                                        echo "<option value=\"".(int)$option['value']."\">".$escaper->escapeHtml($option['name'])."</option>\n";
-                                }
-                            ?>
-                        </select>
+                                        echo "<option value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
+                                    $options = getAvailableControlFrameworkList(true);
+                                    is_array($options) || $options = array();
+                                    foreach($options as $option){
+                                        if(in_array($option['value'],$filter_by_control) || count($filter_by_control)== 0)
+                                            echo "<option selected value=\"".(int)$option['value']."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                                        else 
+                                            echo "<option value=\"".(int)$option['value']."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                                    }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="span4">
+                        <div class="well">
+                            <h4><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?>:</h4>
+                            <select id="filter_by_control_family" class="" multiple="multiple">
+                                <?php 
+                                    echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
+                                    $options = getAvailableControlFamilyList();  
+                                    is_array($options) || $options = array();
+                                    foreach($options as $option){
+                                        echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                                    } 
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="span4">
+                        <div class="well">
+                            <h4><?php echo $escaper->escapeHtml($lang['ControlName']); ?>:</h4>
+                            <input type="text" class="form-control" id="filter_by_control_text">
+                        </div>
                     </div>
                 </div>
                 <div class="row-fluid">

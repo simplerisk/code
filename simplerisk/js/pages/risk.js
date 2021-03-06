@@ -686,6 +686,11 @@ $(document).ready(function(){
                 form.append('file['+j+']', file);
             })
         });
+        $('.content-container').block({
+            message: 'Processing',
+            css: { border: '1px solid black', background: '#ffffff'},
+            baseZ:'10001'
+        });
 
         $.ajax({
             type: "POST",
@@ -696,6 +701,7 @@ $(document).ready(function(){
             contentType: false,
             processData: false,
             success: function(data){
+                $('.content-container').unblock();
                 $('.content-container', tabContainer).html(data.data);
                 callbackAfterRefreshTab(tabContainer, 0);
                 getScoreByAction(tabContainer, scoring_method);
@@ -706,6 +712,7 @@ $(document).ready(function(){
             }
         })
         .fail(function(xhr, textStatus){
+            $('.content-container').unblock();
             if(!retryCSRF(xhr, this))
             {
                 if(xhr.responseJSON && xhr.responseJSON.status_message){

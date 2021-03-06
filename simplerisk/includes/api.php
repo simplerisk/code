@@ -846,6 +846,7 @@ function dynamicriskForm()
                 $escaper->escapeHtml($row['mitigation_effort']),
                 $escaper->escapeHtml($row['mitigation_cost']),
                 $escaper->escapeHtml($row['mitigation_owner']),
+                $escaper->escapeHtml($row['mitigation_percent']),
                 $escaper->escapeHtml($row['mitigation_team']),
                 $escaper->escapeHtml($row['mitigation_accepted']),
                 $escaper->escapeHtml($row['mitigation_date']),
@@ -1023,7 +1024,6 @@ function dynamicriskUniqueColumnDataAPI()
                 case "regulation":
                 case "next_step":
                 case "planning_strategy":
-                case "mitigation_effort":
                 case "mitigation_cost":
                 case "mitigation_owner":
                 case "mitigation_team":
@@ -1072,6 +1072,9 @@ function dynamicriskUniqueColumnDataAPI()
                         $value = $text_value_arr['value'];
                         return ["text"=>$text, "value"=>$value];
                     }, $uniqueColumnArr);
+                break;
+                case "mitigation_effort":
+                    $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter, false, true);
                 break;
                 default: 
                     $continue = true;
@@ -1255,6 +1258,7 @@ function getTabHtml($id, $template){
         }else{
             $ContributingImpacts = [];
         }
+        $display_risk = true;
     }
     // If the risk was not found use null values
     else
@@ -1336,6 +1340,7 @@ function getTabHtml($id, $template){
         
         $ContributingLikelihood = "";
         $ContributingImpacts = [];
+        $display_risk = false;
     }
 
     // If the current scoring method was changed to Classic
@@ -2064,10 +2069,12 @@ function saveReviewForm()
                 $prefix = 'new-projval-prfx-';
                 if (startsWith($project, $prefix)) {//It's a new project's name
                     $name = substr($project, strlen($prefix));
-                    $project = add_name("projects", try_encrypt($name));
-
-                    if ($project)
+                    if(isset($_SESSION["add_projects"]) && $_SESSION["add_projects"] == 1) {
+                        $project = add_name("projects", try_encrypt($name));
                         set_alert(true, "good", $lang['SuccessCreateProject']);
+                    } else {
+                        set_alert(true, "bad", $lang['NoAddProjectPermission']);
+                    }
                 }
 
                 if (ctype_digit((string)$project)) {
@@ -2697,7 +2704,14 @@ function addRisk(){
         if (strlen($tag) > 255) {
             set_alert(true, "bad", $lang['MaxTagLengthWarning']);
             json_response(400, get_alert(true), []);
-            return;
+        }
+    }
+    
+    if (jira_extra()) {
+        require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
+        $issue_key = strtoupper(trim(get_param("POST", 'jira_issue_key')));
+        if ($issue_key && !jira_validate_issue_key($issue_key)) {
+            json_response(400, get_alert(true), NULL);
         }
     }
 
@@ -2829,6 +2843,17 @@ function addRisk(){
 
         //Add tags
         updateTagsOfType($last_insert_id, 'risk', $tags);
+
+        // Create the connection between the risk and the jira issue
+        if (jira_extra()) {
+            if ($issue_key) {
+                if (jira_update_risk_issue_connection($last_insert_id, $issue_key)) {
+                    jira_push_changes($issue_key, $last_insert_id);
+                }
+            } else {
+                CreateIssueForRisk($last_insert_id);
+            }
+        }
 
         // If the notification extra is enabled
         if (notification_extra())
@@ -3023,10 +3048,12 @@ function saveReview(){
                 $prefix = 'new-projval-prfx-';
                 if (startsWith($project, $prefix)) {//It's a new project's name
                     $name = substr($project, strlen($prefix));
-                    $project = add_name("projects", try_encrypt($name));
-
-                    if ($project)
+                    if(isset($_SESSION["add_projects"]) && $_SESSION["add_projects"] == 1) {
+                        $project = add_name("projects", try_encrypt($name));
                         set_alert(true, "good", $lang['SuccessCreateProject']);
+                    } else {
+                        set_alert(true, "bad", $lang['NoAddProjectPermission']);
+                    }
                 }
 
                 if (ctype_digit((string)$project)) {
@@ -3328,36 +3355,43 @@ function getFrameworkControlsDatatable(){
                     $html .= "<div class='control-block--row'>\n";
                         $html .= "<table width='100%'>\n";
                             $html .= "<tr>\n";
+                                $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </td>\n";
+                                $html .= "<td width='54%' colspan='3'>".$escaper->escapeHtml($control['short_name'])."</td>\n";
+                            $html .= "<tr>\n";
                                 $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>\n";
                                 $html .= "<td colspan='5'>".$escaper->escapeHtml($control['long_name'])."</td>\n";
                             $html .= "</tr>\n";
                             $html .= "<tr>\n";
-                                $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </td>\n";
-                                $html .= "<td width='57%' colspan='3'>".$escaper->escapeHtml($control['short_name'])."</td>\n";
-                                $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
-                                $html .= "<td width='17%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
-                                //$html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlFrameworks'])."</strong>: </td>\n";
-                                //$html .= "<td width='17%'>". display_expandable_framework_names($control['framework_names'], 8) ."</td>\n";
-                            $html .= "</tr>\n";
-                            $html .= "<tr>\n";
-                                $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['control_class_name'])."</td>\n";
-                                $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlPhase'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['control_phase_name'])."</td>\n";
-                                $html .= "<td  align='right'><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </td>\n";
+                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </td>\n";
                                 $html .= "<td>".$escaper->escapeHtml($control['control_number'])."</td>\n";
                             $html .= "</tr>\n";
                             $html .= "<tr>\n";
+                                $html .= "<td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>\n";
+                                $html .= "<td width='20%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>\n";
                                 $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlPriority'])."</strong>: </td>\n";
                                 $html .= "<td>".$escaper->escapeHtml($control['control_priority_name'])."</td>\n";
-                                $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </td>\n";
-                                $html .= "<td>".$escaper->escapeHtml($control['family_short_name'])."</td>\n";
+                            $html .= "</tr>\n";
+                            $html .= "<tr>\n";
+                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['CurrentControlMaturity'])."</strong>: </td>\n";
+                                $html .= "<td>".$escaper->escapeHtml($control['control_maturity_name'])."</td>\n";
+                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>\n";
+                                $html .= "<td width='22%'>".$escaper->escapeHtml($control['control_class_name'])."</td>\n";
+                            $html .= "</tr>\n";
+                            $html .= "<tr>\n";
+                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['DesiredControlMaturity'])."</strong>: </td>\n";
+                                $html .= "<td>".$escaper->escapeHtml($control['desired_maturity_name'])."</td>\n";
+                                $html .= "<td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlPhase'])."</strong>: </td>\n";
+                                $html .= "<td>".$escaper->escapeHtml($control['control_phase_name'])."</td>\n";
+                            $html .= "</tr>\n";
+                            $html .= "<tr>\n";
                                 $html .= "<td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['MitigationPercent'])."</strong>: </td>\n";
                                 $html .= "<td>".$escaper->escapeHtml($control['mitigation_percent'])."%</td>\n";
+                                $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </td>\n";
+                                $html .= "<td>".$escaper->escapeHtml($control['family_short_name'])."</td>\n";
                             $html .= "</tr>\n";
                             $html .= "<tr>\n";
                                 $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </td>\n";
-                                $html .= "<td colspan='5'>".nl2br($escaper->escapeHtml($control['description']))."</td>\n";
+                                $html .= "<td colspan='3'>".nl2br($escaper->escapeHtml($control['description']))."</td>\n";
                             $html .= "</tr>\n";
                             $html .= "<tr>\n";
                                 $html .= "<td align='right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </td>\n";
@@ -3644,6 +3678,8 @@ function addControlResponse()
         'control_class' => isset($_POST['control_class']) ? (int)$_POST['control_class'] : 0,
         'control_phase' => isset($_POST['control_phase']) ? (int)$_POST['control_phase'] : 0,
         'control_number' => isset($_POST['control_number']) ? $_POST['control_number'] : "",
+        'control_current_maturity' => isset($_POST['control_current_maturity']) ? $_POST['control_current_maturity'] : 0,
+        'control_desired_maturity' => isset($_POST['control_desired_maturity']) ? $_POST['control_desired_maturity'] : 0,
         'control_priority' => isset($_POST['control_priority']) ? (int)$_POST['control_priority'] : 0,
         'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0,
         'mitigation_percent' => (isset($_POST['mitigation_percent']) && $_POST['mitigation_percent'] >= 0 && $_POST['mitigation_percent'] <= 100) ? (int)$_POST['mitigation_percent'] : 0
@@ -3713,6 +3749,8 @@ function updateControlResponse()
             'control_class' => isset($_POST['control_class']) ? (int)$_POST['control_class'] : 0,
             'control_phase' => isset($_POST['control_phase']) ? (int)$_POST['control_phase'] : 0,
             'control_number' => isset($_POST['control_number']) ? $_POST['control_number'] : "",
+            'control_current_maturity' => isset($_POST['control_current_maturity']) ? (int)$_POST['control_current_maturity'] : 0,
+            'control_desired_maturity' => isset($_POST['control_desired_maturity']) ? (int)$_POST['control_desired_maturity'] : 0,
             'control_priority' => isset($_POST['control_priority']) ? (int)$_POST['control_priority'] : 0,
             'family' => isset($_POST['family']) ? (int)$_POST['family'] : 0,
             'mitigation_percent' => (isset($_POST['mitigation_percent']) && $_POST['mitigation_percent'] >= 0 && $_POST['mitigation_percent'] <= 100) ? (int)$_POST['mitigation_percent'] : 0
@@ -4158,8 +4196,10 @@ function getDefineTestsResponse()
     {
         $draw = $escaper->escapeHtml($_GET['draw']);
         $control_framework = empty($_GET['control_framework']) ? [] : $_GET['control_framework'];
+        $control_family = isset($_GET['control_family']) ? $_GET['control_family'] : [];
+        $control_name = isset($_GET['control_name']) ? $_GET['control_name'] : "";
 
-        $controls = get_framework_controls_by_filter("all", "all", "all", "all", $control_framework);
+        $controls = get_framework_controls_by_filter("all", "all", "all", $control_family, $control_framework, "all", $control_name);
         $recordsTotal = count($controls);
 
          // If team separation is enabled
@@ -4504,9 +4544,15 @@ function getPastTestAuditsResponse()
         $columnName = isset($columnNames[$orderColumn]) ? $columnNames[$orderColumn] : false;
         $orderDir = isset($_POST['order'][0]['dir']) && strtolower($_POST['order'][0]['dir']) == "asc" ? "asc" : "desc";
 
+        $column_filters = [];
+        for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
+            if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
+                $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
+            }
+        }
 
         // Get past tests
-        $past_test_audits = get_framework_control_test_audits(false, $columnName, $orderDir, $filters);
+        $past_test_audits = get_framework_control_test_audits(false, $columnName, $orderDir, $filters, $column_filters);
 
         $recordsTotal = count($past_test_audits);
 
@@ -4595,8 +4641,15 @@ function getActiveTestAuditsResponse()
             "actions"
         );
 
+        $column_filters = [];
+        for ( $i=0 ; $i<count($_GET['columns']) ; $i++ ) {
+            if ( isset($_GET['columns'][$i]) && $_GET['columns'][$i]['searchable'] == "true" && $_GET['columns'][$i]['search']['value'] != '' ) {
+                $column_filters[$_GET['columns'][$i]['name']] = $_GET['columns'][$i]['search']['value'];
+            }
+        }
+
         // Get active tests
-        $active_tests = get_framework_control_test_audits(true, $columnNames[$orderColumn], $orderDir, $filters);
+        $active_tests = get_framework_control_test_audits(true, $columnNames[$orderColumn], $orderDir, $filters, $column_filters);
 
         $recordsTotal = count($active_tests);
 
@@ -5479,10 +5532,12 @@ function getDocumentResponse()
         $document = get_document_by_id($id);
 
         $document['creation_date'] = format_date($document['creation_date']);
+        $document['last_review_date'] = format_date($document['last_review_date']);
         $document['approval_date'] = format_date($document['approval_date']);
         $document['next_review_date'] = format_date($document['next_review_date']);
         $document['control_ids'] = explode(',', $document['control_ids']);
         $document['framework_ids'] = explode(',', $document['framework_ids']);
+        $document['team_ids'] = explode(',', $document['team_ids']);
         $document['additional_stakeholders'] = explode(',', $document['additional_stakeholders']);
 
         json_response(200, "Success", $document);
@@ -5777,14 +5832,50 @@ function getPlanMitigationsDatatableResponse()
 
         $draw = $escaper->escapeHtml($_POST['draw']);
 
+        $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
+        $length = $_POST['length'] ? (int)$_POST['length'] : 10;
         $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
         $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;;
         $orderDir = isset($_POST['order'][0]['dir'])?$escaper->escapeHtml($_POST['order'][0]['dir']):false;
 
+        $column_filters = [];
+        for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
+            if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
+                $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
+            }
+        }
+
         // Get risks requiring mitigations
         $risks = get_risks(1, $orderColumnName, $orderDir);
 
-        $recordsTotal = count($risks);
+        $risk_levels = get_risk_levels();
+        $review_levels = get_review_levels();
+
+        // If we're ordering by the 'management_review' column
+        if ($orderColumnName === 'management_review') {
+            // Calculate the 'management_review' values
+            foreach($risks as &$risk) {
+                $risk_level = get_risk_level_name($risk['calculated_risk']);
+                $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
+
+                $risk['management_review'] = management_review($risk['id'], $risk['mgmt_review'], $next_review);
+                $risk['management_review_text'] = management_review_text_only($risk['mgmt_review'], $next_review);
+            }
+            unset($risk);
+
+            // Sorting by the management review text as the normal 'management_review' field contains html
+            usort($risks, function($a, $b) use ($orderDir){
+                // For identical management reviews we're sorting on the id, so the results' order is not changing
+                if ($a['management_review_text'] === $b['management_review_text']) {
+                    return (int)$a['id'] - (int)$b['id'];
+                }
+                if($orderDir == "asc") {
+                    return strcmp($a['management_review_text'], $b['management_review_text']);
+                } else {
+                    return strcmp($b['management_review_text'], $a['management_review_text']);
+                }
+            });
+        }
 
         $data = array();
         
@@ -5792,16 +5883,6 @@ function getPlanMitigationsDatatableResponse()
 
         foreach ($risks as $key=>$risk)
         {
-            // If it is not requested to view all
-            if($_POST['length'] != -1){
-                if($key < $_POST['start']){
-                    continue;
-                }
-                if($key >= ($_POST['start'] + $_POST['length'])){
-                    break;
-                }
-            }
-            
             $color = get_risk_color($risk['calculated_risk']);
 
             $risk_level = get_risk_level_name($risk['calculated_risk']);
@@ -5817,6 +5898,8 @@ function getPlanMitigationsDatatableResponse()
             {
                 $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels, false, true);
             }
+            $submission_date = date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']));
+            $management_review = management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, true, "PlanYourMitigations");
             $data_row = [];
             foreach($columns as $column){
                 switch ($column) {
@@ -5851,13 +5934,13 @@ function getPlanMitigationsDatatableResponse()
                         $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>";
                         break;
                     case "submission_date":
-                        $data_row[] = $escaper->escapeHtml(date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date'])));
+                        $data_row[] = $escaper->escapeHtml($submission_date);
                         break;
                     case "mitigation_planned":
                         $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-mitigation mitigation active-cell\" >".planned_mitigation(convert_id($risk['id']), $risk['mitigation_id'], "PlanYourMitigations")."</div>";
                         break;
                     case "management_review":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-review management active-cell\">".management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, true, "PlanYourMitigations")."</div>";
+                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-review management active-cell\">".$management_review."</div>";
                         break;
                     case "closure_date":
                         $data_row[] = $escaper->escapeHtml(format_datetime($risk['closure_date'], "", "H:i"));
@@ -5943,11 +6026,152 @@ function getPlanMitigationsDatatableResponse()
                         break;
                 }
             }
-            $data[] = $data_row;
+
+            // column filter 
+            $success = true;
+            foreach($column_filters as $column_name => $val){
+                switch ($column_name) {
+                    default :
+                        if(stripos($risk[$column_name], $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "id":
+                        if(stripos(convert_id($risk['id']), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "risk_status":
+                        if(stripos($risk['status'], $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "submission_date":
+                        if(stripos($submission_date, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "mitigation_planned":
+                        if(($risk['mitigation_id']&&$val=="no")||(!$risk['mitigation_id']&&$val=="yes")){
+                            $success = false;
+                        }
+                        break;
+                    case "management_review":
+                        if( stripos(strip_tags($management_review), $val) === false ){
+                            $success = false;
+                            break;
+                        }
+                        break;
+                    case "closure_date":
+                        if(stripos(format_datetime($risk['closure_date'], "", "H:i"), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "regulation":
+                        if(stripos(try_decrypt($risk["regulation"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "scoring_method":
+                        if(stripos(get_scoring_method_name($risk["scoring_method"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "project":
+                        if(stripos(try_decrypt($risk["project"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "risk_assessment":
+                        if(stripos(try_decrypt($risk["risk_assessment"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "additional_notes":
+                        if(stripos(try_decrypt($risk["additional_notes"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "affected_assets":
+                        if(stripos($affected_assets, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "mitigation_cost":
+                        if(stripos($mitigation_cost, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "mitigation_accepted":
+                        if(stripos($mitigation_accepted, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "mitigation_date":
+                        if(stripos(format_datetime($risk['mitigation_date'], "", "H:i"), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "current_solution":
+                        if(stripos(try_decrypt($risk["current_solution"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "security_recommendations":
+                        if(stripos(try_decrypt($risk["security_recommendations"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "security_requirements":
+                        if(stripos(try_decrypt($risk["security_requirements"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "review_date":
+                        if(stripos(format_datetime($risk['review_date'], "", "H:i"), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "planning_date":
+                        if(stripos(format_datetime($risk['planning_date'], "", "H:i"), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "next_review_date":
+                        if(stripos($next_review, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "comments":
+                        if(stripos(try_decrypt($risk["comments"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "risk_tags":
+                        if(stripos($risk["risk_tags"], $val) === false){
+                            $success = false;
+                        }
+                        break;
+                }
+            }
+            if($success == true) $data[] = $data_row;
         }
+        $risks_by_page = [];
+
+        if($length == -1)
+        {
+            $risks_by_page = $data;
+        }
+        else
+        {
+            for($i=$start; $i<count($data) && $i<$start + $length; $i++){
+                $risks_by_page[] = $data[$i];
+            }
+        }
+        $recordsTotal = count($data);
         $result = array(
             'draw' => $draw,
-            'data' => $data,
+            'data' => $risks_by_page,
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
         );
@@ -5989,31 +6213,56 @@ function getManagementReviewsDatatableResponse()
 
         $draw = $escaper->escapeHtml($_POST['draw']);
 
+        $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
+        $length = $_POST['length'] ? (int)$_POST['length'] : 10;
         $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
         $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;;
         $orderDir = isset($_POST['order'][0]['dir'])?$escaper->escapeHtml($_POST['order'][0]['dir']):false;
 
+        $column_filters = [];
+        for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
+            if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
+                $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
+            }
+        }
+
         // Get risks requiring mitigations
         $risks = get_risks(2, $orderColumnName, $orderDir);
 
-        $recordsTotal = count($risks);
+        $risk_levels = get_risk_levels();
+        $review_levels = get_review_levels();
 
+        // If we're ordering by the 'management_review' column
+        if ($orderColumnName === 'management_review') {
+            // Calculate the 'management_review' values
+            foreach($risks as &$risk) {
+                $risk_level = get_risk_level_name($risk['calculated_risk']);
+                $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
+
+                $risk['management_review'] = management_review($risk['id'], $risk['mgmt_review'], $next_review);
+                $risk['management_review_text'] = management_review_text_only($risk['mgmt_review'], $next_review);
+            }
+            unset($risk);
+
+            // Sorting by the management review text as the normal 'management_review' field contains html
+            usort($risks, function($a, $b) use ($orderDir){
+                // For identical management reviews we're sorting on the id, so the results' order is not changing
+                if ($a['management_review_text'] === $b['management_review_text']) {
+                    return (int)$a['id'] - (int)$b['id'];
+                }
+                if($orderDir == "asc") {
+                    return strcmp($a['management_review_text'], $b['management_review_text']);
+                } else {
+                    return strcmp($b['management_review_text'], $a['management_review_text']);
+                }
+            });
+        }
         $data = array();
         
         $review_levels = get_review_levels();
 
         foreach ($risks as $key=>$risk)
         {
-            // If it is not requested to view all
-            if($_POST['length'] != -1){
-                if($key < $_POST['start']){
-                    continue;
-                }
-                if($key >= ($_POST['start'] + $_POST['length'])){
-                    break;
-                }
-            }
-            
             $color = get_risk_color($risk['calculated_risk']);
 
             $risk_level = get_risk_level_name($risk['calculated_risk']);
@@ -6029,6 +6278,8 @@ function getManagementReviewsDatatableResponse()
             {
                 $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
             }
+            $submission_date = date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']));
+            $management_review = management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, true, "PerformManagementReviews");
             $data_row = [];
             foreach($columns as $column){
                 switch ($column) {
@@ -6063,13 +6314,13 @@ function getManagementReviewsDatatableResponse()
                         $data_row[] = "<div class='".$escaper->escapeHtml($color)."'><div class='risk-cell-holder' style='position:relative;'>" . $escaper->escapeHtml($risk['calculated_risk']) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></div></div>";
                         break;
                     case "submission_date":
-                        $data_row[] = $escaper->escapeHtml(date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date'])));
+                        $data_row[] = $escaper->escapeHtml($submission_date);
                         break;
                     case "mitigation_planned":
                         $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-mitigation mitigation active-cell\" >".planned_mitigation(convert_id($risk['id']), $risk['mitigation_id'], "PerformManagementReviews")."</div>";
                         break;
                     case "management_review":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-review management active-cell\">".management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, true, "PerformManagementReviews")."</div>";
+                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-review management active-cell\">".$management_review."</div>";
                         break;
                     case "closure_date":
                         $data_row[] = $escaper->escapeHtml(format_datetime($risk['closure_date'], "", "H:i"));
@@ -6155,11 +6406,152 @@ function getManagementReviewsDatatableResponse()
                         break;
                 }
             }
-            $data[] = $data_row;
+
+            // column filter 
+            $success = true;
+            foreach($column_filters as $column_name => $val){
+                switch ($column_name) {
+                    default :
+                        if(stripos($risk[$column_name], $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "id":
+                        if(stripos(convert_id($risk['id']), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "risk_status":
+                        if(stripos($risk['status'], $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "submission_date":
+                        if(stripos($submission_date, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "mitigation_planned":
+                        if(($risk['mitigation_id']&&$val=="no")||(!$risk['mitigation_id']&&$val=="yes")){
+                            $success = false;
+                        }
+                        break;
+                    case "management_review":
+                        if( stripos(strip_tags($management_review), $val) === false ){
+                            $success = false;
+                            break;
+                        }
+                        break;
+                    case "closure_date":
+                        if(stripos(format_datetime($risk['closure_date'], "", "H:i"), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "regulation":
+                        if(stripos(try_decrypt($risk["regulation"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "scoring_method":
+                        if(stripos(get_scoring_method_name($risk["scoring_method"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "project":
+                        if(stripos(try_decrypt($risk["project"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "risk_assessment":
+                        if(stripos(try_decrypt($risk["risk_assessment"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "additional_notes":
+                        if(stripos(try_decrypt($risk["additional_notes"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "affected_assets":
+                        if(stripos($affected_assets, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "mitigation_cost":
+                        if(stripos($mitigation_cost, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "mitigation_accepted":
+                        if(stripos($mitigation_accepted, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "mitigation_date":
+                        if(stripos(format_datetime($risk['mitigation_date'], "", "H:i"), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "current_solution":
+                        if(stripos(try_decrypt($risk["current_solution"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "security_recommendations":
+                        if(stripos(try_decrypt($risk["security_recommendations"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "security_requirements":
+                        if(stripos(try_decrypt($risk["security_requirements"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "review_date":
+                        if(stripos(format_datetime($risk['review_date'], "", "H:i"), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "planning_date":
+                        if(stripos(format_datetime($risk['planning_date'], "", "H:i"), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "next_review_date":
+                        if(stripos($next_review, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "comments":
+                        if(stripos(try_decrypt($risk["comments"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "risk_tags":
+                        if(stripos($risk["risk_tags"], $val) === false){
+                            $success = false;
+                        }
+                        break;
+                }
+            }
+            if($success == true) $data[] = $data_row;
         }
+        $risks_by_page = [];
+        
+        if($length == -1)
+        {
+            $risks_by_page = $data;
+        }
+        else
+        {
+            for($i=$start; $i<count($data) && $i<$start + $length; $i++){
+                $risks_by_page[] = $data[$i];
+            }
+        }
+        $recordsTotal = count($data);
         $result = array(
             'draw' => $draw,
-            'data' => $data,
+            'data' => $risks_by_page,
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
         );
@@ -6201,14 +6593,21 @@ function getReviewRisksDatatableResponse()
 
         $draw = $escaper->escapeHtml($_POST['draw']);
 
+        $start  = $_POST['start'] ? (int)$_POST['start'] : 0;
+        $length = $_POST['length'] ? (int)$_POST['length'] : 10;
         $orderColumn = isset($_POST['order'][0]['column']) ? $_POST['order'][0]['column'] : "";
         $orderColumnName = isset($_POST['columns'][$orderColumn]['name']) ? $_POST['columns'][$orderColumn]['name'] : null;;
         $orderDir = $escaper->escapeHtml($_POST['order'][0]['dir']);
 
+        $column_filters = [];
+        for ( $i=0 ; $i<count($_POST['columns']) ; $i++ ) {
+            if ( isset($_POST['columns'][$i]) && $_POST['columns'][$i]['searchable'] == "true" && $_POST['columns'][$i]['search']['value'] != '' ) {
+                $column_filters[$_POST['columns'][$i]['name']] = $_POST['columns'][$i]['search']['value'];
+            }
+        }
+
         // Get the list of reviews
         $risks = get_risks(3, $orderColumnName, $orderDir);
-
-        $recordsTotal = count($risks);
 
         // Initialize the arrays
         $sorted_reviews = array();
@@ -6221,6 +6620,34 @@ function getReviewRisksDatatableResponse()
 
         $risk_levels = get_risk_levels();
         $next_review_date_uses = get_setting('next_review_date_uses');
+
+        $review_levels = get_review_levels();
+
+        // If we're ordering by the 'management_review' column
+        if ($orderColumnName === 'management_review') {
+            // Calculate the 'management_review' values
+            foreach($risks as &$risk) {
+                $risk_level = get_risk_level_name($risk['calculated_risk']);
+                $next_review = next_review($risk_level, $risk['id'], $risk['next_review'], false, $review_levels);
+
+                $risk['management_review'] = management_review($risk['id'], $risk['mgmt_review'], $next_review);
+                $risk['management_review_text'] = management_review_text_only($risk['mgmt_review'], $next_review);
+            }
+            unset($risk);
+
+            // Sorting by the management review text as the normal 'management_review' field contains html
+            usort($risks, function($a, $b) use ($orderDir){
+                // For identical management reviews we're sorting on the id, so the results' order is not changing
+                if ($a['management_review_text'] === $b['management_review_text']) {
+                    return (int)$a['id'] - (int)$b['id'];
+                }
+                if($orderDir == "asc") {
+                    return strcmp($a['management_review_text'], $b['management_review_text']);
+                } else {
+                    return strcmp($b['management_review_text'], $a['management_review_text']);
+                }
+            });
+        }
 
         // Parse through each row in the array
         foreach ($risks as $key => $row)
@@ -6292,15 +6719,6 @@ function getReviewRisksDatatableResponse()
 
         foreach ($reviews as $key=>$review)
         {
-            // If it is not requested to view all
-            if($_POST['length'] != -1){
-                if($key < $_POST['start']){
-                    continue;
-                }
-                if($key >= ($_POST['start'] + $_POST['length'])){
-                    break;
-                }
-            }
             $risk = $review["risk"];
             $risk_id = $review['risk_id'];
             $subject = $review['subject'];
@@ -6310,6 +6728,8 @@ function getReviewRisksDatatableResponse()
             $dayssince = $review['dayssince'];
             $next_review = $review['next_review'];
             $next_review_html = $review['next_review_html'];
+            $submission_date = date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date']));
+            $management_review = management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, true, "ReviewRisksRegularly");
             $data_row = [];
             foreach($columns as $column){
                 switch ($column) {
@@ -6347,13 +6767,13 @@ function getReviewRisksDatatableResponse()
                         $data_row[] = $escaper->escapeHtml($dayssince);
                         break;
                     case "submission_date":
-                        $data_row[] = $escaper->escapeHtml(date(get_default_datetime_format("g:i A T"), strtotime($risk['submission_date'])));
+                        $data_row[] = $escaper->escapeHtml($submission_date);
                         break;
                     case "mitigation_planned":
                         $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-mitigation mitigation active-cell\" >".planned_mitigation(convert_id($risk['id']), $risk['mitigation_id'],"ReviewRisksRegularly")."</div>";
                         break;
                     case "management_review":
-                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-review management active-cell\">".management_review(convert_id($risk['id']), $risk['mgmt_review'], $next_review, true, "ReviewRisksRegularly")."</div>";
+                        $data_row[] = "<div data-id=". $escaper->escapeHtml(convert_id($risk['id'])) ." class=\"text-center open-review management active-cell\">".$management_review."</div>";
                         break;
                     case "closure_date":
                         $data_row[] = $escaper->escapeHtml(format_datetime($risk['closure_date'], "", "H:i"));
@@ -6439,11 +6859,152 @@ function getReviewRisksDatatableResponse()
                         break;
                 }
             }
-            $data[] = $data_row;
+            // column filter 
+            $success = true;
+            foreach($column_filters as $column_name => $val){
+                switch ($column_name) {
+                    default :
+                        if(stripos($risk[$column_name], $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "id":
+                        if(stripos(convert_id($risk_id), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "risk_status":
+                        if(stripos($risk['status'], $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "submission_date":
+                        if(stripos($submission_date, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "mitigation_planned":
+                        if(($risk['mitigation_id']&&$val=="no")||(!$risk['mitigation_id']&&$val=="yes")){
+                            $success = false;
+                        }
+                        break;
+                    case "management_review":
+                        if( stripos(strip_tags($management_review), $val) === false ){
+                            $success = false;
+                            break;
+                        }
+                        break;
+                    case "closure_date":
+                        if(stripos(format_datetime($risk['closure_date'], "", "H:i"), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "regulation":
+                        if(stripos(try_decrypt($risk["regulation"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "scoring_method":
+                        if(stripos(get_scoring_method_name($risk["scoring_method"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "project":
+                        if(stripos(try_decrypt($risk["project"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "risk_assessment":
+                        if(stripos(try_decrypt($risk["risk_assessment"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "additional_notes":
+                        if(stripos(try_decrypt($risk["additional_notes"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "affected_assets":
+                        if(stripos($affected_assets, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "mitigation_cost":
+                        if(stripos($mitigation_cost, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "mitigation_accepted":
+                        if(stripos($mitigation_accepted, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "mitigation_date":
+                        if(stripos(format_datetime($risk['mitigation_date'], "", "H:i"), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "current_solution":
+                        if(stripos(try_decrypt($risk["current_solution"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "security_recommendations":
+                        if(stripos(try_decrypt($risk["security_recommendations"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "security_requirements":
+                        if(stripos(try_decrypt($risk["security_requirements"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "review_date":
+                        if(stripos(format_datetime($risk['review_date'], "", "H:i"), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "planning_date":
+                        if(stripos(format_datetime($risk['planning_date'], "", "H:i"), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "next_review_date":
+                        if(stripos($next_review, $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "comments":
+                        if(stripos(try_decrypt($risk["comments"]), $val) === false){
+                            $success = false;
+                        }
+                        break;
+                    case "risk_tags":
+                        if(stripos($risk["risk_tags"], $val) === false){
+                            $success = false;
+                        }
+                        break;
+                }
+            }
+            if($success == true) $data[] = $data_row;
         }
+
+        $risks_by_page = [];
+
+        if($length == -1)
+        {
+            $risks_by_page = $data;
+        }
+        else
+        {
+            for($i=$start; $i<count($data) && $i<$start + $length; $i++){
+                $risks_by_page[] = $data[$i];
+            }
+        }
+        $recordsTotal = count($data);
         $result = array(
             'draw' => $draw,
-            'data' => $data,
+            'data' => $risks_by_page,
             'recordsTotal' => $recordsTotal,
             'recordsFiltered' => $recordsTotal,
         );
@@ -8762,10 +9323,10 @@ function high_risk_report_datatable() {
             }
         });
 
-        // If not all the results are requested, cutting a piece of it
-        if($length > 0) {
-            $risks = array_slice($risks, $start, $length);
-        }
+        // // If not all the results are requested, cutting a piece of it
+        // if($length > 0) {
+        //     $risks = array_slice($risks, $start, $length);
+        // }
     }
 
     // Assembling the response
@@ -8816,7 +9377,7 @@ function high_risk_report_datatable() {
                     break;
                 }
             } else if($column_name == "management_review") {
-                if( stripos($risk['management_review'], $val) === false ){
+                if( stripos(strip_tags($risk['management_review']), $val) === false ){
                     $success = false;
                     break;
                 }
@@ -8846,7 +9407,7 @@ function high_risk_report_datatable() {
         "draw" => $draw,
         "recordsTotal" => $rowCount,
         "recordsFiltered" => $rowCount,
-        "data" => $datas
+        "data" => $datas_by_page
     );
 
     // Return a JSON response
@@ -9017,6 +9578,7 @@ function update_project_order_api(){
         json_response(400, $escaper->escapeHtml($lang['NoPermissionForThisAction']), NULL);
     }
 }
+
 /****************************************
  * FUNCTION: GET RISK CATALOG DATATABLE *
  ****************************************/
@@ -9036,7 +9598,7 @@ function getRiskCatalogDatatableAPI()
                 $escaper->escapeHtml($risk['name']),
                 $escaper->escapeHtml($risk['description']),
                 $escaper->escapeHtml($risk['function_name']),
-                "<a href='javascript:void();' class='edit_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-pencil-square-o'></i></a>&nbsp;&nbsp;&nbsp;<a href='javascript:void();' class='delete_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-trash'></i></a>",
+                "<a href='javascript:void();' class='edit_risk_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-pencil-square-o'></i></a>&nbsp;&nbsp;&nbsp;<a href='javascript:void();' class='delete_risk_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-trash'></i></a>",
             );
         }
         $draw = $escaper->escapeHtml($_GET['draw']);
@@ -9054,6 +9616,44 @@ function getRiskCatalogDatatableAPI()
         unauthorized_access();
     }
 }
+
+/******************************************
+ * FUNCTION: GET THREAT CATALOG DATATABLE *
+ ******************************************/
+function getThreatCatalogDatatableAPI()
+{
+    global $lang, $escaper;
+
+    if (is_admin())
+    {
+        $threat_catalogs = get_threat_catalogs();
+        $rows = array();
+        foreach($threat_catalogs as $threat){
+            $rows[] = array(
+                "DT_RowId"=>$threat['id'],
+                $escaper->escapeHtml($threat['grouping_name']),
+                $escaper->escapeHtml($threat['number']),
+                $escaper->escapeHtml($threat['name']),
+                $escaper->escapeHtml($threat['description']),
+                "<a href='javascript:void();' class='edit_threat_catalog' data-id='".$threat['id']."' style='display:inline;'><i class='fa fa-pencil-square-o'></i></a>&nbsp;&nbsp;&nbsp;<a href='javascript:void();' class='delete_threat_catalog' data-id='".$threat['id']."' style='display:inline;'><i class='fa fa-trash'></i></a>",
+            );
+        }
+        $draw = $escaper->escapeHtml($_GET['draw']);
+        $result = array(
+            'draw' => $draw,
+            'data' => $rows,
+            'recordsTotal' => count($threat_catalogs),
+            'recordsFiltered' => count($threat_catalogs),
+        );
+        echo json_encode($result);
+        exit;
+    }
+    else
+    {
+        unauthorized_access();
+    }
+}
+
 /****************************************
  * FUNCTION: GET RISK CATALOG DETAIL    *
  ****************************************/
@@ -9076,6 +9676,30 @@ function getRiskCatalogAPI()
         unauthorized_access();
     }
 }
+
+/***************************************
+ * FUNCTION: GET THREAT CATALOG DETAIL *
+ ***************************************/
+function getThreatCatalogAPI()
+{
+    global $lang, $escaper;
+
+    if (is_admin())
+    {
+        if (isset($_GET['threat_id']))
+        {
+            $id = $_GET['threat_id'];
+            $result = get_threat_catalog($id);
+            // Display an alert
+            json_response(200, "Get threat catalog by ID", ["threat" => $result]);
+        }
+    }
+    else
+    {
+        unauthorized_access();
+    }
+}
+
 /****************************************
  * FUNCTION: UPDATE RISK CATALOG ORDER  *
  ****************************************/
@@ -9101,6 +9725,33 @@ function updateRiskCatalogOrderAPI()
         unauthorized_access();
     }
 }
+
+/******************************************
+ * FUNCTION: UPDATE THREAT CATALOG ORDER  *
+ ******************************************/
+function updateThreatCatalogOrderAPI()
+{
+    global $lang, $escaper;
+
+    if (is_admin())
+    {
+        if (isset($_POST['orders']))
+        {
+            $orders = $_POST['orders'];
+            update_threat_catalog_order($orders);
+            // Display an alert
+            set_alert(true, "good", "The order was updated successfully.");
+            json_response(200, get_alert(true), NULL);
+        }
+
+        return true;
+    }
+    else
+    {
+        unauthorized_access();
+    }
+}
+
 /******************************
  * FUNCTION: ADD RISK CATALOG *
  ******************************/
@@ -9123,7 +9774,7 @@ function addRiskCatalogAPI()
         } else {
             add_risk_catalog($data);
             // Display an alert
-            set_alert(true, "good", "A new risk catalog was added successfully.");
+            set_alert(true, "good", "A new risk catalog item was added successfully.");
         }
         json_response(200, get_alert(true), NULL);
         return true;
@@ -9133,6 +9784,39 @@ function addRiskCatalogAPI()
         unauthorized_access();
     }
 }
+
+/********************************
+ * FUNCTION: ADD THREAT CATALOG *
+ ********************************/
+function addThreatCatalogAPI()
+{
+    global $lang, $escaper;
+    if (is_admin())
+    {
+        $data = array(
+            "number" => isset($_POST['number']) ? $_POST['number'] : "",
+            "grouping" => isset($_POST['threat_grouping']) ? $_POST['threat_grouping'] : 0,
+            "name" => isset($_POST['name']) ? $_POST['name'] : "",
+            "description" => isset($_POST['description']) ? $_POST['description'] : "",
+        );
+        if (!$data["number"])
+        {
+            // Display an alert
+            set_alert(true, "bad", "The threat name cannot be empty.");
+        } else {
+            add_threat_catalog($data);
+            // Display an alert
+            set_alert(true, "good", "A new threat catalog item was added successfully.");
+        }
+        json_response(200, get_alert(true), NULL);
+        return true;
+    }
+    else
+    {
+        unauthorized_access();
+    }
+}
+
 /*********************************
  * FUNCTION: UPDATE RISK CATALOG *
  *********************************/
@@ -9156,7 +9840,7 @@ function updateRiskCatalogAPI()
         } else {
             update_risk_catalog($data);
             // Display an alert
-            set_alert(true, "good", "An existing risk catalog was updated successfully.");
+            set_alert(true, "good", "An existing risk catalog item was updated successfully.");
         }
         json_response(200, get_alert(true), NULL);
         return true;
@@ -9166,6 +9850,40 @@ function updateRiskCatalogAPI()
         unauthorized_access();
     }
 }
+
+/***********************************
+ * FUNCTION: UPDATE THREAT CATALOG *
+ ***********************************/
+function updateThreatCatalogAPI()
+{
+    global $lang, $escaper;
+    if (is_admin())
+    {
+        $data = array(
+            "id" => isset($_POST['id']) ? $_POST['id'] : "",
+            "number" => isset($_POST['number']) ? $_POST['number'] : "",
+            "grouping" => isset($_POST['threat_grouping']) ? $_POST['threat_grouping'] : 0,
+            "name" => isset($_POST['name']) ? $_POST['name'] : "",
+            "description" => isset($_POST['description']) ? $_POST['description'] : "",
+        );
+        if (!$data["id"])
+        {
+            // Display an alert
+            set_alert(true, "bad", "The data ID was not a valid value.  Please try again.");
+        } else {
+            update_threat_catalog($data);
+            // Display an alert
+            set_alert(true, "good", "An existing threat catalog item was updated successfully.");
+        }
+        json_response(200, get_alert(true), NULL);
+        return true;
+    }
+    else
+    {
+        unauthorized_access();
+    }
+}
+
 /*********************************
  * FUNCTION: DELETE RISK CATALOG *
  *********************************/
@@ -9182,7 +9900,7 @@ function deleteRiskCatalogAPI()
         } else {
             delete_risk_catalog($id);
             // Display an alert
-            set_alert(true, "good", "An existing risk catalog was deleted successfully.");
+            set_alert(true, "good", "An existing risk catalog item was deleted successfully.");
         }
         json_response(200, get_alert(true), NULL);
         return true;
@@ -9193,6 +9911,35 @@ function deleteRiskCatalogAPI()
     }
 
 }
+
+/***********************************
+ * FUNCTION: DELETE THREAT CATALOG *
+ ***********************************/
+function deleteThreatCatalogAPI()
+{
+    global $lang, $escaper;
+    if (is_admin())
+    {
+        $id = isset($_POST['id']) ? $_POST['id'] : "";
+        if (!$id)
+        {
+            // Display an alert
+            set_alert(true, "bad", "The data ID was not a valid value.  Please try again.");
+        } else {
+            delete_threat_catalog($id);
+            // Display an alert
+            set_alert(true, "good", "An existing risk catalog item was deleted successfully.");
+        }
+        json_response(200, get_alert(true), NULL);
+        return true;
+    }
+    else
+    {
+        unauthorized_access();
+    }
+
+}
+
 /**********************************************
  * FUNCTION: SAVE CUSTOM DISPLAY SETTINGS API *
  *********************************************/
@@ -9294,7 +10041,7 @@ function getFilesWithEncodingIssuesDatatableResponse() {
         $offset = (int)$_GET['start'];
         $page_size = (int)$_GET['length'];
         
-        $type = isset($_GET['type']) && in_array($_GET['type'], ['risk', 'compliance', 'incident_management']) ? $_GET['type'] : 'risk';
+        $type = isset($_GET['type']) && in_array($_GET['type'], ['risk', 'compliance', 'questionnaire']) ? $_GET['type'] : 'risk';
 
         list($recordsTotal, $fileList) = get_files_with_encoding_issues($type, $order_column, $order_dir, $offset, $page_size);
         
@@ -9324,7 +10071,13 @@ function getFilesWithEncodingIssuesDatatableResponse() {
                     
                     
                     $row['ref_type'] = $escaper->escapeHtml($lang['ref_type_' . $file['ref_type']]);
-                    break;
+                break;
+                case 'questionnaire':
+
+                    $row['name'] = "<a target='_blank' href='../assessments/questionnaire_results.php?action=full_view&token=" . $escaper->escapeHtml($file['token']) . "'>" . $escaper->escapeHtml($file['name']) . "</a>";
+
+                    $row['type'] = $escaper->escapeHtml($lang[$file['type']]);
+                break;
             }
 
             $uploader = "
@@ -9359,24 +10112,32 @@ function getFilesWithEncodingIssuesDatatableResponse() {
 }
 
 function uploadFileToFixFileEncodingIssue() {
-    
+
     // If the user is an administrator and the upload is EXACTLY one file
     if (is_admin() && !empty($_FILES) && count($_FILES) === 1) {
-        
+
         global $lang, $escaper;
-        
-        $type = isset($_POST['type']) && in_array($_POST['type'], ['risk', 'compliance', 'incident_management']) ? $_POST['type'] : false;
-        
+
+        $type = isset($_POST['type']) && in_array($_POST['type'], ['risk', 'compliance', 'questionnaire']) ? $_POST['type'] : false;
+
         if (!$type) {
             set_alert(true, "bad", $lang['YouNeedToSpecifyATypeParameter']);
             json_response(400, get_alert(true), NULL);
         }
-        
-        
+
+        // If the user wants to upload a `questionnaire` type file, check if the assessment extra file exists
+        if ($type === 'questionnaire' && file_exists(realpath(__DIR__ . '/../extras/assessments/index.php'))) {
+            // Include the file
+            require_once(realpath(__DIR__ . '/../extras/assessments/index.php'));
+        } else {
+            set_alert(true, "bad", $lang['NoPermissionForAssessments']);
+            json_response(400, get_alert(true), NULL);
+        }
+
         $unique_name = $_POST['unique_name'];
 
         $file_info = get_encoding_issue_file_info($type, $unique_name);
-        
+
         if (!$file_info) {
             set_alert(true, "bad", $lang['InvalidUniqueName']);
             json_response(400, get_alert(true), NULL);
@@ -9411,45 +10172,66 @@ function uploadFileToFixFileEncodingIssue() {
                         return;
                     }
                 } elseif ($file_info['ref_type'] === 'exceptions') {
-                    
+
                     list($status, $file_ids, $errors) = upload_compliance_files($file_info['ref_id'], "exceptions", $files);
-                    
+
                     if (!$status) {
                         json_response(400, $escaper->escapeHtml($errors[0]), NULL);
                         return;
                     } else {
 
                         $db = db_open();
-                        
+
                         $stmt = $db->prepare("UPDATE `document_exceptions` SET file_id=:file_id WHERE value=:id");
                         $stmt->bindParam(":file_id", $file_ids[0], PDO::PARAM_INT);
                         $stmt->bindParam(":id", $file_info['ref_id'], PDO::PARAM_INT);
                         $stmt->execute();
-                        
+
                         db_close($db);
-                        
+
                         delete_compliance_file($file_info['id']);
                     }
                 } elseif ($file_info['ref_type'] === 'documents') {
 
                     list($status, $file_ids, $errors) = upload_compliance_files($file_info['ref_id'], "documents", $files, $file_info['version']);
-                    
+
                     if (!$status) {
                         json_response(400, $escaper->escapeHtml($errors[0]), NULL);
                         return;
                     } else {
                         // Open the database connection
                         $db = db_open();
-                        
+
                         $stmt = $db->prepare("UPDATE `documents` SET file_id=:file_id WHERE id=:id");
                         $stmt->bindParam(":file_id", $file_ids[0], PDO::PARAM_INT);
                         $stmt->bindParam(":id", $file_info['ref_id'], PDO::PARAM_INT);
                         $stmt->execute();
-                        
+
                         db_close($db);
-                        
+
                         delete_compliance_file($file_info['id']);
                     }
+                }
+            break;
+            case 'questionnaire':
+                $files = array(
+                    'name' => [$_FILES['file']['name']],
+                    'type' => [$_FILES['file']['type']],
+                    'tmp_name' => [$_FILES['file']['tmp_name']],
+                    'size' => [$_FILES['file']['size']],
+                    'error' => [$_FILES['file']['error']]
+                );
+
+                // It's ok to use the same logic for files attached to the answer or the questionnaire as in case of the file attached to the questionnaire
+                // the files `template_id`, `question_id` and `parent_question_id` will be 0 anyway(this is the default what's used whe those parameters aren't present)
+                $result = upload_questionnaire_files($file_info['tracking_id'], $files, $file_info['template_id'], $file_info['question_id'], $file_info['parent_question_id']);
+
+                // Check if there was an error
+                if($result !== true && is_array($result)){
+                    json_response(400, $escaper->escapeHtml($result[0]), NULL);
+                    return;
+                } else { // Delete the original file if everything went well with the upload
+                    delete_assessment_file($file_info['id']);
                 }
             break;
         }
@@ -9584,7 +10366,6 @@ function my_open_risk_datatable() {
     }
 
     $stmt = $db->prepare($sql);
-    //echo $sql;
 
     $stmt->bindParam(":uid", $_SESSION['uid'], PDO::PARAM_INT);
     foreach($bind_params as $name => $bind_param){
@@ -9726,7 +10507,7 @@ function my_open_risk_datatable() {
         "draw" => $draw,
         "recordsTotal" => $rowCount,
         "recordsFiltered" => $rowCount,
-        "data" => $datas
+        "data" => $datas_by_page
     );
 
     // Return a JSON response
@@ -9953,7 +10734,7 @@ function recent_commented_risk_datatable() {
                     break;
                 }
             } else if($column_name == "comment_date") {
-                if( stripos($submission_date, $val) === false ){
+                if( stripos($comment_date, $val) === false ){
                     $success = false;
                     break;
                 }
@@ -9983,7 +10764,7 @@ function recent_commented_risk_datatable() {
         "draw" => $draw,
         "recordsTotal" => $rowCount,
         "recordsFiltered" => $rowCount,
-        "data" => $datas
+        "data" => $datas_by_page
     );
 
     // Return a JSON response
@@ -9992,5 +10773,68 @@ function recent_commented_risk_datatable() {
 /***************************************************************************************
  * END OF SECTION CONTAINING FUNCTIONS DEDICATED TO FIXING FILE UPLOAD ENCODING ISSUES *
  ***************************************************************************************/
+
+/*******************************************
+ * FUNCTION: CONTROL GAP ANALYSIS RESPONSE *
+ *******************************************/
+function controlGapAnalysisResponse()
+{
+    global $lang, $escaper;
+
+    // If the user has governance permissions
+    if (check_permission_governance())
+    {
+	$framework_id = $escaper->escapeHtml($_GET['framework_id']);
+	$maturity = $escaper->escapeHtml($_GET['maturity']);
+        $draw = $escaper->escapeHtml($_GET['draw']);
+
+        $orderColumn = isset($_GET['order'][0]['column']) ? $_GET['order'][0]['column'] : "";
+        $orderColumnName = isset($_GET['columns'][$orderColumn]['name']) ? $_GET['columns'][$orderColumn]['name'] : null;;
+        $orderDir = strtolower($_GET['order'][0]['dir']) == "asc" ? "asc" : "desc";
+
+	// Get controls with gaps
+	$control_gaps = get_control_gaps($framework_id, $maturity, $orderColumnName, $orderDir);
+        $recordsTotal = count($control_gaps);
+        $data = array();
+
+        foreach ($control_gaps as $key=>$control_gap)
+        {
+            // If it is not requested to view all
+            if($_GET['length'] != -1){
+                if($key < $_GET['start']){
+                    continue;
+                }
+                if($key >= ($_GET['start'] + $_GET['length'])){
+                    break;
+                }
+            }
+
+            $data[] = [
+                $escaper->escapeHtml($control_gap['control_number']),
+		$escaper->escapeHtml($control_gap['short_name']),
+		$escaper->escapeHtml($control_gap['control_phase_name']),
+		$escaper->escapeHtml($control_gap['family_short_name']),
+		$escaper->escapeHtml($control_gap['control_maturity_name']),
+		$escaper->escapeHtml($control_gap['desired_maturity_name']),
+            ];
+        }
+    }
+    else
+    {
+        $draw = $escaper->escapeHtml($_GET['draw']);
+        $data = [];
+        $recordsTotal = 0;
+        $recordsTotal = 0;
+    }
+
+    $result = array(
+        'draw' => $draw,
+        'data' => $data,
+        'recordsTotal' => $recordsTotal,
+        'recordsFiltered' => $recordsTotal,
+    );
+    echo json_encode($result);
+    exit;
+}
 
 ?>

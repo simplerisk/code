@@ -302,7 +302,6 @@ require_once(language_file());
                             <ul>
 <?php
    $permission_groups = get_grouped_permissions($user_id);
-   error_log("permission_groups: " . json_encode($permission_groups));
    foreach ($permission_groups as $permission_group_name => $permission_group) {
        $permission_group_id = $escaper->escapeHtml("pg-" . $permission_group[0]['permission_group_id']);
        $permission_group_name = $escaper->escapeHtml($permission_group_name);
@@ -319,14 +318,14 @@ require_once(language_file());
            $permission_name = $escaper->escapeHtml($permission['permission_name']);
            $permission_description = $escaper->escapeHtml($permission['permission_description']);
            $selected = $permission['selected'];
-?>       
+?>
                                         <li>
                                             <input class="hidden-checkbox permission" type="checkbox" name="permissions[]" id="<?php echo $permission_key;?>" value="<?php echo $permission_id;?>" <?php if ($selected) echo "checked='checked'";?>>
                                             <label for="<?php echo $permission_key;?>" title="<?php echo $permission_description;?>"><?php echo $permission_name;?></label>
                                         </li>
 <?php
        }
-?>  
+?>
                                 	</ul>
                                 </li>
 <?php

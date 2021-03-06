@@ -44,6 +44,9 @@ $status = isset($_GET["status"])?$_GET["status"]:0;
 $group = isset($_GET["group"])?$_GET["group"]:"";
 $sort = isset($_GET["sort"])?$_GET["sort"]:0;
 $group_value = isset($_GET["group_value"])?$_GET["group_value"]:"";
+$order_column = isset($_GET["order_column"])?$_GET["order_column"]:null;
+$order_dir = isset($_GET["order_dir"])?$_GET["order_dir"]:"asc";
+$column_filters = isset($_GET["column_filters"])?$_GET["column_filters"]:[];
 
 // Once it has been activated
 if (import_export_extra()){
@@ -80,7 +83,7 @@ if (import_export_extra()){
         <div class="row-fluid top-offset-15">
             <div class="span12">
                 <div id="risk-table-container">
-                    <?php get_risks_by_group($status, $group, $sort, $group_value, $custom_display_settings); ?>
+                    <?php get_risks_by_group($status, $group, $sort, $group_value, $custom_display_settings, $column_filters, $order_column, $order_dir); ?>
                 </div>
             </div>
         </div>

@@ -792,6 +792,12 @@ if (isset($_POST['delete_controls']))
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlNumber']); ?></label>
                     <input type="text" name="control_number" value="" class="form-control" maxlength="100">
 
+                    <label for=""><?php echo $escaper->escapeHtml($lang['CurrentControlMaturity']); ?></label>
+                    <?php create_dropdown("control_maturity", NULL, "control_current_maturity", false, false, false); ?>
+
+                    <label for=""><?php echo $escaper->escapeHtml($lang['DesiredControlMaturity']); ?></label>
+                    <?php create_dropdown("control_maturity", NULL, "control_desired_maturity", false, false, false); ?>
+
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlPriority']); ?></label>
                     <?php create_dropdown("control_priority", NULL, "control_priority", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
 
@@ -862,6 +868,12 @@ if (isset($_POST['delete_controls']))
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlNumber']); ?></label>
                     <input type="text" name="control_number" value="" class="form-control" maxlength="100">
+
+                    <label for=""><?php echo $escaper->escapeHtml($lang['CurrentControlMaturity']); ?></label>
+                    <?php create_dropdown("control_maturity", NULL, "control_current_maturity", false, false, false); ?>
+
+                    <label for=""><?php echo $escaper->escapeHtml($lang['DesiredControlMaturity']); ?></label>
+                    <?php create_dropdown("control_maturity", NULL, "control_desired_maturity", false, false, false); ?>
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlPriority']); ?></label>
                     <?php create_dropdown("control_priority", NULL, "control_priority", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>

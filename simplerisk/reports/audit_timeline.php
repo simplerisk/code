@@ -25,7 +25,7 @@ include_csrf_magic();
 // Include the SimpleRisk language file
 require_once(language_file());
 
-// If User has no access permission for complicance menu, enforce to main page.
+// If User has no access permission for compliance menu, enforce to main page.
 if(empty($_SESSION['compliance']))
 {
     header("Location: ../index.php");

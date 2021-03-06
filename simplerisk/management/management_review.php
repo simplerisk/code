@@ -108,7 +108,9 @@ if (isset($_GET['mitigated']))
     // Get any alert messages
     get_alert();
     ?>
-    
+    <style>
+        .dataTables_filter, .dataTables_info { display: none; }
+    </style>    
     <div class="tabs new-tabs">
         <div class="container-fluid">
             <div class="row-fluid">

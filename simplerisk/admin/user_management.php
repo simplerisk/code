@@ -49,7 +49,7 @@ if (isset($_POST['add_user']))
     $type = $_POST['type'];
     $name = $_POST['name'];
     $email = $_POST['email'];
-    $team = $_POST['new_user'];
+    $user = $_POST['new_user'];
     $pass = $_POST['password'];
     $manager = (int)$_POST['manager'];
 
@@ -104,10 +104,10 @@ if (isset($_POST['add_user']))
     if ($error_code == 1)
     {
         // Verify that the user does not exist
-        if (!user_exist($team))
+        if (!user_exist($user))
         {
             // Verify that it is a valid username format
-            if (valid_username($team))
+            if (valid_username($user))
             {
                 // Create a unique salt for the user
                 $salt = generate_token(20);
@@ -119,7 +119,7 @@ if (isset($_POST['add_user']))
                 $hash = generateHash($salt_hash, $pass);
 
                 // Insert a new user
-                add_user($type, $team, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions);
+                add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions);
 
 		// If the encryption extra is enabled
                 if (encryption_extra())
@@ -131,14 +131,14 @@ if (isset($_POST['add_user']))
                     if (isset($_SESSION['encryption_method']) && $_SESSION['encryption_method'] == "mcrypt")
                     {
                         // Add the new encrypted user
-                        add_user_enc($pass, $salt, $team);
+                        add_user_enc($pass, $salt, $user);
                     }
                 }
 
                 // Clear values
                 $name = "";
                 $email = "";
-                $team = "";
+                $user = "";
                 $change_password = 0;
 
                 // Display an alert
@@ -241,6 +241,9 @@ if (isset($_POST['delete_user']))
             }
         }
 
+        // Killing its active sessions
+        kill_sessions_of_user($value);
+        
         // Display an alert
         set_alert(true, "good", "The existing user was deleted successfully.");
     }
@@ -764,7 +767,7 @@ if (isset($_POST['password_policy_update']))
                                 </tr>
                                 <tr><td><?php echo $escaper->escapeHtml($lang['FullName']); ?>:&nbsp;</td><td><input name="name" type="text" maxlength="50" size="20" value="<?php echo isset($name) ? $escaper->escapeHtml($name) : "" ?>" /></td></tr>
                                 <tr><td><?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>:&nbsp;</td><td><input name="email" type="text" maxlength="200" value="<?php echo isset($email) ? $escaper->escapeHtml($email) : "" ?>" size="20" /></td></tr>
-                                <tr><td><?php echo $escaper->escapeHtml($lang['Username']); ?>:&nbsp;</td><td><input name="new_user" type="text" maxlength="200" value="<?php echo isset($team) ? $escaper->escapeHtml($team) : "" ?>" size="20" /></td></tr>
+                                <tr><td><?php echo $escaper->escapeHtml($lang['Username']); ?>:&nbsp;</td><td><input name="new_user" type="text" maxlength="200" value="<?php echo isset($user) ? $escaper->escapeHtml($user) : "" ?>" size="20" /></td></tr>
                                 <tr class="ldap_pass"><td><?php echo $escaper->escapeHtml($lang['Password']); ?>:&nbsp;</td><td><input name="password" type="password" maxlength="50" size="20" autocomplete="off" /></td></tr>
                                 <tr class="ldap_pass"><td><?php echo $escaper->escapeHtml($lang['RepeatPassword']); ?>:&nbsp;</td><td><input name="repeat_password" type="password" maxlength="50" size="20" autocomplete="off" /></td></tr>
                             </table>

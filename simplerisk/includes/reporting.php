@@ -2414,7 +2414,7 @@ function get_group_query_for_dynamic_risk($group, &$group_value_from_db, $rename
 /********************************
  * FUNCTION: GET RISKS BY TABLE *
  ********************************/
-function get_risks_by_table($status, $sort, $group, $column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_additional_stakeholders=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_residual_risk=true, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_planning_date=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_team=false, $column_mitigation_accepted=false, $column_mitigation_date=false, $column_mitigation_controls=false, $column_risk_assessment=false, $column_additional_notes=false, $column_current_solution=false, $column_security_recommendations=false, $column_security_requirements=false, $column_risk_tags=false, $column_closure_date=false, $column_comments=false)
+function get_risks_by_table($status, $sort, $group, $column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_additional_stakeholders=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_residual_risk=true, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_planning_date=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_percent=false, $column_mitigation_team=false, $column_mitigation_accepted=false, $column_mitigation_date=false, $column_mitigation_controls=false, $column_risk_assessment=false, $column_additional_notes=false, $column_current_solution=false, $column_security_recommendations=false, $column_security_requirements=false, $column_risk_tags=false, $column_closure_date=false, $column_comments=false)
 {
     global $lang;
     global $escaper;
@@ -2465,12 +2465,12 @@ function get_risks_by_table($status, $sort, $group, $column_id=true, $column_sta
         echo "<tr class='main'>\n";
 
         // Header columns go here
-        get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date,$column_comments);
+        get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_percent, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date,$column_comments);
 
         echo "</tr>\n";
         echo "<tr class='filter'>\n";
         // Header columns go here
-        get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date,$column_comments);
+        get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_percent, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date,$column_comments);
         echo "</tr>\n";
         echo "</thead>\n";
         echo "<tbody>\n";
@@ -2613,12 +2613,12 @@ function get_risks_by_table($status, $sort, $group, $column_id=true, $column_sta
                         echo "<tr class='main'>\n";
 
                         // Header columns go here
-                        get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date,$column_comments);
+                        get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_percent, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date,$column_comments);
 
                         echo "</tr>\n";
                         echo "<tr class='filter'>\n";
                         // Header columns go here
-                        get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date,$column_comments);
+                        get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_percent, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date,$column_comments);
                         echo "</tr>\n";
                         echo "</thead>\n";
                         echo "<tbody>\n";
@@ -2639,7 +2639,7 @@ function get_risks_by_table($status, $sort, $group, $column_id=true, $column_sta
 /********************************
  * FUNCTION: GET RISKS BY GROUP *
  ********************************/
-function get_risks_by_group($status, $group, $sort, $group_value, $display_columns)
+function get_risks_by_group($status, $group, $sort, $group_value, $display_columns, $column_filters=[], $order_column=null, $order_dir="asc")
 {
     global $lang, $escaper;
     $rowCount = 0;
@@ -2670,7 +2670,7 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
             }
         }
     }
-    $risks = risks_query($status, $sort, $group, [], $rowCount, 0, -1, $group_value, "", [], null, "asc");
+    $risks = risks_query($status, $sort, $group, $column_filters, $rowCount, 0, -1, $group_value, "", [], $order_column, $order_dir);
     if ($group_value == "")
     {
         // Current group is Unassigned
@@ -2762,6 +2762,7 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
         if(in_array("mitigation_effort", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_effort']);
         if(in_array("mitigation_cost", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_cost']);
         if(in_array("mitigation_owner", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_owner']);
+        if(in_array("mitigation_percent", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_percent']);
         if(in_array("mitigation_team", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_team']);
         if(in_array("mitigation_accepted", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_accepted']);
         if(in_array("mitigation_date", $display_columns)) $data_row[] = $escaper->escapeHtml($row['mitigation_date']);
@@ -2848,6 +2849,7 @@ function get_print_header_columns($columns)
     if(in_array("mitigation_effort",$columns)) $str .= "<th class=\"mitigation_effort\" data-name='mitigation_effort' align=\"left\" >". $escaper->escapeHtml($lang['MitigationEffort']) ."</th>\n";
     if(in_array("mitigation_cost",$columns)) $str .= "<th class=\"mitigation_cost\" data-name='mitigation_cost' align=\"left\" >". $escaper->escapeHtml($lang['MitigationCost']) ."</th>\n";
     if(in_array("mitigation_owner",$columns)) $str .= "<th class=\"mitigation_owner\" data-name='mitigation_owner' align=\"left\" >". $escaper->escapeHtml($lang['MitigationOwner']) ."</th>\n";
+    if(in_array("mitigation_percent",$columns)) $str .= "<th class=\"mitigation_percent\" data-name='mitigation_percent' align=\"left\" >". $escaper->escapeHtml($lang['MitigationPercent']) ."</th>\n";
     if(in_array("mitigation_team",$columns)) $str .= "<th class=\"mitigation_team\" data-name='mitigation_team' align=\"left\" >". $escaper->escapeHtml($lang['MitigationTeam']) ."</th>\n";
     if(in_array("mitigation_accepted",$columns)) $str .= "<th class=\"mitigation_accepted\" data-name='mitigation_accepted' align=\"left\" >". $escaper->escapeHtml($lang['MitigationAccepted']) ."</th>\n";
     if(in_array("mitigation_date",$columns)) $str .= "<th class=\"mitigation_date\" data-name='mitigation_date' align=\"left\" >". $escaper->escapeHtml($lang['MitigationDate']) ."</th>\n";
@@ -2880,7 +2882,7 @@ function get_print_header_columns($columns)
 /********************************
  * FUNCTION: GET HEADER COLUMNS *
  ********************************/
-function get_header_columns($hide, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_columns=[])
+function get_header_columns($hide, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_columns=[])
 {
     global $lang;
     global $escaper;
@@ -2928,6 +2930,7 @@ function get_header_columns($hide, $id, $risk_status, $subject, $reference_id, $
     echo "<th class=\"mitigation_effort\" data-name='mitigation_effort' " . ($mitigation_effort == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >". $escaper->escapeHtml($lang['MitigationEffort']) ."</th>\n";
     echo "<th class=\"mitigation_cost\" data-name='mitigation_cost' " . ($mitigation_cost== true ? "" : "style=\"{$display}\" ") . "align=\"left\" >". $escaper->escapeHtml($lang['MitigationCost']) ."</th>\n";
     echo "<th class=\"mitigation_owner\" data-name='mitigation_owner' " . ($mitigation_owner== true ? "" : "style=\"{$display}\" ") . "align=\"left\" >". $escaper->escapeHtml($lang['MitigationOwner']) ."</th>\n";
+    echo "<th class=\"mitigation_percent\" data-name='mitigation_percent' " . ($mitigation_percent== true ? "" : "style=\"{$display}\" ") . "align=\"left\" >". $escaper->escapeHtml($lang['MitigationPercent']) ."</th>\n";
     echo "<th class=\"mitigation_team\" data-name='mitigation_team' " . ($mitigation_team == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >". $escaper->escapeHtml($lang['MitigationTeam']) ."</th>\n";
     echo "<th class=\"mitigation_accepted\" data-name='mitigation_accepted' " . ($mitigation_accepted == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >". $escaper->escapeHtml($lang['MitigationAccepted']) ."</th>\n";
     echo "<th class=\"mitigation_date\" data-name='mitigation_date' " . ($mitigation_date == true ? "" : "style=\"{$display}\" ") . "align=\"left\" >". $escaper->escapeHtml($lang['MitigationDate']) ."</th>\n";
@@ -2958,7 +2961,7 @@ function get_header_columns($hide, $id, $risk_status, $subject, $reference_id, $
 /**********************************
  * FUNCTION: TABLE OF RISK BY TEAM *
  *********************************/
-function risk_table_open_by_team($column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_additional_stakeholders=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_residual_risk=false, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_planning_date=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_team=false, $column_mitigation_accepted=false, $column_mitigation_date=false, $column_mitigation_controls=false, $column_risk_assessment=false, $column_additional_notes=false, $column_current_solution=false, $column_security_recommendations=false, $column_security_requirements=false, $column_risk_tags=false, $column_closure_date=false,$comments=false, $column_custom_values=[]){
+function risk_table_open_by_team($column_id=true, $column_status=false, $column_subject=true, $column_reference_id=false, $column_regulation=false, $column_control_number=false, $column_location=false, $column_source=false, $column_category=false, $column_team=false, $column_additional_stakeholders=false, $column_technology=false, $column_owner=false, $column_manager=false, $column_submitted_by=false, $column_scoring_method=false, $column_calculated_risk=true, $column_residual_risk=false, $column_submission_date=true, $column_review_date=false, $column_project=false, $column_mitigation_planned=true, $column_management_review=true, $column_days_open=false, $column_next_review_date=false, $column_next_step=false, $column_affected_assets=false, $column_planning_strategy=false, $column_planning_date=false, $column_mitigation_effort=false, $column_mitigation_cost=false, $column_mitigation_owner=false, $column_mitigation_percent=false, $column_mitigation_team=false, $column_mitigation_accepted=false, $column_mitigation_date=false, $column_mitigation_controls=false, $column_risk_assessment=false, $column_additional_notes=false, $column_current_solution=false, $column_security_recommendations=false, $column_security_requirements=false, $column_risk_tags=false, $column_closure_date=false,$comments=false, $column_custom_values=[]){
 
     global $lang;
     global $escaper;
@@ -2969,12 +2972,12 @@ function risk_table_open_by_team($column_id=true, $column_status=false, $column_
     echo "<tr class='main'>\n";
 
     // Header columns go here
-    get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date, $comments);
+    get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_percent, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date, $comments);
 
     echo "</tr>\n";
     echo "<tr class='filter'>\n";
     // Header columns go here
-    get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date,$comments);
+    get_header_columns(false, $column_id, $column_status, $column_subject, $column_reference_id, $column_regulation, $column_control_number, $column_location, $column_source, $column_category, $column_team, $column_additional_stakeholders, $column_technology, $column_owner, $column_manager, $column_submitted_by, $column_scoring_method, $column_calculated_risk, $column_residual_risk, $column_submission_date, $column_review_date, $column_project, $column_mitigation_planned, $column_management_review, $column_days_open, $column_next_review_date, $column_next_step, $column_affected_assets, $column_planning_strategy, $column_planning_date, $column_mitigation_effort, $column_mitigation_cost, $column_mitigation_owner, $column_mitigation_percent, $column_mitigation_team, $column_mitigation_accepted, $column_mitigation_date, $column_mitigation_controls, $column_risk_assessment, $column_additional_notes, $column_current_solution, $column_security_recommendations, $column_security_requirements, $column_risk_tags, $column_closure_date,$comments);
     echo "</tr>\n";
     echo "</thead>\n";
     echo "<tbody>\n";
@@ -3089,8 +3092,7 @@ function risks_by_month_table()
         else if ($total[$i] < 0)
         {
             // Display it in green
-            $total_string = "<font color=\"green\">" . $total[$i] . "</font>
-";
+            $total_string = "<font color=\"green\">" . $total[$i] . "</font>";
         }
         // Otherwise the total is 0
         else $total_string = $total[$i];
@@ -3489,7 +3491,7 @@ function risks_unique_column_query_select()
 /*************************************
  * FUNCTION: RETURN REISKS QUERY SQL *
  *************************************/
-function risks_query_from($column_filters=[], $risks_by_team=0)
+function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName=null)
 {
     global $lang;
     
@@ -3543,6 +3545,7 @@ function risks_query_from($column_filters=[], $risks_by_team=0)
     // If customization extra is enabled, set join tables for custom filters
     if(customization_extra())
     {
+        $join_custom_table = false;
         foreach($column_filters as $key => $column_filter)
         {
             if($column_filter && stripos($key, "custom_field_") !== false)
@@ -3552,9 +3555,21 @@ function risks_query_from($column_filters=[], $risks_by_team=0)
                 if($custom_field_id)
                 {
                     $table_alias = "custom_field_".$custom_field_id;
-                    
+
                     $query .= " LEFT JOIN custom_risk_data {$table_alias} ON a.id={$table_alias}.risk_id AND {$table_alias}.field_id={$custom_field_id} AND ( {$table_alias}.review_id=0 OR {$table_alias}.review_id=a.mgmt_review ) ";
+
+                    if($table_alias == $orderColumnName) $join_custom_table = true;
                 }
+            }
+        }
+        if(!$join_custom_table && stripos($orderColumnName, "custom_field_") !== false){
+            $custom_field_id = (int)str_replace("custom_field_", "", $orderColumnName);
+            if($custom_field_id)
+            {
+                $table_alias = "custom_field_".$custom_field_id;
+
+                $query .= " LEFT JOIN custom_risk_data {$table_alias} ON a.id={$table_alias}.risk_id AND {$table_alias}.field_id={$custom_field_id} AND ( {$table_alias}.review_id=0 OR {$table_alias}.review_id=a.mgmt_review ) ";
+
             }
         }
     }
@@ -3657,6 +3672,8 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
     }
 
     $orderDir = (strtolower($orderDir) == "asc") ? "ASC" : "DESC";
+    $sort_name = "none";
+
 
     switch ($orderColumnName)
     {
@@ -3742,13 +3759,16 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
             $sort_name = " planning_strategy {$orderDir} ";
             break;
         case "mitigation_effort":
-            $sort_name = " mitigation_effort {$orderDir} ";
+            $sort_name = " r.value {$orderDir} ";
             break;
         case "mitigation_cost":
             $sort_name = " mitigation_min_cost {$orderDir} ";
             break;
         case "mitigation_owner":
             $sort_name = " mitigation_owner {$orderDir} ";
+            break;
+        case "mitigation_percent":
+            $sort_name = " mitigation_percent {$orderDir} ";
             break;
         case "mitigation_team":
             $sort_name = " mitigation_team {$orderDir} ";
@@ -3771,8 +3791,18 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
         case "additional_stakeholders":
             $sort_name = " additional_stakeholders {$orderDir} ";
             break;
+        case "comments":
+            if (!encryption_extra())
+            {
+                $sort_name = " l.comments {$orderDir} ";
+            }
+            break;
         default:
-            $sort_name = "none";
+            if(stripos($orderColumnName, "custom_field_") !== false){
+                $sort_name = " {$orderColumnName}.value {$orderDir} ";
+            } else {
+                $sort_name = "none";
+            }
             break;
     }
     
@@ -3816,7 +3846,7 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
     
     $having_query .= " AND ".get_group_query_for_dynamic_risk($group, $group_value_from_db, "");
 
-    $query .= " FROM ".risks_query_from($column_filters, $risks_by_team)
+    $query .= " FROM ".risks_query_from($column_filters, $risks_by_team, $orderColumnName)
         ." WHERE 1 "
         .$filter_query 
         .$status_query
@@ -3852,7 +3882,7 @@ function get_query_type($need_total_count)
 /******************************************
  * FUNCTION: GET DATA FOR ONLY DYNAMIC RISK
  ******************************************/
-function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $column_filters=[], &$rowCount, $start=0, $length=10, $group_value_from_db="", $custom_query="", $bind_params=array(), $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
+function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $column_filters=[], &$rowCount, $start=0, $length=10, $group_value_from_db="", $custom_query="", $bind_params=[], $orderColumnName=null, $orderDir="asc", $risks_by_team=0, $teams=[], $owners=[], $ownersmanagers=[])
 {
     global $lang;
     
@@ -4009,6 +4039,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     case "current_solution":
                     case "security_requirements":
                     case "security_recommendations":
+                    case "mitigation_percent":
                         $wheres[] = " p.{$name} like :".$bind_param_name;
                         $bind_params[$bind_param_name] = "%{$column_filter}%";
                     break;
@@ -4115,6 +4146,10 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                         $operator = get_operator_from_value($column_filters[$name."_operator"]);
                         $havings[] = " {$name} {$operator} :{$bind_param_name} ";
                         $bind_params[$bind_param_name] = $column_filter;
+                    break;
+                    case "comments":
+                        $wheres[] = " l.comments like :{$bind_param_name} ";
+                        $bind_params[$bind_param_name] = "%{$column_filter}%";
                     break;
                     default:
 //                        $wheres[]
@@ -4563,6 +4598,7 @@ function risks_query($status, $sort, $group, $column_filters, &$rowCount, $start
         $mitigation_min_cost = $risk['mitigation_min_cost'];
         $mitigation_max_cost = $risk['mitigation_max_cost'];
         $mitigation_owner = $risk['mitigation_owner'];
+        $mitigation_percent = $risk['mitigation_percent']?$risk['mitigation_percent']."%":"";
         $mitigation_team = $risk['mitigation_team'];
         $mitigation_accepted = $risk['mitigation_accepted'] ? $escaper->escapeHtml($lang['Yes']) : $escaper->escapeHtml($lang['No']);
         $mitigation_date = format_date($risk['mitigation_date']);
@@ -4596,7 +4632,7 @@ function risks_query($status, $sort, $group, $column_filters, &$rowCount, $start
         else $group_value = $group_name;
 
         // Create the new data array
-        $data[] = array("id" => $risk_id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "control_number" => $control_number, "submission_date" => $submission_date, "last_update" => $last_update, "review_date" => $review_date, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "residual_risk" => $residual_risk, "color" => $color, "residual_color" => $residual_color, "risk_level" => $risk_level, "residual_risk_level" => $residual_risk_level, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "additional_stakeholders" => $additional_stakeholders, "technology" => $technology, "owner" => $owner, "manager" => $manager, "submitted_by" => $submitted_by, "regulation" => $regulation, "project" => $project, "mgmt_review" => $mgmt_review, "days_open" => $days_open, "next_review_date" => $next_review_date, "next_review_date_html" => $next_review_date_html, "next_step" => $next_step, "affected_assets" => $affected_assets, "risk_assessment" => $risk_assessment, "additional_notes" => $additional_notes, "current_solution" => $current_solution, "security_recommendations" => $security_recommendations, "security_requirements" => $security_requirements, "month_submitted" => $month_submitted, "planning_strategy" => $planning_strategy, "mitigation_id" => $mitigation_id, "planning_date" => $planning_date, "mitigation_effort" => $mitigation_effort, "mitigation_min_cost" => $mitigation_min_cost, "mitigation_max_cost" => $mitigation_max_cost, "mitigation_cost" => $mitigation_cost, "mitigation_owner" => $mitigation_owner, "mitigation_team" => $mitigation_team, "mitigation_accepted" => $mitigation_accepted, "mitigation_date" => $mitigation_date, "mitigation_control_names" => $mitigation_control_names, "group_name" => $group_name, "group_value" => $group_value, 'closure_date' => $closure_date, 'risk_tags' => $risk_tags,'comments' => $comments);
+        $data[] = array("id" => $risk_id, "status" => $status, "subject" => $subject, "reference_id" => $reference_id, "control_number" => $control_number, "submission_date" => $submission_date, "last_update" => $last_update, "review_date" => $review_date, "scoring_method" => $scoring_method, "calculated_risk" => $calculated_risk, "residual_risk" => $residual_risk, "color" => $color, "residual_color" => $residual_color, "risk_level" => $risk_level, "residual_risk_level" => $residual_risk_level, "location" => $location, "source" => $source, "category" => $category, "team" => $team, "additional_stakeholders" => $additional_stakeholders, "technology" => $technology, "owner" => $owner, "manager" => $manager, "submitted_by" => $submitted_by, "regulation" => $regulation, "project" => $project, "mgmt_review" => $mgmt_review, "days_open" => $days_open, "next_review_date" => $next_review_date, "next_review_date_html" => $next_review_date_html, "next_step" => $next_step, "affected_assets" => $affected_assets, "risk_assessment" => $risk_assessment, "additional_notes" => $additional_notes, "current_solution" => $current_solution, "security_recommendations" => $security_recommendations, "security_requirements" => $security_requirements, "month_submitted" => $month_submitted, "planning_strategy" => $planning_strategy, "mitigation_id" => $mitigation_id, "planning_date" => $planning_date, "mitigation_effort" => $mitigation_effort, "mitigation_min_cost" => $mitigation_min_cost, "mitigation_max_cost" => $mitigation_max_cost, "mitigation_cost" => $mitigation_cost, "mitigation_owner" => $mitigation_owner, "mitigation_percent" => $mitigation_percent, "mitigation_team" => $mitigation_team, "mitigation_accepted" => $mitigation_accepted, "mitigation_date" => $mitigation_date, "mitigation_control_names" => $mitigation_control_names, "group_name" => $group_name, "group_value" => $group_value, 'closure_date' => $closure_date, 'risk_tags' => $risk_tags,'comments' => $comments);
     }
 
     // Return the data array
@@ -5445,7 +5481,7 @@ function get_risks_by_appetite($type, $start, $length, $orderColumn, $orderDir, 
             LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0 
             LEFT JOIN `risk_to_team` rtt on a.id=rtt.risk_id
             LEFT JOIN `risk_to_additional_stakeholder` rtas on a.id=rtas.risk_id
-        WHERE 1=1
+        WHERE a.status != \"Closed\"
             {$separation_query}
         GROUP BY
             a.id
@@ -6767,6 +6803,177 @@ function get_control_connectivity_for_framework($framework_id, $framework_name)
 
         // Return the associations
         return $associations;
+}
+
+/***************************************************
+ * FUNCTION: DISPLAY CONTROL MATURITY SPIDER CHART *
+ ***************************************************/
+function display_control_maturity_spider_chart($framework_id)
+{
+	global $escaper, $lang;
+
+	// Get the control gap information for this framework
+	$control_gaps = get_control_gaps($framework_id, "all_maturity", "control_family", "asc");
+
+	// Create an empty current category
+	$current_category = "";
+
+	// Create an empty categories array
+	$categories = array();
+
+	// Create an empty categories count array
+	$categories_count = array();
+
+	// Create an empty categories current maturity sum array
+	$categories_current_maturity_sum = array();
+
+	// Create an empty categories desired maturity sum array
+	$categories_desired_maturity_sum = array();
+
+	// Get the list of control gaps
+	foreach ($control_gaps as $value)
+	{
+		// Get the numeric value for the current control maturity
+		switch ($value['control_maturity_name'])
+		{
+			case "Not Performed":
+				$current_control_maturity = 0;
+				break;
+			case "Performed":
+                                $current_control_maturity = 1;
+                                break;
+			case "Documented":
+                                $current_control_maturity = 2;
+                                break;
+			case "Managed":
+                                $current_control_maturity = 3;
+                                break;
+			case "Reviewed":
+                                $current_control_maturity = 4;
+                                break;
+			case "Optimizing":
+                                $current_control_maturity = 5;
+                                break;
+		}
+
+                // Get the numeric value for the desired control maturity
+                switch ($value['desired_maturity_name'])
+                {
+                        case "Not Performed":
+                                $desired_control_maturity = 0;
+                                break;
+                        case "Performed":
+                                $desired_control_maturity = 1;
+                                break;
+                        case "Documented":
+                                $desired_control_maturity = 2;
+                                break;
+                        case "Managed":
+                                $desired_control_maturity = 3;
+                                break;
+                        case "Reviewed":
+                                $desired_control_maturity = 4;
+                                break;
+                        case "Optimizing":
+                                $desired_control_maturity = 5;
+                                break;
+                }
+
+		// If this is not the current category
+		if ($value['family_short_name'] != $current_category)
+		{
+			// Add the family to the category array
+			$categories[] = $value['family_short_name'];
+
+			// Set the count for this family to one
+			$categories_count[$value['family_short_name']] = 1;
+
+			// Put the first value in the categories current maturity sum array
+			$categories_current_maturity_sum[$value['family_short_name']] = $current_control_maturity;
+
+			// Put the first value in the categories desired maturity sum array
+			$categories_desired_maturity_sum[$value['family_short_name']] = $desired_control_maturity;
+
+			// Set the new current category
+			$current_category = $value['family_short_name'];
+		}
+		// If the category hasn't changed
+		else
+		{
+			// Increment the count
+			$categories_count[$value['family_short_name']] = $categories_count[$value['family_short_name']] + 1;
+
+			// Increment the current maturity sum
+			$categories_current_maturity_sum[$value['family_short_name']] = $categories_current_maturity_sum[$value['family_short_name']] + $current_control_maturity;
+
+			// Increment the desired maturity sum
+			$categories_desired_maturity_sum[$value['family_short_name']] = $categories_desired_maturity_sum[$value['family_short_name']] + $desired_control_maturity;
+		}
+	}
+
+	// Create the empty data arrays
+	$categories_current_maturity_average = array();
+	$categories_desired_maturity_average = array();
+
+	// For each category
+	foreach ($categories as $key => $value)
+	{
+		// Averaage = sum / value
+		$current_maturity_average = $categories_current_maturity_sum[$value] / $categories_count[$value];
+		$desired_maturity_average = $categories_desired_maturity_sum[$value] / $categories_count[$value];
+		$categories_current_maturity_average[] = round($current_maturity_average, 1);
+		$categories_desired_maturity_average[] = round($desired_maturity_average, 1);
+	}
+
+	// Create a new Highchart
+	$chart = new Highchart();
+	$chart->includeExtraScripts();
+
+	$chart->chart->renderTo = "control_maturity_spider_chart";
+	$chart->chart->polar = true;
+	$chart->chart->type = "line";
+	$chart->title->text = "Current vs Desired Maturity by Control Family";
+	$chart->title->x = -80;
+	$chart->pane->size = "80%";
+	$chart->xAxis->categories = $categories;
+	$chart->xAxis->tickmarkPlacement = "on";
+	$chart->xAxis->lineWidth = 0;
+	$chart->yAxis->gridLineInterpolation = "polygon";
+	$chart->yAxis->lineWidth = 0;
+	$chart->yAxis->min = 0;
+	$chart->yAxis->max = 5;
+	$chart->yAxis->tickInterval = 1;
+	$chart->tooltip->shared = true;
+	$chart->tooltip->pointFormat = '<span style="color:{series.color}">{series.name}: <b>{point.y}</b><br/>';
+	$chart->legend->align = "right";
+	$chart->legend->verticalAlign = "middle";
+	$chart->legend->layout = "vertical";
+
+	// Draw the Current Maturity series
+	$chart->series[0]->name = $escaper->escapeHtml($lang['CurrentControlMaturity']);
+	$chart->series[0]->data = empty($categories_current_maturity_average) ? [] : $categories_current_maturity_average;
+	$chart->series[0]->pointPlacement = "on";
+
+	// Draw the Desired Maturity series
+	$chart->series[1]->name = $escaper->escapeHtml($lang['DesiredControlMaturity']);
+	$chart->series[1]->data = empty($categories_desired_maturity_average) ? [] : $categories_desired_maturity_average;
+	$chart->series[1]->pointPlacement = "on";
+
+	$chart->responsive->rules->condition->maxWidth = 500;
+	$chart->responsive->rules->chartOptions->legend->align = "center";
+	$chart->responsive->rules->chartOptions->legend->verticalAlign = "bottom";
+	$chart->responsive->rules->chartOptions->legend->layout = "horizontal";
+	$chart->responsive->rules->chartOptions->pane->size = "70%";
+
+	$chart->credits->enabled = false;
+
+	echo "<figure class=\"highcharts-figure\">\n";
+        echo "  <div id=\"control_maturity_spider_chart\"></div>\n";
+	echo "</figure>\n";
+
+        echo "<script type=\"text/javascript\">";
+        echo $chart->render("control_maturity_spider_chart");
+        echo "</script>\n";
 }
 
 ?>
