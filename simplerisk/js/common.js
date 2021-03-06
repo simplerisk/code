@@ -339,7 +339,11 @@ function checkAndSetValidation(container)
                 issue_el.addClass("error");
                 issue_el.focus()
             }
-            var message = field_required_lang.replace("_XXX_", issue_el.attr("title"))
+
+            // We have to make sure that no html gets through to toastr as it's displaying what it gets 'as is';
+            var escaped = $("<div/>").text(issue_el.attr("title")).html();
+            var message = field_required_lang.replace("_XXX_", escaped);
+
             showAlertFromMessage(message, false)
         }
         return false;
