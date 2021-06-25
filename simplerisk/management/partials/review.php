@@ -9,10 +9,10 @@
     require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../../includes/display.php'));
     require_once(realpath(__DIR__ . '/../../includes/permissions.php'));
+    require_once(realpath(__DIR__ . '/../../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+    // Include Laminas Escaper for HTML Output Encoding
+    $escaper = new Laminas\Escaper\Escaper('utf-8');
 
     // Add various security headers
     add_security_headers();
@@ -42,14 +42,14 @@
     session_check();
 
     // Check if access is authorized
-    if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
+    if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1")
     {
         header("Location: ../../index.php");
         exit(0);
     }
 
     // Enforce that the user has access to risk management
-    enforce_permission_riskmanagement();
+    enforce_permission("riskmanagement");
 
 ?>
 

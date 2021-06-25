@@ -8,10 +8,10 @@
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -57,8 +57,9 @@ require_once(language_file());
         elseif (isset($_POST['restore']))
         {
             $fgroup = get_param("POST", "fgroup", "risk");
+            $template_group_id = get_param("POST", "template_group_id", "1");
             // Set default main fields
-            set_default_main_fields($fgroup);
+            set_default_main_fields($fgroup, $template_group_id);
             refresh();
         }
 
@@ -109,7 +110,66 @@ require_once(language_file());
             
             refresh();
         }
-        
+        // If add template group submitted
+        elseif (isset($_POST['add_template_group']))
+        {
+            $name = get_param("POST", "name");
+            $fgroup = get_param("POST", "fgroup", "risk");
+
+            if(!$name){
+                // Display an alert
+                set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameFieldIsRequired']));
+            }else{
+                add_custom_template_group($name, $fgroup);
+                set_alert(true, "good", $escaper->escapeHtml($lang['AddedSuccess']));
+            }
+            refresh();
+        }
+        // If update template group submitted
+        elseif (isset($_POST['update_template_group']))
+        {
+            $id = get_param("POST", "id");
+            $name = get_param("POST", "name");
+            $fgroup = get_param("POST", "fgroup", "risk");
+
+            if(!$id || !$name){
+                // Display an alert
+                set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameFieldIsRequired']));
+            }else{
+                update_custom_template_group($id, $name);
+                set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
+            }
+            refresh();
+        }
+        // If delete template group submitted
+        elseif (isset($_POST['delete_template_group']))
+        {
+            $id = get_param("POST", "custom_template_group");
+            if(!$id){
+                // Display an alert
+                set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+            }else{
+                delete_custom_template_group($id);
+                set_alert(true, "good", $escaper->escapeHtml($lang['DeletedSuccess']));
+            }
+
+            refresh();
+        }
+        // If assign template group to bussiness unit
+        elseif (isset($_POST['assign_template']))
+        {
+            $fgroup = get_param("POST", "fgroup");
+            $business_unit_ids = get_param("POST", "business_unit_ids");
+            if(!$business_unit_ids){
+                // Display an alert
+                set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+            }else{
+                if(assign_template_to_business_unit($fgroup, $business_unit_ids)) set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
+                else set_alert(true, "bad", $escaper->escapeHtml($lang['UpdateFailed']));
+            }
+
+            refresh();
+        }
     }
 
     /*********************
@@ -129,10 +189,12 @@ require_once(language_file());
                 // If the extra is not restricted based on the install type
                 if (!restricted_extra("customization"))
                 {
-                echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
-                echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
-                echo "</form>\n";
-                echo "</div>\n";
+                    echo "<div class=\"hero-unit\">\n";
+                    echo "<h4>" . $escaper->escapeHtml($lang['CustomizationExtra']) . "</h4>\n";
+                    echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
+                    echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
+                    echo "</form>\n";
+                    echo "</div>\n";
             }
                 // The extra is restricted
                 else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
@@ -179,11 +241,24 @@ require_once(language_file());
         <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
         <link rel="stylesheet" href="../css/side-navigation.css">
+        <link rel="stylesheet" href="../css/settings_tabs.css">
         
         <?php
             setup_favicon("..");
             setup_alert_requirements("..");
-        ?>    
+        ?>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var $tabs = $("#main").tabs({
+                        active: $('.tabs a.active').parent().index(),
+                        show: { effect: "fade", duration: 200 },
+                        beforeActivate: function(event, ui){
+                            ui.oldTab.find('a').removeClass("active");
+                            ui.newTab.find('a').addClass("active");
+                        },
+                   });
+            });
+        </script>
       </head>
 
       <body>
@@ -202,10 +277,7 @@ require_once(language_file());
             <div class="span9">
               <div class="row-fluid">
                 <div class="span12">
-                  <div class="hero-unit">
-                    <h4>Customization Extra</h4>
                     <?php display(); ?>
-                  </div>
                 </div>
               </div>
             </div>

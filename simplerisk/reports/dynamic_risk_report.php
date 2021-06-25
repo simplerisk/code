@@ -8,10 +8,10 @@ require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/reporting.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -71,56 +71,6 @@ else $sort = 0;
     if(!is_array($locations_filter)) $locations_filter = [$locations_filter];
     $location_ids = array_map("base64_encode", $locations_filter);
 
-// Names list of Risk columns
-$columns = array(
-    'id',
-    'risk_status',
-    'subject',
-    'reference_id',
-    'regulation',
-    'control_number',
-    'location',
-    'source',
-    'category',
-    'team',
-    'additional_stakeholders',
-    'technology',
-    'owner',
-    'manager',
-    'submitted_by',
-    'scoring_method',
-    'calculated_risk',
-    'residual_risk',
-    'submission_date',
-    'review_date',
-    'project',
-    'mitigation_planned',
-    'management_review',
-    'days_open',
-    'next_review_date',
-    'next_step',
-    'affected_assets',
-    'planning_strategy',
-    'planning_date',
-    'mitigation_effort',
-    'mitigation_cost',
-    'mitigation_owner',
-    'mitigation_percent',
-    'mitigation_team',
-    'mitigation_accepted',
-    'mitigation_date',
-    'mitigation_controls',
-    'risk_assessment',
-    'additional_notes',
-    'current_solution',
-    'security_recommendations',
-    'security_requirements',
-    'risk_tags',
-    'closure_date',
-    'comments'
-);
-
-$custom_values = [];
 $custom_selection_settings = "";
 $custom_column_filters = "";
 if(!empty($_GET['selection']))
@@ -157,61 +107,212 @@ else
 {
     $custom_display_settings = $_SESSION['custom_display_settings'];
 }
-
-if(is_array($custom_display_settings) && !isset($_POST['status'])){
-    foreach($columns as $column){
-        ${$column} = in_array($column, $custom_display_settings) ? true : false;
-    }
-    // Set default display settings if no selected columns
-    if(!count($custom_display_settings)){
-        $id = true;
-        $subject = true;
-        $calculated_risk = true;
-        $residual_risk = true;
-        $submission_date = true;
-        $mitigation_planned = true;
-        $management_review = true;
-    }
-    foreach($custom_display_settings as $custom_display_setting){
-        if(stripos($custom_display_setting, "custom_field_") === 0){
-            $custom_values[$custom_display_setting] = 1;
+    
+// If customization extra is enabled
+if(customization_extra()){
+    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+    $active_fields = get_active_fields();
+    $risk_fields = array(
+        'id',
+        'risk_status',
+        'closure_date',
+        'subject',
+    );
+    // Names list of Mitigation columns
+    $mitigation_fields = array(
+        'mitigation_planned',
+        'mitigation_date',
+    );
+    // Names list of Review columns
+    $review_fields = array(
+        'management_review',
+    );
+    $scoring_base_fields = "";
+    $risk_custom_fields = [];
+    $mitigation_custom_fields = [];
+    $review_custom_fields = [];
+    foreach($active_fields as $active_field)
+    {
+        $field = get_dynamic_names_by_main_field_name($active_field['name']);
+        switch($active_field['tab_index']){
+            case 1:
+                if($active_field['is_basic'] == 1 && $field) {
+                    if($active_field['name'] != "RiskScoringMethod")
+                        $risk_fields[] = $field['name'];
+                    else 
+                        $scoring_base_fields = $field['name'];
+                } else if($active_field['is_basic'] == 0){
+                    $risk_custom_fields[] = "custom_field_".$active_field['id'];
+                }
+            break;
+            case 2:
+                if($active_field['is_basic'] == 1 && $field) {
+                    $mitigation_fields[] = $field['name'];
+                } else if($active_field['is_basic'] == 0){
+                    $mitigation_custom_fields[] = "custom_field_".$active_field['id'];
+                }
+            break;
+            case 3:
+                if($active_field['is_basic'] == 1 && $field) {
+                    $review_fields[] = $field['name'];
+                } else if($active_field['is_basic'] == 0){
+                    $review_fields[] = "custom_field_".$active_field['id'];
+                }
+            break;
         }
     }
-}elseif(isset($_POST['status'])){
-    foreach($columns as $column){
-        ${$column} = isset($_POST[$column]) ? true : false;
-    }
-    foreach($_POST as $key=>$val){
-        if(stripos($key, "custom_field_") === 0){
-            $custom_values[$key] = 1;
-        }
-    }
-}else{
-    $id = true;
-    $subject = true;
-    $calculated_risk = true;
-    $residual_risk = true;
-    $submission_date = true;
-    $mitigation_planned = true;
-    $management_review = true;
+    $risk_fields = array_merge($risk_fields, $risk_custom_fields);
+    $mitigation_fields = array_merge($mitigation_fields, $mitigation_custom_fields);
+    $review_fields = array_merge($review_fields, $review_custom_fields);
+} else {
+// Names list of Risk columns
+    $risk_fields = array(
+        'id',
+        'risk_status',
+        'closure_date',
+        'subject',
+        'risk_tags',
+        'submitted_by',
+        'source',
+        'submission_date',
+        'category',
+        'project',
+        'project_status',
+        'days_open',
+        'location',
+        'risk_assessment',
+        'additional_notes',
+        'reference_id',
+        'regulation',
+        'control_number',
+        'affected_assets',
+        'technology',
+        'team',
+        'additional_stakeholders',
+        'owner',
+        'manager',
+    );
+    // Names list of Mitigation columns
+    $mitigation_fields = array(
+        'mitigation_planned',
+        'current_solution',
+        'mitigation_date',
+        'security_requirements',
+        'planning_date',
+        'security_recommendations',
+        'mitigation_effort',
+        'mitigation_cost',
+        'mitigation_owner',
+        'mitigation_accepted',
+        'planning_strategy',
+        'mitigation_team',
+        'mitigation_controls',
+        'mitigation_percent',
+    );
+    // Names list of Review columns
+    $review_fields = array(
+        'management_review',
+        'review_date',
+        'next_step',
+        'next_review_date',
+        'comments'
+    );
+    $scoring_base_fields = "scoring_method";
 }
+// Names list of Risk Scoring columns
+$scoring_fields = array(
+    'calculated_risk',
+    'residual_risk',
+    'calculated_risk_30',
+    'residual_risk_30',
+    'calculated_risk_60',
+    'residual_risk_60',
+    'calculated_risk_90',
+    'residual_risk_90',
+    'CLASSIC_likelihood',
+    'CLASSIC_impact',
+    'CVSS_AccessVector',
+    'CVSS_AccessComplexity',
+    'CVSS_Authentication',
+    'CVSS_ConfImpact',
+    'CVSS_IntegImpact',
+    'CVSS_AvailImpact',
+    'CVSS_Exploitability',
+    'CVSS_RemediationLevel',
+    'CVSS_ReportConfidence',
+    'CVSS_CollateralDamagePotential',
+    'CVSS_TargetDistribution',
+    'CVSS_ConfidentialityRequirement',
+    'CVSS_IntegrityRequirement',
+    'CVSS_AvailabilityRequirement',
+    'DREAD_DamagePotential',
+    'DREAD_Reproducibility',
+    'DREAD_Exploitability',
+    'DREAD_AffectedUsers',
+    'DREAD_Discoverability',
+    'OWASP_SkillLevel',
+    'OWASP_Motive',
+    'OWASP_Opportunity',
+    'OWASP_Size',
+    'OWASP_EaseOfDiscovery',
+    'OWASP_EaseOfExploit',
+    'OWASP_Awareness',
+    'OWASP_IntrusionDetection',
+    'OWASP_LossOfConfidentiality',
+    'OWASP_LossOfIntegrity',
+    'OWASP_LossOfAvailability',
+    'OWASP_LossOfAccountability',
+    'OWASP_FinancialDamage',
+    'OWASP_ReputationDamage',
+    'OWASP_NonCompliance',
+    'OWASP_PrivacyViolation',
+    'Contributing_Likelihood',
+);
+if($scoring_base_fields) array_unshift($scoring_fields, $scoring_base_fields);
+$contributing_risks = get_contributing_risks();
+foreach($contributing_risks as $contributing_risk){
+    $scoring_fields[] = "Contributing_Impact_".$contributing_risk['id'];
+}
+
+$risk_columns = [];
+$mitigation_columns = [];
+$review_columns = [];
+$scoring_columns = [];
+if(!is_array($custom_display_settings) || !count($custom_display_settings)){
+    $custom_display_settings = array(
+        'id',
+        'subject',
+        'calculated_risk',
+        'residual_risk',
+        'submission_date',
+        'mitigation_planned',
+        'management_review',
+    );
+}
+foreach($risk_fields as $column){
+    $risk_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
+}
+foreach($mitigation_fields as $column){
+    $mitigation_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
+}
+foreach($review_fields as $column){
+    $review_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
+}
+foreach($scoring_fields as $column){
+    $scoring_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
+}
+$table_columns = array_merge($risk_fields, $mitigation_fields, $review_fields, $scoring_fields);
+$selected_columns = [];
+foreach($table_columns as $column){
+    $selected_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
+}
+
 if(is_array($custom_selection_settings)){
     foreach($custom_selection_settings as $select=>$custom_selection_setting){
         if(!isset($_POST[$select])) ${$select} = $custom_selection_setting;
     }
 }
 
-// If there was not a POST
-//if (!isset($_POST['status']))
-//{
-    // Set the default fields to show
-//    $id = true;
-//    $subject = true;
-//    $calculated_risk = true;
-//    $submission_date = true;
-//    $mitigation_planned = true;
-//    $management_review = true;
-//}
 
 // Once it has been activated
 if (import_export_extra()){
@@ -224,7 +325,8 @@ if (import_export_extra()){
         $column_filters = isset($_GET["column_filters"])?$_GET["column_filters"]:[];
         $order_column = isset($_GET["order_column"])?$_GET["order_column"]:null;
         $order_dir = isset($_GET["order_dir"])?$_GET["order_dir"]:"asc";
-        download_risks_by_table($status, $group, $sort, NULL, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values, $column_filters, $order_column, $order_dir);
+        $option = $_GET['option'];
+        download_risks_by_table($status, $group, $sort, NULL, $selected_columns, $column_filters, $order_column, $order_dir, $option);
     }
 
     // if group download request, download risks by the group
@@ -234,10 +336,10 @@ if (import_export_extra()){
         $column_filters = isset($_GET["column_filters"])?$_GET["column_filters"]:[];
         $order_column = isset($_GET["order_column"])?$_GET["order_column"]:null;
         $order_dir = isset($_GET["order_dir"])?$_GET["order_dir"]:"asc";
-        download_risks_by_table($status, $group, $sort, $group_value, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values, $column_filters, $order_column, $order_dir);
+        $option = $_GET['option'];
+        download_risks_by_table($status, $group, $sort, $group_value, $selected_columns, $column_filters, $order_column, $order_dir, $option);
     }
 }
-
 
 ?>
 <!doctype html>
@@ -249,6 +351,7 @@ if (import_export_extra()){
   <script src="../js/sorttable.js"></script>
   <script src="../js/obsolete.js"></script>
   <script src="../js/jquery.dataTables.js"></script>
+  <script src="../js/jquery.blockUI.min.js"></script>
   <script src="../js/dynamic.js"></script>
   <script src="../js/common.js"></script>
   <script src="../js/bootstrap-multiselect.js"></script>
@@ -272,6 +375,7 @@ if (import_export_extra()){
 <style>
    .dataTables_scrollHead, .dataTables_scrollBody {overflow: visible !important;}
    .dataTables_scroll {overflow: auto !important;}
+   div.blockOverlay {z-index:100000 !important;}
 </style>
 <body>
 
@@ -290,7 +394,7 @@ if (import_export_extra()){
           <div id="selections" class="span12">
             <div class="well">
                 <div id="selection-container">
-                  <?php view_get_risks_by_selections($status, $group, $sort, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values); ?>
+                    <?php view_get_risks_by_selections($status, $group, $sort, $risk_columns, $mitigation_columns, $review_columns, $scoring_columns); ?>
                 </div>
                 <div id="save-container">
                     <?php
@@ -323,7 +427,7 @@ if (import_export_extra()){
         <div class="row-fluid">
           <div class="span12">
             <div id="risk-table-container">
-                <?php get_risks_by_table($status, $sort, $group, $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values); ?>
+                <?php get_risks_by_table($status, $sort, $group, $selected_columns); ?>
             </div>
           </div>
         </div>

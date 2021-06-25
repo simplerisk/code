@@ -161,28 +161,6 @@
         getRoute()->post('/compliance/delete_audit', 'deleteTestAuditResponse');
         /*************************************************************************/
 
-        /***************************** Assessment API *********************************/
-        getRoute()->get('/assessment/contacts', 'assessment_extra_getAssessmentContacts');
-        getRoute()->post('/assessment/questionnaire/copy', 'assessment_extra_copyQuestionnaireAPI');
-        getRoute()->post('/assessment/template/copy', 'assessment_extra_copyTemplateAPI');
-        getRoute()->get('/assessment/questionnaire_questions', 'assessment_extra_getAssessmentQuestionnaireQuestions');
-        getRoute()->get('/assessment/questionnaire/template/dynamic', 'assessment_extra_questionnaireTemplateDynamicAPI');
-        getRoute()->get('/assessment/questionnaire/dynamic', 'assessment_extra_questionnaireDynamicAPI');
-        getRoute()->get('/assessment/questionnaire/results/dynamic', 'assessment_extra_questionnaireResultsDynamicAPI');
-        getRoute()->post('/assessment/questionnaire/save_result_comment', 'assessment_extra_saveQuestionnaireResultCommentAPI');
-        getRoute()->post('/assessment/questionnaire/pending_risk', 'assessment_extra_createARiskFromQuestionnairePendingRisksAPI');
-        getRoute()->post('/assessment/questionnaire/pending_risks', 'assessment_extra_createRisksFromQuestionnairePendingRisksAPI');
-        getRoute()->post('/assessment/questionnaire/delete_pending_risk', 'assessment_extra_deleteRiskFromQuestionnairePendingRisksAPI');
-        getRoute()->get('/assessment/questionnaire/template_questions/dynamic', 'assessment_extra_questionnaireTemplateQuestionsDynamicAPI');
-        getRoute()->post('/assessment/send_questionnaire', 'assessment_extra_sendQuestionnaireAPI');
-        getRoute()->post('/assessment/questionnaire/result/approve', 'assessment_extra_approveResultAPI');
-        getRoute()->post('/assessment/questionnaire/result/reject', 'assessment_extra_rejectResultAPI');
-        getRoute()->post('/assessment/questionnaire/result/audit_log', 'get_questionnaire_result_audit_log_api');
-        getRoute()->get('/assessment/questionnaire/analysis/dynamic', 'assessment_extra_questionnaireAnalysisDynamicAPI');
-        getRoute()->get('/assessment/contacts-users/options', 'assessment_extra_questionnaireContactsUsersOptionsAPI');
-        getRoute()->post('/assessment/questionnaire/template/controls', 'assessment_extra_questionnaireTemplateControlsAPI');
-        /******************************************************************************/
-        
         /******************************* Audit Log API **********************************/
         getRoute()->get('/audit_logs', 'get_audit_logs_api');
         /****************************************** *************************************/
@@ -218,6 +196,15 @@
         /********************* RISK LEVEL API **************************/
         getRoute()->post('/risklevel/update', 'update_risk_level_API');
         /***************************************************************/
+
+        /********************* CONTRIBUTING RISKS API ***************************/
+        getRoute()->post('/contributing_risks/add', 'add_contributing_risks_api');
+        getRoute()->post('/contributing_risks/update/likelihood', 'update_contributing_risks_likelihood_api');
+        getRoute()->post('/contributing_risks/update/impact', 'update_contributing_risks_impact_api');
+        getRoute()->post('/contributing_risks/delete/likelihood', 'delete_contributing_risks_likelihood_api');
+        getRoute()->post('/contributing_risks/delete/impact', 'delete_contributing_risks_impact_api');
+        getRoute()->post('/contributing_risks/table_list', 'contributing_risks_table_list_api');
+        /******************************************************************/
 
         /***************** DOCUMENT EXCEPTIONS API *****************/
         getRoute()->post('/exceptions/create', 'create_exception_api');

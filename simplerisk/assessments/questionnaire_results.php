@@ -9,10 +9,10 @@ require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/assessments.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -72,7 +72,7 @@ if(process_questionnaire_pending_risks()){
 ?>
 
 <!doctype html>
-<html>
+<html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
@@ -80,11 +80,28 @@ if(process_questionnaire_pending_risks()){
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/jquery.dataTables.js"></script>
+    <script src="../js/jquery.blockUI.min.js"></script>
     <script src="../js/pages/assessment.js"></script>
     <script src="../js/common.js"></script>
     <script src="../js/bootstrap-multiselect.js"></script>
     <script src="../js/cve_lookup.js"></script>
-    
+    <script src="../extras/assessments/includes/js/questionnaire-result_share.js"></script>
+
+    <?php
+        // Use these HighCharts scripts
+        $scripts = [
+		'highcharts.js',
+		'highcharts-more.js',
+		'modules/exporting.js',
+		'modules/export-data.js',
+		'modules/accessibility.js',
+	];
+
+        // Display the highcharts javascript source
+        display_highcharts_javascript($scripts);
+
+    ?>
+
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">

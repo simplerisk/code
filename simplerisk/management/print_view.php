@@ -8,10 +8,10 @@
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -122,6 +122,7 @@ require_once(language_file());
             $OWASPNonCompliance = $risk[0]['OWASP_NonCompliance'];
             $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
             $custom = $risk[0]['Custom'];
+            $template_group_id  = $risk[0]['template_group_id'];
         }
         // If the risk was not found use null values
         else
@@ -204,6 +205,7 @@ require_once(language_file());
             $OWASPNonCompliance = "";
             $OWASPPrivacyViolation = "";
             $custom = "";
+            $template_group_id  = "";
         }
 
 

@@ -10,10 +10,10 @@ require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/messages.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../includes/reporting.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -119,7 +119,7 @@ if (isset($_POST['add_user']))
                 $hash = generateHash($salt_hash, $pass);
 
                 // Insert a new user
-                add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions);
+                $user_id = add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions);
 
 		// If the encryption extra is enabled
                 if (encryption_extra())
@@ -133,6 +133,14 @@ if (isset($_POST['add_user']))
                         // Add the new encrypted user
                         add_user_enc($pass, $salt, $user);
                     }
+                }
+
+                // If ths customization extra is enabled, add new user to custom field as user multi dropdown
+                if(customization_extra())
+                {
+                    // Include the extra
+                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                    add_user_to_custom_fields($user_id);
                 }
 
                 // Clear values
@@ -176,12 +184,14 @@ if (isset($_POST['enable_user']))
     $value = (int)$_POST['disabled_users'];
 
     // Verify value is an integer
-    if (is_int($value))
+    if (is_int($value) && $value > 0)
     {
         enable_user($value);
 
         // Display an alert
         set_alert(true, "good", "The user was enabled successfully.");
+    } else {
+        set_alert(true, "bad", $lang['PleaseSelectUser']);
     }
 }
 
@@ -195,13 +205,15 @@ if (isset($_POST['disable_user']))
     $value = (int)$_POST['enabled_users'];
 
     // Verify value is an integer
-    if (is_int($value)) {
+    if (is_int($value) && $value > 0) {
         // Disabling user
         disable_user($value);
         // Killing its active sessions
         kill_sessions_of_user($value);
         // Display an alert
         set_alert(true, "good", "The user was disabled successfully.");
+    } else {
+        set_alert(true, "bad", $lang['PleaseSelectUser']);
     }
 
 }
@@ -216,7 +228,7 @@ if (isset($_POST['delete_user']))
     $value = (int)$_POST['user'];
 
     // Verify value is an integer
-    if (is_int($value))
+    if (is_int($value) && $value > 0)
     {
         // Delete the user
         delete_value("user", $value);
@@ -246,6 +258,8 @@ if (isset($_POST['delete_user']))
         
         // Display an alert
         set_alert(true, "good", "The existing user was deleted successfully.");
+    } else {
+        set_alert(true, "bad", $lang['PleaseSelectUser']);
     }
 }
 
@@ -259,12 +273,14 @@ if (isset($_POST['password_reset']))
     $value = (int)$_POST['user'];
 
     // Verify value is an integer
-    if (is_int($value))
+    if (is_int($value) && $value > 0)
     {
         password_reset_by_userid($value);
 
         // Display an alert
         set_alert(true, "good", "A password reset email was sent to the user.");
+    } else {
+        set_alert(true, "bad", $lang['PleaseSelectUser']);
     }
 }
 
@@ -355,6 +371,9 @@ if (isset($_POST['password_policy_update']))
                 	}
                 }
             });
+            if(window.location.hash == "#manageusers"){
+                $("#main").tabs({ active: 1 });
+            }
 
             $('#report_displayed_dropdown').change(function() {
                 datatableWrapperId = this.value + '-report';
@@ -393,7 +412,8 @@ if (isset($_POST['password_policy_update']))
                 if(!$(this).val()) {
         			$("#admin").prop("checked", false);
         			$("#default").prop("checked", false);
-        			$("#admin").prop("readonly", false);
+                    $("#admin").prop("readonly", false);
+                    $("#team").multiselect("enable");
         
         		    $(".permissions-widget input[type=checkbox]").each(function() {
         		    	$this = $(this);
@@ -428,7 +448,11 @@ if (isset($_POST['password_policy_update']))
         	                        // Set all teams
         	                        $("#team").multiselect("selectAll", false);
         	                        $("#team").multiselect("refresh");
-                        		}
+                                    $("#team").multiselect("disable");
+                                    $("#team").prop("disabled", false);
+                        		} else {
+                                    $("#team").multiselect("enable");
+                                }
                         		update_admin_button();
         					}
                         },
@@ -464,6 +488,12 @@ if (isset($_POST['password_policy_update']))
 
         	$("#admin_button").text(admin ? remove_text : grant_text);
         	$("#admin_button").prop("disabled", $("#admin").prop("readonly"));
+            $("#team").multiselect(admin ? 'disable' : 'enable');
+            $("#team").prop("disabled", false);
+            if (admin) {
+                $("#team").multiselect("selectAll", false);
+                $("#team").multiselect("refresh");
+            }
         }
 
         function handleSelection(choice) {

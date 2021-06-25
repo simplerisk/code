@@ -9,10 +9,10 @@
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -62,7 +62,6 @@ require_once(language_file());
     <script src="../js/sorttable.js"></script>
     <script src="../js/common.js"></script>
     <script src="../js/pages/risk.js"></script>
-    <script src="../js/highcharts/code/highcharts.js"></script>
     <script src="../js/moment.min.js"></script>
     <script src="../js/bootstrap-multiselect.js"></script>
     <script src="../js/jquery.blockUI.min.js"></script>
@@ -95,14 +94,9 @@ require_once(language_file());
 
     <?php
         view_top_menu("RiskManagement");
-    ?>
-    <?php  
         // Get any alert messages
         get_alert();
     ?>
-    <style>
-        .dataTables_filter, .dataTables_info { display: none; }
-    </style>    
     <div class="tabs new-tabs">
         <div class="container-fluid">
           <div class="row-fluid">

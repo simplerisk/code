@@ -12,10 +12,10 @@ require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 require_once(realpath(__DIR__ . '/../includes/governance.php'));
 require_once(realpath(__DIR__ . '/../includes/compliance.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -269,11 +269,20 @@ if(isset($_POST['delete_test'])){
                             <h4><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?>:</h4>
                             <select id="filter_by_control_family" class="" multiple="multiple">
                                 <?php 
-                                    echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
+                                    $filter_by_control_family = array();
+                                    if(isset($_POST['filter_by_control_family'])) $filter_by_control_family = explode(",",$_POST['filter_by_control_family']);
+                                    if(in_array("-1",$filter_by_control_family) || count($filter_by_control_family)== 0) 
+                                        echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
+                                    else 
+                                        echo "<option value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
+
                                     $options = getAvailableControlFamilyList();  
                                     is_array($options) || $options = array();
                                     foreach($options as $option){
-                                        echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                                        if(in_array($option['value'],$filter_by_control_family) || count($filter_by_control)== 0)
+                                            echo "<option selected value=\"".(int)$option['value']."\">".$escaper->escapeHtml($option['name'])."</option>\n";
+                                        else 
+                                            echo "<option value=\"".(int)$option['value']."\">".$escaper->escapeHtml($option['name'])."</option>\n";
                                     } 
                                 ?>
                             </select>
@@ -282,7 +291,8 @@ if(isset($_POST['delete_test'])){
                     <div class="span4">
                         <div class="well">
                             <h4><?php echo $escaper->escapeHtml($lang['ControlName']); ?>:</h4>
-                            <input type="text" class="form-control" id="filter_by_control_text">
+                            <?php $filter_by_control_text = isset($_POST['filter_by_control_text'])?$_POST['filter_by_control_text']:""; ?>
+                            <input type="text" class="form-control" id="filter_by_control_text" value="<?php echo $escaper->escapeHtml($filter_by_control_text);?>">
                         </div>
                     </div>
                 </div>
@@ -336,6 +346,8 @@ if(isset($_POST['delete_test'])){
 
             <input type="hidden" name="framework_control_id" value="">
             <input type="hidden" name="filter_by_control" value="">
+            <input type="hidden" name="filter_by_control_family" value="">
+            <input type="hidden" name="filter_by_control_text" value="">
 
           </div>
         </div>
@@ -390,6 +402,8 @@ if(isset($_POST['delete_test'])){
 
             <input type="hidden" name="test_id" value="">
             <input type="hidden" name="filter_by_control" value="">
+            <input type="hidden" name="filter_by_control_family" value="">
+            <input type="hidden" name="filter_by_control_text" value="">
 
           </div>
         </div>
@@ -409,6 +423,8 @@ if(isset($_POST['delete_test'])){
             <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisTest']); ?></label>
             <input type="hidden" name="test_id" value="" />
             <input type="hidden" name="filter_by_control" value="">
+            <input type="hidden" name="filter_by_control_family" value="">
+            <input type="hidden" name="filter_by_control_text" value="">
           </div>
 
           <div class="form-group text-center project-delete-actions">
@@ -432,6 +448,8 @@ if(isset($_POST['delete_test'])){
             });
             $("form").submit(function(e){
                 $("input[name=filter_by_control]").val($("#filter_by_control_framework").val());
+                $("input[name=filter_by_control_family]").val($("#filter_by_control_family").val());
+                $("input[name=filter_by_control_text]").val($("#filter_by_control_text").val());
                 return true;
             });
         });

@@ -9,10 +9,10 @@ require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../includes/reporting.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -48,8 +48,8 @@ $risk_appetite = get_setting("risk_appetite", 0);
         <link rel="stylesheet" href="../css/easyui.css">
         <link rel="stylesheet" href="../css/bootstrap.css">
         <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-        <link rel="stylesheet" href="../css/jquery.dataTables.css">
         <link rel="stylesheet" href="../css/prioritize.css">
+        <link rel="stylesheet" href="../css/jquery.dataTables.css">
         <link rel="stylesheet" href="../css/divshot-util.css">
         <link rel="stylesheet" href="../css/divshot-canvas.css">
         <link rel="stylesheet" href="../css/display.css">
@@ -68,7 +68,6 @@ $risk_appetite = get_setting("risk_appetite", 0);
             .status-tabs .tabs-nav {
                 margin-left: 20px;
             }
-            .dataTables_filter, .dataTables_info { display: none; }
         </style>
         <script>
             function activateDatatable(id) {
@@ -77,7 +76,8 @@ $risk_appetite = get_setting("risk_appetite", 0);
                 $('#'+id+' thead tr').clone(true).appendTo( '#'+id+' thead' );
                 $('#'+id+' thead tr:eq(1) th').each( function (i) {
                     var title = $(this).text();
-                    $(this).html( '<input type="text" name="'+title+'" placeholder="'+title+'" />' );
+                    $(this).html(''); // To clear the title out of the header cell
+                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
              
                     $( 'input', this ).on( 'keyup change', function () {
                         if ( riskDatatable.column(i).search() !== this.value ) {
@@ -95,7 +95,7 @@ $risk_appetite = get_setting("risk_appetite", 0);
                     bSort: true,
                     orderCellsTop: true,
                     pagingType: "full_numbers",
-                    dom : "flrti<'.download-by-group'><'#view-all-"+ id +".view-all'>p",
+                    dom : "lrti<'.download-by-group'><'#view-all-"+ id +".view-all'>p",
                     ajax: {
                         url: BASE_URL + '/api/reports/appetite?type=' + appetite_type,
                         type: "get"

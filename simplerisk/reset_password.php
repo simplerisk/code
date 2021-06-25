@@ -8,10 +8,10 @@ require_once(realpath(__DIR__ . '/includes/functions.php'));
 require_once(realpath(__DIR__ . '/includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/includes/display.php'));
 require_once(realpath(__DIR__ . '/includes/alerts.php'));
+require_once(realpath(__DIR__ . '/vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -43,7 +43,7 @@ if(empty($_SESSION['first_login_uid'])){
 if (isset($_POST['password_reset']))
 {
 	$user_id            = $_SESSION['first_login_uid'];
-	$current_password   = $_POST['current_password'];
+	$current_password   = $_SESSION['first_login_pass'];
 	$new_password       = $_POST['new_password'];
 	$confirm_password    = $_POST['confirm_password'];
 
@@ -114,7 +114,6 @@ if (isset($_POST['password_reset']))
                                 echo "</td>\n";
                             echo "</tr>\n";
                             
-                                                    echo "<tr><td width=\"30%\">" . $escaper->escapeHtml($lang['CurrentPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"current_password\" id=\"current_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" value=\"" . $_SESSION['first_login_pass'] . "\" /></td></tr>\n";
 						    echo "<tr><td width=\"30%\">" . $escaper->escapeHtml($lang['NewPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"new_password\" id=\"new_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
 						    echo "<tr><td width=\"30%\">" . $escaper->escapeHtml($lang['ConfirmPassword']) . ":&nbsp;</td><td width=\"80%\"><input class=\"input-medium\" name=\"confirm_password\" id=\"confirm_password\" type=\"password\" maxlength=\"50\" autocomplete=\"off\" /></td></tr>\n";
 						    echo "</table>\n";

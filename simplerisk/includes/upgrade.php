@@ -15,10 +15,10 @@ require_once(realpath(__DIR__ . '/permissions.php'));
 
 // Include the language file
 require_once(language_file());
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // These are here to make sure they're available when upgrading
 if (!function_exists('index_exists_on_table')) {
@@ -147,6 +147,7 @@ $releases = array(
 	"20201123-001",
 	"20210121-001",
 	"20210305-001",
+	"20210625-001",
 );
 
 /*************************
@@ -313,7 +314,7 @@ function convert_tables_to_utf8()
     $db = db_open();
 
     // Find tables that are not InnoDB
-    $stmt = $db->prepare("SELECT table_name FROM information_schema.tables WHERE table_schema='" . DB_DATABASE . "' AND TABLE_COLLATION!='utf8_general_ci';");
+    $stmt = $db->prepare("SELECT `table_name` as table_name FROM `information_schema`.`tables` WHERE `table_schema` = '" . DB_DATABASE . "' AND `TABLE_COLLATION` != 'utf8_general_ci';");
     $stmt->execute();
 
     // Store the list in the array
@@ -1593,7 +1594,7 @@ function upgrade_from_20170102001($db){
                           `risk_id` int(11) NOT NULL,
                           `calculated_risk` float NOT NULL,
                           `last_update` datetime NOT NULL
-                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
     ");
     $stmt->execute();
 
@@ -5516,6 +5517,148 @@ WHERE number = 'R-GV-5';");
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20210305-001 *
+ ***************************************/
+function upgrade_from_20210305001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20210305-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20210625-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Add contributing_risks_likelihood table
+    if (!table_exists('contributing_risks_likelihood')) {
+
+        echo "Adding a table for contributing risks likelihood.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `contributing_risks_likelihood` (`id` int(11) NOT NULL AUTO_INCREMENT, `value` int(11) NOT NULL, `name` varchar(100) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+    }
+
+    echo "Adding current levels from the existing Classic Risk Likelihood to 'contributing_risks_likelihood'.<br />\n";
+    $stmt = $db->prepare("SELECT * FROM `likelihood` ORDER BY `value`;");
+    $stmt->execute();
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($array as $row)
+    {
+        $stmt = $db->prepare("INSERT INTO `contributing_risks_likelihood` (`value`, `name`) VALUES (:value, :name);");
+        $stmt->bindParam(":value", $row['value']);
+        $stmt->bindParam(":name", $row['name']);
+        $stmt->execute();
+    }
+
+    // Add contributing_risks_impact table
+    if (!table_exists('contributing_risks_impact')) {
+
+        echo "Adding a table for contributing risks impact.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `contributing_risks_impact` (`id` int(11) NOT NULL AUTO_INCREMENT, `contributing_risks_id` int(11) NOT NULL, `value` int(11) NOT NULL, `name` varchar(100) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+    }
+
+    echo "Adding current levels from the existing Classic Risk Impact to 'contributing_risks_impact'.<br />\n";
+    $stmt = $db->prepare("SELECT * FROM `impact` ORDER BY `value`;");
+    $stmt->execute();
+    $impacts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmt = $db->prepare("SELECT * FROM `contributing_risks` ORDER BY `id`;");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($impacts as $impact)
+    {
+        foreach($rows as $row){
+            $stmt = $db->prepare("INSERT INTO `contributing_risks_impact` (`contributing_risks_id`, `value`, `name`) VALUES (:contributing_risks_id, :value, :name);");
+            $stmt->bindParam(":contributing_risks_id", $row['id']);
+            $stmt->bindParam(":value", $impact['value']);
+            $stmt->bindParam(":name", $impact['name']);
+            $stmt->execute();
+        }
+    }
+
+    // Add default current maturity setting
+    echo "Adding default current maturity setting.<br />\n";
+    update_or_insert_setting("default_current_maturity", 0);
+
+    // Add default desired maturity setting
+    echo "Adding default desired maturity setting.<br />\n";
+    update_or_insert_setting("default_desired_maturity", 3);
+
+    // Add default highcharts delivery method setting
+    echo "Adding default highcharts delivery method setting.<br />\n";
+    update_or_insert_setting("highcharts_delivery_method", "cdn");
+
+    // If the control_number field exists in the risks table.
+    if (!field_exists_in_table('control_number', 'risks')) {
+        echo "Expanding the control_number field from 20 characters to 50 characters.<br />\n";
+	$stmt = $db->prepare("ALTER TABLE risks CHANGE control_number control_number varchar(50) DEFAULT NULL;");
+	$stmt->execute();
+    }
+
+    // Change name for "Able to Modify Existing Risks"
+    echo "Changing permission name from 'Able to Modify Existing Risks' to 'Able to Modify Existing Risk Details'.<br />\n";
+    $stmt = $db->prepare("UPDATE permissions set name='Able to Modify Risk Details' WHERE `key`='modify_risks';");
+    $stmt->execute();
+
+    // Add the backups table
+    if (!table_exists('backups')) {
+
+        echo "Adding a table for tracking backups.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `backups` (`id` int(11) NOT NULL AUTO_INCREMENT, `random_id` varchar(50) NOT NULL, `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, `app_zip_file_name` TEXT NOT NULL, `db_zip_file_name` TEXT NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+    }
+
+    // Add a setting to track auto backup
+    echo "Enabling new auto-backup feature.<br />\n";
+    update_setting('backup_auto', 'true');
+    $backup_path = realpath(__DIR__ . '/../../') . DIRECTORY_SEPARATOR . 'backup-simplerisk';
+    update_setting('backup_path', $backup_path);
+    update_setting('backup_schedule', 'daily');
+    update_setting('backup_remove', '1');
+
+    // Add template_group_id field to risk table
+    if (!field_exists_in_table('template_group_id', 'risks')) {
+        echo "Adding a field template_group_id to risk table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD `template_group_id` INT NOT NULL DEFAULT '1';");
+        $stmt->execute();
+    }
+
+    // Set all teams to admistrator users
+    echo "Updating all admin users to be assigned to every team.<br />\n";
+    set_all_teams_to_administrators();
+
+    // Remove unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = array(
+            realpath(__DIR__ . '/../composer.json'),
+            realpath(__DIR__ . '/../package.json'),
+            realpath(__DIR__ . '/../config.rb'),
+            realpath(__DIR__ . '/../Gemfile'),
+	    realpath(__DIR__ . '/../management/plan-projects.php'),
+	    realpath(__DIR__ . '/../js/min/plan-project-min.js'),
+    );
+
+    foreach ($remove_files as $file)
+    {
+        // If the file exists
+        if (file_exists($file))
+        {
+            // Remove the file
+            unlink($file);
+        }
+    }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+
 /******************************
  * FUNCTION: UPGRADE DATABASE *
  ******************************/
@@ -5548,6 +5691,39 @@ function upgrade_database()
 
                     // Recursively run the database upgrade for the next release
                     upgrade_database();
+
+		    // If the composer.json file exists
+                    $file = realpath(__DIR__ . '/../composer.json');
+                    if (file_exists($file))
+                    {
+                        // If we successfully deleted the file
+                        if (delete_file($file))
+                        {
+                            echo "Deleted the composer.json file.<br />\n";
+                        }
+                    }
+
+                    // If the composer.lock file exists
+                    $file = realpath(__DIR__ . '/../composer.lock');
+                    if (file_exists($file))
+                    {
+                        // If we successfully deleted the file
+                        if (delete_file($file))
+                        {
+                            echo "Deleted the composer.lock file.<br />\n";
+                        }
+                    }
+
+		    // If the installed.json file exists
+                    $file = realpath(__DIR__ . '/../vendor/composer/installed.json');
+                    if (file_exists($file))
+                    {
+                        // If we successfully deleted the file
+                        if (delete_file($file))
+                        {
+                            echo "Deleted the installed.json file.<br />\n";
+                        }
+                    }
                 }
                 else echo "The specified database upgrade function could not be found.<br />\n";
             }

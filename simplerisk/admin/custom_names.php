@@ -8,10 +8,10 @@
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -40,9 +40,25 @@ require_once(language_file());
             {
                     update_table("mitigation_effort", $new_name, $value);
 
-        // Display an alert
-        set_alert(true, "good", "The mitigation effort naming convention was updated successfully.");
+                    // Display an alert
+                    set_alert(true, "good", "The mitigation effort naming convention was updated successfully.");
             }
+    }
+
+    // Check if the control maturity update was submitted
+    if (isset($_POST['update_control_maturity']))
+    {
+	    $new_name = $_POST['new_name'];
+	    $value = (int)$_POST['control_maturity'];
+
+	    // Verify value is an integer
+	    if (is_int($value))
+	    {
+		    update_table("control_maturity", $new_name, $value);
+
+		    // Display an alert
+		    set_alert(true, "good", "The control maturity naming convention was updated successfully.");
+	    }
     }
 ?>
 
@@ -95,6 +111,11 @@ get_alert();
             <p>
             <h4><?php echo $escaper->escapeHtml($lang['MitigationEffort']); ?>:</h4>
             <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("mitigation_effort") ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_mitigation_effort" /></p>
+	    </form>
+            <form name="control_maturity" method="post" action="">
+	    <p>
+            <h4><?php echo $escaper->escapeHtml($lang['ControlMaturity']); ?>:</h4>
+            <?php echo $escaper->escapeHtml($lang['Change']); ?> <?php create_dropdown("control_maturity") ?> <?php echo $escaper->escapeHtml($lang['to']); ?> <input name="new_name" type="text" size="20" />&nbsp;&nbsp;<input type="submit" value="<?php echo $escaper->escapeHtml($lang['Update']); ?>" name="update_control_maturity" /></p>
             </form>
           </div>
         </div>

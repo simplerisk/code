@@ -3,10 +3,10 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 require_once(realpath(__DIR__ . '/displayrisks.php'));
 
@@ -71,14 +71,46 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
                         // Otherwise, offer to close
                         else{
                             // If the user has permission to close risks
-                            if (isset($_SESSION["close_risks"]) && $_SESSION["close_risks"] == 1) { echo "<li><a class='close-risk' href=\"close.php?id=".$escaper->escapeHtml($risk_id)."\">". $escaper->escapeHtml($lang['CloseRisk']) ."</a></li>\n";                            }
+		            if (has_permission("close_risks"))
+			    {
+				    echo "<li><a class='close-risk' href=\"close.php?id=".$escaper->escapeHtml($risk_id)."\">". $escaper->escapeHtml($lang['CloseRisk']) ."</a></li>\n";
+			    }
                         }
 
-                        echo "<li><a class='edit-risk' href=\"view.php?action=editdetail&id=" . $escaper->escapeHtml($risk_id) . "\">". $escaper->escapeHtml($lang['EditRisk']) ."</a></li>\n";
-                        echo "<li><a class='edit-mitigation' href=\"#\">". $escaper->escapeHtml($lang['PlanAMitigation']) ."</a></li>\n";
-                        echo "<li><a class='perform-review' href=\"#\">". $escaper->escapeHtml($lang['PerformAReview']) ."</a></li>\n";
-                        echo "<li><a class='change-status' href=\"#\">" . $escaper->escapeHtml($lang['ChangeStatus']) . "</a></li>\n";
-                        echo "<li><a href=\"#comment\" class='add-comment-menu'>". $escaper->escapeHtml($lang['AddAComment']) ."</a></li>\n";
+			// If the user has permission to modify risks
+			if (has_permission("modify_risks"))
+			{
+                            echo "<li><a class='edit-risk' href=\"view.php?action=editdetail&id=" . $escaper->escapeHtml($risk_id) . "\">". $escaper->escapeHtml($lang['EditRisk']) ."</a></li>\n";
+			}
+
+			// If the user has permission to plan mitigations
+			if (has_permission("plan_mitigations"))
+			{
+                            echo "<li><a class='edit-mitigation' href=\"#\">". $escaper->escapeHtml($lang['PlanAMitigation']) ."</a></li>\n";
+			}
+
+			// Check the review permissions for this risk id
+			$approved = check_review_permission_by_risk_id($risk_id);
+
+                        // If the user has permission to review the current level
+			if ($approved)
+                        {
+		            echo "<li><a class='perform-review' href=\"#\">". $escaper->escapeHtml($lang['PerformAReview']) ."</a></li>\n";
+                        }
+
+
+			// If the user has permission to modify risks
+                        if (has_permission("modify_risks"))
+                        {
+                            echo "<li><a class='change-status' href=\"#\">" . $escaper->escapeHtml($lang['ChangeStatus']) . "</a></li>\n";
+			}
+
+			// If the user has permission to comment on risk management
+			if (has_permission("comment_risk_management"))
+			{
+                            echo "<li><a href=\"#comment\" class='add-comment-menu'>". $escaper->escapeHtml($lang['AddAComment']) ."</a></li>\n";
+			}
+
                         echo "<li><a class='printable-veiw' href=\"print_view.php?id=" . $escaper->escapeHtml($risk_id) . "\" target=\"_blank\">". $escaper->escapeHtml($lang['PrintableView']) ."</a></li>\n";
                         echo "</ul>\n";
                     echo "</div>\n";
@@ -89,7 +121,9 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
         echo "<div class=\"row-fluid border-top\">";
             echo "<div class=\"span12\">";
                 echo "<div id=\"static-subject\" class='static-subject'><label>Subject : <span class=\"large-text\">".$escaper->escapeHtml($subject)."</span>";
-                if($display_risk == true){
+
+	        // If we are displaying the risk and the user has modify risk permissions
+                if($display_risk == true && has_permission("modify_risks")){
                     echo "<div id=\"edit-subject\" class='edit-subject-btn' style=\"display:inline;margin:0 0 0 10px; font-size:20px;\"><i class=\"fa fa-pencil-square-o\" aria-hidden=\"true\"></i></div>";
                 }
                 echo "</label></div>";
@@ -177,22 +211,28 @@ function view_print_top_table($id, $calculated_risk, $subject, $status)
 /*******************************
 * FUNCTION: ADD RISK DETAILS *
 *******************************/
-function add_risk_details(){
+function add_risk_details($template_group_id = 1){
     global $lang;
     global $escaper;
     echo "<form name=\"submit_risk\" method=\"post\" action=\"\" enctype=\"multipart/form-data\" id=\"risk-submit-form\">\n";
-        echo "<div class=\"row-fluid padded-bottom subject-field\">\n";
-            echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['Subject']).":</div>\n";
-            echo "<div class=\"span8\"><input maxlength=\"300\" title=\"".$escaper->escapeHtml($lang['Subject'])."\" required name=\"subject\" id=\"subject\" class=\"form-control\" type=\"text\"></div>\n";
-        echo "</div>\n";
         // If customization extra is enabled
         if(customization_extra())
         {
             // Include the extra
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-            $active_fields = get_active_fields();
-            $inactive_fields = get_inactive_fields();
+            echo "<input type='hidden' name='template_group_id' id='template_group_id' value='{$template_group_id}' />";
+            echo "<div class=\"row-fluid padded-bottom subject-field\">\n";
+                echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['Subject']).":</div>\n";
+                echo "<div class=\"span8\"><input maxlength=\"300\" title=\"".$escaper->escapeHtml($lang['Subject'])."\" required name=\"subject\" id=\"subject\" class=\"form-control\" type=\"text\"></div>\n";
+            echo "</div>\n";
 
+            $active_fields = get_active_fields("risk", $template_group_id);
+            $inactive_fields = get_inactive_fields("risk", $template_group_id);
+
+            // Top panel
+            echo "<div class=\"row-fluid\">\n";
+                    display_main_detail_fields_by_panel_add('top', $active_fields);
+            echo "</div>\n";
             echo "<div class=\"row-fluid\">\n";
                 // Left Panel
                 echo "<div class=\"span5 left-panel\">\n";
@@ -210,7 +250,7 @@ function add_risk_details(){
 
             // Bottom panel
             echo "<div class=\"row-fluid\">\n";
-                echo "<div class=\"span12 bottom-panel\">\n";
+                echo "<div class=\"span10 bottom-panel\">\n";
                     display_main_detail_fields_by_panel_add('bottom', $active_fields);
                     echo "&nbsp;";
                 echo "</div>\n";
@@ -218,6 +258,10 @@ function add_risk_details(){
         }
         else
         {
+            echo "<div class=\"row-fluid padded-bottom subject-field\">\n";
+                echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['Subject']).":</div>\n";
+                echo "<div class=\"span8\"><input maxlength=\"300\" title=\"".$escaper->escapeHtml($lang['Subject'])."\" required name=\"subject\" id=\"subject\" class=\"form-control\" type=\"text\"></div>\n";
+            echo "</div>\n";
             $mapping_required = get_setting('risk_mapping_required') == 1?"required":"";
             echo "<div class=\"row-fluid padded-bottom subject-field\">\n";
                 echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
@@ -297,7 +341,7 @@ function add_risk_details(){
 /*******************************
 * FUNCTION: VIEW RISK DETAILS *
 *******************************/
-function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name = "")
+function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name="", $template_group_id=1)
 {
     global $lang;
     global $escaper;
@@ -308,8 +352,8 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
     $notes = try_decrypt($notes);
 
     //echo "<h4>". $escaper->escapeHtml($lang['Details']) ."</h4>\n";
-        // If the page is the view.php page
-    if (basename($_SERVER['PHP_SELF']) == "view.php")
+        // If the page is the view.php page and the user has permission to modify risks
+    if (basename($_SERVER['PHP_SELF']) == "view.php" && has_permission("modify_risks"))
     {
         // Give the option to edit the risk details
         echo "<div class=\"tabs--action\">";
@@ -322,8 +366,13 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        $active_fields = get_active_fields();
-        $inactive_fields = get_inactive_fields();
+        $active_fields = get_active_fields("risk", $template_group_id);
+        $inactive_fields = get_inactive_fields("risk", $template_group_id);
+
+        // Top panel
+        echo "<div class=\"row-fluid\">\n";
+            display_main_detail_fields_by_panel_view('top', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name);
+        echo "</div>";
 
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
@@ -335,15 +384,15 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
 
             // Right Panel
             echo "<div class=\"span5 right-panel\">\n";
-                display_main_detail_fields_by_panel_view('right', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key);
+                display_main_detail_fields_by_panel_view('right', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
 
         // Bottom panel
         echo "<div class=\"row-fluid\">\n";
-            echo "<div class=\"span12 bottom-panel\">";
-                display_main_detail_fields_by_panel_view('bottom', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key);
+            echo "<div class=\"span10 bottom-panel\">";
+                display_main_detail_fields_by_panel_view('bottom', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -660,7 +709,7 @@ function risk_score_method_html($scoring_method="1", $CLASSIC_likelihood="", $CL
 /*******************************
 * FUNCTION: EDIT RISK DETAILS *
 *******************************/
-function edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping="")
+function edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping="", $template_group_id=1)
 {
     global $lang;
     global $escaper;
@@ -682,8 +731,13 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-        $active_fields = get_active_fields();
-        $inactive_fields = get_inactive_fields();
+        $active_fields = get_active_fields("risk", $template_group_id);
+        $inactive_fields = get_inactive_fields("risk", $template_group_id);
+
+        // Top panel
+        echo "<div class=\"row-fluid\">\n";
+                display_main_detail_fields_by_panel_edit('top', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping);
+        echo "</div>";
 
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
@@ -702,7 +756,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 
         // Bottom panel
         echo "<div class=\"row-fluid\">\n";
-            echo "<div class=\"row-fluid bottom-panel\">\n";
+            echo "<div class=\"span10 bottom-panel\">\n";
                 display_main_detail_fields_by_panel_edit('bottom', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping);
                 echo "&nbsp;";
             echo "</div>";
@@ -767,7 +821,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 /*************************************
 * FUNCTION: VIEW MITIGATION DETAILS *
 *************************************/
-function view_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls)
+function view_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id=1)
 {
     global $lang;
     global $escaper;
@@ -776,7 +830,7 @@ function view_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
     $current_solution = try_decrypt($current_solution);
     $security_requirements = try_decrypt($security_requirements);
     $security_recommendations = try_decrypt($security_recommendations);
-    if (basename($_SERVER['PHP_SELF']) == "view.php")
+    if (basename($_SERVER['PHP_SELF']) == "view.php" && has_permission("plan_mitigations"))
     {
         // Give the option to edit the mitigation details
         echo "<div class=\"tabs--action\">";
@@ -791,8 +845,8 @@ function view_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-        $active_fields = get_active_fields();
-        $inactive_fields = get_inactive_fields();
+        $active_fields = get_active_fields("risk", $template_group_id);
+        $inactive_fields = get_inactive_fields("risk", $template_group_id);
 
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
@@ -1025,7 +1079,7 @@ function view_print_mitigation_controls($mitigation)
                             $html .= "<div class='row-fluid'>";
                                 $html .= "<div class='span4'>
                                     ".$escaper->escapeHtml($lang['Details']).":<br>
-                                    ".nl2br($validation["validation_details"])."
+                                    ".nl2br($escaper->escapeHtml($validation["validation_details"]))."
                                 </div>";
                             $html .= "</div>";
                             $html .= "<div class='row-fluid'>";
@@ -1053,7 +1107,7 @@ function view_print_mitigation_controls($mitigation)
 /*************************************
 * FUNCTION: EDIT MITIGATION DETAILS *
 *************************************/
-function edit_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls)
+function edit_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id=1)
 {
     global $lang;
     global $escaper;
@@ -1076,8 +1130,8 @@ function edit_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        $active_fields = get_active_fields();
-        $inactive_fields = get_inactive_fields();
+        $active_fields = get_active_fields("risk", $template_group_id);
+        $inactive_fields = get_inactive_fields("risk", $template_group_id);
 
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
@@ -1153,50 +1207,60 @@ function edit_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
 
 }
 
-/*************************************************
-* FUNCTION: Display Mitigation Controls Dropdown *
-**************************************************/
-function mitigation_controls_dropdown($selected_control_ids_string = "", $element_name = "mitigation_controls[]")
+/********************************************************************************************************************************
+* FUNCTION: Display Mitigation Controls Dropdown                                                                                *
+* Renders the mitigation controls dropdown. Can be used in multiple places due to its configurability.                          *
+* selected_control_ids_string: the selected control ids as a comma separated string                                             *
+* element_name: name of the rendered element                                                                                    *
+* initialize: A boolean to sign whether the initialozation of the multiselect is required                                       *
+* datatable_redraw: A boolean that tells the rendering logic whether the mitigation control details                             *
+                    datatable is present on the page and needs logic to refresh it when the selection of the dropdown changed.  *
+*********************************************************************************************************************************/
+function mitigation_controls_dropdown($selected_control_ids_string = "", $element_name = "mitigation_controls[]", $initialize = true, $datatable_redraw = false)
 {
-    global $lang;
-    global $escaper;
+    global $lang, $escaper;
 
     require_once(realpath(__DIR__ . '/governance.php'));
     $controls = get_framework_controls_dropdown_data();
 
-    $selected_control_ids = explode(",", $selected_control_ids_string);
-
-    $eID = "mitigation_controls_".generate_token(10);
-
-    echo  "<select id=\"".$eID."\" name=\"".$element_name."\" title=\"".$escaper->escapeHtml($lang['MitigationControls'])."\" class=\"mitigation_controls\" multiple=\"multiple\">";
-        foreach($controls as $control){
-            if(in_array($control['id'], $selected_control_ids)){
-                echo "<option value='".$control['id']."' selected title='".$escaper->escapeHtml($control['long_name'])."'>".$escaper->escapeHtml($control['short_name'])."</option>";
-            }else{
-                echo "<option value='".$control['id']."' title='".$escaper->escapeHtml($control['long_name'])."'>".$escaper->escapeHtml($control['short_name'])."</option>";
+    if ($controls && !empty($controls)) {
+        $selected_control_ids = explode(",", $selected_control_ids_string);
+        $eID = "mitigation_controls_".generate_token(10);
+        echo  "<select id=\"".$eID."\" name=\"".$element_name."\" title=\"".$escaper->escapeHtml($lang['MitigationControls'])."\" class=\"mitigation_controls\" multiple=\"multiple\">";
+            foreach($controls as $control){
+                if(in_array($control['id'], $selected_control_ids)){
+                    echo "<option value='".$control['id']."' selected title='".$escaper->escapeHtml($control['long_name'])."'>".$escaper->escapeHtml($control['short_name'])."</option>";
+                }else{
+                    echo "<option value='".$control['id']."' title='".$escaper->escapeHtml($control['long_name'])."'>".$escaper->escapeHtml($control['short_name'])."</option>";
+                }
             }
+        echo "</select>";
+    
+        if ($initialize) {
+            echo "
+                <script>
+                    $(document).ready(function(){
+                        $('#".$eID."').multiselect({
+                            enableFiltering: true,
+                            enableCaseInsensitiveFiltering: true,
+                            buttonWidth: '100%',
+                            maxHeight: 250,
+                            dropUp: true,
+                            filterPlaceholder: '".$escaper->escapeHtml($lang["SelectForMitigationControls"])."'" . ($datatable_redraw ? ",
+                            onDropdownHide: function(){
+                                var form = $('#{$eID}').parents('form');
+                                var tableId = $(\".mitigation-controls-table-container\", form).data('tableid');
+                                $(\"#\" + tableId).DataTable().draw();
+                            }" : "") . "
+                        });
+                    })
+                </script>
+            ";
         }
-    echo "</select>";
-
-    echo "
-        <script>
-            $(document).ready(function(){
-                $('#".$eID."').multiselect({
-                    enableFiltering: true,
-                    enableCaseInsensitiveFiltering: true,
-                    buttonWidth: '100%',
-                    maxHeight: 250,
-                    dropUp: true,
-                    filterPlaceholder: '".$escaper->escapeHtml($lang["SelectForMitigationControls"])."',
-                    onDropdownHide: function(){
-                        var form = $('#{$eID}').parents('form');
-                        var tableId = $(\".mitigation-controls-table-container\", form).data('tableid');
-                        $(\"#\" + tableId).DataTable().draw();
-                    }
-                });
-            })
-        </script>
-    ";
+    
+    } else {
+        echo "<span style='vertical-align: middle;'><b>{$escaper->escapeHtml($lang['NoControlsAvailable'])}</b></span>";
+    }
 
 }
 
@@ -1355,7 +1419,7 @@ function display_mitigation_controls_script(){
 /*********************************
 * FUNCTION: view_review_details *
 *********************************/
-function view_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment)
+function view_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment, $template_group_id=1)
 {
     global $lang;
     global $escaper;
@@ -1377,7 +1441,7 @@ function view_review_details($id, $review_id, $review_date, $reviewer, $review, 
         {
             // Include the extra
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-            $active_fields = get_active_fields();
+            $active_fields = get_active_fields("risk", $template_group_id);
 
             echo "<div class=\"row-fluid\">\n";
                 // Left Panel
@@ -1427,7 +1491,7 @@ function view_review_details($id, $review_id, $review_date, $reviewer, $review, 
 
         echo "<u>".$escaper->escapeHtml($lang['ReviewHistory'])."</u>";
 
-        get_reviews($id);
+        get_reviews($id, $template_group_id);
 
     echo "</div>\n";
 
@@ -1505,7 +1569,7 @@ function view_print_review_details($id, $review_date, $reviewer, $review, $next_
 /************************************
 * FUNCTION: edit_review_submission *
 ************************************/
-function edit_review_submission($id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review)
+function edit_review_submission($id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review, $template_group_id=1)
 {
     global $lang;
     global $escaper;
@@ -1528,8 +1592,8 @@ function edit_review_submission($id, $review_id, $review, $next_step, $next_revi
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        $active_fields = get_active_fields();
-        $inactive_fields = get_inactive_fields();
+        $active_fields = get_active_fields("risk", $template_group_id);
+        $inactive_fields = get_inactive_fields("risk", $template_group_id);
 
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
@@ -2162,8 +2226,7 @@ function edit_contributing_risk_score($ContributingLikelihood, $ContributingImpa
     global $lang;
     global $escaper;
 
-    $max_likelihood = count(get_table("likelihood"));
-    $max_impact = count(get_table("impact"));
+    $max_likelihood = get_max_value("contributing_risks_likelihood");
     $ContributingLikelihood = $ContributingLikelihood ? $ContributingLikelihood : $max_likelihood;
     $contributing_risks = get_contributing_risks();
     
@@ -2178,7 +2241,7 @@ function edit_contributing_risk_score($ContributingLikelihood, $ContributingImpa
     echo "<tr>\n";
     echo "<td width=\"175\">" . $escaper->escapeHtml($lang['ContributingLikelihood']) . ":</td>\n";
     echo "<td width=\"200\">\n";
-    create_dropdown("likelihood", $ContributingLikelihood, "ContributingLikelihood", false);
+    create_dropdown("contributing_risks_likelihood", $ContributingLikelihood, "ContributingLikelihood", false);
     echo "</td>\n";
     echo "<td colspan='2'>&nbsp;</td>\n";
     echo "</tr>\n";
@@ -2195,12 +2258,14 @@ function edit_contributing_risk_score($ContributingLikelihood, $ContributingImpa
     echo "</tr>\n";
 
     foreach($contributing_risks as $contributing_risk){
+        $impacts = get_impact_values_from_contributing_risks_id($contributing_risk['id']);
+        $max_impact = max(array_column($impacts, 'value'));
         echo "<tr>\n";
         echo "<td >" . $escaper->escapeHtml($contributing_risk['subject']) . "</td>\n";
         echo "<td >" . $escaper->escapeHtml($contributing_risk['weight']) . "</td>\n";
         $impact = empty($ContributingImpacts[$contributing_risk["id"]]) ? $max_impact : $ContributingImpacts[$contributing_risk["id"]];
         echo "<td >\n";
-        create_dropdown("impact", $impact, "ContributingImpacts[{$contributing_risk["id"]}]", false);
+        create_dropdown("", $impact, "ContributingImpacts[{$contributing_risk["id"]}]", false, false, false, "", "--", "", true, 0, $impacts);
         echo "</td>\n";
         echo "<td>&nbsp;</td>\n";
         echo "</tr>\n";
@@ -2636,11 +2701,22 @@ function contributing_risk_scoring_table($id, $calculated_risk, $Contributing_Li
     global $lang;
     global $escaper;
 
-    echo "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border:none;\">\n";
+    $max_likelihood = get_max_value("contributing_risks_likelihood");
+    $max_likelihood_name = get_name_by_value("contributing_risks_likelihood", $max_likelihood);
+    $Contributing_Likelihood = $Contributing_Likelihood ? $Contributing_Likelihood : $max_likelihood;
+    $Contributing_Likelihood_name = get_name_by_value("contributing_risks_likelihood", $Contributing_Likelihood);
 
-    echo "<tr>\n";
-    echo "<td colspan=\"3\"><h4>" . $escaper->escapeHtml($lang['ContributingRiskScoring']) . "</h4></td>\n";
-    echo "<td colspan=\"3\" style=\"vertical-align:top;\">\n";
+    echo "
+        <style> 
+            table.risk_scores .header-row{
+                color: #ffffff;
+                background: #6f6f6f;
+                line-height: 2em;
+            }
+            
+        </style>";
+
+    echo "<div class=\" pull-left\"><h4>" . $escaper->escapeHtml($lang['ContributingRiskScoring']) . "</h4></div>\n";
     echo "<div class=\"btn-group pull-right sorting-buttons\">\n";
     echo "<a class=\"btn updateScore\" href=\"#\" onclick=\"javascript:updateScore()\">" . $escaper->escapeHtml($lang['UpdateContributingRiskScore']) . "</a>\n";
     echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($lang['RiskScoringActions']) . "<span class=\"caret\"></span></a>\n";
@@ -2653,66 +2729,61 @@ function contributing_risk_scoring_table($id, $calculated_risk, $Contributing_Li
     echo "<li><a class='score-action' data-method='5' href=\"view.php?type=".$type."&id=". $escaper->escapeHtml($id) ."&scoring_method=5\">" . $escaper->escapeHtml($lang['ScoreByCustom']) . "</a></li>\n";
     echo "</ul>\n";
     echo "</div>\n";
-    echo "</td>\n";
+
+    echo "<table class=\"risk_scores\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"1\">\n";
+    echo "<tr class=\"header-row\">\n";
+    echo "<th colspan=\"2\" align=\"center\"><u>" . $escaper->escapeHtml($lang['ContributingLikelihood']) . "</u></th>\n";
+    echo "</tr>\n";
+    echo "<tr class=\"header-row\">\n";
+    echo "<th align=\"center\" width=\"50%\">" . $escaper->escapeHtml($lang['Selected']) . "</th>\n";
+    echo "<th align=\"center\" width=\"50%\">" . $escaper->escapeHtml($lang['MaximumValue']) . "</th>\n";
+    echo "</tr>\n";
+    echo "<tr>\n";
+    echo "<td align=\"center\">[ ".$Contributing_Likelihood." ] ".$Contributing_Likelihood_name . "</td>\n";
+    echo "<td align=\"center\">[ ".$max_likelihood." ] ".$max_likelihood_name."</td>\n";
+    echo "</tr>\n";
+    echo "</table>\n";
+    echo "<br>";
+
+    echo "<table class=\"risk_scores\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"1\">\n";
+    echo "<tr class=\"header-row\">\n";
+    echo "<th colspan=\"4\" align=\"center\"><u>" . $escaper->escapeHtml($lang['ContributingImpact']) . "</u></td>\n";
+    echo "</tr>\n";
+    echo "<tr class=\"header-row\">\n";
+    echo "<th align=\"center\" width=\"20%\">" . $escaper->escapeHtml($lang['Subject']) . "</th>\n";
+    echo "<th align=\"center\" width=\"20%\">" . $escaper->escapeHtml($lang['Weight']) . "</th>\n";
+    echo "<th align=\"center\" width=\"30%\">" . $escaper->escapeHtml($lang['Selected']) . "</th>\n";
+    echo "<th align=\"center\" width=\"30%\">" . $escaper->escapeHtml($lang['MaximumValue']) . "</th>\n";
     echo "</tr>\n";
 
-    echo "<tr>\n";
-    echo "<td colspan=\"6\">&nbsp;</td>\n";
-    echo "</tr>\n";
-
-    $max_impact = count(get_table("impact"));
-    $max_likelihood = count(get_table("likelihood"));
-    $Contributing_Likelihood = $Contributing_Likelihood ? $Contributing_Likelihood : $max_likelihood;
-    
-    echo "<tr>\n";
-    echo "<td >". $escaper->escapeHtml($lang['ContributingLikelihood']) .":</td>\n";
-    echo "<td >[ " . $escaper->escapeHtml($Contributing_Likelihood) . " ]</td>\n";
-    echo "<td>" . $escaper->escapeHtml(get_name_by_value("likelihood", $Contributing_Likelihood)) . "</td>\n";
-    echo "<td colspan='3'>&nbsp;</td>\n";
-    echo "</tr>\n";
-    
     $contributing_risks = get_contributing_risks();
     
-    $impact_formula_string = "";
+    $contributing_likelihood_formula = "( ".$escaper->escapeHtml($Contributing_Likelihood)." X 5 / ".$escaper->escapeHtml($max_likelihood)." )";
+    $contributing_impact_formula = array();
     
     foreach($contributing_risks as $index => $contributing_risk){
-        echo "<tr>\n";
-        echo "<td width=\"20%\">". $escaper->escapeHtml($lang['Weight']). ($index+1) .":</td>\n";
-        echo "<td width=\"10%\">[ " . $escaper->escapeHtml($contributing_risk['weight']) . " ]</td>\n";
-        echo "<td width=\"20%\">". $escaper->escapeHtml($contributing_risk['subject']) ."</td>\n";
-        
-        echo "<td width=\"20%\">". $escaper->escapeHtml($lang['Impact']). ($index+1) .":</td>\n";
+        $impacts = get_impact_values_from_contributing_risks_id($contributing_risk['id']);
+        $impact_names = [];
+        foreach($impacts as $row){
+            $impact_names[$row['value']] = $row['name'];
+        }
+        $max_impact = max(array_column($impacts, 'value'));
+        $max_impact_name = $impact_names[$max_impact];
         $impact = empty($Contributing_Impacts[$contributing_risk['id']]) ? $max_impact : $Contributing_Impacts[$contributing_risk['id']];
-        
-        echo "<td width=\"10%\">[ " . $escaper->escapeHtml($impact) . " ]</td>\n";
-        echo "<td width=\"20%\">". $escaper->escapeHtml(get_name_by_value("impact", $impact)) .":</td>\n";
+        $impact_name = $impact_names[$impact];
+        echo "<tr>\n";
+        echo "<td align=\"center\">". $escaper->escapeHtml($contributing_risk['subject']) ."</td>\n";
+        echo "<td align=\"center\">". $escaper->escapeHtml($contributing_risk['weight']) ."</td>\n";
+        echo "<td align=\"center\">[ " . $escaper->escapeHtml($impact) . " ] ".$escaper->escapeHtml($impact_name)."</td>\n";
+        echo "<td align=\"center\">[ " . $escaper->escapeHtml($max_impact) . " ] ".$escaper->escapeHtml($max_impact_name)."</td>\n";
         echo "</tr>\n";
-        
-        $impact_formula_string .= " + ( ". $escaper->escapeHtml($contributing_risk['weight']) ." X ". $escaper->escapeHtml($impact) ." ) ";
+        $contributing_impact_formula[] = " ( ".$escaper->escapeHtml($contributing_risk['weight'])." X (".$escaper->escapeHtml($impact)." X 5 / ".$escaper->escapeHtml($max_impact)."))"; 
     }
-    
-    echo "<tr>\n";
-    echo "<td >". $escaper->escapeHtml($lang['MaxLikelihood']) .":</td>\n";
-    echo "<td >[ " . $escaper->escapeHtml($max_likelihood) . " ]</td>\n";
-    echo "<td >&nbsp;</td>\n";
-    echo "<td >". $escaper->escapeHtml($lang['MaxImpact']) .":</td>\n";
-    echo "<td >[ " . $escaper->escapeHtml($max_impact) . " ]</td>\n";
-    echo "<td >&nbsp;</td>\n";
-    echo "</tr>\n";
-    
-    echo "<tr>\n";
-    echo "<td colspan=\"6\">&nbsp;</td>\n";
-    echo "</tr>\n";
-
-    echo "<tr>\n";
-    echo "<td colspan=\"6\"><b>RISK = ( " . $escaper->escapeHtml($Contributing_Likelihood) . $impact_formula_string . " ) X ( 10 / ( ". $max_likelihood . " + " . $max_impact ." ) ) = ". $escaper->escapeHtml($calculated_risk) ." </b></td>\n";
-    echo "</tr>\n";
-    
-    echo "<tr>\n";
-    echo "<td colspan=\"9\">&nbsp;</td>\n";
-    echo "</tr>\n";
-
     echo "</table>\n";
+    echo "<br>";
+    $risk_formula = $contributing_likelihood_formula . " +  (" . implode(" + ", $contributing_impact_formula) . " = ".$escaper->escapeHtml($calculated_risk);
+    
+    echo "<b>RISK = ".$risk_formula." </b>\n";
 }
 
 /*******************************
@@ -3553,17 +3624,17 @@ function view_top_menu($active)
         echo "</div>\n";
 
         // If the user is logged in
-        if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
+        if (isset($_SESSION["access"]) && $_SESSION["access"] == "1")
         {
             // Show the user profile menu
             echo "<div class=\"btn-group pull-right\">\n";
             echo "<a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
             echo "<ul class=\"dropdown-menu\">\n";
             echo "<li>\n";
-            echo "<a href=\"account/profile.php\">". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
+            echo "<a href=\"account/profile.php\"><i class=\"fa fa-user\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
             echo "</li>\n";
             echo "<li>\n";
-            echo "<a href=\"logout.php\">". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
+            echo "<a href=\"logout.php\"><i class=\"fa fa-sign-out\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
             echo "</li>\n";
             echo "</ul>\n";
             echo "</div>\n";
@@ -3585,7 +3656,7 @@ function view_top_menu($active)
 // echo "</li>\n";
 
         // If the user has governance permissions
-        if (check_permission_governance())
+        if (check_permission("governance"))
         {
             echo ($active == "Governance" ? "<li class=\"active\">\n" : "<li>\n");
             echo "<a href=\"../governance/index.php\">" . $escaper->escapeHtml($lang['Governance']) . "</a>\n";
@@ -3593,7 +3664,7 @@ function view_top_menu($active)
         }
 
         // If the user has risk management permissions
-        if (check_permission_riskmanagement())
+        if (check_permission("riskmanagement"))
         {
             echo ($active == "RiskManagement" ? "<li class=\"active\">\n" : "<li>\n");
             echo "<a href=\"../management/index.php\">" . $escaper->escapeHtml($lang['RiskManagement']) . "</a>\n";
@@ -3601,7 +3672,7 @@ function view_top_menu($active)
         }
 
         // If the user has compliance permissions
-        if (check_permission_compliance())
+        if (check_permission("compliance"))
         {
             echo ($active == "Compliance" ? "<li class=\"active\">\n" : "<li>\n");
             echo "<a href=\"../compliance/index.php\">" . $escaper->escapeHtml($lang['Compliance']) . "</a>\n";
@@ -3641,14 +3712,14 @@ function view_top_menu($active)
 
 
         // If the user is logged in
-        if (isset($_SESSION["access"]) && $_SESSION["access"] == "granted")
+        if (isset($_SESSION["access"]) && $_SESSION["access"] == "1")
         {
             // Show the user profile menu
             echo "<div class=\"pull-right user--info\">\n";
             echo "<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">" . $escaper->escapeHtml($_SESSION['name']) . "<span class=\"caret\"></span></a>\n";
             echo "<ul class=\"dropdown-menu\">\n";
             echo "<li>\n";
-            echo "<a href=\"../account/profile.php\">". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
+            echo "<a href=\"../account/profile.php\"><i class=\"fa fa-user\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
             echo "</li>\n";
 
             if (organizational_hierarchy_extra()) {
@@ -3685,7 +3756,7 @@ function view_top_menu($active)
 
                 echo "
                     <li class='dropdown-submenu pull-left business-units'>
-                        <a href='#'>" . $escaper->escapeHtml($lang['BusinessUnits']) . "</a>
+                        <a href='#'><i class=\"fa fa-briefcase\"></i>&nbsp&nbsp;" . $escaper->escapeHtml($lang['BusinessUnits']) . "</a>
                         <ul class='dropdown-menu'>
                             " . get_available_business_unit_menu_items() . "
                         </ul>
@@ -3693,7 +3764,7 @@ function view_top_menu($active)
                 ";
             }
             echo "<li>\n";
-            echo "<a href=\"../logout.php\">". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
+            echo "<a href=\"../logout.php\"><i class=\"fa fa-sign-out\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
             echo "</li>\n";
             echo "</ul>\n";
             echo "</div>\n";
@@ -3703,18 +3774,39 @@ function view_top_menu($active)
             echo "<div class=\"pull-right help\">\n";
             echo "<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\"><img src=\"../images/helpicon-top.png\"><span class=\"caret\"></span></a>\n";
             echo "<ul class=\"dropdown-menu\">\n";
+	    echo "<li>\n";
+	    echo "<a href=\"https://help.simplerisk.com/index.php?page=" . get_request_uri() . "\" target=\"_blank\"><i class=\"fa fa-info-circle\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['AboutThisPage']) ."</a>\n";
+	    echo "</li>\n";
             echo "<li>\n";
-            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000228831\" target=\"_blank\">". $escaper->escapeHtml($lang['HowToVideos']) ."</a>\n";
+            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000228831\" target=\"_blank\"><i class=\"fa fa-video-camera\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['HowToVideos']) ."</a>\n";
             echo "</li>\n";
             echo "<li>\n";
-            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000168810\" target=\"_blank\">". $escaper->escapeHtml($lang['FAQs']) ."</a>\n";
+            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000168810\" target=\"_blank\"><i class=\"fa fa-question-circle\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['FAQs']) ."</a>\n";
             echo "</li>\n";
             echo "<li>\n";
-            echo "<a href=\"https://github.com/simplerisk/documentation/raw/master/SimpleRisk%20Release%20Notes%20" . $escaper->escapeHtml(get_latest_app_version()) . ".pdf\" target=\"_blank\">". $escaper->escapeHtml($lang['WhatsNew']) ."</a>\n";
+            echo "<a href=\"https://github.com/simplerisk/documentation/raw/master/SimpleRisk%20Release%20Notes%20" . $escaper->escapeHtml(get_latest_app_version()) . ".pdf\" target=\"_blank\"><i class=\"fa fa-newspaper-o\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['WhatsNew']) ."</a>\n";
             echo "</li>\n";
             echo "<li>\n";
-            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/articles/6000190811\" target=\"_blank\">". $escaper->escapeHtml($lang['Roadmap']) ."</a>\n";
+            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/articles/6000190811\" target=\"_blank\"><i class=\"fa fa-map\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['Roadmap']) ."</a>\n";
             echo "</li>\n";
+	    echo "<li>\n";
+	    echo "<a href=\"https://simplerisk.freshdesk.com/support/solutions\" target=\"_blank\"><i class=\"fa fa-cloud\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['SupportPortal']) ."</a>\n";
+	    echo "</li>\n";
+	    echo "<li>\n";
+	    echo "<a href=\"https://simplerisk.freshdesk.com/support/tickets/new\" target=\"_blank\"><i class=\"fa fa-ticket\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['WebSupport']) ."</a>\n";
+	    echo "</li>\n";
+	    echo "<li>\n";
+	    echo "<a href=\"mailto: support@simplerisk.com\"><i class=\"fa fa-envelope\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['EmailSupport']) ."</a>\n";
+	    echo "</li>\n";
+
+	    // If the user has support enabled
+	    if (isset($_SESSION['support']) && $_SESSION['support'] == "true")
+	    {
+		    echo "<li>\n";
+		    echo "<a href=\"https://www.simplerisk.com/schedule/support\" target=\"_blank\"><i class=\"fa fa-phone\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['PhoneSupport']) ."</a>\n";
+		    echo "</li>\n";
+	    }
+
             echo "</ul>\n";
             echo "</div>\n";
 
@@ -4264,7 +4356,7 @@ function view_risks_and_assets_selections($report, $sortby, $asset_tags)
 /******************************************
 * FUNCTION: VIEW GET RISKS BY SELECTIONS *
 ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_percent=false, $mitigation_team=false, $mitigation_accepted=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $closure_date=false,$comments=false, $custom_values=[])
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[])
 {
     global $lang, $escaper;
     
@@ -4337,7 +4429,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $id=true, $r
     echo "</div></div>\n";
 
     // Risk columns
-    echo display_risk_columns( $id, $risk_status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $submitted_by, $scoring_method, $calculated_risk, $residual_risk, $submission_date, $review_date, $project, $mitigation_planned, $management_review, $days_open, $next_review_date, $next_step, $affected_assets, $planning_strategy, $planning_date, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_percent, $mitigation_team, $mitigation_accepted, $mitigation_date, $mitigation_controls, $risk_assessment, $additional_notes, $current_solution, $security_recommendations, $security_requirements, $risk_tags, $closure_date, $comments, $custom_values);
+    echo display_risk_columns($risk_columns, $mitigation_columns, $review_columns, $scoring_columns);
     
     echo "</form>\n";
     echo "<script>
@@ -4503,14 +4595,14 @@ function display_save_dynamic_risk_selections()
                     var type = $('#saved-selection-type', self).val();
                     var name = $('input[name=name]', self).val();
                     
-                    var checkBoxes = $(\"form[name='get_risks_by'] .hidden-checkbox\");
                     var viewColumns = [];
-                    checkBoxes.each(function(){
-                        if($(this).is(':checked'))
-                            viewColumns.push($(this).attr('name'));
-                    });
+                    var risk_columns = $('#risk_columns').val();
+                    var mitigation_columns = $('#mitigation_columns').val();
+                    var review_columns = $('#review_columns').val();
+                    var scoring_columns = $('#scoring_columns').val();
+                    var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns);
                     var columnFilters = [];
-                    $('.risk-datatable .dynamic-column-filter').each(function(i){
+                    $('.risk-datatable:first .dynamic-column-filter').each(function(i){
                         if($(this).val().length > 0){
                             var data_name = $(this).attr('data-name');
                             columnFilters.push([data_name,$(this).val()]);
@@ -4527,15 +4619,15 @@ function display_save_dynamic_risk_selections()
                         data:{
                             type: type,
                             name: name,
-                            columns: viewColumns,
+                            columns: selected_columns,
                             selects: selectFilters,
                             columnFilters: columnFilters,
                         },
                         success: function(res){
                             var value = res.data.value;
-                            var name = escapeHTML(res.data.name);
                             if(value)
                             {
+                                var name = escapeHTML(res.data.name);
                                 $('#saved_selections').append('<option value='+value+'>'+name+'</option>');
                                 self[0].reset();
                             }
@@ -4588,7 +4680,7 @@ function display_save_dynamic_risk_selections()
 /*********************************
 * FUNCTION: DISPLAY RISK COLUMNS *
 **********************************/
-function display_risk_columns( $id=true, $risk_status=false, $subject=true, $reference_id=false, $regulation=false, $control_number=false, $location=false, $source=false, $category=false, $team=false, $additional_stakeholders=false, $technology=false, $owner=false, $manager=false, $submitted_by=false, $scoring_method=false, $calculated_risk=true, $residual_risk=true, $submission_date=true, $review_date=false, $project=false, $mitigation_planned=true, $management_review=true, $days_open=false, $next_review_date=false, $next_step=false, $affected_assets=false, $planning_strategy=false, $planning_date=false, $mitigation_effort=false, $mitigation_cost=false, $mitigation_owner=false, $mitigation_percent=false, $mitigation_team=false, $mitigation_accepted=false, $mitigation_date=false, $mitigation_controls=false, $risk_assessment=false, $additional_notes=false, $current_solution=false, $security_recommendations=false, $security_requirements=false, $risk_tags=false, $closure_date=false, $comments=false, $custom_values=[]){
+function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[]){
     global $escaper, $lang;
     echo "
         <div class=\"well\" id='column-selections-container'>
@@ -4596,580 +4688,103 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
               <span><i class=\"fa fa-caret-right\"></i>".$escaper->escapeHtml($lang['ColumnSelections'])."</span>
           </h4>
           <div class=\"collapsible\" style=\"display: none;\">";
-    echo "<div class=\"row-fluid\">\n";
 
-    
+    $risk_columns_option = [];
+    $risk_columns_selected = [];
+    $mitigation_columns_option = [];
+    $mitigation_columns_selected = [];
+    $review_columns_option = [];
+    $review_columns_selected = [];
+    $scoring_columns_option = [];
+    $scoring_columns_selected = [];
+
     // If customization extra is enabled
     if(customization_extra())
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        $active_fields = get_active_fields();
-
-        $risk_fields = [];
-        $mitigation_fields = [];
-        $review_fields = [];
-        
-        foreach($active_fields as $active_field)
-        {
-            switch($active_field['tab_index']){
-                case 1:
-                    $risk_fields[] = $active_field;
-                break;
-                case 2:
-                    $mitigation_fields[] = $active_field;
-                break;
-                case 3:
-                    $review_fields[] = $active_field;
-                break;
+        foreach($risk_columns as $column=>$value){
+            if(stripos($column, "custom_field_") !== false){
+                $field_id = str_replace("custom_field_", "", $column);
+                $custom_field = get_field_by_id($field_id);
+                $name = $custom_field['name'];
+            } else {
+                $name = get_label_by_risk_field_name($column);
             }
+            $risk_columns_option[] = array('value'=>$column, 'name'=>$name);
+            if($value == true) $risk_columns_selected[] = $column;
         }
-        
-        // Risks
-        echo "<div class=\"span8\">\n";
-            echo "<div class=\"well\">\n";
-                echo "<h4>" . $escaper->escapeHtml($lang['RiskColumns']) . ":</h4>\n";
-                echo "<div class=\"row-fluid\">\n";
-                    echo "<div class=\"span4\">\n";
-                        echo "<table border=\"0\">\n";
-                            echo "<tr><td><input class=\"hidden-checkbox\" type=\"checkbox\" name=\"id\" id=\"checkbox_id\"" . ($id == true ? " checked=\"yes\"" : "") . "  /> <label for=\"checkbox_id\">". $escaper->escapeHtml($lang['ID']) ."</label> </td></tr>\n";
-                            
-                            echo "<tr>
-                                <td>
-                                    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"risk_status\" id=\"checkbox_risk_status\"" . ($risk_status == true ? " checked=\"yes\"" : "") . " />
-                                    <label for=\"checkbox_risk_status\">". $escaper->escapeHtml($lang['Status']) ."</label>
-                                </td>
-                            </tr>\n";
-                            echo "<tr>
-                                <td>
-                                    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"closure_date\" id=\"checkbox_closure_date\"" . ($closure_date == true ? " checked=\"yes\"" : "") . " />
-                                    <label for=\"checkbox_closure_date\">". $escaper->escapeHtml($lang['DateClosed']) ."</label>
-                                </td>
-                            </tr>\n";
-                            echo "<tr>
-                                <td>
-                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"subject\" id=\"checkbox_subject\"" . ($subject == true ? " checked=\"yes\"" : "") . "  />
-                                <label for=\"checkbox_subject\">". $escaper->escapeHtml($lang['Subject']) ."</label>
-                            </tr>\n";
-                        
-                            $count_of_items = floor(count($risk_fields) / 3);    
-                            for($i=0; $i<$count_of_items; $i++){
-                                $risk_field = $risk_fields[$i];
-                                // If this is main field
-                                if($risk_field['is_basic'] == 1) 
-                                {
-                                    $dynamic_field_info = get_dynamic_names_by_main_field_name($risk_field['name']);
-                                    
-                                    // If this main field is valid in dynamic risk page.
-                                    if($dynamic_field_info)
-                                    {
-                                        echo "<tr>
-                                            <td>
-                                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"{$dynamic_field_info['name']}\" id=\"checkbox_{$dynamic_field_info['name']}\"" . (${$dynamic_field_info['name']} == true ? " checked=\"yes\"" : "") . "  />
-                                            <label for=\"checkbox_{$dynamic_field_info['name']}\">". $dynamic_field_info['text'] ."</label>
-                                        </tr>\n";
-                                    }
-                                }
-                                // If this is custom field.
-                                else
-                                {
-                                    echo "<tr>
-                                        <td>
-                                        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$risk_field['id']}\" id=\"checkbox_custom_field_{$risk_field['id']}\"" . (!empty($custom_values["custom_field_{$risk_field['id']}"]) == true ? " checked=\"yes\"" : "") . "  />
-                                        <label for=\"checkbox_custom_field_{$risk_field['id']}\">". $escaper->escapeHtml($risk_field['name']) ."</label>
-                                    </tr>\n";
-                                }
-                            }
-                        echo "</table>\n";
-                    echo "</div>";
-                    echo "<div class=\"span4\">";
-                        echo "<table border=\"0\">\n";
-                            echo "<tr>
-                                <td>
-                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"calculated_risk\" id=\"checkbox_calculated_risk\"" . ($calculated_risk == true ? " checked=\"yes\"" : "") . "  />
-                                <label for=\"checkbox_calculated_risk\">". $escaper->escapeHtml($lang['InherentRisk']) ."</label>
-                                </td>
-                            </tr>\n";
-                            echo "<tr>
-                                <td>
-                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"residual_risk\" id=\"checkbox_residual_risk\"" . ($residual_risk == true ? " checked=\"yes\"" : "") . "  />
-                                <label for=\"checkbox_residual_risk\">". $escaper->escapeHtml($lang['ResidualRisk']) ."</label>
-                                </td>
-                            </tr>\n";
-                            echo "<tr>
-                                <td>
-                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"project\" id=\"checkbox_project\"" . ($project == true ? " checked=\"yes\"" : "") . " />
-                                <label for=\"checkbox_project\">". $escaper->escapeHtml($lang['Project']) ."</label>
-                                </td>
-                            </tr>\n";
-                            echo "<tr>
-                                <td>
-                                <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"days_open\" id=\"checkbox_days_open\"" . ($days_open == true ? " checked=\"yes\"" : "") . "  />
-                                <label for=\"checkbox_days_open\">". $escaper->escapeHtml($lang['DaysOpen']) ."</label>
-                                </td>
-                            </tr>\n";
-                            for($i; $i<$count_of_items + $count_of_items; $i++){
-                                $risk_field = $risk_fields[$i];
-                                // If this is main field
-                                if($risk_fields[$i]['is_basic'] == 1) 
-                                {
-                                    $dynamic_field_info = get_dynamic_names_by_main_field_name($risk_field['name']);
-                                    // If this main field is valid in dynamic risk page.
-                                    if($dynamic_field_info)
-                                    {
-                                        echo "<tr>
-                                            <td>
-                                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"{$dynamic_field_info['name']}\" id=\"checkbox_{$dynamic_field_info['name']}\"" . (${$dynamic_field_info['name']} == true ? " checked=\"yes\"" : "") . "  />
-                                            <label for=\"checkbox_{$dynamic_field_info['name']}\">". $dynamic_field_info['text'] ."</label>
-                                        </tr>\n";
-                                    }
-                                }
-                                // If this is custom field.
-                                else
-                                {
-                                    echo "<tr>
-                                        <td>
-                                        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$risk_field['id']}\" id=\"checkbox_custom_field_{$risk_field['id']}\"" . (!empty($custom_values["custom_field_{$risk_field['id']}"]) == true ? " checked=\"yes\"" : "") . "  />
-                                        <label for=\"checkbox_custom_field_{$risk_field['id']}\">". $escaper->escapeHtml($risk_field['name']) ."</label>
-                                    </tr>\n";
-                                }
-                            }
-                            
-                        echo "</table>\n";
-                    echo "</div>";
-                    
-                    echo "<div class=\"span4\">";
-                        echo "<table border=\"0\">\n";
-                            for($i; $i<count($risk_fields); $i++){
-                                $risk_field = $risk_fields[$i];
-                                // If this is main field
-                                if($risk_fields[$i]['is_basic'] == 1) 
-                                {
-                                    $dynamic_field_info = get_dynamic_names_by_main_field_name($risk_field['name']);
-                                    // If this main field is valid in dynamic risk page.
-                                    if($dynamic_field_info)
-                                    {
-                                        echo "<tr>
-                                            <td>
-                                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"{$dynamic_field_info['name']}\" id=\"checkbox_{$dynamic_field_info['name']}\"" . (${$dynamic_field_info['name']} == true ? " checked=\"yes\"" : "") . "  />
-                                            <label for=\"checkbox_{$dynamic_field_info['name']}\">". $dynamic_field_info['text'] ."</label>
-                                        </tr>\n";
-                                    }
-                                }
-                                // If this is custom field.
-                                else
-                                {
-                                    echo "<tr>
-                                        <td>
-                                        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$risk_field['id']}\" id=\"checkbox_custom_field_{$risk_field['id']}\"" . (!empty($custom_values["custom_field_{$risk_field['id']}"]) ? " checked=\"yes\"" : "") . "  />
-                                        <label for=\"checkbox_custom_field_{$risk_field['id']}\">". $escaper->escapeHtml($risk_field['name']) ."</label>
-                                    </tr>\n";
-                                }
-                            }
-                        echo "</table>\n";
-                    echo "</div>";
-
-                echo "</div>";
-            echo "</div>";
-        echo "</div>";
-        
-        echo "<div class=\"span4\">\n";
-            echo "<div class=\"well\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                    echo "<h4>" . $escaper->escapeHtml($lang['MitigationColumns']) . ":</h4>\n";
-                    echo "<table border=\"0\">\n";    
-                        echo "<tr>
-                            <td>
-                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_planned\" id=\"checkbox_mitigation_planned\"" . ($mitigation_planned == true ? " checked=\"yes\"" : "") . " />
-                            <label for=\"checkbox_mitigation_planned\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</label>
-                            </td>
-                        </tr>\n";
-//                        echo "<tr>
-//                            <td>
-//                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_date\" id=\"checkbox_mitigation_date\"" . ($mitigation_date == true ? " checked=\"yes\"" : "") . " />
-//                            <label for=\"checkbox_mitigation_date\">". $escaper->escapeHtml($lang['MitigationDate']) ."</label>
-//                            </td>
-//                        </tr>\n";
-
-                        foreach($mitigation_fields as $mitigation_field)
-                        {
-                            // If this is main field
-                            if($mitigation_field['is_basic'] == 1) 
-                            {
-                                $dynamic_field_info = get_dynamic_names_by_main_field_name($mitigation_field['name']);
-                                // If this main field is valid in dynamic risk page.
-                                if($dynamic_field_info)
-                                {
-                                    echo "<tr>
-                                        <td>
-                                        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"{$dynamic_field_info['name']}\" id=\"checkbox_{$dynamic_field_info['name']}\"" . (${$dynamic_field_info['name']} == true ? " checked=\"yes\"" : "") . "  />
-                                        <label for=\"checkbox_{$dynamic_field_info['name']}\">". $dynamic_field_info['text'] ."</label>
-                                    </tr>\n";
-                                }
-                            }
-                            else
-                            {
-                                echo "<tr>
-                                    <td>
-                                    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$mitigation_field['id']}\" id=\"checkbox_custom_field_{$mitigation_field['id']}\"" . (!empty($custom_values["custom_field_{$mitigation_field['id']}"]) == true ? " checked=\"yes\"" : "") . "  />
-                                    <label for=\"checkbox_custom_field_{$mitigation_field['id']}\">". $escaper->escapeHtml($mitigation_field['name']) ."</label>
-                                </tr>\n";
-                            }
-                        }
-                        
-                    echo "</table>\n";    
-                echo "</div>";
-            echo "</div>";
-        echo "</div>";
-
-        echo "<div class=\"span4\" style=\"float: right\">\n";
-            echo "<div class=\"well\">\n";
-                echo "<div class=\"row-fluid\">\n";
-                    echo "<h4>" . $escaper->escapeHtml($lang['ReviewColumns']) . ":</h4>\n";
-                    echo "<table border=\"0\">\n"; 
-                        echo "<tr>
-                            <td>
-                            <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"management_review\" id=\"checkbox_management_review\"" . ($management_review == true ? " checked=\"yes\"" : "") . " />
-                            <label for=\"checkbox_management_review\">". $escaper->escapeHtml($lang['ManagementReview']) ."</label>
-                            </td>
-                        </tr>\n";
-
-                        foreach($review_fields as $review_field)
-                        {
-                            // If this is main field
-                            if($review_field['is_basic'] == 1) 
-                            {
-                                $dynamic_field_info = get_dynamic_names_by_main_field_name($review_field['name']);
-                                // If this main field is valid in dynamic risk page.
-                                if($dynamic_field_info)
-                                {
-                                    echo "<tr>
-                                        <td>
-                                        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"{$dynamic_field_info['name']}\" id=\"checkbox_{$dynamic_field_info['name']}\"" . (${$dynamic_field_info['name']} == true ? " checked=\"yes\"" : "") . "  />
-                                        <label for=\"checkbox_{$dynamic_field_info['name']}\">". $dynamic_field_info['text'] ."</label>
-                                    </tr>\n";
-                                }
-                            }
-                            else
-                            {
-                                echo "<tr>
-                                    <td>
-                                    <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"custom_field_{$review_field['id']}\" id=\"checkbox_custom_field_{$review_field['id']}\"" . (!empty($custom_values["custom_field_{$review_field['id']}"]) ? " checked=\"yes\"" : "") . "  />
-                                    <label for=\"checkbox_custom_field_{$review_field['id']}\">". $escaper->escapeHtml($review_field['name']) ."</label>
-                                </tr>\n";
-                            }
-                        }
-
-                    echo "</table>\n";    
-                echo "</div>";
-            echo "</div>";
-        echo "</div>";
-    } 
-    else
-    {
-        echo "<div class=\"span8\">\n";
-        echo "<div class=\"well\">\n";
-        echo "<div class=\"row-fluid\">\n";
-        echo "<h4>" . $escaper->escapeHtml($lang['RiskColumns']) . ":</h4>\n";
-        echo "<div class=\"span4\">\n";
-        echo "<table border=\"0\">\n";
-        echo "<tr><td><input class=\"hidden-checkbox\" type=\"checkbox\" name=\"id\" id=\"checkbox_id\"" . ($id == true ? " checked=\"yes\"" : "") . "  /> <label for=\"checkbox_id\">". $escaper->escapeHtml($lang['ID']) ."</label> </td></tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"risk_status\" id=\"checkbox_risk_status\"" . ($risk_status == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_risk_status\">". $escaper->escapeHtml($lang['Status']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"closure_date\" id=\"checkbox_closure_date\"" . ($closure_date == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_closure_date\">". $escaper->escapeHtml($lang['DateClosed']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"subject\" id=\"checkbox_subject\"" . ($subject == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_subject\">". $escaper->escapeHtml($lang['Subject']) ."</label>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"reference_id\" id=\"checkbox_reference_id\"" . ($reference_id == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_reference_id\">". $escaper->escapeHtml($lang['ExternalReferenceId']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"regulation\" id=\"checkbox_regulation\"" . ($regulation == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_regulation\">". $escaper->escapeHtml($lang['ControlRegulation']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"control_number\" id=\"checkbox_control_number\"" . ($control_number == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_control_number\">". $escaper->escapeHtml($lang['ControlNumber']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"location\" id=\"checkbox_location\"" . ($location == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_location\">". $escaper->escapeHtml($lang['SiteLocation']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"source\" id=\"checkbox_source\"" . ($source == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_source\">". $escaper->escapeHtml($lang['RiskSource']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"category\" id=\"checkbox_category\"" . ($category == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_category\">". $escaper->escapeHtml($lang['Category']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"team\" id=\"checkbox_team\"" . ($team == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_team\">". $escaper->escapeHtml($lang['Team']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"additional_stakeholders\" id=\"checkbox_additional_stakeholders\"" . ($additional_stakeholders == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_additional_stakeholders\">". $escaper->escapeHtml($lang['AdditionalStakeholders']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"technology\" id=\"checkbox_technology\"" . ($technology == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_technology\">". $escaper->escapeHtml($lang['Technology']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"owner\" id=\"checkbox_owner\"" . ($owner == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_owner\">". $escaper->escapeHtml($lang['Owner']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"manager\" id=\"checkbox_manager\"" . ($manager == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_manager\">". $escaper->escapeHtml($lang['OwnersManager']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"submitted_by\" id=\"checkbox_submitted_by\"" . ($submitted_by == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_submitted_by\">". $escaper->escapeHtml($lang['SubmittedBy']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"risk_tags\" id=\"checkbox_risk_tags\"" . ($risk_tags == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_risk_tags\">". $escaper->escapeHtml($lang['Tags']) ."</label>
-        </td>
-        </tr>\n";
-        echo "</table>\n";
-        echo "</div>\n";
-        echo "<div class=\"span4\">\n";
-        echo "<table border=\"0\">\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"scoring_method\" id=\"checkbox_scoring_method\"" . ($scoring_method == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_scoring_method\">". $escaper->escapeHtml($lang['RiskScoringMethod']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"calculated_risk\" id=\"checkbox_calculated_risk\"" . ($calculated_risk == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_calculated_risk\">". $escaper->escapeHtml($lang['InherentRisk']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"residual_risk\" id=\"checkbox_residual_risk\"" . ($residual_risk == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_residual_risk\">". $escaper->escapeHtml($lang['ResidualRisk']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"submission_date\" id=\"checkbox_submission_date\"" . ($submission_date == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_submission_date\">". $escaper->escapeHtml($lang['SubmissionDate']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"project\" id=\"checkbox_project\"" . ($project == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_project\">". $escaper->escapeHtml($lang['Project']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"days_open\" id=\"checkbox_days_open\"" . ($days_open == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"checkbox_days_open\">". $escaper->escapeHtml($lang['DaysOpen']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"affected_assets\" id=\"AffectedAssets\"" . ($affected_assets == true ? " checked=\"yes\"" : "") . "  />
-        <label for=\"AffectedAssets\">". $escaper->escapeHtml($lang['AffectedAssets']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"risk_assessment\" id=\"RiskAssessment\"" . ($risk_assessment == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"RiskAssessment\">". $escaper->escapeHtml($lang['RiskAssessment']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"additional_notes\" id=\"AdditionalNotes\"" . ($additional_notes == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"AdditionalNotes\">". $escaper->escapeHtml($lang['AdditionalNotes']) ."</label>
-        </td>
-        </tr>\n";
-        echo "</table>\n";
-        echo "</div>\n";
-        echo "</div>\n";
-        echo "</div>\n";
-        echo "</div>\n";
-
-        echo "<div class=\"span4\">\n";
-        echo "<div class=\"well\">\n";
-        echo "<div class=\"row-fluid\">\n";
-        echo "<h4>" . $escaper->escapeHtml($lang['MitigationColumns']) . ":</h4>\n";
-        echo "<table border=\"0\">\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_planned\" id=\"checkbox_mitigation_planned\"" . ($mitigation_planned == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_mitigation_planned\">". $escaper->escapeHtml($lang['MitigationPlanned']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"planning_strategy\" id=\"checkbox_planning_strategy\"" . ($planning_strategy == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_planning_strategy\">". $escaper->escapeHtml($lang['PlanningStrategy']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"planning_date\" id=\"checkbox_planning_date\"" . ($planning_date == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_planning_date\">". $escaper->escapeHtml($lang['MitigationPlanning']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_effort\" id=\"checkbox_mitigation_effort\"" . ($mitigation_effort == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_mitigation_effort\">". $escaper->escapeHtml($lang['MitigationEffort']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_cost\" id=\"checkbox_mitigation_cost\"" . ($mitigation_cost == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_mitigation_cost\">". $escaper->escapeHtml($lang['MitigationCost']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_owner\" id=\"checkbox_mitigation_owner\"" . ($mitigation_owner == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_mitigation_owner\">". $escaper->escapeHtml($lang['MitigationOwner']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_percent\" id=\"checkbox_mitigation_percent\"" . ($mitigation_percent == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_mitigation_percent\">". $escaper->escapeHtml($lang['MitigationPercent']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_team\" id=\"checkbox_mitigation_team\"" . ($mitigation_team == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_mitigation_team\">". $escaper->escapeHtml($lang['MitigationTeam']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_accepted\" id=\"checkbox_mitigation_accepted\"" . ($mitigation_accepted == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_mitigation_accepted\">". $escaper->escapeHtml($lang['MitigationAccepted']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_date\" id=\"checkbox_mitigation_date\"" . ($mitigation_date == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_mitigation_date\">". $escaper->escapeHtml($lang['MitigationDate']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"mitigation_controls\" id=\"checkbox_mitigation_controls\"" . ($mitigation_controls == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_mitigation_controls\">". $escaper->escapeHtml($lang['MitigationControls']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"current_solution\" id=\"CurrentSolution\"" . ($current_solution == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"CurrentSolution\">". $escaper->escapeHtml($lang['CurrentSolution']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"security_recommendations\" id=\"SecurityRecommendations\"" . ($security_recommendations == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"SecurityRecommendations\">". $escaper->escapeHtml($lang['SecurityRecommendations']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"security_requirements\" id=\"SecurityRequirements\"" . ($security_requirements == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"SecurityRequirements\">". $escaper->escapeHtml($lang['SecurityRequirements']) ."</label>
-        </td>
-        </tr>\n";
-        echo "</table>\n";
-        echo "</div>\n";
-        echo "</div>\n";
-        echo "</div>\n";
-
-        echo "<div class=\"span4\">\n";
-        echo "<div class=\"well\">\n";
-        echo "<div class=\"row-fluid\">\n";
-        echo "<h4>" . $escaper->escapeHtml($lang['ReviewColumns']) . ":</h4>\n";
-        echo "<table border=\"0\">\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"management_review\" id=\"checkbox_management_review\"" . ($management_review == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_management_review\">". $escaper->escapeHtml($lang['ManagementReview']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"review_date\" id=\"checkbox_review_date\"" . ($review_date == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_review_date\">". $escaper->escapeHtml($lang['ReviewDate']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"next_review_date\" id=\"checkbox_next_review_date\"" . ($next_review_date == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_next_review_date\">". $escaper->escapeHtml($lang['NextReviewDate']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"next_step\" id=\"checkbox_next_step\"" . ($next_step == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_next_step\">". $escaper->escapeHtml($lang['NextStep']) ."</label>
-        </td>
-        </tr>\n";
-        echo "<tr>
-        <td>
-        <input class=\"hidden-checkbox\" type=\"checkbox\" name=\"comments\" id=\"checkbox_comments\"" . ($comments == true ? " checked=\"yes\"" : "") . " />
-        <label for=\"checkbox_comments\">". $escaper->escapeHtml($lang['Comments']) ."</label>
-        </td>
-        </tr>\n";
-        echo "</table>\n";
-
-        echo "</div>\n";
-        echo "</div>\n";
-        echo "</div>\n";
-
-        echo "</div>\n";
+        foreach($mitigation_columns as $column=>$value){
+            if(stripos($column, "custom_field_") !== false){
+                $field_id = str_replace("custom_field_", "", $column);
+                $custom_field = get_field_by_id($field_id);
+                $name = $custom_field['name'];
+            } else {
+                $name = get_label_by_risk_field_name($column);
+            }
+            $mitigation_columns_option[] = array('value'=>$column, 'name'=>$name);
+            if($value == true) $mitigation_columns_selected[] = $column;
+        }
+        foreach($review_columns as $column=>$value){
+            if(stripos($column, "custom_field_") !== false){
+                $field_id = str_replace("custom_field_", "", $column);
+                $custom_field = get_field_by_id($field_id);
+                $name = $custom_field['name'];
+            } else {
+                $name = get_label_by_risk_field_name($column);
+            }
+            $review_columns_option[] = array('value'=>$column, 'name'=>$name);
+            if($value == true) $review_columns_selected[] = $column;
+        }
+        foreach($scoring_columns as $column=>$value){
+            $name = get_label_by_risk_field_name($column);
+            $scoring_columns_option[] = array('value'=>$column, 'name'=>$name);
+            if($value == true) $scoring_columns_selected[] = $column;
+        }
+    } else {
+        foreach($risk_columns as $column=>$value){
+            $name = get_label_by_risk_field_name($column);
+            $risk_columns_option[] = array('value'=>$column, 'name'=>$name);
+            if($value == true) $risk_columns_selected[] = $column;
+        }
+        foreach($mitigation_columns as $column=>$value){
+            $name = get_label_by_risk_field_name($column);
+            $mitigation_columns_option[] = array('value'=>$column, 'name'=>$name);
+            if($value == true) $mitigation_columns_selected[] = $column;
+        }
+        foreach($review_columns as $column=>$value){
+            $name = get_label_by_risk_field_name($column);
+            $review_columns_option[] = array('value'=>$column, 'name'=>$name);
+            if($value == true) $review_columns_selected[] = $column;
+        }
+        foreach($scoring_columns as $column=>$value){
+            $name = get_label_by_risk_field_name($column);
+            $scoring_columns_option[] = array('value'=>$column, 'name'=>$name);
+            if($value == true) $scoring_columns_selected[] = $column;
+        }
     }
+    echo "<div class=\"row-fluid\">\n";
+        echo "<div class=\"row-fluid\">\n";
+            echo "<div class=\"span4\">\n";
+            echo "<h4>" . $escaper->escapeHtml($lang['RiskColumns']) . ":</h4>\n";
+            create_multiple_dropdown("", $risk_columns_selected, "risk_columns", $risk_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
+            echo "</div>";
+            echo "<div class=\"span4\">\n";
+            echo "<h4>" . $escaper->escapeHtml($lang['MitigationColumns']) . ":</h4>\n";
+            create_multiple_dropdown("", $mitigation_columns_selected, "mitigation_columns", $mitigation_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
+            echo "</div>";
+            echo "<div class=\"span4\">\n";
+            echo "<h4>" . $escaper->escapeHtml($lang['ReviewColumns']) . ":</h4>\n";
+            create_multiple_dropdown("", $review_columns_selected, "review_columns", $review_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
+            echo "</div>";
+        echo "</div>";
+        echo "<div class=\"row-fluid\">\n";
+            echo "<div class=\"span4\">\n";
+            echo "<h4>" . $escaper->escapeHtml($lang['RiskScoringColumns']) . ":</h4>\n";
+            create_multiple_dropdown("", $scoring_columns_selected, "scoring_columns", $scoring_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
+            echo "</div>";
+        echo "</div>";
+    echo "</div>";
     echo "</div></div>\n";
     echo "<script>
             $(document).ready(function(){
@@ -5179,7 +4794,7 @@ function display_risk_columns( $id=true, $risk_status=false, $subject=true, $ref
                     \$(this).find('i').toggleClass('fa-caret-right fa-caret-down');
                 });
             });
-    </script>";
+        </script>";
 
 }
 
@@ -6897,53 +6512,246 @@ function display_contributing_risk_formula()
     echo "
         <table id='template-for-adding' style='display: none'>
             <tr>
+                <td align='center'></td>
+                <td align='center'><input type='text' class='new-name' value=''></td>
+                <td align='center'><a class='delete-row'><i class='fa fa-trash'></i></a></td>
+                <td></td>
+            </tr>
+        </table>
+        <table id='template-for-impact-adding' style='display: none'>
+            <tr>
                 <td align='center'><input type='text' class='subject' required name='subject[]' style='max-width: none'></td>
                 <td align='center'><input type='number' class='weight' required step='0.01' name='weight[]' max='1' min='0'></td>
                 <td align='center'><a class='delete-row' href=''><img src='../images/minus.png' width='15px' height='15px'></a></td>
             </tr>
         </table>
+
     ";
-    
-    echo "<form class=\"contributing_risk_form\" method=\"post\" action=\"\">\n";
+ 
     echo "
-        <table width='100%' id='contributing-risk-table'>
-            <thead>
-                <tr>
-                    <th width='50%'>".$escaper->escapeHtml($lang["Subject"])."</th>
-                    <th width='30%'>".$escaper->escapeHtml($lang["ContributionWeight"])."</th>
-                    <th>&nbsp;</th>
-                </tr>
-            </thead>
-            <tbody>";
-            $contributing_risks = get_contributing_risks();
-            foreach($contributing_risks as $key => $contributing_risk){
-                echo "
+        <div class='well'>
+            <div class='row-fluid'>
+                <div class='span6'><h4>".$escaper->escapeHtml($lang["Likelihood"])."</h4></div>
+                <div class='span6 text-right'><button id='likelihood-add-btn'><i class='fa fa-plus'></i></button></div>
+            </div>
+
+            <table width='100%' id='contributing-risks-likelihood-table'>
+                <thead>
                     <tr>
-                        <td align='center'><input type='text' class='subject' required name='existing_subject[".$contributing_risk["id"]."]' style='max-width: none' value='". $escaper->escapeHtml($contributing_risk['subject']) ."'></td>
-                        <td align='center'><input type='number' class='weight' required step='0.01' name='existing_weight[".$contributing_risk["id"]."]' value='". $escaper->escapeHtml($contributing_risk['weight']) ."' max='1' min='0'></td>
-                        <td align='center' ". ($key==0 ? ("style='display: none'") : "") ."><a class='delete-row' href=''><img src='../images/minus.png' width='15px' height='15px'></a></td>
+                        <th width='10%'>".$escaper->escapeHtml($lang["Value"])."</th>
+                        <th width='40%'>".$escaper->escapeHtml($lang["Name"])."</th>
+                        <th width='20%'>&nbsp;</td>
+                        <th>&nbsp;</th>
                     </tr>
-                ";
-            }
-            
-            echo "</tbody>
-            <tfoot>
-                <tr>
-                    <td align='center'>&nbsp;</td>
-                    <td align='center'>&nbsp;</td>
-                    <td align='center'><a class='add-row' href=''><img src='../images/plus.png' width='15px' height='15px'></a></td>
-                </tr>
-                
-                <tr>
-                    <td colspan='3' align='right'><button type='submit' name='save_contributing_risk'>".$escaper->escapeHtml($lang["Save"])."</button></td>
-                </tr>
-            </tfoot>
-        </table>
+                </thead>
+                <tbody>";
+                $table_list = display_contributing_risks_likelihood_table_list();
+                echo $table_list;
+                echo "</tbody>
+            </table>
+        </div>
     ";
-    echo "</form>\n";
+    echo "
+        <div class='well'>
+            <div class='row-fluid'>
+                <div class='span6'><h4>".$escaper->escapeHtml($lang["Impact"])."</h4></div>
+                <div class='span6 text-right'><button id='add-impact-row'>".$escaper->escapeHtml($lang["AddImpact"])."</button></div>
+            </div>
+            <form class=\"contributing_risk_form\" method=\"post\" action=\"\">\n
+            <table width='100%' id='contributing-risk-table'>
+                <thead>
+                    <tr>
+                        <th width='50%'>".$escaper->escapeHtml($lang["Subject"])."</th>
+                        <th width='30%'>".$escaper->escapeHtml($lang["ContributionWeight"])."</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody>";
+                $contributing_risks = get_contributing_risks();
+                foreach($contributing_risks as $key => $contributing_risk){
+                    echo "
+                        <tr>
+                            <td align='center'><input type='text' class='subject' required name='existing_subject[".$contributing_risk["id"]."]' style='max-width: none' value='". $escaper->escapeHtml($contributing_risk['subject']) ."'></td>
+                            <td align='center'><input type='number' class='weight' required step='0.01' name='existing_weight[".$contributing_risk["id"]."]' value='". $escaper->escapeHtml($contributing_risk['weight']) ."' max='1' min='0'></td>
+                            <td align='center' ". ($key==0 ? ("style='display: none'") : "") ."><a class='delete-row' href=''><img src='../images/minus.png' width='15px' height='15px'></a></td>
+                        </tr>
+                    ";
+                }
+                
+                echo "</tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan='3' align='right'><button type='submit' name='save_contributing_risk'>".$escaper->escapeHtml($lang["Save"])."</button></td>
+                    </tr>
+                </tfoot>
+            </table>
+            </form>
+            <hr><br>
+            <table width='100%' id='contributing-risks-impact-table'>
+                <thead>
+                    <tr>
+                        <th width='10%'>".$escaper->escapeHtml($lang["Value"])."</th>
+                        <th width='40%'>".$escaper->escapeHtml($lang["Name"])."</th>
+                        <th width='20%'>".$escaper->escapeHtml($lang["Name"])."</th>
+                        <th>&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody>";
+                $table_list = display_contributing_risks_impact_table_list();
+                echo $table_list;
+                echo "</tbody>
+            </table>
+        </div>
+    ";
     
     echo "
         <script>
+            $('#likelihood-add-btn').click(function(e){
+                e.preventDefault();
+                $('#contributing-risks-likelihood-table tbody').prepend($('#template-for-adding tbody').html());
+            })
+            $('#contributing-risk-formula').on('click', '.impact-add-btn', function(e){
+                e.preventDefault();
+                $(this).parents('.subject-row').after($('#template-for-adding tbody').html());
+            })
+            $('#contributing-risk-formula').on('click', '#add-impact-row', function(e){
+                e.preventDefault();
+                $('#contributing-risk-table tbody').append($('#template-for-impact-adding tbody').html());
+            })
+            $('body').on('click', '.delete-row', function(e){
+                e.preventDefault();
+                $(this).closest('tr').remove()
+            });
+            $('#contributing-risks-likelihood-table, #contributing-risks-impact-table').on('change','.new-name', function(){
+                var name = $(this).val();
+                var table_id = $(this).parents('table').attr('id');
+                if(table_id == 'contributing-risks-likelihood-table') {
+                    var table = 'likelihood';
+                    var data = {
+                        table: table,
+                        name: name
+                    };
+                } else {
+                    var table = 'impact';
+                    var contributing_risks_id = $(this).closest('tr').prev().data('contributing_risks_id');
+                    var data = {
+                        table: table,
+                        name: name,
+                        contributing_risks_id : contributing_risks_id
+                    };
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: BASE_URL + '/api/contributing_risks/add',
+                    data: data,
+                    success: function(data){
+                        if(data.status_message){
+                            showAlertsFromArray(data.status_message);
+                        }
+                        redraw_contributing_table_list(table);
+                    },
+                    error: function(xhr,status,error){
+                        if(!retryCSRF(xhr, this))
+                        {
+                            if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                showAlertsFromArray(xhr.responseJSON.status_message);
+                            }
+                        }
+                    },
+                });
+            });
+            $('#contributing-risks-likelihood-table, #contributing-risks-impact-table').on('change', 'input.editable', function(){
+                var _this = $(this);
+                var id = _this.parent().data('id');
+                var value = _this.parent().data('value');
+                var name = _this.val();
+                if(!name) return false;
+                var table_id = $(this).parents('table').attr('id');
+                if(table_id == 'contributing-risks-likelihood-table') var table = 'likelihood';
+                else var table = 'impact';
+
+                $.ajax({
+                    type: 'POST',
+                    url: BASE_URL + '/api/contributing_risks/update/' + table,
+                    data: {
+                        id: id,
+                        value: value,
+                        name: name
+                    },
+                    success: function(data){
+                        if(data.status_message){
+                            showAlertsFromArray(data.status_message);
+                        }
+                        _this.blur();
+                    },
+                    error: function(xhr,status,error){
+                        if(!retryCSRF(xhr, this))
+                        {
+                            if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                showAlertsFromArray(xhr.responseJSON.status_message);
+                            }
+                        }
+                    },
+                });
+            });
+            $('#contributing-risks-likelihood-table, #contributing-risks-impact-table').on('click', '.delete-value', function(){
+                var id = $(this).data('id');
+                var value = $(this).data('value');
+                var table_id = $(this).parents('table').attr('id');
+                if(table_id == 'contributing-risks-likelihood-table') {
+                    var table = 'likelihood';
+                    var data = {
+                        id: id,
+                        value: value,
+                    };
+                } else {
+                    var table = 'impact';
+                    var contributing_risks_id = $(this).data('contributing_risks_id');
+                    var data = {
+                        id: id,
+                        value: value,
+                        contributing_risks_id: contributing_risks_id,
+                    };
+                }
+                $.ajax({
+                    type: 'POST',
+                    url: BASE_URL + '/api/contributing_risks/delete/' + table,
+                    data: data,
+                    dataType : 'json',
+                    success: function(data){
+                        if(data.status_message){
+                            showAlertsFromArray(data.status_message);
+                        }
+                        redraw_contributing_table_list(table);
+                    },
+                    error: function(xhr,status,error){
+                        if(!retryCSRF(xhr, this))
+                        {
+                            if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                showAlertsFromArray(xhr.responseJSON.status_message);
+                            }
+                        }
+                    },
+                });
+            });
+            function redraw_contributing_table_list(table){
+                if(table == 'likelihood') var table_body = 'contributing-risks-likelihood-table';
+                else var table_body = 'contributing-risks-impact-table';
+                $.ajax({
+                    type: 'POST',
+                    data: {
+                        table: table,
+                    },
+                    url: BASE_URL + '/api/contributing_risks/table_list',
+                    success: function(data){
+                        $('#'+table_body+' tbody').html(data);
+                        $('input.editable').each(function(){
+                            resizable($(this));
+                        });
+                    },
+                });
+            }
+
             $('.contributing_risk_form').submit(function(){
                 if(!$(this).find('.weight').length)
                     return false;
@@ -6958,15 +6766,6 @@ function display_contributing_risk_formula()
                     return false;
                 }
             })
-            $('.add-row').click(function(e){
-                e.preventDefault();
-                $('#contributing-risk-table tbody').append($('#template-for-adding tbody').html());
-            })
-            $('body').on('click', '.delete-row', function(e){
-                e.preventDefault();
-                $(this).closest('tr').remove()
-            })
-//            $('#template-for-adding')
         </script>
     ";
 
@@ -6988,6 +6787,7 @@ function display_contributing_risk_from_calculator()
         ";
         $contributing_risks = get_contributing_risks();
         foreach($contributing_risks as $contributing_risk){
+            $impacts = get_impact_values_from_contributing_risks_id($contributing_risk['id']);
             echo "
                 <tr>
                     <td colspan='3' height='5'></td>
@@ -6995,7 +6795,7 @@ function display_contributing_risk_from_calculator()
                 <tr class='contributing_impact_row'>
                     <td>".$escaper->escapeHtml($contributing_risk['subject'])."</td>
                     <td align='center' class='contributing_weight'>".$escaper->escapeHtml($contributing_risk['weight'])."</td>
-                    <td align='center' class='contributing_impact'>"; create_dropdown("impact", NULL, "contributing_impact_{$contributing_risk['id']}", false); echo "</td>
+                    <td align='center' class='contributing_impact'>".create_dropdown("impact", NULL, "contributing_impact_{$contributing_risk['id']}", false, false, true, "", "--", "", true, 0, $impacts)."</td>
                 </tr>
             ";
         }
@@ -7016,7 +6816,6 @@ function display_plan_mitigations()
     $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
     $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
     $columns = [];
-    $unsort_columns = array("regulation", "project", "affected_assets", "risk_assessment", "additional_notes", "current_solution", "security_recommendations", "security_requirements", "next_review_date", "comments");
     foreach($columns_setting as $column){
         if(stripos($column[0], "custom_field_") !== false){
             if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
@@ -7027,7 +6826,6 @@ function display_plan_mitigations()
     }
     $tr = "";
     $index = 0;
-    $unsort_indexs = [];
     $order_index = 0;
     $order_dir = "asc";
 
@@ -7040,26 +6838,26 @@ function display_plan_mitigations()
     }
 
     foreach($columns as $column){
-        $add_column = false;
+        if($column == "calculated_risk") {
+            $order_index = $index;
+            $order_dir = "desc";
+        }
+        if($column == "subject") {
+            $style = "min-width:250px;";
+        } else {
+            $style = "min-width:100px;";
+        }
         if(($pos = stripos($column, "custom_field_")) !== false){
             if(customization_extra()){
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
-                $add_column = true;
+                $tr .= "<th data-name='".$column."' align=\"left\" style=\"".$style."\">".$label."</th>";
+                $index++;
             }
         } else {
             $label = get_label_by_risk_field_name($column);
-            $tr .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
-            $add_column = true;
-        }
-        if($column == "calculated_risk") {
-            $order_index = $index;
-            $order_dir = "desc";
-        }
-        if($add_column == true) {
-            if(in_array($column, $unsort_columns)||stripos($column, "custom_field_") !== false) $unsort_indexs[] = $index;
+            $tr .= "<th data-name='".$column."' align=\"left\" style=\"".$style."\">".$label."</th>";
             $index++;
         }
     }
@@ -7082,11 +6880,14 @@ function display_plan_mitigations()
                 var title = $(this).text();
                 var data_name = $(this).attr('data-name');
                 if(data_name == 'mitigation_planned') {
-                    $(this).html( '<select name=\"mitigation_planned\"><option value=\"\">--</option><option value=\"yes\">Yes</option><option value=\"no\">No</option></select>' );
+                    $(this).html( '<select name=\"mitigation_planned\"><option value=\"\">--</option><option value=\"".$escaper->escapeHtml($lang['Yes'])."\">".$escaper->escapeHtml($lang['Yes'])."</option><option value=\"".$escaper->escapeHtml($lang['No'])."\">".$escaper->escapeHtml($lang['No'])."</option></select>' );
+                } else if(data_name == 'management_review') {
+                    $(this).html( '<select name=\"management_review\"><option value=\"\">--</option><option value=\"".$escaper->escapeHtml($lang['Yes'])."\">".$escaper->escapeHtml($lang['Yes'])."</option><option value=\"".$escaper->escapeHtml($lang['No'])."\">".$escaper->escapeHtml($lang['No'])."</option><option value=\"".$escaper->escapeHtml($lang['PASTDUE'])."\">".$escaper->escapeHtml($lang['PASTDUE'])."</option></select>' );
                 } else {
-                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $(this).html(''); // To clear the title out of the header cell
+                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                 }
-         
+
                 $( 'input, select', this ).on( 'keyup change', function () {
                     if ( datatableInstance.column(i).search() !== this.value ) {
                         datatableInstance.column(i).search( this.value ).draw();
@@ -7101,9 +6902,8 @@ function display_plan_mitigations()
                 bSort: true,
                 orderCellsTop: true,
                 pagingType: \"full_numbers\",
-                dom : \"flrtip\",
                 pageLength: pageLength,
-                dom : \"flrti<'#view-all.view-all'>p\",
+                dom : \"lrti<'#view-all.view-all'>p\",
                 createdRow: function(row, data, index){
                     var background = $('.background-class', $(row)).data('background');
                     $(row).find('td').addClass(background)
@@ -7118,12 +6918,6 @@ function display_plan_mitigations()
                     complete: function(response){
                     }
                 },
-                columnDefs : [
-                    {
-                        'targets' : ".json_encode($unsort_indexs).",
-                        'orderable' : false,
-                    }
-                ]
             });
             
             // Add paginate options
@@ -7228,7 +7022,6 @@ function display_management_review()
     $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
     $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
     $columns = [];
-    $unsort_columns = array("regulation", "project", "affected_assets", "risk_assessment", "additional_notes", "current_solution", "security_recommendations", "security_requirements", "next_review_date", "comments");
     foreach($columns_setting as $column){
         if(stripos($column[0], "custom_field_") !== false){
             if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
@@ -7239,7 +7032,6 @@ function display_management_review()
     }
     $tr = "";
     $index = 0;
-    $unsort_indexs = [];
     $order_index = 0;
     $order_dir = "asc";
 
@@ -7252,26 +7044,26 @@ function display_management_review()
     }
 
     foreach($columns as $column){
-        $add_column = false;
+        if($column == "calculated_risk") {
+            $order_index = $index;
+            $order_dir = "desc";
+        }
+        if($column == "subject") {
+            $style = "min-width:250px;";
+        } else {
+            $style = "min-width:100px;";
+        }
         if(($pos = stripos($column, "custom_field_")) !== false){
             if(customization_extra()){
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
-                $add_column = true;
+                $tr .= "<th data-name='".$column."' align=\"left\" style=\"".$style."\">".$label."</th>";
+                $index++;
             }
         } else {
             $label = get_label_by_risk_field_name($column);
-            $tr .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
-            $add_column = true;
-        }
-        if($column == "calculated_risk") {
-            $order_index = $index;
-            $order_dir = "desc";
-        }
-        if($add_column == true) {
-            if(in_array($column, $unsort_columns)||stripos($column, "custom_field_") !== false) $unsort_indexs[] = $index;
+            $tr .= "<th data-name='".$column."' align=\"left\" style=\"".$style."\">".$label."</th>";
             $index++;
         }
     }
@@ -7294,11 +7086,14 @@ function display_management_review()
                 var title = $(this).text();
                 var data_name = $(this).attr('data-name');
                 if(data_name == 'mitigation_planned') {
-                    $(this).html( '<select name=\"mitigation_planned\"><option value=\"\">--</option><option value=\"yes\">Yes</option><option value=\"no\">No</option></select>' );
+                    $(this).html( '<select name=\"mitigation_planned\"><option value=\"\">--</option><option value=\"".$escaper->escapeHtml($lang['Yes'])."\">".$escaper->escapeHtml($lang['Yes'])."</option><option value=\"".$escaper->escapeHtml($lang['No'])."\">".$escaper->escapeHtml($lang['No'])."</option></select>' );
+                } else if(data_name == 'management_review') {
+                    $(this).html( '<select name=\"management_review\"><option value=\"\">--</option><option value=\"".$escaper->escapeHtml($lang['Yes'])."\">".$escaper->escapeHtml($lang['Yes'])."</option><option value=\"".$escaper->escapeHtml($lang['No'])."\">".$escaper->escapeHtml($lang['No'])."</option><option value=\"".$escaper->escapeHtml($lang['PASTDUE'])."\">".$escaper->escapeHtml($lang['PASTDUE'])."</option></select>' );
                 } else {
-                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $(this).html(''); // To clear the title out of the header cell
+                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                 }
-         
+
                 $( 'input, select', this ).on( 'keyup change', function () {
                     if ( datatableInstance.column(i).search() !== this.value ) {
                         datatableInstance.column(i).search( this.value ).draw();
@@ -7313,9 +7108,8 @@ function display_management_review()
                 bSort: true,
                 orderCellsTop: true,
                 pagingType: \"full_numbers\",
-                dom : \"flrtip\",
                 pageLength: pageLength,
-                dom : \"flrti<'#view-all.view-all'>p\",
+                dom : \"lrti<'#view-all.view-all'>p\",
                 createdRow: function(row, data, index){
                     var background = $('.background-class', $(row)).data('background');
                     $(row).find('td').addClass(background)
@@ -7330,12 +7124,6 @@ function display_management_review()
                     complete: function(response){
                     }
                 },
-                columnDefs : [
-                    {
-                        'targets' : ".json_encode($unsort_indexs).",
-                        'orderable' : false,
-                    }
-                ]
             });
             
             // Add paginate options
@@ -7439,7 +7227,6 @@ function display_review_risks()
     $review_colums_setting = isset($settings["review_colums"])?$settings["review_colums"]:[];
     $columns_setting = array_merge($risk_colums_setting, $mitigation_colums_setting, $review_colums_setting);
     $columns = [];
-    $unsort_columns = array("regulation", "project", "affected_assets", "risk_assessment", "additional_notes", "current_solution", "security_recommendations", "security_requirements", "comments");
     foreach($columns_setting as $column){
         if(stripos($column[0], "custom_field_") !== false){
             if(customization_extra() && $column[1] == 1) $columns[] = $column[0];
@@ -7450,7 +7237,6 @@ function display_review_risks()
     }
     $tr = "";
     $index = 0;
-    $unsort_indexs = [];
     $order_index = 0;
     $order_dir = "asc";
 
@@ -7463,26 +7249,26 @@ function display_review_risks()
     }
 
     foreach($columns as $column){
-        $add_column = false;
+        if($column == "next_review_date") {
+            $order_index = $index;
+            $order_dir = "asc";
+        }
+        if($column == "subject") {
+            $style = "min-width:250px;";
+        } else {
+            $style = "min-width:100px;";
+        }
         if(($pos = stripos($column, "custom_field_")) !== false){
             if(customization_extra()){
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $label = $escaper->escapeHtml($custom_field['name']);
-                $tr .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
-                $add_column = true;
+                $tr .= "<th data-name='".$column."' align=\"left\" style=\"".$style."\">".$label."</th>";
+                $index++;
             }
         } else {
             $label = get_label_by_risk_field_name($column);
-            $tr .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
-            $add_column = true;
-        }
-        if($column == "next_review_date") {
-            $order_index = $index;
-            $order_dir = "asc";
-        }
-        if($add_column == true) {
-            if(in_array($column, $unsort_columns)||stripos($column, "custom_field_") !== false) $unsort_indexs[] = $index;
+            $tr .= "<th data-name='".$column."' align=\"left\" style=\"".$style."\">".$label."</th>";
             $index++;
         }
     }
@@ -7505,11 +7291,14 @@ function display_review_risks()
                 var title = $(this).text();
                 var data_name = $(this).attr('data-name');
                 if(data_name == 'mitigation_planned') {
-                    $(this).html( '<select name=\"mitigation_planned\"><option value=\"\">--</option><option value=\"yes\">Yes</option><option value=\"no\">No</option></select>' );
+                    $(this).html( '<select name=\"mitigation_planned\"><option value=\"\">--</option><option value=\"".$escaper->escapeHtml($lang['Yes'])."\">".$escaper->escapeHtml($lang['Yes'])."</option><option value=\"".$escaper->escapeHtml($lang['No'])."\">".$escaper->escapeHtml($lang['No'])."</option></select>' );
+                } else if(data_name == 'management_review') {
+                    $(this).html( '<select name=\"management_review\"><option value=\"\">--</option><option value=\"".$escaper->escapeHtml($lang['Yes'])."\">".$escaper->escapeHtml($lang['Yes'])."</option><option value=\"".$escaper->escapeHtml($lang['No'])."\">".$escaper->escapeHtml($lang['No'])."</option><option value=\"".$escaper->escapeHtml($lang['PASTDUE'])."\">".$escaper->escapeHtml($lang['PASTDUE'])."</option></select>' );
                 } else {
-                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $(this).html(''); // To clear the title out of the header cell
+                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                 }
-         
+
                 $( 'input, select', this ).on( 'keyup change', function () {
                     if ( datatableInstance.column(i).search() !== this.value ) {
                         datatableInstance.column(i).search( this.value ).draw();
@@ -7524,9 +7313,8 @@ function display_review_risks()
                 bSort: true,
                 orderCellsTop: true,
                 pagingType: \"full_numbers\",
-                dom : \"flrtip\",
                 pageLength: pageLength,
-                dom : \"flrti<'#view-all.view-all'>p\",
+                dom : \"lrti<'#view-all.view-all'>p\",
                 createdRow: function(row, data, index){
                     var background = $('.background-class', $(row)).data('background');
                     $(row).find('td').addClass(background)
@@ -7541,12 +7329,6 @@ function display_review_risks()
                     complete: function(response){
                     }
                 },
-                columnDefs : [
-                    {
-                        'targets' : ".json_encode($unsort_indexs).",
-                        'orderable' : false,
-                    }
-                ]
             });
             // Add paginate options
             datatableInstance.on('draw', function(e, settings){
@@ -7966,7 +7748,7 @@ function display_side_navigation($active)
                 require_once(realpath(__DIR__ . '/../extras/incident_management/index.php'));
 
                 // If the user has incident management permissions
-                if (check_permission_incident_management())
+		if (check_permission("im_incidents"))
                 {
 			echo ($active == "IncidentManagement" ? "<li class=\"active\">\n" : "<li>\n");
         		echo "  <a href=\"../incidents/index.php\">IM</a>\n";
@@ -7994,7 +7776,7 @@ function display_side_navigation($active)
                 require_once(realpath(__DIR__ . '/../extras/incident_management/index.php'));
                 
                 // If the user has incident management permissions
-                if (check_permission_incident_management())
+		if (check_permission("im_incidents"))
                 {
                         echo ($active == "IncidentManagement" ? "<li class=\"active\">\n" : "<li>\n");
                         echo "  <a href=\"../incidents/index.php\">" . $escaper->escapeHtml($lang['IncidentManagement']) . "</a>\n";
@@ -8275,53 +8057,106 @@ function get_label_by_risk_field_name($field){
     global $lang, $escaper;
 	// Names list of Risk columns
 	$columns = array(
-		'id' => $escaper->escapeHtml($lang['ID']),
-		'risk_status' => $escaper->escapeHtml($lang['Status']),
-		'closure_date' => $escaper->escapeHtml($lang['DateClosed']),
-		'subject' => $escaper->escapeHtml($lang['Subject']),
-		'reference_id' => $escaper->escapeHtml($lang['ExternalReferenceId']),
-		'regulation' => $escaper->escapeHtml($lang['ControlRegulation']),
-		'control_number' => $escaper->escapeHtml($lang['ControlNumber']),
-		'location' => $escaper->escapeHtml($lang['SiteLocation']),
-		'source' => $escaper->escapeHtml($lang['RiskSource']),
-		'category' => $escaper->escapeHtml($lang['Category']),
-		'team' => $escaper->escapeHtml($lang['Team']),
-		'additional_stakeholders' => $escaper->escapeHtml($lang['AdditionalStakeholders']),
-		'technology' => $escaper->escapeHtml($lang['Technology']),
-		'owner' => $escaper->escapeHtml($lang['Owner']),
-		'manager' => $escaper->escapeHtml($lang['OwnersManager']),
-		'submitted_by' => $escaper->escapeHtml($lang['SubmittedBy']),
-		'risk_tags' => $escaper->escapeHtml($lang['Tags']),
-		'scoring_method' => $escaper->escapeHtml($lang['RiskScoringMethod']),
-		'calculated_risk' => $escaper->escapeHtml($lang['InherentRisk']),
-		'residual_risk' => $escaper->escapeHtml($lang['ResidualRisk']),
-		'submission_date' => $escaper->escapeHtml($lang['SubmissionDate']),
-		'project' => $escaper->escapeHtml($lang['Project']),
-		'days_open' => $escaper->escapeHtml($lang['DaysOpen']),
-		'affected_assets' => $escaper->escapeHtml($lang['AffectedAssets']),
-		'risk_assessment' => $escaper->escapeHtml($lang['RiskAssessment']),
-		'additional_notes' => $escaper->escapeHtml($lang['AdditionalNotes']),
+		'id' => js_string_escape($lang['ID']),
+		'risk_status' => js_string_escape($lang['Status']),
+		'closure_date' => js_string_escape($lang['DateClosed']),
+		'subject' => js_string_escape($lang['Subject']),
+		'reference_id' => js_string_escape($lang['ExternalReferenceId']),
+		'regulation' => js_string_escape($lang['ControlRegulation']),
+		'control_number' => js_string_escape($lang['ControlNumber']),
+		'location' => js_string_escape($lang['SiteLocation']),
+		'source' => js_string_escape($lang['RiskSource']),
+		'category' => js_string_escape($lang['Category']),
+		'team' => js_string_escape($lang['Team']),
+		'additional_stakeholders' => js_string_escape($lang['AdditionalStakeholders']),
+		'technology' => js_string_escape($lang['Technology']),
+		'owner' => js_string_escape($lang['Owner']),
+		'manager' => js_string_escape($lang['OwnersManager']),
+		'submitted_by' => js_string_escape($lang['SubmittedBy']),
+		'risk_tags' => js_string_escape($lang['Tags']),
+		'submission_date' => js_string_escape($lang['SubmissionDate']),
+        'project' => js_string_escape($lang['Project']),
+        'project_status' => js_string_escape($lang['ProjectStatus']),
+		'days_open' => js_string_escape($lang['DaysOpen']),
+		'affected_assets' => js_string_escape($lang['AffectedAssets']),
+		'risk_assessment' => js_string_escape($lang['RiskAssessment']),
+		'additional_notes' => js_string_escape($lang['AdditionalNotes']),
 
-		'mitigation_planned' => $escaper->escapeHtml($lang['MitigationPlanned']),
-		'planning_strategy' => $escaper->escapeHtml($lang['PlanningStrategy']),
-		'planning_date' => $escaper->escapeHtml($lang['MitigationPlanning']),
-		'mitigation_effort' => $escaper->escapeHtml($lang['MitigationEffort']),
-		'mitigation_cost' => $escaper->escapeHtml($lang['MitigationCost']),
-		'mitigation_owner' => $escaper->escapeHtml($lang['MitigationOwner']),
-		'mitigation_team' => $escaper->escapeHtml($lang['MitigationTeam']),
-		'mitigation_accepted' => $escaper->escapeHtml($lang['MitigationAccepted']),
-		'mitigation_date' => $escaper->escapeHtml($lang['MitigationDate']),
-		'mitigation_controls' => $escaper->escapeHtml($lang['MitigationControls']),
-		'current_solution' => $escaper->escapeHtml($lang['CurrentSolution']),
-		'security_recommendations' => $escaper->escapeHtml($lang['SecurityRecommendations']),
-		'security_requirements' => $escaper->escapeHtml($lang['SecurityRequirements']),
+		'mitigation_planned' => js_string_escape($lang['MitigationPlanned']),
+		'planning_strategy' => js_string_escape($lang['PlanningStrategy']),
+		'planning_date' => js_string_escape($lang['MitigationPlanning']),
+		'mitigation_effort' => js_string_escape($lang['MitigationEffort']),
+		'mitigation_cost' => js_string_escape($lang['MitigationCost']),
+		'mitigation_owner' => js_string_escape($lang['MitigationOwner']),
+		'mitigation_team' => js_string_escape($lang['MitigationTeam']),
+		'mitigation_accepted' => js_string_escape($lang['MitigationAccepted']),
+		'mitigation_date' => js_string_escape($lang['MitigationDate']),
+        'mitigation_controls' => js_string_escape($lang['MitigationControls']),
+        'mitigation_percent' => js_string_escape($lang['MitigationPercent']),
+		'current_solution' => js_string_escape($lang['CurrentSolution']),
+		'security_recommendations' => js_string_escape($lang['SecurityRecommendations']),
+		'security_requirements' => js_string_escape($lang['SecurityRequirements']),
 
-		'management_review' => $escaper->escapeHtml($lang['ManagementReview']),
-		'review_date' => $escaper->escapeHtml($lang['ReviewDate']),
-		'next_review_date' => $escaper->escapeHtml($lang['NextReviewDate']),
-		'next_step' => $escaper->escapeHtml($lang['NextStep']),
-		'comments' => $escaper->escapeHtml($lang['Comments']),
+		'management_review' => js_string_escape($lang['ManagementReview']),
+		'review_date' => js_string_escape($lang['ReviewDate']),
+		'next_review_date' => js_string_escape($lang['NextReviewDate']),
+		'next_step' => js_string_escape($lang['NextStep']),
+		'comments' => js_string_escape($lang['Comments']),
+
+        'scoring_method' => js_string_escape($lang['RiskScoringMethod']),
+        'calculated_risk' => js_string_escape($lang['InherentRiskCurrent']),
+        'residual_risk' => js_string_escape($lang['ResidualRiskCurrent']),
+        'calculated_risk_30' => js_string_escape(_lang('InherentRiskDays', ['days' => 30])),
+        'residual_risk_30' => js_string_escape(_lang('ResidualRiskDays', ['days' => 30])),
+        'calculated_risk_60' => js_string_escape(_lang('InherentRiskDays', ['days' => 60])),
+        'residual_risk_60' => js_string_escape(_lang('ResidualRiskDays', ['days' => 60])),
+        'calculated_risk_90' => js_string_escape(_lang('InherentRiskDays', ['days' => 90])),
+        'residual_risk_90' => js_string_escape(_lang('ResidualRiskDays', ['days' => 90])),
+
+        'CLASSIC_likelihood' => js_string_escape($lang['Classic'].": ".$lang['Likelihood']),
+        'CLASSIC_impact' => js_string_escape($lang['Classic'].": ".$lang['Impact']),
+        'CVSS_AccessVector' => js_string_escape("CVSS: ".$lang['AccessVector']),
+        'CVSS_AccessComplexity' => js_string_escape("CVSS: ".$lang['AccessComplexity']),
+        'CVSS_Authentication' => js_string_escape("CVSS: ".$lang['Authentication']),
+        'CVSS_ConfImpact' => js_string_escape("CVSS: ".$lang['ConfidentialityImpact']),
+        'CVSS_IntegImpact' => js_string_escape("CVSS: ".$lang['IntegrityImpact']),
+        'CVSS_AvailImpact' => js_string_escape("CVSS: ".$lang['AvailabilityImpact']),
+        'CVSS_Exploitability' => js_string_escape("CVSS: ".$lang['Exploitability']),
+        'CVSS_RemediationLevel' => js_string_escape("CVSS: ".$lang['RemediationLevel']),
+        'CVSS_ReportConfidence' => js_string_escape("CVSS: ".$lang['ReportConfidence']),
+        'CVSS_CollateralDamagePotential' => js_string_escape("CVSS: ".$lang['CollateralDamagePotential']),
+        'CVSS_TargetDistribution' => js_string_escape("CVSS: ".$lang['TargetDistribution']),
+        'CVSS_ConfidentialityRequirement' => js_string_escape("CVSS: ".$lang['ConfidentialityRequirement']),
+        'CVSS_IntegrityRequirement' => js_string_escape("CVSS: ".$lang['IntegrityRequirement']),
+        'CVSS_AvailabilityRequirement' => js_string_escape("CVSS: ".$lang['AvailabilityRequirement']),
+        'DREAD_DamagePotential' => js_string_escape("DREAD: ".$lang['DamagePotential']),
+        'DREAD_Reproducibility' => js_string_escape("DREAD: ".$lang['Reproducibility']),
+        'DREAD_Exploitability' => js_string_escape("DREAD: ".$lang['Exploitability']),
+        'DREAD_AffectedUsers' => js_string_escape("DREAD: ".$lang['AffectedUsers']),
+        'DREAD_Discoverability' => js_string_escape("DREAD: ".$lang['Discoverability']),
+        'OWASP_SkillLevel' => js_string_escape("OWASP: ".$lang['SkillLevel']),
+        'OWASP_Motive' => js_string_escape("OWASP: ".$lang['Motive']),
+        'OWASP_Opportunity' => js_string_escape("OWASP: ".$lang['Opportunity']),
+        'OWASP_Size' => js_string_escape("OWASP: ".$lang['Size']),
+        'OWASP_EaseOfDiscovery' => js_string_escape("OWASP: ".$lang['EaseOfDiscovery']),
+        'OWASP_EaseOfExploit' => js_string_escape("OWASP: ".$lang['EaseOfExploit']),
+        'OWASP_Awareness' => js_string_escape("OWASP: ".$lang['Awareness']),
+        'OWASP_IntrusionDetection' => js_string_escape("OWASP: ".$lang['IntrusionDetection']),
+        'OWASP_LossOfConfidentiality' => js_string_escape("OWASP: ".$lang['LossOfConfidentiality']),
+        'OWASP_LossOfIntegrity' => js_string_escape("OWASP: ".$lang['LossOfIntegrity']),
+        'OWASP_LossOfAvailability' => js_string_escape("OWASP: ".$lang['LossOfAvailability']),
+        'OWASP_LossOfAccountability' => js_string_escape("OWASP: ".$lang['LossOfAccountability']),
+        'OWASP_FinancialDamage' => js_string_escape("OWASP: ".$lang['FinancialDamage']),
+        'OWASP_ReputationDamage' => js_string_escape("OWASP: ".$lang['ReputationDamage']),
+        'OWASP_NonCompliance' => js_string_escape("OWASP: ".$lang['NonCompliance']),
+        'OWASP_PrivacyViolation' => js_string_escape("OWASP: ".$lang['PrivacyViolation']),
+        'Contributing_Likelihood' => js_string_escape($lang['ContributingRisk'].": ".$lang['Likelihood']),
+
 	);
+    $contributing_risks = get_contributing_risks();
+    foreach($contributing_risks as $contributing_risk){
+        $columns["Contributing_Impact_".$contributing_risk['id']] = js_string_escape($lang['ContributingRisk'].": ".$lang['Impact']." - ".$contributing_risk['subject']);
+    }
 	return $columns[$field];
 
 }
@@ -8504,6 +8339,108 @@ function display_gap_analysis_table($framework, $maturity)
                 
             </script>
         ";
+}
+
+/*************************************************************
+* FUNCTION: DISPLAY CONTRIBUTING RISKS LIKELIHOOD TABLE LIST *
+**************************************************************/
+function display_contributing_risks_likelihood_table_list(){
+    global $lang, $escaper;
+    $rows = get_contributing_risks_likelihood_list();
+    $str = "";
+    foreach($rows as $row){
+        if(count($rows) != 1) $delete_button = "<a class='delete-value' data-id='{$row['id']}' data-value='{$row['value']}'><i class='fa fa-trash'></i></a>";
+        else $delete_button = "";
+        $str .= "
+            <tr>
+                <td align='center'>{$row['value']}</td>
+                <td align='center'>
+                    <span data-id='{$row['id']}' data-value='{$row['value']}'><span class='editable'>{$escaper->escapeHtml($row['name'])}</span>
+                    <input type='text' class='editable' value='{$escaper->escapeHtml($row['name'])}' style='display: none;'></span>
+                </td>
+                <td align='center'>{$delete_button}</td>
+                <td></td>
+            </tr>
+        ";
+    }
+    return $str;
+}
+/*********************************************************
+* FUNCTION: DISPLAY CONTRIBUTING RISKS IMPACT TABLE LIST *
+**********************************************************/
+function display_contributing_risks_impact_table_list(){
+    global $lang, $escaper;
+    $rows = get_contributing_risks_impact_list();
+    $str = "";
+    $prev_subject = "";
+    foreach($rows as $row){
+        if($prev_subject != $row['subject']) {
+            $str .= "
+                <tr class='subject-row' data-value='{$row['value']}' data-contributing_risks_id='{$row['contributing_risks_id']}'>
+                    <td align='center'>{$escaper->escapeHtml($row['subject'])}</td>
+                    <td></td>
+                    <td align='center'>
+                        <button class='impact-add-btn'><i class='fa fa-plus'></i></button>
+                    </td>
+                    <td></td>
+                </tr>
+            ";
+        }
+        $prev_subject = $row['subject'];
+        $str .= "
+            <tr>
+                <td align='center'>{$row['value']}</td>
+                <td align='center'>
+                    <span data-id='{$row['id']}' data-value='{$row['value']}'><span class='editable'>{$escaper->escapeHtml($row['name'])}</span>
+                    <input type='text' class='editable' value='{$escaper->escapeHtml($row['name'])}' style='display: none;'></span>
+                </td>
+                <td align='center'>
+                    <a class='delete-value' data-id='{$row['id']}' data-value='{$row['value']}' data-contributing_risks_id='{$row['contributing_risks_id']}'><i class='fa fa-trash'></i></a>
+                </td>
+                <td></td>
+            </tr>
+        ";
+    }
+    return $str;
+}
+
+/*******************************************
+ * FUNCTION: DISPLAY HIGHCHARTS JAVASCRIPT *
+ *******************************************/
+function display_highcharts_javascript($scripts)
+{
+        // Get the highcharts delivery method
+        $highcharts_delivery_method = get_setting("highcharts_delivery_method");
+
+        // If the highcharts delivery method is local
+        if ($highcharts_delivery_method == "local")
+        {
+                // Get the SimpleRisk Base URL
+                $simplerisk_base_url = get_setting('simplerisk_base_url');
+
+                // If the last character is not a /
+                if (substr($simplerisk_base_url, -1) != "/")
+                {
+                        // Append a / to the SimpleRisk Base URL
+                        $simplerisk_base_url .= "/";
+                }
+
+                // Append the path to the highcharts code
+                $path = $simplerisk_base_url . "vendor/node_modules/highcharts/";
+        }
+        // Otherwise
+        else
+        {
+                // Use the HighCharts CDN as the path
+                $path = "https://code.highcharts.com/";
+        }
+
+        // For each script provided
+        foreach ($scripts as $script)
+        {
+                // Display it as a script src
+                echo "<script src=\"" . $path . $script . "\"></script>\n";
+        }
 }
 
 ?>

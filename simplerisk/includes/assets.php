@@ -9,10 +9,10 @@ require_once(realpath(__DIR__ . '/functions.php'));
 require_once(realpath(__DIR__ . '/HighchartsPHP/Highchart.php'));
 require_once(language_file());
 require_once(realpath(__DIR__ . '/displayassets.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /*****************************
  * FUNCTION: DISCOVER ASSETS *
@@ -2340,9 +2340,9 @@ function import_assets_asset_groups_for_type($type_id, $asset_and_group_names, $
     db_close($db);    
 }
 
-function get_asset_groups_table()
-{
-    global $lang, $escaper;
+function get_asset_groups_table() {
+
+    global $escaper;
 
     echo "<table id='asset-groups-table' class='easyui-treegrid asset-groups-table'
             data-options=\"
@@ -2358,6 +2358,9 @@ function get_asset_groups_table()
                 idField: 'id',
                 treeField: 'name',
                 scrollbarSize: 0,
+                loadFilter: function(data, parentId) {
+                    return data.data;
+                },
                 onLoadSuccess: function(row, data){
                     //fixTreeGridCollapsableColumn();
                     //It's there to be able to have it collapsed on load
@@ -2371,8 +2374,7 @@ function get_asset_groups_table()
     echo "<thead>";
     
         // If the customization extra is enabled, shows fields by asset customization
-    if (customization_extra())
-    {
+    if (customization_extra()) {
         // Load the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
@@ -2381,8 +2383,7 @@ function get_asset_groups_table()
         display_main_detail_asset_fields_treegrid_th($active_fields);
     }
     // If the customization extra is disabled, Show default main fields
-    else
-    {
+    else {
         display_asset_name_treegrid_th();
         display_asset_ip_address_treegrid_th();
         display_asset_valuation_treegrid_th();
@@ -2532,7 +2533,7 @@ function get_assets_of_asset_group_for_treegrid($id){
                     }
 
                     if ($value) {
-                        $asset[$field['name']] = get_custom_field_name_by_value($field['id'], $field['type'], $field['encryption'], $value);
+                        $asset[$field['id']] = get_custom_field_name_by_value($field['id'], $field['type'], $field['encryption'], $value);
                     }
                 }
             }

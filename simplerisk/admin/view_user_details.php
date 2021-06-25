@@ -8,10 +8,10 @@
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -28,6 +28,15 @@ include_csrf_magic();
 
 // Include the SimpleRisk language file
 require_once(language_file());
+
+// If a user was posted
+if (isset($_POST['user']))
+{
+    // When an admin is editing itself should only be able to choose admin roles and can't remove it's own admin permission
+    $admin_editing_itself = isset($_SESSION['admin']) && isset($_SESSION['uid']) && (int)$_SESSION['admin'] === 1 && (int)$_SESSION['uid'] === (int)$_POST['user'];
+}
+// Otherwise an admin is not editing itself
+else $admin_editing_itself = false;
 
     // If the user has been updated
     if (isset($_POST['update_user']) && isset($_POST['user']))
@@ -53,33 +62,39 @@ require_once(language_file());
 
             $permissions            = isset($_POST['permissions']) ? array_filter($_POST['permissions'], 'ctype_digit') : [];
 
-            /*$possible_permissions = get_possible_permissions();
-            $permissions = [];
+            $admin_role_issue = false;
+            if ($admin_editing_itself) {
+                // Get the new role
+                $role = get_role($role_id);
 
-            foreach ($possible_permissions as $permission) {
-                $permissions[$permission] = isset($_POST[$permission]) ? '1' : '0';
-            }*/
-            
-            // Change the type from a numeric to alpha
-            switch($type){
-            case "1":
-              $type = "simplerisk";
-              break;
-            case "2":
-              $type = "ldap";
-              break;
-            case "3":
-              $type = "saml";
-              break;
-            default:
-              $type = "simplerisk";
+                // If the role was changed to a non-admin role or the user removed its own admin permission then we can't let this change be saved
+                $admin_role_issue = !$role['admin'] || !$admin;
             }
-            
-            // Update the user
-            update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $language, $admin,  $multi_factor, $change_password, $manager, $permissions);
-            
-            // Display an alert
-            set_alert(true, "good", "The user was updated successfully.");
+
+            if (!$admin_role_issue) {
+                // Change the type from a numeric to alpha
+                switch($type){
+                    case "1":
+                        $type = "simplerisk";
+                    break;
+                    case "2":
+                        $type = "ldap";
+                    break;
+                    case "3":
+                        $type = "saml";
+                    break;
+                    default:
+                        $type = "simplerisk";
+                }
+                
+                // Update the user
+                update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $language, $admin,  $multi_factor, $change_password, $manager, $permissions);
+                
+                // Display an alert
+                set_alert(true, "good", "The user was updated successfully.");
+            } else {
+                set_alert(true, "bad", $lang['AdminSelfEditWarning']);
+            }
         }
   }
 
@@ -257,6 +272,7 @@ require_once(language_file());
 
 <script type="text/javascript">
 
+	var admin_editing_itself = <?php echo $admin_editing_itself ? 'true' : 'false';?>;
     $(document).ready(function(){
 
     	if ($("#admin").is(':checked')) {
@@ -270,6 +286,7 @@ require_once(language_file());
     			$("#admin").prop("checked", false);
     			$("#default").prop("checked", false);
     			$("#admin").prop("readonly", false);
+                $("#team").multiselect("enable");
     
     		    $(".permissions-widget input[type=checkbox]").each(function() {
     		    	$this = $(this);
@@ -304,7 +321,11 @@ require_once(language_file());
     	                        // Set all teams
     	                        $("#team").multiselect("selectAll", false);
     	                        $("#team").multiselect("refresh");
-                    		}
+                                $("#team").multiselect("disable");
+                                $("#team").prop("disabled", false);
+                    		} else {
+                                $("#team").multiselect("enable");
+                            }
                     		update_admin_button();
     					}
                     },
@@ -339,13 +360,19 @@ require_once(language_file());
 		grant_text = admin_button.data('grant');
 
     	$("#admin_button").text(admin ? remove_text : grant_text);
-    	$("#admin_button").prop("disabled", $("#admin").prop("readonly"));
+    	$("#admin_button").prop("disabled", admin_editing_itself || $("#admin").prop("readonly"));
+		$("#team").multiselect(admin ? 'disable' : 'enable');
+        $("#team").prop("disabled", false);
+		if (admin) {
+			$("#team").multiselect("selectAll", false);
+			$("#team").multiselect("refresh");
+		}
     }
     
 </script>
 
     <?php
-	display_license_check();
+        display_license_check();
 
         view_top_menu("Configure");
 
@@ -361,6 +388,9 @@ require_once(language_file());
                 <div class="row-fluid">
                     <div class="span12">
                         <div class="hero-unit">
+                           <a type="button" class="btn" href="./user_management.php#manageusers"/>
+                              <?php echo $escaper->escapeHtml($lang['Back']); ?>
+                           </a><br />
                             <form name="update_user" method="post" action="">
                                 <input name="user" type="hidden" value="<?php echo $escaper->escapeHtml($user_id); ?>" />
                                 <table border="0" cellspacing="0" cellpadding="0">
@@ -428,10 +458,31 @@ require_once(language_file());
                                 <h6>
                                     <u><?php echo $escaper->escapeHtml($lang['Teams']); ?></u>
                                 </h6>
-                                <?php create_multiple_dropdown("team", $teams, null, get_all_teams()); ?>
+                                <?php create_multiple_dropdown("team", $teams, null, get_all_teams(), false, '', '', true, $admin ? 'disabled' : ''); ?>
 
                                 <h6><u><?php echo $escaper->escapeHtml($lang['Role']); ?></u></h6>
-                                <?php create_dropdown("role", $role_id); ?>
+                                <?php
+                                    $db = db_open();
+
+                                    $stmt = $db->prepare("SELECT * FROM `role` ORDER BY `value`;");
+                                    $stmt->execute();
+                                    $roles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                    db_close($db);
+
+                                    echo "<select id='role' name='role' class='form-field' style='width:auto;' required>";
+                                    echo "<option value='0'>--</option>";
+                                    foreach ($roles as $option)
+                                    {
+                                        // When an admin is editing itself should only be able to choose admin roles
+                                        $valid_option = !$admin_editing_itself || (int)$option['admin'] === 1;
+                                        echo "<option value='" . ($valid_option ? $option['value'] : '') . "' " . ($role_id === $option['value'] ? "selected" : "") . " " . ( !$valid_option ? "disabled" : "") . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
+                                    }
+                                    echo "</select>";
+                                    if ($admin_editing_itself) {
+                                        echo "<br/><span class='admin_selfediting_warning'>{$escaper->escapeHtml($lang['AdminSelfEditWarning'])}</span>";
+                                    }
+                                ?>
 
 								<br/>
                                 <input style="display:none" type="checkbox" name="admin" id="admin" <?php if ($admin) echo "checked='checked'";?> <?php if ($role_id == 1) echo "readonly='readonly'";?>>
@@ -464,7 +515,7 @@ require_once(language_file());
                                            $permission_key = $escaper->escapeHtml($permission['key']);
                                            $permission_name = $escaper->escapeHtml($permission['permission_name']);
                                            $permission_description = $escaper->escapeHtml($permission['permission_description']);
-                                           $selected = $permission['selected'];
+                                           $selected = (isset($permission['selected']) ? $permission['selected'] : null);
                                 ?>       
                                                         <li>
                                                             <input class="hidden-checkbox permission" type="checkbox" name="permissions[]" id="<?php echo $permission_key;?>" value="<?php echo $permission_id;?>" <?php if ($selected) echo "checked='checked'";?>>

@@ -10,10 +10,10 @@ require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 require_once(realpath(__DIR__ . '/../includes/governance.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -199,25 +199,25 @@ function display($display = "")
                         success : function (res){
                             var data = res.data;
 
-                            $("#exception--view #name").text(data.name);
-                            $("#exception--view #type").text(data.type_text);
+                            $("#exception--view #name").html(data.name);
+                            $("#exception--view #type").html(data.type_text);
                             if (data.type == 'policy') {
-                                $("#exception--view #policy").text(data.policy_name);
+                                $("#exception--view #policy").html(data.policy_name);
                                 $("#exception--view #policy").parent().show();
                                 $("#exception--view #control").parent().hide();
                             } else {
-                                $("#exception--view #control").text(data.control_name);
+                                $("#exception--view #control").html(data.control_name);
                                 $("#exception--view #control").parent().show();
                                 $("#exception--view #policy").parent().hide();
                             }
 
-                            $("#exception--view #owner").text(data.owner);
-                            $("#exception--view #additional_stakeholders").text(data.additional_stakeholders);
-                            $("#exception--view #creation_date").text(data.creation_date);
-                            $("#exception--view #review_frequency").text(data.review_frequency);
-                            $("#exception--view #next_review_date").text(data.next_review_date);
-                            $("#exception--view #approval_date").text(data.approval_date);
-                            $("#exception--view #approver").text(data.approver);
+                            $("#exception--view #owner").html(data.owner);
+                            $("#exception--view #additional_stakeholders").html(data.additional_stakeholders);
+                            $("#exception--view #creation_date").html(data.creation_date);
+                            $("#exception--view #review_frequency").html(data.review_frequency);
+                            $("#exception--view #next_review_date").html(data.next_review_date);
+                            $("#exception--view #approval_date").html(data.approval_date);
+                            $("#exception--view #approver").html(data.approver);
                             $("#exception--view #description").html(data.description);
                             $("#exception--view #justification").html(data.justification);
                             $("#exception--view #file_download").html(data.file_download);

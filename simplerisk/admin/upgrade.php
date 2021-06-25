@@ -1,17 +1,17 @@
 <?php
-        /* This Source Code Form is subject to the terms of the Mozilla Public
-         * License, v. 2.0. If a copy of the MPL was not distributed with this
-         * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+    /* This Source Code Form is subject to the terms of the Mozilla Public
+     * License, v. 2.0. If a copy of the MPL was not distributed with this
+     * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/config.php'));
     require_once(realpath(__DIR__ . '/../includes/upgrade.php'));
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+    // Include Laminas Escaper for HTML Output Encoding
+    $escaper = new Laminas\Escaper\Escaper('utf-8');
 
     // Add various security headers
     add_security_headers();
@@ -54,7 +54,7 @@
             if (isset($_SESSION["admin"]) && $_SESSION["admin"] == "1")
             {
                 // Grant access
-                $_SESSION["access"] = "granted";
+                $_SESSION["access"] = "1";
             }
             // The user is not an admin
             else
@@ -78,12 +78,12 @@
     if (isset($_GET['key']) && check_valid_key($_GET['key']))
     {
         // Grant access
-        $_SESSION["access"] = "granted";
+        $_SESSION["access"] = "1";
         // API key is admin
         $_SESSION["admin"] = "1";
     }
 ?>
-
+<!doctype html>
 <html ng-app="SimpleRisk">
   <head>
       <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
@@ -142,7 +142,7 @@
               <div class="login-wrapper clearfix">
 <?php
     // If access was not granted display the login form
-    if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
+    if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1")
     {
         // Display the login form
         display_login_form();

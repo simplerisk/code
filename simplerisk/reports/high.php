@@ -8,10 +8,10 @@
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/reporting.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -50,7 +50,18 @@ require_once(language_file());
         <script src="../js/bootstrap.min.js"></script>
         <script src="../js/sorttable.js"></script>
         <script src="../js/obsolete.js"></script>
-        <script src="../js/highcharts/code/highcharts.js"></script>
+
+    <?php
+        // Use these HighCharts scripts
+        $scripts = [
+                'highcharts.js',
+        ];
+
+        // Display the highcharts javascript source
+        display_highcharts_javascript($scripts);
+
+?>
+
         <script src="../js/jquery.dataTables.js"></script>
 
         <link rel="stylesheet" href="../css/bootstrap.css">
@@ -73,9 +84,6 @@ require_once(language_file());
                 });
             });
         </script>
-        <style>
-            .dataTables_filter, .dataTables_info { display: none; }
-        </style>
     </head>
     <body>
         <?php
@@ -168,14 +176,20 @@ require_once(language_file());
                     <br>
                     <script>
                         var pageLength = 10;
+                        var yes_str = '<?php echo $escaper->escapeHtml($lang['Yes']);?>';
+                        var no_str = '<?php echo $escaper->escapeHtml($lang['No']);?>';
+                        var PASTDUE_str = '<?php echo $escaper->escapeHtml($lang['PASTDUE']);?>';
                         $('#high-risk-datatable thead tr').clone(true).appendTo( '#high-risk-datatable thead' );
                         $('#high-risk-datatable thead tr:eq(1) th').each( function (i) {
                             var title = $(this).text();
                             var data_name = $(this).attr("data-name");
                             if(data_name == "mitigation_planned") {
-                                $(this).html( '<select name="mitigation_planned"><option value="">--</option><option value="yes">Yes</option><option value="no">No</option></select>' );
+                                $(this).html( '<select name="mitigation_planned"><option value="">--</option><option value="'+yes_str+'">'+yes_str+'</option><option value="'+no_str+'">'+no_str+'</option></select>' );
+                            } else if(data_name == 'management_review') {
+                                $(this).html( '<select name="management_review"><option value="">--</option><option value="'+yes_str+'">'+yes_str+'</option><option value="'+no_str+'">'+no_str+'</option><option value="'+PASTDUE_str+'">'+PASTDUE_str+'</option></select>' );
                             } else {
-                                $(this).html( '<input type="text" name="'+title+'" placeholder="'+title+'" />' );
+                            	$(this).html(''); // To clear the title out of the header cell
+                            	$('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                             }
                      
                             $( 'input, select', this ).on( 'keyup change', function () {
@@ -192,9 +206,8 @@ require_once(language_file());
                             bSort: true,
                             orderCellsTop: true,
                             pagingType: "full_numbers",
-                            dom : "flrtip",
                             pageLength: pageLength,
-                            dom : "flrti<'#view-all.view-all'>p",
+                            dom : "lrti<'#view-all.view-all'>p",
                             createdRow: function(row, data, index){
                                 var background = $('.background-class', $(row)).data('background');
                                 $(row).find('td').addClass(background)

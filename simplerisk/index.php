@@ -9,10 +9,10 @@ require_once(realpath(__DIR__ . '/includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/includes/display.php'));
 require_once(realpath(__DIR__ . '/includes/alerts.php'));
 require_once(realpath(__DIR__ . '/includes/extras.php'));
+require_once(realpath(__DIR__ . '/vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -122,7 +122,7 @@ if (isset($_POST['submit']))
     }
 }
 
-if (isset($_SESSION["access"]) && ($_SESSION["access"] == "granted"))
+if (isset($_SESSION["access"]) && ($_SESSION["access"] == "1"))
 {
     // Select where to redirect the user next
     select_redirect();
@@ -173,6 +173,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
     }
 }
 ?>
+<!doctype html>
 <html ng-app="SimpleRisk">
 <head>
   <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
@@ -219,7 +220,7 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
     echo "</div>\n";
   }
   // If the user has not authenticated
-  else if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
+  else if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1")
   {
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span12\">\n";

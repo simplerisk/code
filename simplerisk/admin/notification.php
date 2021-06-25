@@ -8,10 +8,10 @@
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -113,6 +113,7 @@ require_once(language_file());
     <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <script src="../js/jquery.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
+
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -127,6 +128,38 @@ require_once(language_file());
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/side-navigation.css">
     <link rel="stylesheet" href="../css/settings_tabs.css">
+
+    <?php if (notification_extra()) { // Only need these if the extra is enabled ?>
+        <script src="../vendor/tinymce/tinymce/tinymce.min.js"></script>
+        <script src="../extras/notification/js/editor.js"></script>
+    	<style>
+    	   .tox .tox-mbtn, .tox .tox-tbtn {
+                color: #222f3e !important;
+            }
+
+            .tox .tox-mbtn:hover, .tox .tox-tbtn:hover {
+                color: #222f3e !important;
+                background-color: #dee0e2 !important;
+            }
+
+            .tox .tox-listboxfield .tox-listbox--select {
+                color: #222f3e !important;
+            }
+
+             .tox .tox-listboxfield .tox-listbox--select:hover {
+                background-color: #ffffff !important;
+            }
+
+            .tox .tox-tbtn--active, .tox .tox-tbtn:active {
+                background-color: #c8cbcf !important;
+            }
+
+            .details_template {
+                display: none;
+            }
+        </style>
+	<?php }?>
+
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
@@ -165,11 +198,11 @@ require_once(language_file());
         var tabs =  $(".tabs li a");
   
         tabs.click(function() {
-                var content = this.hash.replace('/','');
-                tabs.removeClass("active");
-                $(this).addClass("active");
-                $("#content").find('.settings_tab').hide();
-                $(content).fadeIn(200);
+            var content = this.hash.replace('/','');
+            tabs.removeClass("active");
+            $(this).addClass("active");
+            $("#content").find('.settings_tab').hide();
+            $(content).fadeIn(200);
         });
 
         })(jQuery);

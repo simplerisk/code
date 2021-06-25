@@ -9,10 +9,10 @@
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/mail.php'));
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -191,6 +191,24 @@ function is_valid_base_url($url) {
             // Update the default user role
             update_setting("default_user_role", $default_user_role);
         }
+
+	// Update the default current maturity setting
+	$default_current_maturity = (int)$_POST['default_current_maturity'];
+	$current_default_current_maturity = get_setting("default_current_maturity");
+	if ($default_current_maturity != $current_default_current_maturity)
+	{
+	    // Update the default current maturity
+	    update_setting("default_current_maturity", $default_current_maturity);
+	}
+
+        // Update the default desired maturity setting
+        $default_desired_maturity = (int)$_POST['default_desired_maturity'];
+        $current_default_desired_maturity = get_setting("default_desired_maturity");
+        if ($default_desired_maturity != $current_default_desired_maturity)
+        {
+            // Update the default desired maturity
+            update_setting("default_desired_maturity", $default_desired_maturity);
+        }
         
         // Update the next review date setting
         $next_review_date_uses = $_POST['next_review_date_uses'];
@@ -200,6 +218,18 @@ function is_valid_base_url($url) {
             // Update the default user role
             update_setting("next_review_date_uses", $next_review_date_uses);
         }
+
+	// Update the highcharts delivery method setting
+	$highcharts_delivery_method = $_POST['highcharts_delivery_method'];
+	$current_highcharts_delivery_method = get_setting("highcharts_delivery_method");
+	if ($highcharts_delivery_method != $current_highcharts_delivery_method)
+	{
+		// If the highcharts delivery method is cdn or local
+		if ($highcharts_delivery_method == "cdn" || $highcharts_delivery_method == "local")
+		{
+			update_setting("highcharts_delivery_method", $highcharts_delivery_method);
+		}
+	}
 
         // Update the base url
         $simplerisk_base_url = $_POST['simplerisk_base_url'];
@@ -358,6 +388,92 @@ function is_valid_base_url($url) {
                 // Display an alert
                 set_alert(true, "good", "A test email has been sent using the current settings.");
         }
+
+	// If the Backups tab was submitted
+    if (isset($_POST['submit_backup']) || isset($_POST['submit_and_backup_now'])) {
+
+		// Set the error to false
+		$error = false;
+
+		// Get the submitted backup_auto value
+		$backup_auto = (isset($_POST['backup_auto']) ? "true" : "false");
+
+		// If the backup_auto value has changed
+		if ($backup_auto != get_setting("backup_auto")) {
+			// Update the backup_auto setting
+			update_setting("backup_auto", $backup_auto);
+		}
+
+		// Get the submitted backup_path value
+		$backup_path = $_POST['backup_path'];
+
+		// Remove any trailing slashes from the backup path
+		$backup_path = rtrim($backup_path, "/");
+
+		// If the backup_path value has changed
+		if ($backup_path != get_setting("backup_path")) {
+			// Get the actual path to the document root and backup directory
+			$root_path = str_replace('/', '\\', realpath(__DIR__ . '/../'));
+			$dir_path = str_replace('/', '\\', $backup_path);
+
+			// If the backup file is not in the web root
+			if (strpos($dir_path, $root_path) === false && $dir_path != "") {
+				// Update the backup_path setting
+				update_setting("backup_path", $backup_path);
+			} else {
+				// We have an error
+				$error = true;
+    			set_alert(true, "bad", $escaper->escapeHtml($lang['ForSecurityReasonsBackupOutsideWebRoot']));
+			}
+		}
+
+		// Get the submitted backup_schedule value
+		$backup_schedule = $_POST['backup_schedule'];
+
+		// If the backup_schedule value has changed
+		if ($backup_schedule != get_setting("backup_schedule")) {
+			// If the backup schedule is hourly, daily, weekly or monthly
+			if ($backup_schedule == "hourly" || $backup_schedule == "daily" || $backup_schedule == "weekly" || $backup_schedule == "monthly") {
+				// Update the backup_schedule setting
+				update_setting("backup_schedule", $backup_schedule);
+			}
+		}
+
+		// Get the posted backup_remove value
+		$backup_remove = (int)$_POST['backup_remove'];
+
+		// If the backup_remove value has changed
+		if ($backup_remove != get_setting("backup_remove")) {
+			// If the backup_remove value is an integer value
+			if (is_int($backup_remove)) {
+				// Update the backup_remove setting
+				update_setting("backup_remove", $backup_remove);
+			}
+		}
+
+		// If we don't have an error
+		if (!$error) {
+			// Display an alert
+        	set_alert(true, "good", "The settings were updated successfully.");
+        	
+        	$message = _lang('BackupSettingsUpdated', ['user_name' => $_SESSION['name']], false); 
+        	write_log(0, $_SESSION['uid'], $message, 'backup');
+        	
+        	// If we should also do a backup
+        	if (isset($_POST['submit_and_backup_now'])) {
+
+        	    $message = _lang('BackupInitiatedByUser', ['user_name' => $_SESSION['name']], false);
+        	    write_debug_log($message);
+        	    write_log(0, $_SESSION['uid'], $message, 'backup');
+
+        	    // Increasing the time for timeout
+        	    set_time_limit(600);
+
+        	    require_once(realpath(__DIR__ . '/../cron/cron_backup.php'));
+        	    do_backup(true);
+        	}
+		}
+	}
         
         // If the Security tab was submitted
         if (isset($_POST['update_security_settings']))
@@ -449,12 +565,23 @@ function is_valid_base_url($url) {
 
             if ($proxy_host != $current_proxy_host)
             {
-                update_setting("proxy_host", $proxy_host);
+		// If this is a valid IP or domain name
+		if (filter_var($proxy_host, FILTER_VALIDATE_IP) || filter_var($proxy_host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME))
+		{
+                    update_setting("proxy_host", $proxy_host);
+		}
             }
 
             if ($proxy_port != $current_proxy_port)
             {
-                update_setting("proxy_port", $proxy_port);
+		// Set the minimum and maximum port range
+		$options = array("options" => array("min_range"=>0, "max_range"=>65535));
+
+		// If this is a valid integer value
+		if (filter_var($proxy_port, FILTER_VALIDATE_INT, $options))
+		{
+                    update_setting("proxy_port", $proxy_port);
+		}
             }
 
             if ($proxy_user != $current_proxy_user)
@@ -529,6 +656,8 @@ function is_valid_base_url($url) {
     <script src="../js/jquery.min.js"></script>
     <script src="../js/jquery-ui.min.js"></script>
     <script src="../js/bootstrap.min.js"></script>
+    <script src="../js/jquery.blockUI.min.js"></script>
+
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -627,6 +756,7 @@ function is_valid_base_url($url) {
               <li><a class="active" href="#/general"><?php echo $escaper->escapeHtml($lang['General']); ?></a></li>
               <li><a href="#/files"><?php echo $escaper->escapeHtml($lang['FileUpload']); ?></a></li>
               <li><a href="#/mail"><?php echo $escaper->escapeHtml($lang['Mail']); ?></a></li>
+              <li><a href="#/backups"><?php echo $escaper->escapeHtml($lang['Backups']); ?></a></li>
               <li><a href="#/security"><?php echo $escaper->escapeHtml($lang['Security']); ?></a></li>
               <li><a href="#/debug"><?php echo $escaper->escapeHtml($lang['Debugging']); ?></a></li>
               <!--<li><a href="#/extras">Extras</a></li>-->
@@ -781,11 +911,38 @@ function is_valid_base_url($url) {
                               </td>
                             </tr>
                             <tr>
+                              <td><?php echo $escaper->escapeHtml($lang['DefaultCurrentMaturity']) ?>:</td>
+                              <td>
+                                <?php
+                                  // Create default current maturity dropdown
+                                  create_dropdown("control_maturity", $escaper->escapeHtml(get_setting("default_current_maturity")), "default_current_maturity", false);
+                                ?>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td><?php echo $escaper->escapeHtml($lang['DefaultDesiredMaturity']) ?>:</td>
+                              <td>
+                                <?php
+                                  // Create default desired maturity dropdown
+                                  create_dropdown("control_maturity", $escaper->escapeHtml(get_setting("default_desired_maturity")), "default_desired_maturity", false);
+                                ?>
+                              </td>
+                            </tr>
+                            <tr>
                               <td><?php echo $escaper->escapeHtml($lang['NextReviewDateUses']) ?>:</td>
                               <td>
                                 <select name="next_review_date_uses">
                                     <option value="InherentRisk" <?php echo $escaper->escapeHtml(get_setting("next_review_date_uses")) == "InherentRisk" ? "selected" : ""; ?> ><?php echo $escaper->escapeHtml($lang['InherentRisk']); ?></option>
                                     <option value="ResidualRisk" <?php echo $escaper->escapeHtml(get_setting("next_review_date_uses")) == "ResidualRisk" ? "selected" : ""; ?>><?php echo $escaper->escapeHtml($lang['ResidualRisk']); ?></option>
+                                </select>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td><?php echo $escaper->escapeHtml($lang['HighChartsDeliveryMethod']) ?>:</td>
+                              <td>
+                                <select name="highcharts_delivery_method">
+                                    <option value="cdn" <?php echo $escaper->escapeHtml(get_setting("highcharts_delivery_method")) == "cdn" ? "selected" : ""; ?> >HighCharts CDN</option>
+                                    <option value="local" <?php echo $escaper->escapeHtml(get_setting("highcharts_delivery_method")) == "local" ? "selected" : ""; ?> >Local</option>
                                 </select>
                               </td>
                             </tr>
@@ -1064,6 +1221,177 @@ function is_valid_base_url($url) {
                 </table>
 
                 </form>
+              </div>
+
+
+              <!-- Backups Setting Tab -->
+              <div id="backups" style="display: none;" class="settings_tab">
+        <?php
+                // Get the backup settings
+		$backup_auto = get_setting('backup_auto');
+		$backup_path= get_setting('backup_path');
+		$phpExecutablePath = getPHPExecutableFromPath();
+        ?>
+                  <table border="1" width="800" cellpadding="10px">
+                  <tbody>
+                  <tr>
+                    <td>
+                      <table name="backup" id="backup" border="0">
+            			<tr><td><h4><u><?php echo $escaper->escapeHtml($lang['Instructions']); ?></u></h4></td></tr>
+            			<tr><td><?php echo $escaper->escapeHtml($lang['PlaceTheFollowingInYourCrontabToRunAutomatically']); ?>:</td></tr>
+            			<tr><td>* * * * * <?php echo $escaper->escapeHtml($phpExecutablePath ? $phpExecutablePath : $lang['PathToPhpExecutable']); ?> <?php echo (strncasecmp(PHP_OS, 'WIN', 3) == 0 ? "" : "-f") ?> <?php echo realpath(__DIR__ . '/../cron/cron.php'); ?> > /dev/null 2>&1</td></tr>
+                      </table>
+                    </td>
+                  </tr>
+                  </tbody>
+                  </table>
+
+                  <br />
+
+                  <table border="1" width="800" cellpadding="10px">
+                  <tbody>
+                  <tr>
+                    <td>
+                      <form name="backups_settings" method="post" action="">
+                      <table name="backup" id="backup" border="0">
+                        <tr>
+                          <td colspan="2"><input type="checkbox" name="backup_auto" id="backup_auto" <?php echo ($backup_auto == "true") ? "checked=\"yes\" " : ""?>/>&nbsp;&nbsp;<?php echo $escaper->escapeHTML($lang['AutomaticallyBackupThisSimpleRiskInstance']); ?></td>
+                        </tr>
+                        <tr>
+                        <td colspan="2"><font style="color: red;"><?php echo $escaper->escapeHtml($lang['ForSecurityReasonsBackupOutsideWebRoot']); ?></font></td>
+                        </tr>
+						<tr>
+                          <td><?php echo $escaper->escapeHtml($lang['BackupLocation']); ?>:</td>
+                          <td><input name="backup_path" id="backup_path" type="text" size="50px" value="<?php echo $escaper->escapeHtml($backup_path); ?>" /></td>
+                        </tr>
+						<tr>
+			  			  <td colspan="2"><?php echo $escaper->escapeHTML($lang['BackupSchedule']); ?>:&nbsp;&nbsp;
+                            <select id="backup_schedule" name="backup_schedule" style="width: 100px !important; min-width: 100px; max-width: 100px;">
+                              <option value="hourly"<?php echo (get_setting('backup_schedule') == "hourly") ? " selected" : ""; ?>><?php echo $escaper->escapeHTML($lang['Hourly']); ?></option>
+            			      <option value="daily"<?php echo (get_setting('backup_schedule') == "daily") ? " selected" : ""; ?>><?php echo $escaper->escapeHTML($lang['Daily']); ?></option>
+            			      <option value="weekly"<?php echo (get_setting('backup_schedule') == "weekly") ? " selected" : ""; ?>><?php echo $escaper->escapeHTML($lang['Weekly']); ?></option>
+                              <option value="monthly"<?php echo (get_setting('backup_schedule') == "monthly") ? " selected" : ""; ?>><?php echo $escaper->escapeHTML($lang['Monthly']); ?></option>
+                            </select>
+                          </td>
+                        </tr>
+						<tr>
+			  			  <td colspan="2">
+			  				<?php echo $escaper->escapeHTML($lang['RemoveBackupsAfter']); ?>&nbsp;<input type="number" name="backup_remove" id="backup_remove" value="<?php echo $escaper->escapeHTML(get_setting('backup_remove')); ?>" min="1" max="365" style="width: 75px !important; min-width: 75px; max-width: 75px;"/>&nbsp;<?php echo $escaper->escapeHTML($lang['days']); ?>
+			  			  </td>
+			  			</tr>
+		      		  </table>
+                      <br />
+                      <input type="submit" value="<?php echo $escaper->escapeHtml($lang['Save']); ?>" name="submit_backup" />
+                      <input type="submit" value="<?php echo $escaper->escapeHtml($lang['SaveAndBackupNow']); ?>" name="submit_and_backup_now" />
+                      </form>
+                      
+                      <script>
+                          function blockWithInfoMessage(message) {
+                              toastr.options = {
+                                  "timeOut": "0",
+                                  "extendedTimeOut": "0",
+                              }
+    
+                              $('body').block({
+                            	  baseZ: 100000, // So the block covers the header too thats z-index is 99999
+                                  message: "<?php echo $escaper->escapeHtml($lang['Processing']); ?>",
+                                  css: { border: '1px solid black' }
+                              });
+                              setTimeout(function(){ toastr.info(message); }, 1);
+                          }
+                        $(document).ready(function() {
+                            $("input[name='submit_and_backup_now']").click(function(evt) {
+                                blockWithInfoMessage("<?php echo $escaper->escapeHtml($lang['BackupInitiated']); ?>");
+                                return true;
+                            });
+                        });
+                      </script>
+                    </td>
+                  </tr>
+                  </tbody>
+                  </table>
+
+                  <br />
+
+                  <table border="1" width="800" cellpadding="10px">
+                  <tbody>
+                  <tr>
+                    <td>
+
+                      <?php
+				// Open the database connection
+				$db = db_open();
+
+				// Get the list of backups ordered by timestamp
+				$stmt = $db->prepare("SELECT * FROM `backups` ORDER BY `timestamp` DESC;");
+				$stmt->execute();
+				$backups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+				// Close the database connection
+				db_close($db);
+                      ?>
+
+
+                      <table name="backups" id="backups" border="0">
+                        <tr><td colspan='5'><h4><u><?php echo $escaper->escapeHtml($lang['Backups']); ?></u></h4></td></tr>
+                        <tr>
+                        <td colspan="5"><font style="color: red;"><?php echo $escaper->escapeHtml($lang['PrivateTmpMessage']); ?></font></td>
+                        </tr>
+			<tr>
+			<td><u><?php echo $escaper->escapeHtml($lang['BackupDate']); ?></u></td>
+                          <td width="20px">&nbsp;</td>
+
+                      <?php
+				// If this is not a hosted customer
+				if (get_setting('hosting_tier') == false)
+				{
+					echo "<td><u>" . $escaper->escapeHtml($lang['ApplicationBackup']) . "</u></td>\n";
+					echo "<td width=\"20px\">&nbsp;</td>\n";
+				}
+				else
+				{
+					echo "<td width=\"0px\">&nbsp;</td>\n";
+					echo "<td width=\"0px\">&nbsp;</td>\n";
+				}
+                      ?>
+                          <td><u><?php echo $escaper->escapeHtml($lang['DatabaseBackup']); ?></u></td>
+                        </tr>
+
+                      <?php
+				// For each backup
+				foreach ($backups as $backup)
+				{
+					// Display the backup information
+					echo "<tr>\n";
+					echo "  <td>" . $escaper->escapeHtml($backup['timestamp']) . "</td>\n";
+					echo "  <td>&nbsp;</td>\n";
+					
+					// If this is not a hosted customer
+                                	if (get_setting('hosting_tier') == false)
+                                	{
+						// Display the Download link for the application backup
+						echo "<td><a target=\"_blank\" href=\"download_backup.php?type=app&id=" . $escaper->escapeHtml($backup['random_id']) . "\">" . $escaper->escapeHtml($lang['Download']) . "</a></td>\n";
+						echo "  <td>&nbsp;</td>\n";
+                                	}
+					// If this is a hosted customer
+                                	else
+                                	{
+						// Do not display a Download link for the application backup
+                                        	echo "<td width=\"0px\">&nbsp;</td>\n";
+                                        	echo "<td width=\"0px\">&nbsp;</td>\n";
+                                	}
+
+					echo "<td><a target=\"_blank\" href=\"download_backup.php?type=db&id=" . $escaper->escapeHtml($backup['random_id']) . "\">" . $escaper->escapeHtml($lang['Download']) . "</a></td>\n";
+					echo "</tr>\n";
+				}
+                      ?>
+
+                      </table>
+                    </td>
+                  </tr>
+                  </tbody>
+		  </table>
+
               </div>
 
               <!-- Security Setting Tab -->

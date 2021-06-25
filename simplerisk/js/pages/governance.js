@@ -99,11 +99,12 @@ jQuery(document).ready(function($){
                     $('[name=control_phase]', modal).val(Number(control.control_phase) ? control.control_phase : "");
                     $('[name=control_owner]', modal).val(Number(control.control_owner) ? control.control_owner : "");
                     $('[name=control_number]', modal).val(control.control_number);
-                    $('[name=control_current_maturity]', modal).val(Number(control.control_current_maturity) ? control.control_current_maturity : "");
-                    $('[name=control_desired_maturity]', modal).val(Number(control.control_desired_maturity) ? control.control_desired_maturity : "");
+                    $('[name=control_current_maturity]', modal).val(Number(control.control_maturity) ? control.control_maturity : "");
+                    $('[name=control_desired_maturity]', modal).val(Number(control.desired_maturity) ? control.desired_maturity : "");
                     $('[name=control_priority]', modal).val(Number(control.control_priority) ? control.control_priority : "");
                     $('[name=family]', modal).val(Number(control.family) ? control.family : "");
                     $('[name=mitigation_percent]', modal).val(Number(control.mitigation_percent) ? control.mitigation_percent : "");
+                    $(".mapping_framework_table tbody", modal).html(data.mapped_frameworks);
 
                     $(modal).modal('show');
                 }
@@ -368,15 +369,14 @@ $(document).ready(function(){
                 if(result.status_message){
                     showAlertsFromArray(result.status_message);
                 }
-                var control_frameworks = $("#filter_by_control_framework").val();
-                $("#update-control-form [name*=map_framework_id]").each(function(index){
-                    var framework_id = $(this).val();
-                    if(control_frameworks.indexOf(framework_id) === -1){
-                        var framework_name = $(this).find("option:selected").text();
-                        $('#filter_by_control_framework').append($('<option>').val(framework_id).text(framework_name).attr("selected",true));
-                    }
-                });
-                $("#filter_by_control_framework").multiselect("rebuild");
+                // var control_frameworks = $("#filter_by_control_framework").val();
+                // $("#update-control-form [name*=map_framework_id]").each(function(index){
+                //     var framework_id = $(this).val();
+                //     if(control_frameworks.indexOf(framework_id) === -1){
+                //         $("#filter_by_control_framework option[value="+framework_id+"]").prop("selected", true);
+                //     }
+                // });
+                // $("#filter_by_control_framework").multiselect("rebuild");
                 $('#control--update').modal('hide');
                 controlDatatable.ajax.reload(null, false);
             }

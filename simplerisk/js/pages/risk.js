@@ -8,7 +8,7 @@ function close_current_tab(index)
 }
 
 function addRisk($this){
-    var tabContainer = $this.parents('.tab-data');
+    var tabContainer = $this.closest('.tab-data');
 
     // Check the sum of files the user wants to upload and
     // stop if it's over the max_upload_size
@@ -16,9 +16,8 @@ function addRisk($this){
     	return false;
     }
 
-    var getForm = $this.parent().parent().parent().parent();
-    var div = getForm.parent().parent();
-    var index = parseInt((div).attr('id').replace(/[A-Za-z$-]/g, ""));
+    var getForm = $this.closest("form");
+    var index = tabContainer.index();
     var form = new FormData($(getForm)[0]);
     $.each($("input[type=file]", tabContainer), function(i, obj) {
         $.each(obj.files, function(j, file){
@@ -45,16 +44,6 @@ function addRisk($this){
             }
             
             var risk_id = data.data.risk_id;
-
-            if (isNaN(index)){
-                var subject = $('input[name="subject"]', getForm).val();
-                var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-                $('#tab span:eq(0)').html('<b>ID:'+risk_id+' </b>'+subject);
-            } else {
-                var subject = $('input[name="subject"]', getForm).val();
-                var subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-                $('#tab'+index+' span:eq(0)').html('<b>ID:'+risk_id+' </b>'+subject);
-            }
 
             $.ajax({
                 type: "GET",
@@ -122,11 +111,11 @@ function addRisk($this){
         if($( ".datepicker" , tabContainer).length){
             $( ".datepicker" , tabContainer).datepicker();
         }
-        var tabIndex = tabContainer.attr('id').replace(/[A-Za-z$-]/g, "");
+        var tabIndex = tabContainer.index();
         var riskID = $('.risk-id', tabContainer).html();
         var subject = $('input[name="subject"]', tabContainer).val();
         subject = subject.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        $('#tab'+tabIndex+' span:eq(0)').html('<b>ID:'+riskID+' </b>'+subject);
+        $('.tab-append .tab').eq(tabIndex).find("span").html('<b>ID:'+riskID+' </b>'+subject);
         
         // if file upload button exists, set the unique ID
         if($(".hidden-file-upload.active", tabContainer).length){
@@ -154,7 +143,7 @@ function addRisk($this){
         /**
         * Build multiselect box
         */
-        $(".multiselect", tabContainer).multiselect({buttonWidth: '100%'});
+        $(".multiselect", tabContainer).multiselect({enableFiltering: true, buttonWidth: '100%'});
     }
     
     
@@ -267,10 +256,10 @@ function addRisk($this){
             $("textarea").addClass("enable-popup");
         }
         
-        look_for = "textarea" + text_area_id;
+        var look_for = "textarea" + text_area_id;
         if( !$(look_for, parent).length ){
             text_area_id = text_area_id.replace('#','');
-            look_for = "textarea[name=" + text_area_id;
+            look_for = "textarea[name=" + text_area_id + "]";
         }
         $(look_for, parent).focusin(function() {
             $(id_of_text_head, parent).addClass("affected-assets-title");
@@ -801,6 +790,12 @@ $(document).ready(function(){
             })
         });
 
+        $('.content-container').block({
+            message: 'Processing',
+            css: { border: '1px solid black', background: '#ffffff'},
+            baseZ:'10001'
+        });
+
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/management/risk/saveMitigation?id=" + risk_id,
@@ -810,6 +805,7 @@ $(document).ready(function(){
             contentType: false,
             processData: false,
             success: function(result){
+                $('.content-container').unblock();
                 var data = result.data;
                 $('.content-container', tabContainer).html(data.html);
                 $('.score--wrapper', tabContainer).html(data.score_wrapper_html);
@@ -900,6 +896,12 @@ $(document).ready(function(){
             })
         });
         
+        $('.content-container').block({
+            message: 'Processing',
+            css: { border: '1px solid black', background: '#ffffff'},
+            baseZ:'10001'
+        });
+
         $.ajax({
             type: "POST",
             url: BASE_URL + "/api/management/risk/saveReview?id=" + risk_id,
@@ -909,6 +911,7 @@ $(document).ready(function(){
             contentType: false,
             processData: false,
             success: function(data){
+                $('.content-container').unblock();
                 $('.content-container', tabContainer).html(data.data);
                 callbackAfterRefreshTab(tabContainer, 2);
                 if(data.status_message){
@@ -971,6 +974,13 @@ $(document).ready(function(){
     function closeRisk($this){
         var tabContainer = $this.parents('.tab-data');
         var risk_id = $('.large-text', tabContainer).html();
+
+        tabContainer.block({
+            message: 'Processing',
+            css: { border: '1px solid black', background: '#ffffff'},
+            baseZ:'10001'
+        });
+
         
         var getForm = $this.parents('form', tabContainer);
         var form = new FormData($(getForm)[0]);
@@ -983,6 +993,7 @@ $(document).ready(function(){
             contentType: false,
             processData: false,
             success: function(data){
+                tabContainer.unblock();
                 tabContainer.html(data.data);
                 callbackAfterRefreshTab(tabContainer);
                 if(data.status_message){
@@ -991,6 +1002,7 @@ $(document).ready(function(){
             }
         })
         .fail(function(xhr, textStatus){
+            tabContainer.unblock();
             if(!retryCSRF(xhr, this))
             {
                 if(xhr.responseJSON && xhr.responseJSON.status_message){

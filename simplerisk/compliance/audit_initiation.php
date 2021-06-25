@@ -12,10 +12,10 @@ require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 require_once(realpath(__DIR__ . '/../includes/governance.php'));
 require_once(realpath(__DIR__ . '/../includes/compliance.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -109,7 +109,7 @@ if(isset($_POST['update_test'])){
     $name           = $_POST['name'];
     $objective      = $_POST['objective'];
     $test_steps     = $_POST['test_steps'];
-    $approximate_time = is_int($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
+    $approximate_time = (int)($_POST['approximate_time']) ? $_POST['approximate_time'] : 0;
     $expected_results = $_POST['expected_results'];
     
     // Update a framework control test

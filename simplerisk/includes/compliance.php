@@ -12,10 +12,10 @@ require_once(realpath(__DIR__ . '/alerts.php'));
 
 // Include the language file
 require_once(language_file());
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /******************************************************
  * FUNCTION: DISPLAY FRAMEWORK CONTROLS IN COMPLIANCE *
@@ -213,7 +213,7 @@ function add_framework_control_test($tester, $test_frequency, $name, $objective,
 
     $test_id = $db->lastInsertId();
 
-    $message = _lang('TestCreatedAuditLogMessage', array('test_name' => $name, 'test_id' => $test_id, 'user' => $_SESSION['user']));
+    $message = _lang('TestCreatedAuditLogMessage', array('test_name' => $name, 'test_id' => $test_id, 'user' => $_SESSION['user']), false);
     write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
 
     updateTeamsOfItem($test_id, 'test', $teams);
@@ -231,6 +231,7 @@ function update_framework_control_test($test_id, $tester=false, $test_frequency=
 
     // Get test by test ID
     $test = get_framework_control_test_by_id($test_id);
+
     if($tester === false) $tester = $test['tester'];
     if($test_frequency === false) $test_frequency = $test['test_frequency'];
     if($name === false) $name = $test['name'];
@@ -267,10 +268,15 @@ function update_framework_control_test($test_id, $tester=false, $test_frequency=
     // Close the database connection
     db_close($db);
 
-    $message = _lang('TestUpdatedAuditLogMessage', array('test_name' => $name, 'test_id' => $test_id, 'user' => $_SESSION['user']));
+    updateTeamsOfItem($test_id, 'test', $teams, false);
+
+    $test_after = get_framework_control_test_by_id($test_id);
+    
+    $changes = get_changes('test', $test, $test_after);
+
+    $message = _lang('AuditLog_TestUpdated', array('test_name' => $name, 'test_id' => $test_id, 'user_name' => $_SESSION['user'], 'changes' => $changes), false);
     write_log((int)$test_id + 1000, $_SESSION['uid'], $message, "test");
 
-    updateTeamsOfItem($test_id, 'test', $teams);
 
     return $test_id;
 }
@@ -389,28 +395,42 @@ function get_framework_control_test_audit_by_id($test_audit_id){
 
     $stmt = $db->prepare("
         SELECT 
-            t1.*,
-            t2.name tester_name,
-            t3.short_name control_name,
-            t3.control_owner,
-            IFNULL(GROUP_CONCAT(DISTINCT t4.name), '') framework_name,
-            t5.id result_id,
-            t5.test_result,
-            t5.summary,
-            t5.test_date,
-            t5.submitted_by,
-            t5.submission_date,
-            t6.additional_stakeholders,
+            audits.id,
+            audits.test_id,
+            audits.tester,
+            audits.test_frequency,
+            tests.last_date,
+            tests.next_date,
+            audits.name,
+            audits.objective,
+            audits.test_steps,
+            audits.approximate_time,
+            audits.expected_results,
+            audits.framework_control_id,
+            audits.desired_frequency,
+            audits.status,
+            audits.created_at,
+            u.name tester_name,
+            ctrl.short_name control_name,
+            ctrl.control_owner,
+            IFNULL(GROUP_CONCAT(DISTINCT fw.name), '') framework_name,
+            results.id result_id,
+            results.test_result,
+            results.summary,
+            results.test_date,
+            results.submitted_by,
+            results.submission_date,
+            tests.additional_stakeholders,
             GROUP_CONCAT(DISTINCT `itt`.`team_id`) teams
-        FROM `framework_control_test_audits` t1
-            LEFT JOIN `user` t2 ON t1.tester = t2.value
-            LEFT JOIN `framework_controls` t3 ON t1.framework_control_id = t3.id 
-            LEFT JOIN `framework_control_mappings` m ON t3.id = m.control_id
-            LEFT JOIN `frameworks` t4 ON m.framework=t4.value
-            LEFT JOIN `framework_control_test_results` t5 ON t1.id=t5.test_audit_id
-            LEFT JOIN `framework_control_tests` t6 ON t6.id=t1.test_id
-            LEFT JOIN `items_to_teams` itt ON `itt`.`item_id` = `t1`.`id` and `itt`.`type` = 'audit'
-        WHERE t1.id=:test_audit_id
+        FROM `framework_control_test_audits` audits
+            LEFT JOIN `user` u ON audits.tester = u.value
+            LEFT JOIN `framework_controls` ctrl ON audits.framework_control_id = ctrl.id 
+            LEFT JOIN `framework_control_mappings` ctrl_m ON ctrl.id = ctrl_m.control_id
+            LEFT JOIN `frameworks` fw ON ctrl_m.framework=fw.value
+            LEFT JOIN `framework_control_test_results` results ON audits.id=results.test_audit_id
+            LEFT JOIN `framework_control_tests` tests ON tests.id=audits.test_id
+            LEFT JOIN `items_to_teams` itt ON `itt`.`item_id` = `audits`.`id` and `itt`.`type` = 'audit'
+        WHERE audits.id=:test_audit_id
     ");
     $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -442,7 +462,61 @@ function get_framework_control_test_audit_by_id($test_audit_id){
     }
 
     return $test;
-} 
+}
+
+/********************************************************
+ * FUNCTION: GET TEST AUDIT STATUS 						*
+ * Returns the `test_status` id of the audit's status	*
+ ********************************************************/
+function get_test_audit_status($test_audit_id) {
+
+    // Open the database connection
+    $db = db_open();
+    
+    $stmt = $db->prepare("
+        SELECT
+            `status`
+        FROM
+            `framework_control_test_audits`
+        WHERE
+            `id` = :test_audit_id;
+    ");
+    $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $status = $stmt->fetchColumn();
+
+    // Close the database connection
+    db_close($db);
+
+    return $status;
+}
+/************************************
+ * FUNCTION: GET TEST AUDIT NAME	*
+ ************************************/
+function get_test_audit_name($test_audit_id) {
+    
+    // Open the database connection
+    $db = db_open();
+    
+    $stmt = $db->prepare("
+        SELECT
+            `name`
+        FROM
+            `framework_control_test_audits`
+        WHERE
+            `id` = :test_audit_id;
+    ");
+    $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
+    $stmt->execute();
+    
+    $name = $stmt->fetchColumn();
+    
+    // Close the database connection
+    db_close($db);
+    
+    return $name;
+}
 
 /*************************************
  * FUNCTION: DISPLAY INITIATE AUDITS *
@@ -699,9 +773,6 @@ function display_active_audits(){
             </tbody>
         </table>
         <br>
-        <style>
-            .dataTables_filter, .dataTables_info { display: none; }
-        </style>
     <script>
         $(document).ready(function(){
             var pageLength = 10;
@@ -716,9 +787,11 @@ function display_active_audits(){
                 var data_name = $(this).attr('data-name');
                 if(data_name != 'actions') {
                     if(data_name == 'test_frequency') {
-                        $(this).html( '<input type=\"number\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                        $(this).html(''); // To clear the title out of the header cell
+                        $('<input type=\"number\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                     } else {
-                        $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                        $(this).html(''); // To clear the title out of the header cell
+                        $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                     }
                 }
          
@@ -747,9 +820,8 @@ function display_active_audits(){
                     }
                 ],
                 pagingType: \"full_numbers\",
-                dom : \"flrtip\",
                 pageLength: pageLength,
-                dom : \"flrti<'#view-all.view-all'>p\",
+                dom : \"lrti<'#view-all.view-all'>p\",
                 createdRow: function(row, data, index){
                     var background = $('.background-class', $(row)).data('background');
                     $(row).find('td').addClass(background)
@@ -1083,7 +1155,7 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
     $select_background_class = $active ? "" : ", t8.background_class ";
 
     $sql = "
-        SELECT t1.id, t1.test_id, t1.test_frequency, t1.last_date, t1.next_date, t1.name, t1.objective, t1.test_steps,
+        SELECT t1.id, t1.test_id, t1.test_frequency, t7.last_date, t7.next_date, t1.name, t1.objective, t1.test_steps,
             t1.approximate_time, t1.expected_results, t1.framework_control_id, t1.desired_frequency, t1.status, t1.created_at,
             t2.name tester_name, t3.short_name control_name, IFNULL(GROUP_CONCAT(DISTINCT t4.name), '') framework_name, t5.test_result,
             t5.summary, t5.submitted_by, t5.submission_date, ifnull(t6.name, '--') audit_status_name, t7.additional_stakeholders{$select_background_class}
@@ -1135,11 +1207,15 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
             if($filters['filter_test_result'])
             {
                 foreach($filters['filter_test_result'] as &$val){
-                    $val = (int)$val;
+		          $val = (int)$val;
                 }
                 unset($val);
 
-                $wheres[] = " t8.value IN (".implode(",", $filters['filter_test_result']).") ";
+                if(in_array(0, $filters['filter_test_result'])) {
+                    $wheres[] = " (t5.test_result='' OR t8.value IN (".implode(",", $filters['filter_test_result']).")) ";
+                } else {
+                    $wheres[] = " t8.value IN (".implode(",", $filters['filter_test_result']).") ";
+                }
             }
             else
             {
@@ -1583,7 +1659,12 @@ function display_testing()
         </form>
     ";
     
+    // Display test audit comment
     display_test_audit_comment($test_audit_id);
+    
+    // Display test audit trail
+    display_test_audit_trail($test_audit_id);
+    
     echo "
         <script>
             $( document ).ready(function() {
@@ -1641,6 +1722,81 @@ function display_test_audit_trail($test_audit_id)
         </div>
     ";
 }
+
+function display_test_audit_framework_control($framework_control_id) {
+    if ($framework_control_id) {
+        global $escaper, $lang;
+
+        $control = get_framework_controls($framework_control_id)[0];
+        echo "
+        <div class='row-fluid framework-control-wrapper'>
+            <div class='well'>
+                <h4 class='collapsible--toggle'><span><i class='fa fa-caret-down'></i>".$escaper->escapeHtml($lang['ControlDetails'])."</span></h4>
+                <div class='framework-control collapsible'>
+                    <table width='100%'>
+                        <tr>
+                            <td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>
+                            <td colspan='5'>".$escaper->escapeHtml($control['long_name'])."</td>
+                        </tr>
+                        <tr>
+                            <td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </td>
+                            <td width='57%' colspan='3'>".$escaper->escapeHtml($control['short_name'])."</td>
+                            <td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>
+                            <td width='17%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>
+                        </tr>
+                        <tr>
+                            <td  align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>
+                            <td>".$escaper->escapeHtml($control['control_class_name'])."</td>
+                            <td  align='right'><strong>".$escaper->escapeHtml($lang['ControlPhase'])."</strong>: </td>
+                            <td>".$escaper->escapeHtml($control['control_phase_name'])."</td>
+                            <td  align='right'><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </td>
+                            <td>".$escaper->escapeHtml($control['control_number'])."</td>
+                        </tr>
+                        <tr>
+                            <td align='right'><strong>".$escaper->escapeHtml($lang['ControlPriority'])."</strong>: </td>
+                            <td>".$escaper->escapeHtml($control['control_priority_name'])."</td>
+                            <td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </td>
+                            <td>".$escaper->escapeHtml($control['family_short_name'])."</td>
+                            <td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['MitigationPercent'])."</strong>: </td>
+                            <td>".$escaper->escapeHtml($control['mitigation_percent'])."%</td>
+                        </tr>
+                        <tr>
+                            <td align='right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </td>
+                            <td colspan='5'>".$escaper->escapeHtml($control['description'])."</td>
+                        </tr>
+                        <tr>
+                            <td align='right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </td>
+                            <td colspan='5'>".$escaper->escapeHtml($control['supplemental_guidance'])."</td>
+                        </tr>
+                    </table>\n";
+        
+        $mapped_frameworks = get_mapping_control_frameworks($control['id']);
+        echo "
+                    <div class='container-fluid'>
+                        <div class='well'>
+                            <h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>
+                            <table width='100%' class='table table-bordered'>
+                                <tr>
+                                    <th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>
+                                    <th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>
+                                </tr>";
+        foreach ($mapped_frameworks as $framework){
+            echo "
+                                <tr>
+                                    <td>".$escaper->escapeHtml($framework['framework_name'])."</td>
+                                    <td>".$escaper->escapeHtml($framework['reference_name'])."</td>
+                                </tr>";
+        }
+        echo "
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>";
+    }
+}
+
 
 /****************************************
  * FUNCTION: DISPLAY TEST AUDIT COMMENT *
@@ -1801,10 +1957,10 @@ function get_testing_comment_list($test_audit_id)
 /********************************
  * FUNCTION: INSERT TEST RESULT *
  ********************************/
-function save_test_result($test_audit_id, $status, $test_result, $tester, $test_date, $teams, $summary)
-{
+function save_test_result($test_audit_id, $status, $test_result, $tester, $test_date, $teams, $summary) {
+
     $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
-    
+
     $submitted_by = $_SESSION['uid'];
 
     // Open the database connection
@@ -1813,12 +1969,12 @@ function save_test_result($test_audit_id, $status, $test_result, $tester, $test_
     $submission_date = date("Y-m-d H:i:s");
 
     // Check submitted result is existing
-    if(!$test_audit['result_id']){
+    if(!$test_audit['result_id']) {
         $sql = "INSERT INTO framework_control_test_results(`test_audit_id`, `test_result`, `summary`, `test_date`, `submitted_by`, `submission_date`) VALUES(:test_audit_id, :test_result, :summary, :test_date, :submitted_by, :submission_date);";
-    }
-    else{
+    } else {
         $sql = "UPDATE framework_control_test_results SET `test_result`=:test_result, `summary`=:summary, `test_date`=:test_date, `submitted_by`=:submitted_by, `submission_date`=:submission_date WHERE `test_audit_id`=:test_audit_id;";
     }
+
     $stmt = $db->prepare($sql);
     $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
     $stmt->bindParam(":test_result", $test_result, PDO::PARAM_STR);
@@ -1827,52 +1983,61 @@ function save_test_result($test_audit_id, $status, $test_result, $tester, $test_
     $stmt->bindParam(":submitted_by", $submitted_by, PDO::PARAM_STR);
     $stmt->bindParam(":submission_date", $submission_date, PDO::PARAM_STR);
     $stmt->execute();
-    
+
     // Update tester in test audit table
-    $sql = "UPDATE framework_control_test_audits SET `tester`=:tester WHERE `id`=:test_audit_id;";
-    $stmt = $db->prepare($sql);
+    $stmt = $db->prepare("UPDATE framework_control_test_audits SET `tester`=:tester WHERE `id`=:test_audit_id;");
     $stmt->bindParam(":tester", $tester, PDO::PARAM_INT);
     $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
     $stmt->execute();
-    
+
     // Close the database connection
     db_close($db);
-    
+
     // Update teams of the active audit
-    updateTeamsOfItem($test_audit_id, 'audit', $teams);
-    
+    updateTeamsOfItem($test_audit_id, 'audit', $teams, false);
+
     // Update status in test_audit table
     update_test_audit_status($test_audit_id, $status);
-    
+
     $closed_audit_status = get_setting("closed_audit_status");
-    
+
     // Check audit was closed
-    if($status == $closed_audit_status)
-    {
+    if($status == $closed_audit_status) {
         // update last audit date and next audti date in test_audit table
         update_last_and_next_auditdate($test_audit_id, $test_date);
+
+        $test_audit_after = get_framework_control_test_audit_by_id($test_audit_id);
+        $changes = get_changes('audit', $test_audit, $test_audit_after);
+
+        $message = _lang('AuditLog_TestAuditClosed', ['test_audit_name' => $test_audit["name"], 'test_audit_id' => $test_audit_id, 'user_name' => $_SESSION['user'], 'changes' => $changes], false);
+        write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
+    } else {
+        $test_audit_after = get_framework_control_test_audit_by_id($test_audit_id);
+        $changes = get_changes('audit', $test_audit, $test_audit_after);
+
+        $message = _lang('AuditLog_TestAuditUpdated', ['test_audit_name' => $test_audit["name"], 'test_audit_id' => $test_audit_id, 'user_name' => $_SESSION['user'], 'changes' => $changes], false);
+        write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
     }
-    
+
     return true;
 }
 
-/*********************************************************
- * FUNCTION: UPDATE TESTAUDIT, CONTROL, FRAMEWORK STATUS *
- *********************************************************/
-function update_test_audit_status($test_audit_id, $status)
-{    
-    $old_status = get_framework_control_test_audit_by_id($test_audit_id)["status"];
-    
+/**************************************
+ * FUNCTION: UPDATE TEST AUDIT STATUS *
+ **************************************/
+function update_test_audit_status($test_audit_id, $status=0) {
+
+    $old_status = get_test_audit_status($test_audit_id);
+
     // Open the database connection
     $db = db_open();
-    
+
     // Update test audit status
-    $sql = "UPDATE framework_control_test_audits SET `status`=:status WHERE id=:test_audit_id;";
-    $stmt = $db->prepare($sql);
+    $stmt = $db->prepare("UPDATE `framework_control_test_audits` SET `status` = :status WHERE `id` = :test_audit_id;");
     $stmt->bindParam(":status", $status, PDO::PARAM_INT);
     $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
     $stmt->execute();
-    
+
     // Close the database connection
     db_close($db);
 
@@ -1884,25 +2049,7 @@ function update_test_audit_status($test_audit_id, $status)
 
         // Send the notification
         notify_audit_status_change($test_audit_id, $old_status, $status);
-    }    
-    
-    $closed_audit_status = get_setting("closed_audit_status");
-    $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
-    $test_audit_name = empty($test_audit["name"]) ? "" : $test_audit["name"];
-
-    // Check audit was closed
-    if($status == $closed_audit_status)
-    {
-        $message = "An audit named \"{$test_audit_name}\" was modified and closed by username \"" . $_SESSION['user'] . "\".";
-        write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
     }
-    // The audit status is not closed
-    else
-    {
-        $message = "An audit named \"{$test_audit_name}\" was modified by username \"" . $_SESSION['user'] . "\".";
-        write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
-    }
-    
 }
 
 /***********************************************************
@@ -2079,7 +2226,7 @@ function display_past_audits()
                     <strong>".$escaper->escapeHtml($lang['TestResult']).":&nbsp;&nbsp;&nbsp;</strong>
                 </div>
                 <div class='span3'>";
-                    create_multiple_dropdown("test_results_filter", "all", "filter_by_test_result");
+                    create_multiple_dropdown("test_results_filter", "all", "filter_by_test_result", null, true, "--");
     echo "
                 </div>
                 <div class='span2' align='right'>
@@ -2181,6 +2328,7 @@ function display_past_audits()
             $('#filter_by_testname').multiselect({
                 enableFiltering: true,
                 enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
                 includeSelectAllOption: true
             });
@@ -2192,7 +2340,8 @@ function display_past_audits()
                 var title = $(this).text();
                 var data_name = $(this).attr('data-name');
                 if(data_name != 'actions') {
-                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $(this).html(''); // To clear the title out of the header cell
+                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                 }
          
                 $( 'input, select', this ).on( 'keyup change', function () {
@@ -2504,6 +2653,9 @@ function display_detail_test()
 
         </div>
     ";
+
+    // Display the Control Details
+    display_test_audit_framework_control($test_audit['framework_control_id']);
     
     // Display test audit comment
     display_test_audit_comment($test_audit_id);
@@ -2531,7 +2683,7 @@ function delete_test_audit($test_audit_id) {
     // Close the database connection
     db_close($db);
 
-    $message = _lang('TestAuditDeleteAuditTrailMessage', array('test_audit_id' => $test_audit_id, 'user' => $_SESSION['user']));
+    $message = _lang('TestAuditDeleteAuditTrailMessage', array('test_audit_id' => $test_audit_id, 'user' => $_SESSION['user']), false);
     write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
 
     return true;
@@ -2545,7 +2697,8 @@ function reopen_test_audit($test_audit_id)
     // Set test audit status to undefined
     update_test_audit_status($test_audit_id, 0);
     
-    $message = "A closed test audit was for ID \"{$test_audit_id}\" reopened by username \"" . $_SESSION['user'] . "\".";
+    $test_audit_name = get_test_audit_name($test_audit_id);
+    $message = _lang('AuditLog_TestAuditReopen', ['test_audit_name' => $test_audit_name, 'test_audit_id' => $test_audit_id, 'user_name' => $_SESSION['user']], false);
     write_log((int)$test_audit_id + 1000, $_SESSION['uid'], $message, "test_audit");
 
     return true;

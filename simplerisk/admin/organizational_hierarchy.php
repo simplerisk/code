@@ -8,10 +8,10 @@
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -186,7 +186,6 @@ require_once(language_file());
     			                        url: BASE_URL + '/api/organizational_hierarchy/business_unit/available_business_unit_menu_items',
     			                        type: 'GET',
     			                        success : function (response) {
-											console.log(response);
 											$('li.dropdown-submenu.business-units ul.dropdown-menu').html(response);
     			                        },
     			                        error: function(xhr,status,error) {
@@ -216,6 +215,9 @@ require_once(language_file());
         				                idField: 'value',
         				                treeField: 'name',
         				                scrollbarSize: 0,
+        				                loadFilter: function(data, parentId) {
+        				                    return data.data;
+        				                },
         				                onLoadSuccess: function(row, data){
         				                    //fixTreeGridCollapsableColumn();
         				                    //It's there to be able to have it collapsed on load
@@ -223,7 +225,6 @@ require_once(language_file());
         				                    tree.treegrid('options').animate = false;
         				                    tree.treegrid('collapseAll');
         				                    //tree.treegrid('options').animate = true;
-        				                    console.log(row, data);
 
         				                    //$("#business_units").treegrid('resize');
         				                },

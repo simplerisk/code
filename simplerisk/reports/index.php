@@ -8,10 +8,10 @@ require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/reporting.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -35,7 +35,18 @@ require_once(language_file());
   <script src="../js/bootstrap.min.js"></script>
   <script src="../js/sorttable.js"></script>
   <script src="../js/obsolete.js"></script>
-  <script src="../js/highcharts/code/highcharts.js"></script>
+
+    <?php
+        // Use these HighCharts scripts
+        $scripts = [
+                'highcharts.js',
+        ];
+
+        // Display the highcharts javascript source
+        display_highcharts_javascript($scripts);
+
+?>
+
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
@@ -46,8 +57,19 @@ require_once(language_file());
   <link rel="stylesheet" href="../css/side-navigation.css">
   
   <?php
-    setup_favicon("..");
-    setup_alert_requirements("..");
+
+        // If the Incident Management Extra is enabled
+        if (incident_management_extra())
+        {
+                // Include the incident management javascript file
+                echo "        <script src=\"../extras/incident_management/js/incident_management.js\"></script>\n";
+
+                // Include the incident management css file
+                echo "        <link rel=\"stylesheet\" href=\"../extras/incident_management/css/incident_management.css\">\n";
+        }
+
+	setup_favicon("..");
+	setup_alert_requirements("..");
   ?>
 </head>
 
@@ -63,36 +85,42 @@ require_once(language_file());
   ?>
 
   <div class="container-fluid">
+    <?php display_side_navigation("GovernanceRiskCompliance"); ?>
     <div class="row-fluid">
-      <div class="span3">
+      <div class="spacer"></div>
+      <div class="span2">
         <?php view_reporting_menu("Overview"); ?>
       </div>
-      <div class="span9">
-        <div class="row-fluid">
-          <div class="span4">
-            <div class="well">
-              <?php open_closed_pie(js_string_escape($lang['OpenVsClosed'])); ?>
+      <div class="span4">
+        <div class="container-fluid">
+          <br />
+          <div class="row-fluid">
+            <div class="span4">
+              <div class="well">
+                <?php open_closed_pie(js_string_escape($lang['OpenVsClosed'])); ?>
+              </div>
+            </div>
+            <div class="span4">
+              <div class="well">
+                <?php open_mitigation_pie(js_string_escape($lang['MitigationPlannedVsUnplanned'])); ?>
+              </div>
+            </div>
+            <div class="span4">
+              <div class="well">
+                <?php open_review_pie(js_string_escape($lang['ReviewedVsUnreviewed'])); ?>
+              </div>
             </div>
           </div>
-          <div class="span4">
-            <div class="well">
-              <?php open_mitigation_pie(js_string_escape($lang['MitigationPlannedVsUnplanned'])); ?>
-            </div>
-          </div>
-          <div class="span4">
-            <div class="well">
-              <?php open_review_pie(js_string_escape($lang['ReviewedVsUnreviewed'])); ?>
+          <div class="row-fluid">
+            <div class="span12">
+              <div class="well">
+                <?php risks_by_month_table(); ?>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="span9">
-        <div class="row-fluid">
-          <div class="well">
-            <?php risks_by_month_table(); ?>
-          </div>
-        </div>
-      </div>
+    
     </div>
   </div>
 </body>

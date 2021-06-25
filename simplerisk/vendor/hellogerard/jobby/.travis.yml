@@ -1,0 +1,23 @@
+language: php
+
+sudo: false
+
+php:
+  - 5.6
+  - 7.0
+  - 7.1
+  - 7.2
+  - hhvm
+
+matrix:
+  allow_failures:
+    - php: hhvm
+
+before_script:
+  - composer self-update || true
+  - composer install
+
+cache:
+  directories:
+    - vendor
+    - $COMPOSER_CACHE_DIR

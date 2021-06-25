@@ -12,10 +12,10 @@ require_once(realpath(__DIR__ . '/alerts.php'));
 
 // Include the language file
 require_once(language_file());
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /****************************
  * FUNCTION: GET FRAMEWORKS *
@@ -1072,8 +1072,8 @@ function add_framework_control($control){
     $control_class = isset($control['control_class']) ? (int)$control['control_class'] : 0;
     $control_phase = isset($control['control_phase']) ? (int)$control['control_phase'] : 0;
     $control_number = isset($control['control_number']) ? $control['control_number'] : "";
-    $control_current_maturity = isset($control['control_current_maturity']) ? $control['control_current_maturity'] : 0;
-    $control_desired_maturity = isset($control['control_desired_maturity']) ? $control['control_desired_maturity'] : 0;
+    $control_current_maturity = isset($control['control_current_maturity']) ? $control['control_current_maturity'] : get_setting("default_current_maturity");
+    $control_desired_maturity = isset($control['control_desired_maturity']) ? $control['control_desired_maturity'] : get_setting("default_desired_maturity");
     $control_priority = isset($control['control_priority']) ? (int)$control['control_priority'] : 0;
     $family = isset($control['family']) ? (int)$control['family'] : 0;
     $mitigation_percent = isset($control['mitigation_percent']) ? (int)$control['mitigation_percent'] : 0;
@@ -2332,7 +2332,7 @@ function get_exceptions_as_treegrid($type){
 
     $stmt->execute();
 
-    $exceptions = $stmt->fetchAll(PDO::FETCH_GROUP);
+    $exceptions = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
 
     // Close the database connection
     db_close($db);
@@ -2404,6 +2404,9 @@ function get_exception_tabs($type)
                 idField: 'value',
                 treeField: 'name',
                 scrollbarSize: 0,
+                loadFilter: function(data, parentId) {
+                    return data.data;
+                },
                 onLoadSuccess: function(row, data){
                     fixTreeGridCollapsableColumn();
                     //It's there to be able to have it collapsed on load
@@ -2502,7 +2505,7 @@ function create_exception($name, $policy, $control, $owner, $additional_stakehol
     // Close the database connection
     db_close($db);
 
-    write_log($id, $_SESSION['uid'], _lang('ExceptionAuditLogCreate', array('exception_name' => $name, 'user' => $_SESSION['user'])), 'exception');
+    write_log($id, $_SESSION['uid'], _lang('ExceptionAuditLogCreate', array('exception_name' => $name, 'user' => $_SESSION['user']), false), 'exception');
 
 
     // If submitted files are existing, save files
@@ -2584,7 +2587,7 @@ function update_exception($name, $policy, $control, $owner, $additional_stakehol
     $changes = getChangesInException($original, $updated);
 
     if (!empty($changes)) {
-        write_log($id, $_SESSION['uid'], _lang('ExceptionAuditLogUpdate', array('exception_name' => $name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes))), 'exception');
+        write_log($id, $_SESSION['uid'], _lang('ExceptionAuditLogUpdate', array('exception_name' => $name, 'user' => $_SESSION['user'], 'changes' => implode(', ', $changes)), false), 'exception');
     }
 
     // If submitted files are existing, save files

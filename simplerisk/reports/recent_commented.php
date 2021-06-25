@@ -7,10 +7,10 @@
 require_once(realpath(__DIR__ . '/../includes/functions.php'));
 require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -63,9 +63,6 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
         // Get any alert messages
         get_alert();
     ?>
-    <style>
-        .dataTables_filter, .dataTables_info { display: none; }
-    </style>
     <script>
         $(document).ready(function(){
             $('#risk-datatable thead tr').clone(true).appendTo( '#risk-datatable thead');
@@ -77,7 +74,8 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
                 } else if(data_name == "management_review") {
                     $(this).html( '<select name="management_review"><option value="">--</option><option value="yes">Yes</option><option value="no">No</option></select>' );
                 } else {
-                    $(this).html( '<input type="text" name="'+title+'" placeholder="'+title+'" />' );
+                	$(this).html(''); // To clear the title out of the header cell
+                	$('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                 }
          
                 $( 'input, select', this ).on( 'keyup change', function () {
@@ -94,7 +92,7 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
                 bSort: true,
                 orderCellsTop: true,
                 pagingType: "full_numbers",
-                dom : "flrti<'#view-all.view-all'>p",
+                dom : "lrti<'#view-all.view-all'>p",
                 pageLength: 10,
                 ajax: {
                     url: BASE_URL + '/api/reports/recent_commented_risk',

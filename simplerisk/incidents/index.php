@@ -17,6 +17,7 @@ add_security_headers();
 // Add the session
 $permissions = array(
         "check_access" => true,
+	"check_im" => true,
 );
 add_session_check($permissions);
 
@@ -31,9 +32,6 @@ if (incident_management_extra())
 {       
         // Load the Incident Management Extra
         require_once(realpath(__DIR__ . '/../extras/incident_management/index.php'));
-
-	// Enforce that the user has access to incident management
-	enforce_permission_incident_management();
 
         process_incident_management();
 }
@@ -59,7 +57,18 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
         <script src="../js/jquery-ui.min.js"></script>
         <script src="../js/jquery.dataTables.js"></script>
         <script src="../js/jquery.blockUI.min.js"></script>
-        <script src="../js/highcharts/code/highcharts.js"></script>
+
+    <?php
+        // Use these HighCharts scripts
+        $scripts = [
+                'highcharts.js',
+        ];
+
+        // Display the highcharts javascript source
+        display_highcharts_javascript($scripts);
+
+    ?>
+
         <script src="../js/bootstrap.min.js"></script>
         <script src="../js/bootstrap-multiselect.js"></script>
         <script src="../js/selectize.min.js"></script>

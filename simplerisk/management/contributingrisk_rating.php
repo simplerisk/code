@@ -8,10 +8,10 @@
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/permissions.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -31,6 +31,7 @@ require_once(language_file());
 
 ?>
 
+<!doctype html>
 <html>
 <head>
 <title>SimpleRisk Contributing Risk Calculator</title>
@@ -144,7 +145,7 @@ require_once(language_file());
                                         </tr>
                                         <tr>
                                             <td style="padding:20px 5px;" align="center">
-                                                <?php create_dropdown("likelihood", NULL, "contributing_likelihood", false); ?>
+                                                <?php create_dropdown("contributing_risks_likelihood", NULL, "contributing_likelihood", false); ?>
                                             </td>
                                         </tr>
                                         <tr bordercolor="#CCCCCC">

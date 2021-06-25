@@ -57,7 +57,7 @@ function makeFilterNonDropdownHTML(index, columnName, fieldType)
     {
         HTML += '<input type="text" data-index="'+ index +'" class="dynamic-column-filter dynamic-column-text-filter" placeholder="'+date_format+'" data-name="'+columnName+'">'
     }
-    else if(columnName == "calculated_risk" || columnName == "residual_risk" || columnName == "days_open" )
+    else if(columnName.indexOf("calculated_risk") !== -1 || columnName.indexOf("residual_risk") !== -1 || columnName.indexOf("contributing_likelihood") !== -1 || columnName.indexOf("contributing_impact") !== -1 || columnName == "classic_likelihood" || columnName == "classic_impact" || columnName == "days_open")
     {
         /**
         * >  : 0
@@ -86,6 +86,11 @@ $(document).ready(function(){
         if(defaultSortColumn == undefined){
             defaultSortColumn = sortColumns[defaultSortColumnIndex];
         }
+        var risk_columns = $("#risk_columns").val();
+        var mitigation_columns = $("#mitigation_columns").val();
+        var review_columns = $("#review_columns").val();
+        var scoring_columns = $("#scoring_columns").val();
+        var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns);
         var columnOptions = [];
         var columnNames = [];
         $(".risk-datatable tr.main th").each(function(index){
@@ -94,13 +99,13 @@ $(document).ready(function(){
                 return;
             }
             columnNames.push(name);
-            if(!$("form[name='get_risks_by'] input.hidden-checkbox[name='"+ name +"']").is(':checked')){
+            if(selected_columns.indexOf(name) == -1) {
                 columnOptions.push(index);
             }
             if(defaultSortColumn != undefined && name == defaultSortColumn[0]) {
                 defaultSortColumnIndex = index;
             }
-        })
+        });
         
         // Save filter dropdown was changed or not
         var changedFitler = false;
@@ -114,6 +119,13 @@ $(document).ready(function(){
                 maxHeight: 150,
                 numberDisplayed: 1,
                 enableCaseInsensitiveFiltering: true,
+                includeSelectAllOption: true,
+                onSelectAll : function(){
+                    changedFitler = true;
+                },
+                onDeselectAll : function(){
+                    changedFitler = true;
+                },
                 onChange: function(){
                     changedFitler = true;
                 },
@@ -126,7 +138,7 @@ $(document).ready(function(){
                 onDropdownHide: function(){
                     if(changedFitler){
                         selfTable.draw()
-                        changedFitler = true;
+                        changedFitler = false;
                     }
                 }
             })
@@ -147,7 +159,6 @@ $(document).ready(function(){
             var hidden_location_filters = false;
         }
         
-        
         var riskDataTables = [];
         var unique = [];
         var unassigned_option = $("#unassigned_option").val();
@@ -163,7 +174,14 @@ $(document).ready(function(){
         var orderDir = "";
         $(".risk-datatable").each(function(index){
             var $this = $(this);
-            var riskDatatable = $(this).DataTable({
+            var table_columns = [];
+            var risk_cell_indexs = [];
+            $('tr.main th', $this).each(function(index){
+                var column_name = $(this).data('name');
+                table_columns[index] = column_name;
+                if(column_name.indexOf("calculated_risk") !== -1 || column_name.indexOf("residual_risk") !== -1) risk_cell_indexs.push(index);
+            });
+            var riskDatatable = $this.DataTable({
                 scrollX: true,
                 bFilter: false,
                 bLengthChange: false,
@@ -183,6 +201,7 @@ $(document).ready(function(){
                         d.group         = $("#group").val();
                         d.sort          = $("#sort").val();
                         d.group_value   = $this.data('group');
+                        d.table_columns = table_columns;
                         
                         // Set params in risks_by_teams page
                         if ($("#teams").length) {
@@ -221,29 +240,8 @@ $(document).ready(function(){
                         "visible" : false
                     },
                     {
-                        // Calculated risk
-                        "targets" : 16,
+                        "targets" : risk_cell_indexs,
                         "className" : "risk-cell",
-                    },
-                    {
-                        // Residulat risk
-                        "targets" : 17,
-                        "className" : "risk-cell",
-                    },
-                    {
-                        /**
-                        * 21: mitigation_planned
-                        * 22: managment_review
-                        * 23: days_open
-                        * 26: affected_assets
-                        * 27: risk_assessment
-                        * 28: additional_notes
-                        * 29: current_solution
-                        * 30: security_recommendations
-                        * 41: risk_tags
-                        */
-                        "targets" : [21, 22, 23, 26, 27, 28, 29, 30, 41],
-                        "orderable" : false,
                     },
                 ],
                 initComplete: function(){
@@ -360,49 +358,6 @@ $(document).ready(function(){
         $('.download-by-group').html("<i class=\"fa fa-download\" aria-hidden=\"true\"></i>");
         $('.print-by-group').html("<i class=\"fa fa-print\" aria-hidden=\"true\"></i>");
         
-        $("form[name='get_risks_by'] .hidden-checkbox").click(function(e){
-            
-            for(var key in riskDataTables){
-                var column = riskDataTables[key].column("th[data-name='"+ $(this).attr('name') +"']");
-                if($(this).is(':checked')){
-                    column.visible(true);
-                    // The TH element to show filter html
-                    var targetTH = $("tr.filter th[data-name='"+ $(this).attr('name') +"']", riskDataTables[key].table().header());
-
-                    // If this element was hidden on loading, add filter content to the TH element and create multi dropdown
-                    if($(".hidden-container", column.header()).length > 0)
-                    {
-                        targetTH.html($(".hidden-container", column.header()).html());
-                        createMultiSelectColumnFilter(riskDataTables[key], targetTH);
-                        $(".hidden-container", column.header()).remove();
-                    }
-                }else{
-                    column.visible(false);
-                }
-            }
-            
-            var checkBoxes = $("form[name='get_risks_by'] .hidden-checkbox");
-            var viewColumns = [];
-            checkBoxes.each(function(){
-                if($(this).is(':checked'))
-                    viewColumns.push($(this).attr('name'));
-            })
-            $.ajax({
-                type: "POST",
-                url: BASE_URL + "/api/set_custom_display",
-                data: {
-                    columns: viewColumns,
-                },
-                success: function(data){
-                },
-                error: function(xhr,status,error){
-                    if(!retryCSRF(xhr, this))
-                    {
-                    }
-                }
-            });
-        })
-        
         $(".expand-all").click(function(e){
             e.preventDefault();
             $(".view-all").click();
@@ -474,6 +429,79 @@ $(document).ready(function(){
             var url = "print_by_group.php?group=" + group + "&status=" + status + "&sort=" + sort + "&group_value=" + group_value + "&order_column=" + orderColumnName + "&order_dir=" + orderDir + "&" + filter_uri;
             window.open(url,'_blank');
         });
+        var selected_all = false;
+        $('#column-selections-container .multiselect').multiselect({
+            enableFiltering: true,
+            buttonWidth: '100%',
+            maxHeight: 250,
+            numberDisplayed: 1,
+            includeSelectAllOption: true,
+            onSelectAll : function(){
+                selected_all = true;
+            },
+            onDeselectAll : function(){
+                selected_all = true;
+            },
+            onChange: function(option, checked, select){
+                var option_value = $(option).val();
+                for(var key in riskDataTables){
+                    var column = riskDataTables[key].column("th[data-name='"+ option_value +"']");
+                    if(checked == true){
+                        column.visible(true);
+                        // The TH element to show filter html
+                        var targetTH = $("tr.filter th[data-name='"+ option_value +"']", riskDataTables[key].table().header());
+
+                        // If this element was hidden on loading, add filter content to the TH element and create multi dropdown
+                        if($(".hidden-container", column.header()).length > 0)
+                        {
+                            targetTH.html($(".hidden-container", column.header()).html());
+                            createMultiSelectColumnFilter(riskDataTables[key], targetTH);
+                            $(".hidden-container", column.header()).remove();
+                        }
+                    }else{
+                        column.visible(false);
+                    }
+                }
+                return true;
+            },
+            onDropdownHide: function(){
+                $('#selections').block({
+                    message: 'Processing',
+                    css: { border: '1px solid black', background: '#ffffff', zIndex:100001 }
+                });
+                setTimeout(function(){
+                    var risk_columns = $("#risk_columns").val();
+                    var mitigation_columns = $("#mitigation_columns").val();
+                    var review_columns = $("#review_columns").val();
+                    var scoring_columns = $("#scoring_columns").val();
+                    var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns);
+                    if(selected_all == true) {
+                        visible_column("risk_columns", selected_columns);
+                        visible_column("mitigation_columns", selected_columns);
+                        visible_column("review_columns", selected_columns);
+                        visible_column("scoring_columns", selected_columns);
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: BASE_URL + "/api/set_custom_display",
+                        data: {
+                            columns: selected_columns,
+                        },
+                        success: function(data){
+                            $("#selections").unblock();
+                        },
+                        error: function(xhr,status,error){
+                            if(!retryCSRF(xhr, this))
+                            {
+                            }
+                        }
+                    });
+                    selected_all = false;
+                },200);
+
+                return true;
+            },
+       });
     }
     
     $("#export-dynamic-risk-report").click(function(e){
@@ -487,5 +515,28 @@ $(document).ready(function(){
         document.get_risks_by.action = "";
         // $("#get_risks_by").attr('target', '');
     });
+    function visible_column(selectID, selected_columns){
+        $("#"+selectID).find("option").each(function(index){
+            var option_value = $(this).val();
+            for(var key in riskDataTables){
+                var column = riskDataTables[key].column("th[data-name='"+ option_value +"']");
+                if(selected_columns.indexOf(option_value) > -1) {
+                    column.visible(true);
+                    var targetTH = $("tr.filter th[data-name='"+ option_value +"']", riskDataTables[key].table().header());
+
+                    // If this element was hidden on loading, add filter content to the TH element and create multi dropdown
+                    if($(".hidden-container", column.header()).length > 0)
+                    {
+                        targetTH.html($(".hidden-container", column.header()).html());
+                        createMultiSelectColumnFilter(riskDataTables[key], targetTH);
+                        $(".hidden-container", column.header()).remove();
+                    }
+                } else {
+                    column.visible(false);
+                }
+            }
+        });
+
+    }
     
 })

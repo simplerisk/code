@@ -442,12 +442,12 @@ $(document).ready(function(){
 
         return false;
     })
-    if($('#tab-container .datepicker').length){
-        $('#tab-container .datepicker').datepicker();
+    if($('#tab-content-container .datepicker').length){
+        $('#tab-content-container .datepicker').datepicker();
     }
     
-    if($("#tab-container .multiselect").length){
-        $("#tab-container .multiselect").multiselect({buttonWidth: '100%'});
+    if($("#tab-content-container .multiselect").length){
+        $("#tab-content-container .multiselect").multiselect({enableFiltering: true, buttonWidth: '100%'});
     }
     
 })

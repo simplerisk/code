@@ -10,10 +10,10 @@ require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));
 require_once(realpath(__DIR__ . '/../includes/governance.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -42,7 +42,7 @@ if (isset($_POST['add_framework']))
   if (isset($name) && $name == "")
   {
     // Display an alert
-    set_alert(true, "bad", "The framework name cannot be empty.");
+    set_alert(true, "bad", $escaper->escapeHtml($lang["FrameworkNameCantBeEmpty."]));
   }
   // Otherwise
   else
@@ -793,10 +793,10 @@ if (isset($_POST['delete_controls']))
                     <input type="text" name="control_number" value="" class="form-control" maxlength="100">
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['CurrentControlMaturity']); ?></label>
-                    <?php create_dropdown("control_maturity", NULL, "control_current_maturity", false, false, false); ?>
+                    <?php create_dropdown("control_maturity", get_setting("default_current_maturity"), "control_current_maturity", false, false, false); ?>
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['DesiredControlMaturity']); ?></label>
-                    <?php create_dropdown("control_maturity", NULL, "control_desired_maturity", false, false, false); ?>
+                    <?php create_dropdown("control_maturity", get_setting("default_desired_maturity"), "control_desired_maturity", false, false, false); ?>
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlPriority']); ?></label>
                     <?php create_dropdown("control_priority", NULL, "control_priority", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>

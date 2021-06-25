@@ -3,10 +3,10 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 require_once(realpath(__DIR__ . '/functions.php'));
 
@@ -107,7 +107,7 @@ function display_control_number_view($control_number)
     echo $escaper->escapeHtml($lang['ControlNumber']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo " <input style=\"cursor: default;\" type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $escaper->escapeHtml($control_number) . "\" title=\"" . $escaper->escapeHtml($control_number) . "\" disabled=\"disabled\" />\n";
+    echo " <input style=\"cursor: default;\" type=\"text\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $escaper->escapeHtml($control_number) . "\" title=\"" . $escaper->escapeHtml($control_number) . "\" disabled=\"disabled\" maxlength=\"50\" />\n";
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -288,7 +288,7 @@ function display_risk_scoring_method_view($scoring_method, $CLASSIC_likelihood="
         echo $escaper->escapeHtml($lang['CurrentImpact']) .": \n";
         echo "</div>\n";
         echo "<div class=\"span7\">\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"currentLikelihood\" id=\"currentLikelihood\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "\" disabled=\"disabled\" />\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"currentImpact\" id=\"currentImpact\" size=\"50\" value=\"" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "\" title=\"" . $escaper->escapeHtml(get_name_by_value("impact", $CLASSIC_impact)) . "\" disabled=\"disabled\" />\n";
         echo "</div>\n";
         echo "</div>\n";
     }
@@ -377,18 +377,25 @@ function display_supporting_documentation_view($risk_id, $view_type)
 /**************************************
 * FUNCTION: DISPLAY RISK MAPPING VIEW *
 ***************************************/
-function display_risk_mapping_view($risk_catalog_name)
+function display_risk_mapping_view($risk_catalog_name, $panel_name="")
 {
     global $lang, $escaper;
 
-    echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
-    echo $escaper->escapeHtml($lang['RiskMapping']) . ": \n";
-    echo "</div>\n";
-    echo "<div class=\"span7\">\n";
-    echo "<input style=\"cursor: default;\" type=\"text\" name=\"risk_catalog_mapping\" id=\"risk_catalog_mapping\" size=\"50\" value=\"" . $escaper->escapeHtml($risk_catalog_name) . "\" title=\"" . $escaper->escapeHtml($risk_catalog_name) . "\" disabled=\"disabled\" />\n";
-    echo "</div>\n";
-    echo "</div>\n";
+    if($panel_name=="top" || $panel_name=="bottom"){
+        echo "<div class=\"row-fluid subject-field\">\n";
+        echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
+        echo "<div class=\"span8\">\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"risk_catalog_mapping\" id=\"risk_catalog_mapping\" size=\"50\" value=\"" . $escaper->escapeHtml($risk_catalog_name) . "\" title=\"" . $escaper->escapeHtml($risk_catalog_name) . "\" disabled=\"disabled\" />\n";
+        echo "</div>\n";
+        echo "</div>\n";
+    } else {
+        echo "<div class=\"row-fluid\">\n";
+        echo "<div class=\"span5 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
+        echo "<div class=\"span7\">\n";
+        echo "<input style=\"cursor: default;\" type=\"text\" name=\"risk_catalog_mapping\" id=\"risk_catalog_mapping\" size=\"50\" value=\"" . $escaper->escapeHtml($risk_catalog_name) . "\" title=\"" . $escaper->escapeHtml($risk_catalog_name) . "\" disabled=\"disabled\" />\n";
+        echo "</div>\n";
+        echo "</div>\n";
+    }
 }
 
 /*********************************************************
@@ -491,7 +498,7 @@ function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id
                     break;
 
                     case 'RiskMapping':
-                        display_risk_mapping_view($risk_catalog_name);
+                        display_risk_mapping_view($risk_catalog_name, $panel_name);
                     break;
                 }
 
@@ -624,7 +631,7 @@ function display_control_number_edit($control_number)
     echo $escaper->escapeHtml($lang['ControlNumber']) .": \n";
     echo "</div>\n";
     echo "<div class=\"span7\">\n";
-    echo "<input type=\"text\" class=\"active-textfield\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $escaper->escapeHtml($control_number) . "\" maxlength=\"20\"/>\n";
+    echo "<input type=\"text\" class=\"active-textfield\" name=\"control_number\" id=\"control_number\" size=\"20\" value=\"" . $escaper->escapeHtml($control_number) . "\" maxlength=\"50\"/>\n";
     echo "</div>\n";
     echo "</div>\n";
 }
@@ -825,21 +832,28 @@ function display_supporting_documentation_edit($risk_id, $view_type)
     echo "</div>\n";
     echo "</div>\n";
 }
-/**********************************
-* FUNCTION: DISPLAY CATEGORY EDIT *
-***********************************/
-function display_risk_mapping_edit($risk_catalog_mapping=[])
+/**************************************
+* FUNCTION: DISPLAY RISK MAPPING EDIT *
+***************************************/
+function display_risk_mapping_edit($risk_catalog_mapping=[], $panel_name="")
 {
     global $lang, $escaper;
     $mapping_required = get_setting('risk_mapping_required') == 1?"required":"";
-    echo "<div class=\"row-fluid\">\n";
-    echo "<div class=\"span5 text-right\">\n";
-    echo $escaper->escapeHtml($lang['RiskMapping']) .": \n";
-    echo "</div>\n";
-    echo "<div class=\"span7\">\n";
-    create_dropdown("risk_catalog", $risk_catalog_mapping, "risk_catalog_mapping", true, false, false, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} style='max-width:100%'");
-    echo "</div>\n";
-    echo "</div>\n";
+    if($panel_name=="top" || $panel_name=="bottom"){
+        echo "<div class=\"row-fluid subject-field\">\n";
+        echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
+        echo "<div class=\"span8\">\n";
+        create_dropdown("risk_catalog", $risk_catalog_mapping, "risk_catalog_mapping", true, false, false, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} style='max-width:100%'");
+        echo "</div>\n";
+        echo "</div>\n";
+    } else {
+        echo "<div class=\"row-fluid\">\n";
+        echo "<div class=\"span5 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
+        echo "<div class=\"span7\">\n";
+        create_dropdown("risk_catalog", $risk_catalog_mapping, "risk_catalog_mapping", true, false, false, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} style='max-width:100%'");
+        echo "</div>\n";
+        echo "</div>\n";
+    }
 }
 
 
@@ -939,7 +953,7 @@ function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id
                     break;
 
                     case 'RiskMapping':
-                        display_risk_mapping_edit($risk_catalog_mapping);
+                        display_risk_mapping_edit($risk_catalog_mapping, $panel_name);
                     break;
                 }
 
@@ -1574,7 +1588,7 @@ function display_mitigation_controls_edit($mitigation_controls)
                 .$escaper->escapeHtml($lang['MitigationControls']) .": 
             </div>
             <div class=\"span7 text-left\">";
-                mitigation_controls_dropdown($mitigation_controls);
+                mitigation_controls_dropdown($mitigation_controls, "mitigation_controls[]", true, true);
             echo "</div>
          </div>
     ";
@@ -2199,13 +2213,13 @@ function display_risk_tags_edit($tags = "")
     $tags_placeholder = $escaper->escapeHtml($lang['TagsWidgetPlaceholder']);
 
     echo "  <div class=\"row-fluid\">";
-    echo "      <div class=\"span10 hero-unit\">";
+    echo "      <div class=\"span12 hero-unit\">";
     echo "          <div class=\"row-fluid\">";
     echo "              <div class=\"wrap-text span1 text-left\"><strong>".$escaper->escapeHtml($lang['Tags'])."</strong></div>";
     echo "          </div>";
     echo "          <div class=\"row-fluid\">";
     echo "              <div class=\"span12\">";
-    echo "                  <select readonly id='tags' name='tags[]' multiple placeholder='{$tags_placeholder}'>";
+    echo "                  <select readonly id='tags' class='tags' name='tags[]' multiple placeholder='{$tags_placeholder}'>";
     if ($tags) {
         foreach(explode("|", $tags) as $tag) {
             $tag = $escaper->escapeHtml($tag);
@@ -2216,7 +2230,7 @@ function display_risk_tags_edit($tags = "")
                             </select>
                             <div class='tag-max-length-warning'>" . $escaper->escapeHtml($lang['MaxTagLengthWarning']) . "</div>\n
                             <script>
-                                $('#tags').selectize({
+                                $('select.tags').selectize({
                                     plugins: ['remove_button', 'restore_on_backspace'],
                                     delimiter: '|',
                                     create: true,
@@ -2256,7 +2270,7 @@ function display_risk_tags_view($tags)
     global $lang, $escaper;
 
     echo "  <div class=\"row-fluid\">";
-    echo "      <div class=\"span10 hero-unit\">";
+    echo "      <div class=\"span12 hero-unit\">";
     echo "          <div class=\"row-fluid\">";
     echo "              <div class=\"wrap-text span1 text-left\"><strong>".$escaper->escapeHtml($lang['Tags'])."</strong></div>";
     echo "          </div>";
@@ -2367,7 +2381,7 @@ function display_main_detail_fields_by_panel_add($panel_name, $fields)
                     break;
 
                     case 'RiskMapping':
-                        display_risk_mapping_edit();
+                        display_risk_mapping_edit([], $panel_name);
                     break;
                 }
 

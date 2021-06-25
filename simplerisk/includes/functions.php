@@ -14,10 +14,10 @@ require_once(realpath(__DIR__ . '/authenticate.php'));
 
 // Include the language file
 require_once(language_file());
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Set the simplerisk timezone for any datetime functions
 set_simplerisk_timezone();
@@ -191,6 +191,20 @@ $junction_config = array(
         'id_field' => 'value',
         'junctions' => array(
             'role_responsibilities' => 'role_id',
+        )
+    ),
+    'permissions' => array(
+        'id_field' => 'id',
+        'junctions' => array(
+            'role_responsibilities' => 'permission_id',
+            'permission_to_user' => 'permission_id',
+            'permission_to_permission_group' => 'permission_id'
+        )
+    ),
+    'permission_groups' => array(
+        'id_field' => 'id',
+        'junctions' => array(
+            'permission_to_permission_group' => 'permission_group_id'
         )
     ),
 );
@@ -635,6 +649,7 @@ function get_custom_table($type)
             ");
             
             if (!isset($_SESSION['selected_business_unit'])) {
+                require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
                 $selected_business_unit = get_selected_business_unit($_SESSION['uid']);
             } else {
                 $selected_business_unit = $_SESSION['selected_business_unit'];
@@ -668,6 +683,7 @@ function get_custom_table($type)
             ");
 
             if (!isset($_SESSION['selected_business_unit'])) {
+                require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
                 $selected_business_unit = get_selected_business_unit($_SESSION['uid']);
             } else {
                 $selected_business_unit = $_SESSION['selected_business_unit'];
@@ -1529,29 +1545,34 @@ function get_risk_level_name($risk)
             // Open the database connection
             $db = db_open();
 
-                // Get the risk levels
+            // Get the risk levels
             $stmt = $db->prepare("SELECT name, display_name FROM `risk_levels` WHERE value<=:risk ORDER BY value DESC LIMIT 1");
             $stmt->bindParam(":risk", $risk, PDO::PARAM_STR);
             $stmt->execute();
 
             // Store the list in the array
-            $array = $stmt->fetch();
+            $array = $stmt->fetch(PDO::FETCH_ASSOC);
 
             // Close the database connection
             db_close($db);
 
-            // If the risk level display name is in High, Medium, or Low
-            if ($array['display_name'] != "")
-            {
-                $GLOBALS[$key] = $array['display_name'];
-            }
-            // If the risk level name is in High, Medium, or Low
-            elseif($array['name'] != "")
-            {
-                $GLOBALS[$key] = $array['name'];
-            }
-            // Otherwise the risk is Insignificant
-            else $GLOBALS[$key] = "Insignificant";
+	    // If the returned array is not empty
+	    if (!empty($array))
+	    {
+            	// If the risk level display name is in High, Medium, or Low
+            	if ($array['display_name'] != "")
+            	{
+            	    $GLOBALS[$key] = $array['display_name'];
+            	}
+            	// If the risk level name is in High, Medium, or Low
+            	elseif($array['name'] != "")
+            	{
+            	    $GLOBALS[$key] = $array['name'];
+            	}
+            	// Otherwise the risk is Insignificant
+            	else $GLOBALS[$key] = "Insignificant";
+	    }
+	    else $GLOBALS[$key] = "Insignificant";
         }
         else
         {
@@ -1759,6 +1780,33 @@ function update_table($table, $name, $value, $length=20)
 
     return $stmt->rowCount();
 }
+/********************************
+ * FUNCTION: UPDATE TABLE BY ID *
+ ********************************/
+function update_table_by_id($table, $name, $id, $length=50)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Get the risk levels
+    $stmt = $db->prepare("UPDATE {$table} SET name=:name WHERE id=:id");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, $length);
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    if($stmt->rowCount())
+    {
+        // Audit log
+        $risk_id = 1000;
+        $message = "The \"".$table."\" naming convention was modified by the \"" . $_SESSION['user'] . "\" user.";
+        write_log($risk_id, $_SESSION['uid'], $message);
+    }
+
+    // Close the database connection
+    db_close($db);
+
+    return $stmt->rowCount();
+}
 
 /*************************
  * FUNCTION: ADD SETTING *
@@ -1788,6 +1836,7 @@ function update_or_insert_setting($name, $value)
 {
     // Open the database connection
     $db = db_open();
+
     // Update the database version information
 
     $stmt = $db->prepare("REPLACE INTO `settings`(`name`, `value`) VALUES (:name, :value);");
@@ -2192,6 +2241,23 @@ function delete_value_by_name($table, $name)
     // Close the database connection
     db_close($db);
 }
+/********************************
+ * FUNCTION: DELETE VALUE BY ID *
+ ********************************/
+function delete_value_by_id($table, $id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Delete the table value
+    $stmt = $db->prepare("DELETE FROM $table WHERE id=:id");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+    return true;
+}
 
 /**************************
  * FUNCTION: DELETE VALUE *
@@ -2374,29 +2440,22 @@ function disable_user($value)
  ************************/
 function user_exist($user)
 {
-        // Open the database connection
-        $db = db_open();
+    // Open the database connection
+    $db = db_open();
 
-        // Find the user
-    $stmt = $db->prepare("SELECT * FROM user WHERE name=:user");
+    // Find the user
+    $stmt = $db->prepare("SELECT * FROM `user` WHERE `username`=:user");
     $stmt->bindParam(":user", $user, PDO::PARAM_STR, 200);
 
-        $stmt->execute();
+    $stmt->execute();
 
     // Fetch the array
     $array = $stmt->fetchAll();
-
-    // If the array is empty
-    if (empty($array))
-    {
-        $return = false;
-    }
-    else $return = true;
-
-        // Close the database connection
-        db_close($db);
-
-        return $return;
+    
+    // Close the database connection
+    db_close($db);
+    
+    return !empty($array);
 }
 
 /****************************
@@ -2739,6 +2798,11 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
     
     $user_id = $db->lastInsertId();
 
+    // If it's an admin then make sure that all teams are assigned
+    if ($admin) {
+        $teams = get_all_team_values();
+    }
+
     // Set user's teams
     set_teams_of_user($user_id, $teams);
 
@@ -2814,6 +2878,11 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
 
     $stmt->execute();
 
+    // If it's an admin then make sure that all teams are assigned
+    if ($admin) {
+        $teams = get_all_team_values();
+    }
+
     // Update the user's teams
     set_teams_of_user($user_id, $teams);
 
@@ -2826,8 +2895,8 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
         kill_sessions_of_user($user_id);
     } else {
         // If the update affects the current logged in user
-        if ($_SESSION['uid'] == $user_id) {
-            set_user_permissions($user_id);
+        if (isset($_SESSION['uid']) && $_SESSION['uid'] == $user_id && isset($_SESSION['user'])) {
+            set_user_permissions($_SESSION['user']);
         }
 
         // Refresh the permissions in the active sessions of the user
@@ -2891,9 +2960,9 @@ function refresh_permissions_in_sessions_of_user($uid) {
             session_start();
 
             // Refresh permissions if the user id matches the current user
-            if (isset($_SESSION['uid']) && $_SESSION['uid'] == $uid) {
+            if (isset($_SESSION['uid']) && $_SESSION['uid'] == $uid && isset($_SESSION['user'])) {
                 // Refresh user permissions for that session
-                set_user_permissions($_SESSION['uid']);
+                set_user_permissions($_SESSION['user']);
             }
             // Force-write current session changes
             session_write_close();
@@ -3054,7 +3123,7 @@ function update_password($user, $hash)
 /*************************
  * FUNCTION: SUBMIT RISK *
  *************************/
-function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders=[], $risk_catalog_mapping=0)
+function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders=[], $risk_catalog_mapping=0, $template_group_id=1)
 {
     // In the database `submitted_by` is defaulted to 1 as that's the id of the pre-created Admin user, so it's defaulted to 1 here as well
     $submitted_by || ($submitted_by = $_SESSION['uid']) || ($submitted_by = 1);
@@ -3068,7 +3137,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     if ($location == NULL) $location = "";
 
     // Add the risk
-    $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `source`, `category`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`, `risk_catalog_mapping`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :source, :category, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date, :risk_catalog_mapping)";
+    $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `source`, `category`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`, `risk_catalog_mapping`, `template_group_id`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :source, :category, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date, :risk_catalog_mapping, :template_group_id)";
     
     $try_encrypt_assessment = try_encrypt($assessment);
     $try_encrypt_notes = try_encrypt($notes);
@@ -3080,7 +3149,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $stmt->bindParam(":subject", $encrypted_subject, PDO::PARAM_STR, 1000);
     $stmt->bindParam(":reference_id", $reference_id, PDO::PARAM_STR, 20);
     $stmt->bindParam(":regulation", $regulation, PDO::PARAM_INT);
-    $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR, 50);
     $stmt->bindParam(":source", $source, PDO::PARAM_INT);
     $stmt->bindParam(":category", $category, PDO::PARAM_INT);
     $stmt->bindParam(":owner", $owner, PDO::PARAM_INT);
@@ -3091,6 +3160,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $stmt->bindParam(":submitted_by", $submitted_by, PDO::PARAM_INT);
     $stmt->bindParam(":submission_date", $submission_date, PDO::PARAM_STR);
     $stmt->bindParam(":risk_catalog_mapping", $risk_catalog_mapping, PDO::PARAM_INT);
+    $stmt->bindParam(":template_group_id", $template_group_id, PDO::PARAM_INT);
     $stmt->execute();
 
     // Get the id of the risk
@@ -3286,79 +3356,79 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
 
         // Average the threat agent and vulnerability factors to get the likelihood
         $OWASP_likelihood = ($threat_agent_factors + $vulnerability_factors)/2;
-	if ($OWASP_likelihood >= 0 && $OWASP_likelihood < 3)
-	{
-		$OWASP_likelihood_name = "LOW";
-	}
-	else if ($OWASP_likelihood >= 3 && $OWASP_likelihood < 6)
-	{
-		$OWASP_likelihood_name = "MEDIUM";
-	}
-	else if ($OWASP_likelihood >= 6)
-	{
-		$OWASP_likelihood_name = "HIGH";
-	}
+    	if ($OWASP_likelihood >= 0 && $OWASP_likelihood < 3)
+    	{
+    		$OWASP_likelihood_name = "LOW";
+    	}
+    	else if ($OWASP_likelihood >= 3 && $OWASP_likelihood < 6)
+    	{
+    		$OWASP_likelihood_name = "MEDIUM";
+    	}
+    	else if ($OWASP_likelihood >= 6)
+    	{
+    		$OWASP_likelihood_name = "HIGH";
+    	}
 
-        $technical_impact = ($OWASPLossOfConfidentiality + $OWASPLossOfIntegrity + $OWASPLossOfAvailability + $OWASPLossOfAccountability)/4;
-        $business_impact = ($OWASPFinancialDamage + $OWASPReputationDamage + $OWASPNonCompliance + $OWASPPrivacyViolation)/4;
+            $technical_impact = ($OWASPLossOfConfidentiality + $OWASPLossOfIntegrity + $OWASPLossOfAvailability + $OWASPLossOfAccountability)/4;
+            $business_impact = ($OWASPFinancialDamage + $OWASPReputationDamage + $OWASPNonCompliance + $OWASPPrivacyViolation)/4;
 
-        // Average the technical and business impacts to get the impact
-        $OWASP_impact = ($technical_impact + $business_impact)/2;
-        if ($OWASP_impact >= 0 && $OWASP_impact < 3)
-        {
-                $OWASP_impact_name = "LOW";
-        }
-        else if ($OWASP_impact >= 3 && $OWASP_impact < 6)
-        {
-                $OWASP_impact_name = "MEDIUM";
-        }
-        else if ($OWASP_impact >= 6)
-        {
-                $OWASP_impact_name = "HIGH";
-        }
+            // Average the technical and business impacts to get the impact
+            $OWASP_impact = ($technical_impact + $business_impact)/2;
+            if ($OWASP_impact >= 0 && $OWASP_impact < 3)
+            {
+                    $OWASP_impact_name = "LOW";
+            }
+            else if ($OWASP_impact >= 3 && $OWASP_impact < 6)
+            {
+                    $OWASP_impact_name = "MEDIUM";
+            }
+            else if ($OWASP_impact >= 6)
+            {
+                    $OWASP_impact_name = "HIGH";
+            }
 
-	// Get the overall risk severity
-	if ($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "LOW")
-	{
-		// Set the calculated risk for a "Note" severity
-		$severity = "Note";
-		$calculated_risk = 0;
-	}
-	else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "LOW"))
-	{
-		// Set the calculated risk for a "Low" severity as the average between Low and Medium
-		$severity = "Low";
-		$stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='Low' OR name='Medium') AS risk_level;");
-		$stmt->execute();
-		$risk_level = $stmt->fetch();
-		$calculated_risk = $risk_level['calculated_risk'];
-		$calculated_risk = round($risk_level['calculated_risk'], 1);
-	}
-	else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "LOW"))
-	{
-		// Set the calculated risk for a "Medium" severity as the average between Medium and High
-		$severity = "Medium";
-		$stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='Medium' OR name='High') AS risk_level;");
-		$stmt->execute();
-		$risk_level = $stmt->fetch();
-		$calculated_risk = $risk_level['calculated_risk'];
-		$calculated_risk = round($risk_level['calculated_risk'], 1);
-	}
-	else if (($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "MEDIUM"))
-	{
-		// Set the calculated risk for a "High" severity as the average between High and Very High
-		$severity = "High";
-		$stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='High' OR name='Very High') AS risk_level;");
-		$stmt->execute();
-		$risk_level = $stmt->fetch();
-		$calculated_risk = round($risk_level['calculated_risk'], 1);
-	}
-	else if ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "HIGH")
-	{
-		// Set the calculated risk for a "Critical" severity
-		$severity = "Critical";
-		$calculated_risk = 10;
-	}
+    	// Get the overall risk severity
+    	if ($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "LOW")
+    	{
+    		// Set the calculated risk for a "Note" severity
+    		$severity = "Note";
+    		$calculated_risk = 0;
+    	}
+    	else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "LOW"))
+    	{
+    		// Set the calculated risk for a "Low" severity as the average between Low and Medium
+    		$severity = "Low";
+    		$stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='Low' OR name='Medium') AS risk_level;");
+    		$stmt->execute();
+    		$risk_level = $stmt->fetch();
+    		$calculated_risk = $risk_level['calculated_risk'];
+    		$calculated_risk = round($risk_level['calculated_risk'], 1);
+    	}
+    	else if (($OWASP_likelihood_name == "LOW" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "MEDIUM") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "LOW"))
+    	{
+    		// Set the calculated risk for a "Medium" severity as the average between Medium and High
+    		$severity = "Medium";
+    		$stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='Medium' OR name='High') AS risk_level;");
+    		$stmt->execute();
+    		$risk_level = $stmt->fetch();
+    		$calculated_risk = $risk_level['calculated_risk'];
+    		$calculated_risk = round($risk_level['calculated_risk'], 1);
+    	}
+    	else if (($OWASP_likelihood_name == "MEDIUM" && $OWASP_impact_name == "HIGH") || ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "MEDIUM"))
+    	{
+    		// Set the calculated risk for a "High" severity as the average between High and Very High
+    		$severity = "High";
+    		$stmt = $db->prepare("SELECT AVG(value) AS calculated_risk FROM (SELECT value FROM risk_levels WHERE name='High' OR name='Very High') AS risk_level;");
+    		$stmt->execute();
+    		$risk_level = $stmt->fetch();
+    		$calculated_risk = round($risk_level['calculated_risk'], 1);
+    	}
+    	else if ($OWASP_likelihood_name == "HIGH" && $OWASP_impact_name == "HIGH")
+    	{
+    		// Set the calculated risk for a "Critical" severity
+    		$severity = "Critical";
+    		$calculated_risk = 10;
+    	}
 
         // Calculate the overall OWASP risk score
         //$calculated_risk = round((($OWASP_impact * $OWASP_likelihood) / 10), 1);
@@ -3412,21 +3482,21 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
     }
     // If the scroing method is Contributing Risk (6)
     else if($scoring_method == 6){
-        $max_likelihood = count(get_table("likelihood"));
-        $max_impact = count(get_table("impact"));
+        $max_likelihood = get_max_value("contributing_risks_likelihood");
         
         $ImpactSum = 0;
         foreach($ContributingImpacts as $contributing_risk_id => $ContributingImpact){
+            $impacts = get_impact_values_from_contributing_risks_id($contributing_risk_id);
+            $max_impact = max(array_column($impacts, 'value'));
             $weight = get_contributing_weight_by_id($contributing_risk_id);
-            $ImpactSum += $weight * $ContributingImpact;
+            $ImpactSum += $weight * ($ContributingImpact * 5 / $max_impact);
         }
-
+        
         // Set default Contributing Likelihood value
         $ContributingLikelihood = $ContributingLikelihood ? $ContributingLikelihood : $max_likelihood;
-        // Set default Contributing Impact value
-        $ImpactSum = $ImpactSum ? $ImpactSum : $max_impact;
+        $ContributingLikelihood = $ContributingLikelihood * 5 / $max_likelihood;
         
-        $calculated_risk = round(($ContributingLikelihood + $ImpactSum) / ($max_likelihood + $max_impact) * 10, 2);
+        $calculated_risk = round($ContributingLikelihood + $ImpactSum, 2);
         
         // Create the database query
         $stmt = $db->prepare("INSERT INTO risk_scoring (`id`, `scoring_method`, `calculated_risk`, `Contributing_Likelihood`) VALUES (:last_insert_id, :scoring_method, :calculated_risk, :Contributing_Likelihood)");
@@ -3923,21 +3993,21 @@ function update_contributing_risk_score($risk_id, $ContributingLikelihood="", $C
     // Open the database connection
     $db = db_open();
 
-    $max_likelihood = count(get_table("likelihood"));
-    $max_impact = count(get_table("impact"));
+    $max_likelihood = get_max_value("contributing_risks_likelihood");
     
     $ImpactSum = 0;
     foreach($ContributingImpacts as $contributing_risk_id => $ContributingImpact){
+        $impacts = get_impact_values_from_contributing_risks_id($contributing_risk_id);
+        $max_impact = max(array_column($impacts, 'value'));
         $weight = get_contributing_weight_by_id($contributing_risk_id);
-        $ImpactSum += $weight * $ContributingImpact;
+        $ImpactSum += $weight * ($ContributingImpact * 5 / $max_impact);
     }
     
     // Set default Contributing Likelihood value
     $ContributingLikelihood = $ContributingLikelihood ? $ContributingLikelihood : $max_likelihood;
-    // Set default Contributing Impact value
-    $ImpactSum = $ImpactSum ? $ImpactSum : $max_impact;
+    $ContributingLikelihood = $ContributingLikelihood * 5 / $max_likelihood;
     
-    $calculated_risk = round(($ContributingLikelihood + $ImpactSum) / ($max_likelihood + $max_impact) * 10, 2);
+    $calculated_risk = round($ContributingLikelihood + $ImpactSum, 2);
 
     // Create the database query
     $stmt = $db->prepare("UPDATE risk_scoring SET calculated_risk=:calculated_risk, Contributing_Likelihood=:Contributing_Likelihood WHERE id=:id; ");
@@ -4699,11 +4769,53 @@ function update_risk($risk_id, $is_api = false)
 
     // Open the database connection
     $db = db_open();
+    $risk = get_risk_by_id($risk_id);
+    $updated_fields = [];
 
     $sql = "UPDATE risks SET ";
     foreach($data as $key => $value){
         if($value !== false)
             $sql .= " {$key}=:{$key}, ";
+        // find updated field
+        if($key=="assessment" || $key=="notes") {
+            if(try_decrypt($value) != try_decrypt($risk[0][$key])) {
+                $updated_fields[$key]["original"] = try_decrypt($risk[0][$key]);
+                $updated_fields[$key]["updated"] = try_decrypt($value);
+            }
+        } else if($value != $risk[0][$key] && $key != "last_update") {
+            switch($key)
+            {
+                default:
+                    $original_value = $risk[0][$key];
+                    $updated_value = $value;
+                break;
+                case "source":
+                    $original_value = get_table_value_by_id("source", $risk[0][$key]);
+                    $updated_value = get_table_value_by_id("source", $value);
+                break;
+                case "category":
+                    $original_value = get_table_value_by_id("category", $risk[0][$key]);
+                    $updated_value = get_table_value_by_id("category", $value);
+                break;
+                case "regulation":
+                    $original_value = try_decrypt(get_table_value_by_id("frameworks", $risk[0][$key]));
+                    $updated_value = try_decrypt(get_table_value_by_id("frameworks", $value));
+                break;
+                case "owner":
+                case "manager":
+                    $user_original = get_user_by_id($risk[0][$key]);
+                    $user_updated = get_user_by_id($value);
+                    $original_value = $user_original["name"];
+                    $updated_value = $user_updated["name"];
+                break;
+                case "risk_catalog_mapping":
+                    $original_value = get_table_value_by_id("risk_catalog", $risk[0][$key]);
+                    $updated_value = get_table_value_by_id("risk_catalog", $value);
+                break;
+            }
+            $updated_fields[$key]["original"] = $original_value;
+            $updated_fields[$key]["updated"] = $updated_value;
+        }
     }
     $sql = trim($sql, ", ");
     $sql .= " WHERE id = :id ";
@@ -4755,7 +4867,14 @@ function update_risk($risk_id, $is_api = false)
     }
 
     // Audit log
-    $message = "Risk details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+    if(count($updated_fields)) {
+        $detail_updated = [];
+        foreach ($updated_fields as $key => $value) {
+            $detail_updated[] = "Field name : `".$key. "` (`".$value["original"]."`=>`".$value["updated"]."`)";
+        }
+        $updated_string = implode($detail_updated,", ");
+    } else $updated_string = "";
+    $message = "Risk details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".\n".$updated_string;
     write_log($risk_id, $_SESSION['uid'], $message);
 
     // Close the database connection
@@ -5433,6 +5552,9 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             break;
             case "submitted_by":
                 $sort_query = " ORDER BY i.name {$order_dir} ";
+            break;
+            case "project":
+                $sort_query = " ORDER BY project {$order_dir} ";
             break;
             case "next_review_date":
             case "management_review":
@@ -7326,7 +7448,8 @@ function get_submitted_risks_table()
                 $('#submitted_risk thead tr:eq(0)').clone(true).appendTo($('#submitted_risk thead'));
                 $('#submitted_risk  thead tr:eq(1) th').each( function (i) {
                     var title = $(this).text();
-                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $(this).html(''); // To clear the title out of the header cell
+                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                     $( 'input, select', this ).on( 'keyup change', function () {
                         if ( riskTable.column(i).search() !== this.value ) {
                             riskTable.column(i).search( this.value ).draw();
@@ -7336,7 +7459,8 @@ function get_submitted_risks_table()
                 var riskTable = $('#submitted_risk').DataTable( {
                     paging: false,
                     orderCellsTop: true,
-                    fixedHeader: true
+                    fixedHeader: true,
+                    dom : 'lrti'
                 });
              });
         </script>
@@ -7396,7 +7520,8 @@ function get_mitigations_table()
                 $('#mitigations_risk thead tr:eq(0)').clone(true).appendTo($('#mitigations_risk thead'));
                 $('#mitigations_risk  thead tr:eq(1) th').each( function (i) {
                     var title = $(this).text();
-                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $(this).html(''); // To clear the title out of the header cell
+                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                     $( 'input, select', this ).on( 'keyup change', function () {
                         if ( riskTable.column(i).search() !== this.value ) {
                             riskTable.column(i).search( this.value ).draw();
@@ -7406,7 +7531,8 @@ function get_mitigations_table()
                 var riskTable = $('#mitigations_risk').DataTable( {
                     paging: false,
                     orderCellsTop: true,
-                    fixedHeader: true
+                    fixedHeader: true,
+                    dom : 'lrti'
                 });
              });
         </script>
@@ -7460,7 +7586,8 @@ function get_reviewed_risk_table($sort_order=12)
                 $('#reviewed_risk thead tr:eq(0)').clone(true).appendTo($('#reviewed_risk thead'));
                 $('#reviewed_risk  thead tr:eq(1) th').each( function (i) {
                     var title = $(this).text();
-                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $(this).html(''); // To clear the title out of the header cell
+                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                     $( 'input, select', this ).on( 'keyup change', function () {
                         if ( riskTable.column(i).search() !== this.value ) {
                             riskTable.column(i).search( this.value ).draw();
@@ -7470,7 +7597,8 @@ function get_reviewed_risk_table($sort_order=12)
                 var riskTable = $('#reviewed_risk').DataTable( {
                     paging: false,
                     orderCellsTop: true,
-                    fixedHeader: true
+                    fixedHeader: true,
+                    dom : 'lrti'
                 });
              });
         </script>
@@ -7530,7 +7658,8 @@ function get_closed_risks_table($sort_order=17)
                 $('#closeded_risk thead tr:eq(0)').clone(true).appendTo($('#closeded_risk thead'));
                 $('#closeded_risk  thead tr:eq(1) th').each( function (i) {
                     var title = $(this).text();
-                    $(this).html( '<input type=\"text\" name=\"'+title+'\" placeholder=\"'+title+'\" />' );
+                    $(this).html(''); // To clear the title out of the header cell
+                    $('<input type=\"text\">').attr('name', title).attr('placeholder', title).appendTo($(this));
                     $( 'input, select', this ).on( 'keyup change', function () {
                         if ( riskTable.column(i).search() !== this.value ) {
                             riskTable.column(i).search( this.value ).draw();
@@ -7540,7 +7669,8 @@ function get_closed_risks_table($sort_order=17)
                 var riskTable = $('#closeded_risk').DataTable( {
                     paging: false,
                     orderCellsTop: true,
-                    fixedHeader: true
+                    fixedHeader: true,
+                    dom : 'lrti',
                 });
              });
         </script>
@@ -9433,6 +9563,56 @@ function update_mitigation($risk_id, $post)
     // To be able to import submission date
     $submission_date = isset($post['mitigation_date']) && validate_date($post['mitigation_date'], get_default_datetime_format()) ? get_standard_date_from_default_format($post['mitigation_date'], true) : false;
 
+    // get current mitigation
+    $mitigation = get_mitigation_by_id($risk_id);
+    $data = array(
+        "planning_strategy" => $planning_strategy,
+        "mitigation_effort" => $mitigation_effort,
+        "mitigation_cost" => $mitigation_cost,
+        "mitigation_owner" => $mitigation_owner,
+        "current_solution" => $current_solution,
+        "security_requirements" => $security_requirements,
+        "planning_date" => $planning_date,
+        "mitigation_percent" => $mitigation_percent
+    );
+    $updated_fields = [];
+    foreach($data as $key => $value){
+        if($key=="current_solution" || $key=="security_requirements" || $key=="security_recommendations") {
+            if(try_decrypt($value) != try_decrypt($mitigation[0][$key])) {
+                $updated_fields[$key]["original"] = try_decrypt($mitigation[0][$key]);
+                $updated_fields[$key]["updated"] = try_decrypt($value);
+            }
+        } else if($value != $mitigation[0][$key]) {
+            switch($key)
+            {
+                default:
+                    $original_value = $risk[0][$key];
+                    $updated_value = $value;
+                break;
+                case "planning_strategy":
+                    $original_value = get_table_value_by_id("planning_strategy", $risk[0][$key]);
+                    $updated_value = get_table_value_by_id("planning_strategy", $value);
+                break;
+                case "mitigation_effort":
+                    $original_value = get_table_value_by_id("mitigation_effort", $risk[0][$key]);
+                    $updated_value = get_table_value_by_id("mitigation_effort", $value);
+                break;
+                case "mitigation_cost":
+                    $original_value = try_decrypt(get_table_value_by_id("frameworks", $risk[0][$key]));
+                    $updated_value = try_decrypt(get_table_value_by_id("frameworks", $value));
+                break;
+                case "mitigation_owner":
+                    $owner_original = get_user_by_id($risk[0][$key]);
+                    $owner_updated = get_user_by_id($value);
+                    $original_value = $owner_original["name"];
+                    $updated_value = $owner_updated["name"];
+                break;
+            }
+            $updated_fields[$key]["original"] = $original_value;
+            $updated_fields[$key]["updated"] = $updated_value;
+        }
+    }
+
     // Open the database connection
     $db = db_open();
 
@@ -9495,7 +9675,14 @@ function update_mitigation($risk_id, $post)
     }
 
     // Audit log
-    $message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+    if(count($updated_fields)) {
+        $detail_updated = [];
+        foreach ($updated_fields as $key => $value) {
+            $detail_updated[] = "Field name : `".$key. "` (`".$value["original"]."`=>`".$value["updated"]."`)";
+        }
+        $updated_string = implode($detail_updated,", ");
+    } else $updated_string = "";
+    $message = "Risk mitigation details were updated for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".\n".$updated_string;
     write_log($risk_id, $_SESSION['uid'], $message);
 
     // Close the database connection
@@ -9560,7 +9747,7 @@ function update_mitigation($risk_id, $post)
 /**************************
  * FUNCTION: GET REVIEWS *
  **************************/
-function get_reviews($risk_id)
+function get_reviews($risk_id, $template_group_id=1)
 {
     global $lang;
     global $escaper;
@@ -9589,7 +9776,7 @@ function get_reviews($risk_id)
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-        $active_fields = get_active_fields();
+        $active_fields = get_active_fields("risk", $template_group_id);
         foreach($active_fields as $key => $field){
             if($field['name'] == 'NextReviewDate'){
                 unset($active_fields[$key]);
@@ -10579,51 +10766,6 @@ function download_file($unique_name)
     }
 }
 
-function checkApprove($risk_level){
-
-    // Default is not approved
-    $approved = false;
-
-    $very_high_display_name = get_risk_level_display_name('Very High');
-    $high_display_name      = get_risk_level_display_name('High');
-    $medium_display_name    = get_risk_level_display_name('Medium');
-    $low_display_name       = get_risk_level_display_name('Low');
-    $insignificant_display_name = get_risk_level_display_name('Insignificant');
-
-    // If the risk level is very high and they have permission
-    if (($risk_level == $very_high_display_name) && ($_SESSION['review_veryhigh'] == 1))
-    {
-        // Review is approved
-        $approved = true;
-    }
-    // If the risk level is high and they have permission
-    else if (($risk_level == $high_display_name) && ($_SESSION['review_high'] == 1))
-    {
-        // Review is approved
-        $approved = true;
-    }
-    // If the risk level is medium and they have permission
-    else if (($risk_level == $medium_display_name) && ($_SESSION['review_medium'] == 1))
-    {
-        // Review is approved
-        $approved = true;
-    }
-    // If the risk level is low and they have permission
-    else if (($risk_level == $low_display_name) && ($_SESSION['review_low'] == 1))
-    {
-        // Review is approved
-        $approved = true;
-    }
-    // If the risk level is insignificant and they have permission
-    else if (($risk_level == $insignificant_display_name) && ($_SESSION['review_insignificant'] == 1))
-    {
-        // Review is approved
-        $approved = true;
-    }
-
-    return $approved;
-}
-
 /**************************************
  * FUNCTION: SUPPORTING DOCUMENTATION *
  * TYPE 1 = Risk File                 *
@@ -10967,7 +11109,7 @@ function write_debug_log($value)
             // Log file to write to
             $log_file = get_setting("debug_log_file");
 
-            $root_path = str_replace('/', '\\', $_SERVER["DOCUMENT_ROOT"]);
+	    $root_path = str_replace('/', '\\', realpath(__DIR__ . '/../'));
             $log_path = str_replace('/', '\\', realpath(dirname($log_file)));
             if(strpos($log_path, $root_path) === false && $log_path != ""){
                 // Write to the error log
@@ -12574,8 +12716,15 @@ function ping_server()
     // Set the default socket timeout to 5 seconds
     ini_set('default_socket_timeout', 5);
 
+    // Url for SimpleRisk ping
+    if (defined('PING_URL'))
+    {
+        $url = PING_URL . $path;
+    }
+    else $url = 'https://ping.simplerisk.com' . $path;
+
     // Make the https request
-    file_get_contents("https://ping.simplerisk.com" . $path, null, $context);
+    file_get_contents($url, null, $context);
 }
 
 /*******************************************
@@ -13278,8 +13427,8 @@ function save_role_responsibilities($role_id, $admin, $default, $responsibilitie
             update_permissions($user_id, $new_responsibilities);
 
             // If the update affects the current logged in user
-            if ($_SESSION['uid'] == $user_id) {
-                set_user_permissions($user_id);
+            if (isset($_SESSION['uid']) && $_SESSION['uid'] == $user_id && isset($_SESSION['user'])) {
+                set_user_permissions($_SESSION['user']);
             }
 
             // Refresh the permissions in the active sessions of the user
@@ -13411,7 +13560,7 @@ function get_accpeted_mitigations($risk_id)
     // Open the database connection
     $db = db_open();
 
-    $stmt = $db->prepare("SELECT t1.user_id, t1.risk_id, t1.created_at, t2.username FROM `mitigation_accept_users` t1 LEFT JOIN `user` t2 ON t1.user_id=t2.value WHERE t1.risk_id=:risk_id;");
+    $stmt = $db->prepare("SELECT t1.user_id, t1.risk_id, t1.created_at, t2.username, t2.name FROM `mitigation_accept_users` t1 LEFT JOIN `user` t2 ON t1.user_id=t2.value WHERE t1.risk_id=:risk_id;");
     $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -13434,10 +13583,10 @@ function view_accepted_mitigations($risk_id)
 
     foreach($infos as $info)
     {
-        $username = isset($info['username']) ? $info['username'] : "Someone";
+        $name = isset($info['name']) ? $info['name'] : "Unknown User";
         $date = isset($info['created_at']) ? date(get_default_date_format(), strtotime($info['created_at'])) : "";
         $time = $info['created_at'] ? date("H:i", strtotime($info['created_at'])) : "";
-        $message .= "<input disabled type=\"checkbox\" checked> &nbsp;&nbsp;&nbsp;"._lang("MitigationAcceptedByUserOnTime", ["username"=>$username, "date"=>$date, "time"=>$time])."<br>";
+        $message .= "<input disabled type=\"checkbox\" checked> &nbsp;&nbsp;&nbsp;"._lang("MitigationAcceptedByUserOnTime", ["name"=>$name, "date"=>$date, "time"=>$time])."<br>";
 
     }
 
@@ -14129,6 +14278,31 @@ function get_user_teams($user_id) {
     return $teams;
 }
 
+/***************************
+ * FUNCTION: GET ALL USERS *
+ ***************************/
+function get_all_users()
+{
+	// Open the database connection
+	$db = db_open();
+
+	// Get the list of all users
+	$stmt = $db->prepare("
+		SELECT
+			`value`, `username`
+		FROM
+			`user`;
+	");
+	$stmt->execute();
+	$all_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+	// Close the database connection
+	db_close($db);
+
+	// Return the list of all users
+	return $all_users;
+}
+
 /*******************************
  * FUNCTION: GET USERS IN TEAM *
  *******************************/
@@ -14438,6 +14612,8 @@ function restricted_extra($extra_name)
                 return medium_extra($extra_name);
             case 'large':
                 return large_extra($extra_name);
+            case 'reseller':
+		return large_extra($extra_name);
             default:
                 return true;
         }
@@ -14675,6 +14851,18 @@ function add_contributing_risk($subject, $weight)
     $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 100);
     $stmt->bindParam(":weight", $weight);
     $stmt->execute();
+    $contributing_risks_id = $db->lastInsertId();
+
+    $impacts = get_table("impact");
+    foreach($impacts as $key=>$impact){
+        $value = $key + 1;
+        $stmt = $db->prepare("INSERT INTO `contributing_risks_impact` (`contributing_risks_id`, `value`, `name`) VALUES (:contributing_risks_id, :value, :name);");
+        $stmt->bindParam(":contributing_risks_id", $contributing_risks_id);
+        $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+        $stmt->bindParam(":name", $impact['name'], PDO::PARAM_STR);
+        $stmt->execute();
+
+    }
 
     // Close the database connection
     db_close($db);
@@ -14736,6 +14924,12 @@ function save_contributing_risks($subjects, $weights, $existing_subjects=[], $ex
     $db = db_open();
     // Delete contributing risks not inlcuding existing ids
     $stmt = $db->prepare("DELETE FROM `contributing_risks` WHERE FIND_IN_SET(id, :existing_ids) = 0; ");
+    $existing_ids_string = implode(",", $existing_ids);
+    $stmt->bindParam(":existing_ids", $existing_ids_string, PDO::PARAM_STR);
+    $stmt->execute();
+
+    // Delete contributing risks impact not inlcuding existing ids
+    $stmt = $db->prepare("DELETE FROM `contributing_risks_impact` WHERE FIND_IN_SET(contributing_risks_id, :existing_ids) = 0; ");
     $existing_ids_string = implode(",", $existing_ids);
     $stmt->bindParam(":existing_ids", $existing_ids_string, PDO::PARAM_STR);
     $stmt->execute();
@@ -15846,7 +16040,7 @@ function hasItems($team_id, $type) {
  * Third parameter is an array of team ids. If the array is         *
  * empty, all the teams will be removed from the item.              *
  ********************************************************************/
-function updateTeamsOfItem($item_id, $type, $teams) {
+function updateTeamsOfItem($item_id, $type, $teams, $audit_log=true) {
 
     global $available_item_types;
 
@@ -15921,7 +16115,7 @@ function updateTeamsOfItem($item_id, $type, $teams) {
     db_close($db);
 
     // No audit logging is needed if nothing changed
-    if ($teams_to_add || $teams_to_remove) {
+    if ($audit_log && ($teams_to_add || $teams_to_remove)) {
         global $lang;
 
         $team_changes = [];
@@ -16548,7 +16742,7 @@ function save_junction_values($tb_name, $first_field_name, $first_id, $second_fi
     }
 
     $sql = "
-        INSERT INTO
+        INSERT IGNORE INTO
             `{$tb_name}`({$first_field_name}, {$second_field_name})
         VALUES
             " . implode(',', $values);
@@ -16557,6 +16751,14 @@ function save_junction_values($tb_name, $first_field_name, $first_id, $second_fi
     $stmt->execute();
 
     db_close($db);
+
+    // Audit log
+    $username = $_SESSION['user'];
+    $message = "New data \"" . $first_id . "\" inserted to `{$first_field_name}` field of `{$tb_name}` table submitted by username \"" . $username . "\".";
+    if(count($second_ids)) {
+        $message .= "\nNew datas (" . implode(",",$second_ids) . ") inserted to `{$second_field_name}` field of `{$tb_name}` table submitted by username \"" . $username . "\".";
+    }
+    write_log(100, $_SESSION['uid'], $message);
 
     return true;
 }
@@ -17115,6 +17317,7 @@ function get_users_with_permission($permission_key) {
         ");
 
         if (!isset($_SESSION['selected_business_unit'])) {
+            require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
             $selected_business_unit = get_selected_business_unit($_SESSION['uid']);
         } else {
             $selected_business_unit = $_SESSION['selected_business_unit'];
@@ -17553,6 +17756,336 @@ function array_orderby()
     $args[] = &$data;
     call_user_func_array('array_multisort', $args);
     return array_pop($args);
+}
+/********************************************
+ * FUNCTION: GET DATABASE TABLE VALUE BY ID *
+ *******************************************/
+function get_table_value_by_id($table, $id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    if(field_exists_in_table("value", $table)) {
+        $stmt = $db->prepare("SELECT * FROM `{$table}` WHERE `value` = :id");
+    } else {
+        $stmt = $db->prepare("SELECT * FROM `{$table}` WHERE `id` = :id");
+    }
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    db_close($db);
+    return $result?$result["name"]:"";    
+}
+/************************************
+ * FUNCTION: ADD CONTRIBUTING RISKS *
+ ************************************/
+function add_contributing_risks($table, $name, $contributing_risks_id="")
+{
+    global $lang, $escaper;
+
+    // Open the database connection
+    $db = db_open();
+
+    if($table == "likelihood"){
+        $table_name = "contributing_risks_likelihood";
+        $stmt = $db->prepare("SELECT max(`value`) FROM {$table_name}");
+        $stmt->execute();
+        $max_value = $stmt->fetch(PDO::FETCH_COLUMN);
+        $value = $max_value+1;
+        // Add a new value
+        $stmt = $db->prepare("INSERT INTO {$table_name} (value, name) VALUES(:value, :name);");
+        $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+        $stmt->execute();
+    } else {
+        $table_name = "contributing_risks_impact";
+        $stmt = $db->prepare("SELECT max(`value`) FROM {$table_name} WHERE contributing_risks_id = :contributing_risks_id");
+        $stmt->bindParam(":contributing_risks_id", $contributing_risks_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $max_value = $stmt->fetch(PDO::FETCH_COLUMN);
+        $value = $max_value+1;
+        $stmt = $db->prepare("INSERT INTO {$table_name} (`contributing_risks_id`, `value`, `name`) VALUES (:contributing_risks_id, :value, :name);");
+        $stmt->bindParam(":contributing_risks_id", $contributing_risks_id);
+        $stmt->bindParam(":value", $value, PDO::PARAM_INT);
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+        $stmt->execute();
+    }
+
+    // Close the database connection
+    db_close($db);
+
+    write_log(1000, $_SESSION['uid'], "A new {$table} named \"".$escaper->escapeHtml($name)."\" was created by the \"" . $_SESSION['user'] . "\" user.");
+
+    return $stmt->rowCount();
+}
+/***********************************************
+ * FUNCTION: GET CONTRIBUTING RISKS LIKELIHOOD *
+ ***********************************************/
+function get_contributing_risks_likelihood_list()
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT * FROM `contributing_risks_likelihood` ORDER BY value DESC");
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    return $array;
+}
+/*******************************************
+ * FUNCTION: GET CONTRIBUTING RISKS IMPACT *
+ ******************************************/
+function get_contributing_risks_impact_list()
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT t1.*, t2.subject FROM `contributing_risks_impact` t1 LEFT JOIN `contributing_risks` t2 ON t1.contributing_risks_id = t2.id ORDER BY t2.id, value DESC");
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    return $array;
+}
+/**********************************************************
+ * FUNCTION: GET IMPACT VALUES FROM CONTRIBUTING RISKS ID *
+ **********************************************************/
+function get_impact_values_from_contributing_risks_id($id)
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT * FROM `contributing_risks_impact` WHERE `contributing_risks_id` = :id ORDER BY id");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Store the list in the array
+    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    return $array;
+}
+/***************************
+ * FUNCTION: GET MAX VALUE *
+ ***************************/
+function get_max_value($table, $field="value")
+{
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT max({$field}) FROM {$table}");
+    $stmt->execute();
+    $max_value = $stmt->fetch(PDO::FETCH_COLUMN);
+
+    return $max_value?$max_value:null;
+}
+
+/**
+ * The `change_audit_log_localization_config` array holds the localization keys for field names used in the `get_changes()` function
+ */
+global $change_audit_log_localization_config;
+$change_audit_log_localization_config = [
+    'risk' => [],
+    
+    'test' => [ // as fields returned by the get_framework_control_test_by_id() function
+        'test_frequency' => 'TestFrequency',
+        'last_date' => 'LastTestDate',
+        'next_date' => 'NextTestDate',
+        'name' => 'TestName',
+        'objective' => 'Objective',
+        'test_steps' => 'TestSteps',
+        'approximate_time' => 'ApproximateTime',
+        'expected_results' => 'ExpectedResults',
+        'desired_frequency' => 'DesiredFrequency',
+        'status' => 'AuditStatus',
+        'created_at' => 'CreatedDate',
+        'additional_stakeholders' => 'AdditionalStakeholders',
+        'tester_name' => 'Tester',
+        'teams' => 'Teams',
+    ],
+    
+    'audit' => [ // as fields returned by the get_framework_control_test_audit_by_id() function
+        'test_frequency' => 'TestFrequency',
+        'last_date' => 'LastTestDate',
+        'next_date' => 'NextTestDate',
+        'name' => 'TestName',
+        'objective' => 'Objective',
+        'test_steps' => 'TestSteps',
+        'approximate_time' => 'ApproximateTime',
+        'expected_results' => 'ExpectedResults',
+        'desired_frequency' => 'DesiredFrequency',
+        'status' => 'AuditStatus',
+        'created_at' => 'CreatedDate',
+        'tester_name' => 'Tester',
+        'control_name' => 'ControlName',
+        'control_owner' => 'ControlOwner',
+        'framework_name' => 'FrameworkName',
+        'test_result' => 'TestResult',
+        'summary' => 'Summary',
+        'test_date' => 'TestDate',
+        'submitted_by' => 'SubmittedBy',
+        'submission_date' => 'SubmissionDate',
+        'additional_stakeholders' => 'AdditionalStakeholders',
+        'teams' => 'Teams',
+    ]
+];
+
+/**
+ * Function: GET CHANGES
+ * The function is used to get the list of changes of two objects(arrays) of `before` and `after` states in a string format of "`{$field_name}` (`{$before}` => `{$after}`)"
+ * Example response: `Audit Status` (`Evidence Submitted / Pending Review` => `Pending Evidence from Control Owner`), `Tester` (`Admin` => `Josh Sokol`)
+ */
+function get_changes($type, $before, $after) {
+    
+    if (!$before || !$after || !is_array($before) || !is_array($after)) {
+        return '';
+    }
+    
+    global $lang, $change_audit_log_localization_config;
+    
+    $differences = [];
+    
+    foreach ($change_audit_log_localization_config[$type] as $field => $key) {
+        if ($before[$field] !== $after[$field]) {
+
+            // These can be handled together as the fields with the same name hold the same type of values
+            if ($type === 'audit' || $type === 'test') {
+                switch($field) {
+                    case 'last_date':
+                    case 'next_date':                    
+                    case 'test_date':
+                        if ($before[$field]) {
+                            $before[$field] = format_date($before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = format_date($after[$field]);
+                        }
+                    break;
+
+                    case 'created_at':
+                    case 'submission_date':
+                        if ($before[$field]) {
+                            $before[$field] = format_datetime($before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = format_datetime($after[$field]);
+                        }
+                    break;
+
+                    case 'control_owner':
+                    case 'submitted_by':
+                        if ($before[$field]) {
+                            $before[$field] = get_name_by_value('user', $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = get_name_by_value('user', $after[$field]);
+                        }
+                    break;
+
+                    case 'additional_stakeholders':
+                        if ($before[$field]) {
+                            $before[$field] = get_names_by_multi_values('user', $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = get_names_by_multi_values('user', $after[$field]);
+                        }
+                    break;
+
+                    case 'teams':
+                        if ($before[$field]) {
+                            $before[$field] = get_names_by_multi_values('team', $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = get_names_by_multi_values('team', $after[$field]);
+                        }
+                    break;
+
+                    case 'status':
+                        if ($before[$field]) {
+                            $before[$field] = get_name_by_value('test_status', $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = get_name_by_value('test_status', $after[$field]);
+                        }
+                    break;
+                }
+            }
+            
+            $differences[]= _lang('FieldChangeTemplate', [
+                'field_name' => $lang[$key],
+                'before' => $before[$field],
+                'after' => $after[$field]
+            ], false);
+        }
+    }
+    
+    return $differences ? implode(', ', $differences) : '';
+}
+
+/*****************************
+ * FUNCTION: CREATE ZIP FILE *
+ *****************************/
+function create_zip_file($source, $destination)
+{
+    // Set the memory limit to 1 GB
+    ini_set('memory_limit', '1024M');
+
+    if (!extension_loaded('zip') || !file_exists($source)) {
+        return false;
+    }
+
+    $zip = new ZipArchive();
+    if (!$zip->open($destination, ZIPARCHIVE::CREATE)) {
+        return false;
+    }
+
+    $source = str_replace('\\', '/', realpath($source));
+
+    if (is_dir($source) === true)
+    {
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source), RecursiveIteratorIterator::SELF_FIRST);
+
+        foreach ($files as $file)
+        {
+            $file = str_replace('\\', '/', $file);
+
+            // Ignore "." and ".." folders
+            if( in_array(substr($file, strrpos($file, '/')+1), array('.', '..')) )
+                continue;
+
+            $file = realpath($file);
+
+            if (is_dir($file) === true)
+            {
+		// Add the directory to the zip
+                $zip->addEmptyDir(str_replace($source . '/', '', $file . '/'));
+            }
+            else if (is_file($file) === true)
+            {
+		// Add the file to the zip
+                $zip->addFromString(str_replace($source . '/', '', $file), file_get_contents($file));
+            }
+        }
+    }
+    else if (is_file($source) === true)
+    {
+        $zip->addFromString(basename($source), file_get_contents($source));
+    }
+
+    return $zip->close();
 }
 
 ?>

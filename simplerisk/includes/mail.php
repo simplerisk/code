@@ -7,12 +7,16 @@
 // Include required configuration files
 require_once(realpath(__DIR__ . '/config.php'));
 
+// Require the composer autoload file
+// This loads the PHPMailer library
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+
 // Include the language file
 require_once(language_file());
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /*******************************
  * FUNCTION: GET MAIL SETTINGS *
@@ -170,11 +174,6 @@ function send_email($name, $email, $subject, $body)
     $password = $mail['phpmailer_password'];
     $encryption = $mail['phpmailer_smtpsecure'];
     $port = $mail['phpmailer_port'];
-
-	// Load the PHPMailer library
-	require_once(realpath(__DIR__ . '/PHPMailer/src/PHPMailer.php'));
-	require_once(realpath(__DIR__ . '/PHPMailer/src/SMTP.php'));
-	require_once(realpath(__DIR__ . '/PHPMailer/src/Exception.php'));
 
 	// Create a new PHPMailer instance
 	$mail = new PHPMailer\PHPMailer\PHPMailer;

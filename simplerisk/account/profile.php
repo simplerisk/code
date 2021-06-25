@@ -1,18 +1,18 @@
 <?php
     /* This Source Code Form is subject to the terms of the Mozilla Public
-      * License, v. 2.0. If a copy of the MPL was not distributed with this
-      * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+     * License, v. 2.0. If a copy of the MPL was not distributed with this
+     * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-    // Include required functions file
-    require_once(realpath(__DIR__ . '/../includes/functions.php'));
-    require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-    require_once(realpath(__DIR__ . '/../includes/display.php'));
-    require_once(realpath(__DIR__ . '/../includes/messages.php'));
-    require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+// Include required functions file
+require_once(realpath(__DIR__ . '/../includes/functions.php'));
+require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
+require_once(realpath(__DIR__ . '/../includes/display.php'));
+require_once(realpath(__DIR__ . '/../includes/messages.php'));
+require_once(realpath(__DIR__ . '/../includes/alerts.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-    // Include Zend Escaper for HTML Output Encoding
-    require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-    $escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();

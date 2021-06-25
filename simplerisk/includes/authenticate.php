@@ -219,10 +219,13 @@ function set_user_permissions($user, $upgrade = false)
     // Open the database connection
     $db = db_open();
 
+    // Convert the username to a uid
+    $uid = get_id_by_user($user);
+
     // If user id is provided
-    if (is_int($user) || ctype_digit($user)) {
+    if (is_int($uid) && $uid > 0) {
         $stmt = $db->prepare("SELECT `username` FROM user WHERE value = :user_id;");
-        $stmt->bindParam(":user_id", $user, PDO::PARAM_INT);
+        $stmt->bindParam(":user_id", $uid, PDO::PARAM_INT);
         $stmt->execute();
         $user = $stmt->fetchColumn();
     }
@@ -349,7 +352,7 @@ function grant_access()
     session_regenerate_id(true);
 
     // Grant access
-    $_SESSION["access"] = "granted";
+    $_SESSION["access"] = "1";
     // Clear any failed login attempts
     clear_failed_logins($_SESSION['uid']);
 
@@ -533,9 +536,7 @@ function password_reset_by_userid($userid)
 
     // Get the users e-mail address
     $stmt = $db->prepare("SELECT username, name, email, salt FROM user WHERE value=:userid");
-
     $stmt->bindParam(":userid", $userid, PDO::PARAM_INT);
-
     $stmt->execute();
 
     // Store the list in the array
@@ -587,6 +588,8 @@ function password_reset_by_userid($userid)
  ******************************/
 function send_reset_email($username, $name, $email, $token)
 {
+    global $escaper;
+
     $to = $email;
     $subject = "Password Reset Token";
 
@@ -601,7 +604,7 @@ function send_reset_email($username, $name, $email, $token)
 
     // Create the full HTML message
     $body = "<html><body>\n";
-    $body .= "<p>Hello " . $name.",</p>\n";
+    $body .= "<p>Hello " . $escaper->escapeHtml($name).",</p>\n";
     $body .= "<p>A request was submitted to reset your SimpleRisk password.</p>\n";
     
     $resetRequestMessages = getPasswordReqeustMessages();
@@ -837,7 +840,7 @@ function add_session_check($permissions = null)
 		// If we are running an old version of PHP
 		if (PHP_VERSION_ID < 70300)
 		{
-			write_debug_log("We are running an old version of PHP.");
+			write_debug_log("We are running a version of PHP < 7.3 (" . PHP_VERSION_ID . ").");
 			write_debug_log("Setting the session cookie parameters.");
 
 			// Set the session cookie parameters
@@ -845,7 +848,7 @@ function add_session_check($permissions = null)
 		}
 		else
 		{
-			write_debug_log("We are running a newer version of PHP.");
+			write_debug_log("We are running a newer version of PHP >= 7.3 (" . PHP_VERSION_ID . ").");
 			write_debug_log("Setting the session cookie parameters.");
 
 			// Set the session cookie parameters
@@ -877,76 +880,64 @@ function add_session_check($permissions = null)
 	write_debug_log("Checking for session timeout or renegotiation.");
 	session_check();
 
-	// If permissions were provided
-	if (!is_null($permissions))
+	// If the check_accesspermission was not provided
+	if (!isset($permissions['check_access']))
 	{
-		// Extract the permissions from the array
-		extract($permissions);
+		// Set check_access to true by default
+		$permissions['check_access'] = true;
 	}
 
-	// Set default permission values for whatever wasn't provided
-	(!isset($check_access) ? $check_access = true : null);
-	(!isset($check_admin) ? $check_admin = false : null);
-	(!isset($check_assessments) ? $check_assessments = false : null);
-	(!isset($check_assets) ? $check_assets = false : null);
-	(!isset($check_compliance) ? $check_compliance = false : null);
-	(!isset($check_governance) ? $check_governance = false : null);
-	(!isset($check_riskmanagement) ? $check_riskmanagement = false: null);
-
-	// If we need to check if the user was granted access
-	if ($check_access)
+	// For each permission provided
+	foreach ($permissions as $permission => $value)
 	{
-		// Enforce the access permission
-		write_debug_log("Access permission is required.");
-		enforce_permission_access();
-	}
-
-	// If we need to check if the user has admin
-	if ($check_admin)
-	{
-		// Enforce the admin permission
-		write_debug_log("Admin permission is required.");
-		enforce_permission_admin();
-	}
-
-	// If we need to check if the user has assessments permissions
-	if ($check_assessments)
-	{
-		// Enforce the assessments permission
-		write_debug_log("Assessments permission is required.");
-		enforce_permission_assessments();
-	}
-
-	// If we need to check if the user has assets permissions
-	if ($check_assets)
-	{
-		// Enforce the assets permission
-		write_debug_log("Assets permission is required.");
-		enforce_permission_asset();
-	}
-
-	// If we need to check if the user has compliance permissions
-	if ($check_compliance)
-	{
-		// Enforce the compliance permission
-		write_debug_log("Compliance permission is required.");
-		enforce_permission_compliance();
-	}
-
-	// If we need to check if the user has governance permissions
-	if ($check_governance)
-	{
-		// Enforce the governance permission
-		write_debug_log("Governance permission is required.");
-		enforce_permission_governance();
-	}
-
-	// If we need to check if the user has risk management permissions
-	if ($check_riskmanagement)
-	{
-		// Enforce the risk management permission
-		write_debug_log("Risk management permission is required.");
-		enforce_permission_riskmanagement();
+		// If the value is true
+		if ($value)
+		{
+			// Handle the permission
+			switch ($permission)
+			{
+				case "check_access":
+					write_debug_log("Access permission is required.");
+					enforce_permission("access");
+					break;
+                                case "check_admin":
+					write_debug_log("Admin permission is required.");
+					enforce_permission("admin");
+                                        break;
+                                case "check_assessments":
+					write_debug_log("Assessments permission is required.");
+					enforce_permission("assessments");
+                                        break;
+                                case "check_assets":
+					write_debug_log("Assets permission is required.");
+					enforce_permission("asset");
+                                        break;
+                                case "check_compliance":
+					write_debug_log("Compliance permission is required.");
+					enforce_permission("compliance");
+                                        break;
+                                case "check_governance":
+					write_debug_log("Governance permission is required.");
+					enforce_permission("governance");
+                                        break;
+                                case "check_riskmanagement":
+					write_debug_log("Risk management permission is required.");
+					enforce_permission("riskmanagement");
+                                        break;
+				case "check_im":
+					write_debug_log("Incident Management Incidents permission is required.");
+					enforce_permission("im_incidents");
+					break;
+				case "check_im_reporting":
+					write_debug_log("Incident Management Reporting permission is required.");
+					enforce_permission("im_reporting");
+					break;
+				case "check_im_configure":
+					write_debug_log("Incident Management Configure permission is required.");
+					enforce_permission("im_configure");
+					break;
+			}
+		}
 	}
 }
 

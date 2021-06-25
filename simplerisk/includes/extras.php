@@ -11,10 +11,10 @@ require_once(realpath(__DIR__ . '/services.php'));
 
 // Include the language file
 require_once(language_file());
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /***************************************************
  * FUNCTION: AVAILABLE EXTRAS                      *
@@ -249,75 +249,87 @@ function core_display_upgrade_extras()
 	echo "</thead>\n";
 	echo "<tbody>\n";
 
-	// For each available extra
-	foreach ($available_extras as $extra)
-	{
-		// If this is the Upgrade or ComplianceForge SCF Extra
-		if ($extra['short_name'] == "upgrade" || $extra['short_name'] == "complianceforgescf")
+        // If we were able to obtain the purchases
+        if ($purchases != false)
+        {
+		// For each available extra
+		foreach ($available_extras as $extra)
 		{
-			// Set purchased to true
-			$purchased = true;
-			$expires = "Unlimited";
-		}
-		else
-		{
-			$extras_xml = $purchases->{"extras"};
-			$extra_xml = $extras_xml->{$extra['short_name']};
-			$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
-			$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
-			$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
-
-			// If the extra was purchased
-			if ($purchased)
+			// If this is the Upgrade or ComplianceForge SCF Extra
+			if ($extra['short_name'] == "upgrade" || $extra['short_name'] == "complianceforgescf")
 			{
-				// Get the expiration date
-				$expires = $extra_xml->{"expires"}->__toString();
-
-				// If the exipration date is not set
-				if ($expires == "0000-00-00 00:00:00")
-				{
-					$expires = $escaper->escapeHtml("N/A");
-				}
-				// If the expiration date has passed
-				else if ($expires < date('Y-m-d h:i:s'))
-				{
-					$expires = "<font color=\"red\"><b>Expired</b></font>";
-				}
-				else $expires = "<font color=\"green\"><b>" . $escaper->escapeHtml(substr($expires, 0, 10)) . "</b></font>";
+				// Set purchased to true
+				$purchased = true;
+				$expires = "Unlimited";
 			}
-			else $expires = "N/A";
+			else
+			{
+				$extras_xml = $purchases->{"extras"};
+				$extra_xml = $extras_xml->{$extra['short_name']};
+				$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
+				$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
+				$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
+
+				// If the extra was purchased
+				if ($purchased)
+				{
+					// Get the expiration date
+					$expires = $extra_xml->{"expires"}->__toString();
+
+					// If the exipration date is not set
+					if ($expires == "0000-00-00 00:00:00")
+					{
+						$expires = $escaper->escapeHtml("N/A");
+					}
+					// If the expiration date has passed
+					else if ($expires < date('Y-m-d h:i:s'))
+					{
+						$expires = "<font color=\"red\"><b>Expired</b></font>";
+					}
+					else $expires = "<font color=\"green\"><b>" . $escaper->escapeHtml(substr($expires, 0, 10)) . "</b></font>";
+				}
+				else $expires = "N/A";
+			}
+
+			// Check if the extra is installed
+			$installed = core_is_installed($extra['short_name']);
+
+			// Check if the extra is activated
+			$activated = core_extra_activated($extra['short_name']);
+
+			// If the extra is purchased and activated
+			if ($purchased && $activated)
+			{
+				$activated_link = core_extra_activated_link($extra['short_name']);
+			}
+			else $activated_link = "";
+
+			// Get the version information
+			$version = core_extra_current_version($extra['short_name']);
+			$latest_version = latest_version($extra['short_name']);
+
+			// Get the action button
+			$action_button = core_get_action_button($extra['short_name'], $purchased, $installed, $activated, $version, $latest_version);
+
+			// Display the table row
+			echo "<tr>\n";
+			echo "  <td width=\"115px\"><b>" . $escaper->escapeHtml($extra['long_name']) . "</b></td>\n";
+			echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
+			echo "  <td width=\"60px\">" . $expires . "</td>\n";
+			echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
+			echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " />" . $activated_link . "</td>\n";
+			echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
+			echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
+			echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
+			echo "</tr>\n";
 		}
-
-		// Check if the extra is installed
-		$installed = core_is_installed($extra['short_name']);
-
-		// Check if the extra is activated
-		$activated = core_extra_activated($extra['short_name']);
-
-		// If the extra is purchased and activated
-		if ($purchased && $activated)
-		{
-			$activated_link = core_extra_activated_link($extra['short_name']);
-		}
-		else $activated_link = "";
-
-		// Get the version information
-		$version = core_extra_current_version($extra['short_name']);
-		$latest_version = latest_version($extra['short_name']);
-
-		// Get the action button
-		$action_button = core_get_action_button($extra['short_name'], $purchased, $installed, $activated, $version, $latest_version);
-
+	}
+	// We were unable to obtain the purchases from the server
+	else
+	{
 		// Display the table row
 		echo "<tr>\n";
-		echo "  <td width=\"115px\"><b>" . $escaper->escapeHtml($extra['long_name']) . "</b></td>\n";
-		echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($purchased ? " checked" : "") . " /></td>\n";
-		echo "  <td width=\"60px\">" . $expires . "</td>\n";
-		echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($installed ? " checked" : "") . " /></td>\n";
-		echo "  <td width=\"10px\"><input type=\"checkbox\"" . ($activated ? " checked" : "") . " />" . $activated_link . "</td>\n";
-		echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($version) . "</b></td>\n";
-		echo "  <td width=\"60px\"><b>" . $escaper->escapeHtml($latest_version) . "</b></td>\n";
-		echo "  <td width=\"60px\"><b>" . $action_button . "</b></td>\n";
+		echo "  <td colspan=\"8\"><b>" . $escaper->escapeHtml($lang['UnableToCommunicateWithTheSimpleRiskServer']) . "</b></td>\n";
 		echo "</tr>\n";
 	}
 
@@ -447,15 +459,19 @@ function core_check_all_purchases()
     if(!$result || $result[0] == 'HTTP/1.1 404 Not Found')
     {
         write_debug_log("SimpleRisk was unable to connect to " . $url);
+
+	// Return false
+	return false;
     }
     // We were able to connect to the URL
     else
     {
         write_debug_log("SimpleRisk successfully connected to " . $url);
-    }
 
-    $xml = simplexml_load_string($result);
-    return $xml;
+	// Return the XML results
+	$xml = simplexml_load_string($result);
+	return $xml;
+    }
 }
 
 /*************************************************************
@@ -747,49 +763,6 @@ function simplerisk_license_check()
 			// Set the last checked date to now
 			$now = time();
 			update_setting("license_check_date", $now);
-
-/*
-                	// Get the last license check
-                	$license_check_date = get_setting('license_check_date');
-
-			// Get the current date and time
-			$now = time();
-
-                	// If the license has not been checked
-                	if (!$license_check_date)
-                	{
-				write_debug_log("This is the first time a license check has been run.");
-
-				// Check the license against what is installed
-				simplerisk_license_check_purchases();
-
-                        	// Set the last checked date to now
-                        	update_setting("license_check_date", $now);
-                	}
-                	else
-                	{
-                	        // Get the number of days since the last check
-                	        $difference = $now - $license_check_date;
-                	        $days = round($difference / (60 * 60 * 24));
-
-				write_debug_log("Current timestamp: " . $now);
-				write_debug_log("Last license check date: " . $license_check_date);
-				write_debug_log("Days since last license check: " . $days);
-                	        
-                	        // If it has been one or more days since the last license check
-                	        if ($days >= 1)
-                	        {       
-					write_debug_log("It has been at least one day since the last license check.");
-
-					// Check the license against what is installed
-					simplerisk_license_check_purchases();
-
-                	                // Set the last checked date to now
-                	                update_setting("license_check_date", $now);
-                	        }
-                	}       
-*/
-
         	}
 	}
 }
@@ -806,113 +779,129 @@ function simplerisk_license_check_purchases()
 	// Check the purchases
 	$purchases = core_check_all_purchases();
 
-	// Get the list of available SimpleRisk Extras
-	$extras = available_extras();
-
-	// For each available Extra
-	foreach ($extras as $extra)
+	// If we were able to obtain the purchases
+	if ($purchases != false)
 	{
-		// If this is not the Upgrade or ComplianceForge SCF Extra
-		if ($extra['short_name'] != "upgrade" && $extra['short_name'] != "complianceforgescf")
+		// Get the support information
+		$support_xml = $purchases->{"support"};
+		$support_purchased = (boolean)json_decode(strtolower($support_xml->{"purchased"}->__toString()));
+
+		// If support is purchased
+		if ($support_purchased == "true")
 		{
-			// Get the license information
-			$extras_xml = $purchases->{"extras"};
-			$extra_xml = $extras_xml->{$extra['short_name']};
-			$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
-			$expires = $extra_xml->{"expires"}->__toString();
-			$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
-			$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
+			// Add the support license to the session
+			$_SESSION['support'] = "true";
+		}
+		else $_SESSION['support'] = "false";
 
-			// Check if the extra is installed
-			$installed = core_is_installed($extra['short_name']);
+		// Get the list of available SimpleRisk Extras
+		$extras = available_extras();
 
-			// Check if the extra is activated
-			$activated = core_extra_activated($extra['short_name']);
-
-			// If the Extra is activated and should be disabled
-			if ($activated && $disabled)
+		// For each available Extra
+		foreach ($extras as $extra)
+		{
+			// If this is not the Upgrade or ComplianceForge SCF Extra
+			if ($extra['short_name'] != "upgrade" && $extra['short_name'] != "complianceforgescf")
 			{
-				write_debug_log("SimpleRisk says this Extra should be disabled: " . $extra['short_name']);
+				// Get the license information
+				$extras_xml = $purchases->{"extras"};
+				$extra_xml = $extras_xml->{$extra['short_name']};
+				$purchased = (boolean)json_decode(strtolower($extra_xml->{"purchased"}->__toString()));
+				$expires = $extra_xml->{"expires"}->__toString();
+				$disabled = (boolean)json_decode(strtolower($extra_xml->{"disabled"}->__toString()));
+				$deleted = (boolean)json_decode(strtolower($extra_xml->{"deleted"}->__toString()));
 
-				// Deactivate the Extra
-				core_deactivate_extra($extra['short_name']);
-			}
+				// Check if the extra is installed
+				$installed = core_is_installed($extra['short_name']);
 
-			// If the Extra is installed and should be deleted
-			if ($installed && $deleted)
-			{
-				write_debug_log("SimpleRisk says this Extra should be deleted: " . $extra['short_name']);
+				// Check if the extra is activated
+				$activated = core_extra_activated($extra['short_name']);
 
-				// Delete the Extra
-				core_delete_extra($extra['short_name']);
-			}
-
-			// If the Extra is installed and activated
-			if ($installed && $activated)
-			{
-				// If the expiration date is set
-				if ($expires != "0000-00-00 00:00:00")
+				// If the Extra is activated and should be disabled
+				if ($activated && $disabled)
 				{
-					// If the expiration date has passed
-					if ($expires < date('Y-m-d h:i:s'))
-					{
-						// Set the license to expired
-						$expired = true;
-					}
-					else $expired = false;					
+					write_debug_log("SimpleRisk says this Extra should be disabled: " . $extra['short_name']);
+
+					// Deactivate the Extra
+					core_deactivate_extra($extra['short_name']);
 				}
-				else $expired = false;
 
-				// Get the name of the setting to check for a license failure
-				$license_check_fail_date_name = "license_check_fail_date_" . $extra['short_name'];
-
-				// Get the current date and time
-				$now = time();
-				
-				// If the Extra is not purchased or has expired
-				if (!$purchased || $expired)
+				// If the Extra is installed and should be deleted
+				if ($installed && $deleted)
 				{
-					write_debug_log("Extra not purchased or expired: " . $extra['short_name']);
+					write_debug_log("SimpleRisk says this Extra should be deleted: " . $extra['short_name']);
 
-					// Set the session value for the license check to failed
-					$_SESSION['license_check'] = "fail";
+					// Delete the Extra
+					core_delete_extra($extra['short_name']);
+				}
 
-					// Check if we already have a license failed date
-					$license_check_fail_date = get_setting($license_check_fail_date_name);
-
-					// If we do not have a license failed date
-					if (!$license_check_fail_date)
+				// If the Extra is installed and activated
+				if ($installed && $activated)
+				{
+					// If the expiration date is set
+					if ($expires != "0000-00-00 00:00:00")
 					{
-						// Set a license failed date
-						update_setting($license_check_fail_date_name, $now);
-					}
-					// We do have a license failed date
-					else
-					{
-                        			// Get the number of days since the license failure
-                        			$difference = $now - $license_check_fail_date;
-                        			$days = round($difference / (60 * 60 * 24));
-
-                        			// If it has been 30 or more days since the license check failure
-                        			if ($days >= 30)
+						// If the expiration date has passed
+						if ($expires < date('Y-m-d h:i:s'))
 						{
-							write_debug_log("Deactivating and deleting Extra: " . $extra['short_name']);
+							// Set the license to expired
+							$expired = true;
+						}
+						else $expired = false;					
+					}
+					else $expired = false;
 
-							// Deactivate the Extra
-							core_deactivate_extra($extra['short_name']);
+					// Get the name of the setting to check for a license failure
+					$license_check_fail_date_name = "license_check_fail_date_" . $extra['short_name'];
 
-							// Delete the Extra
-							core_delete_extra($extra['short_name']);
+					// Get the current date and time
+					$now = time();
+				
+					// If the Extra is not purchased or has expired
+					if (!$purchased || $expired)
+					{
+						write_debug_log("Extra not purchased or expired: " . $extra['short_name']);
+
+						// Set the session value for the license check to failed
+						$_SESSION['license_check'] = "fail";
+
+						// Check if we already have a license failed date
+						$license_check_fail_date = get_setting($license_check_fail_date_name);
+
+						// If we do not have a license failed date
+						if (!$license_check_fail_date)
+						{
+							// Set a license failed date
+							update_setting($license_check_fail_date_name, $now);
+						}
+						// We do have a license failed date
+						else
+						{
+        	                			// Get the number of days since the license failure
+        	                			$difference = $now - $license_check_fail_date;
+        	                			$days = round($difference / (60 * 60 * 24));
+
+        	                			// If it has been 30 or more days since the license check failure
+        	                			if ($days >= 30)
+							{
+								write_debug_log("Deactivating and deleting Extra: " . $extra['short_name']);
+
+								// Deactivate the Extra
+								core_deactivate_extra($extra['short_name']);
+
+								// Delete the Extra
+								core_delete_extra($extra['short_name']);
+							}
 						}
 					}
-				}
-				// If the Extra is purchased and has not expired
-				else if ($purchased && !$expired)
-				{
-					write_debug_log("Removing license check failure for Extra: " . $extra['short_name']);
+					// If the Extra is purchased and has not expired
+					else if ($purchased && !$expired)
+					{
+						write_debug_log("Removing license check failure for Extra: " . $extra['short_name']);
 
-					// Delete the setting for a failed license date
-					delete_setting($license_check_fail_date_name);
+						// Delete the setting for a failed license date
+						delete_setting($license_check_fail_date_name);
+					}
 				}
 			}
 		}

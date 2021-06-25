@@ -17,6 +17,7 @@ add_security_headers();
 // Add the session
 $permissions = array(
         "check_access" => true,
+	"check_im_reporting" => true,
 );
 add_session_check($permissions);
 
@@ -31,9 +32,6 @@ if (incident_management_extra())
 {       
         // Load the Incident Management Extra
         require_once(realpath(__DIR__ . '/../extras/incident_management/index.php'));
-
-	// Enforce that the user has access to incident management
-	enforce_permission_incident_management();
 
         process_incident_management();
 }

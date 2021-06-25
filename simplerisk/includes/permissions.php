@@ -10,10 +10,10 @@ require_once(realpath(__DIR__ . '/alerts.php'));
 
 // Include the language file
 require_once(language_file());
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 if (!function_exists('table_exists')) {
     function table_exists($table) {
@@ -42,237 +42,64 @@ if (!function_exists('table_exists')) {
 // Leaving here for backwards compatibility
 $possible_permissions = get_possible_permissions();
 
-
-/*************************************
- * FUNCTION: CHECK PERMISSION ACCESS *
- *************************************/
-function check_permission_access()
+/******************************
+ * FUNCTION: CHECK PERMISSION *
+ ******************************/
+function check_permission($permission)
 {
-	// If access to the application is not authorized for this session
-	if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
+	// If we have a valid session
+	if (isset($_SESSION['user']) && $_SESSION['user'] != "")
 	{
-		write_debug_log("Access to the application is not authorized for this session.");
-		return false;
+		$message = "The currently authenticated session for username \"" . $_SESSION['user'] . "\"";
 	}
-	// If access to the application is authorized for this session
-	else
+	else $message = "The currently unauthenticated session";
+
+	// Check if the permission is authorized
+	if (!isset($_SESSION[$permission]) || $_SESSION[$permission] != 1)
 	{
-		write_debug_log("Access to the application is authorized for this session.");
-		return true;
-	}
-}
-
-/***************************************
- * FUNCTION: ENFORCE PERMISSION ACCESS *
- ***************************************/
-function enforce_permission_access()
-{
-        // If access is not authorized
-        if (!check_permission_access())
-        {
-		// Store the requested URL in the session so we can redirect the user back to it after authentication
-		set_unauthenticated_redirect();
-
-		write_debug_log("Redirecting back to the login page.");
-
-		// Redirect the user to the login page
-                header("Location: ../index.php");
-
-		// Stop any further processing
-                exit(0);
-        }
-}
-
-/************************************
- * FUNCTION: CHECK PERMISSION ADMIN *
- ************************************/
-function check_permission_admin()
-{ 
-	// If access to admin is not authorized for this session
-	if (!isset($_SESSION["admin"]) || $_SESSION["admin"] != "1")
-	{
-		write_debug_log("The currently authenticated session does not have admin privileges.");
-		return false;
-	}
-	// If access to admin is authorized for this session
-	else
-	{
-		write_debug_log("The currently authenticated session does have admin privileges.");
-		return true;
-	}
-}
-
-/**************************************
- * FUNCTION: ENFORCE PERMISSION ADMIN *
- **************************************/
-function enforce_permission_admin()
-{
-        // If admin is not authorized
-        if (!check_permission_admin())
-        {
-                write_debug_log("Redirecting back to the login page.");
-
-                // Redirect the user to the login page
-                header("Location: ../index.php");
-
-                // Stop any further processing
-                exit(0);
-        }
-}
-
-/*****************************************
- * FUNCTION: CHECK PERMISSION GOVERNANCE *
- *****************************************/
-function check_permission_governance()
-{
-        // Check if governance is authorized
-        if (!isset($_SESSION["governance"]) || $_SESSION["governance"] != 1)
-        {
-		write_debug_log("The currently authenticated session does not have governance privileges.");
-                return false;
-        }
-	else
-	{
-		write_debug_log("The currently authenticated session does have governance privileges.");
-		return true;
-	}
-}
-
-/*******************************************
- * FUNCTION: ENFORCE PERMISSION GOVERNANCE *
- *******************************************/
-function enforce_permission_governance()
-{
-        // If governance is not authorized
-        if (!check_permission_governance())
-        {
-                header("Location: ../index.php");
-                exit(0);
-        }
-}
-
-/*********************************************
- * FUNCTION: CHECK PERMISSION RISKMANAGEMENT *
- *********************************************/
-function check_permission_riskmanagement()
-{
-	// Check if riskmanagement is authorized
-	if (!isset($_SESSION["riskmanagement"]) || $_SESSION["riskmanagement"] != 1)
-	{
-		write_debug_log("The currently authenticated session does not have risk management privileges.");
+		write_debug_log($message . " does not have the \"" . $permission . "\" permission.");
 		return false;
 	}
 	else
 	{
-		write_debug_log("The currently authenticated session does have risk management privileges.");
+		write_debug_log($message . " has the \"" . $permission . "\" permission.");
 		return true;
 	}
-}
+}	
 
-/***********************************************
- * FUNCTION: ENFORCE PERMISSION RISKMANAGEMENT *
- ***********************************************/
-function enforce_permission_riskmanagement()
+/********************************
+ * FUNCTION: ENFORCE PERMISSION *
+ ********************************/
+function enforce_permission($permission)
 {
-        // If riskmanagement is not authorized
-	if (!check_permission_riskmanagement())
-        {
-                header("Location: ../index.php");
-                exit(0);
-        }
-}
-
-/*****************************************
- * FUNCTION: CHECK PERMISSION COMPLIANCE *
- *****************************************/
-function check_permission_compliance()
-{
-        // Check if compliance is authorized
-        if (!isset($_SESSION["compliance"]) || $_SESSION["compliance"] != 1)
-        {
-		write_debug_log("The currently authenticated session does not have compliance privileges.");
-                return false;
-        }
-	else
+	// If the permission is not authorized
+	if (!check_permission($permission))
 	{
-		write_debug_log("The currently authenticated session does have compliance privileges.");
-		return true;
+		// Different actions for different permissions
+		switch ($permission)
+		{
+			// If this is the access permission
+			case "access":
+				// Store the requested URL in the session so we can redirect the user back to it after authentication
+				set_unauthenticated_redirect();
+
+				write_debug_log("Redirecting back to the login page.");
+
+				// Redirect the user to the login page
+				header("Location: ../index.php");
+
+				// Stop any further processing
+				exit(0);
+			default:
+				write_debug_log("Redirecting back to the login page.");
+
+				// Redirect the user to the login page
+				header("Location: ../index.php");
+
+				// Stop any further processing
+				exit(0);
+		}
 	}
-}
-
-/*******************************************
- * FUNCTION: ENFORCE PERMISSION COMPLIANCE *
- *******************************************/
-function enforce_permission_compliance()
-{
-        // If compliance is not authorized
-        if (!check_permission_compliance())
-        {
-                header("Location: ../index.php");
-                exit(0);
-        }
-}
-
-/*************************************
- * FUNCTION: CHECK PERMISSION ASSET *
- *************************************/
-function check_permission_asset()
-{
-        // Check if asset is authorized
-        if (!isset($_SESSION["asset"]) || $_SESSION["asset"] != 1)
-        {
-		write_debug_log("The currently authenticated session does not have asset privileges.");
-                return false;
-        }
-	else
-	{
-		write_debug_log("The currently authenticated session does have asset privileges.");
-		return true;
-	}
-}
-
-/*******************************************
- * FUNCTION: ENFORCE PERMISSION ASSET *
- *******************************************/
-function enforce_permission_asset()
-{
-        // If asset is not authorized
-        if (!check_permission_asset())
-        {
-                header("Location: ../index.php");
-                exit(0);
-        }
-}
-
-/******************************************
- * FUNCTION: CHECK PERMISSION ASSESSMENTS *
- ******************************************/
-function check_permission_assessments()
-{
-	// Check if assessments is authorized
-	if (!isset($_SESSION["assessments"]) || $_SESSION["assessments"] != 1)
-	{
-		write_debug_log("The currently authenticated session does not have assessment privileges.");
-		return false;
-	}
-	else
-	{
-		write_debug_log("The currently authenticated session does have assessment privileges.");
-		return true;
-	}
-}
-
-/********************************************
- * FUNCTION: ENFORCE PERMISSION ASSESSMENTS *
- ********************************************/
-function enforce_permission_assessments()
-{
-    // If asset is not authorized
-    if (!check_permission_assessments())
-    {
-        header("Location: ../index.php");
-        exit(0);
-    }
 }
 
 /*************************************
@@ -479,6 +306,9 @@ function get_grouped_permissions($user_id = false) {
         return $perms;
 }
 
+/********************************
+ * FUNCTION: UPDATE PERMISSIONS *
+ ********************************/
 function update_permissions($user_id, $permissions) {
     $current_permissions = get_permission_ids_of_user($user_id);
     
@@ -622,4 +452,308 @@ function user_has_permission($user_id, $permission_key) {
     return isset($result) && (int)$result === 5;
     
 }
+
+/*********************************
+ * FUNCTION: ADD NEW PERMISSIONS *
+ *********************************/
+function add_new_permissions($permission_groups_and_permissions)
+{
+	// Open the database connection
+	$db = db_open();
+
+	// Create an array for the new permissions
+	$new_permissions = [];
+
+	// For each of the permission groups provided
+	foreach ($permission_groups_and_permissions as $_ => $group)
+	{
+		// Pull out the group information
+		$group_name = $group['name'];
+		$group_description = $group['description'];
+		$group_order = $group['order'];
+		$permissions = $group['permissions'];
+
+		// Create the permission group
+		$stmt = $db->prepare("INSERT IGNORE INTO `permission_groups` (`name`, `description`, `order`) VALUES (:name, :description, :order);");
+		$stmt->bindParam(":name", $group_name, PDO::PARAM_STR);
+		$stmt->bindParam(":description", $group_description, PDO::PARAM_STR);
+		$stmt->bindParam(":order", $group_order, PDO::PARAM_INT);
+		$stmt->execute();
+
+		// Get the permission group id
+		$group_id = $db->lastInsertId();
+
+		// Write debug log
+		write_debug_log("Added new permission group with the following values:");
+		write_debug_log("GROUP ID: " . $group_id);
+		write_debug_log("NAME: " . $group_name);
+		write_debug_log("DESCRIPTION: " . $group_description);
+		write_debug_log("ORDER: " . $group_order);
+
+		// Write audit log
+		$message = "A new permission group named \"" . $group_name . "\" was added to the system.";
+		write_log(1000, $_SESSION['uid'], $message, "user");
+
+		// For each of the permissions in this permission group
+		foreach ($permissions as $key => $permission)
+		{
+			// Pull out the permission information
+			$permission_name = $permission['name'];
+			$permission_description = $permission['description'];
+			$permission_order = $permission['order'];
+
+			// Create the permission
+			$stmt = $db->prepare("INSERT IGNORE INTO `permissions` (`key`, `name`, `description`, `order`) VALUES (:key, :name, :description, :order);");
+			$stmt->bindParam(":key", $key, PDO::PARAM_STR);
+			$stmt->bindParam(":name", $permission_name, PDO::PARAM_STR);
+			$stmt->bindParam(":description", $permission_description, PDO::PARAM_STR);
+			$stmt->bindParam(":order", $permission_order, PDO::PARAM_INT);
+			$stmt->execute();
+
+			// Get the permission id
+			$stmt = $db->prepare("SELECT `id` FROM `permissions` WHERE `name` = :name;");
+			$stmt->bindParam(":name", $permission_name, PDO::PARAM_STR);
+			$stmt->execute();
+			$permission_id = $stmt->fetch(PDO::FETCH_ASSOC);
+			$permission_id = $permission_id['id'];
+
+			// Add the new permission to the new permissions array
+			$new_permissions[] = $permission_id;
+
+			// Write debug log
+			write_debug_log("Added new permission with the following values:");
+			write_debug_log("PERMISSION ID: " . $permission_id);
+			write_debug_log("KEY: " . $key);
+			write_debug_log("NAME: " . $permission_name);
+			write_debug_log("DESCRIPTION: " . $permission_description);
+			write_debug_log("ORDER: " . $permission_order);
+
+			// Write audit log
+			$message = "A new permission named \"" . $permission_name . "\" was added to the system.";
+			write_log(1000, $_SESSION['uid'], $message, "user");
+
+			// Add the permission to the permission group
+			$stmt = $db->prepare("INSERT IGNORE INTO `permission_to_permission_group` (`permission_id`, `permission_group_id`) VALUES (:permission_id, :permission_group_id);");
+			$stmt->bindParam(":permission_id", $permission_id);
+			$stmt->bindParam(":permission_group_id", $group_id);
+			$stmt->execute();
+
+			// Write debug log
+			write_debug_log("Added permission id \"" . $permission_id . "\" to group id \"" . $group_id . "\".");
+
+			// Write audit log
+			$message = "The \"" . $permission_name . "\" permission was added to the \"" . $group_name . "\" permission group.";
+			write_log(1000, $_SESSION['uid'], $message, "user");
+		}
+	}
+
+	// For each admin user
+	$admin_users = get_admin_users();
+	foreach ($admin_users as $user)
+	{
+		// Get the user values
+		$user_id = (int)$user['value'];
+		$username = $user['username'];
+
+		// Get the current permissions of this user
+		$current_permissions = get_permission_ids_of_user($user_id);
+
+		// Add the new permission to the current permissions
+		$updated_permissions = array_merge($current_permissions, $new_permissions);
+
+		// Add the updated permissions to the admin user
+		update_permissions($user_id, $updated_permissions);
+
+		// If the update affects the current logged in user
+		if ($_SESSION['uid'] == $user_id)
+		{
+			// Update the current user's permissions
+			set_user_permissions($username);
+		}
+
+		// Refresh the permissions in the active sessions of the user
+		refresh_permissions_in_sessions_of_user($user_id);
+
+		// Write debug log
+		write_debug_log("The new permissions were added to the \"" . $username . "\" user.");
+	}
+
+	// Automatically grant all permissions to roles granted admin
+	$stmt = $db->prepare("
+            INSERT IGNORE INTO
+                `role_responsibilities`(`role_id`, `permission_id`)
+            SELECT
+                `r`.`value`,
+                `p`.`id`
+            FROM
+                `role` r, `permissions` p
+            WHERE
+                `r`.`admin` = 1;
+	");
+	$stmt->execute();
+
+	// Close the database connection
+	db_close($db);
+}
+
+/********************************
+ * FUNCTION: REMOVE PERMISSIONS *
+ ********************************/
+function remove_permissions($permission_groups_and_permissions)
+{
+	// Open the database connection
+	$db = db_open();
+
+        // Create an array for the removed permissions
+        $removed_permissions = [];
+
+	// For each of the permission groups provided
+	foreach ($permission_groups_and_permissions as $_ => $group)
+	{
+		// Pull out the group information
+		$group_name = $group['name'];
+		$permissions = $group['permissions'];
+
+		// For each of the permissions in this permission group
+		foreach ($permissions as $key => $permission)
+		{
+			// Pull out the permission information
+			$permission_name = $permission['name'];
+
+			write_debug_log("Deleting permission named \"" . $permission_name . "\".");
+
+                        // Get the permission id
+                        $stmt = $db->prepare("SELECT `id` FROM `permissions` WHERE `name` = :name;");
+                        $stmt->bindParam(":name", $permission_name, PDO::PARAM_STR);
+                        $stmt->execute();
+                        $permission_id = $stmt->fetch(PDO::FETCH_ASSOC);
+                        $permission_id = $permission_id['id'];
+
+                        // Add the new permission to the removed permissions array
+                        $removed_permissions[] = $permission_id;
+
+			// Delete the permission from the permission group
+			$stmt = $db->prepare("
+				DELETE FROM `permission_to_permission_group` WHERE `permission_id` = :permission_id;
+			");
+			$stmt->bindParam(":permission_id", $permission_id, PDO::PARAM_INT);
+			$stmt->execute();
+
+			// Delete the permission
+			$stmt = $db->prepare("
+				DELETE FROM `permissions` WHERE `name` = :name;
+			");
+			$stmt->bindParam(":name", $permission_name, PDO::PARAM_STR);
+			$stmt->execute();
+
+			// Write audit log
+			$message = "The \"" . $permission_name . "\" permission was removed from the system.";
+			write_log(1000, $_SESSION['uid'], $message, "user");
+		}
+
+		// After all permissions have been deleted, delete the permission group
+		write_debug_log("Deleting permission group named \"" . $group_name . "\".");
+		$stmt = $db->prepare("
+			DELETE FROM `permission_groups`  WHERE `name` = :name;
+		");
+		$stmt->bindParam(":name", $group_name, PDO::PARAM_STR);
+		$stmt->execute();
+
+		// Write audit log
+		$message = "The \"" . $group_name . "\" permission group was removed from the system.";
+		write_log(1000, $_SESSION['uid'], $message, "user");
+	}
+
+	// Cleanup the permissions after the deletion
+	cleanup_after_delete('permissions');
+	cleanup_after_delete('permission_groups');
+
+        // For each user
+	$all_users = get_all_users();
+        foreach ($all_users as $user)
+        {
+                // Get the user values
+                $user_id = (int)$user['value'];
+                $username = $user['username'];
+
+                // Get the current permissions of this user
+                //$current_permissions = get_permission_ids_of_user($user_id);
+
+		// Remove the removed permissions from the current permissions
+		//$updated_permissions = array_diff($current_permissions, $removed_permissions);
+
+                // Remove the removed permissions from the user
+                //update_permissions($user_id, $updated_permissions);
+
+                // If the update affects the current logged in user
+                if ($_SESSION['uid'] == $user_id)
+                {
+                        // Update the current user's permissions
+                        set_user_permissions($username);
+                }
+
+                // Refresh the permissions in the active sessions of the user
+                refresh_permissions_in_sessions_of_user($user_id);
+
+                // Write debug log
+                write_debug_log("The new permissions were added to the \"" . $username . "\" user.");
+        }
+
+	// Close the database connection
+	db_close($db);
+}
+
+/*****************************
+ * FUNCTION: GET ADMIN USERS *
+ *****************************/
+function get_admin_users()
+{
+	// Open the database connection
+	$db = db_open();
+
+	// Get all users with an admin role
+	$stmt = $db->prepare("
+		SELECT `value`, `username` FROM `user` WHERE admin = 1;
+	");
+	$stmt->execute();
+	$admin_users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+	// Close the database connection
+	db_close($db);
+
+	// Return the list of admin users
+	return $admin_users;
+}
+
+/************************************************
+ * FUNCTION: CHECK REVIEW PERMISSION BY RISK ID *
+ ************************************************/
+function check_review_permission_by_risk_id($risk_id)
+{
+	// Get the calcualted risk for this risk id
+	$calculated_risk = get_calculated_risk_by_id($risk_id);
+
+	// Get the risk level name for this calculated risk
+	$level = get_risk_level_name($calculated_risk);
+
+	// Get the risk level display names
+	$very_high_display_name = get_risk_level_display_name('Very High');
+	$high_display_name      = get_risk_level_display_name('High');
+	$medium_display_name    = get_risk_level_display_name('Medium');
+	$low_display_name       = get_risk_level_display_name('Low');
+	$insignificant_display_name = get_risk_level_display_name('Insignificant');
+
+	// If the user has permission to review the current level
+	if (($level == $very_high_display_name && has_permission("review_veryhigh")) || ($level == $high_display_name && has_permission("review_high")) || ($level == $medium_display_name && has_permission("review_medium")) || ($level == $low_display_name && has_permission("review_low")) || ($level == $insignificant_display_name && has_permission("review_insignificant")))
+	{
+		// Review is approved
+		$approved = true;
+	}
+	// Otherwise the review is not approved
+	else $approved = false;
+
+	// Return the approved status
+	return $approved;
+}
+
 ?>

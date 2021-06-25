@@ -9,10 +9,10 @@ require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -128,6 +128,7 @@ if (isset($_GET['id']))
         $custom = $risk[0]['Custom'];
         $risk_catalog_mapping = $risk[0]['risk_catalog_mapping'];
         $risk_catalog_name = $risk[0]['risk_catalog_name'];
+        $template_group_id  = $risk[0]['template_group_id'];
 
         $ContributingLikelihood = $risk[0]['Contributing_Likelihood'];
         $contributing_risks_impacts = $risk[0]['Contributing_Risks_Impacts'];
@@ -221,6 +222,7 @@ if (isset($_GET['id']))
         $custom = "";
         $risk_catalog_mapping = "";
         $risk_catalog_name = "";
+        $template_group_id = "";
 
         $ContributingLikelihood  = "";
         $ContributingImpacts = [];
@@ -330,7 +332,18 @@ if (isset($_GET['id']))
         <script src="../js/jquery.dataTables.js"></script>
         <script src="../js/cve_lookup.js"></script>
         <script src="../js/basescript.js"></script>
-        <script src="../js/highcharts/code/highcharts.js"></script>
+
+    <?php
+        // Use these HighCharts scripts
+        $scripts = [
+                'highcharts.js',
+        ];
+
+        // Display the highcharts javascript source
+        display_highcharts_javascript($scripts);
+
+    ?>
+
         <script src="../js/moment.min.js"></script>
         <script src="../js/common.js"></script>
         <script src="../js/pages/risk.js"></script>
@@ -372,6 +385,9 @@ if (isset($_GET['id']))
             }
           
         </script>
+        <style>
+            .top-panel .span5, .bottom-panel .span5{max-width: 210px;}
+        </style>
         
       <?php
           setup_favicon("..");
@@ -405,7 +421,7 @@ if (isset($_GET['id']))
             <div class="span3"> </div>
             <div class="span9">
               <div class="tab-append">
-                <div class="tab selected form-tab tab-show" id="risk_list"><div><span><a href="<?php echo $list_href;?>">Risk list</a></span></div>
+                <div class="tab form-tab tab-show" id="risk_list"><div><span><a href="<?php echo $list_href;?>">Risk list</a></span></div>
                 </div>
                 <div class="tab selected form-tab tab-show" id="risk_detail"><div><span><strong>ID: <?php echo $id.'</strong>  '.$escaper->escapeHtml(try_decrypt($subject)); ?></span></div>
                 </div>
@@ -425,6 +441,7 @@ if (isset($_GET['id']))
           <div class="span9">
 
             <div class="row-fluid" id="tab-content-container">
+                <div class='tab-data hide' id="tab-container"></div>
                 <div class='tab-data' id="tab-container">
                     <?php
                         

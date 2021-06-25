@@ -7,11 +7,12 @@
 // Include required configuration files
 require_once(language_file());
 require_once(realpath(__DIR__ . '/functions.php'));
+require_once(realpath(__DIR__ . '/config.php'));
 require_once(realpath(__DIR__ . '/extras.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 /*************************************
  * FUNCTION: SIMPLERISK HEALTH CHECK *
@@ -35,6 +36,12 @@ function simplerisk_health_check()
 
         // Check that the application and database versions are the same
         $check_same_app_and_db = check_same_app_and_db($current_app_version, $current_db_version);
+
+	// Check that USE_DATABASE_FOR_SESSION is set to true
+	$check_use_database_for_session = check_use_database_for_session();
+
+	// Check that the automation cron is configured and running
+	$cron_configured = check_cron_configured();
 
         // Check the Extra versions match the SimpleRisk version
         $check_extra_versions = check_extra_versions($current_app_version);
@@ -77,6 +84,9 @@ function simplerisk_health_check()
 
         // Check that this is PHP 7
         $check_php_version = check_php_version();
+
+	// Check the PHP memory_limit
+	$check_php_memory_limit = check_php_memory_limit();
 
         // Check the necessary PHP extensions are installed
         $check_php_extensions = check_php_extensions();
@@ -150,7 +160,7 @@ function simplerisk_health_check()
 	echo "<div class=\"wrap\">\n";
 	echo "  <ul class=\"tabs group\">\n";
 	echo "    <li><a class=\"active\" href=\"#/summary\">Summary</a></li>\n";
-	echo "    <li><a href=\"#/versions\">Versions</a></li>\n";
+	echo "    <li><a href=\"#/simplerisk\">SimpleRisk Core</a></li>\n";
 	echo "    <li><a href=\"#/extras\">Extras</a></li>\n";
 	echo "    <li><a href=\"#/connectivity\">Connectivity</a></li>\n";
 	echo "    <li><a href=\"#/php\">PHP</a></li>\n";
@@ -164,11 +174,11 @@ function simplerisk_health_check()
 	echo "      <b><u>Health Check Summary</u></b><br />";
 
 	// Versions Summary
-	if ($check_app_version['result'] === 1 && $check_db_version['result'] === 1 && $check_same_app_and_db['result'] === 1)
+	if ($check_app_version['result'] === 1 && $check_db_version['result'] === 1 && $check_same_app_and_db['result'] === 1 && $check_use_database_for_session['result'] === 1 && $cron_configured['result'] === 1)
 	{
-		health_check_good("Versions");
+		health_check_good("SimpleRisk Core");
 	}
-	else health_check_bad("Versions");
+	else health_check_bad("SimpleRisk Core");
 
 	// Extras Summary
 	if ($check_extra_versions_result === 1)
@@ -185,7 +195,7 @@ function simplerisk_health_check()
 	else health_check_bad("Connectivity");
 
 	// PHP Summary
-	if ($check_php_version['result'] === 1 && $check_php_extensions_result === 1)
+	if ($check_php_version['result'] === 1 && $check_php_memory_limit['result'] === 1 && $check_php_extensions_result === 1)
 	{
 		health_check_good("PHP");
 	}
@@ -207,12 +217,15 @@ function simplerisk_health_check()
 
 	echo "    </div>\n";
 
-	// SimpleRisk Versions Tab
-	echo "    <div id=\"versions\" style=\"display: none;\" class=\"settings_tab\">\n";
-        echo "      <b><u>SimpleRisk Versions</u></b><br />";
+	// SimpleRisk Tab
+	echo "    <div id=\"simplerisk\" style=\"display: none;\" class=\"settings_tab\">\n";
+        echo "      <b><u>SimpleRisk Version</u></b><br />";
         display_health_check_results($check_app_version);
 	display_health_check_results($check_db_version);
 	display_health_check_results($check_same_app_and_db);
+	echo "      <br /><b><u>Configurations</u></b><br />";
+	display_health_check_results($check_use_database_for_session);
+	display_health_check_results($cron_configured);
         echo "    </div>\n";
 
         // SimpleRisk Extras Tab
@@ -234,6 +247,7 @@ function simplerisk_health_check()
         echo "    <div id=\"php\" style=\"display: none;\" class=\"settings_tab\">\n";
         echo "<b><u>PHP</u></b><br />";
 	display_health_check_results($check_php_version);
+	display_health_check_results($check_php_memory_limit);
 	display_health_check_array_results($check_php_extensions);
 	echo "    </div>\n";
 
@@ -750,12 +764,12 @@ function check_php_version()
 	// If PHP is at least 7
 	if (PHP_VERSION_ID >= 70000)
 	{
-		return array("result" => 1, "text" => "SimpleRisk is running under PHP 7.");
+		return array("result" => 1, "text" => "SimpleRisk is running under PHP version " . phpversion() . ".");
 	}
 	// If this is PHP 5.x
 	else if (PHP_VERSION_ID >= 50000 && PHP_VERSION_ID < 60000)
 	{
-		return array("result" => 0, "text" => "SimpleRisk will no longer run properly under PHP version 5.x.  Please upgrade to PHP 7.");
+		return array("result" => 0, "text" => "SimpleRisk will no longer run properly under PHP version " . phpversion() . ".  Please upgrade to PHP 7.");
 	}
 	else
 	{
@@ -880,6 +894,96 @@ function check_extra_versions($current_app_version)
 	}
 
 	return $array;
+}
+
+/********************************************
+ * FUNCTION: CHECK USE DATABASE FOR SESSION *
+ ********************************************/
+function check_use_database_for_session()
+{
+	// If USE_DATABASE_FOR_SESSIONS is defined
+	if (defined('USE_DATABASE_FOR_SESSIONS'))
+	{
+		// If USE_DATABASE_FOR_SESSIONS is set to false
+		if (USE_DATABASE_FOR_SESSIONS == "false")
+		{
+			return array("result" => 1, "text" => "The USE_DATABASE_FOR_SESSIONS value is set to false in the config.php file.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the USE_DATABASE_FOR_SESSIONS to true.");
+		}
+		// If USE_DATABASE_FOR_SESSIONS is set to true
+		else if (USE_DATABASE_FOR_SESSIONS == "true")
+		{
+			return array("result" => 1, "text" => "Using the database to store PHP session information.");
+		}
+	}
+	else return array("result" => 0, "text" => "Unable to determine a value for USE_DATABASE_FOR_SESSIONS in the config.php file.");
+}
+
+/***********************************
+ * FUNCTION: CHECK CRON CONFIGURED *
+ ***********************************/
+function check_cron_configured()
+{
+	// Get the cron_last_run setting
+	$cron_last_run = get_setting("cron_last_run");
+
+	// If the cron_last_run is false
+	if ($cron_last_run === false)
+	{
+		// The cron hasn't been configured yet
+		return array("result" => 0, "text" => "The automation cron hasn't been configured yet. Check the 'Backups' tab under Configure-> Settings to learn more.");
+	}
+	else
+	{
+		// If the cron was run within the past 60 seconds
+		if (time() - $cron_last_run <= 60)
+		{
+			return array("result" => 1, "text" => "The automation cron is configured correctly.");
+		}
+		else
+		{
+			return array("result" => 0, "text" => "The automation cron hasn't run in the past minute. Check the 'Backups' tab under Configure-> Settings to learn more.");
+		}
+	}
+}
+
+/************************************
+ * FUNCTION: CHECK PHP MEMORY LIMIT *
+ ************************************/
+function check_php_memory_limit()
+{
+	// Get the currently set memory limit
+	$memory_limit = ini_get('memory_limit');
+
+	// If the memory limit is a number followed by characters
+	if (preg_match('/^(\d+)(.)$/', $memory_limit, $matches))
+	{
+		// If the memory limit is in megabytes
+		if ($matches[2] == 'M')
+		{
+			// Get the memory limit in bytes
+			$memory_limit_bytes = $matches[1] * 1024 * 1024;
+		}
+		// If the memory limit is in kilobytes
+		else if ($matches[2] == 'K')
+		{
+			// Get the memory limit in bytes
+			$memory_limit_bytes = $matches[1] * 1024;
+		}
+	}
+
+	// Set the current SimpleRisk size in bytes
+	$simplerisk_size_bytes = 180 * 1024 * 1024;
+
+	// If the memory limit is less than the SimpleRisk size
+	if ($memory_limit_bytes < $simplerisk_size_bytes)
+	{
+		return array("result" => 1, "text" => "The memory_limit value in the php.ini file is set to " . $memory_limit . ", which is less than the current size of the SimpleRisk application.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the memory_limit value to 256M or higher.");
+	}
+	// The memory limit is higher than the SimpleRisk size
+	else
+	{
+		return array("result" => 1, "text" => "The memory_limit value in the php.ini file is set to " . $memory_limit . ".");
+	}
 }
 
 ?>

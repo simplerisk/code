@@ -5,10 +5,10 @@ require_once(realpath(__DIR__ . '/../../includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/../../includes/display.php'));
 require_once(realpath(__DIR__ . '/../../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../../includes/permissions.php'));
+require_once(realpath(__DIR__ . '/../../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -38,14 +38,14 @@ require_once(realpath(__DIR__ . '/../../includes/csrf-magic/csrf-magic.php'));
 session_check();
 
 // Check if access is authorized
-if (!isset($_SESSION["access"]) || $_SESSION["access"] != "granted")
+if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1")
 {
   header("Location: ../../index.php");
   exit(0);
 }
 
 // Enforce that the user has access to risk management
-enforce_permission_riskmanagement();
+enforce_permission("riskmanagement");
 
 ?>
 
@@ -61,7 +61,7 @@ enforce_permission_riskmanagement();
           <div class="span12">
             <div id="tabs1" class=" tabs1 risk-tab">
               <form name="details" method="post" action="" enctype="multipart/form-data">
-                <?php if(@$isAjax && (!isset($action) || $action != 'editdetail')): ?>
+                <?php if(@$isAjax && has_permission("modify_risks") && (!isset($action) || $action != 'editdetail')): ?>
                     <!-- Edit th risk details-->
                     <div class="tabs--action">
                         <button type="button" name="edit_details" class="btn on-view"><?php echo $escaper->escapeHtml($lang['EditDetails']); ?></button>
@@ -71,15 +71,15 @@ enforce_permission_riskmanagement();
                 <?php endif; ?>
 
                 <?php
-                // If the user has selected to edit the risk
-                if (isset($_POST['edit_details']) || (isset($action) && $action == 'editdetail'))
+                // If the user has selected to edit the risk and has permission to edit the risk
+                if ((isset($_POST['edit_details']) || (isset($action) && $action == 'editdetail')) && has_permission("modify_risks"))
                 {
-                  edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $risk_tags, $jira_issue_key, $risk_catalog_mapping);
+                  edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $risk_tags, $jira_issue_key, $risk_catalog_mapping, $template_group_id);
                 }
                 // Otherwise we are just viewing the risk
                 else
                 {
-                  view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_tags, $jira_issue_key, $risk_catalog_name);
+                  view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_tags, $jira_issue_key, $risk_catalog_name, $template_group_id);
                 }
                 ?>
                 <input type="hidden" class="risk_id" value="<?php echo $escaper->escapeHtml($id); ?>">
@@ -88,7 +88,7 @@ enforce_permission_riskmanagement();
             <div id="tabs2" class="tabs2 risk-tab">
 
               <form name="mitigation" method="post" action="" enctype="multipart/form-data">
-                <?php if(@$isAjax && (!isset($action) || $action!="editmitigation")): ?>
+                <?php if(@$isAjax && has_permission("plan_mitigations") && (!isset($action) || $action!="editmitigation")): ?>
                     <!-- Edit mitigation -->
                     <div class="tabs--action">
                         <button type="button" name="edit_mitigation" class="btn"><?php echo $escaper->escapeHtml($lang['EditMitigation']); ?></button>
@@ -96,15 +96,15 @@ enforce_permission_riskmanagement();
                 <?php endif; ?>
 
                 <?php
-                // If the user has selected to edit the mitigation
-                if (isset($_POST['edit_mitigation']) || (isset($action) && $action == 'editmitigation'))
+                // If the user has selected to edit the mitigation and they have permission to edit the mitigation
+                if ((isset($_POST['edit_mitigation']) || (isset($action) && $action == 'editmitigation')) && has_permission("plan_mitigations"))
                 {
-                  edit_mitigation_details($id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
+                  edit_mitigation_details($id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id);
                 }
                 // Otherwise we are just viewing the mitigation
                 else
                 {
-                  view_mitigation_details($id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls);
+                  view_mitigation_details($id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id);
                 }
                 ?>
               </form>
@@ -112,12 +112,16 @@ enforce_permission_riskmanagement();
             <div id="tabs3" class="tabs3 risk-tab">
 <!--                      <form name="review" method="post" action="">-->
                 <?php
-                    if (isset($action) && $action == 'editreview'){
+		    // Check the review permissions for this risk id
+		    $edit = check_review_permission_by_risk_id($id);
+
+		    // If the user is trying to perform a review and the user has the right permission
+                    if (isset($action) && $action == 'editreview' && $edit){
                         $default_next_review = get_next_review_default($id-1000);
-                        edit_review_submission($id, $review_id, $review, $next_step, $next_review, $comments, $default_next_review);
+                        edit_review_submission($id, $review_id, $review, $next_step, $next_review, $comments, $default_next_review, $template_group_id);
                     }
 		else{
-                        view_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments);
+                        view_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comments, $template_group_id);
                     }
                 ?>
 <!--                      </form>-->

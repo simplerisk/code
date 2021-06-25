@@ -10,10 +10,10 @@ require_once(realpath(__DIR__ . '/../includes/display.php'));
 require_once(realpath(__DIR__ . '/../includes/assets.php'));
 require_once(realpath(__DIR__ . '/../includes/alerts.php'));
 require_once(realpath(__DIR__ . '/../includes/permissions.php'));
+require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/../includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -72,6 +72,10 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     $assets_asset_groups = get_param("POST", "assets_asset_groups", []);
     $additional_stakeholders =  get_param("POST", "additional_stakeholders", []);
     $risk_tags = get_param("POST", "tags", []);
+
+    if(customization_extra()) {
+        $template_group_id = get_param("POST", "template_group_id", 1);
+    } else $template_group_id = 1;
 
     foreach($risk_tags as $tag){
         if (strlen($tag) > 255) {
@@ -153,7 +157,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     $ContributingImpacts = get_param("POST", "ContributingImpacts");
 
     // Submit risk and get back the id
-    if($last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders, $risk_catalog_mapping)){}
+    if($last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders, $risk_catalog_mapping, $template_group_id)){}
     else
     {
         // Display an alert
@@ -261,7 +265,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
         // Display an alert   
         ob_end_clean();
-        set_alert(true, "good", _lang("RiskSubmitSuccess", ["subject" => $subject]), false);
+        set_alert(true, "good", _lang("RiskSubmitSuccess", ["subject" => $subject], false));
         json_response(200, get_alert(true), array("risk_id" => $risk_id));
         exit;
     }
@@ -281,19 +285,26 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 	            newrisk: "<?php echo $lang['NewRisk']; ?>"
             }
         </script>
-        <!--script src="../js/jquery.min.js"></script>
-        <script src="../js/jquery-ui.min.js"></script -->
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js" ></script>
-
-<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+        <script src="../js/jquery.min.js"></script>
+        <script src="../js/jquery-ui.min.js"></script>
         <script src="../js/bootstrap.min.js"></script>
         <script src="../js/jquery.dataTables.js"></script>
         <script src="../js/cve_lookup.js?<?php echo time() ?>"></script>
         <script src="../js/basescript.js"></script>
         <script src="../js/common.js?<?php echo time() ?>"></script>
         <script src="../js/pages/risk.js?<?php echo time() ?>"></script>
-        <script src="../js/highcharts/code/highcharts.js"></script>
+
+    <?php
+        // Use these HighCharts scripts
+        $scripts = [
+                'highcharts.js',
+        ];
+
+        // Display the highcharts javascript source
+        display_highcharts_javascript($scripts);
+
+?>
+
         <script src="../js/bootstrap-multiselect.js"></script>
         <script src="../js/jquery.blockUI.min.js"></script>
 
@@ -316,6 +327,9 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
         <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
         <script src="../js/selectize.min.js"></script>
+        <style>
+            .top-panel .span5, .bottom-panel .span5{max-width: 210px;}
+        </style>
 
         <?php
             setup_favicon("..");
@@ -339,15 +353,33 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
             <div class="span3"> </div>
             <div class="span9">
-
-              <div class="tab add" id='add-tab'>
-                <span>+</span>
-              </div>
-              <div class="tab-append">
-                <div class="tab selected form-tab tab-show new" id="tab"><div><span><?php echo $escaper->escapeHtml($lang['NewRisk']); ?> (1)</span></div>
-                  <button class="close tab-close" aria-label="Close" data-id=""><i class="fa fa-close"></i></button>
-                </div>
-              </div>
+                <?php 
+                if(customization_extra()) {
+                    $tab_str = "<div class=\"tab-append\">";
+                    if(organizational_hierarchy_extra()) {
+                        require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
+                        $template_groups = get_assigned_template_group_by_user_id($_SESSION['uid'], "risk");
+                    } else {
+                        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                        $template_groups = get_custom_template_groups('risk');
+                    }
+                    foreach($template_groups as $index=>$template_group){
+                        $selected = $index == 0?"selected":""; 
+                        $tab_str .= "<div class=\"tab tempate_tab {$selected}\" data-content=\"#template_group_".$template_group["id"]."\"><div><span>".$escaper->escapeHtml($template_group["name"])."</span></div></div>\n";
+                    }
+                    $tab_str .= "</div>\n";
+                    echo $tab_str;
+                } else { 
+                ?>
+                    <div class="tab add" id='add-tab'>
+                        <span>+</span>
+                    </div>
+                    <div class="tab-append">
+                        <div class="tab selected form-tab tab-show new" id="tab"><div><span><?php echo $escaper->escapeHtml($lang['NewRisk']); ?> (1)</span></div>
+                          <button class="close tab-close" aria-label="Close" data-id=""><i class="fa fa-close"></i></button>
+                        </div>
+                    </div>
+                <?php } ?>
             </div>
 
           </div>
@@ -360,14 +392,31 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
               <?php view_risk_management_menu("SubmitYourRisks"); ?>
             </div>
             <div class="span9">
-
-              <div class="row-fluid" id="tab-content-container">
-                <div class='tab-data' id="tab-container">
-
+                <div class="row-fluid" id="tab-content-container">
                     <?php
+                    if(customization_extra()) {
+                        if(organizational_hierarchy_extra()) {
+                            require_once(realpath(__DIR__ . '/../extras/organizational_hierarchy/index.php'));
+                            $template_groups = get_assigned_template_group_by_user_id($_SESSION['uid'], "risk");
+                        } else {
+                            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                            $template_groups = get_custom_template_groups('risk');
+                        }
+                        foreach($template_groups as $index=>$template_group){
+                            $hide = $index == 0?"":"hide"; 
+                            $template_group_id = $template_group["id"];
+                            echo "<div id=\"template_group_".$template_group["id"]."\" class=\"tab-data {$hide}\">";
+                            include(realpath(__DIR__ . '/partials/add.php'));
+                            echo "</div>\n";
+                        }
+                    } else {
+                        $template_group_id = 1;
+                        echo  "<div class='tab-data' id='tab-container'>";
                         include(realpath(__DIR__ . '/partials/add.php'));
+                        echo "</div>";
+                    }
                     ?>
-                  
+                      
                 </div>
               </div>
 
@@ -386,7 +435,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <script>
             $(document).ready(function() {
 
-                setupAssetsAssetGroupsWidget($('#tab-container select.assets-asset-groups-select'));
+                setupAssetsAssetGroupsWidget($('#tab-content-container select.assets-asset-groups-select'));
                 
                 window.onbeforeunload = function() {
                     if ($('#subject:enabled').val() != ''){
@@ -408,7 +457,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     var form = $('#tab-append-div').html();
 
                     $('.tab-show').removeClass('selected');
-                    $("div.tab-append").prepend(
+                    $("div.tab-append").append(
                         "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span><?php echo $escaper->escapeHtml($lang['NewRisk']); ?> ("+num_tabs+")</span></div>"
                         +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
                         +"<i class='fa fa-close'></i>"
@@ -446,6 +495,19 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
                 focus_add_css_class("#RiskAssessmentTitle", "#assessment", $("#tab-container"));
                 focus_add_css_class("#NotesTitle", "#notes", $("#tab-container"));
+
+                if(typeof max_upload_size == "undefined") max_upload_size = 0;
+                if(typeof fileTooBigMessage == "undefined") fileTooBigMessage = "";
+
+                $(".tempate_tab").click(function(){
+                    $(".tempate_tab").removeClass("selected");
+                    $(this).addClass("selected");
+                    $("#tab-content-container .tab-data").hide();
+                    var tabContentId = $(this).data('content');
+                    $(tabContentId).removeClass("hide").show();
+                    return true;
+                });
+
             });
 
         </script>

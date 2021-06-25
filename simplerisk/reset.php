@@ -8,10 +8,10 @@ require_once(realpath(__DIR__ . '/includes/functions.php'));
 require_once(realpath(__DIR__ . '/includes/authenticate.php'));
 require_once(realpath(__DIR__ . '/includes/display.php'));
 require_once(realpath(__DIR__ . '/includes/alerts.php'));
+require_once(realpath(__DIR__ . '/vendor/autoload.php'));
 
-// Include Zend Escaper for HTML Output Encoding
-require_once(realpath(__DIR__ . '/includes/Component_ZendEscaper/Escaper.php'));
-$escaper = new Zend\Escaper\Escaper('utf-8');
+// Include Laminas Escaper for HTML Output Encoding
+$escaper = new Laminas\Escaper\Escaper('utf-8');
 
 // Add various security headers
 add_security_headers();
@@ -53,11 +53,31 @@ if (isset($_POST['send_reset_email']))
 
             $username = $_POST['user'];
 
-            // Try to generate a password reset token
-            password_reset_by_username($username);
+            // Open the database connection
+            $db = db_open();
 
-            // Display an alert
-            set_alert(true, "good", $lang['PassworResetEmailSent']);
+	    // Get any password resets for this user in the past 10 minutes
+	    $stmt = $db->prepare("SELECT * FROM password_reset WHERE username=:username AND timestamp >= NOW() - INTERVAL 10 MINUTE;");
+	    $stmt->bindParam(":username", $username, PDO::PARAM_STR, 200);
+	    $stmt->execute();
+	    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+	    // If we have password resets in the past 10 minutes
+	    if (count($results) != 0)
+	    {
+                set_alert(true, "bad", $lang['PasswordResetRequestsExceeded']);
+	    }
+	    else
+	    {
+                // Try to generate a password reset token
+                password_reset_by_username($username);
+
+                // Display an alert
+                set_alert(true, "good", $lang['PassworResetEmailSent']);
+	    }
+
+	    // Close the database connection
+            db_close($db);
         } else {
             set_alert(true, "bad", $lang['PassworResetRequestFailed']);
         }
