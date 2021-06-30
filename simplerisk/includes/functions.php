@@ -8700,12 +8700,13 @@ function get_value_by_name($table, $name, $return_name = false)
 
         // Store the list in the array
         $GLOBALS[$table_key] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
 
         // Close the database connection
         db_close($db);
 
-        if($table == 'frameworks'){
+        global $tables_where_name_is_encrypted;
+
+        if (in_array($table, $tables_where_name_is_encrypted)) {
             foreach($GLOBALS[$table_key] as &$row){
                 $row['name'] = try_decrypt($row['name']);
             }
@@ -9586,23 +9587,23 @@ function update_mitigation($risk_id, $post)
             switch($key)
             {
                 default:
-                    $original_value = $risk[0][$key];
+                    $original_value = $mitigation[0][$key];
                     $updated_value = $value;
                 break;
                 case "planning_strategy":
-                    $original_value = get_table_value_by_id("planning_strategy", $risk[0][$key]);
+                    $original_value = get_table_value_by_id("planning_strategy", $mitigation[0][$key]);
                     $updated_value = get_table_value_by_id("planning_strategy", $value);
                 break;
                 case "mitigation_effort":
-                    $original_value = get_table_value_by_id("mitigation_effort", $risk[0][$key]);
+                    $original_value = get_table_value_by_id("mitigation_effort", $mitigation[0][$key]);
                     $updated_value = get_table_value_by_id("mitigation_effort", $value);
                 break;
                 case "mitigation_cost":
-                    $original_value = try_decrypt(get_table_value_by_id("frameworks", $risk[0][$key]));
-                    $updated_value = try_decrypt(get_table_value_by_id("frameworks", $value));
+                    $original_value = get_asset_value_by_id($mitigation[0][$key]);
+                    $updated_value = get_asset_value_by_id($value);
                 break;
                 case "mitigation_owner":
-                    $owner_original = get_user_by_id($risk[0][$key]);
+                    $owner_original = get_user_by_id($mitigation[0][$key]);
                     $owner_updated = get_user_by_id($value);
                     $original_value = $owner_original["name"];
                     $updated_value = $owner_updated["name"];
@@ -15002,28 +15003,89 @@ function get_contributing_id_by_subject($subject)
     return false;
 }
 
+/********************************************************************************
+ * FUNCTION: GET CONTRIBUTING RISKS - MAX CONTRIBUTING IMPACT MAP               *
+ * Get the array of all the contributing risk ids and their maximum associated  *
+ * contributing impact values to be used as default when importing              *
+ *******************************************************************************/
+function get_contributing_risks_max_contributing_impact_map() {
+
+    // Return the saved mapping to make sure it's only created once/request
+    if(!empty($GLOBALS['contributing_risks_max_contributing_impact_map'])){
+        return $GLOBALS['contributing_risks_max_contributing_impact_map'];
+    }
+
+    //Create the mapping if it wasn't created yet
+
+    $db = db_open();
+    $ContributingImpacts = [];
+
+    // Iterate through all the contributing risks
+    foreach(get_contributing_risks() as $contributing_risk){
+
+        $contributing_risk_id = $contributing_risk['id'];
+
+        // get the maximum impact value associated to that contributing risk
+        $stmt = $db->prepare("SELECT MAX(`value`) FROM `contributing_risks_impact` WHERE `contributing_risks_id` = :contributing_risks_id;");
+        $stmt->bindParam(":contributing_risks_id", $contributing_risk_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $impact = $stmt->fetch(PDO::FETCH_COLUMN, 0);
+
+        // Store the Contributing risk id -> Contributing impact
+        $ContributingImpacts[$contributing_risk_id] = $impact;
+    }
+    db_close($db);
+
+    // Store the mapping to make sure it's only built once/request
+    $GLOBALS['contributing_risks_max_contributing_impact_map'] = $ContributingImpacts;
+    return $GLOBALS['contributing_risks_max_contributing_impact_map'];
+}
+
 /*******************************************************************************
  * FUNCTION: GET CONTRIBUTING IMPACTS BY CONTRIBUTING SUBJECT AND IMPACT NAMES *
  *******************************************************************************/
-function get_contributing_impacts_by_subjectimpact_names($subject_impact_names)
-{
-    // if subject and impact names is emtpty, return []
-    if(!$subject_impact_names)
-    {
-        return [];
+function get_contributing_impacts_by_subjectimpact_names($subject_impact_names) {
+
+    // Open the database connection
+    $db = db_open();
+
+    // Set initial value to Contributing Impacts(List of all the Contributing Risks and their max Contributing Impact values)
+    $ContributingImpacts = get_contributing_risks_max_contributing_impact_map();
+
+    // if subject and impact names is emtpty, return the default max values
+    if(!$subject_impact_names) {
+        return $ContributingImpacts;
     }
-    
-    // Set initial value to Contributing Impacts
-    $ContributingImpacts = [];
-    
+
     $subject_impact_names_arr = explode(",", $subject_impact_names);
     foreach($subject_impact_names_arr as $subject_impact_name){
         list($subject, $impact_name) = explode("_", $subject_impact_name);
         $contributing_risk_id = get_contributing_id_by_subject($subject);
-        $impact = get_value_by_name("impact", $impact_name);
+
+        // If it's not an existing contributing risk, then skip it
+        if (!$contributing_risk_id) {
+            continue;
+        }
+
+        // get contributing impact
+        $stmt = $db->prepare("SELECT `value` FROM `contributing_risks_impact` WHERE contributing_risks_id = :contributing_risks_id  AND name = :name;");
+        $stmt->bindParam(":contributing_risks_id", $contributing_risk_id, PDO::PARAM_INT);
+        $stmt->bindParam(":name", $impact_name, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $impact = $stmt->fetch(PDO::FETCH_COLUMN, 0);
+
+        // If it does not exist, then use the default(the contributing impact for that contributing risk with the highest value)
+        if(!$impact) {
+            continue;
+        }
+
         $ContributingImpacts[$contributing_risk_id] = $impact;
     }
-    
+
+    // Close the database connection
+    db_close($db);
+
     return $ContributingImpacts;
 }
 

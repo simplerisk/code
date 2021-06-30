@@ -524,7 +524,7 @@ function check_mysql_permission($permission)
 function check_php_extensions()
 {
 	// List of extensions to check for
-	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom", "curl");
+	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom", "curl", "posix");
 
 	// Create an empty array
 	$array = array();

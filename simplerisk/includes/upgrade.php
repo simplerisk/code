@@ -148,6 +148,7 @@ $releases = array(
 	"20210121-001",
 	"20210305-001",
 	"20210625-001",
+	"20210630-001",
 );
 
 /*************************
@@ -5536,47 +5537,46 @@ function upgrade_from_20210305001($db)
         echo "Adding a table for contributing risks likelihood.<br />\n";
         $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `contributing_risks_likelihood` (`id` int(11) NOT NULL AUTO_INCREMENT, `value` int(11) NOT NULL, `name` varchar(100) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
-    }
 
-    echo "Adding current levels from the existing Classic Risk Likelihood to 'contributing_risks_likelihood'.<br />\n";
-    $stmt = $db->prepare("SELECT * FROM `likelihood` ORDER BY `value`;");
-    $stmt->execute();
-    $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($array as $row)
-    {
-        $stmt = $db->prepare("INSERT INTO `contributing_risks_likelihood` (`value`, `name`) VALUES (:value, :name);");
-        $stmt->bindParam(":value", $row['value']);
-        $stmt->bindParam(":name", $row['name']);
+        echo "Adding current levels from the existing Classic Risk Likelihood to 'contributing_risks_likelihood'.<br />\n";
+        $stmt = $db->prepare("SELECT * FROM `likelihood` ORDER BY `value`;");
         $stmt->execute();
+        $array = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($array as $row)
+        {
+            $stmt = $db->prepare("INSERT INTO `contributing_risks_likelihood` (`value`, `name`) VALUES (:value, :name);");
+            $stmt->bindParam(":value", $row['value']);
+            $stmt->bindParam(":name", $row['name']);
+            $stmt->execute();
+        }
     }
-
     // Add contributing_risks_impact table
     if (!table_exists('contributing_risks_impact')) {
 
         echo "Adding a table for contributing risks impact.<br />\n";
         $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `contributing_risks_impact` (`id` int(11) NOT NULL AUTO_INCREMENT, `contributing_risks_id` int(11) NOT NULL, `value` int(11) NOT NULL, `name` varchar(100) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
-    }
 
-    echo "Adding current levels from the existing Classic Risk Impact to 'contributing_risks_impact'.<br />\n";
-    $stmt = $db->prepare("SELECT * FROM `impact` ORDER BY `value`;");
-    $stmt->execute();
-    $impacts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $stmt = $db->prepare("SELECT * FROM `contributing_risks` ORDER BY `id`;");
-    $stmt->execute();
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($impacts as $impact)
-    {
-        foreach($rows as $row){
-            $stmt = $db->prepare("INSERT INTO `contributing_risks_impact` (`contributing_risks_id`, `value`, `name`) VALUES (:contributing_risks_id, :value, :name);");
-            $stmt->bindParam(":contributing_risks_id", $row['id']);
-            $stmt->bindParam(":value", $impact['value']);
-            $stmt->bindParam(":name", $impact['name']);
-            $stmt->execute();
+        echo "Adding current levels from the existing Classic Risk Impact to 'contributing_risks_impact'.<br />\n";
+        $stmt = $db->prepare("SELECT * FROM `impact` ORDER BY `value`;");
+        $stmt->execute();
+        $impacts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+        $stmt = $db->prepare("SELECT * FROM `contributing_risks` ORDER BY `id`;");
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($impacts as $impact)
+        {
+            foreach($rows as $row){
+                $stmt = $db->prepare("INSERT INTO `contributing_risks_impact` (`contributing_risks_id`, `value`, `name`) VALUES (:contributing_risks_id, :value, :name);");
+                $stmt->bindParam(":contributing_risks_id", $row['id']);
+                $stmt->bindParam(":value", $impact['value']);
+                $stmt->bindParam(":name", $impact['name']);
+                $stmt->execute();
+            }
         }
     }
-
+    
     // Add default current maturity setting
     echo "Adding default current maturity setting.<br />\n";
     update_or_insert_setting("default_current_maturity", 0);
@@ -5658,6 +5658,44 @@ function upgrade_from_20210305001($db)
     echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 }
 
+/***************************************
+ * FUNCTION: UPGRADE FROM 20210625-001 *
+ ***************************************/
+function upgrade_from_20210625001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20210625-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20210630-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Remove unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = array(
+	    realpath(__DIR__ . '/../includes/Component_ZendEscaper'),
+	    realpath(__DIR__ . '/../includes/PHPMailer'),
+    );
+
+    foreach ($remove_files as $directory)
+    {
+        // If the file exists
+        if (is_dir($directory))
+        {
+	    // Remove the directory
+	    delete_dir($directory);
+        }
+    }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
 
 /******************************
  * FUNCTION: UPGRADE DATABASE *

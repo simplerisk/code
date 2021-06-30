@@ -747,7 +747,7 @@ function get_framework_controls_by_filter($control_class="all", $control_phase="
         $sql .= " AND 0 ";
     }
 
-    $sql .= " GROUP BY t1.id; ";
+    $sql .= " GROUP BY t1.id ORDER BY t1.id; ";
 
     $stmt = $db->prepare($sql);
 

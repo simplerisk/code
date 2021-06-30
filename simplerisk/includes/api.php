@@ -2494,7 +2494,7 @@ function scoringHistory()
     if (isset($_GET['id']))
     {
         //sleep(3);
-        $risk_id= $_GET{'id'};
+        $risk_id = $_GET['id'];
 
         // Check whether the user should be able to access this risk_id
         $access = check_access_for_risk($risk_id);
@@ -2532,7 +2532,7 @@ function residualScoringHistory()
     if (isset($_GET['id']))
     {
         //sleep(3);
-        $risk_id= $_GET{'id'};
+        $risk_id= $_GET['id'];
 
         // Check whether the user should be able to access this risk_id
         $access = check_access_for_risk($risk_id);
@@ -3479,7 +3479,6 @@ function getMitigationControlsDatatable(){
                 break;
             }
         }
-        $validation = get_mitigation_to_controls($mitigation_id,$control['id']);
         $html = "<div class='control-block item-block clearfix'>\n";
             $html .= "<div class='control-block--header clearfix' data-project=''>\n";
 
@@ -3540,7 +3539,8 @@ function getMitigationControlsDatatable(){
                         $html .= "</div>\n";
                     $html .= "</div>\n";
                 $html .= "</div>\n";
-
+        $validation = get_mitigation_to_controls($mitigation_id,$control['id']);
+        if ($validation) {
                 $html .= "<div class='container-fluid'>\n";
                 $validation_mitigation_percent = ($validation["validation_mitigation_percent"] >= 0 && $validation["validation_mitigation_percent"] <= 100) ? $validation["validation_mitigation_percent"] : 0;
                 if($flag == "edit"){
@@ -3599,7 +3599,7 @@ function getMitigationControlsDatatable(){
                     $html .= "</div>\n";
                 }
                 $html .= "</div>\n";
-
+        }
             $html .= "</div>\n";
         $html .= "</div>\n";
         $data[] = [$html];
