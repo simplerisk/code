@@ -86,7 +86,7 @@ else
 	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
         <link rel="stylesheet" href="../css/jquery.dataTables.css">
         <link rel="stylesheet" href="../css/style.css">
-        <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
         <link rel="stylesheet" href="../css/side-navigation.css">
         <link rel="stylesheet" href="../css/selectize.bootstrap3.css">

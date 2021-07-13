@@ -18,7 +18,7 @@ function refreshFilelist($parent, currentButtonId){
         
         filesHtml += "<li >\
             <div class='file-name'>"+name+"</div>\
-            <a href='#' class='remove-file' data-id='file-upload-"+filesLength+"'><i class='fa fa-remove'></i></a>\
+            <a href='#' class='remove-file' data-id='file-upload-"+filesLength+"'><i class='fa fa-times'></i></a>\
         </li>";
         filesLength++;
     });

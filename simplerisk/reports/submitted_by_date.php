@@ -45,7 +45,7 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
     <link rel="stylesheet" href="../css/bootstrap.css">
     <link rel="stylesheet" href="../css/bootstrap-responsive.css">
 
-    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/side-navigation.css">
     <?php

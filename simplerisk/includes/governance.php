@@ -93,7 +93,7 @@ function get_frameworks_as_treegrid($status){
         $framework['actions'] = "
             <div class=\"text-center\">
                 <a class=\"framework-block--edit\" data-id=\"" . $framework_value . "\">
-                    <i class=\"fa fa-pencil-square-o\"></i>
+                    <i class=\"fa fa-edit\"></i>
                 </a>"
                     . ($complianceforge_scf_framework_id && $complianceforge_scf_framework_id === $framework_value ? "" : "&nbsp;&nbsp;&nbsp;
                 <a class=\"framework-block--delete\" data-id=\"" . $framework_value . "\">
@@ -1859,6 +1859,9 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
         $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
         $stmt->execute();
 
+        $message = "A new document named \"" . $escaper->escapeHtml($document_name) . "\" was created by the \"" . $_SESSION['user'] . "\" user.";
+        write_log(1000, $_SESSION['uid'], $message, "document");
+
         return $document_id;
     }
 }
@@ -1931,6 +1934,9 @@ function update_document($document_id, $document_type, $document_name, $control_
         $stmt->execute();
     }
 
+    $message = "A document \"" . $escaper->escapeHtml($document_name) . "\"(ID:".$document_id.") was updated by the \"" . $_SESSION['user'] . "\" user.";
+    write_log(1000, $_SESSION['uid'], $message, "document");
+
     return $document_id;
 }
 
@@ -1965,6 +1971,9 @@ function delete_document($document_id, $version=null)
         $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
         $stmt->execute();
     }
+
+    $message = "The existing document ID \"".$document_id."\" was deleted by the \"" . $_SESSION['user'] . "\" user.";
+    write_log(1000, $_SESSION['uid'], $message, "document");
     
     // Close the database connection
     db_close($db);
@@ -2143,7 +2152,7 @@ function get_documents_as_treegrid($type){
         $document['status'] = $escaper->escapeHtml($document['status']);
         $document['creation_date'] = format_date($document['creation_date']);
         $document['approval_date'] = format_date($document['approval_date']);
-        $document['actions'] = "<div class=\"text-center\"><a class=\"framework-block--edit\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;<a class=\"framework-block--delete\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a></div>";
+        $document['actions'] = "<div class=\"text-center\"><a class=\"framework-block--edit\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-edit\"></i></a>&nbsp;&nbsp;&nbsp;<a class=\"framework-block--delete\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a></div>";
         $filtered_documents[] = $document;
     }
     $results = array();
@@ -2361,7 +2370,7 @@ function get_exceptions_as_treegrid($type){
             else $approve_action = "";
 
             if ($update)
-                $updateAction = "<a class='exception--edit' data-id='".((int)$row['value'])."' data-type='{$row['type']}'><i class='fa fa-pencil-square-o'></i></a>&nbsp;&nbsp;&nbsp;";
+                $updateAction = "<a class='exception--edit' data-id='".((int)$row['value'])."' data-type='{$row['type']}'><i class='fa fa-edit'></i></a>&nbsp;&nbsp;&nbsp;";
             else $updateAction = "";
 
             if ($delete)

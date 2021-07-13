@@ -51,7 +51,7 @@ $time = isset($_GET['time']) ? $_GET['time'] : "day";
     <link rel="stylesheet" href="../css/jquery.dataTables.css">
     <link rel="stylesheet" href="../css/daterangepicker.css">
 
-    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/side-navigation.css">
     <?php

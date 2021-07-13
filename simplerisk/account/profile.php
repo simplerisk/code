@@ -158,7 +158,7 @@ require_once(language_file());
     <link rel="stylesheet" href="../css/divshot-util.css">
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
-    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/side-navigation.css">
     
@@ -213,7 +213,8 @@ require_once(language_file());
         }
         
         .admin-info:before {
-            font-family: "FontAwesome";
+            font-family: "Font Awesome 5 Free";
+            font-weight: "900";
             content: "\f05A";
             display: inline-block;
             padding-right: 3px;

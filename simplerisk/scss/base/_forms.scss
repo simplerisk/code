@@ -1,0 +1,254 @@
+/*--------------------------------------------------------------
+ ## Form and From Related Element Styles
+ --------------------------------------------------------------*/
+
+input[type="text"],
+input[type="url"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="email"],
+input[type="date"],
+input[type="text"]{
+
+    border: 1px solid $border-color;
+    padding: 10px;
+    border-radius: 2px;
+    box-shadow: none;
+    height: 35px;
+    width: 100%;
+    outline: none;
+    max-width: 300px;
+
+    &:disabled{
+        background-color: transparent;
+        border: 1px solid transparent;
+        font-weight: 700;
+        padding-left: 10px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+}
+
+input[type="text"],
+input[type="url"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="email"],
+input[type="date"],
+input[type="text"]{
+
+}
+
+select{
+    border-radius: 2px;
+    border: 1px solid $border-color;
+    height: 35px;
+    width: 100% !important;
+    outline: none !important;
+    font-family: $font-1;
+    max-width: 300px;
+
+    &:disabled{
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-color: transparent;
+        border: transparent;
+        font-weight: 700 !important;
+        padding-left: 10px;
+        cursor: default;
+    }
+    
+	// The select element is set to required
+	// as long as the selected options value
+	// is empty the element is not valid.
+	&:invalid {
+		background-color: lightgrey;
+	}
+
+	// Styling for browsers which do support
+	// styling select option elements directly
+	[disabled] {
+		background-color: lightgrey;
+	}
+}
+
+textarea:disabled{
+    @extend input, [type="text"], :disabled;
+    //@extend input[type="text"]:disabled;
+
+}
+textarea:focus{
+    @extend input, [type="text"], :focus;
+    //@extend input[type="text"]:focus;
+}
+textarea,
+textarea.form-control{
+
+
+    resize: both;
+    overflow: auto;
+    height: 100px;
+
+    &:disabled{
+        resize:both;
+        padding: 5px 10px;
+        transition: inherit !important;
+    }
+
+}
+
+
+
+.hidden-checkbox,
+.hidden-radio{
+  display: none;
+}
+
+.hidden-checkbox+label,
+.hidden-radio+label{
+  position: relative;
+  padding-left: 25px;
+    font-weight: 400;
+}
+
+.hidden-checkbox+label:before,
+.hidden-radio+label:before{
+  content:"";
+  display: block;
+  border:1px solid #ddd;
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  width:20px;
+  height:20px;
+  top:2px;
+  left:0px;
+  position: absolute;
+  text-align: center;
+  line-height:18px;
+  color:$color-3;
+}
+
+.hidden-radio+label:before{
+  border-radius:15px;
+    line-height: 21px;
+}
+
+.hidden-checkbox:checked+label:before{
+  content:"\f00c";
+}
+
+.hidden-radio:checked+label:before{
+  content:"\f111";
+}
+
+
+td[align="center"] .hidden-checkbox+label:before,
+td[align="center"] .hidden-radio+label:before{
+    left: 50%;
+    margin-left: -10px;
+}
+
+input[type="text"]+input[type="submit"],textarea + input[type="submit"],
+textarea.form-control + input[type="submit"],
+select+input[type="submit"]{
+    margin-top: -10px;
+}
+
+
+.hidden-file-upload{
+    visibility: hidden;
+    display: none;
+}
+
+
+.file-uploader{
+    .file-count{
+        margin-left: 10px;
+        font-size: 13px;
+    }
+
+    .file-list, .exist-files{
+        margin-top: 10px;
+        list-style: none;
+        margin-left: 0px;
+        color: #187bd0;
+        font-size: 14px;
+        >li{
+            margin-bottom: 10px;
+            .file-name{
+                float: left;
+                width: calc(100% - 30px);
+                word-wrap: break-word;
+            }
+            .remove-file{
+                float: right;
+                font-size: 20px;
+            }
+            &:after{
+                content:"";
+                clear:both;
+                display: table;
+            }
+        }
+    }
+
+}
+
+
+.delete-link-check{
+    margin: -3px 0px 0px 10px !important;
+}
+
+.multiselect-holder{
+    margin-bottom: 10px;
+}
+
+textarea:focus,
+select:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="datetime"]:focus,
+input[type="datetime-local"]:focus,
+input[type="date"]:focus,
+input[type="month"]:focus,
+input[type="time"]:focus,
+input[type="week"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="color"]:focus,
+.uneditable-input:focus {
+    border-color: rgba(82, 168, 236, 0.5) !important;
+    outline: 0;
+    outline: none;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 5px rgba(82, 168, 236, 0.5) !important;
+    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 5px rgba(82, 168, 236, 0.5) !important;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 5px rgba(82, 168, 236, 0.5) !important;
+}
+
+textarea.saml_metadata_xml{
+    width: 100%;
+    min-height: 150px;
+    resize: none;
+    resize:vertical;
+}
+
+.large-control{
+    max-width: none !important;
+}
+
+.full-width{
+    width: 100%;
+    max-width: none;
+}
+input, select, textarea, button.multiselect{
+    &.error{
+        border: 2px solid red;
+    }
+}

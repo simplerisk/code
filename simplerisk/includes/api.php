@@ -52,7 +52,7 @@ function is_authenticated()
 function is_session_authenticated()
 {
     // If the session is not authenticated
-    if (!isset($_SESSION["access"]) || $_SESSION["access"] != "1")
+    if (!isset($_SESSION["access"]) || ($_SESSION["access"] != "1" && $_SESSION["access"] != "granted"))
     {
         return false;
     }
@@ -3333,7 +3333,7 @@ function getFrameworkControlsDatatable(){
                     break;
                 }
             }
-            $edit = '<a href="#" class="control-block--edit pull-right" title="'.$escaper->escapeHtml($lang["Edit"]).'" data-id="'.$escaper->escapeHtml($control['id']).'"><i class="fa fa-pencil-square-o"></i></a>';
+            $edit = '<a href="#" class="control-block--edit pull-right" title="'.$escaper->escapeHtml($lang["Edit"]).'" data-id="'.$escaper->escapeHtml($control['id']).'"><i class="fa fa-edit"></i></a>';
             // Remove clone button if user has no permission for add new controls
             if(empty($_SESSION['add_new_controls']))
             {
@@ -4307,7 +4307,7 @@ function getDefineTestsResponse()
                                     $last_date = format_date($test['last_date']);
                                     $next_date = format_date($test['next_date']);
                                     if(isset($_SESSION["edit_tests"]) && $_SESSION["edit_tests"] == 1){
-                                        $edit_row = "<a data-id='".$escaper->escapeHtml($test['id'])."' class='edit-test' data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-pencil-square-o\"></i></a>";
+                                        $edit_row = "<a data-id='".$escaper->escapeHtml($test['id'])."' class='edit-test' data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-edit\"></i></a>";
                                     } else $edit_row = "";
                                     if(isset($_SESSION["delete_tests"]) && $_SESSION["delete_tests"] == 1){
                                         $delete_row = "<a class='delete-row' data-toggle=\"modal\" data-id=\"{$escaper->escapeHtml($test['id'])}\"><i class=\"fa fa-trash\"></i></a>";
@@ -5256,7 +5256,7 @@ function getTabularDocumentsResponse()
                 $document['actions'] = "<div class=\"text-center\">&nbsp;&nbsp;&nbsp;";
                 if(!empty($_SESSION['modify_documentation']))
                 {
-                    $document['actions'] .= "<a class=\"document--edit\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-pencil-square-o\"></i></a>&nbsp;&nbsp;&nbsp;";
+                    $document['actions'] .= "<a class=\"document--edit\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-edit\"></i></a>&nbsp;&nbsp;&nbsp;";
                 }
                 if(!empty($_SESSION['delete_documentation']))
                 {
@@ -8785,24 +8785,41 @@ function one_click_upgrade() {
         if ($need_update_db) {
             if ($is_upgrade_mode_extra) {
                 list($status, $result) = call_extra_api_functionality('upgrade', 'upgrade', 'core_db');
-                
+
                 // Check the results
                 if ($status !== 200) {
                     // Print the error message if the call failed for some reason and stop the upgrade
-                    stream_write_error($result['status_message']);
+                    // Parsing the database upgrade's message
+                    if ($result && !empty($result['status_message'])) {
+                        $messages = preg_split("/\s*<br\s*\/>\s*|\s*\\\\n\s*/", $result['status_message'], 0, PREG_SPLIT_NO_EMPTY);
+                        $last = count($messages) - 1;
+                        foreach($messages as $index => $message) {
+                            if($index == $last) { // the last message is the actual error message
+                                stream_write_error($message);
+                            } else {
+                                stream_write($message);
+                            }
+                        }
+                    }
                     return;
                 }
-                // Print the success message
-                stream_write($result['status_message']);
+
+                // Parsing the database upgrade's message
+                if ($result && !empty($result['status_message'])) {
+                    $messages = preg_split("/\s*<br\s*\/>\s*|\s*\\\\n\s*/", $result['status_message'], 0, PREG_SPLIT_NO_EMPTY);
+                    foreach($messages as $message) {
+                        stream_write($message);
+                    }
+                }
             } else {
                 require_once(realpath(__DIR__ . '/upgrade.php'));
-                
+
                 // Upgrade the database
                 upgrade_database();
-                
+
                 // Convert tables to InnoDB
                 convert_tables_to_innodb();
-                
+
                 // Convert tables to utf8_general_ci
                 convert_tables_to_utf8();
             }
@@ -9327,7 +9344,7 @@ function getRiskCatalogDatatableAPI()
                 $escaper->escapeHtml($risk['name']),
                 $escaper->escapeHtml($risk['description']),
                 $escaper->escapeHtml($risk['function_name']),
-                "<a href='javascript:void();' class='edit_risk_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-pencil-square-o'></i></a>&nbsp;&nbsp;&nbsp;<a href='javascript:void();' class='delete_risk_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-trash'></i></a>",
+                "<a href='javascript:void();' class='edit_risk_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-edit'></i></a>&nbsp;&nbsp;&nbsp;<a href='javascript:void();' class='delete_risk_catalog' data-id='".$risk['id']."' style='display:inline;'><i class='fa fa-trash'></i></a>",
             );
         }
         $draw = $escaper->escapeHtml($_GET['draw']);
@@ -9364,7 +9381,7 @@ function getThreatCatalogDatatableAPI()
                 $escaper->escapeHtml($threat['number']),
                 $escaper->escapeHtml($threat['name']),
                 $escaper->escapeHtml($threat['description']),
-                "<a href='javascript:void();' class='edit_threat_catalog' data-id='".$threat['id']."' style='display:inline;'><i class='fa fa-pencil-square-o'></i></a>&nbsp;&nbsp;&nbsp;<a href='javascript:void();' class='delete_threat_catalog' data-id='".$threat['id']."' style='display:inline;'><i class='fa fa-trash'></i></a>",
+                "<a href='javascript:void();' class='edit_threat_catalog' data-id='".$threat['id']."' style='display:inline;'><i class='fa fa-edit'></i></a>&nbsp;&nbsp;&nbsp;<a href='javascript:void();' class='delete_threat_catalog' data-id='".$threat['id']."' style='display:inline;'><i class='fa fa-trash'></i></a>",
             );
         }
         $draw = $escaper->escapeHtml($_GET['draw']);

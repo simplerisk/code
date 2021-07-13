@@ -321,7 +321,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <link rel="stylesheet" href="../css/style.css">
         <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
 
-        <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
         <link rel="stylesheet" href="../css/side-navigation.css">
 
@@ -376,7 +376,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     </div>
                     <div class="tab-append">
                         <div class="tab selected form-tab tab-show new" id="tab"><div><span><?php echo $escaper->escapeHtml($lang['NewRisk']); ?> (1)</span></div>
-                          <button class="close tab-close" aria-label="Close" data-id=""><i class="fa fa-close"></i></button>
+                          <button class="close tab-close" aria-label="Close" data-id=""><i class="fa fa-times"></i></button>
                         </div>
                     </div>
                 <?php } ?>
@@ -460,7 +460,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                     $("div.tab-append").append(
                         "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span><?php echo $escaper->escapeHtml($lang['NewRisk']); ?> ("+num_tabs+")</span></div>"
                         +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
-                        +"<i class='fa fa-close'></i>"
+                        +"<i class='fa fa-times'></i>"
                         +"</button>"
                         +"</div>"
                     );

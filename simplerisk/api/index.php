@@ -6,10 +6,10 @@
     // Include required functions file
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
-    require_once(realpath(__DIR__ . '/../includes/epiphany/src/Epi.php'));
     require_once(realpath(__DIR__ . '/../includes/governance.php'));
     require_once(realpath(__DIR__ . '/../includes/compliance.php'));
     require_once(realpath(__DIR__ . '/../includes/api.php'));
+    require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
 
     // Add various security headers except CSP
     add_security_headers(true, true, true, true, false);
@@ -38,9 +38,6 @@
     // If access is authenticated
     if (is_authenticated())
     {
-        // Set the base path for epiphany
-        Epi::setPath('base', realpath(__DIR__ . '/../includes/epiphany/src'));
-
         // Initialize the epiphany api
         Epi::init('api', 'route', 'session');
 
@@ -548,9 +545,6 @@
         // but has a valid questionnaire token.
         // This won't create an authenticated session, but allows questionnaires to
         // serve some data to unauthenticated contacts
-
-        // Set the base path for epiphany
-        Epi::setPath('base', realpath(__DIR__ . '/../includes/epiphany/src'));
 
         // Initialize the epiphany api
         Epi::init('api', 'route', 'session');

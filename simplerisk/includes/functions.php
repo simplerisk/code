@@ -459,6 +459,8 @@ function get_name_value_array_from_text_array($text_array, $delimiter1=",", $del
  *************************************/
 function save_dynamic_selections($type, $name, $custom_display_settings,$custom_selection_settings,$custom_column_filters)
 {
+    global $escaper, $lang;
+
     $custom_display_settings = json_encode($custom_display_settings);
     $custom_selection_settings = json_encode($custom_selection_settings);
     $custom_column_filters = json_encode($custom_column_filters);
@@ -478,6 +480,9 @@ function save_dynamic_selections($type, $name, $custom_display_settings,$custom_
 
     // Close the database connection
     db_close($db);
+
+    $message = "The selections for Dynamic Risk Report named \"" . $escaper->escapeHtml($name) . "\" was created by the \"" . $_SESSION['user'] . "\" user.";
+    write_log(1000, $_SESSION['uid'], $message);
     
     return $db->lastInsertId();
 }
@@ -487,6 +492,8 @@ function save_dynamic_selections($type, $name, $custom_display_settings,$custom_
  ********************************************/
 function delete_dynamic_selection($id)
 {
+    global $escaper, $lang;
+
     // Open the database connection
     $db = db_open();
 
@@ -497,6 +504,9 @@ function delete_dynamic_selection($id)
 
     // Close the database connection
     db_close($db);
+
+    $message = "The selections for Dynamic Risk Report (ID : {$id}) was created by the \"" . $_SESSION['user'] . "\" user.";
+    write_log(1000, $_SESSION['uid'], $message);
 }
 
 /***************************************************
@@ -10848,7 +10858,7 @@ function supporting_documentation($id, $mode = "view", $view_type = 1)
 //                    <a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($file['name']) . "</a>&nbsp;&nbsp;--&nbsp;" . $escaper->escapeHtml($lang['Delete']) . "?<input class=\"delete-link-check active-textfield\" type=\"checkbox\" name=\"delete[]\" value=\"" . $escaper->escapeHtml($file['unique_name']) . "\" /></div>\n";
                 $documentHtml .= "<li>
                     <div class='file-name'><a href=\"download.php?id=" . $escaper->escapeHtml($file['unique_name']) . "\" target=\"_blank\" />" . $escaper->escapeHtml($file['name']) . "</a></div>
-                    <a href='#' class='remove-file' ><i class='fa fa-remove'></i></a>
+                    <a href='#' class='remove-file' ><i class='fa fa-times'></i></a>
                     <input type='hidden' name='unique_names[]' value='".$escaper->escapeHtml($file['unique_name'])."'>
                 </li>";
             }
@@ -14370,7 +14380,7 @@ function set_teams_of_user($user_id, $team_ids) {
                 $team_changes[] = _lang('TeamUpdateAuditLogRemoved', array('teams_removed' => implode(", ", get_names_by_multi_values('team', $teams_to_remove, true))), false);
 
             $message = _lang('UserTeamUpdateAuditLog', array(
-                    'user' => $_SESSION['user'],
+                    'user' => isset($_SESSION['user']) ? $_SESSION['user'] : 'admin', // In case of new users created by the custom authentication logic a user can be created before it has a session
                     'username' => get_name_by_value("user", $user_id),
                     'teams_from' => implode(", ", get_names_by_multi_values('team', $current_teams, true)),
                     'teams_to' => implode(", ", get_names_by_multi_values('team', $team_ids, true)),
@@ -14378,7 +14388,7 @@ function set_teams_of_user($user_id, $team_ids) {
                 ), false
             );
 
-            write_log((int)$user_id + 1000, $_SESSION['uid'], $message, 'user');
+            write_log((int)$user_id + 1000, isset($_SESSION['uid']) ? $_SESSION['uid'] : 0, $message, 'user');
         }
     }
 }
@@ -16815,12 +16825,12 @@ function save_junction_values($tb_name, $first_field_name, $first_id, $second_fi
     db_close($db);
 
     // Audit log
-    $username = $_SESSION['user'];
+    $username = isset($_SESSION['user']) ? $_SESSION['user'] : 'admin'; // because it can happen that this function is used even before the user logs in, thus there's no session
     $message = "New data \"" . $first_id . "\" inserted to `{$first_field_name}` field of `{$tb_name}` table submitted by username \"" . $username . "\".";
     if(count($second_ids)) {
         $message .= "\nNew datas (" . implode(",",$second_ids) . ") inserted to `{$second_field_name}` field of `{$tb_name}` table submitted by username \"" . $username . "\".";
     }
-    write_log(100, $_SESSION['uid'], $message);
+    write_log(100, isset($_SESSION['uid']) ? $_SESSION['uid'] : 0, $message);
 
     return true;
 }

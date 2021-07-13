@@ -2016,7 +2016,7 @@ $lang = array(
     'JiraUpdateDetails' => 'Jira Update Details',
     'YouNeedToSpecifyTheTemplateNameParameter' => 'You need to specify the template name parameter!',
     'QuestionsLackingAubjectEdited' => 'Questions lacking a subject were edited to not attempt to submit a blank risk subject.',
-    'AdminSelfEditWarning' => 'Admin users are unable to remove their own admin permission.',
+    'AdminSelfEditWarning' => 'Admin users are unable to remove their own admin permission or lock themselves out.',
     'Value' => 'Value',
     'ControlDetails' => 'Control Details',
     'CannotDeleteLastItem' => 'Cannot delete the last item.',
@@ -2079,6 +2079,15 @@ $lang = array(
     'BackupInitiatedByUser' => 'Backup initiated by user "{$user_name}".',
     'BackupInitiated' => 'Backup initiated. This can take several minutes to complete.',
     'NoControlsAvailable' => 'No Controls Available',
+    'AdminCantDisableItself' => 'An admin can\'t disable itself.',
+    'AdminCantDeleteItself' => 'An admin can\'t delete itself.',
+    'NoFrameworksFromGithub' => 'There is no specified frameworks imported from github',
+    'AllowDocumentOwnerToSeeDocuments' => 'Allow Document Owner to See Documents',
+    'AllowApproverToSeeDocuments' => 'Allow Approver to See Documents',
+    'AllowAdditionalStakeholdersToSeeDocuments' => 'Allow Additional Stakeholders to See Documents',
+    'AllowAllUsersToSeeDocumentsNotAssignedToTeam' => 'Allow all users to see documents not assigned to a team',
+    'AllowAllUsersToSeeAllDocuments' => 'Allow All Users to See All Documents',
+    'AllowAllUsersToSeeAssetsNotAssignedToTeam' => 'Allow all users to see assets not assigned to a team',
 
     '' => ''
 );

@@ -85,7 +85,7 @@ if (isset($_GET['mitigated']))
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/style.css">
 
-    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/side-navigation.css">
@@ -139,7 +139,7 @@ if (isset($_GET['mitigated']))
                                 <p><?php echo $escaper->escapeHtml($lang['MitigationPlanningHelp']); ?>.</p>
                             </div>
                             <div class="span2 text-right">
-                                <a href="#setting_modal" class="btn" title="<?php echo $escaper->escapeHtml($lang['Settings']);?>" role="button" data-toggle="modal"><i class="fa fa-gear"></i></a>
+                                <a href="#setting_modal" class="btn" title="<?php echo $escaper->escapeHtml($lang['Settings']);?>" role="button" data-toggle="modal"><i class="fa fa-cog"></i></a>
                             </div>
                         </div>
                         <div class="row-fluid">

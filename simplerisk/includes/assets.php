@@ -659,7 +659,7 @@ function display_asset_table_body()
         echo  "<tr id=\"tr-".$asset['id']."\">\n";
         echo  "<td align=\"center\" style='width:1%; white-space:nowrap; padding: 0px;'>\n";
         echo  "<button type='button' class='btn btn-danger btn-xs delete-asset' data-id='".$asset['id']."'>";
-        echo  "<i class='fa fa-remove' style='font-size:24px'></i>";
+        echo  "<i class='fa fa-times' style='font-size:24px'></i>";
         echo  "</button>";
         echo  "<input id=\"".$asset['id']."\" style=\"display: none\" type=\"checkbox\" name=\"assets[]\" value=\"" . $escaper->escapeHtml($asset['id']) . "\" checked />";
         echo  "</td>\n";
@@ -744,7 +744,7 @@ function display_unverified_asset_table()
         echo "</td>\n";
         echo "<td align=\"center\" style='width:1%; white-space:nowrap; padding: 0px;'>\n";
         echo "<button type='button' class='btn btn-danger btn-xs discard-asset' data-id='".$asset['id']."'>";
-        echo "<i class='fa fa-remove' style='font-size:24px'></i>";
+        echo "<i class='fa fa-times' style='font-size:24px'></i>";
         echo "</button>";
         echo "</td>\n";
 
@@ -2433,7 +2433,7 @@ function get_asset_groups_for_treegrid($offset, $rows) {
         $group['name'] = $escaper->escapeHtml($group['name']);
         $group['actions'] = "
             <div class='text-center actions-cell'>
-                <a title='{$update_tooltip}' class='asset-group--update' data-id='{$group['id']}'><i class='fa fa-pencil-square-o'></i></a>
+                <a title='{$update_tooltip}' class='asset-group--update' data-id='{$group['id']}'><i class='fa fa-edit'></i></a>
                 <a title='{$delete_tooltip}' class='asset-group--delete' data-id='{$group['id']}'><i class='fa fa-trash'></i></a>
             </div>";
     }
@@ -2508,7 +2508,7 @@ function get_assets_of_asset_group_for_treegrid($id){
 
         $asset['actions'] = "
             <div class='text-center actions-cell'>
-                <a title='{$remove_tooltip}' class='asset--remove' data-asset-id='{$asset['id']}' data-asset-group-id='{$id}'><i class='fa fa-remove'></i></a>
+                <a title='{$remove_tooltip}' class='asset--remove' data-asset-id='{$asset['id']}' data-asset-group-id='{$id}'><i class='fa fa-times'></i></a>
             </div>";
 
         $asset['id'] = $asset['id'] . '-' . $id;

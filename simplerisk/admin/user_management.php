@@ -204,18 +204,20 @@ if (isset($_POST['disable_user']))
 
     $value = (int)$_POST['enabled_users'];
 
-    // Verify value is an integer
-    if (is_int($value) && $value > 0) {
-        // Disabling user
-        disable_user($value);
-        // Killing its active sessions
-        kill_sessions_of_user($value);
-        // Display an alert
-        set_alert(true, "good", "The user was disabled successfully.");
+    if ($_SESSION['admin'] && $value === (int)$_SESSION['uid']) {
+        set_alert(true, "bad", $lang['AdminCantDisableItself']);
     } else {
-        set_alert(true, "bad", $lang['PleaseSelectUser']);
+        if ($value > 0) {
+            // Disabling user
+            disable_user($value);
+            // Killing its active sessions
+            kill_sessions_of_user($value);
+            // Display an alert
+            set_alert(true, "good", "The user was disabled successfully.");
+        } else {
+            set_alert(true, "bad", $lang['PleaseSelectUser']);
+        }
     }
-
 }
 
 // Check if a user was deleted
@@ -227,39 +229,44 @@ if (isset($_POST['delete_user']))
 
     $value = (int)$_POST['user'];
 
-    // Verify value is an integer
-    if (is_int($value) && $value > 0)
-    {
-        // Delete the user
-        delete_value("user", $value);
-
-        // Remove the leftover associations in the related junction tables
-        cleanup_after_delete("user");
-
-        // If the encryption extra is enabled
-        if (encryption_extra())
-        {
-            // Load the extra
-            require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
-
-            // If the encryption method is mcrypt
-            if (isset($_SESSION['encryption_method']) && $_SESSION['encryption_method'] == "mcrypt")
-            {
-                // Delete the value from the user_enc table
-                delete_user_enc($value);
-
-                // Check to see if all users have now been activated
-                check_all_activated();
-            }
-        }
-
-        // Killing its active sessions
-        kill_sessions_of_user($value);
-        
-        // Display an alert
-        set_alert(true, "good", "The existing user was deleted successfully.");
+    // An admin user can't delete itself
+    if ($_SESSION['admin'] && $value === (int)$_SESSION['uid']) {
+        set_alert(true, "bad", $lang['AdminCantDeleteItself']);
     } else {
-        set_alert(true, "bad", $lang['PleaseSelectUser']);
+
+        if ($value > 0) {
+
+            // Delete the user
+            delete_value("user", $value);
+
+            // Remove the leftover associations in the related junction tables
+            cleanup_after_delete("user");
+
+            // If the encryption extra is enabled
+            if (encryption_extra())
+            {
+                // Load the extra
+                require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+                // If the encryption method is mcrypt
+                if (isset($_SESSION['encryption_method']) && $_SESSION['encryption_method'] == "mcrypt")
+                {
+                    // Delete the value from the user_enc table
+                    delete_user_enc($value);
+
+                    // Check to see if all users have now been activated
+                    check_all_activated();
+                }
+            }
+
+            // Killing its active sessions
+            kill_sessions_of_user($value);
+            
+            // Display an alert
+            set_alert(true, "good", "The existing user was deleted successfully.");
+        } else {
+            set_alert(true, "bad", $lang['PleaseSelectUser']);
+        }
     }
 }
 
@@ -338,7 +345,7 @@ if (isset($_POST['password_policy_update']))
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
 
-    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/side-navigation.css">
     

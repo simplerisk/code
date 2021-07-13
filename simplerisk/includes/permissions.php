@@ -331,7 +331,7 @@ function update_permissions($user_id, $permissions) {
             
             $message = _lang('UserPermissionUpdateAuditLog',
                 array(
-                    'user' => $_SESSION['user'],
+                    'user' => isset($_SESSION['user']) ? $_SESSION['user'] : '', // because it can happen that this function is used by the custom authentication logic when there's no session yet
                     'username' => get_name_by_value("user", $user_id),
                     'permissions_from' => get_names_by_multi_values('permissions', $current_permissions, false, ', ', true),
                     'permissions_to' => get_names_by_multi_values('permissions', $permissions, false, ', ', true),
@@ -340,7 +340,7 @@ function update_permissions($user_id, $permissions) {
                 false
                 );
             
-            write_log((int)$user_id + 1000, $_SESSION['uid'], $message, 'user');
+            write_log((int)$user_id + 1000, isset($_SESSION['uid']) ? $_SESSION['uid'] : 0, $message, 'user');
         }
     }
 }

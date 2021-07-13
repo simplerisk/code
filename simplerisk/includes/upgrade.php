@@ -149,6 +149,7 @@ $releases = array(
 	"20210305-001",
 	"20210625-001",
 	"20210630-001",
+	"20210713-001",
 );
 
 /*************************
@@ -5674,7 +5675,6 @@ function upgrade_from_20210625001($db)
     // Remove unnecessary files
     echo "Removing unnecessary files.<br />\n";
     $remove_files = array(
-	    realpath(__DIR__ . '/../includes/Component_ZendEscaper'),
 	    realpath(__DIR__ . '/../includes/PHPMailer'),
     );
 
@@ -5687,6 +5687,28 @@ function upgrade_from_20210625001($db)
 	    delete_dir($directory);
         }
     }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20210630-001 *
+ ***************************************/
+function upgrade_from_20210630001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20210630-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20210713-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic

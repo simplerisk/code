@@ -154,7 +154,7 @@ if (isset($_POST['password_reset']))
 	<link rel="stylesheet" href="css/divshot-canvas.css">
 	<link rel="stylesheet" href="css/display.css">
 
-    <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="vendor/fortawesome/font-awesome/css/fontawesome.min.css">
     <link rel="stylesheet" href="css/theme.css">
     <?php
         setup_favicon();

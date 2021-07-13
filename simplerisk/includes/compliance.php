@@ -1689,7 +1689,7 @@ function display_compliance_files($ref_id, $ref_type){
         $html .= "
             <li>            
                 <div class=\"file-name\"><a href=\"".$_SESSION['base_url']."/compliance/download.php?id=".$escaper->escapeHtml($file['unique_name'])."\">".$escaper->escapeHtml($file['name'])."</a></div>
-                <a href=\"#\" class=\"remove-file\" data-id=\"file-upload-0\"><i class=\"fa fa-remove\"></i></a>
+                <a href=\"#\" class=\"remove-file\" data-id=\"file-upload-0\"><i class=\"fa fa-times\"></i></a>
                 <input name=\"unique_names[]\" value=\"". $escaper->escapeHtml($file['unique_name']) ."\" type=\"hidden\">
             </li>            
         ";

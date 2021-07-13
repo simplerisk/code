@@ -355,7 +355,7 @@ if (isset($_GET['id']))
         <link rel="stylesheet" href="../css/jquery.dataTables.css">
         <link rel="stylesheet" href="../css/divshot-util.css">
         <link rel="stylesheet" href="../css/divshot-canvas.css">
-        <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
         <link rel="stylesheet" href="../css/style.css">
         <link rel="stylesheet" href="../css/theme.css">
         <link rel="stylesheet" href="../css/side-navigation.css">

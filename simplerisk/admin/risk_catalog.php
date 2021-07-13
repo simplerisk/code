@@ -54,7 +54,7 @@ require_once(language_file());
 <link rel="stylesheet" href="../css/divshot-canvas.css">
 <link rel="stylesheet" href="../css/display.css">
 
-<link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+<link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
 <link rel="stylesheet" href="../css/theme.css">
 <link rel="stylesheet" href="../css/side-navigation.css">
 <link rel="stylesheet" href="../css/settings_tabs.css">
@@ -74,7 +74,7 @@ var $threat_table;
     var threat_pageLength = 1;
 
     // GET THE RISK DATATABLE
-    $risk_table = $('.risk-datatable').DataTable({
+    $risk_table = $('#risk_catalog').DataTable({
         bFilter: false,
         bLengthChange: false,
         processing: true,
@@ -96,13 +96,8 @@ var $threat_table;
         }
     });
 
-    function redraw(){
-        $(".risk-datatable").DataTable().draw();
-        $(".threat-datatable").DataTable().draw();
-    } 
-
     // GET THE THREAT DATATABLE
-    $threat_table = $('.threat-datatable').DataTable({
+    $threat_table = $('#threat_catalog').DataTable({
         bFilter: false,
         bLengthChange: false,
         processing: true,
@@ -504,7 +499,7 @@ get_alert();
                                                                                                 <div class="span12 text-right">
                                                                                                         <a href="#threat-catalog--add" role="button" data-toggle="modal" class="btn"><?php echo $escaper->escapeHtml($lang['Add']); ?></a>
                                                                                                 </div>
-                                                                                                <table class="table threat-datatable table-bordered table-striped table-condensed  " width="100%" id="threat_catalog" >
+                                                                                                <table class="table risk-datatable table-bordered table-striped table-condensed  " width="100%" id="threat_catalog" >
                                                                                                 <thead >
                                                                                                 <tr>
                                                                                                         <th width="15%"><?php echo $escaper->escapeHtml($lang['ThreatGrouping']);?></th>

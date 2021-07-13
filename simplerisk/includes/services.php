@@ -343,14 +343,13 @@ function json_response($status, $status_message, $data=array())
     exit;
 }
 
-
 /******************************************
- * FUNCTION: UPGRADE EXTRA DB THROUGH API *
+ * FUNCTION: CALL EXTRA API FUNCTIONALITY *
  ******************************************/
 function call_extra_api_functionality($extra, $functionality, $target) {
-    
+
     $uri = "";
-    
+
     if ($extra === 'upgrade') {
         if ($functionality === 'upgrade') {
             $uri .= 'upgrade/';
@@ -379,6 +378,13 @@ function call_extra_api_functionality($extra, $functionality, $target) {
                 default: // return false on invalid target
                     return false;
             }
+        } elseif ($functionality === 'version') {
+            $uri .= 'version';
+            switch($target) {
+                case 'app':
+                    $uri .= '/app';
+                    break;
+            }
         } else {
             // return false on invalid functionality
             return false;
@@ -401,7 +407,7 @@ function call_extra_api_functionality($extra, $functionality, $target) {
             return false;
         }
     }
-    
+
     // Get the simplerisk_base_url from the settings table
     $url = get_setting("simplerisk_base_url");
     $url .= (endsWith($url, '/') ? '' : '/') . "api/$extra/$uri";
@@ -425,13 +431,13 @@ function call_extra_api_functionality($extra, $functionality, $target) {
     );
     $context = stream_context_create($opts);
     //error_log("url: " . json_encode($url));
-    
+    //error_log("context: " . json_encode($context));
     $result = file_get_contents($url, false, $context);
     //error_log("header: " . json_encode($http_response_header));
     //error_log("result: " . json_encode($result));
-    
+
     preg_match('{HTTP\/\S*\s(\d{3})}', $http_response_header[0], $match);
-    
+
     return [(int)$match[1], json_decode($result, true)];
 }
 

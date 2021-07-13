@@ -284,7 +284,7 @@ function addTabContainer(){
     $("div.tab-append").append(
         "<div class='tab new tab-show form-tab selected' id='tab"+num_tabs+"'><div><span>New Risk ("+num_tabs+")</span></div>"
         +"<button class='close tab-close' aria-label='Close' data-id='"+num_tabs+"'>"
-        +"<i class='fa fa-close'></i>"
+        +"<i class='fa fa-times'></i>"
         +"</button>"
         +"</div>"
     );

@@ -64,6 +64,14 @@ require_once(language_file());
                 'allow_stakeholders_to_see_test_and_audit'      => isset($_POST['allow_stakeholders_to_see_test_and_audit']) ? 1 : 0,
                 'allow_team_members_to_see_test_and_audit'      => isset($_POST['allow_team_members_to_see_test_and_audit']) ? 1 : 0,
                 'allow_everyone_to_see_test_and_audit'          => isset($_POST['allow_everyone_to_see_test_and_audit']) ? 1 : 0,
+
+                'allow_all_to_asset_noassign_team'              => isset($_POST['allow_all_to_asset_noassign_team']) ? 1 : 0,
+
+                'allow_document_owner_to_see_documents'         => isset($_POST['allow_document_owner_to_see_documents']) ? 1 : 0,
+                'allow_approver_to_see_documents'               => isset($_POST['allow_approver_to_see_documents']) ? 1 : 0,
+                'allow_stakeholders_to_see_documents'           => isset($_POST['allow_stakeholders_to_see_documents']) ? 1 : 0,
+                'allow_all_to_document_noassign_team'           => isset($_POST['allow_all_to_document_noassign_team']) ? 1 : 0,
+                'allow_all_to_see_document'                     => isset($_POST['allow_all_to_see_document']) ? 1 : 0,
             );
             update_permission_settings($permissions);
             set_alert(true, "good", $lang['SavedSuccess']);
@@ -128,7 +136,7 @@ require_once(language_file());
         <link rel="stylesheet" href="../css/divshot-canvas.css">
         <link rel="stylesheet" href="../css/display.css">
 
-        <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
         <link rel="stylesheet" href="../css/side-navigation.css">
         <?php

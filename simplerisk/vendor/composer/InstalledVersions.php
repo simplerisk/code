@@ -30,7 +30,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => 'd892158024bfc544957b37c3f3d16a89c2e40c37',
+    'reference' => '0437d1d080c36494fccc7f2d3ed24ceaad393e6b',
     'name' => 'simplerisk/code',
   ),
   'versions' => 
@@ -234,7 +234,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => 'd892158024bfc544957b37c3f3d16a89c2e40c37',
+      'reference' => '0437d1d080c36494fccc7f2d3ed24ceaad393e6b',
     ),
     'simplerisk/csrf-magic' => 
     array (

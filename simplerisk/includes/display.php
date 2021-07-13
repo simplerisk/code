@@ -124,7 +124,7 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
 
 	        // If we are displaying the risk and the user has modify risk permissions
                 if($display_risk == true && has_permission("modify_risks")){
-                    echo "<div id=\"edit-subject\" class='edit-subject-btn' style=\"display:inline;margin:0 0 0 10px; font-size:20px;\"><i class=\"fa fa-pencil-square-o\" aria-hidden=\"true\"></i></div>";
+                    echo "<div id=\"edit-subject\" class='edit-subject-btn' style=\"display:inline;margin:0 0 0 10px; font-size:20px;\"><i class=\"fa fa-edit\" aria-hidden=\"true\"></i></div>";
                 }
                 echo "</label></div>";
             
@@ -3634,7 +3634,7 @@ function view_top_menu($active)
             echo "<a href=\"account/profile.php\"><i class=\"fa fa-user\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['MyProfile']) ."</a>\n";
             echo "</li>\n";
             echo "<li>\n";
-            echo "<a href=\"logout.php\"><i class=\"fa fa-sign-out\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
+            echo "<a href=\"logout.php\"><i class=\"fa fa-sign-out-alt\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
             echo "</li>\n";
             echo "</ul>\n";
             echo "</div>\n";
@@ -3764,7 +3764,7 @@ function view_top_menu($active)
                 ";
             }
             echo "<li>\n";
-            echo "<a href=\"../logout.php\"><i class=\"fa fa-sign-out\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
+            echo "<a href=\"../logout.php\"><i class=\"fa fa-sign-out-alt\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['Logout']) ."</a>\n";
             echo "</li>\n";
             echo "</ul>\n";
             echo "</div>\n";
@@ -3778,13 +3778,13 @@ function view_top_menu($active)
 	    echo "<a href=\"https://help.simplerisk.com/index.php?page=" . get_request_uri() . "\" target=\"_blank\"><i class=\"fa fa-info-circle\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['AboutThisPage']) ."</a>\n";
 	    echo "</li>\n";
             echo "<li>\n";
-            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000228831\" target=\"_blank\"><i class=\"fa fa-video-camera\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['HowToVideos']) ."</a>\n";
+            echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000228831\" target=\"_blank\"><i class=\"fa fa-video\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['HowToVideos']) ."</a>\n";
             echo "</li>\n";
             echo "<li>\n";
             echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/folders/6000168810\" target=\"_blank\"><i class=\"fa fa-question-circle\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['FAQs']) ."</a>\n";
             echo "</li>\n";
             echo "<li>\n";
-            echo "<a href=\"https://github.com/simplerisk/documentation/raw/master/SimpleRisk%20Release%20Notes%20" . $escaper->escapeHtml(get_latest_app_version()) . ".pdf\" target=\"_blank\"><i class=\"fa fa-newspaper-o\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['WhatsNew']) ."</a>\n";
+            echo "<a href=\"https://github.com/simplerisk/documentation/raw/master/SimpleRisk%20Release%20Notes%20" . $escaper->escapeHtml(get_latest_app_version()) . ".pdf\" target=\"_blank\"><i class=\"fa fa-newspaper\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['WhatsNew']) ."</a>\n";
             echo "</li>\n";
             echo "<li>\n";
             echo "<a href=\"https://simplerisk.freshdesk.com/a/solutions/articles/6000190811\" target=\"_blank\"><i class=\"fa fa-map\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['Roadmap']) ."</a>\n";
@@ -3793,7 +3793,7 @@ function view_top_menu($active)
 	    echo "<a href=\"https://simplerisk.freshdesk.com/support/solutions\" target=\"_blank\"><i class=\"fa fa-cloud\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['SupportPortal']) ."</a>\n";
 	    echo "</li>\n";
 	    echo "<li>\n";
-	    echo "<a href=\"https://simplerisk.freshdesk.com/support/tickets/new\" target=\"_blank\"><i class=\"fa fa-ticket\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['WebSupport']) ."</a>\n";
+	    echo "<a href=\"https://simplerisk.freshdesk.com/support/tickets/new\" target=\"_blank\"><i class=\"fa fa-ticket-alt\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['WebSupport']) ."</a>\n";
 	    echo "</li>\n";
 	    echo "<li>\n";
 	    echo "<a href=\"mailto: support@simplerisk.com\"><i class=\"fa fa-envelope\"></i>&nbsp&nbsp;". $escaper->escapeHtml($lang['EmailSupport']) ."</a>\n";

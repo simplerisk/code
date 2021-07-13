@@ -67,8 +67,8 @@ else $admin_editing_itself = false;
                 // Get the new role
                 $role = get_role($role_id);
 
-                // If the role was changed to a non-admin role or the user removed its own admin permission then we can't let this change be saved
-                $admin_role_issue = !$role['admin'] || !$admin;
+                // If the role was changed to a non-admin role, the user removed its own admin permission or trying to lock itself out then we can't let this change be saved
+                $admin_role_issue = !$role['admin'] || !$admin || $lockout;
             }
 
             if (!$admin_role_issue) {
@@ -257,7 +257,7 @@ else $admin_editing_itself = false;
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
 
-    <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/side-navigation.css">
     

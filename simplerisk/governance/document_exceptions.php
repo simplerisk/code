@@ -103,7 +103,7 @@ function display($display = "")
         <link rel="stylesheet" href="../css/display.css">
         <link rel="stylesheet" href="../css/style.css">
 
-        <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
         <link rel="stylesheet" href="../css/side-navigation.css">
 
@@ -119,7 +119,7 @@ function display($display = "")
 
             .exception-name:before {
                 margin-right: 5px;
-                font: normal normal normal 14px/1 FontAwesome !important;
+                font: normal normal normal 14px/1 'Font Awesome 5 Free' !important;
                 content: "\f05a";
             }
 
@@ -712,7 +712,7 @@ function display($display = "")
                         <div class="well">
                             <h4 class="collapsible--toggle">
                                 <span><i class="fa fa-caret-right"></i><?php echo $escaper->escapeHtml($lang['AuditTrail']); ?></span>
-                                <a href="#" class="refresh-audit-trail pull-right"><i class="fa fa-refresh"></i></a>
+                                <a href="#" class="refresh-audit-trail pull-right"><i class="fa fa-sync"></i></a>
                             </h4>
                             <div class="collapsible" style="display: none;">
                                 <div class="row-fluid">
