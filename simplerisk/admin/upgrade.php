@@ -4,6 +4,7 @@
      * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
     require_once(realpath(__DIR__ . '/../includes/functions.php'));
+    require_once(realpath(__DIR__ . '/../includes/display.php'));
     require_once(realpath(__DIR__ . '/../includes/authenticate.php'));
     require_once(realpath(__DIR__ . '/../includes/config.php'));
     require_once(realpath(__DIR__ . '/../includes/upgrade.php'));
@@ -27,7 +28,7 @@
 
     // Include the language file
     require_once(language_file());
-    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+    csrf_init();
 
     // Check for session timeout or renegotiation
     session_check();
@@ -88,7 +89,15 @@
   <head>
       <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
       <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-      <script src="../js/jquery.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+?>
 
       <!-- build:css vendor/vendor.min.css -->
       <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" media="screen" />
@@ -100,7 +109,7 @@
       <link rel="stylesheet" href="../css/bootstrap.css">
       <link rel="stylesheet" href="../css/bootstrap-responsive.css">
 
-      <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+      <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
       <link rel="stylesheet" href="../css/theme.css">
       <link rel="stylesheet" href="../css/side-navigation.css">
       <?php

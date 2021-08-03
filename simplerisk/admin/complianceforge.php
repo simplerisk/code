@@ -98,9 +98,24 @@ function display()
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
-    <script src="../js/jquery.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+
+        // Use these jquery-ui scripts
+        $scripts = [
+                'jquery-ui.min.js',
+        ];
+
+        // Include the jquery-ui javascript source
+        display_jquery_ui_javascript($scripts);
+?>
     <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/jquery-ui.min.js"></script>
     <link rel="stylesheet" type="text/css" href="../css/jquery-ui.min.css" />
 
     <script src="../js/bootstrap-multiselect.js"></script>
@@ -113,7 +128,7 @@ function display()
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
 
-    <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
     <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/side-navigation.css">

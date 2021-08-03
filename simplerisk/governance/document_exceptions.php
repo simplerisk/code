@@ -78,9 +78,25 @@ function display($display = "")
 <!doctype html>
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
     <head>
-        <script src="../js/jquery.min.js"></script>
-        <script src="../js/jquery.easyui.min.js"></script>
-        <script src="../js/jquery-ui.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+?>
+	<script src="../js/jquery.easyui.min.js"></script>
+<?php
+        // Use these jquery-ui scripts
+        $scripts = [
+                'jquery-ui.min.js',
+        ];
+
+        // Include the jquery-ui javascript source
+        display_jquery_ui_javascript($scripts);
+?>
         <script src="../js/jquery.draggable.js"></script>
         <script src="../js/jquery.droppable.js"></script>
         <script src="../js/treegrid-dnd.js"></script>
@@ -103,7 +119,7 @@ function display($display = "")
         <link rel="stylesheet" href="../css/display.css">
         <link rel="stylesheet" href="../css/style.css">
 
-        <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
         <link rel="stylesheet" href="../css/side-navigation.css">
 
@@ -143,6 +159,8 @@ function display($display = "")
                 $("#"+ tab + "-exceptions .exception--edit").click(function(){
                     var exception_id = $(this).data("id");
                     var type = $(this).data("type");
+                    $("#exception-update-form [name='additional_stakeholders[]']").multiselect('deselectAll', false);
+                    $("#exception-update-form [name='associated_risks[]']").multiselect('deselectAll', false);
 
                     $.ajax({
                         url: BASE_URL + '/api/exceptions/exception?id=' + exception_id,
@@ -157,14 +175,11 @@ function display($display = "")
                             $("#exception-update-form [name=policy]").val(data.policy_document_id);
                             $("#exception-update-form [name=control]").val(data.control_framework_id);
                             $("#exception-update-form [name=owner]").val(data.owner);
-                            if (Array.isArray(data.additional_stakeholders) && data.additional_stakeholders.length) {
-                                $("#exception-update-form [name='additional_stakeholders[]']").multiselect('select', data.additional_stakeholders);
-                            } else {
-                                $("#exception-update-form [name='additional_stakeholders[]']").multiselect('deselectAll', false);
-                            }
+                            $("#exception-update-form [name='additional_stakeholders[]']").multiselect('select', data.additional_stakeholders);
 
                             $("#exception-update-form [name='additional_stakeholders[]']").multiselect('updateButtonText');
 
+                            $("#exception-update-form [name='associated_risks[]']").multiselect('select', data.associated_risks);
                             $("#exception-update-form [name=creation_date]").val(data.creation_date);
                             $("#exception-update-form [name=review_frequency]").val(data.review_frequency);
                             $("#exception-update-form [name=next_review_date]").val(data.next_review_date);
@@ -213,6 +228,7 @@ function display($display = "")
 
                             $("#exception--view #owner").html(data.owner);
                             $("#exception--view #additional_stakeholders").html(data.additional_stakeholders);
+                            $("#exception--view #associated_risks").html(data.associated_risks);
                             $("#exception--view #creation_date").html(data.creation_date);
                             $("#exception--view #review_frequency").html(data.review_frequency);
                             $("#exception--view #next_review_date").html(data.next_review_date);
@@ -369,6 +385,7 @@ function display($display = "")
                             $('#exception-new-form')[0].reset();
                             $('#exception-new-form #file-size').text("");
                             $("#exception-new-form [name='additional_stakeholders[]']").multiselect('select', []);
+                            $("#exception-new-form [name='associated_risks[]']").multiselect('select', []);
 
                             if (!data.data.approved) {
                                 var tree = $('#exception-table-unapproved');
@@ -420,6 +437,7 @@ function display($display = "")
                             $('#exception-update-form')[0].reset();
                             $('#exception-update-form #file-size').text("");
                             $("#exception-update-form [name='additional_stakeholders[]']").multiselect('select', []);
+                            $("#exception-update-form [name='associated_risks[]']").multiselect('select', []);
                             var tree = $('#exception-table-' + data.data.type);
                             tree.treegrid('options').animate = false;
                             tree.treegrid('reload');
@@ -583,6 +601,11 @@ function display($display = "")
                 $(".exception-table").treegrid('resize');
 
                 $("[name='additional_stakeholders[]']").multiselect();
+                $("[name='associated_risks[]']").multiselect({
+                    enableFiltering: true,
+                    buttonWidth: '100%',
+                    maxHeight: '400',
+                });
 
                 $("[name='approval_date']").datepicker({maxDate: new Date});
                 $("[name='creation_date']").datepicker({maxDate: new Date});
@@ -669,6 +692,7 @@ function display($display = "")
 
               // Get any alert messages
               get_alert();
+              $risks = get_risks(1);
           ?>
 
 
@@ -762,6 +786,18 @@ function display($display = "")
                             <label id="label_for_control" for=""><?php echo $escaper->escapeHtml($lang['Control']); ?></label>
                             <?php create_dropdown("framework_controls", NULL, "control", true); ?>
 
+                            <label for=""><?php echo $escaper->escapeHtml($lang['AssociatedRisks']); ?></label>
+                            <select name="associated_risks[]" multiple="true">
+                            <?php 
+                                foreach ($risks as $risk) {
+                                    $risk_id = $risk['id'];
+                                    $subject = "(" . ($risk['id'] + 1000) . ") " . $risk['subject'];
+                                    echo "<option value='{$risk_id}'>" . $subject . "</option>\n";
+                                }
+
+                            ?>
+                            </select>
+
                             <label for=""><?php echo $escaper->escapeHtml($lang['ExceptionOwner']); ?></label>
                             <?php create_dropdown("enabled_users", NULL, "owner", false, false, false); ?>
 
@@ -829,6 +865,18 @@ function display($display = "")
                             <label id="label_for_control" for=""><?php echo $escaper->escapeHtml($lang['Control']); ?></label>
                             <?php create_dropdown("framework_controls", NULL, "control", true, false, false, "", "--", "0"); ?>
 
+                            <label for=""><?php echo $escaper->escapeHtml($lang['AssociatedRisks']); ?></label>
+                            <select name="associated_risks[]" multiple="true">
+                            <?php 
+                                foreach ($risks as $risk) {
+                                    $risk_id = $risk['id'];
+                                    $subject = "(" . ($risk['id'] + 1000) . ") " . $risk['subject'];
+                                    echo "<option value='{$risk_id}'>" . $subject . "</option>\n";
+                                }
+
+                            ?>
+                            </select>
+
                             <label for=""><?php echo $escaper->escapeHtml($lang['ExceptionOwner']); ?></label>
                             <?php create_dropdown("enabled_users", NULL, "owner", false, false, false); ?>
 
@@ -895,6 +943,9 @@ function display($display = "")
                         <h4><?php echo $escaper->escapeHtml($lang['ControlName']); ?></h4>
                         <span id="control" class="exception-data"></span>
                     </span>
+
+                    <h4><?php echo $escaper->escapeHtml($lang['AssociatedRisks']); ?></h4>
+                    <span id="associated_risks" class="exception-data"></span>
 
                     <h4><?php echo $escaper->escapeHtml($lang['ExceptionOwner']); ?></h4>
                     <span id="owner" class="exception-data"></span>

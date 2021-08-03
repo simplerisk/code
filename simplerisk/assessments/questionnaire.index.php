@@ -35,7 +35,7 @@ if (!isset($_SESSION))
 // Include the language file
 require_once(language_file());
 
-require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+csrf_init();
 
 // Check for session timeout or renegotiation
 session_check();
@@ -102,8 +102,23 @@ else
 
 <head>
   <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-  <script src="../js/jquery.min.js"></script>
-  <script src="../js/jquery-ui.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+
+        // Use these jquery-ui scripts
+        $scripts = [
+                'jquery-ui.min.js',
+        ];
+
+        // Include the jquery-ui javascript source
+        display_jquery_ui_javascript($scripts);
+?>
   <script src="../js/bootstrap.min.js"></script>
   <script src="../js/common.js"></script>
   <script src="../js/pages/assessment.js"></script>
@@ -120,7 +135,7 @@ else
   <link rel="stylesheet" href="../css/display.css">
   <link rel="stylesheet" href="../css/style.css">
 
-  <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/side-navigation.css">
   <link rel="stylesheet" href="../css/selectize.bootstrap3.css">

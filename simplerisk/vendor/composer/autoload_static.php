@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitbab738aa27fd9964dc7a66d8a335a8c8
+class ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9
 {
     public static $files = array (
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
@@ -18,6 +18,7 @@ class ComposerStaticInitbab738aa27fd9964dc7a66d8a335a8c8
         '538ca81a9a966a6716601ecf48f4eaef' => __DIR__ . '/..' . '/opis/closure/functions.php',
         '2c102faa651ef8ea5874edb585946bce' => __DIR__ . '/..' . '/swiftmailer/swiftmailer/lib/swift_required.php',
         '2cffec82183ee1cea088009cef9a6fc3' => __DIR__ . '/..' . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
+        '39f8f809a191c7af11cb6d6aa45edb06' => __DIR__ . '/..' . '/simplerisk/csrf-magic/csrf-magic.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -76,7 +77,6 @@ class ComposerStaticInitbab738aa27fd9964dc7a66d8a335a8c8
             'SimpleSAML\\Module\\authX509\\' => 27,
             'SimpleSAML\\Module\\adfs\\' => 23,
             'SimpleSAML\\' => 11,
-            'SimpleRisk\\Includes\\' => 20,
             'SAML2\\' => 6,
         ),
         'R' => 
@@ -118,7 +118,6 @@ class ComposerStaticInitbab738aa27fd9964dc7a66d8a335a8c8
         ),
         'C' => 
         array (
-            'CsrfMagic\\' => 10,
             'Cron\\' => 5,
         ),
         'B' => 
@@ -317,10 +316,6 @@ class ComposerStaticInitbab738aa27fd9964dc7a66d8a335a8c8
         array (
             0 => __DIR__ . '/..' . '/simplesamlphp/simplesamlphp/lib/SimpleSAML',
         ),
-        'SimpleRisk\\Includes\\' => 
-        array (
-            0 => __DIR__ . '/../../..' . '/simplerisk/includes',
-        ),
         'SAML2\\' => 
         array (
             0 => __DIR__ . '/..' . '/simplesamlphp/saml2/src/SAML2',
@@ -376,10 +371,6 @@ class ComposerStaticInitbab738aa27fd9964dc7a66d8a335a8c8
         'Doctrine\\Common\\Lexer\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/lexer/lib/Doctrine/Common/Lexer',
-        ),
-        'CsrfMagic\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/simplerisk/csrf-magic/src',
         ),
         'Cron\\' => 
         array (
@@ -461,10 +452,10 @@ class ComposerStaticInitbab738aa27fd9964dc7a66d8a335a8c8
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitbab738aa27fd9964dc7a66d8a335a8c8::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitbab738aa27fd9964dc7a66d8a335a8c8::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitbab738aa27fd9964dc7a66d8a335a8c8::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitbab738aa27fd9964dc7a66d8a335a8c8::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9::$classMap;
 
         }, null, ClassLoader::class);
     }

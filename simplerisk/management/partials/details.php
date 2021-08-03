@@ -32,7 +32,7 @@ if (!isset($_SESSION))
 require_once(language_file());
 global $lang;
 
-require_once(realpath(__DIR__ . '/../../includes/csrf-magic/csrf-magic.php'));
+csrf_init();
 
 // Check for session timeout or renegotiation
 session_check();
@@ -74,12 +74,12 @@ enforce_permission("riskmanagement");
                 // If the user has selected to edit the risk and has permission to edit the risk
                 if ((isset($_POST['edit_details']) || (isset($action) && $action == 'editdetail')) && has_permission("modify_risks"))
                 {
-                  edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $risk_tags, $jira_issue_key, $risk_catalog_mapping, $template_group_id);
+                  edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $risk_tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id);
                 }
                 // Otherwise we are just viewing the risk
                 else
                 {
-                  view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_tags, $jira_issue_key, $risk_catalog_name, $template_group_id);
+                  view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes,  $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $risk_tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id);
                 }
                 ?>
                 <input type="hidden" class="risk_id" value="<?php echo $escaper->escapeHtml($id); ?>">

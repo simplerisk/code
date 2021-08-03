@@ -217,9 +217,25 @@ if (isset($_POST['delete_controls']))
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
 <head>
-  <script src="../js/jquery.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+?>
   <script src="../js/jquery.easyui.min.js"></script>
-  <script src="../js/jquery-ui.min.js"></script>
+<?php
+        // Use these jquery-ui scripts
+        $scripts = [
+                'jquery-ui.min.js',
+        ];
+
+        // Include the jquery-ui javascript source
+        display_jquery_ui_javascript($scripts);
+?>
   <script src="../js/jquery.draggable.js"></script>
   <script src="../js/jquery.droppable.js"></script>
   <script src="../js/treegrid-dnd.js"></script>
@@ -243,7 +259,7 @@ if (isset($_POST['delete_controls']))
   <link rel="stylesheet" href="../css/display.css">
   <link rel="stylesheet" href="../css/style.css">
 
-  <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/side-navigation.css">
 

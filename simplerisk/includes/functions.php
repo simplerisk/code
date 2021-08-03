@@ -828,6 +828,10 @@ function get_custom_table($type)
     {
         $stmt = $db->prepare("SELECT id as value, name FROM `risk_catalog` ORDER BY `order`");
     }
+    else if ($type == "threat_catalog")
+    {
+        $stmt = $db->prepare("SELECT id as value, name FROM `threat_catalog` ORDER BY `order`");
+    }
     // Execute the database query
     $stmt->execute();
 
@@ -881,7 +885,7 @@ function get_options_from_table($name)
         $options = get_table_ordered_by_name($name);
     }
     else if (in_array($name, array("user", "team", "enabled_users", "disabled_users", "languages", "family", "date_formats",
-            "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter", "policies", "framework_control_tests", "risk_catalog"))) {
+            "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter", "policies", "framework_control_tests", "risk_catalog", "threat_catalog"))) {
         $options = get_custom_table($name);
     }
     // Otherwise
@@ -3133,7 +3137,7 @@ function update_password($user, $hash)
 /*************************
  * FUNCTION: SUBMIT RISK *
  *************************/
-function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders=[], $risk_catalog_mapping=0, $template_group_id=1)
+function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders=[], $risk_catalog_mapping=[], $threat_catalog_mapping=[], $template_group_id=1)
 {
     // In the database `submitted_by` is defaulted to 1 as that's the id of the pre-created Admin user, so it's defaulted to 1 here as well
     $submitted_by || ($submitted_by = $_SESSION['uid']) || ($submitted_by = 1);
@@ -3146,8 +3150,11 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     // Set numeric null to 0
     if ($location == NULL) $location = "";
 
+    $risk_catalog_mapping = count($risk_catalog_mapping)?implode(",", $risk_catalog_mapping):"";
+    $threat_catalog_mapping = count($threat_catalog_mapping)?implode(",", $threat_catalog_mapping):"";
+
     // Add the risk
-    $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `source`, `category`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`, `risk_catalog_mapping`, `template_group_id`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :source, :category, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date, :risk_catalog_mapping, :template_group_id)";
+    $sql = "INSERT INTO risks (`status`, `subject`, `reference_id`, `regulation`, `control_number`, `source`, `category`, `owner`, `manager`, `assessment`, `notes`, `project_id`, `submitted_by`, `submission_date`, `risk_catalog_mapping`, `threat_catalog_mapping`, `template_group_id`) VALUES (:status, :subject, :reference_id, :regulation, :control_number, :source, :category, :owner, :manager, :assessment, :notes, :project_id, :submitted_by, :submission_date, :risk_catalog_mapping, :threat_catalog_mapping, :template_group_id)";
     
     $try_encrypt_assessment = try_encrypt($assessment);
     $try_encrypt_notes = try_encrypt($notes);
@@ -3169,7 +3176,8 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $stmt->bindParam(":project_id", $project_id, PDO::PARAM_STR);
     $stmt->bindParam(":submitted_by", $submitted_by, PDO::PARAM_INT);
     $stmt->bindParam(":submission_date", $submission_date, PDO::PARAM_STR);
-    $stmt->bindParam(":risk_catalog_mapping", $risk_catalog_mapping, PDO::PARAM_INT);
+    $stmt->bindParam(":risk_catalog_mapping", $risk_catalog_mapping, PDO::PARAM_STR);
+    $stmt->bindParam(":threat_catalog_mapping", $threat_catalog_mapping, PDO::PARAM_STR);
     $stmt->bindParam(":template_group_id", $template_group_id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -4759,8 +4767,11 @@ function update_risk($risk_id, $is_api = false)
     } elseif($submission_date == ""){
         $submission_date = $current_datetime;
     }
-    $risk_catalog_mapping = get_param("post", "risk_catalog_mapping", "");
-	$risk_catalog_mapping = $risk_catalog_mapping?$risk_catalog_mapping:0;
+    $risk_catalog_mapping = get_param("post", "risk_catalog_mapping", []);
+	$risk_catalog_mapping = count($risk_catalog_mapping)?implode(",", $risk_catalog_mapping):"";
+
+    $threat_catalog_mapping = get_param("post", "threat_catalog_mapping", []);
+    $threat_catalog_mapping = count($threat_catalog_mapping)?implode(",", $threat_catalog_mapping):"";
 
     $data = array(
         "reference_id"      =>$reference_id,
@@ -4774,7 +4785,8 @@ function update_risk($risk_id, $is_api = false)
         "notes"             =>$notes,
         "last_update"       =>$current_datetime,
         "submission_date"   =>$submission_date,
-        "risk_catalog_mapping"   =>$risk_catalog_mapping
+        "risk_catalog_mapping"   =>$risk_catalog_mapping,
+        "threat_catalog_mapping"   =>$threat_catalog_mapping
     );
 
     // Open the database connection
@@ -4817,10 +4829,6 @@ function update_risk($risk_id, $is_api = false)
                     $user_updated = get_user_by_id($value);
                     $original_value = $user_original["name"];
                     $updated_value = $user_updated["name"];
-                break;
-                case "risk_catalog_mapping":
-                    $original_value = get_table_value_by_id("risk_catalog", $risk[0][$key]);
-                    $updated_value = get_table_value_by_id("risk_catalog", $value);
                 break;
             }
             $updated_fields[$key]["original"] = $original_value;
@@ -5124,7 +5132,7 @@ function get_risk_by_id($id)
         SELECT
             a.*,
             group_concat(distinct CONCAT_WS('_', rsci.contributing_risk_id, rsci.impact)) as Contributing_Risks_Impacts,
-            b.*,cat.name risk_catalog_name,
+            b.*,
             c.next_review,
             ROUND((a.calculated_risk - (a.calculated_risk * GREATEST(IFNULL(mg.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0)) / 100)), 2) as residual_risk,
             GROUP_CONCAT(DISTINCT t.tag ORDER BY t.tag ASC SEPARATOR '|') as risk_tags
@@ -5160,7 +5168,6 @@ function get_risk_by_id($id)
             LEFT JOIN technology on rttg.technology_id=technology.value
             LEFT JOIN risk_to_additional_stakeholder rtas on b.id=rtas.risk_id
             LEFT JOIN user adsh on rtas.user_id=adsh.value
-            LEFT JOIN risk_catalog cat on cat.id=b.risk_catalog_mapping
         WHERE
             b.id=:id
             " . $separation_query . "
@@ -15880,10 +15887,9 @@ function include_csrf_magic() {
 
     function csrf_startup() {
         global $escaper;
-        csrf_conf('rewrite-js', $escaper->escapeHtml(get_setting('simplerisk_base_url')).'/includes/csrf-magic/csrf-magic.js');
+        csrf_conf('rewrite-js', $escaper->escapeHtml(get_setting('simplerisk_base_url')).'/vendor/simplerisk/csrf-magic/csrf-magic.js');
     }
-
-    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+    csrf_init();
 }
 
 function startsWith($haystack, $needle) {
@@ -18012,6 +18018,24 @@ $change_audit_log_localization_config = [
         'submission_date' => 'SubmissionDate',
         'additional_stakeholders' => 'AdditionalStakeholders',
         'teams' => 'Teams',
+    ],
+
+    'document' => [
+        'document_type' => 'DocumentType',
+        'document_name' => 'DocumentName',
+        'control_ids' => 'Controls',
+        'framework_ids' => 'Frameworks',
+        'parent' => 'ParentDocument',
+        'document_status' => 'DocumentStatus',
+        'creation_date' => 'CreationDate',
+        'last_review_date' => 'LastReview',
+        'review_frequency' => 'ReviewFrequency',
+        'next_review_date' => 'NextReviewDate',
+        'approval_date' => 'ApprovalDate',
+        'document_owner' => 'DocumentOwner',
+        'additional_stakeholders' => 'AdditionalStakeholders',
+        'approver' => 'Approver',
+        'team_ids' => 'Teams',
     ]
 ];
 
@@ -18031,14 +18055,17 @@ function get_changes($type, $before, $after) {
     $differences = [];
     
     foreach ($change_audit_log_localization_config[$type] as $field => $key) {
-        if ($before[$field] !== $after[$field]) {
+        if ($before[$field] != $after[$field]) {
 
             // These can be handled together as the fields with the same name hold the same type of values
-            if ($type === 'audit' || $type === 'test') {
+            if ($type === 'audit' || $type === 'test' || $type === 'document') {
                 switch($field) {
                     case 'last_date':
                     case 'next_date':                    
                     case 'test_date':
+		    case 'last_review_date':
+		    case 'next_review_date':
+		    case 'approval_date':
                         if ($before[$field]) {
                             $before[$field] = format_date($before[$field]);
                         }
@@ -18049,6 +18076,7 @@ function get_changes($type, $before, $after) {
 
                     case 'created_at':
                     case 'submission_date':
+		    case 'creation_date':
                         if ($before[$field]) {
                             $before[$field] = format_datetime($before[$field]);
                         }
@@ -18059,12 +18087,17 @@ function get_changes($type, $before, $after) {
 
                     case 'control_owner':
                     case 'submitted_by':
+		    case 'document_owner':
+		    case 'approver':
                         if ($before[$field]) {
-                            $before[$field] = get_name_by_value('user', $before[$field]);
+			    $before[$field] = get_name_by_value('user', $before[$field]);
                         }
+			else $before[$field] = "Unassigned";
+
                         if ($after[$field]) {
-                            $after[$field] = get_name_by_value('user', $after[$field]);
+			    $after[$field] = get_name_by_value('user', $after[$field]);
                         }
+			else $after[$field] = "Unassigned";
                     break;
 
                     case 'additional_stakeholders':
@@ -18077,6 +18110,7 @@ function get_changes($type, $before, $after) {
                     break;
 
                     case 'teams':
+		    case 'team_ids':
                         if ($before[$field]) {
                             $before[$field] = get_names_by_multi_values('team', $before[$field]);
                         }
@@ -18092,6 +18126,66 @@ function get_changes($type, $before, $after) {
                         if ($after[$field]) {
                             $after[$field] = get_name_by_value('test_status', $after[$field]);
                         }
+                    break;
+
+		    case 'document_status':
+			if ($before[$field]) {
+                            $before[$field] = get_name_by_value('document_status', $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = get_name_by_value('document_status', $after[$field]);
+                        }
+                    break;
+
+		    case 'parent':
+                        if ($before[$field]) {
+			    // Get the document name
+			    $document = get_document_by_id($before[$field]);
+			    $before[$field] = $document['document_name'];
+                        }
+			else $before[$field] = "--";
+                        if ($after[$field]) {
+			    // Get the document name
+			    $document = get_document_by_id($after[$field]);
+			    $after[$field] = $document['document_name'];
+                        }
+			else $after[$field] = "--";
+		    break;
+
+		    case 'framework_ids':
+                        if ($before[$field]) {
+                            $before[$field] = get_names_by_multi_values('frameworks', $before[$field]);
+                        }
+			else $before[$field] = "--";
+                        if ($after[$field]) {
+                            $after[$field] = get_names_by_multi_values('frameworks', $after[$field]);
+                        }
+			else $after[$field] = "--";
+                    break;
+
+		    case 'control_ids':
+                        if ($before[$field]) {
+			    $control_short_names = array();
+			    $controls = get_framework_controls($before[$field]);
+			    foreach($controls as $control)
+			    {
+				// Add the control name
+				$control_short_names[] = $control['short_name'];
+			    }
+			    $before[$field] = implode(", ", $control_short_names);
+                        }
+			else $before[$field] = "--";
+                        if ($after[$field]) {
+			    $control_short_names = array();
+                            $controls = get_framework_controls($after[$field]);
+                            foreach($controls as $control)
+                            {
+                                // Add the control name
+                                $control_short_names[] = $control['short_name'];
+                            }
+                            $after[$field] = implode(", ", $control_short_names);
+                        }
+			else $after[$field] = "--";
                     break;
                 }
             }
@@ -18158,6 +18252,52 @@ function create_zip_file($source, $destination)
     }
 
     return $zip->close();
+}
+
+/****************************************
+ * FUNCTION: GET RISK SUBJECTS FROM IDS *
+ ****************************************/
+function get_risk_subjects_by_ids($ids="", $limit=4, $escape=false, $separate="<br>")
+{
+    global $escaper;
+
+    if(!$ids){
+        return "";
+    }
+
+    if (is_array($ids))
+        $idArray = $ids;
+    else
+        $idArray = explode(",", $ids);
+
+    foreach($idArray as &$id){
+        $id = intval($id);
+    }
+    unset($id);
+
+    // Open the database connection
+    $db = db_open();
+
+    // Update user
+    $stmt = $db->prepare("SELECT * FROM `risks` WHERE id in (" . implode(",", $idArray) . "); ");
+    $stmt->execute();
+
+    // Store the list in the array
+    $risks = $stmt->fetchAll();
+    // Close the database connection
+    db_close($db);
+
+    $subjects = array();
+    $count = 0;
+    foreach($risks as $risk){
+        $subject = "(" . ($risk['id'] + 1000) . ") " . try_decrypt($risk['subject']);
+        $subjects[] = $escape ? $escaper->escapeHtml($subject) : $subject;
+        $count++;
+        if ($count == $limit)
+            break;
+    }
+
+    return implode($separate, $subjects) . (count($risks) > $limit ? $separate."...": "");
 }
 
 ?>

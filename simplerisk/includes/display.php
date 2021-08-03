@@ -4,6 +4,7 @@
 * License, v. 2.0. If a copy of the MPL was not distributed with this
 * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+use Ghunti\HighchartsPHP\Highchart;
 
 // Include Laminas Escaper for HTML Output Encoding
 $escaper = new Laminas\Escaper\Escaper('utf-8');
@@ -227,7 +228,6 @@ function add_risk_details($template_group_id = 1){
             echo "</div>\n";
 
             $active_fields = get_active_fields("risk", $template_group_id);
-            $inactive_fields = get_inactive_fields("risk", $template_group_id);
 
             // Top panel
             echo "<div class=\"row-fluid\">\n";
@@ -237,7 +237,6 @@ function add_risk_details($template_group_id = 1){
                 // Left Panel
                 echo "<div class=\"span5 left-panel\">\n";
                     display_main_detail_fields_by_panel_add('left', $active_fields);
-                    display_main_detail_fields_by_panel_add('left', $inactive_fields);
                     echo "&nbsp;";
                 echo "</div>\n";
 
@@ -262,11 +261,8 @@ function add_risk_details($template_group_id = 1){
                 echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['Subject']).":</div>\n";
                 echo "<div class=\"span8\"><input maxlength=\"300\" title=\"".$escaper->escapeHtml($lang['Subject'])."\" required name=\"subject\" id=\"subject\" class=\"form-control\" type=\"text\"></div>\n";
             echo "</div>\n";
-            $mapping_required = get_setting('risk_mapping_required') == 1?"required":"";
-            echo "<div class=\"row-fluid padded-bottom subject-field\">\n";
-                echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
-                echo "<div class=\"span8\">".create_dropdown("risk_catalog", null, "risk_catalog_mapping", true, false, true, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} style='max-width:100%'")."</div>\n";
-            echo "</div>\n";
+            display_risk_mapping_edit([], "top");
+            display_threat_mapping_edit([], "top");
             echo "<div class=\"row-fluid\">\n";
                 echo "<!-- first coulmn -->\n";
                 echo "<div class=\"span5 left-panel\">\n";
@@ -341,7 +337,7 @@ function add_risk_details($template_group_id = 1){
 /*******************************
 * FUNCTION: VIEW RISK DETAILS *
 *******************************/
-function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name="", $template_group_id=1)
+function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id=1)
 {
     global $lang;
     global $escaper;
@@ -367,24 +363,22 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
         $active_fields = get_active_fields("risk", $template_group_id);
-        $inactive_fields = get_inactive_fields("risk", $template_group_id);
 
         // Top panel
         echo "<div class=\"row-fluid\">\n";
-            display_main_detail_fields_by_panel_view('top', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name);
+            display_main_detail_fields_by_panel_view('top', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping);
         echo "</div>";
 
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5 left-panel\">\n";
-                display_main_detail_fields_by_panel_view('left', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name);
-                display_main_detail_fields_by_panel_view('left', $inactive_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name);
+                display_main_detail_fields_by_panel_view('left', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping);
                 echo "&nbsp;";
             echo "</div>";
 
             // Right Panel
             echo "<div class=\"span5 right-panel\">\n";
-                display_main_detail_fields_by_panel_view('right', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name);
+                display_main_detail_fields_by_panel_view('right', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -392,7 +386,7 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
         // Bottom panel
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"span10 bottom-panel\">";
-                display_main_detail_fields_by_panel_view('bottom', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name);
+                display_main_detail_fields_by_panel_view('bottom', $active_fields, $id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -400,11 +394,13 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
     else
     {
         echo "<div class=\"row-fluid\">\n";
+            display_risk_mapping_view($risk_catalog_mapping, "top");
+            display_threat_mapping_view($threat_catalog_mapping, "top");
+        echo "</div>\n";
+        echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5\">\n";
                 echo "<div class=\"row-fluid left-panel\">\n";
-
-                    display_risk_mapping_view($risk_catalog_name);
 
                     display_submission_date_view($submission_date);
 
@@ -709,7 +705,7 @@ function risk_score_method_html($scoring_method="1", $CLASSIC_likelihood="", $CL
 /*******************************
 * FUNCTION: EDIT RISK DETAILS *
 *******************************/
-function edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping="", $template_group_id=1)
+function edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping=[], $threat_catalog_mapping=[], $template_group_id=1)
 {
     global $lang;
     global $escaper;
@@ -732,24 +728,22 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
         $active_fields = get_active_fields("risk", $template_group_id);
-        $inactive_fields = get_inactive_fields("risk", $template_group_id);
 
         // Top panel
         echo "<div class=\"row-fluid\">\n";
-                display_main_detail_fields_by_panel_edit('top', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping);
+                display_main_detail_fields_by_panel_edit('top', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping);
         echo "</div>";
 
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5 left-panel\">\n";
-                display_main_detail_fields_by_panel_edit('left', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping);
-                display_main_detail_fields_by_panel_edit('left', $inactive_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping);
+                display_main_detail_fields_by_panel_edit('left', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping);
                 echo "&nbsp;";
             echo "</div>";
 
             // Right Panel
             echo "<div class=\"span5 right-panel\">\n";
-                display_main_detail_fields_by_panel_edit('right', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping);
+                display_main_detail_fields_by_panel_edit('right', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -757,7 +751,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
         // Bottom panel
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"span10 bottom-panel\">\n";
-                display_main_detail_fields_by_panel_edit('bottom', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping);
+                display_main_detail_fields_by_panel_edit('bottom', $active_fields, $id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping);
                 echo "&nbsp;";
             echo "</div>";
         echo "</div>";
@@ -765,9 +759,12 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
     else
     {
         echo "<div class=\"row-fluid\">\n";
-            echo "<div class=\"span5 left-panel\">\n";
+            display_risk_mapping_edit($risk_catalog_mapping, "top");
 
-                display_risk_mapping_edit($risk_catalog_mapping);
+            display_threat_mapping_edit($threat_catalog_mapping, "top");
+        echo "</div>\n";
+        echo "<div class=\"row-fluid\">\n";
+            echo "<div class=\"span5 left-panel\">\n";
 
                 display_submission_date_edit($submission_date);
 
@@ -846,13 +843,11 @@ function view_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
         $active_fields = get_active_fields("risk", $template_group_id);
-        $inactive_fields = get_inactive_fields("risk", $template_group_id);
 
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5 left-panel\">\n";
                 display_main_mitigation_fields_by_panel_view('left', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $mitigation_id);
-                display_main_mitigation_fields_by_panel_view('left', $inactive_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $mitigation_id);
                 echo "&nbsp;";
             echo "</div>";
 
@@ -1131,13 +1126,11 @@ function edit_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
         $active_fields = get_active_fields("risk", $template_group_id);
-        $inactive_fields = get_inactive_fields("risk", $template_group_id);
 
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5 left-panel\">\n";
                 display_main_mitigation_fields_by_panel_edit('left', $active_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $mitigation_id);
-                display_main_mitigation_fields_by_panel_edit('left', $inactive_fields, $risk_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $mitigation_id);
                 echo "&nbsp;";
             echo "</div>";
 
@@ -1593,13 +1586,11 @@ function edit_review_submission($id, $review_id, $review, $next_step, $next_revi
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
         $active_fields = get_active_fields("risk", $template_group_id);
-        $inactive_fields = get_inactive_fields("risk", $template_group_id);
 
         echo "<div class=\"row-fluid\">\n";
             // Left Panel
             echo "<div class=\"span5 left-panel\">\n";
                 display_main_review_fields_by_panel_edit('left', $active_fields, $id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review);
-                display_main_review_fields_by_panel_edit('left', $inactive_fields, $id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review);
                 echo "&nbsp;";
             echo "</div>";
 
@@ -4356,7 +4347,7 @@ function view_risks_and_assets_selections($report, $sortby, $asset_tags)
 /******************************************
 * FUNCTION: VIEW GET RISKS BY SELECTIONS *
 ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[])
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[])
 {
     global $lang, $escaper;
     
@@ -4429,7 +4420,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_column
     echo "</div></div>\n";
 
     // Risk columns
-    echo display_risk_columns($risk_columns, $mitigation_columns, $review_columns, $scoring_columns);
+    echo display_risk_columns($risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns);
     
     echo "</form>\n";
     echo "<script>
@@ -4680,7 +4671,7 @@ function display_save_dynamic_risk_selections()
 /*********************************
 * FUNCTION: DISPLAY RISK COLUMNS *
 **********************************/
-function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[]){
+function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[]){
     global $escaper, $lang;
     echo "
         <div class=\"well\" id='column-selections-container'>
@@ -4697,6 +4688,8 @@ function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_
     $review_columns_selected = [];
     $scoring_columns_option = [];
     $scoring_columns_selected = [];
+    $unassigned_columns_option = [];
+    $unassigned_columns_selected = [];
 
     // If customization extra is enabled
     if(customization_extra())
@@ -4741,6 +4734,17 @@ function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_
             $scoring_columns_option[] = array('value'=>$column, 'name'=>$name);
             if($value == true) $scoring_columns_selected[] = $column;
         }
+        foreach($unassigned_columns as $column=>$value){
+            if(stripos($column, "custom_field_") !== false){
+                $field_id = str_replace("custom_field_", "", $column);
+                $custom_field = get_field_by_id($field_id);
+                $name = $custom_field['name'];
+            } else {
+                $name = get_label_by_risk_field_name($column);
+            }
+            $unassigned_columns_option[] = array('value'=>$column, 'name'=>$name);
+            if($value == true) $unassigned_columns_selected[] = $column;
+        }
     } else {
         foreach($risk_columns as $column=>$value){
             $name = get_label_by_risk_field_name($column);
@@ -4783,6 +4787,12 @@ function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_
             echo "<h4>" . $escaper->escapeHtml($lang['RiskScoringColumns']) . ":</h4>\n";
             create_multiple_dropdown("", $scoring_columns_selected, "scoring_columns", $scoring_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
             echo "</div>";
+        if(count($unassigned_columns_option)){
+            echo "<div class=\"span4\">\n";
+            echo "<h4>" . $escaper->escapeHtml($lang['UnassignedColumns']) . ":</h4>\n";
+            create_multiple_dropdown("", $unassigned_columns_selected, "unassigned_columns", $unassigned_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
+            echo "</div>";
+        }
         echo "</div>";
     echo "</div>";
     echo "</div></div>\n";
@@ -5015,6 +5025,16 @@ function get_dynamic_names_by_main_field_name($field_name)
             [
                 'name' => "comments",
                 'text' => $escaper->escapeHtml($lang['Comments']),
+            ],
+        'RiskMapping' => 
+            [
+                'name' => "risk_mapping",
+                'text' => $escaper->escapeHtml($lang['RiskMapping']),
+            ],
+        'ThreatMapping' => 
+            [
+                'name' => "threat_mapping",
+                'text' => $escaper->escapeHtml($lang['ThreatMapping']),
             ]
     );
     return isset($data[$field_name]) ? $data[$field_name] : "";
@@ -6160,6 +6180,7 @@ function display_set_default_date_format_script()
     echo "
         <script type=\"\">
            \$.datepicker.setDefaults({dateFormat: '".$escaper->escapeHtml(get_default_date_format_for_js())."'});
+           var default_date_format = '".$escaper->escapeHtml(get_default_date_format_for_js())."';
         </script>
     ";
 }
@@ -8060,7 +8081,9 @@ function get_label_by_risk_field_name($field){
 		'id' => js_string_escape($lang['ID']),
 		'risk_status' => js_string_escape($lang['Status']),
 		'closure_date' => js_string_escape($lang['DateClosed']),
-		'subject' => js_string_escape($lang['Subject']),
+        'subject' => js_string_escape($lang['Subject']),
+        'risk_mapping' => js_string_escape($lang['RiskMapping']),
+        'threat_mapping' => js_string_escape($lang['ThreatMapping']),
 		'reference_id' => js_string_escape($lang['ExternalReferenceId']),
 		'regulation' => js_string_escape($lang['ControlRegulation']),
 		'control_number' => js_string_escape($lang['ControlNumber']),
@@ -8409,8 +8432,15 @@ function display_contributing_risks_impact_table_list(){
  *******************************************/
 function display_highcharts_javascript($scripts)
 {
-        // Get the highcharts delivery method
-        $highcharts_delivery_method = get_setting("highcharts_delivery_method");
+        // If the global value is not already set
+        if (!isset($GLOBALS['highcharts_delivery_method']))
+        {       
+                // Set the highcharts delivery method
+                $GLOBALS['highcharts_delivery_method'] = get_setting("highcharts_delivery_method");
+        }
+
+        // Set the highcharts delivery method
+	$highcharts_delivery_method = $GLOBALS['highcharts_delivery_method'];
 
         // If the highcharts delivery method is local
         if ($highcharts_delivery_method == "local")
@@ -8433,6 +8463,98 @@ function display_highcharts_javascript($scripts)
         {
                 // Use the HighCharts CDN as the path
                 $path = "https://code.highcharts.com/";
+        }
+
+        // For each script provided
+        foreach ($scripts as $script)
+        {
+                // Display it as a script src
+                echo "<script src=\"" . $path . $script . "\"></script>\n";
+        }
+}
+
+/***************************************
+ * FUNCTION: DISPLAY JQUERY JAVASCRIPT *
+ ***************************************/
+function display_jquery_javascript($scripts)
+{
+        // If the global value is not already set
+        if (!isset($GLOBALS['jquery_delivery_method']))
+        {       
+                // Set the jquery delivery method
+                $GLOBALS['jquery_delivery_method'] = get_setting("jquery_delivery_method");
+        }
+
+        // Set the jquery delivery method
+	$jquery_delivery_method = $GLOBALS['jquery_delivery_method'];
+
+        // If the jquery delivery method is local
+        if ($jquery_delivery_method == "local")
+        {
+                // Get the SimpleRisk Base URL
+                $simplerisk_base_url = get_setting('simplerisk_base_url');
+
+                // If the last character is not a /
+                if (substr($simplerisk_base_url, -1) != "/")
+                {
+                        // Append a / to the SimpleRisk Base URL
+                        $simplerisk_base_url .= "/";
+                }
+
+                // Append the path to the jquery code
+                $path = $simplerisk_base_url . "vendor/components/jquery/";
+        }
+        // Otherwise
+        else
+        {
+                // Use the HighCharts CDN as the path
+                $path = "https://code.jquery.com/";
+        }
+
+        // For each script provided
+        foreach ($scripts as $script)
+        {
+                // Display it as a script src
+                echo "<script src=\"" . $path . $script . "\"></script>\n";
+        }
+}
+
+/******************************************
+ * FUNCTION: DISPLAY JQUERY UI JAVASCRIPT *
+ ******************************************/
+function display_jquery_ui_javascript($scripts)
+{
+        // If the global value is not already set
+        if (!isset($GLOBALS['jquery_delivery_method']))
+        {
+		// Set the jquery delivery method
+		$GLOBALS['jquery_delivery_method'] = get_setting("jquery_delivery_method");
+        }
+
+	// Set the jquery delivery method
+	$jquery_delivery_method = $GLOBALS['jquery_delivery_method'];
+
+        // If the jquery delivery method is local
+        if ($jquery_delivery_method == "local")
+        {
+                // Get the SimpleRisk Base URL
+                $simplerisk_base_url = get_setting('simplerisk_base_url');
+
+                // If the last character is not a /
+                if (substr($simplerisk_base_url, -1) != "/")
+                {
+                        // Append a / to the SimpleRisk Base URL
+                        $simplerisk_base_url .= "/";
+                }
+
+                // Append the path to the jquery code
+                $path = $simplerisk_base_url . "vendor/components/jqueryui/";
+        }
+        // Otherwise
+        else
+        {
+                // Use the HighCharts CDN as the path
+                $path = "https://code.jquery.com/ui/1.12.1/";
         }
 
         // For each script provided

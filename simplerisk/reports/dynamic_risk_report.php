@@ -111,12 +111,15 @@ else
 // If customization extra is enabled
 if(customization_extra()){
     require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-    $active_fields = get_active_fields();
+    $active_fields = get_all_fields();
     $risk_fields = array(
         'id',
         'risk_status',
         'closure_date',
         'subject',
+        'project',
+        'project_status',
+        'days_open',
     );
     // Names list of Mitigation columns
     $mitigation_fields = array(
@@ -131,6 +134,8 @@ if(customization_extra()){
     $risk_custom_fields = [];
     $mitigation_custom_fields = [];
     $review_custom_fields = [];
+    $unassigned_fields = [];
+    $unassigned_custom_fileds = [];
     foreach($active_fields as $active_field)
     {
         $field = get_dynamic_names_by_main_field_name($active_field['name']);
@@ -159,11 +164,19 @@ if(customization_extra()){
                     $review_fields[] = "custom_field_".$active_field['id'];
                 }
             break;
+            case 0: // unassigned fields
+                if($active_field['is_basic'] == 1 && $field) {
+                    $unassigned_fields[] = $field['name'];
+                } else if($active_field['is_basic'] == 0){
+                    $unassigned_custom_fileds[] = "custom_field_".$active_field['id'];
+                }
+            break;
         }
     }
     $risk_fields = array_merge($risk_fields, $risk_custom_fields);
     $mitigation_fields = array_merge($mitigation_fields, $mitigation_custom_fields);
     $review_fields = array_merge($review_fields, $review_custom_fields);
+    $unassigned_fields = array_merge($unassigned_fields, $unassigned_custom_fileds);
 } else {
 // Names list of Risk columns
     $risk_fields = array(
@@ -171,6 +184,8 @@ if(customization_extra()){
         'risk_status',
         'closure_date',
         'subject',
+        'risk_mapping',
+        'threat_mapping',
         'risk_tags',
         'submitted_by',
         'source',
@@ -218,6 +233,7 @@ if(customization_extra()){
         'comments'
     );
     $scoring_base_fields = "scoring_method";
+    $unassigned_fields = [];
 }
 // Names list of Risk Scoring columns
 $scoring_fields = array(
@@ -278,6 +294,7 @@ $risk_columns = [];
 $mitigation_columns = [];
 $review_columns = [];
 $scoring_columns = [];
+$unassigned_columns = [];
 if(!is_array($custom_display_settings) || !count($custom_display_settings)){
     $custom_display_settings = array(
         'id',
@@ -301,11 +318,10 @@ foreach($review_fields as $column){
 foreach($scoring_fields as $column){
     $scoring_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
 }
-$table_columns = array_merge($risk_fields, $mitigation_fields, $review_fields, $scoring_fields);
-$selected_columns = [];
-foreach($table_columns as $column){
-    $selected_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
+foreach($unassigned_fields as $column){
+    $unassigned_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
 }
+$selected_columns = array_merge($risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns);
 
 if(is_array($custom_selection_settings)){
     foreach($custom_selection_settings as $select=>$custom_selection_setting){
@@ -346,7 +362,15 @@ if (import_export_extra()){
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
 <head>
-  <script src="../js/jquery.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+?>
   <script src="../js/bootstrap.min.js"></script>
   <script src="../js/sorttable.js"></script>
   <script src="../js/obsolete.js"></script>
@@ -363,7 +387,7 @@ if (import_export_extra()){
   <link rel="stylesheet" href="../css/jquery.dataTables.css">
   
   <link rel="stylesheet" href="../css/divshot-canvas.css">
-  <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/side-navigation.css">
 
@@ -394,7 +418,7 @@ if (import_export_extra()){
           <div id="selections" class="span12">
             <div class="well">
                 <div id="selection-container">
-                    <?php view_get_risks_by_selections($status, $group, $sort, $risk_columns, $mitigation_columns, $review_columns, $scoring_columns); ?>
+                    <?php view_get_risks_by_selections($status, $group, $sort, $risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns); ?>
                 </div>
                 <div id="save-container">
                     <?php

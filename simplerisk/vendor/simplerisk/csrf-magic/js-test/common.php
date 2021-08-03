@@ -10,10 +10,10 @@ function print_javascript($name, $web) {
 }
 
 function csrf_startup() {
-    csrf_conf('rewrite-js', '../src/Csrf.js');
+    csrf_conf('rewrite-js', '../csrf-magic.js');
     csrf_conf('frame-breaker', false);
 }
-require_once '../src/Csrf.php';
+require_once '../csrf-magic.php';
 
 // Handle an AJAX request
 if (isset($_POST['ajax'])) {

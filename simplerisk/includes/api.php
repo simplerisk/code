@@ -62,7 +62,7 @@ function is_session_authenticated()
         if(!isset($_GET['key']))
         {
             // Load CSRF Magic
-            require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+            csrf_init();
         }
         else
         {
@@ -73,13 +73,13 @@ function is_session_authenticated()
                 if(!is_valid_key_by_uid($_GET['key'], $_SESSION['uid']))
                 {
                     // Load CSRF Magic
-                    require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+                    csrf_init();
                 }
             }
             else
             {
                 // Load CSRF Magic
-                require_once(realpath(__DIR__ . '/../includes/csrf-magic/csrf-magic.php'));
+                csrf_init();
             }
         }
 
@@ -930,7 +930,7 @@ function dynamicriskUniqueColumnDataAPI()
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
             $custom_extra = true;
-            $active_fields = get_active_fields();
+            $active_fields = get_all_fields();
         }
         else
         {
@@ -999,6 +999,8 @@ function dynamicriskUniqueColumnDataAPI()
                 case "mitigation_owner":
                 case "mitigation_team":
                 case "mitigation_controls":
+                case "risk_mapping":
+                case "threat_mapping":
                     $uniqueColumnArr = get_name_value_array_from_text_array($uniqueColumnArr, ',', $delimiter);
                 break;
                 case "affected_assets":
@@ -1220,7 +1222,7 @@ function getTabHtml($id, $template){
         $OWASPPrivacyViolation = $risk[0]['OWASP_PrivacyViolation'];
         $custom = $risk[0]['Custom'];
         $risk_catalog_mapping = $risk[0]['risk_catalog_mapping'];
-        $risk_catalog_name = $risk[0]['risk_catalog_name'];
+        $threat_catalog_mapping = $risk[0]['threat_catalog_mapping'];
         $template_group_id = $risk[0]['template_group_id'];
         
         $ContributingLikelihood = $risk[0]['Contributing_Likelihood'];
@@ -1308,7 +1310,7 @@ function getTabHtml($id, $template){
         $OWASPPrivacyViolation = "";
         $custom = "";
         $risk_catalog_mapping = "";
-        $risk_catalog_name = "";
+        $threat_catalog_mapping = "";
         $template_group_id = "";
         
         $ContributingLikelihood = "";
@@ -5172,7 +5174,7 @@ function getTabularDocumentsResponse()
                 $document['state'] = "open";
                 $document['document_type'] = $escaper->escapeHtml($document['document_type']);
                 $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name']). " (".$document['file_version'].")" ."</a>";
-                $document['status'] = $escaper->escapeHtml($document['status']);
+                $document['status'] = $escaper->escapeHtml(get_name_by_value('document_status', $document['status']));
                 $document['creation_date'] = format_date($document['creation_date']);
                 $document['approval_date'] = format_date($document['approval_date']);
                 $document['actions'] = "<div class=\"text-center\">&nbsp;&nbsp;&nbsp;";
@@ -5248,7 +5250,7 @@ function getTabularDocumentsResponse()
                 $document['state'] = "closed";
                 $document['document_type'] = $escaper->escapeHtml($document['document_type']);
                 $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name'])."</a>";
-                $document['status'] = $escaper->escapeHtml($document['status']);
+                $document['status'] = $escaper->escapeHtml(get_name_by_value('document_status', $document['status']));
                 $document['framework_names'] = $escaper->escapeHtml($framework_names);
                 $document['control_names'] = $escaper->escapeHtml($control_names);
                 $document['creation_date'] = format_date($document['creation_date']);
@@ -7362,6 +7364,7 @@ function get_exception_api()
     $exception = get_exception((int)$_GET['id']);
 
     $exception['additional_stakeholders'] = $exception['additional_stakeholders'] ? explode(',', $exception['additional_stakeholders']) : [];
+    $exception['associated_risks'] = $exception['associated_risks'] ? explode(',', $exception['associated_risks']) : [];
     $exception['creation_date'] = format_date($exception['creation_date']);
     $exception['next_review_date'] = format_date($exception['next_review_date']);
     $exception['approval_date'] = format_date($exception['approval_date']);
@@ -7408,6 +7411,7 @@ function get_exception_for_display_api()
     $exception["type_text"] = $escaper->escapeHtml($lang[ucfirst($type)]);
     $exception['owner'] = $escaper->escapeHtml($exception['owner']);
     $exception['additional_stakeholders'] = get_stakeholder_names($exception['additional_stakeholders'], 4, true);
+    $exception['associated_risks'] = get_risk_subjects_by_ids($exception['associated_risks'], 4, true);
     $exception['creation_date'] = format_date($exception['creation_date']);
     $exception['next_review_date'] = format_date($exception['next_review_date']);
     if ($type = $_GET['approval']) {
@@ -7478,6 +7482,7 @@ function create_exception_api() {
     $name = $_POST['name'];
     $owner = (int)$_POST['owner'];
     $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
+    $associated_risks = empty($_POST['associated_risks']) ? "" : implode(",", $_POST['associated_risks']);
     $review_frequency = !empty($_POST['review_frequency']) ? $_POST['review_frequency'] : 0;
     $description = $_POST['description'];
     $justification = $_POST['justification'];
@@ -7542,7 +7547,7 @@ function create_exception_api() {
     }
 
     try {
-        $id = create_exception($name, $policy, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification);
+        $id = create_exception($name, $policy, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks);
     } catch(Exception $e) {
         error_log($e);
         set_alert(true, "bad", $lang['ThereWasAProblemCreatingTheException']);
@@ -7616,6 +7621,7 @@ function update_exception_api() {
     $name = $_POST['name'];
     $owner = (int)$_POST['owner'];
     $additional_stakeholders = empty($_POST['additional_stakeholders']) ? "" : implode(",", $_POST['additional_stakeholders']);
+    $associated_risks = empty($_POST['associated_risks']) ? "" : implode(",", $_POST['associated_risks']);
     $review_frequency = !empty($_POST['review_frequency']) ? $_POST['review_frequency'] : 0;
     $description = $_POST['description'];
     $justification = $_POST['justification'];
@@ -7700,6 +7706,7 @@ function update_exception_api() {
             $approved,
             $description,
             $justification,
+            $associated_risks,
             $id);
 
     } catch(Exception $e) {

@@ -2088,6 +2088,12 @@ $lang = array(
     'AllowAllUsersToSeeDocumentsNotAssignedToTeam' => 'Allow all users to see documents not assigned to a team',
     'AllowAllUsersToSeeAllDocuments' => 'Allow All Users to See All Documents',
     'AllowAllUsersToSeeAssetsNotAssignedToTeam' => 'Allow all users to see assets not assigned to a team',
+    'AssociatedRisks' => 'Associated Risks',
+    'ThreatMapping' => 'Threat Mapping',
+    'jQueryDeliveryMethod' => 'jQuery Delivery method',
+    'AuditLog_DocumentUpdates' => 'Document "{$document_name}"(ID: {$document_id}) was updated by "{$user_name}". Changes: {$changes}.',
+    'DocumentStatus' => 'Document Status',
+    'UnassignedColumns' => 'Unassigned Columns',
 
     '' => ''
 );

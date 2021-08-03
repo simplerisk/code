@@ -31,7 +31,15 @@ require_once(language_file());
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
 <head>
-  <script src="../js/jquery.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+?>
   <script src="../js/bootstrap.min.js"></script>
   <script src="../js/sorttable.js"></script>
   <script src="../js/obsolete.js"></script>
@@ -52,7 +60,7 @@ require_once(language_file());
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
   <link rel="stylesheet" href="../css/bootstrap.css">
   <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-  <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/side-navigation.css">
   

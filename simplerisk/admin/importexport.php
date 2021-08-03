@@ -173,7 +173,15 @@ require_once(language_file());
 
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-    <script src="../js/jquery.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+?>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/sorttable.js"></script>
     <script src="../js/jquery.blockUI.min.js"></script>
@@ -187,7 +195,7 @@ require_once(language_file());
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
 
-    <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/side-navigation.css">
     <link rel="stylesheet" href="../css/settings_tabs.css">

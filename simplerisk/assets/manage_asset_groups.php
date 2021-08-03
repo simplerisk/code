@@ -34,9 +34,25 @@ require_once(language_file());
 <!doctype html>
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
     <head>
-        <script src="../js/jquery.min.js"></script>
-        <script src="../js/jquery.easyui.min.js"></script>
-        <script src="../js/jquery-ui.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+?>
+	<script src="../js/jquery.easyui.min.js"></script>
+<?php
+        // Use these jquery-ui scripts
+        $scripts = [
+                'jquery-ui.min.js',
+        ];
+
+        // Include the jquery-ui javascript source
+        display_jquery_ui_javascript($scripts);
+?>
         <script src="../js/bootstrap.min.js"></script>
         <script src="../js/selectlist.js"></script>
 
@@ -54,7 +70,7 @@ require_once(language_file());
         <link rel="stylesheet" href="../css/style.css">
         <link rel="stylesheet" href="../css/easyui.css">
 
-        <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
         <link rel="stylesheet" href="../css/side-navigation.css">
 

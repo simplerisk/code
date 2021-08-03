@@ -1,5 +1,5 @@
 <IfModule mod_rewrite.c>
-        RewriteEngine On
-        RewriteRule ^(?!(simplerisk/csrf-magic/src/Csrf.js|node_modules/highcharts/.*?.js|tinymce/tinymce/.*?|fortawesome/font-awesome/.*?)$)(.*)?$ / [F,L]
+	RewriteEngine On
+	RewriteRule ^(?!(simplerisk/csrf-magic/csrf-magic.js|node_modules/highcharts/.*?.js|components/font-awesome/.*?|components/jquery/.*?.js|components/jqueryui/.*?.js|tinymce/tinymce/.*?)$)(.*)?$ / [F,L]
 	ErrorDocument 301 "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>301 Moved Permanently</title>\n</head><body>\n<h1>Moved Permanently</h1>\n<p>The document has been moved.</p>\n</body></html>"
 </IfModule>

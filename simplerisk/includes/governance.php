@@ -1675,9 +1675,10 @@ function get_document_versions_by_id($id)
     $db = db_open();
 
     $sql = "
-        SELECT t1.*, t2.version file_version, t2.unique_name
+        SELECT t1.*, t2.version file_version, t2.unique_name, t3.value as status
         FROM `documents` t1 
             INNER JOIN `compliance_files` t2 ON t1.id=t2.ref_id AND t2.ref_type='documents'
+            LEFT JOIN `document_status` t3 ON t1.document_status=t3.value
         WHERE t1.id=:id
         ORDER BY t2.version
         ;
@@ -1702,9 +1703,10 @@ function get_document_by_id($id)
     $db = db_open();
 
     $sql = "
-        SELECT t1.*, t2.version file_version, t2.unique_name
+        SELECT t1.*, t2.version file_version, t2.unique_name, t3.value as status
         FROM `documents` t1 
             LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
+            LEFT JOIN `document_status` t3 ON t1.document_status=t3.value
         WHERE t1.id=:id
         ;
     ";
@@ -1727,34 +1729,29 @@ function get_documents($type="")
     // Open the database connection
     $db = db_open();
 
-    if($type)
-    {
-        $sql = "
-            SELECT t1.*, t2.version file_version, t2.unique_name
-            FROM `documents` t1 
-                LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
-            WHERE t1.document_type=:type
-            ORDER BY t1.document_type, t1.document_name
-            ;
-        ";
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam(":type", $type, PDO::PARAM_STR);
+    $sql = "
+        SELECT t1.*, t2.version file_version, t2.unique_name, t3.value as status
+        FROM `documents` t1 
+	    LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
+            LEFT JOIN `document_status` t3 ON t1.document_status=t3.value
+    ";
+    if(team_separation_extra()){
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $where = get_user_teams_query_for_documents("t1");
+    } else $where = " WHERE 1";
+    if($type) {
+        $sql .= $where . " AND t1.document_type=:type";
+    } else {
+         $sql .= $where;
     }
-    // Get all documents
-    else
-    {
-        $sql = "
-            SELECT t1.*, t2.version file_version, t2.unique_name
-            FROM `documents` t1 
-                LEFT JOIN `compliance_files` t2 ON t1.file_id=t2.id
-            ORDER BY t1.document_type, t1.document_name
-            ;
-        ";
-        $stmt = $db->prepare($sql);
-    }
+    $sql .= " ORDER BY t1.document_type, t1.document_name";
+
+
+    $stmt = $db->prepare($sql);
+    if($type) $stmt->bindParam(":type", $type, PDO::PARAM_STR);
     $stmt->execute();
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     // Close the database connection
     db_close($db);
 
@@ -1801,7 +1798,7 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
         return false;
     }
     // Create a document
-    $stmt = $db->prepare("INSERT INTO `documents` (`document_type`, `document_name`, `control_ids`, `framework_ids`, `parent`, `status`, `file_id`, `creation_date`, `last_review_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `additional_stakeholders`, `approver`, `team_ids`) VALUES (:document_type, :document_name, :control_ids, :framework_ids, :parent, :status, :file_id, :creation_date, :last_review_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :additional_stakeholders, :approver, :team_ids)");
+    $stmt = $db->prepare("INSERT INTO `documents` (`document_type`, `document_name`, `control_ids`, `framework_ids`, `parent`, `document_status`, `file_id`, `creation_date`, `last_review_date`, `review_frequency`, `next_review_date`, `approval_date`, `document_owner`, `additional_stakeholders`, `approver`, `team_ids`) VALUES (:document_type, :document_name, :control_ids, :framework_ids, :parent, :status, :file_id, :creation_date, :last_review_date, :review_frequency, :next_review_date, :approval_date, :document_owner, :additional_stakeholders, :approver, :team_ids)");
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":control_ids", $control_ids, PDO::PARAM_STR);
@@ -1869,13 +1866,13 @@ function add_document($document_type, $document_name, $control_ids, $framework_i
 /*****************************
  * FUNCTION: UPDATE DOCUMENT *
  *****************************/
-function update_document($document_id, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver, $team_ids){
+function update_document($document_id, $document_type, $document_name, $control_ids, $framework_ids, $parent, $status, $creation_date, $last_review_date, $review_frequency, $next_review_date, $approval_date, $document_owner, $additional_stakeholders, $approver, $team_ids, $audit_log=true){
     global $lang, $escaper;
     
     // Open the database connection
     $db = db_open();
 
-    // Check if the framework exists
+    // Check if the document exists
     $stmt = $db->prepare("SELECT * FROM `documents` where document_name=:document_name AND document_type=:document_type AND id<>:id; ");
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
@@ -1887,15 +1884,61 @@ function update_document($document_id, $document_type, $document_name, $control_
         return false;
     }
 
+    // Get the existing values for this document
+    $stmt = $db->prepare("SELECT * FROM `documents` where id=:id;");
+    $stmt->bindParam(":id", $document_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Create an array of before values
+    $before = [
+	'document_type' => $row['document_type'],
+	'document_name' => $row['document_name'],
+	'control_ids' => $row['control_ids'],
+	'framework_ids' => $row['framework_ids'],
+	'parent' => $row['parent'],
+	'document_status' => $row['document_status'],
+	'creation_date' => $row['creation_date'],
+	'last_review_date' => $row['last_review_date'],
+	'review_frequency' => $row['review_frequency'],
+	'next_review_date' => $row['next_review_date'],
+	'approval_date' => $row['approval_date'],
+	'document_owner' => $row['document_owner'],
+	'additional_stakeholders' => $row['additional_stakeholders'],
+	'approver' => $row['approver'],
+	'team_ids' => $row['team_ids'],
+    ];
+
+    // Create an array of after values
+    $after = [
+        'document_type' => $document_type,
+        'document_name' => $document_name,
+        'control_ids' => $control_ids,
+        'framework_ids' => $framework_ids,
+        'parent' => $parent,
+        'document_status' => $status,
+        'creation_date' => $creation_date,
+        'last_review_date' => $last_review_date,
+        'review_frequency' => $review_frequency,
+        'next_review_date' => $next_review_date,
+        'approval_date' => $approval_date,
+        'document_owner' => $document_owner,
+        'additional_stakeholders' => $additional_stakeholders,
+        'approver' => $approver,
+        'team_ids' => $team_ids,
+    ];
+
+    $changes = get_changes('document', $before, $after);
+
     // Update a document
-    $stmt = $db->prepare("UPDATE `documents` SET `document_type`=:document_type, `document_name`=:document_name, `control_ids`=:control_ids, `framework_ids`=:framework_ids, `parent`=:parent, `status`=:status, `creation_date`=:creation_date, `last_review_date`=:last_review_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `additional_stakeholders`=:additional_stakeholders , `approver`=:approver, `team_ids`=:team_ids WHERE id=:document_id; ");
+    $stmt = $db->prepare("UPDATE `documents` SET `document_type`=:document_type, `document_name`=:document_name, `control_ids`=:control_ids, `framework_ids`=:framework_ids, `parent`=:parent, `document_status`=:document_status, `creation_date`=:creation_date, `last_review_date`=:last_review_date, `review_frequency`=:review_frequency, `next_review_date`=:next_review_date, `approval_date`=:approval_date, `document_owner`=:document_owner, `additional_stakeholders`=:additional_stakeholders , `approver`=:approver, `team_ids`=:team_ids WHERE id=:document_id; ");
     $stmt->bindParam(":document_id", $document_id, PDO::PARAM_INT);
     $stmt->bindParam(":document_type", $document_type, PDO::PARAM_STR);
     $stmt->bindParam(":document_name", $document_name, PDO::PARAM_STR);
     $stmt->bindParam(":control_ids", $control_ids, PDO::PARAM_STR);
     $stmt->bindParam(":framework_ids", $framework_ids, PDO::PARAM_STR);
     $stmt->bindParam(":parent", $parent, PDO::PARAM_INT);
-    $stmt->bindParam(":status", $status, PDO::PARAM_STR);
+    $stmt->bindParam(":document_status", $status, PDO::PARAM_STR);
     $stmt->bindParam(":creation_date", $creation_date, PDO::PARAM_STR);
     $stmt->bindParam(":last_review_date", $last_review_date, PDO::PARAM_STR);
     $stmt->bindParam(":review_frequency", $review_frequency, PDO::PARAM_INT);
@@ -1934,7 +1977,10 @@ function update_document($document_id, $document_type, $document_name, $control_
         $stmt->execute();
     }
 
-    $message = "A document \"" . $escaper->escapeHtml($document_name) . "\"(ID:".$document_id.") was updated by the \"" . $_SESSION['user'] . "\" user.";
+    //$message = "A document \"" . $escaper->escapeHtml($document_name) . "\"(ID:".$document_id.") was updated by the \"" . $_SESSION['user'] . "\" user.";
+    //write_log(1000, $_SESSION['uid'], $message, "document");
+
+    $message = _lang('AuditLog_DocumentUpdates', array('document_name' => $document_name, 'document_id' => $document_id, 'user_name' => $_SESSION['name'], 'changes' => $changes), false);
     write_log(1000, $_SESSION['uid'], $message, "document");
 
     return $document_id;
@@ -2149,7 +2195,7 @@ function get_documents_as_treegrid($type){
         $document['document_name'] = "<a href=\"".$_SESSION['base_url']."/governance/download.php?id=".$document['unique_name']."\" >".$escaper->escapeHtml($document['document_name'])."</a>";
         $document['framework_names'] = $escaper->escapeHtml($framework_names);
         $document['control_names'] = $escaper->escapeHtml($control_names);
-        $document['status'] = $escaper->escapeHtml($document['status']);
+        $document['status'] = $escaper->escapeHtml(get_name_by_value('document_status', $document['status']));
         $document['creation_date'] = format_date($document['creation_date']);
         $document['approval_date'] = format_date($document['approval_date']);
         $document['actions'] = "<div class=\"text-center\"><a class=\"framework-block--edit\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-edit\"></i></a>&nbsp;&nbsp;&nbsp;<a class=\"framework-block--delete\" data-id=\"".((int)$document['id'])."\"><i class=\"fa fa-trash\"></i></a></div>";
@@ -2282,6 +2328,7 @@ function get_exception_for_display($id, $type){
             de.name,
             o.name as owner,
             de.additional_stakeholders,
+            de.associated_risks,
             de.creation_date,
             de.review_frequency,
             de.next_review_date,
@@ -2455,7 +2502,7 @@ function get_exception_tabs($type)
     echo "</table>";
 }
 
-function create_exception($name, $policy, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification) {
+function create_exception($name, $policy, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks) {
 
     $db = db_open();
 
@@ -2475,7 +2522,8 @@ function create_exception($name, $policy, $control, $owner, $additional_stakehol
                 `approver`,
                 `approved`,
                 `description`,
-                `justification`
+                `justification`,
+                `associated_risks`
             )
         VALUES (
             :name,
@@ -2490,7 +2538,8 @@ function create_exception($name, $policy, $control, $owner, $additional_stakehol
             :approver,
             :approved,
             :description,
-            :justification
+            :justification,
+            :associated_risks
         );"
     );
 
@@ -2507,6 +2556,7 @@ function create_exception($name, $policy, $control, $owner, $additional_stakehol
     $stmt->bindParam(":approved", $approved, PDO::PARAM_INT);
     $stmt->bindParam(":description", $description, PDO::PARAM_STR);
     $stmt->bindParam(":justification", $justification, PDO::PARAM_STR);
+    $stmt->bindParam(":associated_risks", $associated_risks, PDO::PARAM_STR);
     $stmt->execute();
 
     $id = $db->lastInsertId();
@@ -2545,7 +2595,7 @@ function create_exception($name, $policy, $control, $owner, $additional_stakehol
     return $id;
 }
 
-function update_exception($name, $policy, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $id) {
+function update_exception($name, $policy, $control, $owner, $additional_stakeholders, $creation_date, $review_frequency, $next_review_date, $approval_date, $approver, $approved, $description, $justification, $associated_risks, $id) {
 
 
     $original = getExceptionForChangeChecking($id);
@@ -2568,7 +2618,8 @@ function update_exception($name, $policy, $control, $owner, $additional_stakehol
                 `approver` = :approver,
                 `approved` = :approved,
                 `description` = :description,
-                `justification` = :justification
+                `justification` = :justification,
+                `associated_risks` = :associated_risks
         WHERE `value` = :id;"
     );
 
@@ -2585,6 +2636,7 @@ function update_exception($name, $policy, $control, $owner, $additional_stakehol
     $stmt->bindParam(":approved", $approved, PDO::PARAM_INT);
     $stmt->bindParam(":description", $description, PDO::PARAM_STR);
     $stmt->bindParam(":justification", $justification, PDO::PARAM_STR);
+    $stmt->bindParam(":associated_risks", $associated_risks, PDO::PARAM_STR);
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 

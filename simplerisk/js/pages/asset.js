@@ -1,3 +1,4 @@
+var changed_value = false;
 
 function verify_discard_or_delete_asset(action, _this) {
 
@@ -278,6 +279,7 @@ function updateAsset(e, self) {
                     fieldValue: fieldValue,
                 },
                 success: function(data){
+                    changed_value = false;
                     if(data.status_message){
                         showAlertsFromArray(data.status_message);
                     }

@@ -188,12 +188,18 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
   <link rel="stylesheet" href="css/bootstrap.css">
   <link rel="stylesheet" href="css/bootstrap-responsive.css">
 
-  <link rel="stylesheet" href="vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+  <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css">
   <link rel="stylesheet" href="css/theme.css">
-
-  <script src="js/jquery.min.js"></script>
   
   <?php
+      // Use these jQuery scripts
+      $scripts = [
+        'jquery.min.js',
+      ];
+
+      // Include the jquery javascript source
+      display_jquery_javascript($scripts);
+
       setup_favicon();
       setup_alert_requirements();
   ?>  

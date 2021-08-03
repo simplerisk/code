@@ -90,7 +90,8 @@ $(document).ready(function(){
         var mitigation_columns = $("#mitigation_columns").val();
         var review_columns = $("#review_columns").val();
         var scoring_columns = $("#scoring_columns").val();
-        var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns);
+        var unassigned_columns = $("#unassigned_columns").val();
+        var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns, unassigned_columns);
         var columnOptions = [];
         var columnNames = [];
         $(".risk-datatable tr.main th").each(function(index){
@@ -470,16 +471,18 @@ $(document).ready(function(){
                     css: { border: '1px solid black', background: '#ffffff', zIndex:100001 }
                 });
                 setTimeout(function(){
-                    var risk_columns = $("#risk_columns").val();
-                    var mitigation_columns = $("#mitigation_columns").val();
-                    var review_columns = $("#review_columns").val();
-                    var scoring_columns = $("#scoring_columns").val();
-                    var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns);
+                    var risk_columns = $("#risk_columns").val()?$("#risk_columns").val():[];
+                    var mitigation_columns = $("#mitigation_columns").val()?$("#mitigation_columns").val():[];
+                    var review_columns = $("#review_columns").val()?$("#review_columns").val():[];
+                    var scoring_columns = $("#scoring_columns").val()?$("#scoring_columns").val():[];
+                    var unassigned_columns = $("#unassigned_columns").val()?$("#unassigned_columns").val():[];
+                    var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns, unassigned_columns);
                     if(selected_all == true) {
                         visible_column("risk_columns", selected_columns);
                         visible_column("mitigation_columns", selected_columns);
                         visible_column("review_columns", selected_columns);
                         visible_column("scoring_columns", selected_columns);
+                        visible_column("unassigned_columns", selected_columns);
                     }
                     $.ajax({
                         type: "POST",

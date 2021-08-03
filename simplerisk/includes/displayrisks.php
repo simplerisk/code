@@ -377,7 +377,7 @@ function display_supporting_documentation_view($risk_id, $view_type)
 /**************************************
 * FUNCTION: DISPLAY RISK MAPPING VIEW *
 ***************************************/
-function display_risk_mapping_view($risk_catalog_name, $panel_name="")
+function display_risk_mapping_view($risk_catalog_mapping, $panel_name="")
 {
     global $lang, $escaper;
 
@@ -385,14 +385,37 @@ function display_risk_mapping_view($risk_catalog_name, $panel_name="")
         echo "<div class=\"row-fluid subject-field\">\n";
         echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
         echo "<div class=\"span8\">\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"risk_catalog_mapping\" id=\"risk_catalog_mapping\" size=\"50\" value=\"" . $escaper->escapeHtml($risk_catalog_name) . "\" title=\"" . $escaper->escapeHtml($risk_catalog_name) . "\" disabled=\"disabled\" />\n";
+        echo "<span> " . $escaper->escapeHtml(get_names_by_multi_values("risk_catalog", $risk_catalog_mapping, false, ", ", true)) . " </span>\n";
         echo "</div>\n";
         echo "</div>\n";
     } else {
         echo "<div class=\"row-fluid\">\n";
         echo "<div class=\"span5 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
         echo "<div class=\"span7\">\n";
-        echo "<input style=\"cursor: default;\" type=\"text\" name=\"risk_catalog_mapping\" id=\"risk_catalog_mapping\" size=\"50\" value=\"" . $escaper->escapeHtml($risk_catalog_name) . "\" title=\"" . $escaper->escapeHtml($risk_catalog_name) . "\" disabled=\"disabled\" />\n";
+        echo "<span> " . $escaper->escapeHtml(get_names_by_multi_values("risk_catalog", $risk_catalog_mapping, false, ", ", true)) . " </span>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+    }
+}
+/****************************************
+* FUNCTION: DISPLAY THREAT MAPPING VIEW *
+*****************************************/
+function display_threat_mapping_view($threat_catalog_mapping, $panel_name="")
+{
+    global $lang, $escaper;
+
+    if($panel_name=="top" || $panel_name=="bottom"){
+        echo "<div class=\"row-fluid subject-field\">\n";
+        echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['ThreatMapping']).":</div>\n";
+        echo "<div class=\"span8\">\n";
+        echo "<span> " . $escaper->escapeHtml(get_names_by_multi_values("threat_catalog", $threat_catalog_mapping, false, ", ", true)) . " </span>\n";
+        echo "</div>\n";
+        echo "</div>\n";
+    } else {
+        echo "<div class=\"row-fluid\">\n";
+        echo "<div class=\"span5 text-right\">".$escaper->escapeHtml($lang['ThreatMapping']).":</div>\n";
+        echo "<div class=\"span7\">\n";
+        echo "<span> " . $escaper->escapeHtml(get_names_by_multi_values("threat_catalog", $threat_catalog_mapping, false, ", ", true)) . " </span>\n";
         echo "</div>\n";
         echo "</div>\n";
     }
@@ -401,7 +424,7 @@ function display_risk_mapping_view($risk_catalog_name, $panel_name="")
 /*********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS VIEW *
 **********************************************************/
-function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_name="")
+function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping)
 {
 
     foreach($fields as $field)
@@ -498,7 +521,11 @@ function display_main_detail_fields_by_panel_view($panel_name, $fields, $risk_id
                     break;
 
                     case 'RiskMapping':
-                        display_risk_mapping_view($risk_catalog_name, $panel_name);
+                        display_risk_mapping_view($risk_catalog_mapping, $panel_name);
+                    break;
+
+                    case 'ThreatMapping':
+                        display_threat_mapping_view($threat_catalog_mapping, $panel_name);
                     break;
                 }
 
@@ -838,19 +865,47 @@ function display_supporting_documentation_edit($risk_id, $view_type)
 function display_risk_mapping_edit($risk_catalog_mapping=[], $panel_name="")
 {
     global $lang, $escaper;
+    $risk_catalog_mapping = $risk_catalog_mapping?explode(",", $risk_catalog_mapping):[];
+
     $mapping_required = get_setting('risk_mapping_required') == 1?"required":"";
     if($panel_name=="top" || $panel_name=="bottom"){
         echo "<div class=\"row-fluid subject-field\">\n";
         echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
         echo "<div class=\"span8\">\n";
-        create_dropdown("risk_catalog", $risk_catalog_mapping, "risk_catalog_mapping", true, false, false, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} style='max-width:100%'");
+        create_multiple_dropdown("risk_catalog", $risk_catalog_mapping, "risk_catalog_mapping", NULL, false, "", "", true, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} class='multiselect' ");
         echo "</div>\n";
         echo "</div>\n";
     } else {
         echo "<div class=\"row-fluid\">\n";
         echo "<div class=\"span5 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
         echo "<div class=\"span7\">\n";
-        create_dropdown("risk_catalog", $risk_catalog_mapping, "risk_catalog_mapping", true, false, false, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} style='max-width:100%'");
+        create_multiple_dropdown("risk_catalog", $risk_catalog_mapping, "risk_catalog_mapping", NULL, false, "", "", true, "title='".$escaper->escapeHtml($lang['RiskMapping'])."' {$mapping_required} class='multiselect' ");
+
+        echo "</div>\n";
+        echo "</div>\n";
+    }
+}
+/**************************************
+* FUNCTION: DISPLAY THREAT MAPPING EDIT *
+***************************************/
+function display_threat_mapping_edit($threat_catalog_mapping=[], $panel_name="")
+{
+    global $lang, $escaper;
+    $threat_catalog_mapping = $threat_catalog_mapping?explode(",", $threat_catalog_mapping):[];
+
+    $mapping_required = get_setting('threat_mapping_required') == 1?"required":"";
+    if($panel_name=="top" || $panel_name=="bottom"){
+        echo "<div class=\"row-fluid subject-field\">\n";
+        echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['ThreatMapping']).":</div>\n";
+        echo "<div class=\"span8\">\n";
+        create_multiple_dropdown("threat_catalog", $threat_catalog_mapping, "threat_catalog_mapping", NULL, false, "", "", true, "title='".$escaper->escapeHtml($lang['ThreatMapping'])."' {$mapping_required} class='multiselect' ");
+        echo "</div>\n";
+        echo "</div>\n";
+    } else {
+        echo "<div class=\"row-fluid\">\n";
+        echo "<div class=\"span5 text-right\">".$escaper->escapeHtml($lang['RiskMapping']).":</div>\n";
+        echo "<div class=\"span7\">\n";
+        create_multiple_dropdown("threat_catalog", $threat_catalog_mapping, "threat_catalog_mapping", NULL, false, "", "", true, "title='".$escaper->escapeHtml($lang['ThreatMapping'])."' {$mapping_required} class='multiselect' ");
         echo "</div>\n";
         echo "</div>\n";
     }
@@ -861,7 +916,7 @@ function display_risk_mapping_edit($risk_catalog_mapping=[], $panel_name="")
 /*********************************************************
 * FUNCTION: DISPLAY MAIN FIELDS BY PANEL IN DETAILS EDIT *
 **********************************************************/
-function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping = "")
+function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping = [], $threat_catalog_mapping = [])
 {
     foreach($fields as $field)
     {
@@ -954,6 +1009,10 @@ function display_main_detail_fields_by_panel_edit($panel_name, $fields, $risk_id
 
                     case 'RiskMapping':
                         display_risk_mapping_edit($risk_catalog_mapping, $panel_name);
+                    break;
+
+                    case 'ThreatMapping':
+                        display_threat_mapping_edit($threat_catalog_mapping, $panel_name);
                     break;
                 }
 
@@ -2382,6 +2441,10 @@ function display_main_detail_fields_by_panel_add($panel_name, $fields)
 
                     case 'RiskMapping':
                         display_risk_mapping_edit([], $panel_name);
+                    break;
+
+                    case 'ThreatMapping':
+                        display_threat_mapping_edit([], $panel_name);
                     break;
                 }
 

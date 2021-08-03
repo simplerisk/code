@@ -77,6 +77,192 @@
             "install-path": "../box/spout"
         },
         {
+            "name": "components/font-awesome",
+            "version": "5.15.3",
+            "version_normalized": "5.15.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/components/font-awesome.git",
+                "reference": "09f1f2e02ea0cd319569b32f8639b37dfcd7a62d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/components/font-awesome/zipball/09f1f2e02ea0cd319569b32f8639b37dfcd7a62d",
+                "reference": "09f1f2e02ea0cd319569b32f8639b37dfcd7a62d",
+                "shasum": ""
+            },
+            "time": "2021-03-17T05:28:56+00:00",
+            "type": "component",
+            "extra": {
+                "component": {
+                    "styles": [
+                        "css/all.css"
+                    ],
+                    "files": [
+                        "css/all.min.css",
+                        "webfonts/*"
+                    ]
+                }
+            },
+            "installation-source": "dist",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "CC-BY-4.0",
+                "MIT",
+                "OFL-1.1"
+            ],
+            "description": "Font Awesome, the iconic SVG, font, and CSS framework.",
+            "support": {
+                "issues": "https://github.com/components/font-awesome/issues",
+                "source": "https://github.com/components/font-awesome/tree/5.15.3"
+            },
+            "install-path": "../components/font-awesome"
+        },
+        {
+            "name": "components/jquery",
+            "version": "3.5.1",
+            "version_normalized": "3.5.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/components/jquery.git",
+                "reference": "b33e8f0f9a1cb2ae390cf05d766a900b53d2125b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/components/jquery/zipball/b33e8f0f9a1cb2ae390cf05d766a900b53d2125b",
+                "reference": "b33e8f0f9a1cb2ae390cf05d766a900b53d2125b",
+                "shasum": ""
+            },
+            "time": "2020-05-05T13:21:02+00:00",
+            "type": "component",
+            "extra": {
+                "component": {
+                    "scripts": [
+                        "jquery.js"
+                    ],
+                    "files": [
+                        "jquery.min.js",
+                        "jquery.min.map",
+                        "jquery.slim.js",
+                        "jquery.slim.min.js",
+                        "jquery.slim.min.map"
+                    ]
+                }
+            },
+            "installation-source": "dist",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "JS Foundation and other contributors"
+                }
+            ],
+            "description": "jQuery JavaScript Library",
+            "homepage": "http://jquery.com",
+            "support": {
+                "forum": "http://forum.jquery.com",
+                "irc": "irc://irc.freenode.org/jquery",
+                "issues": "https://github.com/jquery/jquery/issues",
+                "source": "https://github.com/jquery/jquery",
+                "wiki": "http://docs.jquery.com/"
+            },
+            "install-path": "../components/jquery"
+        },
+        {
+            "name": "components/jqueryui",
+            "version": "1.12.1",
+            "version_normalized": "1.12.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/components/jqueryui.git",
+                "reference": "44ecf3794cc56b65954cc19737234a3119d036cc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/components/jqueryui/zipball/44ecf3794cc56b65954cc19737234a3119d036cc",
+                "reference": "44ecf3794cc56b65954cc19737234a3119d036cc",
+                "shasum": ""
+            },
+            "require": {
+                "components/jquery": ">=1.6"
+            },
+            "time": "2016-09-16T05:47:55+00:00",
+            "type": "component",
+            "extra": {
+                "component": {
+                    "name": "jquery-ui",
+                    "scripts": [
+                        "jquery-ui.js"
+                    ],
+                    "files": [
+                        "ui/**",
+                        "themes/**",
+                        "jquery-ui.min.js"
+                    ],
+                    "shim": {
+                        "deps": [
+                            "jquery"
+                        ],
+                        "exports": "jQuery"
+                    }
+                }
+            },
+            "installation-source": "dist",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "jQuery UI Team",
+                    "homepage": "http://jqueryui.com/about"
+                },
+                {
+                    "name": "Joern Zaefferer",
+                    "email": "joern.zaefferer@gmail.com",
+                    "homepage": "http://bassistance.de"
+                },
+                {
+                    "name": "Scott Gonzalez",
+                    "email": "scott.gonzalez@gmail.com",
+                    "homepage": "http://scottgonzalez.com"
+                },
+                {
+                    "name": "Kris Borchers",
+                    "email": "kris.borchers@gmail.com",
+                    "homepage": "http://krisborchers.com"
+                },
+                {
+                    "name": "Mike Sherov",
+                    "email": "mike.sherov@gmail.com",
+                    "homepage": "http://mike.sherov.com"
+                },
+                {
+                    "name": "TJ VanToll",
+                    "email": "tj.vantoll@gmail.com",
+                    "homepage": "http://tjvantoll.com"
+                },
+                {
+                    "name": "Corey Frang",
+                    "email": "gnarf37@gmail.com",
+                    "homepage": "http://gnarf.net"
+                },
+                {
+                    "name": "Felix Nagel",
+                    "email": "info@felixnagel.com",
+                    "homepage": "http://www.felixnagel.com"
+                }
+            ],
+            "description": "jQuery UI is a curated set of user interface interactions, effects, widgets, and themes built on top of the jQuery JavaScript Library. Whether you're building highly interactive web applications or you just need to add a date picker to a form control, jQuery UI is the perfect choice.",
+            "support": {
+                "issues": "https://github.com/components/jqueryui/issues",
+                "source": "https://github.com/components/jqueryui/tree/master"
+            },
+            "install-path": "../components/jqueryui"
+        },
+        {
             "name": "doctrine/lexer",
             "version": "1.0.2",
             "version_normalized": "1.0.2.0",
@@ -333,90 +519,18 @@
             "install-path": "../ezyang/htmlpurifier"
         },
         {
-            "name": "fortawesome/font-awesome",
-            "version": "5.15.3",
-            "version_normalized": "5.15.3.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/FortAwesome/Font-Awesome.git",
-                "reference": "d79d85c3fad85ad1885e87ed558f4afd6fce8289"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/FortAwesome/Font-Awesome/zipball/d79d85c3fad85ad1885e87ed558f4afd6fce8289",
-                "reference": "d79d85c3fad85ad1885e87ed558f4afd6fce8289",
-                "shasum": ""
-            },
-            "time": "2021-03-16T18:57:33+00:00",
-            "type": "library",
-            "installation-source": "dist",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "CC-BY-4.0",
-                "OFL-1.1",
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Travis Chase",
-                    "homepage": "http://twitter.com/supercodepoet"
-                },
-                {
-                    "name": "Dave Gandy",
-                    "homepage": "http://twitter.com/davegandy"
-                },
-                {
-                    "name": "Rob Madole",
-                    "homepage": "http://twitter.com/robmadole"
-                },
-                {
-                    "name": "Jory Raphael",
-                    "homepage": "http://twitter.com/sensibleworld"
-                },
-                {
-                    "name": "Geremia Taglialatela",
-                    "homepage": "http://twitter.com/gtagliala"
-                },
-                {
-                    "name": "Brian Talbot",
-                    "homepage": "http://twitter.com/talbs"
-                },
-                {
-                    "name": "Mike Wilkerson",
-                    "homepage": "http://twitter.com/mw77"
-                }
-            ],
-            "description": "The iconic font, CSS, and SVG framework",
-            "homepage": "https://fontawesome.com",
-            "keywords": [
-                "FontAwesome",
-                "awesome",
-                "bootstrap",
-                "font",
-                "icon",
-                "svg"
-            ],
-            "support": {
-                "docs": "http://fontawesome.com/how-to-use",
-                "email": "hello@fontawesome.com",
-                "issues": "https://github.com/FortAwesome/Font-Awesome/issues",
-                "source": "https://github.com/FortAwesome/Font-Awesome"
-            },
-            "install-path": "../fortawesome/font-awesome"
-        },
-        {
             "name": "gettext/gettext",
-            "version": "v4.8.4",
-            "version_normalized": "4.8.4.0",
+            "version": "v4.8.5",
+            "version_normalized": "4.8.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-gettext/Gettext.git",
-                "reference": "58bc0f7f37e78efb0f9758f93d4a0f669f0f84a1"
+                "reference": "ef2e312dff383fc0e4cd62dd39042e1157f137d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-gettext/Gettext/zipball/58bc0f7f37e78efb0f9758f93d4a0f669f0f84a1",
-                "reference": "58bc0f7f37e78efb0f9758f93d4a0f669f0f84a1",
+                "url": "https://api.github.com/repos/php-gettext/Gettext/zipball/ef2e312dff383fc0e4cd62dd39042e1157f137d4",
+                "reference": "ef2e312dff383fc0e4cd62dd39042e1157f137d4",
                 "shasum": ""
             },
             "require": {
@@ -424,7 +538,7 @@
                 "php": ">=5.4.0"
             },
             "require-dev": {
-                "illuminate/view": "*",
+                "illuminate/view": "^5.0.x-dev",
                 "phpunit/phpunit": "^4.8|^5.7|^6.5",
                 "squizlabs/php_codesniffer": "^3.0",
                 "symfony/yaml": "~2",
@@ -437,7 +551,7 @@
                 "twig/extensions": "Is necessary if you want to use the Twig extractor",
                 "twig/twig": "Is necessary if you want to use the Twig extractor"
             },
-            "time": "2021-03-10T19:35:49+00:00",
+            "time": "2021-07-13T16:45:53+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -470,7 +584,7 @@
             "support": {
                 "email": "oom@oscarotero.com",
                 "issues": "https://github.com/oscarotero/Gettext/issues",
-                "source": "https://github.com/php-gettext/Gettext/tree/v4.8.4"
+                "source": "https://github.com/php-gettext/Gettext/tree/v4.8.5"
             },
             "funding": [
                 {
@@ -490,27 +604,26 @@
         },
         {
             "name": "gettext/languages",
-            "version": "2.6.0",
-            "version_normalized": "2.6.0.0",
+            "version": "2.8.1",
+            "version_normalized": "2.8.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-gettext/Languages.git",
-                "reference": "38ea0482f649e0802e475f0ed19fa993bcb7a618"
+                "reference": "4ad818b6341e177b7c508ec4c37e18932a7b788a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-gettext/Languages/zipball/38ea0482f649e0802e475f0ed19fa993bcb7a618",
-                "reference": "38ea0482f649e0802e475f0ed19fa993bcb7a618",
+                "url": "https://api.github.com/repos/php-gettext/Languages/zipball/4ad818b6341e177b7c508ec4c37e18932a7b788a",
+                "reference": "4ad818b6341e177b7c508ec4c37e18932a7b788a",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.16.0",
                 "phpunit/phpunit": "^4.8 || ^5.7 || ^6.5 || ^7.5 || ^8.4"
             },
-            "time": "2019-11-13T10:30:21+00:00",
+            "time": "2021-07-14T15:03:58+00:00",
             "bin": [
                 "bin/export-plural-rules"
             ],
@@ -552,8 +665,18 @@
             ],
             "support": {
                 "issues": "https://github.com/php-gettext/Languages/issues",
-                "source": "https://github.com/php-gettext/Languages/tree/2.6.0"
+                "source": "https://github.com/php-gettext/Languages/tree/2.8.1"
             },
+            "funding": [
+                {
+                    "url": "https://paypal.me/mlocati",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/mlocati",
+                    "type": "github"
+                }
+            ],
             "install-path": "../gettext/languages"
         },
         {
@@ -1206,29 +1329,43 @@
         },
         {
             "name": "simplerisk/csrf-magic",
-            "version": "v1.1.2",
-            "version_normalized": "1.1.2.0",
+            "version": "dev-master",
+            "version_normalized": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/simplerisk/csrf-magic.git",
-                "reference": "69174be55bebbca4c85885c8d0d074048fcde7da"
+                "reference": "e87996e424abca859a754911653dca0a3dc0fc10"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/simplerisk/csrf-magic/zipball/69174be55bebbca4c85885c8d0d074048fcde7da",
-                "reference": "69174be55bebbca4c85885c8d0d074048fcde7da",
+                "url": "https://api.github.com/repos/simplerisk/csrf-magic/zipball/e87996e424abca859a754911653dca0a3dc0fc10",
+                "reference": "e87996e424abca859a754911653dca0a3dc0fc10",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1.0"
+                "php": ">=5.6"
             },
-            "time": "2021-02-19T14:38:53+00:00",
+            "time": "2021-07-26T18:44:44+00:00",
+            "default-branch": true,
             "type": "library",
+            "extra": {
+                "component": {
+                    "scripts": [
+                        "csrf-magic.js"
+                    ]
+                }
+            },
             "installation-source": "dist",
             "autoload": {
-                "psr-4": {
-                    "CsrfMagic\\": "src/"
-                }
+                "files": [
+                    "csrf-magic.php"
+                ]
+            },
+            "archive": {
+                "exclude": [
+                    "js-test",
+                    "test.php"
+                ]
             },
             "license": [
                 "BSD-2-Clause"
@@ -1240,17 +1377,12 @@
                     "homepage": "https://github.com/ezyang"
                 },
                 {
-                    "name": "YetiForceCompany",
-                    "email": "info@yetiforce.com",
-                    "homepage": "https://yetiforce.com/"
-                },
-                {
                     "name": "SimpleRisk",
                     "email": "support@simplerisk.com",
-                    "homepage": "https://simplerisk.com"
+                    "homepage": "https://simplerisk.com/"
                 }
             ],
-            "description": "Cross Site Request Forgery security library",
+            "description": "Cross Site Request Forgery security library. Fork from ezyang/csrf-magic with extra functions.",
             "homepage": "https://github.com/simplerisk/csrf-magic",
             "keywords": [
                 "CSRF",
@@ -1258,7 +1390,7 @@
                 "security"
             ],
             "support": {
-                "source": "https://github.com/simplerisk/csrf-magic/tree/v1.1.2"
+                "source": "https://github.com/simplerisk/csrf-magic/tree/master"
             },
             "install-path": "../simplerisk/csrf-magic"
         },
@@ -4057,17 +4189,17 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.23.0",
-            "version_normalized": "1.23.0.0",
+            "version": "v1.23.1",
+            "version_normalized": "1.23.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "2df51500adbaebdc4c38dea4c89a2e131c45c8a1"
+                "reference": "9174a3d80210dca8daa7f31fec659150bbeabfc6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/2df51500adbaebdc4c38dea4c89a2e131c45c8a1",
-                "reference": "2df51500adbaebdc4c38dea4c89a2e131c45c8a1",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/9174a3d80210dca8daa7f31fec659150bbeabfc6",
+                "reference": "9174a3d80210dca8daa7f31fec659150bbeabfc6",
                 "shasum": ""
             },
             "require": {
@@ -4076,7 +4208,7 @@
             "suggest": {
                 "ext-mbstring": "For best performance"
             },
-            "time": "2021-05-27T09:27:20+00:00",
+            "time": "2021-05-27T12:26:48+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -4120,7 +4252,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.23.0"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.23.1"
             },
             "funding": [
                 {

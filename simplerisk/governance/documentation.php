@@ -149,9 +149,25 @@ if (isset($_POST['delete_document']))
 <html lang="<?php echo $escaper->escapehtml($_SESSION['lang']); ?>" xml:lang="<?php echo $escaper->escapeHtml($_SESSION['lang']); ?>">
 
 <head>
-  <script src="../js/jquery.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+?>
   <script src="../js/jquery.easyui.min.js"></script>
-  <script src="../js/jquery-ui.min.js"></script>
+<?php
+        // Use these jquery-ui scripts
+        $scripts = [
+                'jquery-ui.min.js',
+        ];
+
+        // Include the jquery-ui javascript source
+        display_jquery_ui_javascript($scripts);
+?>
   <script src="../js/jquery.draggable.js"></script>
   <script src="../js/jquery.droppable.js"></script>
   <script src="../js/treegrid-dnd.js"></script>
@@ -175,7 +191,7 @@ if (isset($_POST['delete_document']))
   <link rel="stylesheet" href="../css/display.css">
   <link rel="stylesheet" href="../css/style.css">
 
-  <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/side-navigation.css">
   <?php
@@ -301,12 +317,8 @@ if (isset($_POST['delete_document']))
                     <option>--</option>
                 </select>
             </div>
-            <label for=""><?php echo $escaper->escapeHtml($lang['Status']); ?></label>
-            <select name="status">
-                <option value="Draft"><?php echo $escaper->escapeHtml($lang['Draft']) ?></option>
-                <option value="InReview"><?php echo $escaper->escapeHtml($lang['InReview']) ?></option>
-                <option value="Approved"><?php echo $escaper->escapeHtml($lang['Approved']) ?></option>
-            </select>
+            <label for=""><?php echo $escaper->escapeHtml($lang['DocumentStatus']); ?></label>
+            <?php create_dropdown("document_status", "1", "status", false, false, false); ?>
             <div class="file-uploader">
                 <label for=""><?php echo $escaper->escapeHtml($lang['File']); ?></label>
                 <input required="" type="text" class="form-control readonly" style="width: 50%; margin-bottom: 0px; cursor: default;"/>
@@ -371,12 +383,8 @@ if (isset($_POST['delete_document']))
                     <option>--</option>
                 </select>
             </div>
-            <label for=""><?php echo $escaper->escapeHtml($lang['Status']); ?></label>
-            <select name="status">
-                <option value="Draft"><?php echo $escaper->escapeHtml($lang['Draft']) ?></option>
-                <option value="InReview"><?php echo $escaper->escapeHtml($lang['InReview']) ?></option>
-                <option value="Approved"><?php echo $escaper->escapeHtml($lang['Approved']) ?></option>
-            </select>
+            <label for=""><?php echo $escaper->escapeHtml($lang['DocumentStatus']); ?></label>
+            <?php create_dropdown("document_status", NULL, "status", false, false, false); ?>
             <input type="hidden" name="document_id" value="">
             <div class="file-uploader">
                 <label for=""><?php echo $escaper->escapeHtml($lang['File']); ?></label>
@@ -452,7 +460,8 @@ if (isset($_POST['delete_document']))
         {
             $parent = $frameworks.closest('.modal');
             $controls = $parent.find("#control_ids");
-            var fids = $frameworks.val()
+            var fids = $frameworks.val();
+            if(fids == null) return;
             $.ajax({
                 url: BASE_URL + '/api/governance/related_controls_by_framework_ids?fids=' + fids.join(","),
                 type: 'GET',
@@ -620,7 +629,7 @@ if (isset($_POST['delete_document']))
                 });
 
                 $("#update-document-form").submit(function(event) {
-                    if (<?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload-update')[0].files[0].size) {
+                    if ($('#file-upload-update')[0].files[0] && <?php echo $escaper->escapeHtml(get_setting('max_upload_size')); ?> <= $('#file-upload-update')[0].files[0].size) {
                         toastr.error("<?php echo $escaper->escapeHtml($lang['FileIsTooBigToUpload']) ?>");
                         event.preventDefault();
                     }
@@ -629,34 +638,19 @@ if (isset($_POST['delete_document']))
                 $("input.readonly").remove();
                 $('#file-upload').prop('required',true);
             }
-            $("body").on("change keypress", "input[name=review_frequency], input[name=last_review_date]", function(){
-            //$("input[name=review_frequency], input[name=last_review_date]").change(function(){
+            $("body").on("change keyup", "input[name=review_frequency], input[name=last_review_date]", function(){
                 var form = $(this).closest("form");
                 var last_review_date = $(form).find("input[name=last_review_date]").val();
                 var review_frequency = $(form).find("input[name=review_frequency]").val();
                 if(last_review_date != "" && review_frequency != ""){
                     var next_review_date = new Date(last_review_date);
                     next_review_date.setDate(next_review_date.getDate() + parseInt(review_frequency));
-                    console.log(next_review_date);
-                    var next_review_date_str = formatDate(next_review_date)
+                    var next_review_date_str = $.datepicker.formatDate(default_date_format, next_review_date);
                     $(form).find("input[name=next_review_date]").val(next_review_date_str);
                 }
                 return true;
             });
         });
-        function formatDate(date) {
-            //var d = new Date(dateStr),
-                month = '' + (date.getMonth() + 1),
-                day = '' + date.getDate(),
-                year = date.getFullYear();
-
-            if (month.length < 2) 
-                month = '0' + month;
-            if (day.length < 2) 
-                day = '0' + day;
-
-            return [month, day, year].join('/');
-        }
     </script>
     
     <style type="">

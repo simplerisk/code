@@ -1,0 +1,21 @@
+{
+    "name": "components/font-awesome",
+    "description": "Font Awesome, the iconic SVG, font, and CSS framework.",
+    "type": "component",
+    "license": [
+        "CC-BY-4.0",
+        "MIT",
+        "OFL-1.1"
+    ],
+    "extra": {
+        "component": {
+            "styles": [
+                "css/all.css"
+            ],
+            "files": [
+                "css/all.min.css",
+                "webfonts/*"
+            ]
+        }
+    }
+}

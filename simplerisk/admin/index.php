@@ -231,6 +231,18 @@ function is_valid_base_url($url) {
 		}
 	}
 
+	// Update the jquery delivery method setting
+        $jquery_delivery_method = $_POST['jquery_delivery_method'];
+        $current_jquery_delivery_method = get_setting("jquery_delivery_method");
+        if ($jquery_delivery_method != $current_jquery_delivery_method)
+        {
+                // If the jquery delivery method is cdn or local
+                if ($jquery_delivery_method == "cdn" || $jquery_delivery_method == "local")
+                {
+                        update_setting("jquery_delivery_method", $jquery_delivery_method);
+                }
+        }
+
         // Update the base url
         $simplerisk_base_url = $_POST['simplerisk_base_url'];
         $current_simplerisk_base_url = get_setting("simplerisk_base_url");
@@ -653,8 +665,23 @@ function is_valid_base_url($url) {
 
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
-    <script src="../js/jquery.min.js"></script>
-    <script src="../js/jquery-ui.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+
+        // Use these jquery-ui scripts
+        $scripts = [
+                'jquery-ui.min.js',
+        ];
+
+        // Include the jquery-ui javascript source
+        display_jquery_ui_javascript($scripts);
+?>
     <script src="../js/bootstrap.min.js"></script>
     <script src="../js/jquery.blockUI.min.js"></script>
 
@@ -669,7 +696,7 @@ function is_valid_base_url($url) {
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
 
-    <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/side-navigation.css">
     <link rel="stylesheet" href="../css/settings_tabs.css">
@@ -943,6 +970,15 @@ function is_valid_base_url($url) {
                                 <select name="highcharts_delivery_method">
                                     <option value="cdn" <?php echo $escaper->escapeHtml(get_setting("highcharts_delivery_method")) == "cdn" ? "selected" : ""; ?> >HighCharts CDN</option>
                                     <option value="local" <?php echo $escaper->escapeHtml(get_setting("highcharts_delivery_method")) == "local" ? "selected" : ""; ?> >Local</option>
+                                </select>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td><?php echo $escaper->escapeHtml($lang['jQueryDeliveryMethod']) ?>:</td>
+                              <td>
+                                <select name="jquery_delivery_method">
+                                    <option value="cdn" <?php echo $escaper->escapeHtml(get_setting("jquery_delivery_method")) == "cdn" ? "selected" : ""; ?> >jQuery CDN</option>
+                                    <option value="local" <?php echo $escaper->escapeHtml(get_setting("jquery_delivery_method")) == "local" ? "selected" : ""; ?> >Local</option>
                                 </select>
                               </td>
                             </tr>

@@ -17,4 +17,5 @@ return array(
     '538ca81a9a966a6716601ecf48f4eaef' => $vendorDir . '/opis/closure/functions.php',
     '2c102faa651ef8ea5874edb585946bce' => $vendorDir . '/swiftmailer/swiftmailer/lib/swift_required.php',
     '2cffec82183ee1cea088009cef9a6fc3' => $vendorDir . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
+    '39f8f809a191c7af11cb6d6aa45edb06' => $vendorDir . '/simplerisk/csrf-magic/csrf-magic.php',
 );

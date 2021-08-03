@@ -39,9 +39,25 @@ require_once(language_file());
 <title>SimpleRisk: Enterprise Risk Management Simplified</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-<script src="../js/jquery.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+?>
 <script src="../js/jquery.easyui.min.js"></script>
-<script src="../js/jquery-ui.min.js"></script>
+<?php
+        // Use these jquery-ui scripts
+        $scripts = [
+                'jquery-ui.min.js',
+        ];      
+
+        // Include the jquery-ui javascript source
+        display_jquery_ui_javascript($scripts);
+?>
 <script src="../js/bootstrap.min.js"></script>
 <script src="../js/jquery.dataTables.js"></script>
 <script src="../js/dataTables.rowReorder.min.js"></script>
@@ -54,7 +70,7 @@ require_once(language_file());
 <link rel="stylesheet" href="../css/divshot-canvas.css">
 <link rel="stylesheet" href="../css/display.css">
 
-<link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+<link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
 <link rel="stylesheet" href="../css/theme.css">
 <link rel="stylesheet" href="../css/side-navigation.css">
 <link rel="stylesheet" href="../css/settings_tabs.css">

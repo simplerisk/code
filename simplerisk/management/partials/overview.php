@@ -32,7 +32,7 @@ if (!isset($_SESSION))
 require_once(language_file());
 global $lang;
 
-require_once(realpath(__DIR__ . '/../../includes/csrf-magic/csrf-magic.php'));
+csrf_init();
 
 // Check for session timeout or renegotiation
 session_check();

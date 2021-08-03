@@ -56,7 +56,8 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
     $status = "New";
     $subject = get_param("POST", 'subject');
-    $risk_catalog_mapping = (int)get_param("POST", 'risk_catalog_mapping');
+    $risk_catalog_mapping = get_param("POST", 'risk_catalog_mapping', []);
+    $threat_catalog_mapping = get_param("POST", 'threat_catalog_mapping', []);
     $reference_id = get_param("POST", 'reference_id');
     $regulation = (int)get_param("POST", 'regulation');
     $control_number = get_param("POST", 'control_number');
@@ -157,7 +158,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     $ContributingImpacts = get_param("POST", "ContributingImpacts");
 
     // Submit risk and get back the id
-    if($last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders, $risk_catalog_mapping, $template_group_id)){}
+    if($last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, false, $additional_stakeholders, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id)){}
     else
     {
         // Display an alert
@@ -285,8 +286,23 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 	            newrisk: "<?php echo $lang['NewRisk']; ?>"
             }
         </script>
-        <script src="../js/jquery.min.js"></script>
-        <script src="../js/jquery-ui.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+
+        // Use these jquery-ui scripts
+        $scripts = [
+                'jquery-ui.min.js',
+        ];
+
+        // Include the jquery-ui javascript source
+        display_jquery_ui_javascript($scripts);
+?>
         <script src="../js/bootstrap.min.js"></script>
         <script src="../js/jquery.dataTables.js"></script>
         <script src="../js/cve_lookup.js?<?php echo time() ?>"></script>
@@ -321,7 +337,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <link rel="stylesheet" href="../css/style.css">
         <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
 
-        <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
         <link rel="stylesheet" href="../css/theme.css">
         <link rel="stylesheet" href="../css/side-navigation.css">
 

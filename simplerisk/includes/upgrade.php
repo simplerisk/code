@@ -150,6 +150,7 @@ $releases = array(
 	"20210625-001",
 	"20210630-001",
 	"20210713-001",
+	"20210802-001",
 );
 
 /*************************
@@ -5709,6 +5710,107 @@ function upgrade_from_20210630001($db)
     $version_upgrading_to = '20210713-001';
 
     echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20210713-001 *
+ ***************************************/
+function upgrade_from_20210713001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20210713-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20210802-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Add default jquery delivery method setting
+    echo "Adding default jquery delivery method setting.<br />\n";
+    update_or_insert_setting("jquery_delivery_method", "cdn");
+
+    // Remove unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = array(
+      realpath(__DIR__ . '/../js/jquery-3.3.1.min.js'),
+	    realpath(__DIR__ . '/../js/jquery.min.js'),
+	    realpath(__DIR__ . '/../js/jquery-ui.js'),
+	    realpath(__DIR__ . '/../js/jquery-ui.min.js'),
+    );
+
+    foreach ($remove_files as $file)
+    {
+        // If the file exists
+        if (file_exists($file))
+        {
+            // Remove the file
+            unlink($file);
+        }
+    }
+
+    // Add the document_status table
+    if (!table_exists('document_status'))
+    {
+        echo "Adding a table for document status.<br />\n";
+	      $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `document_status` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+	      $stmt->execute();
+
+	      echo "Adding values to the document status table.<br />\n";
+	      $stmt = $db->prepare("INSERT INTO `document_status` (`name`) VALUES ('Draft'), ('In Review'), ('Approved');");
+	      $stmt->execute();
+    }
+
+    // Add the document_status field to the documents table
+    if (!field_exists_in_table('document_status', 'documents'))
+    {
+        echo "Adding a document_status field to the documents table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` ADD `document_status` int(11) DEFAULT 1 AFTER `status`;");
+        $stmt->execute();
+
+        echo "Copying values from status to document status.<br />\n";
+        $stmt = $db->prepare("UPDATE `documents` SET document_status=2 WHERE status='InReview';");
+        $stmt->execute();
+        $stmt = $db->prepare("UPDATE `documents` SET document_status=3 WHERE status='Approved';");
+        $stmt->execute();
+    }
+
+    // Remove the status field from the documents table
+    if (field_exists_in_table('status', 'documents'))
+    {
+        echo "Removing the status field from the documents table<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `documents` DROP COLUMN `status`;");
+        $stmt->execute();
+    }
+
+    // Add a associated risks field to document exceptions table
+    if (!field_exists_in_table('associated_risks', 'document_exceptions')) {
+        echo "Add a associated risks field to document exceptions table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `document_exceptions` ADD `associated_risks` TEXT NOT NULL;");
+        $stmt->execute();
+    }
+
+    // Change a next_review field type to VARCHAR
+    if (field_exists_in_table('risk_catalog_mapping', 'risks'))
+    {
+        echo "Change a risk_catalog_mapping field type to VARCHAR.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` CHANGE `risk_catalog_mapping` `risk_catalog_mapping` VARCHAR(255) NOT NULL;");
+        $stmt->execute();
+    }
+
+    // Add a threat_catalog_mapping field to risks table
+    if (!field_exists_in_table('threat_catalog_mapping', 'risks')) {
+        echo "Adding a threat catalog mapping field to risks table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` ADD `threat_catalog_mapping` VARCHAR(255) NOT NULL AFTER `risk_catalog_mapping`;");
+        $stmt->execute();
+    }
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic

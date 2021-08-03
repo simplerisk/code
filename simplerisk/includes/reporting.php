@@ -6,11 +6,11 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
-require_once(realpath(__DIR__ . '/HighchartsPHP/Highchart.php'));
-
 
 require_once(language_file());
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+use Ghunti\HighchartsPHP\Highchart;
+use Ghunti\HighchartsPHP\HighchartJsExpr;
 
 // Include Laminas Escaper for HTML Output Encoding
 $escaper = new Laminas\Escaper\Escaper('utf-8');
@@ -2591,28 +2591,6 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[])
                         echo "<thead>\n";
                         echo "<tr>\n";
                         
-                        // If customization extra is enabled, add custom fields
-                        if(customization_extra())
-                        {
-                            // Include the extra
-                            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                            
-                            $active_fields = get_active_fields();
-                            $custom_fields = [];
-                            foreach($active_fields as $active_field)
-                            {
-                                if($active_field['is_basic'] == 0)
-                                {
-                                    $custom_fields[] = $active_field;
-                                }
-                            }
-                            
-                            $custom_fields_length = count($custom_fields);
-                        }
-                        else{
-                            $custom_fields_length = 0;
-                        }
-                        
                         $length = count($table_columns);
 
                         echo "<th bgcolor=\"#0088CC\" colspan=\"{$length}\"><center>". $escaper->escapeHtml($group_value) ."</center></th>\n";
@@ -2682,27 +2660,6 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
     $str = "<table class=\"table risk-datatable table-bordered table-striped table-condensed  table-margin-top\" style='width: 100%'>\n";
     $str .= "<thead>\n";
     if ($group_name != "none"){
-        // If customization extra is enabled, add custom fields
-        if(customization_extra())
-        {
-            // Include the extra
-            require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-            
-            $active_fields = get_active_fields();
-            $custom_fields = [];
-            foreach($active_fields as $active_field)
-            {
-                if($active_field['is_basic'] == 0)
-                {
-                    $custom_fields[] = $active_field;
-                }
-            }
-            
-            $custom_fields_length = count($custom_fields);
-        }
-        else{
-            $custom_fields_length = 0;
-        }
         $length = count($display_columns);
         $display_group_name = get_group_name_from_value($group, $group_value);
         $str .= "<tr>\n";
@@ -2828,7 +2785,7 @@ function get_print_header_columns($columns)
                 $field_id = str_replace("custom_field_", "", $column);
                 $custom_field = get_field_by_id($field_id);
                 $label = $escaper->escapeHtml($custom_field['name']);
-                $str .= "<th data-name='".$column."' align=\"left\" width=\"50px\" valign=\"top\">".$label."</th>";
+                $str .= "<th data-name='".$column."' align=\"left\" valign=\"top\">".$label."</th>";
             }
         }
     }
@@ -3115,34 +3072,43 @@ function risks_query_select($column_filters)
 
         CASE 
             WHEN DATEDIFF(NOW(), a.submission_date) < 30 THEN '--'
-            WHEN ISNULL(sh_30.calculated_risk) THEN b.calculated_risk
             WHEN NOT(ISNULL(sh_30.calculated_risk)) THEN sh_30.calculated_risk
+            WHEN NOT(ISNULL(sh_60.calculated_risk)) THEN sh_60.calculated_risk
+            WHEN NOT(ISNULL(sh_90.calculated_risk)) THEN sh_90.calculated_risk
+            ELSE b.calculated_risk
         END AS calculated_risk_30,
         CASE 
             WHEN DATEDIFF(NOW(), a.submission_date) < 60 THEN '--'
-            WHEN ISNULL(sh_60.calculated_risk) THEN b.calculated_risk
             WHEN NOT(ISNULL(sh_60.calculated_risk)) THEN sh_60.calculated_risk
+            WHEN NOT(ISNULL(sh_90.calculated_risk)) THEN sh_90.calculated_risk
+            ELSE b.calculated_risk
         END AS calculated_risk_60,
         CASE 
             WHEN DATEDIFF(NOW(), a.submission_date) < 90 THEN '--'
-            WHEN ISNULL(sh_90.calculated_risk) THEN b.calculated_risk
             WHEN NOT(ISNULL(sh_90.calculated_risk)) THEN sh_90.calculated_risk
+            ELSE b.calculated_risk
         END AS calculated_risk_90,
         CASE 
             WHEN DATEDIFF(NOW(), a.submission_date) < 30 THEN '--'
-            WHEN ISNULL(sh_30.calculated_risk) THEN ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2)
-            WHEN NOT(ISNULL(sh_30.calculated_risk)) THEN ROUND((sh_30.calculated_risk - (sh_30.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2)
+            WHEN NOT(ISNULL(rsh_30.residual_risk)) THEN rsh_30.residual_risk
+            WHEN NOT(ISNULL(rsh_60.residual_risk)) THEN rsh_60.residual_risk
+            WHEN NOT(ISNULL(rsh_90.residual_risk)) THEN rsh_90.residual_risk
+            ELSE ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2)
         END AS residual_risk_30,
         CASE 
             WHEN DATEDIFF(NOW(), a.submission_date) < 60 THEN '--'
-            WHEN ISNULL(sh_60.calculated_risk) THEN ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2)
-            WHEN NOT(ISNULL(sh_60.calculated_risk)) THEN ROUND((sh_60.calculated_risk - (sh_60.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2)
+            WHEN NOT(ISNULL(rsh_60.residual_risk)) THEN rsh_60.residual_risk
+            WHEN NOT(ISNULL(rsh_90.residual_risk)) THEN rsh_90.residual_risk
+            ELSE ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2)
         END AS residual_risk_60,
         CASE 
             WHEN DATEDIFF(NOW(), a.submission_date) < 90 THEN '--'
-            WHEN ISNULL(sh_90.calculated_risk) THEN ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2)
-            WHEN NOT(ISNULL(sh_90.calculated_risk)) THEN ROUND((sh_90.calculated_risk - (sh_90.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2)
+            WHEN NOT(ISNULL(rsh_90.residual_risk)) THEN rsh_90.residual_risk
+            ELSE ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2)
         END AS residual_risk_90,
+
+        GROUP_CONCAT(DISTINCT rc.name SEPARATOR ',') AS risk_mapping,
+        GROUP_CONCAT(DISTINCT tc.name SEPARATOR ',') AS threat_mapping,
 
         (
             SELECT
@@ -3339,6 +3305,9 @@ function risks_unique_column_query_select()
         b.calculated_risk, 
         p.mitigation_percent,
         ROUND((b.calculated_risk - (b.calculated_risk * GREATEST(IFNULL(p.mitigation_percent,0), IFNULL(MAX(fc.mitigation_percent), 0))  / 100)), 2) AS residual_risk,
+        GROUP_CONCAT(DISTINCT rc.name SEPARATOR ',') AS risk_mapping,
+        GROUP_CONCAT(DISTINCT tc.name SEPARATOR ',') AS threat_mapping,
+
         (
             SELECT
                 GROUP_CONCAT(DISTINCT CONCAT(location.name, '{$delimiter}', location.value) SEPARATOR '; ')
@@ -3521,6 +3490,14 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
                 (SELECT id FROM risk_scoring_history sh WHERE sh.risk_id = a.id AND DATEDIFF(NOW(), sh.last_update) >= 60 AND DATEDIFF(NOW(), sh.last_update) < 90 ORDER BY sh.last_update DESC LIMIT 1)
             LEFT JOIN risk_scoring_history sh_90 ON sh_90.id = 
                 (SELECT id FROM risk_scoring_history sh WHERE sh.risk_id = a.id AND DATEDIFF(NOW(), sh.last_update) >= 90 ORDER BY sh.last_update DESC LIMIT 1)
+            LEFT JOIN residual_risk_scoring_history rsh_30 ON rsh_30.id = 
+                (SELECT id FROM residual_risk_scoring_history sh WHERE sh.risk_id = a.id AND DATEDIFF(NOW(), sh.last_update) >= 30 AND DATEDIFF(NOW(), sh.last_update) < 60 ORDER BY sh.last_update DESC LIMIT 1)
+            LEFT JOIN residual_risk_scoring_history rsh_60 ON rsh_60.id = 
+                (SELECT id FROM residual_risk_scoring_history sh WHERE sh.risk_id = a.id AND DATEDIFF(NOW(), sh.last_update) >= 60 AND DATEDIFF(NOW(), sh.last_update) < 90 ORDER BY sh.last_update DESC LIMIT 1)
+            LEFT JOIN residual_risk_scoring_history rsh_90 ON rsh_90.id = 
+                (SELECT id FROM residual_risk_scoring_history sh WHERE sh.risk_id = a.id AND DATEDIFF(NOW(), sh.last_update) >= 90 ORDER BY sh.last_update DESC LIMIT 1)
+            LEFT JOIN risk_catalog rc ON FIND_IN_SET(rc.id, a.risk_catalog_mapping) > 0
+            LEFT JOIN threat_catalog tc ON FIND_IN_SET(tc.id, a.threat_catalog_mapping) > 0
     ";
     // If the team separation extra is enabled
     $team_separation_extra = team_separation_extra();
@@ -4106,6 +4083,16 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                         $havings[] = " CLASSIC_impact_value {$operator} :{$bind_param_name} ";
                         $bind_params[$bind_param_name] = $column_filter;
                     break;
+                    case "risk_mapping":
+                        if($empty_filter) $wheres[] = "(FIND_IN_SET(rc.id, :{$bind_param_name}) OR rc.id IS NULL)";
+                        else $wheres[] = " FIND_IN_SET(rc.id, :{$bind_param_name}) ";
+                        $bind_params[$bind_param_name] = $column_filter;
+                    break;
+                    case "threat_mapping":
+                        if($empty_filter) $wheres[] = "(FIND_IN_SET(tc.id, :{$bind_param_name}) OR tc.id IS NULL)";
+                        else $wheres[] = " FIND_IN_SET(tc.id, :{$bind_param_name}) ";
+                        $bind_params[$bind_param_name] = $column_filter;
+                    break;
                     default:
 //                        $wheres[]
                     break;
@@ -4133,7 +4120,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
             // Include the extra
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
             
-            $active_fields = get_active_fields();
+            $active_fields = get_all_fields();
             foreach($active_fields as $active_field)
             {
                 $empty_filter = false;
@@ -4541,20 +4528,23 @@ function risks_query($status, $sort, $group, $column_filters, &$rowCount, $start
 
         $row['risk_level'] = $risk_level = get_risk_level_name_from_levels($risk['calculated_risk'], $risk_levels);
         $row['residual_risk_level'] = get_risk_level_name_from_levels($risk['residual_risk'], $risk_levels);
+
         // If next_review_date_uses setting is Residual Risk.
         if(get_setting('next_review_date_uses') == "ResidualRisk")
         {
-            $next_review_date = next_review($residual_risk_level, $risk_id, $risk['next_review'], false, $review_levels);
-            $next_review_date_html = next_review($residual_risk_level, $risk_id, $risk['next_review'], true, $review_levels);
+            $next_review_date = next_review($row['residual_risk_level'], $risk_id, $risk['next_review'], false, $review_levels);
+            $next_review_date_html = next_review($row['residual_risk_level'], $risk_id, $risk['next_review'], true, $review_levels);
         }
         // If next_review_date_uses setting is Inherent Risk.
         else
         {
-            $next_review_date = next_review($risk_level, $risk_id, $risk['next_review'], false, $review_levels);
-            $next_review_date_html = next_review($risk_level, $risk_id, $risk['next_review'], true, $review_levels);
+            $next_review_date = next_review($row['risk_level'], $risk_id, $risk['next_review'], false, $review_levels);
+            $next_review_date_html = next_review($row['risk_level'], $risk_id, $risk['next_review'], true, $review_levels);
         }
+
         $row['next_review_date'] = $next_review_date;
         $row['next_review_date_html'] = $next_review_date_html;
+
         if (!$risk['submission_date'] || stripos($risk['submission_date'], "0000-00-00") !== false)
         {
             // Set the review date to empty
@@ -4667,6 +4657,8 @@ function get_dynamicrisk_unique_column_data($status, $group, $group_value_from_d
             "risk_status" => $risk['status'], 
             "scoring_method" => $risk['scoring_method'], 
             "location" => $risk['location'], 
+            "risk_mapping" =>  $risk['risk_mapping'], 
+            "threat_mapping" =>  $risk['threat_mapping'], 
             "source" =>  $risk['source'], 
             "category" => $risk['category'], 
             "team" => $risk['team'], 

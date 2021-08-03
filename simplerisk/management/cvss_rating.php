@@ -37,7 +37,15 @@ require_once(language_file());
 <link rel="stylesheet" type="text/css" href="../css/style.css">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link href="../css/front-style.css" rel="stylesheet" type="text/css">
-<script src="../js/jquery.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+?>
 <script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
 <script language="javascript" src="../js/cvss_scoring.js" type="text/javascript"></script>
 <script type="text/javascript" language="JavaScript">

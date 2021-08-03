@@ -286,7 +286,15 @@ require_once(language_file());
 <html>
 
   <head>
-    <script src="../js/jquery.min.js"></script>
+<?php
+        // Use these jQuery scripts
+        $scripts = [
+                'jquery.min.js',
+        ];
+
+        // Include the jquery javascript source
+        display_jquery_javascript($scripts);
+?>
     <script src="../js/bootstrap.min.js"></script>
     <script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
@@ -298,7 +306,7 @@ require_once(language_file());
     <link rel="stylesheet" href="../css/divshot-canvas.css">
     <link rel="stylesheet" href="../css/display.css">
 
-    <link rel="stylesheet" href="../vendor/fortawesome/font-awesome/css/fontawesome.min.css">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
     <link rel="stylesheet" href="../css/theme.css">
     <link rel="stylesheet" href="../css/side-navigation.css">
   </head>

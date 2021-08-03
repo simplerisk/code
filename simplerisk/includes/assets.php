@@ -6,7 +6,6 @@
 
 // Include required configuration files
 require_once(realpath(__DIR__ . '/functions.php'));
-require_once(realpath(__DIR__ . '/HighchartsPHP/Highchart.php'));
 require_once(language_file());
 require_once(realpath(__DIR__ . '/displayassets.php'));
 require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
@@ -2554,6 +2553,15 @@ function get_assets_and_asset_groups_for_dropdown($risk_id = false) {
     if (encryption_extra()) {
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
     }
+    if (!is_admin() && team_separation_extra()) {
+        $user_id = $_SESSION['uid'];
+        $teams = get_user_teams($user_id);
+        if(get_setting('allow_all_to_asset_noassign_team')){
+            $where = "(`teams` = '' OR `teams` IN (" . implode(",", $teams) . "))";
+        } else {
+            $where = "`teams` IN (" . implode(",", $teams) . ")";
+        }
+    } else $where = "1";
 
     if ($risk_id)
         $risk_id -= 1000;
@@ -2572,7 +2580,7 @@ function get_assets_and_asset_groups_for_dropdown($risk_id = false) {
                 `assets` a " .
     ($risk_id ? "LEFT OUTER JOIN `risks_to_assets` rta ON `rta`.`asset_id` = `a`.`id` and `rta`.`risk_id` = :risk_id" : "") . "
             WHERE
-                `a`.`verified` = 1" . ($risk_id ? " or `rta`.`asset_id` IS NOT NULL" : "") . "
+                `a`.`verified` = 1" . ($risk_id ? " or `rta`.`asset_id` IS NOT NULL" : "") . " AND " . $where . "
         UNION ALL
             SELECT
                 `ag`.`id`,
