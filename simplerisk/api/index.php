@@ -14,24 +14,6 @@
     // Add various security headers except CSP
     add_security_headers(true, true, true, true, false);
 
-    if (!isset($_SESSION))
-    {
-        // Session handler is database
-        if (USE_DATABASE_FOR_SESSIONS == "true")
-        {
-            session_set_save_handler('sess_open', 'sess_close', 'sess_read', 'sess_write', 'sess_destroy', 'sess_gc');
-        }
-
-        // Start the session
-        session_set_cookie_params(0, '/', '', isset($_SERVER["HTTPS"]), true);
-
-        session_name('SimpleRisk');
-        session_start();
-    }
-
-    // Check for session timeout or renegotiation
-    session_check();
-
     // Include the language file
     require_once(language_file());
     
@@ -149,7 +131,7 @@
         getRoute()->get('/compliance/define_tests', 'getDefineTestsResponse');
         getRoute()->get('/compliance/test', 'getTestResponse');
         getRoute()->get('/compliance/initiate_audits', 'getInitiateTestAuditsResponse');
-        getRoute()->get('/compliance/active_audits', 'getActiveTestAuditsResponse');
+        getRoute()->post('/compliance/active_audits', 'getActiveTestAuditsResponse');
         getRoute()->post('/compliance/save_audit_comment', 'saveTestAuditCommentResponse');
         getRoute()->post('/compliance/past_audits', 'getPastTestAuditsResponse');
         getRoute()->post('/compliance/reopen_audit', 'reopenTestAuditResponse');
@@ -250,8 +232,10 @@
         getRoute()->post('/management/project/add', 'add_project_api');
         getRoute()->post('/management/project/delete', 'delete_project_api');
         getRoute()->post('/management/project/update', 'update_project_api');
+        getRoute()->post('/management/project/edit', 'edit_project_api');
         getRoute()->post('/management/project/update_status', 'update_project_status_api');
         getRoute()->post('/management/project/update_order', 'update_project_order_api');
+        getRoute()->get('/management/project/detail', 'detail_project_api');
 
         // Get risk catalog table data
         getRoute()->get('/admin/risk_catalog/datatable', 'getRiskCatalogDatatableAPI');
@@ -506,6 +490,23 @@
                         
 			// Get the ucf routes
 			get_ucf_routes();
+                }
+        }
+
+	// If the Vulnerability Management Extra is enabled
+        if (vulnmgmt_extra())
+        {
+                // Required file
+                $required_file = realpath(__DIR__ . '/../extras/vulnmgmt/includes/api.php');
+
+                // If the file exists
+                if (file_exists($required_file))
+                {
+                        // Include the required file
+                        require_once($required_file);
+
+                        // Get the vulnmgmt routes
+                        get_vulnmgmt_routes();
                 }
         }
 

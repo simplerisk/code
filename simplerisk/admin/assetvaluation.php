@@ -157,18 +157,19 @@ require_once(language_file());
 
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
-?>
-        <script src="../js/bootstrap.min.js"></script>
-        <script language="javascript" src="../js/asset_valuation.js" type="text/javascript"></script>
 
-        <link rel="stylesheet" href="../css/bootstrap.css">
-        <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-        <link rel="stylesheet" href="../css/divshot-util.css">
-        <link rel="stylesheet" href="../css/divshot-canvas.css">
-        <link rel="stylesheet" href="../css/display.css">
-        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-        <link rel="stylesheet" href="../css/theme.css">
-        <link rel="stylesheet" href="../css/side-navigation.css">
+	display_bootstrap_javascript();
+?>
+        <script language="javascript" src="../js/asset_valuation.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
+
+        <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
 
         <?php $url = "<svg xmlns=\"http://www.w3.org/2000/svg\"><text x=\"5px\" y=\"20px\" font-size=\"15\" stroke=\"green\" fill=\"green\">" . get_setting("currency") . "</text></svg>"; ?>
         <style type="text/css">

@@ -36,6 +36,20 @@ if (!isset($_SESSION))
 // Include the language file
 require_once(language_file());
 
+// Checking for the SAML logout status
+if (custom_authentication_extra() && isset($_REQUEST['LogoutState'])) {
+    global $lang;
+    // Parse the logout state
+    $state = \SimpleSAML\Auth\State::loadState((string)$_REQUEST['LogoutState'], 'MyLogoutState');
+    $ls = $state['saml:sp:LogoutStatus']; /* Only works for SAML SP */
+    if ($ls['Code'] === 'urn:oasis:names:tc:SAML:2.0:status:Success' && !isset($ls['SubCode'])) {
+        /* Successful logout. */
+        set_alert(true, "good", $lang['SAMLLogoutSuccessful']);
+    } else {
+        /* Logout failed. Tell the user to close the browser. */
+        set_alert(true, "bad", $lang['SAMLLogoutFailed']);
+    }
+}
 // If the login form was posted
 if (isset($_POST['submit']))
 {
@@ -134,6 +148,12 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
     // If a response has been posted
     if (isset($_POST['sig_response']))
     {
+	// Get the username and password and then unset the session values
+	$user = $_SESSION['duo_user'];
+	$pass = $_SESSION['duo_pass'];
+	unset($_SESSION['duo_user']);
+	unset($_SESSION['duo_pass']);
+
         // Include the custom authentication extra
         require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
 
@@ -179,17 +199,16 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
   <meta http-equiv="X-UA-Compatible" content="IE=10,9,7,8">
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <!-- build:css vendor/vendor.min.css -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" media="screen" />
   <!-- endbuild -->
   <!-- build:css style.min.css -->
-  <link rel="stylesheet" type="text/css" href="css/style.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="css/style.css?<?php echo current_version("app"); ?>" media="screen" />
   <!-- endbuild -->
 
-  <link rel="stylesheet" href="css/bootstrap.css">
-  <link rel="stylesheet" href="css/bootstrap-responsive.css">
+  <link rel="stylesheet" href="css/bootstrap.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
 
-  <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css">
-  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="css/theme.css?<?php echo current_version("app"); ?>">
   
   <?php
       // Use these jQuery scripts
@@ -199,6 +218,8 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
 
       // Include the jquery javascript source
       display_jquery_javascript($scripts);
+
+      display_bootstrap_javascript();
 
       setup_favicon();
       setup_alert_requirements();
@@ -217,6 +238,10 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
 
     // Include the custom authentication extra
     require_once(realpath(__DIR__ . '/extras/authentication/index.php'));
+
+    // Store the user and password temporarily in the session
+    $_SESSION['duo_user'] = $_POST['user'];
+    $_SESSION['duo_pass'] = $_POST['pass'];
 
     // Perform a duo authentication request for the user
     duo_authentication($_SESSION["user"]);
@@ -269,7 +294,8 @@ if (isset($_SESSION["access"]) && ($_SESSION["access"] == "duo"))
     echo "</div>\n";
     echo "</div>\n";
   }
+
   ?>
-  <script src="js/bootstrap.min.js"></script>
+
 </body>
 </html>

@@ -72,26 +72,36 @@ else $admin_editing_itself = false;
             }
 
             if (!$admin_role_issue) {
-                // Change the type from a numeric to alpha
-                switch($type){
-                    case "1":
-                        $type = "simplerisk";
-                    break;
-                    case "2":
-                        $type = "ldap";
-                    break;
-                    case "3":
-                        $type = "saml";
-                    break;
-                    default:
-                        $type = "simplerisk";
-                }
+		// Verify that the email address is properly formatted
+		if (filter_var($email, FILTER_VALIDATE_EMAIL))
+		{
+                    // Change the type from a numeric to alpha
+                    switch($type){
+                        case "1":
+                            $type = "simplerisk";
+                            break;
+                        case "2":
+                            $type = "ldap";
+                            break;
+                        case "3":
+                            $type = "saml";
+                            break;
+                        default:
+                            $type = "simplerisk";
+                    }
                 
-                // Update the user
-                update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $language, $admin,  $multi_factor, $change_password, $manager, $permissions);
+                    // Update the user
+                    update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $language, $admin,  $multi_factor, $change_password, $manager, $permissions);
                 
-                // Display an alert
-                set_alert(true, "good", "The user was updated successfully.");
+                    // Display an alert
+                    set_alert(true, "good", "The user was updated successfully.");
+		}
+		// Otherwise, the email address is invalid
+		else
+		{
+                    // Display an alert
+		    set_alert(true, "bad", "An invalid email address was specified. Please try again with a different email address.");
+		}
             } else {
                 set_alert(true, "bad", $lang['AdminSelfEditWarning']);
             }
@@ -249,16 +259,17 @@ else $admin_editing_itself = false;
 
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/bootstrap-multiselect.js"></script>
-    <script src="../js/permissions-widget.js"></script>
+    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/permissions-widget.js?<?php echo current_version("app"); ?>"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
+    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
     <script type="text/javascript">
         $(function(){
             $("#team").multiselect({
@@ -268,13 +279,13 @@ else $admin_editing_itself = false;
         });
     </script>
 
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
+    <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-    <link rel="stylesheet" href="../css/theme.css">
-    <link rel="stylesheet" href="../css/side-navigation.css">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
     
     <?php
         setup_favicon("..");

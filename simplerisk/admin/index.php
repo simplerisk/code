@@ -123,7 +123,17 @@ function is_valid_base_url($url) {
                 update_setting("default_risk_score", $default_risk_score);
             }
         }
-        
+
+        // Update the default risk score setting
+        $maximum_risk_subject_length = (float)$_POST['maximum_risk_subject_length'];
+        $current_maximum_risk_subject_length = get_setting("maximum_risk_subject_length");
+        if ($maximum_risk_subject_length != $current_maximum_risk_subject_length) {
+            // If the maximum_risk_subject_length is a numeric value between 0 and 1000
+            if (is_numeric($maximum_risk_subject_length) && ($maximum_risk_subject_length > 0) && ($maximum_risk_subject_length <= 1000)) {
+                update_setting("maximum_risk_subject_length", $maximum_risk_subject_length);
+            }
+        }
+
         // Update the default closed audit status setting
         $default_closed_audit_status = (int)$_POST['closed_audit_status'];
         $current_default_closed_audit_status = get_setting("closed_audit_status");
@@ -240,6 +250,18 @@ function is_valid_base_url($url) {
                 if ($jquery_delivery_method == "cdn" || $jquery_delivery_method == "local")
                 {
                         update_setting("jquery_delivery_method", $jquery_delivery_method);
+                }
+        }
+
+	// Update the bootstrap delivery method setting
+        $bootstrap_delivery_method = $_POST['bootstrap_delivery_method'];
+        $current_bootstrap_delivery_method = get_setting("bootstrap_delivery_method");
+        if ($bootstrap_delivery_method != $current_bootstrap_delivery_method)
+        {
+                // If the bootstrap delivery method is cdn or local
+                if ($bootstrap_delivery_method == "cdn" || $bootstrap_delivery_method == "local")
+                {
+                        update_setting("bootstrap_delivery_method", $bootstrap_delivery_method);
                 }
         }
 
@@ -681,25 +703,26 @@ function is_valid_base_url($url) {
 
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/jquery.blockUI.min.js"></script>
+    <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
 
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" type="text/css" href="../css/jquery-ui.min.css" />
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <link rel="stylesheet" type="text/css" href="../css/jquery-ui.min.css?<?php echo current_version("app"); ?>" />
+    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
+    <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-    <link rel="stylesheet" href="../css/theme.css">
-    <link rel="stylesheet" href="../css/side-navigation.css">
-    <link rel="stylesheet" href="../css/settings_tabs.css">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/settings_tabs.css?<?php echo current_version("app"); ?>">
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
@@ -905,6 +928,10 @@ function is_valid_base_url($url) {
                               <td><input value="<?php echo $escaper->escapeHtml(get_setting('default_risk_score')); ?>" name="default_risk_score" id="default_risk_score" type="number" min="0" step="0.1" max="10" /></td>
                             </tr>
                             <tr>
+                              <td width="300px"><?php echo $escaper->escapeHtml($lang['MaximumRiskSubjectLength']); ?>:</td>
+                              <td><input value="<?php echo $escaper->escapeHtml(get_setting('maximum_risk_subject_length')); ?>" name="maximum_risk_subject_length" id="maximum_risk_subject_length" type="number" min="1" step="1" max="1000" /></td>
+                            </tr>
+                            <tr>
                               <td><?php echo $escaper->escapeHtml($lang['DefaultInitiatedAuditStatus']) ?>:</td>
                               <td><?php create_dropdown("test_status", $escaper->escapeHtml(get_setting("initiated_audit_status")), "initiated_audit_status", true, false, false, "", "--", 0); ?></td>
                             </tr>
@@ -979,6 +1006,15 @@ function is_valid_base_url($url) {
                                 <select name="jquery_delivery_method">
                                     <option value="cdn" <?php echo $escaper->escapeHtml(get_setting("jquery_delivery_method")) == "cdn" ? "selected" : ""; ?> >jQuery CDN</option>
                                     <option value="local" <?php echo $escaper->escapeHtml(get_setting("jquery_delivery_method")) == "local" ? "selected" : ""; ?> >Local</option>
+                                </select>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td><?php echo $escaper->escapeHtml($lang['BootstrapDeliveryMethod']) ?>:</td>
+                              <td>
+                                <select name="bootstrap_delivery_method">
+                                    <option value="cdn" <?php echo $escaper->escapeHtml(get_setting("bootstrap_delivery_method")) == "cdn" ? "selected" : ""; ?> >jsDelivr CDN</option>
+                                    <option value="local" <?php echo $escaper->escapeHtml(get_setting("bootstrap_delivery_method")) == "local" ? "selected" : ""; ?> >Local</option>
                                 </select>
                               </td>
                             </tr>

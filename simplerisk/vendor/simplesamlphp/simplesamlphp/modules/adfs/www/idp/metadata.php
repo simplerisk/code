@@ -12,4 +12,4 @@ $request = Request::createFromGlobals();
 
 $controller = new AdfsController($config, $session);
 $t = $controller->metadata($request);
-$t->send();
+$t->show();

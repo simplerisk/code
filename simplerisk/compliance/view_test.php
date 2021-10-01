@@ -32,18 +32,34 @@ include_csrf_magic();
 // Include the SimpleRisk language file
 require_once(language_file());
 
+$test_audit_id  = (int)$_GET['id'];
+
 // If team separation is enabled
 if (team_separation_extra()) {
     //Include the team separation extra
     require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
-    
-    $test_audit_id  = (int)$_GET['id'];
     
     if (!is_user_allowed_to_access($_SESSION['uid'], $test_audit_id, 'audit')) {
         set_alert(true, "bad", $escaper->escapeHtml($lang['NoPermissionForThisAudit']));
         refresh($_SESSION['base_url']."/compliance/past_audits.php");
     }
 }
+
+// Check if a framework was updated
+if (isset($_POST['update_associated_risks']))
+{
+    // check permission
+    if(!isset($_SESSION["modify_audits"]) || $_SESSION["modify_audits"] != 1){
+        set_alert(true, "bad", $lang['NoPermissionForThisAction']);
+        refresh();
+    }
+    // Process submitting test result
+    if(submit_test_result_to_risk()){
+        refresh();
+    }
+}
+
+$test_audit = get_framework_control_test_audit_by_id($test_audit_id);
 
 ?>
 <!doctype html>
@@ -60,7 +76,7 @@ if (team_separation_extra()) {
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
 ?>
-    <script src="../js/jquery.easyui.min.js"></script>
+    <script src="../js/jquery.easyui.min.js?<?php echo current_version("app"); ?>"></script>
 <?php
         // Use these jquery-ui scripts
         $scripts = [
@@ -69,23 +85,28 @@ if (team_separation_extra()) {
 
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/bootstrap-multiselect.js"></script>
-    <script src="../js/common.js"></script>
+    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/pages/risk.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
 
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 
-    <link rel="stylesheet" href="../css/easyui.css">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
+    <link rel="stylesheet" href="../css/easyui.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
     
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-    <link rel="stylesheet" href="../css/theme.css">
-    <link rel="stylesheet" href="../css/side-navigation.css">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+    <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
@@ -117,6 +138,115 @@ if (team_separation_extra()) {
         </div>
     </div>
 
+    <!-- MODEL WINDOW FOR SUBMIT RISK -->
+    <div id="modal-new-risk" class="modal hide fade no-padding in" tabindex="-1" role="dialog" aria-labelledby="associate-risk" aria-hidden="true" style="width: 1000px;margin-left:-500px;">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['NewRisk']); ?></h4>
+        </div>
+        <div class="modal-body">
+            <div id="tab-content-container"  style="background-color:#fff;padding-top:20px;padding-right:20px;margin-bottom:15px">
+            <?php add_risk_details();?>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODEL WINDOW FOR SELECT EXISTING RISK -->
+    <div id="modal-existing-risk" class="modal hide fade no-padding in" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['ExistingRisk']); ?></h4>
+        </div>
+        <div class="modal-body" style="padding-bottom:250px">
+            <div class="form-group">
+                <label for=""><?php echo $escaper->escapeHtml($lang['AvailableRisks']); ?></label>
+                <?php 
+                    $risks = get_risks();
+                    $risk_options = [];
+                    foreach ($risks as $risk) {
+                        $risk_options[] = array("value" => $risk["id"], "name" => $risk["subject"]);
+                    }
+                    $risk_ids = get_test_result_to_risk_ids($test_audit["result_id"]);
+                    create_multiple_dropdown("existing_risks", $risk_ids, null, $risk_options);
+                ?>
+            </div>
+            <?php
+            ?>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
+            <button id="add_existing_risks" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Select']); ?></button>
+        </div>
+    </div>
+
+    <style>
+        #modal-new-risk .span8{width:80%;}
+        #modal-new-risk .span10{width:100%;}
+        span5.left-panel {width:50%;}
+    </style>
+
     <?php display_set_default_date_format_script(); ?>
     </body>
+    <script>
+        $(document).ready(function(){
+            $("#risk-submit-form").append("<input type='hidden' name='associate_test' value='1'>");
+            $('#existing_risks').multiselect({
+                enableFiltering: true,
+                allSelectedText: "<?php echo $escaper->escapeHtml($lang['ALL']);?>",
+                buttonWidth: '100%',
+                includeSelectAllOption: true
+            });
+
+            $(document).on("click", "#submit_test_result", function(){
+                if($("#test_result").val() == "Fail") {
+                    $("#associate-risk").modal();
+                } else {
+                    if($("#origin_test_results").val() == "Fail" && $("#origin_test_results").attr("data-permission") == 1) {
+                        $("#remove-associate-risk").modal();
+                    } else{
+                        $('#edit-test').submit();
+                    }
+                }
+            });
+            $(document).on("click", "#remove-associate-risk-yes", function(){
+                $("#remove_associated_risk").val(1);
+                $("#associate_exist_risk_ids").val("");
+                $('#edit-test').submit();
+            });
+            $(document).on("click", "#remove-associate-risk-no", function(){
+                $('#edit-test').submit();
+            });
+            $(document).on("click", ".associate_new_risk", function(){
+                $("#modal-new-risk").modal();
+                $("#associate-risk").modal("hide");
+            });
+            $(document).on("click", ".associate_existing_risk", function(){
+                $("#modal-existing-risk").modal();
+                $("#associate-risk").modal("hide");
+            });
+            $(document).on("click", "#add_existing_risks", function(){
+                var risk_ids = $("#existing_risks").val().join(",");
+                $("#associate_exist_risk_ids").val(risk_ids);
+                $('form#edit-test').submit();
+                $("#modal-existing-risk").modal("hide");
+                return;
+            });
+            $(document).on("click", "#associate_no", function(){
+                $('#edit-test').submit();
+            });
+            $(document).on("click", ".delete-risk", function(){
+                var risk_id = $(this).attr("data-risk-id");
+                var risk_ids = $("#associate_exist_risk_ids").val().split(",");
+                var index = risk_ids.indexOf(risk_id);
+                if (index !== -1) {
+                    risk_ids.splice(index, 1);
+                }
+                $("#associate_exist_risk_ids").val(risk_ids.join(","));
+                $('form#edit-test').submit();
+            });
+
+
+        });
+    </script>
 </html>

@@ -85,7 +85,8 @@ $junction_config = array(
             'mitigation_to_team' => 'team_id',
             'risk_to_team' => 'team_id',
             'items_to_teams' => 'team_id',
-            'business_unit_to_team' => 'team_id'
+            'business_unit_to_team' => 'team_id',
+            'remote_team_mapping' => 'local_team_id',
         )
     ),
     'user' => array(
@@ -191,6 +192,7 @@ $junction_config = array(
         'id_field' => 'value',
         'junctions' => array(
             'role_responsibilities' => 'role_id',
+            'remote_role_mapping' => 'local_role_id',
         )
     ),
     'permissions' => array(
@@ -207,6 +209,18 @@ $junction_config = array(
             'permission_to_permission_group' => 'permission_group_id'
         )
     ),
+    'remote_team' => array(
+        'id_field' => 'value',
+        'junctions' => array(
+            'remote_team_mapping' => 'remote_team_id'
+        )
+    ),
+    'remote_role' => array(
+        'id_field' => 'value',
+        'junctions' => array(
+            'remote_role_mapping' => 'remote_role_id'
+        )
+    ),
 );
 
 // Add new supported tag types here
@@ -215,7 +229,7 @@ $junction_config = array(
 // Also have to:
 //      -add localization for tag types(example: 'TagType_risk' => 'Risk')
 //      -add it to the $junction_config 
-$tag_types = ['risk', 'asset', 'questionnaire_answer', 'questionnaire_pending_risk', 'incident_management_source', 'incident_management_destination'];
+$tag_types = ['risk', 'asset', 'questionnaire_risk', 'questionnaire_answer', 'questionnaire_pending_risk', 'incident_management_source', 'incident_management_destination'];
 
 /******************************
  * FUNCTION: DATABASE CONNECT *
@@ -832,7 +846,25 @@ function get_custom_table($type)
     {
         $stmt = $db->prepare("SELECT id as value, name FROM `threat_catalog` ORDER BY `order`");
     }
-    // Execute the database query
+    else if (in_array($type, ["remote_team-SAML", "remote_role-SAML", "remote_team-LDAP"]) && custom_authentication_extra()) {
+        list($table, $remote_type) = explode('-', $type);
+        $stmt = $db->prepare("
+            SELECT
+                *
+            FROM
+                `{$table}`
+            WHERE
+                `type` = '{$remote_type}'
+            ORDER BY
+                `name`;
+        ");
+    }
+    else if ($type == "data_classification")
+    {
+        $stmt = $db->prepare("SELECT id as value, name FROM `data_classification` ORDER BY `order`");
+    }
+
+// Execute the database query
     $stmt->execute();
 
     // Store the list in the array
@@ -885,7 +917,8 @@ function get_options_from_table($name)
         $options = get_table_ordered_by_name($name);
     }
     else if (in_array($name, array("user", "team", "enabled_users", "disabled_users", "languages", "family", "date_formats",
-            "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter", "policies", "framework_control_tests", "risk_catalog", "threat_catalog"))) {
+            "parent_frameworks", "frameworks", "framework_controls", "risk_tags", "asset_tags", "test_results", "test_results_filter",
+            "policies", "framework_control_tests", "risk_catalog", "threat_catalog", "remote_team-SAML", "remote_role-SAML", "remote_team-LDAP", "data_classification"))) {
         $options = get_custom_table($name);
     }
     // Otherwise
@@ -1230,7 +1263,7 @@ function create_numeric_dropdown($name, $selected = NULL, $blank = true)
 /****************************************
  * FUNCTION: CREATE MULTIUSERS DROPDOWN *
  ****************************************/
-function create_multiusers_dropdown($name, $selected = "", $custom_html = ""){
+function create_multiusers_dropdown($name, $selected = "", $custom_html = "", $returnHtml = false){
     global $escaper;
 
     // Make selected to array
@@ -1240,7 +1273,7 @@ function create_multiusers_dropdown($name, $selected = "", $custom_html = ""){
     }
 
     $options = get_options_from_table("enabled_users");
-    $str = "<select class=\"multiselect\" id=\"{$name}\" {$custom_html} name=\"{$name}[]\" multiple class=\"form-field form-control\" style=\"width:auto;\">\n";
+    $str = "<select id=\"{$name}\" {$custom_html} name=\"{$name}[]\" multiple class=\"form-field form-control multiselect\" style=\"width:auto;\">\n";
     // For each option
     foreach ($options as $option)
     {
@@ -1254,9 +1287,12 @@ function create_multiusers_dropdown($name, $selected = "", $custom_html = ""){
         $str .= "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
     }
     $str .= "  </select>\n";
-    echo $str;
 
-    return;
+    if($returnHtml){
+        return $str;
+    }else{
+        echo $str;
+    }
 }
 
 /*****************************
@@ -1328,17 +1364,18 @@ function create_dropdown($name, $selected = NULL, $rename = NULL, $blank = true,
 /**************************************
  * FUNCTION: CREATE MULTIPLE DROPDOWN *
  **************************************/
-function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $options = NULL, $blank = false, $blankText="--", $blankValue="", $useValue=true, $customHtml="",$alphabetical_order=0)
+function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $options = NULL, $blank = false, $blankText="--", $blankValue="", $useValue=true, $customHtml="",$alphabetical_order=0, $returnHtml=false)
 {
     global $lang;
     global $escaper;
+    $str = "";
 
     if ($rename != NULL)
     {
-        echo "<select {$customHtml} multiple=\"multiple\" id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "[]\">\n";
+        $str .= "<select {$customHtml} multiple=\"multiple\" id=\"" . $escaper->escapeHtml($rename) . "\" name=\"" . $escaper->escapeHtml($rename) . "[]\">\n";
     }
     else {
-        echo "<select {$customHtml} multiple=\"multiple\" id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";
+        $str .= "<select {$customHtml} multiple=\"multiple\" id=\"" . $escaper->escapeHtml($name) . "\" name=\"" . $escaper->escapeHtml($name) . "[]\">\n";
     }
 
     // Get the list of options
@@ -1374,17 +1411,22 @@ function create_multiple_dropdown($name, $selected = NULL, $rename = NULL, $opti
         // If ID is used for option's value
         if($useValue)
         {
-            echo "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
+            $str .= "    <option value=\"" . $escaper->escapeHtml($option['value']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
         }
         // If name is used for option's value
         else
         {
-            echo "    <option value=\"" . $escaper->escapeHtml($option['name']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
+            $str .= "    <option value=\"" . $escaper->escapeHtml($option['name']) . "\"" . $text . ">" . $escaper->escapeHtml($option['name']) . "</option>\n";
         }
 
     }
 
-    echo "  </select>\n";
+    $str .= "  </select>\n";
+    if($returnHtml){
+        return $str;
+    }else{
+        echo $str;
+    }
 }
 
 /*****************************************
@@ -2076,7 +2118,7 @@ function get_default_datetime_format($time_format="H:i:s")
 function format_date($date, $default = "")
 {
     // If the date is not 0000-00-00
-    if ($date && $date != "0000-00-00")
+    if ($date && $date != "0000-00-00" && $date != "0000-00-00 00:00:00")
     {
         // Set it to the proper format
         return strtotime($date) ? date(get_default_date_format(), strtotime($date)) : "";
@@ -2845,6 +2887,9 @@ function add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $
  *************************/
 function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id, $language, $admin, $multi_factor, $change_password, $manager, $permissions=[]) {
 
+    // Getting the pre-update version of the user for audit logging
+    $pre_update_user = get_user_by_id($user_id, true);
+
     // Checking whether the user just got locked out
     // It's only true when the user wasn't locked, but with this call it'll be
     $user_got_locked = !is_user_locked_out($user_id) && (int)$lockout == 1;
@@ -2918,10 +2963,20 @@ function update_user($user_id, $lockout, $type, $name, $email, $teams, $role_id,
     }
 
     // Audit log
-    $username = get_name_by_value("user", $user_id);
-    $message = "The existing user \"" . $username . "\" was modified by the \"" . $_SESSION['user'] . "\" user.";
-    write_log((int)$user_id + 1000, $_SESSION['uid'], $message, 'user');
-
+    // Getting the post-update version of the user for audit logging
+    $post_update_user = get_user_by_id($user_id, true);
+    $changes = get_changes('user', $pre_update_user, $post_update_user);
+    if(!empty($_SESSION['uid'])) {
+        $message = _lang('UserUpdatedAuditLog', [
+            'username' => "{$post_update_user['name']}({$post_update_user['username']})",
+            'updater' => "{$_SESSION['name']}({$_SESSION['user']})",
+            'changes' => $changes
+        ], false);
+        write_log((int)$user_id + 1000, $_SESSION['uid'], $message, 'user');
+    } else {
+        $message = _lang('UserUpdatedFromidPDataAuditLog', ['username' => "{$post_update_user['name']}({$post_update_user['username']})", 'changes' => $changes], false);
+        write_log((int)$user_id + 1000, $user_id, $message, 'user');
+    }
     return true;
 }
 
@@ -2990,10 +3045,17 @@ function refresh_permissions_in_sessions_of_user($uid) {
     db_close($db);
 }
 
+/**********************************
+ * FUNCTION: GET USER BY USERNAME *
+ **********************************/
+function get_user_by_username($username, $include_permissions = false) {
+    return get_user_by_id(get_id_by_user($username), $include_permissions);
+}
+
 /****************************
  * FUNCTION: GET USER BY ID *
  ****************************/
-function get_user_by_id($id)
+function get_user_by_id($id, $include_permissions = false)
 {
     // Open the database connection
     $db = db_open();
@@ -3019,8 +3081,13 @@ function get_user_by_id($id)
     db_close($db);
 
     if (isset($array[0])) {
-        if ($array[0]['teams'])
+        if ($array[0]['teams']) {
             $array[0]['teams'] = explode(',', $array[0]['teams']);
+        }
+
+        if ($include_permissions) {
+            $array[0]['permissions'] = get_permissions_of_user($id);
+        }
 
         return $array[0];
     }
@@ -3137,13 +3204,31 @@ function update_password($user, $hash)
 /*************************
  * FUNCTION: SUBMIT RISK *
  *************************/
-function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders=[], $risk_catalog_mapping=[], $threat_catalog_mapping=[], $template_group_id=1)
+function submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source,  $category, $team, $technology, $owner, $manager, $assessment, $notes, $project_id = 0, $submitted_by=0, $submission_date=false, $additional_stakeholders=[], $risk_catalog_mapping=[], $threat_catalog_mapping=[], $template_group_id="")
 {
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        if(!$template_group_id){
+            $group = get_default_template_group("risk");
+            $template_group_id = $group["id"];
+
+        }
+    }
     // In the database `submitted_by` is defaulted to 1 as that's the id of the pre-created Admin user, so it's defaulted to 1 here as well
     $submitted_by || ($submitted_by = $_SESSION['uid']) || ($submitted_by = 1);
 
     $owner || $owner = 0;
-    
+
+    // Limit the subject's length
+    $maxlength = (int)get_setting('maximum_risk_subject_length', 300);
+    if (strlen($subject) > $maxlength) {
+        set_alert(true, "bad", _lang('RiskSubjectTruncated', ['limit' => $maxlength]));
+        $subject = substr($subject, 0, $maxlength);
+    }
+
     // Open the database connection
     $db = db_open();
 
@@ -3163,7 +3248,7 @@ function submit_risk($status, $subject, $reference_id, $regulation, $control_num
     $stmt = $db->prepare($sql);
     $stmt->bindParam(":status", $status, PDO::PARAM_STR, 10);
     $encrypted_subject = try_encrypt($subject);
-    $stmt->bindParam(":subject", $encrypted_subject, PDO::PARAM_STR, 1000);
+    $stmt->bindParam(":subject", $encrypted_subject, PDO::PARAM_STR);
     $stmt->bindParam(":reference_id", $reference_id, PDO::PARAM_STR, 20);
     $stmt->bindParam(":regulation", $regulation, PDO::PARAM_INT);
     $stmt->bindParam(":control_number", $control_number, PDO::PARAM_STR, 50);
@@ -4360,7 +4445,7 @@ function update_risk_scoring($risk_id, $scoring_method, $CLASSIC_likelihood, $CL
 /**************************************
  * FUNCTION: SAVE MITIGATION CONTROLS *
  **************************************/
-function save_mitigation_controls($mitigation_id, $control_ids,$post = array())
+function save_mitigation_controls($mitigation_id, $control_ids, $post = array())
 {
     $control_ids = is_array($control_ids) ? $control_ids : explode(",", $control_ids);
     // Open the database connection
@@ -4383,6 +4468,37 @@ function save_mitigation_controls($mitigation_id, $control_ids,$post = array())
         $stmt->bindParam(":validation_owner", $validation_owner, PDO::PARAM_INT);
         $stmt->bindParam(":validation_mitigation_percent", $validation_mitigation_percent, PDO::PARAM_INT);
         $stmt->execute();
+
+        $file_ids = empty($post['file_ids_'.$control_id]) ? [] : $post['file_ids_'.$control_id];
+        refresh_files_for_validation($mitigation_id, $control_id, $file_ids);
+
+        // If a artifact file was submitted
+        if (!empty($_FILES['artifact-file-'.$control_id]))
+        {
+            $files = $_FILES['artifact-file-'.$control_id];
+            // Upload any file that is submitted
+            for($i=0; $i<count($files['name']); $i++){
+                if($files['error'][$i] || $i==0){
+                    continue;
+                }
+                $file = array(
+                    'name' => $files['name'][$i],
+                    'type' => $files['type'][$i],
+                    'tmp_name' => $files['tmp_name'][$i],
+                    'size' => $files['size'][$i],
+                    'error' => $files['error'][$i],
+                );
+                // Upload any file that is submitted
+                $error = upload_validation_file($mitigation_id, $control_id, $file);
+                if($error != 1){
+                    /**
+                    * If error, stop uploading files;
+                    */
+                    break;
+                }
+            }
+
+        }
     }
 
     // Close the database connection
@@ -5009,7 +5125,7 @@ function update_risk_subject($risk_id, $subject)
     // Update the risk
     $stmt = $db->prepare("UPDATE risks SET subject=:subject, last_update=:date WHERE id = :id");
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
-    $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 1000);
+    $stmt->bindParam(":subject", $subject, PDO::PARAM_STR);
     $stmt->bindParam(":date", $current_datetime, PDO::PARAM_STR);
     $stmt->execute();
 
@@ -5520,6 +5636,10 @@ function get_risks_by_project_id($project_id)
  ***********************/
 function get_risks($sort_order=0, $order_field=false, $order_dir=false)
 {
+    
+    // Open the database connection
+    $db = db_open();
+    
     // If sort_field is defined, set sort query
     if($order_field)
     {
@@ -5580,16 +5700,69 @@ function get_risks($sort_order=0, $order_field=false, $order_dir=false)
             case "mitigation_planned":
                 $sort_query = " ORDER BY b.mitigation_id != 0 {$order_dir}, b.id ASC";
             break;
-            default: 
-                if (stripos($order_field, "custom_field_") === false)
-                    $sort_query = " ORDER BY `$order_field` {$order_dir} ";
+            default:
+                $sort_query = '';
+                // Only check if it's not a custom field
+                if (stripos($order_field, "custom_field_") === false) {
+                    
+                    // If there're new fields added to the 1-3 queries they should be added above if they need special treatment
+                    // or here if they did not
+                    $static_allowed_fields = [
+                        "additional_notes",
+                        "additional_stakeholders",
+                        "affected_asset_groups",
+                        "affected_assets",
+                        "closure_date",
+                        "comments",
+                        "current_solution",
+                        "location",
+                        "mitigation_accepted",
+                        "mitigation_controls",
+                        "mitigation_date",
+                        "mitigation_effort",
+                        "mitigation_max_cost",
+                        "mitigation_min_cost",
+                        "mitigation_owner",
+                        "mitigation_team",
+                        "next_review",
+                        "next_step",
+                        "planning_date",
+                        "planning_strategy",
+                        "regulation_id",
+                        "residual_risk",
+                        "risk_assessment",
+                        "risk_tags",
+                        "scoring_method",
+                        "security_recommendations",
+                        "security_requirements",
+                        "team",
+                        "technology"
+                    ];
+    
+                    // TODO if sorting on a field isn't working then it should be considered to add above or add the whole table to the list in the below query 
+                    $stmt = $db->prepare("
+                        SELECT
+                        	DISTINCT `COLUMN_NAME` 
+                        FROM
+                            `INFORMATION_SCHEMA`.`COLUMNS` 
+                        WHERE
+                            `TABLE_SCHEMA` = '" . DB_DATABASE . "'
+                        	AND `TABLE_NAME` IN ('mitigations', 'risks', 'mgmt_reviews')
+                    ");
+                    $stmt->execute();
+    
+                    // Store the list in the array
+                    $dynamic_allowed_fields = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);                
+                    $allowed_fields = array_values(array_unique(array_merge($static_allowed_fields, $dynamic_allowed_fields)));
+                    
+                    if (in_array($order_field, $allowed_fields)) {
+                        $sort_query = " ORDER BY `$order_field` {$order_dir} ";
+                    }
+                }
             break;
         }
-        
     }
 
-    // Open the database connection
-    $db = db_open();
 
     // If this is the default, sort by risk
     if ($sort_order == 0)
@@ -8402,7 +8575,7 @@ function get_projects_count($status)
 /********************************************
  * FUNCTION: UPDATE PROJECTS HTML BY STATUS *
  ********************************************/
-function get_project_tabs($status)
+function get_project_tabs($status, $template_group_id="")
 {
     global $lang;
     global $escaper;
@@ -8416,6 +8589,19 @@ function get_project_tabs($status)
     
     $index = 0;
     $str = "";
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        $customization = true;
+        if(!$template_group_id){
+            $group = get_default_template_group("project");
+            $template_group_id = $group["id"];
+
+        }
+        $active_fields = get_active_fields("project", $template_group_id);
+    } else $customization = false;
     foreach ($projects as $project)
     {
         if ($project['status'] == $status)
@@ -8429,10 +8615,15 @@ function get_project_tabs($status)
                 $delete = '';
                 $no_sort = 'id = "no-sort"';
                 $name = $escaper->escapehtml($lang['UnassignedRisks']);
+                $due_date = "";
+                $consultant = "";
+                $business_owner = "";
+                $data_classification = "";
 
                 // Get risks for this project
                 $risks = get_risks_unassigned_project();
                 $priority = "";
+                $edit_link = "";
             }
             // If project ID was defined
             else
@@ -8442,11 +8633,16 @@ function get_project_tabs($status)
                 } else $delete ='';
                 $no_sort = '';
                 $name = $escaper->escapeHtml($name);
+                $due_date = format_date($project['due_date']);
+                $consultant = get_user_name($project['consultant']);
+                $business_owner = get_user_name($project['business_owner']);
+                $data_classification = get_table_value_by_id("data_classification", $project['data_classification']);
 
                 // Get risks for this project
                 $risks = get_risks_by_project_id($id);
                 $index++;
                 $priority = $index;
+                $edit_link = '<a href="javascript:void(0);" class="project-block--edit pull-right" data-id="'.$escaper->escapeHtml($id).'" data-name="'.$name.'"><i class="fa fa-edit"></i></a>';
             }
             
             // Get count of risks for this project
@@ -8454,9 +8650,47 @@ function get_project_tabs($status)
 
             $str .= '<div class="project-block clearfix" '.$no_sort.'>';
                 $str .= '<div class="project-block--header clearfix" data-project="'.$escaper->escapeHtml($id).'">
-                <div class="project-block--priority pull-left">'.$escaper->escapeHtml($priority).'</div>
-                <div class="project-block--name pull-left">'. $name .'</div>
-                <div class="project-block--risks pull-left"><span>'.$count.'</span><a href="#" class="view--risks">'.$escaper->escapeHtml($lang['ViewRisk']).'</a>'.$delete.'</div>
+                <div class="project-block--priority pull-left">'.$escaper->escapeHtml($priority).'</div>';
+                if($customization == true){
+                    foreach($active_fields as $field)
+                    {
+                        if($field['is_basic'] == 1)
+                        {
+                            switch($field['name']){
+                                case 'ProjectName':
+                                    $str .= '<div class="project-block--name pull-left">'. $name .'</div>';
+                                break;
+                                case 'DueDate':
+                                    $str .= '<div class="project-block--field pull-left">'. $due_date .'</div>';
+                                break;
+                                case 'Consultant':
+                                    $str .= '<div class="project-block--field pull-left">'. $consultant .'</div>';
+                                break;
+                                case 'BusinessOwner':
+                                    $str .= '<div class="project-block--field pull-left">'. $business_owner .'</div>';
+                                break;
+                                case 'DataClassification':
+                                    $str .= '<div class="project-block--field pull-left">'. $data_classification .'</div>';
+                                break;
+                            }
+                        } 
+                        else {
+                            $text = get_plan_custom_field_name_by_field_id($field, $id, "project");
+                            $str .= '<div class="project-block--field pull-left">'. $text .'</div>';
+                        }
+                    }
+
+                } else {
+                    $str .= '
+                        <div class="project-block--name pull-left">'. $name .'</div>
+                        <div class="project-block--field pull-left">'. $due_date .'</div>
+                        <div class="project-block--field pull-left">'. $consultant .'</div>
+                        <div class="project-block--field pull-left">'. $business_owner .'</div>
+                        <div class="project-block--field pull-left">'. $data_classification .'</div>
+                    ';
+                }
+                $str .= '
+                    <div class="project-block--risks pull-left"><span>'.$count.'</span><a href="#" class="view--risks">'.$escaper->escapeHtml($lang['ViewRisk']).'</a>'.$delete.$edit_link.'</div>
                 </div>';
 
                 $str .= '<div class="risks">';
@@ -9548,22 +9782,22 @@ function update_mitigation($risk_id, $post)
         save_risk_custom_field_values($risk_id);
     }
 
-    $planning_strategy  = (int)$post['planning_strategy'];
-    $mitigation_effort  = (int)$post['mitigation_effort'];
-    $mitigation_cost    = (int)$post['mitigation_cost'];
-    $mitigation_owner   = (int)$post['mitigation_owner'];
-    if(isset($post['mitigation_team']))
-    {
-        $mitigation_team = $post['mitigation_team'];
-    }
-    else
-    {
-        $mitigation_team = [];
-    }
-    $current_solution   = try_encrypt($post['current_solution']);
-    $security_requirements      = try_encrypt($post['security_requirements']);
-    $security_recommendations   = try_encrypt($post['security_recommendations']);
-    $planning_date      = $post['planning_date'];
+    $planning_strategy  = isset($post['planning_strategy']) ? (int)$post['planning_strategy'] : 0;
+    $mitigation_effort  = isset($post['mitigation_effort']) ? (int)$post['mitigation_effort'] : 0;
+    $mitigation_cost    = isset($post['mitigation_cost']) ?(int)$post['mitigation_cost'] : 0;
+    $mitigation_owner   = isset($post['mitigation_owner']) ? (int)$post['mitigation_owner'] : 0;
+    $mitigation_team   = isset($post['mitigation_team']) ? $post['mitigation_team'] : [];
+
+    $current_solution           = isset($post['current_solution']) ? $post['current_solution'] : "";
+    $current_solution  = try_encrypt($current_solution);
+
+    $security_requirements      = isset($post['security_requirements']) ? $post['security_requirements'] : "";
+    $security_requirements  = try_encrypt($security_requirements);
+
+    $security_recommendations   = isset($post['security_recommendations']) ? $post['security_recommendations'] : "";
+    $security_recommendations   = try_encrypt($security_recommendations);
+
+    $planning_date      = isset($post['planning_date']) ? $post['planning_date'] : "";
     $mitigation_percent = (isset($post['mitigation_percent']) && $post['mitigation_percent'] >= 0 && $post['mitigation_percent'] <= 100) ? $post['mitigation_percent'] : 0;
     $mitigation_controls = empty($post['mitigation_controls']) ? [] : $post['mitigation_controls'];
 //    $mitigation_controls = is_array($mitigation_controls) ? implode(",", $mitigation_controls) : $mitigation_controls;
@@ -9765,7 +9999,7 @@ function update_mitigation($risk_id, $post)
 /**************************
  * FUNCTION: GET REVIEWS *
  **************************/
-function get_reviews($risk_id, $template_group_id=1)
+function get_reviews($risk_id, $template_group_id="")
 {
     global $lang;
     global $escaper;
@@ -9794,6 +10028,10 @@ function get_reviews($risk_id, $template_group_id=1)
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        if(!$template_group_id) {
+            $group = get_default_template_group("risk");
+            $template_group_id = $group["id"];
+        }
         $active_fields = get_active_fields("risk", $template_group_id);
         foreach($active_fields as $key => $field){
             if($field['name'] == 'NextReviewDate'){
@@ -10512,6 +10750,32 @@ function organizational_hierarchy_extra() {
     return $GLOBALS['organizational_hierarchy_extra'];
 }
 
+/****************************
+ * FUNCTION: VULNMGMT EXTRA *
+ ****************************/
+function vulnmgmt_extra() {
+    if(isset($GLOBALS['extra_vulnmgmt'])){
+        return $GLOBALS['extra_vulnmgmt'];
+    }
+
+    $setting = get_setting('extra_vulnmgmt');
+
+    // If the setting is not empty
+    if (!empty($setting))
+    {
+        // If the setting is true or "true" or 1
+        if ($setting === true || $setting === "true" || $setting === 1 || $setting === "1")
+        {
+            // The extra is enabled
+            $GLOBALS['extra_vulnmgmt'] = true;
+        }
+	else $GLOBALS['extra_vulnmgmt'] = false;
+    }
+    else $GLOBALS['extra_vulnmgmt'] = false;
+
+    return $GLOBALS['extra_vulnmgmt'];
+}
+
 /****************************************
  * FUNCTION: CHECK INSTALLED PHP-MCRYPT *
  ****************************************/
@@ -10729,7 +10993,7 @@ function refresh_files_for_risk($unique_names, $risk_id, $view_type = 1)
 /***************************
  * FUNCTION: DOWNLOAD FILE *
  ***************************/
-function download_file($unique_name)
+function download_file($unique_name, $file_type = "file")
 {
     global $escaper;
 
@@ -10737,10 +11001,15 @@ function download_file($unique_name)
     $db = db_open();
 
     // Get the file from the database
-    $stmt = $db->prepare("SELECT * FROM files WHERE BINARY unique_name=:unique_name");
-    $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
-    $stmt->execute();
+    if($file_type == "file") {
+        $stmt = $db->prepare("SELECT * FROM files WHERE BINARY unique_name=:unique_name");
+        $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_STR, 30);
+    } else if ($file_type == "validation_file") {
+        $stmt = $db->prepare("SELECT * FROM validation_files WHERE id=:unique_name");
+        $stmt->bindParam(":unique_name", $unique_name, PDO::PARAM_INT);
+    }
 
+    $stmt->execute();
     // Store the results in an array
     $array = $stmt->fetch();
 
@@ -10762,7 +11031,7 @@ function download_file($unique_name)
             require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
 
             // If the user has access to view the risk
-            if (extra_grant_access($_SESSION['uid'], (int)$array['risk_id'] + 1000))
+            if (($file_type == "file" && extra_grant_access($_SESSION['uid'], (int)$array['risk_id'] + 1000)) || ($file_type == "validation_file"))
             {
                 // Display the file
                 header("Content-length: " . $array['size']);
@@ -12710,6 +12979,9 @@ function ping_server()
         $path .= "&organizational_hierarchy_installed=" . core_is_installed("organizational_hierarchy");
         $path .= "&organizational_hierarchy_enabled=" . organizational_hierarchy_extra();
         $path .= "&organizational_hierarchy_version=" . core_extra_current_version("organizational_hierarchy");
+	$path .= "&vulnmgmt_installed=" . core_is_installed("vulnmgmt");
+	$path .= "&vulnmgmt_enabled=" . vulnmgmt_extra();
+	$path .= "&vulnmgmt_version=" . core_extra_current_version("vulnmgmt");
 
         // If the organizational hierarchy extra is enabled
 	if (organizational_hierarchy_extra())
@@ -13697,7 +13969,7 @@ function add_security_headers($x_frame_options = true, $x_xss_protection = true,
 			if (filter_var($simplerisk_base_url, FILTER_VALIDATE_URL))
 			{
 				// Add the Content-Security-Policy header with the simplerisk base url
-				header("Content-Security-Policy: default-src 'self'; style-src-elem 'unsafe-inline' *.googleapis.com " . $simplerisk_base_url . "; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.highcharts.com *.jquery.com; font-src *.gstatic.com " . $simplerisk_base_url . "; img-src 'self' *.googleapis.com " . $simplerisk_base_url . " data:; connect-src 'self' *.simplerisk.com;");
+				header("Content-Security-Policy: default-src 'self'; style-src-elem 'unsafe-inline' *.googleapis.com cdn.jsdelivr.net " . $simplerisk_base_url . "; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.highcharts.com *.jquery.com cdn.jsdelivr.net; font-src *.gstatic.com cdn.jsdelivr.net " . $simplerisk_base_url . "; img-src 'self' *.googleapis.com " . $simplerisk_base_url . " data:; connect-src 'self' *.simplerisk.com; frame-src 'self' *.duosecurity.com;");
 			}
 			// Otherwise add the Content-Security-Policy header without it
 			else header("Content-Security-Policy: default-src * 'unsafe-inline' 'unsafe-eval' data:");
@@ -14370,6 +14642,13 @@ function set_users_of_team($team_id, $user_ids) {
 function set_teams_of_user($user_id, $team_ids) {
 
     $current_teams = get_user_teams($user_id);
+    // Make sure we're dealing with arrays, even if they're empty
+    if (!$current_teams) {
+        $current_teams = [];
+    }
+    if (!$team_ids) {
+        $team_ids = [];
+    }
 
     if (save_junction_values('user_to_team', 'user_id', $user_id, 'team_id', $team_ids)) {
 
@@ -14803,6 +15082,9 @@ function large_extra($extra_name)
         case 'separation':
             // Allow
             return false;
+	case 'vulnmgmt':
+	    // Allow
+	    return false;
     }
 }
 
@@ -14866,7 +15148,7 @@ function add_contributing_risk($subject, $weight)
 
     // Insert the new file type
     $stmt = $db->prepare("INSERT INTO `contributing_risks` (`subject`, `weight`) VALUES(:subject, :weight); ");
-    $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 100);
+    $stmt->bindParam(":subject", $subject, PDO::PARAM_STR);
     $stmt->bindParam(":weight", $weight);
     $stmt->execute();
     $contributing_risks_id = $db->lastInsertId();
@@ -14896,7 +15178,7 @@ function update_contributing_risk($id, $subject, $weight)
 
     // Insert the new file type
     $stmt = $db->prepare("UPDATE `contributing_risks` SET `subject`=:subject, `weight`=:weight WHERE id=:id; ");
-    $stmt->bindParam(":subject", $subject, PDO::PARAM_STR, 100);
+    $stmt->bindParam(":subject", $subject, PDO::PARAM_STR);
     $stmt->bindParam(":weight", $weight);
     $stmt->bindParam(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
@@ -15395,13 +15677,12 @@ function prevent_extra_double_submit($extra, $is_enable) {
         ($extra == "incident_management" && (incident_management_extra() == $is_enable)) ||
         ($extra == "api" && (api_extra() == $is_enable)) ||
         ($extra == "assessments" && (assessments_extra() == $is_enable)) ||
-        ($extra == "complianceforge" && (complianceforge_extra() == $is_enable)) ||
         ($extra == "complianceforge_scf" && (complianceforge_scf_extra() == $is_enable)) ||
         ($extra == "advanced_search" && (advanced_search_extra() == $is_enable)) ||
         ($extra == "jira" && (jira_extra() == $is_enable)) ||
         ($extra == "organizational_hierarchy" && (organizational_hierarchy_extra() == $is_enable)) ||
         ($extra == "ucf" && (ucf_extra() == $is_enable)) ||
-        ($extra == "governance" && (governance_extra() == $is_enable));
+	($extra == "extra_vulnmgmt" && (vulnmgmt_extra() == $is_enable));
 
     if ($interrupt) {
         set_alert(true, "bad", $lang['ExtraIsAlready' . ($is_enable ? 'Enabled': 'Disabled')]);
@@ -15409,16 +15690,36 @@ function prevent_extra_double_submit($extra, $is_enable) {
     }
 }
 
-/***********************************************
- * FUNCTION: PREVENT FORM DOUBLE SUBMIT SCRIPT *
- ***********************************************/
-function prevent_form_double_submit_script() {
-    echo "$(document).ready(function(){
-            $('form').submit(function(evt) {
-                setTimeout(function(){ $(\"input[type='submit']\").prop('disabled', true); }, 1);
-                return true;
-            });
-        });\n";
+/********************************************************************
+ * FUNCTION: PREVENT FORM DOUBLE SUBMIT SCRIPT                      *
+ * When the $forms is set, only the forms of the provided ids       *
+ * will trigger the page-wide disablement of form submit buttons.   *
+ ********************************************************************/
+function prevent_form_double_submit_script($forms = false) {
+    if ($forms) {
+        echo "
+            $(document).ready(function(){";
+        foreach ($forms as $form) {
+            echo "
+                $('#{$form}').submit(function(evt) {
+                    setTimeout(function(){ $(\"input[type='submit']\").prop('disabled', true); }, 1);
+                    setTimeout(function(){ $(\"button[type='submit']\").prop('disabled', true); }, 1);
+                    return true;
+                });
+            ";
+        }
+        echo "
+            });";
+    } else {
+        echo "
+            $(document).ready(function(){
+                $('form').submit(function(evt) {
+                    setTimeout(function(){ $(\"input[type='submit']\").prop('disabled', true); }, 1);
+                    setTimeout(function(){ $(\"button[type='submit']\").prop('disabled', true); }, 1);
+                    return true;
+                });
+            });\n";
+    }
 }
 
 /*********************************
@@ -16601,7 +16902,7 @@ function is_extra_installed($extra) {
  * This function takes the proxy settings from the Security tab in Settings    *
  * and sets the default stream context to use them before making a web request *
  *******************************************************************************/
-function set_proxy_stream_context($method=null, $header=null, $content=null, $ssl_verify_off=false)
+function set_proxy_stream_context($method=null, $header=null, $content=null, $ssl_verify_off=false, $timeout=null)
 {
     // Get the proxy_web_requests value
     $proxy_web_requests = get_setting("proxy_web_requests");
@@ -16708,6 +17009,17 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
 	    write_debug_log("HTTP Context - Content: " . $http_context['content']);
         }
 
+	// If a timeout was provided
+	if ($timeout)
+	{
+            write_debug_log("Timeout was provided");
+
+	    // Set the provided timeout
+	    $http_context['timeout'] = $timeout;
+
+	    write_debug_log("HTTP Context - Timeout: " . $http_context['timeout']);
+	}
+
         // Set the stream context
         $stream_context = array ('http' => $http_context, 'ssl' => $ssl_context);
 
@@ -16766,12 +17078,65 @@ function set_proxy_stream_context($method=null, $header=null, $content=null, $ss
             write_debug_log("HTTP Context - Content: " . $http_context['content']);
         }
 
+        // If a timeout was provided
+        if ($timeout)
+        {
+            write_debug_log("Timeout was provided");
+
+            // Set the provided timeout
+            $http_context['timeout'] = $timeout;
+
+            write_debug_log("HTTP Context - Timeout: " . $http_context['timeout']);
+        }
+
         // Set the stream context
         $stream_context = array ('http' => $http_context);
 
         // Return the default stream context resource
         return stream_context_set_default($stream_context);
     }
+}
+
+/**********************************
+ * FUNCTION: CONFIGURE CURL PROXY *
+ **********************************/
+function configure_curl_proxy($curl_handle)
+{
+	// Get the proxy_web_requests value
+	$proxy_web_requests = get_setting("proxy_web_requests");
+
+	// If proxy web requests is set
+	if ($proxy_web_requests)
+        {
+                // Get the proxy configuration
+                $proxy_verify_ssl_certificate = get_setting("proxy_verify_ssl_certificate");
+                $proxy_host = get_setting("proxy_host");
+                $proxy_port = get_setting("proxy_port");
+                $proxy_authenticated = get_setting("proxy_authenticated");
+                $proxy_user = get_setting("proxy_user");
+                $proxy_pass = get_setting("proxy_pass");
+
+                // Configure the proxy
+                $proxy = "{$proxy_host}:{$proxy_port}";
+                curl_setopt($curl_handle, CURLOPT_PROXY, $proxy);
+
+                // If this is an authenticated proxy
+                if ($proxy_authenticated)
+                {
+                        // Provide the username and password for authentication
+                        $proxyauth = "{$proxy_user}:{$proxy_pass}";
+                        curl_setopt($curl_handle, CURLOPT_PROXYUSERPWD, $proxyauth);
+                }
+
+		// If we do not want to verify the proxy SSL certificates
+		if (!$proxy_verify_ssl_certificate)
+		{
+			// Do not verify the SSL host and peer
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		}
+        }
+        else curl_setopt($curl_handle, CURLOPT_PROXY, null);
 }
 
 /********************************************************************************************************
@@ -16851,8 +17216,12 @@ function save_junction_values($tb_name, $first_field_name, $first_id, $second_fi
  * of a batch-delete, it's enough if it's called once the batch-delete is finished.                         *
  ************************************************************************************************************/
 function cleanup_after_delete($deleted_item_table) {
-
     global $junction_config;
+
+    // It's possible that there're tables that are only present when an extra is installed/enabled
+    if (!array_key_exists($deleted_item_table, $junction_config) || !table_exists($deleted_item_table)) {
+        return;
+    }
 
     $db = db_open();
 
@@ -18036,7 +18405,23 @@ $change_audit_log_localization_config = [
         'additional_stakeholders' => 'AdditionalStakeholders',
         'approver' => 'Approver',
         'team_ids' => 'Teams',
-    ]
+    ],
+    'user' => [
+        'enabled' => 'Enabled',
+        'lockout' => 'AccountLockedOut',
+        'type' => 'Type',
+        'name' => 'FullName',
+        'email' => 'EmailAddress',
+        'role_id' => 'Role',
+        'lang' => 'Language',
+        'admin' => 'Admin',
+        'multi_factor' => 'MultiFactorAuthentication',
+        'change_password' => 'RequirePasswordChangeOnLogin',
+        'manager' => 'Manager',
+        'selected_business_unit' => 'BusinessUnit',
+        'teams' => 'Teams',
+        'permissions' => 'UserResponsibilities'
+    ],
 ];
 
 /**
@@ -18044,28 +18429,30 @@ $change_audit_log_localization_config = [
  * The function is used to get the list of changes of two objects(arrays) of `before` and `after` states in a string format of "`{$field_name}` (`{$before}` => `{$after}`)"
  * Example response: `Audit Status` (`Evidence Submitted / Pending Review` => `Pending Evidence from Control Owner`), `Tester` (`Admin` => `Josh Sokol`)
  */
+// When adding fields you can skip adding logic for fields that are displayed as-is, like name, subject, title, etc
+// because they're just added to the differences as they are(if changed)
 function get_changes($type, $before, $after) {
-    
+
     if (!$before || !$after || !is_array($before) || !is_array($after)) {
         return '';
     }
-    
+
     global $lang, $change_audit_log_localization_config;
-    
+
     $differences = [];
-    
+
     foreach ($change_audit_log_localization_config[$type] as $field => $key) {
-        if ($before[$field] != $after[$field]) {
+        if (isset($before[$field]) && isset($after[$field]) && $before[$field] !== $after[$field]) {
 
             // These can be handled together as the fields with the same name hold the same type of values
-            if ($type === 'audit' || $type === 'test' || $type === 'document') {
+            if ($type === 'audit' || $type === 'test' || $type === 'document' || $type === 'user') {
                 switch($field) {
                     case 'last_date':
-                    case 'next_date':                    
+                    case 'next_date':
                     case 'test_date':
-		    case 'last_review_date':
-		    case 'next_review_date':
-		    case 'approval_date':
+                    case 'last_review_date':
+                    case 'next_review_date':
+                    case 'approval_date':
                         if ($before[$field]) {
                             $before[$field] = format_date($before[$field]);
                         }
@@ -18076,7 +18463,7 @@ function get_changes($type, $before, $after) {
 
                     case 'created_at':
                     case 'submission_date':
-		    case 'creation_date':
+                    case 'creation_date':
                         if ($before[$field]) {
                             $before[$field] = format_datetime($before[$field]);
                         }
@@ -18087,17 +18474,18 @@ function get_changes($type, $before, $after) {
 
                     case 'control_owner':
                     case 'submitted_by':
-		    case 'document_owner':
-		    case 'approver':
+                    case 'document_owner':
+                    case 'approver':
+                    case 'manager':
                         if ($before[$field]) {
-			    $before[$field] = get_name_by_value('user', $before[$field]);
+                            $before[$field] = get_name_by_value('user', $before[$field]);
                         }
-			else $before[$field] = "Unassigned";
+                        else $before[$field] = "Unassigned";
 
                         if ($after[$field]) {
-			    $after[$field] = get_name_by_value('user', $after[$field]);
+                            $after[$field] = get_name_by_value('user', $after[$field]);
                         }
-			else $after[$field] = "Unassigned";
+                        else $after[$field] = "Unassigned";
                     break;
 
                     case 'additional_stakeholders':
@@ -18110,7 +18498,7 @@ function get_changes($type, $before, $after) {
                     break;
 
                     case 'teams':
-		    case 'team_ids':
+                    case 'team_ids':
                         if ($before[$field]) {
                             $before[$field] = get_names_by_multi_values('team', $before[$field]);
                         }
@@ -18128,8 +18516,8 @@ function get_changes($type, $before, $after) {
                         }
                     break;
 
-		    case 'document_status':
-			if ($before[$field]) {
+                    case 'document_status':
+                        if ($before[$field]) {
                             $before[$field] = get_name_by_value('document_status', $before[$field]);
                         }
                         if ($after[$field]) {
@@ -18137,46 +18525,49 @@ function get_changes($type, $before, $after) {
                         }
                     break;
 
-		    case 'parent':
+                    case 'parent':
                         if ($before[$field]) {
-			    // Get the document name
-			    $document = get_document_by_id($before[$field]);
-			    $before[$field] = $document['document_name'];
-                        }
-			else $before[$field] = "--";
-                        if ($after[$field]) {
-			    // Get the document name
-			    $document = get_document_by_id($after[$field]);
-			    $after[$field] = $document['document_name'];
-                        }
-			else $after[$field] = "--";
-		    break;
+                            // Get the document name
+                            $document = get_document_by_id($before[$field]);
+                            $before[$field] = $document['document_name'];
+                                    }
+                        else $before[$field] = "--";
 
-		    case 'framework_ids':
+                        if ($after[$field]) {
+                            // Get the document name
+                            $document = get_document_by_id($after[$field]);
+                            $after[$field] = $document['document_name'];
+                                    }
+                        else $after[$field] = "--";
+                    break;
+
+                    case 'framework_ids':
                         if ($before[$field]) {
                             $before[$field] = get_names_by_multi_values('frameworks', $before[$field]);
                         }
-			else $before[$field] = "--";
+                        else $before[$field] = "--";
+
                         if ($after[$field]) {
                             $after[$field] = get_names_by_multi_values('frameworks', $after[$field]);
                         }
-			else $after[$field] = "--";
+                        else $after[$field] = "--";
                     break;
 
-		    case 'control_ids':
+                    case 'control_ids':
                         if ($before[$field]) {
-			    $control_short_names = array();
-			    $controls = get_framework_controls($before[$field]);
-			    foreach($controls as $control)
-			    {
-				// Add the control name
-				$control_short_names[] = $control['short_name'];
-			    }
-			    $before[$field] = implode(", ", $control_short_names);
+                            $control_short_names = array();
+                            $controls = get_framework_controls($before[$field]);
+                            foreach($controls as $control)
+                            {
+                            	// Add the control name
+                            	$control_short_names[] = $control['short_name'];
+                            }
+                            $before[$field] = implode(", ", $control_short_names);
                         }
-			else $before[$field] = "--";
+                        else $before[$field] = "--";
+
                         if ($after[$field]) {
-			    $control_short_names = array();
+                            $control_short_names = array();
                             $controls = get_framework_controls($after[$field]);
                             foreach($controls as $control)
                             {
@@ -18185,11 +18576,111 @@ function get_changes($type, $before, $after) {
                             }
                             $after[$field] = implode(", ", $control_short_names);
                         }
-			else $after[$field] = "--";
+                        else $after[$field] = "--";
+                    break;
+
+                    case 'enabled':
+                    case 'lockout':
+                    case 'admin':
+                    case 'multi_factor':
+                    case 'change_password':
+                        if (isset($before[$field])) {
+                            $before[$field] = localized_yes_no($before[$field]);
+                        }
+                        if (isset($after[$field])) {
+                            $after[$field] = localized_yes_no($after[$field]);
+                        }
+                    break;
+
+                    case 'type':
+                        $types = ['1' => 'SimpleRisk', '2' => 'LDAP', '3' => 'SAML'];
+                        if ($before[$field]) {
+                            $before[$field] = $types[$before[$field]];
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = $types[$after[$field]];
+                        }
+                    break;
+
+                    case 'role_id':
+                        if ($before[$field]) {
+                            $before[$field] = get_name_by_value('role', $before[$field]);
+                        }
+                        if ($after[$field]) {
+                            $after[$field] = get_name_by_value('role', $after[$field]);
+                        }
+                    break;
+
+                    case 'lang':
+                        if ($before[$field] || $after[$field]) {
+                            // Open the database connection
+                            $db = db_open();
+
+                            // Update user
+                            $stmt = $db->prepare("SELECT `name`, `full` FROM `languages`;");
+                            $stmt->execute();
+
+                            // Store the list in the array
+                            $languages = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+                            // Close the database connection
+                            db_close($db);
+                        }
+
+                        if ($before[$field]) {
+                            $before[$field] = $languages[$before[$field]];
+                        } else $before[$field] = '-';
+                        if ($after[$field]) {
+                            $after[$field] = $languages[$after[$field]];
+                        } else $after[$field] = '-';
+                    break;
+
+                    case 'selected_business_unit':
+                        if (organizational_hierarchy_extra()) {
+                            if ($before[$field]) {
+                                $before[$field] = get_name_by_value('business_unit', $before[$field], '-', true);
+                            }
+                            if ($after[$field]) {
+                                $after[$field] = get_name_by_value('business_unit', $after[$field], '-', true);
+                            }
+                        }
+                    break;
+
+                    case 'permissions':
+                        if ($before[$field] || $after[$field]) {
+                            // Open the database connection
+                            $db = db_open();
+
+                            // Update user
+                            $stmt = $db->prepare("SELECT `key`, `name` FROM `permissions`;");
+                            $stmt->execute();
+
+                            // Store the list in the array
+                            $permissions = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+                            // Close the database connection
+                            db_close($db);
+                        }
+
+                        if ($before[$field]) {
+                            $permission_names = [];
+                            foreach ($before[$field] as $permission_key) {
+                                $permission_names[] = $permissions[$permission_key];
+                            }
+                            $before[$field] = implode(', ', $permission_names);
+                        } else $before[$field] = '-';
+
+                        if ($after[$field]) {
+                            $permission_names = [];
+                            foreach ($after[$field] as $permission_key) {
+                                $permission_names[] = $permissions[$permission_key];
+                            }
+                            $after[$field] = implode(', ', $permission_names);
+                        } else $after[$field] = '-';
                     break;
                 }
             }
-            
+
             $differences[]= _lang('FieldChangeTemplate', [
                 'field_name' => $lang[$key],
                 'before' => $before[$field],
@@ -18197,7 +18688,7 @@ function get_changes($type, $before, $after) {
             ], false);
         }
     }
-    
+
     return $differences ? implode(', ', $differences) : '';
 }
 
@@ -18299,5 +18790,786 @@ function get_risk_subjects_by_ids($ids="", $limit=4, $escape=false, $separate="<
 
     return implode($separate, $subjects) . (count($risks) > $limit ? $separate."...": "");
 }
+
+
+/********************************************************
+* RENDER CRUD UI										*
+* Using the provided table configuration it renders the	*
+* core of the management UI for CRUD functionality		*
+*********************************************************/
+function renderCRUDUI($tableConfig) {
+    
+    global $lang, $escaper;
+    
+    echo "
+        <div class='row-fluid table-selection'>
+            <b>{$escaper->escapeHtml($lang['Select'])}: </b>
+            <select id='table-sections'>";
+    foreach($tableConfig as $table => $config){
+        echo "
+                <option value='{$table}'>{$escaper->escapeHtml($lang[$config['headerKey']])}</option>\n";
+    }
+    echo "
+            </select>
+        </div>
+        <div class='row-fluid'>
+            <div id='crud-wrapper' class='span12'>";
+    $text_change = $escaper->escapeHtml($lang['Change']);
+    $text_to = $escaper->escapeHtml($lang['to']);
+    $text_update = $escaper->escapeHtml($lang['Update']);
+    $text_add = $escaper->escapeHtml($lang['Add']);
+    $text_delete = $escaper->escapeHtml($lang['Delete']);
+    $text_deleteItem = $escaper->escapeHtml($lang['DeleteItemNamed']);
+    $text_addItem = $escaper->escapeHtml($lang['AddNewItemNamed']);
+    
+    $display = true;
+    foreach ($tableConfig as $table => $config) {
+        
+        echo "
+                <div class='hero-unit' data-table_name='{$table}' style='" . ($display ? 'display: block;' : 'display: none;' ) . "'>\n
+                    <h4>" . $escaper->escapeHtml($lang[$config['headerKey']]) . ":</h4>\n
+                    " . $text_addItem . ":&nbsp;&nbsp;<input id='" . $table . "_new' type='text' maxlength='" . $config['lengthLimit'] . "' size='20' />&nbsp;&nbsp;<input type='submit' value=" .  $text_add . " data-action='add' /><br />\n
+                    " . $text_change . "&nbsp;&nbsp;";
+        create_dropdown($table, NULL, $table . "_update_from");
+        echo $text_to . "&nbsp;<input id='" . $table . "_update_to' type='text' maxlength='" . $config['lengthLimit'] . "' size='20' />&nbsp;&nbsp;<input type='submit' value='" . $text_update . "' data-action='update' /><br />" . $text_deleteItem . ":&nbsp;&nbsp;";
+        create_dropdown($table, NULL, $table . "_delete");
+        echo "
+                    &nbsp;&nbsp;<input type='submit' value='" . $text_delete . "' data-action='delete' />
+                </div>";
+        
+        $display = false;
+    }
+    echo "
+            </div>
+        </div>
+        <script>
+        
+            function refreshDropdown(dropdown, data) {
+                dropdown.empty();
+                dropdown.append($('<option>', {
+                    value: 0,
+                    text : '--'
+                }));
+                $.each(data, function (i, item) {
+                    dropdown.append($('<option>', {
+                        value: item.value,
+                        text : item.name
+                    }));
+                });
+            }
+                        
+            function crudAction() {
+                        
+                var div = $(this).closest('div');
+                if (div) {
+                    var tableName = div.data('table_name');
+                    var action = $(this).data('action');
+                        
+                    if (tableName && action) {
+                        $.ajax({
+                            type: 'POST',
+                            url: window.location.href,
+                            data: (function() {
+                                var d = new Object();
+                                d.table_name = tableName;
+                                d.action = action;
+                        
+                                switch(action) {
+                                    case 'add':
+                                        d.name = div.find('#' + tableName + '_new').val();
+                                    break;
+                                    case 'update':
+                                        d.id = div.find('#' + tableName + '_update_from').val();
+                                        d.name = div.find('#' + tableName + '_update_to').val();
+                                    break;
+                                    case 'delete':
+                                        d.id = div.find('#' + tableName + '_delete').val();
+                                    break;
+                                }
+                        
+                                return d;
+                            })(),
+                        
+                            success: function(data){
+                                if(data.status_message){
+                                    showAlertsFromArray(data.status_message);
+                                }
+                        
+                                // Empty input boxes
+                                div.find('#' + tableName + '_new').val('');
+                                div.find('#' + tableName + '_update_to').val('');
+                        
+                                // Refresh dropdowns
+                                refreshDropdown(div.find('#' + tableName + '_update_from'), data.data);
+                                refreshDropdown(div.find('#' + tableName + '_delete'), data.data);
+                            },
+                            error: function(xhr,status,error){
+                                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                                    showAlertsFromArray(xhr.responseJSON.status_message);
+                                }
+                                if(!retryCSRF(xhr, this))
+                                {
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+                        
+            $(document).ready(function() {
+                $('#crud-wrapper input[type=submit]').click(crudAction);
+                        
+                $('#table-sections').change(function(){
+                    $('#crud-wrapper > .hero-unit').hide();
+                    $('#crud-wrapper > [data-table_name=\'' + $(this).val()+'\']').show();
+                })
+            });
+                        
+        </script>";
+}
+
+
+/********************************************************************************************************************
+* PROCESS CRUD ACTION																								*
+* Provided with the $tableConfig and the other data coming from the UI rendered by the 'renderCRUDUI()' function	*
+* this function can execute the required CRUD action																*
+*********************************************************************************************************************/
+function processCRUDAction($tableConfig, $action, $tableKey, $id, $name) {
+    
+    global $lang;
+    
+    if (in_array($action, array('add', 'update', 'delete')) && array_key_exists($tableKey, $tableConfig)) {
+        
+        if (in_array($action, array('add', 'update'))) {
+            if (!isset($name) || !trim($name)) {
+                set_alert(true, "bad", $lang['YouNeedToSpecifyANameParameter']);
+                return false;
+            } else {
+                $name = trim($name);
+                
+                $lengthLimit = $tableConfig[$tableKey]['lengthLimit'];
+                // Size check
+                if (strlen($name) > $lengthLimit) {
+                    // As we render the UI controls with the same limits we shouldn't see this message
+                    set_alert(true, "bad", _lang('TheEnteredValueIsTooLong', ['limit' => $lengthLimit]));
+                    return false;
+                }
+            }
+        }
+
+        if (in_array($action, array('update', 'delete'))) {
+            if (!isset($id) || !trim($id) || !preg_match('/^\d+$/', trim($id))) {
+                set_alert(true, "bad", $lang['YouNeedToSpecifyAnIdParameter']);
+                return false;
+            } else {
+                $id = (int)trim($id);
+            }
+        }
+
+        switch ($action) {
+            case "add":
+                // If the custom add function is set
+                if (array_key_exists('customAddFunction', $tableConfig[$tableKey])) {
+                    // Call it with the required parameters
+                    $result = $tableConfig[$tableKey]['customAddFunction']($name);
+                } else {
+                    // Insert a new item
+                    $result = add_name($tableConfig[$tableKey]['table'], $name);
+                }
+                
+                // Display an alert
+                if ($result) {
+                    set_alert(true, "good", $lang['ANewItemWasAddedSuccessfully']);
+                } else {
+                    set_alert(true, "bad", $lang['FailedToAddNewItem']);
+                }
+            break;
+                        
+            case "update":
+                // If the custom update function is set
+                if (array_key_exists('customUpdateFunction', $tableConfig[$tableKey])) {
+                    // Call it with the required parameters
+                    $result = $tableConfig[$tableKey]['customUpdateFunction']($id, $name);
+                } else {
+                    $result = update_table($tableConfig[$tableKey]['table'], $name, $id);
+                }
+                
+                // Display an alert
+                if ($result) {
+                    set_alert(true, "good", $lang['AnItemWasUpdatedSuccessfully']);
+                } else {
+                    set_alert(true, "bad", $lang['FailedToUpdateItem']);
+                }
+            break;
+                        
+            case "delete":
+                // If the custom delete function is set
+                if (array_key_exists('customDeleteFunction', $tableConfig[$tableKey])) {
+                    // Call it with the required parameters
+                    $result = $tableConfig[$tableKey]['customDeleteFunction']($id);
+                } else {
+                    $result = delete_value($tableConfig[$tableKey]['table'], $id);
+                }
+                
+                // Display an alert
+                if ($result) {
+                    set_alert(true, "good", $lang['AnItemWasDeletedSuccessfully']);
+                } else {
+                    set_alert(true, "bad", $lang['FailedToDeleteItem']);
+                }
+            break;
+        }
+        
+        // It's on purpose that it's getting the data by the key, so if it's a special table, then it can be treated as such
+        return get_options_from_table($tableKey);
+    } else {
+        // Didn't want to put anything informative here as this message will only be
+        // seen if someone is calling this with forged data
+        set_alert(true, "bad", $lang['MissingConfiguration']);
+        return false;
+    }
+}
+/********************************
+ * FUNCTION: CHECK IF VALID URL *
+ ********************************/
+function check_if_valid_url($url)
+{
+	// Return the result of the filter validate
+	return filter_var($url, FILTER_VALIDATE_URL);
+}
+
+/***********************************
+ * FUNCTION: CHECK IF URL RESPONDS *
+ ***********************************/
+function check_if_url_responds($url)
+{
+	// If this is a valid URL
+	if (check_if_valid_url($url))
+	{
+		// Do a curl for the URL
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_HEADERFUNCTION, 'curlHeaderCallback');
+		curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+		curl_exec($ch);
+		$return_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+
+		// If the URL call was successful
+		if ($return_code == 200 || $return_code == 302 || $return_code == 304)
+		{
+			return true;
+		}
+	}
+
+	// If the other checks don't pass, then return false
+	return false;
+
+}
+
+/************************************
+ * FUNCTION: UPLOAD VALIDATION FILE *
+ ************************************/
+function upload_validation_file($mitigation_id, $control_id, $file)
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Get the list of allowed file types
+    $stmt = $db->prepare("SELECT `name` FROM `file_types`");
+    $stmt->execute();
+    $file_types = $stmt->fetchAll();
+
+    // Get the list of allowed file extensions
+    $stmt = $db->prepare("SELECT `name` FROM `file_type_extensions`");
+    $stmt->execute();
+    $file_type_extensions = $stmt->fetchAll();
+
+    // Close the database connection
+    db_close($db);
+
+    // Create an array of allowed types
+    foreach ($file_types as $key => $row)
+    {
+        $allowed_types[] = $row['name'];
+    }
+
+    // Create an array of allowed extensions
+    foreach ($file_type_extensions as $key => $row)
+    {
+        $allowed_extensions[] = $row['name'];
+    }
+
+    // If a file was submitted and the name isn't blank
+    if (isset($file) && $file['name'] != "")
+    {
+        // If the file type is appropriate
+        if (in_array($file['type'], $allowed_types))
+        {
+            // If the file extension is appropriate
+            if (in_array(pathinfo($file['name'], PATHINFO_EXTENSION), $allowed_extensions))
+            {
+            // Get the maximum upload file size
+            $max_upload_size = get_setting("max_upload_size");
+
+            // If the file size is less than 5MB
+            if ($file['size'] < $max_upload_size)
+            {
+                // If there was no error with the upload
+                if ($file['error'] == 0)
+                {
+                    // Read the file
+                    $content = fopen($file['tmp_name'], 'rb');
+
+                    // Create a unique file name
+                    $unique_name = generate_token(30);
+
+                    // Open the database connection
+                    $db = db_open();
+                    $timestamp = date("Y-m-d H:i:s");
+
+                    // Store the file in the database
+                    $stmt = $db->prepare("INSERT INTO validation_files (mitigation_id, control_id, name, type, size, user, timestamp, content) VALUES (:mitigation_id, :control_id, :name, :type, :size, :user, :timestamp, :content)");
+                    $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+                    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+                    $stmt->bindParam(":name", $file['name'], PDO::PARAM_STR, 30);
+                    $stmt->bindParam(":type", $file['type'], PDO::PARAM_STR, 30);
+                    $stmt->bindParam(":size", $file['size'], PDO::PARAM_INT);
+                    $stmt->bindParam(":user", $_SESSION['uid'], PDO::PARAM_INT);
+                    $stmt->bindParam(":timestamp", $timestamp, PDO::PARAM_STR);
+                    $stmt->bindParam(":content", $content, PDO::PARAM_LOB);
+                    $stmt->execute();
+
+                    // Close the database connection
+                    db_close($db);
+
+                    // Return a success
+                    return 1;
+
+                }
+                // Otherwise
+                else
+                {
+                    switch ($file['error'])
+                    {
+                        case 1:
+                            return "The uploaded file exceeds the upload_max_filesize directive in php.ini.";
+                            break;
+                        case 2:
+                            return "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.";
+                            break;
+                        case 3:
+                            return "The uploaded file was only partially uploaded.";
+                            break;
+                        case 4:
+                            return "No file was uploaded.";
+                            break;
+                        case 6:
+                            return "Missing a temporary folder.";
+                            break;
+                        case 7:
+                            return "Failed to write file to disk.";
+                            break;
+                        case 8:
+                            return "A PHP extension stopped the file upload.";
+                            break;
+                        default:
+                            return "There was an error with the file upload.";
+                    }
+                }
+            }
+            else return "The uploaded file was too big to store in the database.  A SimpleRisk administrator can modify the maximum file upload size under \"File Upload Settings\" under the \"Configure\" menu.  You may also need to modify the 'upload_max_filesize' and 'post_max_size' values in your php.ini file.";
+            }
+            else return "The file extension of the uploaded file (" . pathinfo($file['name'], PATHINFO_EXTENSION) . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
+        }
+        else return "The file type of the uploaded file (" . $file['type'] . ") is not supported.  A SimpleRisk administrator can add it under \"File Upload Settings\" under the \"Configure\" menu.";
+    }
+    else return 1;
+}
+
+/**********************************
+ * FUNCTION: GET VALIDATION FILES *
+ **********************************/
+function get_validation_files($mitigation_id, $control_id)
+{
+    // Open the database connection
+    $db = db_open();
+    // Query the database
+    $stmt = $db->prepare("SELECT id, name FROM validation_files WHERE mitigation_id=:mitigation_id AND control_id=:control_id");
+    $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $stmt->execute();
+    $files = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Close the database connection
+    db_close($db);
+
+    return $files;
+}
+
+/**********************************************************
+ * FUNCTION: Delete validation files except current files *
+ **********************************************************/
+function refresh_files_for_validation($mitigation_id, $control_id, $file_ids)
+{
+    //if(!count($file_ids)) return false;
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("DELETE FROM validation_files WHERE mitigation_id=:mitigation_id and control_id=:control_id AND id NOT IN ('" . implode("','", $file_ids) . "')");
+    $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+    $stmt->bindParam(":control_id", $control_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+
+    return 1;
+}
+
+/*************************************
+ * FUNCTION: CVSS2 BASE VECTOR SPLIT *
+ *************************************/
+function cvss2_base_vector_split($cvss_base_vector)
+{
+	// Create an empty CVSS array
+	$cvss_array = [];
+
+        // If a CVSS base vector is set
+	if (isset($cvss_base_vector) && !is_null($cvss_base_vector) && $cvss_base_vector != "")
+	{
+		// Split the CVSS base vector by the slash
+		$cvss = explode("/", $cvss_base_vector);
+
+		// For each CVSS value
+		foreach ($cvss as $vector)
+        	{
+                	// Split the vector by the colon
+                	$vector_split = explode(":", $vector);
+                	$vector_name = $vector_split[0];
+                	$vector_value = (isset($vector_split[1]) ? $vector_split[1] : null);
+
+                	switch($vector_name)
+                	{
+                        	case "AV":
+					$cvss_array['AccessVector'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "N");
+                        	        break;
+                        	case "AC":
+					$cvss_array['AccessComplexity'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "L");
+                        	        break;
+                        	case "Au":
+					$cvss_array['Authentication'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "N");
+                        	        break;
+                        	case "C":
+					$cvss_array['ConfidentialityImpact'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "C");
+                        	        break;
+                        	case "I":
+					$cvss_array['IntegrityImpact'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "C");
+                        	        break;
+                        	case "A":
+					$cvss_array['AvailabilityImpact'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "C");
+                        	        break;
+                 	}
+		}
+        }
+        // Otherwise a CVSS base vector is not set
+        else
+        {       
+                $cvss_array['AccessVector'] = "N";
+                $cvss_array['AccessComplexity'] = "L";
+                $cvss_array['Authentication'] = "N";
+                $cvss_array['ConfidentialityImpact'] = "C";
+                $cvss_array['IntegrityImpact'] = "C";
+                $cvss_array['AvailabilityImpact'] = "C";
+        }
+
+	// Return the CVSS array
+	return $cvss_array;
+}
+
+/*****************************************
+ * FUNCTION: CVSS2 TEMPORAL VECTOR SPLIT *
+ *****************************************/
+function cvss2_temporal_vector_split($cvss_temporal_vector)
+{
+        // Create an empty CVSS array
+        $cvss_array = [];
+
+	// If a CVSS temporal vector is set
+	if (isset($cvss_temporal_vector) && !is_null($cvss_temporal_vector) && $cvss_temporal_vector != "")
+	{
+        	// Split the CVSS temporal vector by the slash
+        	$cvss = explode("/", $cvss_temporal_vector);
+
+        	// For each CVSS value
+        	foreach ($cvss as $vector)
+        	{
+                	// Split the vector by the colon
+                	$vector_split = explode(":", $vector);
+                	$vector_name = $vector_split[0];
+                	$vector_value = (isset($vector_split[1]) ? $vector_split[1] : null);
+
+                	switch($vector_name)
+                	{
+				case "E":
+					$cvss_array['Exploitability'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "ND");
+					break;
+				case "RL":
+					$cvss_array['RemediationLevel'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "ND");
+					break;
+				case "RC":
+					$cvss_array['ReportConfidence'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "ND");
+					break;
+                 	}
+        	}
+	}
+	// Otherwise, a CVSS temporal vector is not set
+	else
+	{
+		// Set the temporal values to not defined
+		$cvss_array['Exploitability'] = "ND";
+		$cvss_array['RemediationLevel'] = "ND";
+		$cvss_array['ReportConfidence'] = "ND";
+	}
+
+        // Return the CVSS array
+        return $cvss_array;
+}
+
+/*************************************
+ * FUNCTION: CVSS3 BASE VECTOR SPLIT *
+ *************************************/
+function cvss3_base_vector_split($cvss_base_vector)
+{
+        // Create an empty CVSS array
+        $cvss_array = [];
+
+        // If a CVSS base vector is set
+        if (isset($cvss_base_vector) && !is_null($cvss_base_vector) && $cvss_base_vector != "")
+        {
+        	// Split the CVSS base vector by the slash
+        	$cvss = explode("/", $cvss_base_vector);
+
+        	// For each CVSS value
+        	foreach ($cvss as $vector)
+        	{
+                	// Split the vector by the colon
+                	$vector_split = explode(":", $vector);
+                	$vector_name = $vector_split[0];
+                	$vector_value = (isset($vector_split[1]) ? $vector_split[1] : null);
+
+                	switch($vector_name)
+                	{
+                        	case "AV":
+                        	        $cvss_array['AttackVector'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "N");
+                        	        break;
+                        	case "AC":
+                        	        $cvss_array['AttackComplexity'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "L");
+                        	        break;
+				case "PR":
+					$cvss_array['PrivilegesRequired'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "N");
+					break;
+				case "UI":
+					$cvss_array['UserInteraction'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "N");
+					break;
+				case "S":
+					$cvss_array['Scope'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "C");
+					break;
+                        	case "C":
+                        	        $cvss_array['ConfidentialityImpact'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "C");
+                        	        break;
+                        	case "I":
+                        	        $cvss_array['IntegrityImpact'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "C");
+                        	        break;
+                        	case "A":
+                        	        $cvss_array['AvailabilityImpact'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "C");
+                        	        break;
+                 	}
+		}
+        }
+	// Otherwise a CVSS base vector is not set
+	else
+	{
+        	$cvss_array['AttackVector'] = "N";
+		$cvss_array['AttackComplexity'] = "L";
+		$cvss_array['PrivilegesRequired'] = "N";
+		$cvss_array['UserInteraction'] = "N";
+		$cvss_array['Scope'] = "C";
+		$cvss_array['ConfidentialityImpact'] = "C";
+		$cvss_array['IntegrityImpact'] = "C";
+		$cvss_array['AvailabilityImpact'] = "C";
+	}
+
+        // Return the CVSS array
+        return $cvss_array;
+}
+
+/*****************************************
+ * FUNCTION: CVSS3 TEMPORAL VECTOR SPLIT *
+ *****************************************/
+function cvss3_temporal_vector_split($cvss_temporal_vector)
+{
+        // Create an empty CVSS array
+        $cvss_array = [];
+
+        // If a CVSS temporal vector is set
+        if (isset($cvss_temporal_vector) && !is_null($cvss_temporal_vector) && $cvss_temporal_vector != "")
+        {
+                // Split the CVSS temporal vector by the slash
+                $cvss = explode("/", $cvss_temporal_vector);
+
+                // For each CVSS value
+                foreach ($cvss as $vector)
+                {
+                        // Split the vector by the colon
+                        $vector_split = explode(":", $vector);
+                        $vector_name = $vector_split[0];
+                        $vector_value = (isset($vector_split[1]) ? $vector_split[1] : null);
+
+                        switch($vector_name)
+                        {
+                                case "E":
+                                        $cvss_array['ExploitCodeMaturity'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "X");
+                                        break;
+                                case "RL":
+                                        $cvss_array['RemediationLevel'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "X");
+                                        break;
+                                case "RC":
+                                        $cvss_array['ReportConfidence'] = ((isset($vector_value) && !is_null($vector_value)) ? $vector_value : "X");
+                                        break;
+                        }
+                }
+        }
+        // Otherwise, a CVSS temporal vector is not set
+        else
+        {
+                // Set the temporal values to not defined
+                $cvss_array['ExploitCodeMaturity'] = "X";
+                $cvss_array['RemediationLevel'] = "X";
+                $cvss_array['ReportConfidence'] = "X";
+        }
+
+        // Return the CVSS array
+        return $cvss_array;
+}
+
+/*****************************
+ * FUNCTION: ADD NEW PROJECT *
+ *****************************/
+function add_project($project){
+
+    $name = isset($project['name']) ? try_encrypt($project['name']) : "";
+    $due_date = isset($project['due_date']) ? $project['due_date'] : "";
+    $consultant = isset($project['consultant']) ? $project['consultant'] : 0;
+    $business_owner = isset($project['business_owner']) ? $project['business_owner'] : 0;
+    $data_classification = isset($project['data_classification']) ? $project['data_classification'] : 0;
+
+
+    // Open the database connection
+    $db = db_open();
+    
+    $stmt = $db->prepare("INSERT INTO `projects` (`name`, `due_date`, `consultant`, `business_owner`, `data_classification`) VALUES (:name, :due_date, :consultant, :business_owner, :data_classification)");
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 1000);
+    $stmt->bindParam(":due_date", $due_date, PDO::PARAM_STR);
+    $stmt->bindParam(":consultant", $consultant, PDO::PARAM_INT);
+    $stmt->bindParam(":business_owner", $business_owner, PDO::PARAM_INT);
+    $stmt->bindParam(":data_classification", $data_classification, PDO::PARAM_INT);
+    $stmt->execute();
+    
+    $project_id = $db->lastInsertId();
+
+    $message = "A new prject named \"{$name}\" was created by username \"" . $_SESSION['user'] . "\".";
+    write_log(1000, $_SESSION['uid'], $message, "project");
+    
+    // Close the database connection
+    db_close($db);
+
+    return $project_id;
+}
+/*****************************
+ * FUNCTION: UPDATE PROJECT  *
+ *****************************/
+function update_project($proejct_id, $project){
+
+    $name = isset($project['name']) ? try_encrypt($project['name']) : "";
+    $due_date = isset($project['due_date']) ? $project['due_date'] : "";
+    $consultant = isset($project['consultant']) ? $project['consultant'] : 0;
+    $business_owner = isset($project['business_owner']) ? $project['business_owner'] : 0;
+    $data_classification = isset($project['data_classification']) ? $project['data_classification'] : 0;
+
+
+    // Open the database connection
+    $db = db_open();
+    
+    $stmt = $db->prepare("UPDATE `projects` SET `name`=:name, `due_date`=:due_date, `consultant`=:consultant, `business_owner`=:business_owner, `data_classification`=:data_classification WHERE value=:id;)");
+    $stmt->bindParam(":id", $proejct_id, PDO::PARAM_INT);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR, 1000);
+    $stmt->bindParam(":due_date", $due_date, PDO::PARAM_STR);
+    $stmt->bindParam(":consultant", $consultant, PDO::PARAM_INT);
+    $stmt->bindParam(":business_owner", $business_owner, PDO::PARAM_INT);
+    $stmt->bindParam(":data_classification", $data_classification, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $message = "A prject named \"{$name}\" was updated by username \"" . $_SESSION['user'] . "\".";
+    //write_log(1000, $_SESSION['uid'], $message, "project");
+    
+    // Close the database connection
+    db_close($db);
+
+    return true;
+}
+/*******************************
+ * FUNCTION: GET PROJECT BY ID *
+ *******************************/
+function get_project($id){
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("SELECT * FROM `projects` WHERE value=:id");
+    $stmt->bindParam(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    
+    $project = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Close the database connection
+    db_close($db);
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        $custom_values = getCustomFieldValuesByProjectId($id);
+        $project['custom_values'] = $custom_values;
+    }
+    
+    return $project;
+}
+
+
+/**********************************
+ * FUNCTION: NAME EXISTS IN TABLE *
+ **********************************/
+function name_exists_in_table($name, $table, $where="")
+{
+    // Open the database connection
+    $db = db_open();
+
+    // Check if the name is in the database
+    $sql = "SELECT * FROM {$table} WHERE name=:name";
+    if($where) $sql .= " AND ".$where;
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+    $stmt->execute();
+    $row = $stmt->fetch();
+
+    // Close the database connection
+    db_close($db);
+
+    return $row;
+}
+
 
 ?>

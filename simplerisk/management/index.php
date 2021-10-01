@@ -75,8 +75,8 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     $risk_tags = get_param("POST", "tags", []);
 
     if(customization_extra()) {
-        $template_group_id = get_param("POST", "template_group_id", 1);
-    } else $template_group_id = 1;
+        $template_group_id = get_param("POST", "template_group_id", "");
+    } else $template_group_id = "";
 
     foreach($risk_tags as $tag){
         if (strlen($tag) > 255) {
@@ -90,7 +90,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
     if (jira_extra()) {
         require_once(realpath(__DIR__ . '/../extras/jira/index.php'));
-        $issue_key = strtoupper(trim($_POST['jira_issue_key']));
+        $issue_key = isset($_POST['jira_issue_key'])?strtoupper(trim($_POST['jira_issue_key'])):"";
         if ($issue_key && !jira_validate_issue_key($issue_key)) {
             json_response(400, get_alert(true), NULL);
             exit;
@@ -103,6 +103,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     // 3 = DREAD
     // 4 = OWASP
     // 5 = Custom
+    // 6 = Contributing Risk
     $scoring_method = (int)get_param("POST", "scoring_method");
 
     // Classic Risk Scoring Inputs
@@ -150,6 +151,8 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     $OWASPNonCompliance = (int)get_param("POST", "OWASPNonCompliance");
     $OWASPPrivacyViolation = (int)get_param("POST", "OWASPPrivacyViolation");
 
+    $associate_test = (int)get_param("POST", "associate_test");
+
     // Custom Risk Scoring
     $custom = (float)get_param("POST", "Custom");
 
@@ -178,7 +181,11 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
     }
 
     // Submit risk scoring
-    submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
+    if (!$scoring_method) { // If the scoring method is invalid then go with the defaults
+        submit_risk_scoring($last_insert_id);
+    } else { // If there's a valid scoring method use the provided values
+        submit_risk_scoring($last_insert_id, $scoring_method, $CLASSIClikelihood, $CLASSICimpact, $CVSSAccessVector, $CVSSAccessComplexity, $CVSSAuthentication, $CVSSConfImpact, $CVSSIntegImpact, $CVSSAvailImpact, $CVSSExploitability, $CVSSRemediationLevel, $CVSSReportConfidence, $CVSSCollateralDamagePotential, $CVSSTargetDistribution, $CVSSConfidentialityRequirement, $CVSSIntegrityRequirement, $CVSSAvailabilityRequirement, $DREADDamage, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts);
+    }
 
     // Process the data from the Affected Assets widget
     if (!empty($assets_asset_groups)) {
@@ -267,7 +274,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         // Display an alert   
         ob_end_clean();
         set_alert(true, "good", _lang("RiskSubmitSuccess", ["subject" => $subject], false));
-        json_response(200, get_alert(true), array("risk_id" => $risk_id));
+        json_response(200, get_alert(true), array("risk_id" => $risk_id, "associate_test" => $associate_test));
         exit;
     }
 
@@ -302,13 +309,14 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-        <script src="../js/bootstrap.min.js"></script>
-        <script src="../js/jquery.dataTables.js"></script>
-        <script src="../js/cve_lookup.js?<?php echo time() ?>"></script>
-        <script src="../js/basescript.js"></script>
-        <script src="../js/common.js?<?php echo time() ?>"></script>
-        <script src="../js/pages/risk.js?<?php echo time() ?>"></script>
+        <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/basescript.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/pages/risk.js?<?php echo current_version("app"); ?>"></script>
 
     <?php
         // Use these HighCharts scripts
@@ -321,28 +329,28 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
 
 ?>
 
-        <script src="../js/bootstrap-multiselect.js"></script>
-        <script src="../js/jquery.blockUI.min.js"></script>
+        <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
 
         <title>SimpleRisk: Enterprise Risk Management Simplified</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-        <link rel="stylesheet" href="../css/bootstrap.css">
-        <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+        <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
 <!--        <link rel="stylesheet" href="../css/jquery-ui.min.css">-->
 
-        <link rel="stylesheet" href="../css/jquery.dataTables.css">
-        <link rel="stylesheet" href="../css/divshot-util.css">
-        <link rel="stylesheet" href="../css/divshot-canvas.css">
-        <link rel="stylesheet" href="../css/style.css">
-        <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
+        <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/style.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
 
-        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-        <link rel="stylesheet" href="../css/theme.css">
-        <link rel="stylesheet" href="../css/side-navigation.css">
+        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
 
-        <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
-        <script src="../js/selectize.min.js"></script>
+        <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+        <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
         <style>
             .top-panel .span5, .bottom-panel .span5{max-width: 210px;}
         </style>
@@ -426,7 +434,7 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
                             echo "</div>\n";
                         }
                     } else {
-                        $template_group_id = 1;
+                        $template_group_id = "";
                         echo  "<div class='tab-data' id='tab-container'>";
                         include(realpath(__DIR__ . '/partials/add.php'));
                         echo "</div>";
@@ -451,11 +459,13 @@ if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQ
         <script>
             $(document).ready(function() {
 
-                setupAssetsAssetGroupsWidget($('#tab-content-container select.assets-asset-groups-select'));
-                
+                $('#tab-content-container select.assets-asset-groups-select').each(function() {
+                    setupAssetsAssetGroupsWidget($(this));
+                });
+
                 window.onbeforeunload = function() {
                     if ($('#subject:enabled').val() != ''){
-                        return "Are you sure you want to procced without saving the risk?";
+                        return "Are you sure you want to proceed without saving the risk?";
                     }
                 }
                 

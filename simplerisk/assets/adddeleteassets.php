@@ -115,30 +115,31 @@ require_once(language_file());
 
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/pages/asset.js?<?php echo time() ?>"></script>
-    <script src="../js/bootstrap-multiselect.js"></script>
-    <script src="../js/jquery.blockUI.min.js"></script>
+    <script src="../js/pages/asset.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
-    <link rel="stylesheet" href="../css/jquery-ui.min.css">
+    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/jquery-ui.min.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-    <link rel="stylesheet" href="../css/theme.css">
-    <link rel="stylesheet" href="../css/side-navigation.css">
+    <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
-    <script src="../js/selectize.min.js"></script>
+    <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+    <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");

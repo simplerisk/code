@@ -70,8 +70,8 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
 ?>
-        <script src="../js/jquery.dataTables.js"></script>
-        <script src="../js/jquery.blockUI.min.js"></script>
+        <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
 
     <?php
         // Use these HighCharts scripts
@@ -82,20 +82,20 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
         // Display the highcharts javascript source
         display_highcharts_javascript($scripts);
 
+	display_bootstrap_javascript();
     ?>
 
-        <script src="../js/bootstrap.min.js"></script>
-        <script src="../js/bootstrap-multiselect.js"></script>
-        <script src="../js/selectize.min.js"></script>
+        <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
 <?php
         // If the Incident Management Extra is enabled
         if (incident_management_extra())
         {
                 // Include the incident management javascript file
-                echo "        <script src=\"../extras/incident_management/js/incident_management.js\"></script>\n";
+                echo "        <script src=\"../extras/incident_management/js/incident_management.js?" . current_version("app") . "\"></script>\n";
 
 		// Include the incident management css file
-		echo "        <link rel=\"stylesheet\" href=\"../extras/incident_management/css/incident_management.css\">\n";
+		echo "        <link rel=\"stylesheet\" href=\"../extras/incident_management/css/incident_management.css?" . current_version("app") . "\">\n";
         }
 ?>
         <script>
@@ -108,19 +108,19 @@ if(isset($_GET["action"]) && $_GET["action"] == "download"){
             var fileTooBigMessage = "<?php echo $escaper->escapeJs($lang['FileIsTooBigToUpload']); ?>"; 
             var fileSizeLabel = "<?php echo $escaper->escapeJs($lang['FileSize']);?>"; 
         </script>
-	<link rel="stylesheet" href="../css/bootstrap.css">
-        <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-	<link rel="stylesheet" href="../css/bootstrap-multiselect.css">
-        <link rel="stylesheet" href="../css/divshot-util.css">
-        <link rel="stylesheet" href="../css/divshot-canvas.css">
-	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
-        <link rel="stylesheet" href="../css/jquery.dataTables.css">
-        <link rel="stylesheet" href="../css/style.css">
-        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-        <link rel="stylesheet" href="../css/theme.css">
-        <link rel="stylesheet" href="../css/side-navigation.css">
-        <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
-	<link rel="stylesheet" href="../css/settings_tabs.css">
+	<link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+	<link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/style.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+	<link rel="stylesheet" href="../css/settings_tabs.css?<?php echo current_version("app"); ?>">
 	<style>
            .tabs li:focus {
                outline: none;

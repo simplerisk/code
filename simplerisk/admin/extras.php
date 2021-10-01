@@ -44,21 +44,22 @@ require_once(language_file());
 
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-<script src="../js/bootstrap.min.js"></script>
 <title>SimpleRisk: Enterprise Risk Management Simplified</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-<link rel="stylesheet" href="../css/bootstrap.css">
-<link rel="stylesheet" href="../css/bootstrap-responsive.css">
+<link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
 
-<link rel="stylesheet" href="../css/divshot-util.css">
-<link rel="stylesheet" href="../css/divshot-canvas.css">
-<link rel="stylesheet" href="../css/display.css">
+<link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
 
-<link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-<link rel="stylesheet" href="../css/theme.css">
-<link rel="stylesheet" href="../css/side-navigation.css">
+<link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
 <?php
     setup_favicon("..");
     setup_alert_requirements("..");
@@ -186,6 +187,11 @@ get_alert();
               <td width="155px"><b>Unified Compliance Framework (UCF)</b></td>
               <td>Enables the integration of the Unified Control Framework (UCF) controls and tests with SimpleRisk.</td>
               <td width="60px"><?php echo (ucf_extra() ? '<a href="ucf.php">Yes</a>' : '<a href="ucf.php">No</a>'); ?></td>
+            </tr>
+            <tr>
+              <td width="155px"><b>Vulnerability Management</b></td>
+              <td>Enables the integration of SimpleRisk with Rapid7 Nexpose and Tenable.io.</td>
+              <td width="60px"><?php echo (vulnmgmt_extra() ? '<a href="vulnmgmt.php">Yes</a>' : '<a href="vulnmgmt.php">No</a>'); ?></td>
             </tr>
             <tbody>
             </table>

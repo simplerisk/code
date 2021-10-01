@@ -15,6 +15,11 @@
             "email": "jaime.perez@uninett.no"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "SimpleSAML\\Module\\oauth\\": "lib/"
+        }
+    },
     "require": {
       "simplesamlphp/composer-module-installer": ">=1.1.6"
     },

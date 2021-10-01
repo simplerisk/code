@@ -48,7 +48,7 @@ require_once(language_file());
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
 ?>
-<script src="../js/jquery.easyui.min.js"></script>
+<script src="../js/jquery.easyui.min.js?<?php echo current_version("app"); ?>"></script>
 <?php
         // Use these jquery-ui scripts
         $scripts = [
@@ -57,23 +57,24 @@ require_once(language_file());
 
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-<script src="../js/bootstrap.min.js"></script>
-<script src="../js/jquery.dataTables.js"></script>
-<script src="../js/dataTables.rowReorder.min.js"></script>
-<link rel="stylesheet" href="../css/bootstrap.css">
-<link rel="stylesheet" href="../css/bootstrap-responsive.css">
-<link rel="stylesheet" href="../css/jquery.dataTables.css">
-<link rel="stylesheet" href="../css/rowReorder.dataTables.min.css">
+<script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+<script src="../js/dataTables.rowReorder.min.js?<?php echo current_version("app"); ?>"></script>
+<link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/rowReorder.dataTables.min.css?<?php echo current_version("app"); ?>">
 
-<link rel="stylesheet" href="../css/divshot-util.css">
-<link rel="stylesheet" href="../css/divshot-canvas.css">
-<link rel="stylesheet" href="../css/display.css">
+<link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
 
-<link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-<link rel="stylesheet" href="../css/theme.css">
-<link rel="stylesheet" href="../css/side-navigation.css">
-<link rel="stylesheet" href="../css/settings_tabs.css">
+<link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/settings_tabs.css?<?php echo current_version("app"); ?>">
 <?php
     setup_favicon("..");
     setup_alert_requirements("..");

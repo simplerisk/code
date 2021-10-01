@@ -289,12 +289,20 @@ $contributing_risks = get_contributing_risks();
 foreach($contributing_risks as $contributing_risk){
     $scoring_fields[] = "Contributing_Impact_".$contributing_risk['id'];
 }
+$risk_mapping_fields = array(
+    'risk_mapping_risk_grouping',
+    'risk_mapping_risk',
+    'risk_mapping_risk_event',
+    'risk_mapping_description',
+    'risk_mapping_function'
+);
 
 $risk_columns = [];
 $mitigation_columns = [];
 $review_columns = [];
 $scoring_columns = [];
 $unassigned_columns = [];
+$risk_mapping_columns = [];
 if(!is_array($custom_display_settings) || !count($custom_display_settings)){
     $custom_display_settings = array(
         'id',
@@ -321,7 +329,10 @@ foreach($scoring_fields as $column){
 foreach($unassigned_fields as $column){
     $unassigned_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
 }
-$selected_columns = array_merge($risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns);
+foreach($risk_mapping_fields as $column){
+    $risk_mapping_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
+}
+$selected_columns = array_merge($risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns, $risk_mapping_columns);
 
 if(is_array($custom_selection_settings)){
     foreach($custom_selection_settings as $select=>$custom_selection_setting){
@@ -370,26 +381,27 @@ if (import_export_extra()){
 
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-  <script src="../js/bootstrap.min.js"></script>
-  <script src="../js/sorttable.js"></script>
-  <script src="../js/obsolete.js"></script>
-  <script src="../js/jquery.dataTables.js"></script>
-  <script src="../js/jquery.blockUI.min.js"></script>
-  <script src="../js/dynamic.js"></script>
-  <script src="../js/common.js"></script>
-  <script src="../js/bootstrap-multiselect.js"></script>
+  <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/dynamic.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-  <link rel="stylesheet" href="../css/jquery.dataTables.css">
+  <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
   
-  <link rel="stylesheet" href="../css/divshot-canvas.css">
-  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-  <link rel="stylesheet" href="../css/theme.css">
-  <link rel="stylesheet" href="../css/side-navigation.css">
+  <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
 
   <?php
       setup_favicon("..");
@@ -418,7 +430,7 @@ if (import_export_extra()){
           <div id="selections" class="span12">
             <div class="well">
                 <div id="selection-container">
-                    <?php view_get_risks_by_selections($status, $group, $sort, $risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns); ?>
+                    <?php view_get_risks_by_selections($status, $group, $sort, $risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns, $risk_mapping_columns); ?>
                 </div>
                 <div id="save-container">
                     <?php

@@ -88,6 +88,9 @@ function simplerisk_health_check()
 	// Check the PHP memory_limit
 	$check_php_memory_limit = check_php_memory_limit();
 
+	// Check the PHP max_input_vars
+	$check_php_max_input_vars = check_php_max_input_vars();
+
         // Check the necessary PHP extensions are installed
         $check_php_extensions = check_php_extensions();
 
@@ -195,7 +198,7 @@ function simplerisk_health_check()
 	else health_check_bad("Connectivity");
 
 	// PHP Summary
-	if ($check_php_version['result'] === 1 && $check_php_memory_limit['result'] === 1 && $check_php_extensions_result === 1)
+	if ($check_php_version['result'] === 1 && $check_php_memory_limit['result'] === 1 && $check_php_max_input_vars['result'] === 1 && $check_php_extensions_result === 1)
 	{
 		health_check_good("PHP");
 	}
@@ -248,6 +251,7 @@ function simplerisk_health_check()
         echo "<b><u>PHP</u></b><br />";
 	display_health_check_results($check_php_version);
 	display_health_check_results($check_php_memory_limit);
+	display_health_check_results($check_php_max_input_vars);
 	display_health_check_array_results($check_php_extensions);
 	echo "    </div>\n";
 
@@ -434,7 +438,7 @@ function check_web_connectivity()
         set_proxy_stream_context($method, $header);
 
         // URLs to check
-        $urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io", "https://github.com");
+        $urls = array("https://register.simplerisk.com", "https://services.simplerisk.com", "https://updates.simplerisk.com", "https://olbat.github.io", "https://github.com", "https://raw.githubusercontent.com");
 
 	// Create an empty array
 	$array = array();
@@ -524,7 +528,7 @@ function check_mysql_permission($permission)
 function check_php_extensions()
 {
 	// List of extensions to check for
-	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom", "curl", "posix");
+	$extensions = array("pdo", "pdo_mysql", "json", "phar", "zlib", "mbstring", "ldap", "dom", "curl", "posix", "zip", "gd");
 
 	// Create an empty array
 	$array = array();
@@ -907,7 +911,7 @@ function check_use_database_for_session()
 		// If USE_DATABASE_FOR_SESSIONS is set to false
 		if (USE_DATABASE_FOR_SESSIONS == "false")
 		{
-			return array("result" => 1, "text" => "The USE_DATABASE_FOR_SESSIONS value is set to false in the config.php file.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the USE_DATABASE_FOR_SESSIONS to true.");
+			return array("result" => 0, "text" => "The USE_DATABASE_FOR_SESSIONS value is set to false in the config.php file.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the USE_DATABASE_FOR_SESSIONS to true.");
 		}
 		// If USE_DATABASE_FOR_SESSIONS is set to true
 		else if (USE_DATABASE_FOR_SESSIONS == "true")
@@ -977,13 +981,51 @@ function check_php_memory_limit()
 	// If the memory limit is less than the SimpleRisk size
 	if ($memory_limit_bytes < $simplerisk_size_bytes)
 	{
-		return array("result" => 1, "text" => "The memory_limit value in the php.ini file is set to " . $memory_limit . ", which is less than the current size of the SimpleRisk application.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the memory_limit value to 256M or higher.");
+		return array("result" => 0, "text" => "The memory_limit value in the php.ini file is set to " . $memory_limit . ", which is less than the current size of the SimpleRisk application.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the memory_limit value to 256M or higher.");
 	}
 	// The memory limit is higher than the SimpleRisk size
 	else
 	{
 		return array("result" => 1, "text" => "The memory_limit value in the php.ini file is set to " . $memory_limit . ".");
 	}
+}
+
+/**************************************
+ * FUNCTION: CHECK PHP MAX INPUT VARS *
+ **************************************/
+function check_php_max_input_vars()
+{
+        // Get the currently set max_iput_vars
+        $max_input_vars = ini_get('max_input_vars');
+
+	// If the max_input_vars is not set
+	if ($max_input_vars === false)
+	{
+		return array("result" => 0, "text" => "The max_input_vars value in the php.ini file is not explicitly set.  The default value of 1000 is too low and the SimpleRisk Dynamic Risk Report will not function properly with this configuration.  We recommend setting the max_input_vars to 3000.");
+	}
+	// If the max_input_vars is set
+	else
+	{
+        	// If the max_input_vars is a number followed by characters
+        	if (preg_match('/^(\d+)$/', $max_input_vars, $matches))
+        	{
+			// If the max_input_vars is 1000
+			if ($max_input_vars == 1000)
+			{
+				return array("result" => 0, "text" => "The max_input_vars value in the php.ini file is set to the default value of 1000.  The SimpleRisk Dynamic Risk Report will not function properly with this configuration.  We recommend setting the max_input_vars to 3000.");
+			}
+			// If the max_input_vars is less than 3000
+			else if ($max_input_vars < 3000)
+			{
+				return array("result" => 0, "text" => "The max_input_vars value in the php.ini file is set to {$max_input_vars}, which could cause issues with the SimpleRisk Dynamic Risk Report.  We recommend setting the max_input_vars to 3000.");
+			}
+			// If the max_input_vars is 3000 or higher
+			else if ($max_input_vars >= 3000)
+			{
+				return array("result" => 1, "text" => "The max_input_vars value in the php.ini file is set to {$max_input_vars}.");
+			}
+		}
+        }
 }
 
 ?>

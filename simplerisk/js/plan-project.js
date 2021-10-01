@@ -1,5 +1,87 @@
 jQuery(document).ready(function($){
-  var is_dragable = $("#is_dragable").val(); 
+    var is_dragable = $("#is_dragable").val(); 
+    $('#project-new').submit(function(event) {
+        var form = new FormData($(this)[0]);
+        $.ajax({
+            url: BASE_URL + '/api/management/project/add',
+            type: "POST",
+            data: form,
+            async: true,
+            cache: false,
+            contentType: false,
+            processData: false,
+
+            success : function (data){
+                showAlertsFromArray(data.status_message);
+                $("#project-new")[0].reset();
+                setTimeout(function(){
+                    location.reload();
+                }, 1500)
+            },
+            error: function(xhr,status,error){
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    showAlertsFromArray(xhr.responseJSON.status_message);
+                }
+            }
+        });
+        $("#project--add").modal('hide');
+        return false;
+    });
+    $('#project-edit').submit(function(event) {
+        var form = new FormData($(this)[0]);
+        $.ajax({
+            url: BASE_URL + '/api/management/project/edit',
+            type: "POST",
+            data: form,
+            async: true,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success : function (data){
+                showAlertsFromArray(data.status_message);
+                $("#project-edit")[0].reset();
+                setTimeout(function(){
+                    location.reload();
+                }, 1500)
+            },
+            error: function(xhr,status,error){
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    showAlertsFromArray(xhr.responseJSON.status_message);
+                }
+            }
+        });
+        $("#project--edit").modal('hide');
+        return false;
+    });
+
+    $(document).on('click', '.project-block--edit', function(event) {
+        event.preventDefault();
+        //$(this).parents('.project-block').fadeOut('400').delay('500').remove();
+        var project_id = $(this).attr('data-id');
+        $.ajax({
+            url: BASE_URL + '/api/management/project/detail?project_id=' + project_id,
+            type: 'GET',
+            success : function (res){
+                var project = res.data;
+                $("#project--edit [name=project_id]").val(project_id);
+                $("#project--edit [name=name]").val(project.name);
+                $("#project--edit [name=due_date]").val(project.due_date);
+                $("#project--edit [name=consultant]").val(project.consultant);
+                $("#project--edit [name=business_owner]").val(project.business_owner);
+                $("#project--edit [name=data_classification]").val(project.data_classification);
+                if(project.custom_values){
+                  var custom_values = project.custom_values;
+                  for (var i=0; i<custom_values.length; i++) {
+                    var field_id = custom_values[i].field_id;
+                    var field_value = custom_values[i].value;
+                    $("#project--edit [name='custom_field["+field_id+"]']").val(field_value);
+                  }
+                }
+                $("#project--edit").modal();
+            }
+        });
+    });
+
   var planProject = {
 
     //projects : getProjects(),
@@ -34,16 +116,11 @@ jQuery(document).ready(function($){
         $(modal).modal('show');
       });
 
-      $('#project--delete').submit(function (event){
+      $('#project-delete').submit(function (event){
         event.preventDefault();
         self.deleteProject(this);
       });
 
-      $('#project--new').submit(function(event) {
-        event.preventDefault();
-
-        self.createProject(this);
-      });
       if(is_dragable > 0) {
           //Bind the draggable option for the risks
           self.draggableRisks();
@@ -249,39 +326,6 @@ jQuery(document).ready(function($){
           }
         
       });
-    },
-
-    createProject : function(form){
-      var self = this;
-
-      var el = $(form).find('#project--name');
-      var projectName = el.val();
-      var newProject = {
-        'id' : +new Date(),
-        'name' : projectName,
-        'status': '1'
-      };
-
-      $.ajax({
-        url: BASE_URL + '/api/management/project/add',
-        type: 'POST',
-        data: {add_project: true, new_project : projectName},
-        success : function (data){
-          showAlertsFromArray(data.status_message);
-          setTimeout(function(){
-            location.reload();
-          }, 1500)
-        },
-        error: function(xhr,status,error){
-            if(xhr.responseJSON && xhr.responseJSON.status_message){
-                showAlertsFromArray(xhr.responseJSON.status_message);
-            }
-        }
-      });
-
-      el.val('');
-      $("#project--add").modal('hide');
-      //self.loadProjects();
     },
 
     loadProjects : function(){

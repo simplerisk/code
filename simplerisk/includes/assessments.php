@@ -232,11 +232,19 @@ function push_pending_risk() {
         return;
     }
 
+    // Limit the subject's length
+    $maxlength = (int)get_setting('maximum_risk_subject_length', 300);
+    if (strlen($subject) > $maxlength) {
+        set_alert(true, "bad", _lang('RiskSubjectTruncated', ['limit' => $maxlength]));
+        $subject = substr($subject, 0, $maxlength);
+    }
+
     // Get the risk id to push
     $pending_risk_id = (int)$_POST['pending_risk_id'];
 
     // Get the posted risk values
-    $submission_date = $_POST['submission_date'];
+    $submission_date = !empty($_POST['submission_date']) ? get_standard_date_from_default_format($_POST['submission_date'], true) : false;
+
     $owner = (int)$_POST['owner'];
     $notes = $_POST['note'];
     $assets_asset_groups = isset($_POST['assets_asset_groups']) ? implode(',',$_POST['assets_asset_groups']) : "";
@@ -255,7 +263,7 @@ function push_pending_risk() {
     $assessment = "";
     
     // Submit the pending risk
-    $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes);
+    $last_insert_id = submit_risk($status, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $technology, $owner, $manager, $assessment, $notes, 0, 0, $submission_date);
     
     // If the encryption extra is enabled, updates order_by_subject
     if (encryption_extra())

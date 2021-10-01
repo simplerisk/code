@@ -70,27 +70,27 @@ if(process_assessment_questionnaire_templates()){
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
 ?>
-    <script src="../js/jquery.blockUI.min.js"></script>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/bootstrap-multiselect.js"></script>
-    <script src="../js/jquery.dataTables.js"></script>
-    <script src="../js/pages/assessment.js"></script>
-    <script src="../js/dataTables.rowReorder.min.js"></script>
+    <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
+    <?php display_bootstrap_javascript(); ?>
+    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/pages/assessment.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/dataTables.rowReorder.min.js?<?php echo current_version("app"); ?>"></script>
 
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
     <meta name="google" content="notranslate" />
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/jquery.dataTables.css">
-    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
-    <link rel="stylesheet" href="../css/rowReorder.dataTables.min.css">
+    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/rowReorder.dataTables.min.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-    <link rel="stylesheet" href="../css/theme.css">
-    <link rel="stylesheet" href="../css/side-navigation.css">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");

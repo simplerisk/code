@@ -35,9 +35,9 @@ require_once(language_file());
 <html>
 <head>
 <title>SimpleRisk Contributing Risk Calculator</title>
-<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css?<?php echo current_version("app"); ?>">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link href="../css/front-style.css" rel="stylesheet" type="text/css">
+<link href="../css/front-style.css?<?php echo current_version("app"); ?>" rel="stylesheet" type="text/css">
 <?php
         // Use these jQuery scripts
         $scripts = [
@@ -47,13 +47,13 @@ require_once(language_file());
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
 ?>
-<script language="javascript" src="../js/basescript.js" type="text/javascript"></script>
-<script language="javascript" src="../js/contributingrisk_scoring.js" type="text/javascript"></script>
+<script language="javascript" src="../js/basescript.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
+<script language="javascript" src="../js/contributingrisk_scoring.js?<?php echo current_version("app"); ?>" type="text/javascript"></script>
 
 
-<link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-<link rel="stylesheet" href="../css/theme.css">
-<link rel="stylesheet" href="../css/side-navigation.css">
+<link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+<link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
 
 <script type="text/javascript" language="JavaScript">
 

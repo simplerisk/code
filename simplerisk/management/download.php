@@ -37,9 +37,10 @@ require_once(language_file());
         // Set the id to the post parameter
         $id = $_POST['id'];
             }
+        $file_type = isset($_REQUEST['file_type'])?$_REQUEST['file_type']:"file";
 
     // Get the file for the submitted file id
-    download_file($id);
+    download_file($id, $file_type);
     }
 
 ?>

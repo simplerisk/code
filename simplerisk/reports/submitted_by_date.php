@@ -44,18 +44,19 @@ $_SESSION["workflow_start"] = $_SERVER['SCRIPT_NAME'];
 
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-    <script src="../js/bootstrap.min.js"></script>
     <!-- <script src="../js/sorttable.js"></script> -->
-    <script src="../js/obsolete.js"></script>
-    <script src="../js/jquery.dataTables.js"></script>
+    <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
 
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-    <link rel="stylesheet" href="../css/theme.css">
-    <link rel="stylesheet" href="../css/side-navigation.css">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");

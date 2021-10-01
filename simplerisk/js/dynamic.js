@@ -91,7 +91,8 @@ $(document).ready(function(){
         var review_columns = $("#review_columns").val();
         var scoring_columns = $("#scoring_columns").val();
         var unassigned_columns = $("#unassigned_columns").val();
-        var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns, unassigned_columns);
+        var risk_mapping_columns = $("#risk_mapping_columns").val();
+        var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns, unassigned_columns, risk_mapping_columns);
         var columnOptions = [];
         var columnNames = [];
         $(".risk-datatable tr.main th").each(function(index){
@@ -476,13 +477,15 @@ $(document).ready(function(){
                     var review_columns = $("#review_columns").val()?$("#review_columns").val():[];
                     var scoring_columns = $("#scoring_columns").val()?$("#scoring_columns").val():[];
                     var unassigned_columns = $("#unassigned_columns").val()?$("#unassigned_columns").val():[];
-                    var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns, unassigned_columns);
+                    var risk_mapping_columns = $("#risk_mapping_columns").val()?$("#risk_mapping_columns").val():[];
+                    var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns, unassigned_columns, risk_mapping_columns);
                     if(selected_all == true) {
                         visible_column("risk_columns", selected_columns);
                         visible_column("mitigation_columns", selected_columns);
                         visible_column("review_columns", selected_columns);
                         visible_column("scoring_columns", selected_columns);
                         visible_column("unassigned_columns", selected_columns);
+                        visible_column("risk_mapping_columns", risk_mapping_columns);
                     }
                     $.ajax({
                         type: "POST",
@@ -517,6 +520,11 @@ $(document).ready(function(){
         document.get_risks_by.submit();
         document.get_risks_by.action = "";
         // $("#get_risks_by").attr('target', '');
+    });
+    $("#export-risks-and-assets-report, #export-risks-and-controls-report").click(function(e){
+        document.select_report.action += (document.select_report.action.indexOf('?') !== -1  ? "&" : "?") + "option=download";
+        document.select_report.submit();
+        document.select_report.action = "";
     });
     function visible_column(selectID, selected_columns){
         $("#"+selectID).find("option").each(function(index){

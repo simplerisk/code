@@ -10,6 +10,7 @@ require_once('functions.php');
 // Array containing the crons to run
 $cron_jobs = array(
 	'cron_backup',
+	'cron_vulnmgmt',
 );
 
 /***************************
@@ -26,6 +27,8 @@ function get_cron_jobs()
 	// For each cron job
 	foreach ($cron_jobs as $cron_job)
 	{
+		write_debug_log("Cron Job: {$cron_job}");
+
 		// Get the script name for the cron job
 		$script_name = $cron_job . '.php';
 
@@ -35,11 +38,15 @@ function get_cron_jobs()
 		// Create the command to run the script via PHP
 		$command = PHP_BINARY . ' -f ' . $cron_script;
 
+		write_debug_log("Cron Command: {$command}");
+
 		// If both a function and script exist for that cron job
 		if (function_exists($cron_job) && is_file($cron_script))
 		{
 			// Call the script to get the schedule
 			$schedule = call_user_func($cron_job);
+
+			write_debug_log("Cron Schedule: {$schedule}");
 
 			// Create an array with the cron job info
 			$cron_job_info = array(
@@ -58,13 +65,13 @@ function get_cron_jobs()
 	return $all_cron_job_info;
 }
 
-/*****************************
- * FUNCTION: BACKUP SCHEDULE *
+/***************************
+ * FUNCTION: CRON SCHEDULE *
  *****************************/
-function backup_schedule($backup_schedule)
+function cron_schedule($cron_schedule)
 {
         // Set the schedule
-        switch ($backup_schedule)
+        switch ($cron_schedule)
         {
                 case "hourly":
                         $schedule = '0 * * * *';
@@ -93,7 +100,19 @@ function backup_schedule($backup_schedule)
 function cron_backup()
 {
 	// Get the backup schedule
-	$schedule = backup_schedule(get_setting("backup_schedule"));
+	$schedule = cron_schedule(get_setting("backup_schedule"));
+
+	// Return the schedule
+	return $schedule;
+}
+
+/***************************
+ * FUNCTION: CRON VULNMGMT *
+ ***************************/
+function cron_vulnmgmt()
+{
+	// Get the vulnerability management schedule
+	$schedule = cron_schedule(get_setting("extra_vulnmgmt_cron_schedule"));
 
 	// Return the schedule
 	return $schedule;

@@ -247,11 +247,7 @@ foreach($review_fields as $column){
 foreach($scoring_fields as $column){
     $scoring_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
 }
-$table_columns = array_merge($risk_fields, $mitigation_fields, $review_fields, $scoring_fields);
-$selected_columns = [];
-foreach($table_columns as $column){
-    $selected_columns[$column] = in_array($column, $custom_display_settings) ? true : false;
-}
+$selected_columns = array_merge($risk_columns, $mitigation_columns, $review_columns, $scoring_columns);
 
 ?>
 
@@ -275,26 +271,27 @@ foreach($table_columns as $column){
 
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/bootstrap-multiselect.js"></script>
-    <script src="../js/sorttable.js"></script>
-    <script src="../js/obsolete.js"></script>
-    <script src="../js/jquery.dataTables.js"></script>
-    <script src="../js/jquery.blockUI.min.js"></script>
-    <script src="../js/dynamic.js"></script>
+    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/dynamic.js?<?php echo current_version("app"); ?>"></script>
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
-    <link rel="stylesheet" href="../css/jquery.dataTables.css">
+    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-    <link rel="stylesheet" href="../css/theme.css">
-    <link rel="stylesheet" href="../css/side-navigation.css">
+    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");

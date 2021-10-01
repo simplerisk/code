@@ -132,7 +132,7 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
                 echo "<form name=\"details\" method=\"post\" action=\"\">";
                     echo "<div class=\"edit-subject row-fluid\">";
                         echo "<div class=\"span9\">";
-                            echo "<input type=\"text\" name=\"subject\" value=\"".$escaper->escapeHtml($subject)."\" style=\"max-width:none;\"/>";
+                            echo "<input maxlength=\"" . (int)get_setting('maximum_risk_subject_length', 300) . "\" type=\"text\" name=\"subject\" value=\"".$escaper->escapeHtml($subject)."\" style=\"max-width:none;\"/>";
                             echo "<input type=\"hidden\" name=\"riskid\" value=\"".$escaper->escapeHtml($risk_id)."\"/>";
                         echo "</div>";
                         echo "<div class=\"span3\">";
@@ -212,7 +212,7 @@ function view_print_top_table($id, $calculated_risk, $subject, $status)
 /*******************************
 * FUNCTION: ADD RISK DETAILS *
 *******************************/
-function add_risk_details($template_group_id = 1){
+function add_risk_details($template_group_id = ""){
     global $lang;
     global $escaper;
     echo "<form name=\"submit_risk\" method=\"post\" action=\"\" enctype=\"multipart/form-data\" id=\"risk-submit-form\">\n";
@@ -221,10 +221,14 @@ function add_risk_details($template_group_id = 1){
         {
             // Include the extra
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+            if(!$template_group_id) {
+                $group = get_default_template_group("risk");
+                $template_group_id = $group["id"];
+            }
             echo "<input type='hidden' name='template_group_id' id='template_group_id' value='{$template_group_id}' />";
             echo "<div class=\"row-fluid padded-bottom subject-field\">\n";
                 echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['Subject']).":</div>\n";
-                echo "<div class=\"span8\"><input maxlength=\"300\" title=\"".$escaper->escapeHtml($lang['Subject'])."\" required name=\"subject\" id=\"subject\" class=\"form-control\" type=\"text\"></div>\n";
+                echo "<div class=\"span8\"><input maxlength=\"" . (int)get_setting('maximum_risk_subject_length', 300) . "\" title=\"".$escaper->escapeHtml($lang['Subject'])."\" required name=\"subject\" id=\"subject\" class=\"form-control\" type=\"text\"></div>\n";
             echo "</div>\n";
 
             $active_fields = get_active_fields("risk", $template_group_id);
@@ -259,7 +263,7 @@ function add_risk_details($template_group_id = 1){
         {
             echo "<div class=\"row-fluid padded-bottom subject-field\">\n";
                 echo "<div class=\"span2 text-right\">".$escaper->escapeHtml($lang['Subject']).":</div>\n";
-                echo "<div class=\"span8\"><input maxlength=\"300\" title=\"".$escaper->escapeHtml($lang['Subject'])."\" required name=\"subject\" id=\"subject\" class=\"form-control\" type=\"text\"></div>\n";
+                echo "<div class=\"span8\"><input maxlength=\"" . (int)get_setting('maximum_risk_subject_length', 300) . "\" title=\"".$escaper->escapeHtml($lang['Subject'])."\" required name=\"subject\" id=\"subject\" class=\"form-control\" type=\"text\"></div>\n";
             echo "</div>\n";
             display_risk_mapping_edit([], "top");
             display_threat_mapping_edit([], "top");
@@ -328,7 +332,7 @@ function add_risk_details($template_group_id = 1){
     echo "<script>\n";
         echo "$(document).ready(function(){\n";
 //            echo "$(\"#team\").multiselect(\"selectAll\", false);\n";
-            echo "$('#team').multiselect('updateButtonText');\n";
+            // echo "$('#team').multiselect('updateButtonText');\n";
         echo "})\n";
     echo "</script>\n";
 
@@ -337,7 +341,7 @@ function add_risk_details($template_group_id = 1){
 /*******************************
 * FUNCTION: VIEW RISK DETAILS *
 *******************************/
-function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id=1)
+function view_risk_details($id, $submission_date, $submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $tags, $jira_issue_key, $risk_catalog_mapping, $threat_catalog_mapping, $template_group_id="")
 {
     global $lang;
     global $escaper;
@@ -362,6 +366,10 @@ function view_risk_details($id, $submission_date, $submitted_by, $subject, $refe
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        if(!$template_group_id) {
+            $group = get_default_template_group("risk");
+            $template_group_id = $group["id"];
+        }
         $active_fields = get_active_fields("risk", $template_group_id);
 
         // Top panel
@@ -705,7 +713,7 @@ function risk_score_method_html($scoring_method="1", $CLASSIC_likelihood="", $CL
 /*******************************
 * FUNCTION: EDIT RISK DETAILS *
 *******************************/
-function edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping=[], $threat_catalog_mapping=[], $template_group_id=1)
+function edit_risk_details($id, $submission_date,$submitted_by, $subject, $reference_id, $regulation, $control_number, $location, $source, $category, $team, $additional_stakeholders, $technology, $owner, $manager, $assessment, $notes, $scoring_method, $CLASSIC_likelihood, $CLASSIC_impact, $AccessVector, $AccessComplexity, $Authentication, $ConfImpact, $IntegImpact, $AvailImpact, $Exploitability, $RemediationLevel, $ReportConfidence, $CollateralDamagePotential, $TargetDistribution, $ConfidentialityRequirement, $IntegrityRequirement, $AvailabilityRequirement, $DREADDamagePotential, $DREADReproducibility, $DREADExploitability, $DREADAffectedUsers, $DREADDiscoverability, $OWASPSkillLevel, $OWASPMotive, $OWASPOpportunity, $OWASPSize, $OWASPEaseOfDiscovery, $OWASPEaseOfExploit, $OWASPAwareness, $OWASPIntrusionDetection, $OWASPLossOfConfidentiality, $OWASPLossOfIntegrity, $OWASPLossOfAvailability, $OWASPLossOfAccountability, $OWASPFinancialDamage, $OWASPReputationDamage, $OWASPNonCompliance, $OWASPPrivacyViolation, $custom, $ContributingLikelihood, $ContributingImpacts, $tags, $jira_issue_key, $risk_catalog_mapping=[], $threat_catalog_mapping=[], $template_group_id="")
 {
     global $lang;
     global $escaper;
@@ -726,7 +734,10 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
+        if(!$template_group_id){
+            $group = get_default_template_group("risk");
+            $template_group_id = $group["id"];
+        }
         $active_fields = get_active_fields("risk", $template_group_id);
 
         // Top panel
@@ -818,7 +829,7 @@ function edit_risk_details($id, $submission_date,$submitted_by, $subject, $refer
 /*************************************
 * FUNCTION: VIEW MITIGATION DETAILS *
 *************************************/
-function view_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id=1)
+function view_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team, $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id="")
 {
     global $lang;
     global $escaper;
@@ -841,7 +852,10 @@ function view_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-
+        if(!$template_group_id){
+            $group = get_default_template_group("risk");
+            $template_group_id = $group["id"];
+        }
         $active_fields = get_active_fields("risk", $template_group_id);
 
         echo "<div class=\"row-fluid\">\n";
@@ -1102,7 +1116,7 @@ function view_print_mitigation_controls($mitigation)
 /*************************************
 * FUNCTION: EDIT MITIGATION DETAILS *
 *************************************/
-function edit_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id=1)
+function edit_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $planning_strategy, $mitigation_effort, $mitigation_cost, $mitigation_owner, $mitigation_team,  $current_solution, $security_requirements, $security_recommendations, $planning_date, $mitigation_percent, $mitigation_controls, $template_group_id="")
 {
     global $lang;
     global $escaper;
@@ -1125,6 +1139,10 @@ function edit_mitigation_details($risk_id, $mitigation_id, $mitigation_date, $pl
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        if(!$template_group_id){
+            $group = get_default_template_group("risk");
+            $template_group_id = $group["id"];
+        }
         $active_fields = get_active_fields("risk", $template_group_id);
 
         echo "<div class=\"row-fluid\">\n";
@@ -1412,7 +1430,7 @@ function display_mitigation_controls_script(){
 /*********************************
 * FUNCTION: view_review_details *
 *********************************/
-function view_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment, $template_group_id=1)
+function view_review_details($id, $review_id, $review_date, $reviewer, $review, $next_step, $next_review, $comment, $template_group_id="")
 {
     global $lang;
     global $escaper;
@@ -1434,6 +1452,10 @@ function view_review_details($id, $review_id, $review_date, $reviewer, $review, 
         {
             // Include the extra
             require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+            if(!$template_group_id){
+                $group = get_default_template_group("risk");
+                $template_group_id = $group["id"];
+            }
             $active_fields = get_active_fields("risk", $template_group_id);
 
             echo "<div class=\"row-fluid\">\n";
@@ -1562,7 +1584,7 @@ function view_print_review_details($id, $review_date, $reviewer, $review, $next_
 /************************************
 * FUNCTION: edit_review_submission *
 ************************************/
-function edit_review_submission($id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review, $template_group_id=1)
+function edit_review_submission($id, $review_id, $review, $next_step, $next_review, $comment, $default_next_review, $template_group_id="")
 {
     global $lang;
     global $escaper;
@@ -1585,6 +1607,10 @@ function edit_review_submission($id, $review_id, $review, $next_step, $next_revi
     {
         // Include the extra
         require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        if(!$template_group_id){
+            $group = get_default_template_group("risk");
+            $template_group_id = $group["id"];
+        }
         $active_fields = get_active_fields("risk", $template_group_id);
 
         echo "<div class=\"row-fluid\">\n";
@@ -4290,47 +4316,48 @@ function view_configure_menu($active)
 /**********************************************
 * FUNCTION: VIEW RISKS AND ASSETS SELECTIONS *
 **********************************************/
-function view_risks_and_assets_selections($report, $sortby, $asset_tags)
+function view_risks_and_assets_selections($report, $sort_by, $asset_tags, $projects)
 {
     global $lang, $escaper;
 
-    echo "<form name=\"select_report\" method=\"GET\" action=\"\">\n";
+    echo "<form name=\"select_report\" method=\"POST\" action=\"\">\n";
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span12\">\n";
     echo "<a href=\"javascript:;\" onclick=\"javascript: closeSearchBox()\"><img src=\"../images/X-100.png\" width=\"10\" height=\"10\" align=\"right\" /></a>\n";
-
-    // Report Selection
-    echo "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
-    echo "<tr>\n";
-    echo "<td>" . $escaper->escapeHtml($lang['Report']) . ":&nbsp;</td>\n";
-    echo "<td>\n";
+    echo "</div>\n";
+    echo "</div>\n";
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span3\">";
+    echo $escaper->escapeHtml($lang['Report']).": ";
     echo "<select id=\"report\" name=\"report\" onchange=\"javascript: submit()\">\n";
     echo "<option value=\"0\"" . ($report == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RisksByAsset']) . "</option>\n";
     echo "<option value=\"1\"" . ($report == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetsByRisk']) . "</option>\n";
     echo "</select>\n";
-    echo "</td>\n";
-    echo "<td>&emsp;" . $escaper->escapeHtml($lang['AssetTags']) . ":&nbsp;</td>\n";
-    echo "<td width='250px'>\n";
-    // Set unassigned value to empty string
-    create_multiple_dropdown("asset_tags", $asset_tags, NULL, NULL, true, $lang['Unassigned'], "-1");
-    echo "</td>\n";
-    if($report == 0){
-        echo "<td>&nbsp; " . $escaper->escapeHtml($lang['SortBy']) . ":&nbsp;</td>\n";
-        echo "<td>\n";
-        echo "<select id=\"sortby\" name=\"sortby\" onchange=\"javascript: submit()\">\n";
-        echo "<option value=\"0\"" . ($sortby == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetName']) . "</option>\n";
-        echo "<option value=\"1\"" . ($sortby == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetRisk']) . "</option>\n";
-        echo "</select>\n";
-        echo "</td>\n";
-    }
-    echo "</tr>\n";
-    echo "</table>\n";
-
     echo "</div>\n";
+
+    echo "<div class=\"span3\">";
+    echo $escaper->escapeHtml($lang['AssetTags']).": ";
+    create_multiple_dropdown("asset_tags", $asset_tags, NULL, NULL, true, $lang['Unassigned'], "-1");
+    echo "</div>\n";
+
+    echo "<div class=\"span3\">";
+    echo $escaper->escapeHtml($lang['Project']).": ";
+    create_multiple_dropdown("projects", $projects, NULL, NULL, true, $lang['Unassigned'], "-1");
+    echo "</div>\n";
+
+    if($report == 0){
+        echo "<div class=\"span3\">";
+        echo $escaper->escapeHtml($lang['SortBy']).": ";
+        echo "<select id=\"sort_by\" name=\"sort_by\" onchange=\"javascript: submit()\">\n";
+        echo "<option value=\"0\"" . ($sort_by == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetName']) . "</option>\n";
+        echo "<option value=\"1\"" . ($sort_by == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetRisk']) . "</option>\n";
+        echo "</select>\n";
+        echo "</div>\n";
+    }
     echo "</div>\n";
     echo "</form>\n";
     echo "<script>
-            $('#asset_tags').multiselect({
+            $('#asset_tags, #projects').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
                 enableFiltering: true,
                 maxHeight: 250,
@@ -4347,7 +4374,7 @@ function view_risks_and_assets_selections($report, $sortby, $asset_tags)
 /******************************************
 * FUNCTION: VIEW GET RISKS BY SELECTIONS *
 ******************************************/
-function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[])
+function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[], $risk_mapping_columns=[])
 {
     global $lang, $escaper;
     
@@ -4420,7 +4447,7 @@ function view_get_risks_by_selections($status=0, $group=0, $sort=0, $risk_column
     echo "</div></div>\n";
 
     // Risk columns
-    echo display_risk_columns($risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns);
+    echo display_risk_columns($risk_columns, $mitigation_columns, $review_columns, $scoring_columns, $unassigned_columns, $risk_mapping_columns);
     
     echo "</form>\n";
     echo "<script>
@@ -4591,7 +4618,8 @@ function display_save_dynamic_risk_selections()
                     var mitigation_columns = $('#mitigation_columns').val();
                     var review_columns = $('#review_columns').val();
                     var scoring_columns = $('#scoring_columns').val();
-                    var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns);
+                    var risk_mapping_columns = $('#risk_mapping_columns').val();
+                    var selected_columns = risk_columns.concat(mitigation_columns, review_columns, scoring_columns, risk_mapping_columns);
                     var columnFilters = [];
                     $('.risk-datatable:first .dynamic-column-filter').each(function(i){
                         if($(this).val().length > 0){
@@ -4671,7 +4699,7 @@ function display_save_dynamic_risk_selections()
 /*********************************
 * FUNCTION: DISPLAY RISK COLUMNS *
 **********************************/
-function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[]){
+function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_columns=[], $scoring_columns=[], $unassigned_columns=[], $risk_mapping_columns=[]){
     global $escaper, $lang;
     echo "
         <div class=\"well\" id='column-selections-container'>
@@ -4690,6 +4718,8 @@ function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_
     $scoring_columns_selected = [];
     $unassigned_columns_option = [];
     $unassigned_columns_selected = [];
+    $risk_mapping_columns_option = [];
+    $risk_mapping_columns_selected = [];
 
     // If customization extra is enabled
     if(customization_extra())
@@ -4767,6 +4797,11 @@ function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_
             if($value == true) $scoring_columns_selected[] = $column;
         }
     }
+    foreach($risk_mapping_columns as $column=>$value){
+        $name = get_label_by_risk_field_name($column);
+        $risk_mapping_columns_option[] = array('value'=>$column, 'name'=>$name);
+        if($value == true) $risk_mapping_columns_selected[] = $column;
+    }
     echo "<div class=\"row-fluid\">\n";
         echo "<div class=\"row-fluid\">\n";
             echo "<div class=\"span4\">\n";
@@ -4793,6 +4828,10 @@ function display_risk_columns($risk_columns=[], $mitigation_columns=[], $review_
             create_multiple_dropdown("", $unassigned_columns_selected, "unassigned_columns", $unassigned_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
             echo "</div>";
         }
+            echo "<div class=\"span4\">\n";
+            echo "<h4>" . $escaper->escapeHtml($lang['RiskMappingColumns']) . ":</h4>\n";
+            create_multiple_dropdown("", $risk_mapping_columns_selected, "risk_mapping_columns", $risk_mapping_columns_option, false, "", "", true, "class='multiselect' multiple='multiple'");
+            echo "</div>";
         echo "</div>";
     echo "</div>";
     echo "</div></div>\n";
@@ -5497,12 +5536,16 @@ function display_pending_risks()
     // Get the pending risks
     $risks = get_pending_risks();
     $affected_assets_placeholder = $escaper->escapeHtml($lang['AffectedAssetsWidgetPlaceholder']);
-    
+
+    $maxlength = (int)get_setting('maximum_risk_subject_length', 300);
+    $date_time_format = get_default_datetime_format('H:i:s');
+
     // For each pending risk
     foreach($risks as $risk)
     {
         // Get the assessment name
         $assessment = get_assessment_names($risk['assessment_id']);
+        $submission_date = format_datetime($risk['submission_date'], '', 'H:i:s');
 
         echo "<div class=\"hero-unit\">\n";
         echo "<form name=\"submit_risk\" method=\"post\" action=\"\" enctype=\"multipart/form-data\">\n";
@@ -5511,11 +5554,11 @@ function display_pending_risks()
         echo "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
         echo "<tr>\n";
         echo "<td style=\"white-space: nowrap;\">".$lang['SubmissionDate'] . ":&nbsp;&nbsp;</td>\n";
-        echo "<td width=\"99%\"><input type=\"text\"  style=\"width: 97%;\" name=\"submission_date\" value=\"" . $escaper->escapeHtml($risk['submission_date']) . "\" /></td>\n";
+        echo "<td width=\"99%\"><input type=\"text\"  style=\"width: 97%;\" name=\"submission_date\" value=\"" . $escaper->escapeHtml($submission_date) . "\" /></td>\n";
         echo "</tr>\n";
         echo "<tr>\n";
         echo "<td style=\"white-space: nowrap;\">".$lang['Subject'] . ":&nbsp;&nbsp;</td>\n";
-        echo "<td width=\"99%\"><input type=\"text\" style=\"width: 97%;\" name=\"subject\" value=\"" . $escaper->escapeHtml($risk['subject']) . "\" /></td>\n";
+        echo "<td width=\"99%\"><input maxlength='{$maxlength}' type=\"text\" style=\"width: 97%;\" name=\"subject\" value=\"" . $escaper->escapeHtml($risk['subject']) . "\" /></td>\n";
         echo "</tr>\n";
         if($risk['scoring_method'])
             display_score_html_from_pending_risk($risk['scoring_method'], $risk['Custom'], $risk['CLASSIC_likelihood'], $risk['CLASSIC_impact'], $risk['CVSS_AccessVector'], $risk['CVSS_AccessComplexity'], $risk['CVSS_Authentication'], $risk['CVSS_ConfImpact'], $risk['CVSS_IntegImpact'], $risk['CVSS_AvailImpact'], $risk['CVSS_Exploitability'], $risk['CVSS_RemediationLevel'], $risk['CVSS_ReportConfidence'], $risk['CVSS_CollateralDamagePotential'], $risk['CVSS_TargetDistribution'], $risk['CVSS_ConfidentialityRequirement'], $risk['CVSS_IntegrityRequirement'], $risk['CVSS_AvailabilityRequirement'], $risk['DREAD_DamagePotential'], $risk['DREAD_Reproducibility'], $risk['DREAD_Exploitability'], $risk['DREAD_AffectedUsers'], $risk['DREAD_Discoverability'], $risk['OWASP_SkillLevel'], $risk['OWASP_Motive'], $risk['OWASP_Opportunity'], $risk['OWASP_Size'], $risk['OWASP_EaseOfDiscovery'], $risk['OWASP_EaseOfExploit'], $risk['OWASP_Awareness'], $risk['OWASP_IntrusionDetection'], $risk['OWASP_LossOfConfidentiality'], $risk['OWASP_LossOfIntegrity'], $risk['OWASP_LossOfAvailability'], $risk['OWASP_LossOfAccountability'], $risk['OWASP_FinancialDamage'], $risk['OWASP_ReputationDamage'], $risk['OWASP_NonCompliance'], $risk['OWASP_PrivacyViolation']);
@@ -5611,6 +5654,11 @@ function display_pending_risks()
 
                         });
                     }
+                });
+                $('input[name=\"submission_date\"]').datetimepicker({
+                  lazyInit: true,
+                  format: '{$date_time_format}',
+                  step: 5
                 });
             });
         </script>
@@ -6495,32 +6543,122 @@ function create_risk_formula_table()
 /**********************************************
 * FUNCTION: VIEW RISKS AND CONTROLS SELECTIONS *
 **********************************************/
-function view_risks_and_controls_selections($report)
+function view_risks_and_controls_selections($report, $sort_by=0, $projects)
 {
     global $lang;
     global $escaper;
 
-    echo "<form name=\"select_report\" method=\"post\" action=\"\">\n";
     echo "<div class=\"row-fluid\">\n";
     echo "<div class=\"span12\">\n";
     echo "<a href=\"javascript:;\" onclick=\"javascript: closeSearchBox()\"><img src=\"../images/X-100.png\" width=\"10\" height=\"10\" align=\"right\" /></a>\n";
-
-    // Report Selection
-    echo "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
-    echo "<tr>\n";
-    echo "<td>" . $escaper->escapeHtml($lang['Report']) . ":&nbsp;</td>\n";
-    echo "<td>\n";
+    echo "</div>\n";
+    echo "</div>\n";
+    echo "<div class=\"row-fluid\">\n";
+    echo "<div class=\"span3\">";
+    echo $escaper->escapeHtml($lang['Report']) . ":&nbsp;\n";
     echo "<select id=\"report\" name=\"report\" onchange=\"javascript: submit()\">\n";
     echo "<option value=\"0\"" . ($report == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['RisksByControl']) . "</option>\n";
     echo "<option value=\"1\"" . ($report == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ControlsByRisk']) . "</option>\n";
     echo "</select>\n";
-    echo "</td>\n";
-    echo "</tr>\n";
-    echo "</table>\n";
+    echo "</div>\n";
+    echo "<div class=\"span3\">";
+    echo $escaper->escapeHtml($lang['Project']) . ":&nbsp;\n";
+    create_multiple_dropdown("projects", $projects, NULL, NULL, true, $lang['Unassigned'], "-1");
+    echo "</div>\n";
+    if($report == 0){
+        echo "<div class=\"span3\">";
+        echo $escaper->escapeHtml($lang['SortBy']).": ";
+        echo "<select id=\"sortby\" name=\"sort_by\" onchange=\"javascript: submit()\">\n";
+        echo "<option value=\"0\"" . ($sort_by == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetName']) . "</option>\n";
+        echo "<option value=\"1\"" . ($sort_by == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetRisk']) . "</option>\n";
+        echo "</select>\n";
+        echo "</div>\n";
+    }
+    echo "</div>\n";
 
-    echo "</div>\n";
-    echo "</div>\n";
-    echo "</form>\n";
+    echo "<script>
+            $('#projects').multiselect({
+                allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
+                enableFiltering: true,
+                maxHeight: 250,
+                buttonWidth: 300,
+                includeSelectAllOption: true,
+                onDropdownHide: function(){
+                    $('form[name=select_report]').submit();
+                }
+            });
+        </script>";
+
+}
+
+/********************************************
+* FUNCTION: VIEW CONTROLS FILTER SELECTIONS *
+*********************************************/
+function view_controls_filter_selections()
+{
+    global $lang;
+    global $escaper;
+    if(count($_POST) > 3) {
+        $control_framework = isset($_POST['control_framework']) ? $_POST['control_framework'] : [];
+        $control_family = isset($_POST['control_family']) ? $_POST['control_family'] : [];
+        $control_class = isset($_POST['control_class']) ? $_POST['control_class'] : [];
+        $control_phase = isset($_POST['control_phase']) ? $_POST['control_phase'] : [];
+        $control_priority = isset($_POST['control_priority']) ? $_POST['control_priority'] : [];
+        $control_owner = isset($_POST['control_owner']) ? $_POST['control_owner'] : [];
+    } else {
+        $control_framework = "all";
+        $control_family = "all";
+        $control_class = "all";
+        $control_phase = "all";
+        $control_priority = "all";
+        $control_owner = "all";
+    }
+
+
+    echo "<div class=\"row-fluid\">";
+    echo "<div class=\"span4\">";
+    echo $escaper->escapeHtml($lang['ControlFrameworks']).":";
+    create_multiple_dropdown("control_framework", $control_framework, null, getAvailableControlFrameworkList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "</div>";
+    echo "<div class=\"span4\">";
+    echo $escaper->escapeHtml($lang['ControlFamily']).":";
+    create_multiple_dropdown("control_family", $control_family, null, getAvailableControlFamilyList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "</div>";
+    echo "<div class=\"span4\">";
+    echo $escaper->escapeHtml($lang['ControlClass']).":";
+    create_multiple_dropdown("control_class", $control_class, null, getAvailableControlClassList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "</div>";
+    echo "</div>";
+    echo "<div class=\"row-fluid\">";
+    echo "<div class=\"span4\">";
+    echo $escaper->escapeHtml($lang['ControlPhase']).":";
+    create_multiple_dropdown("control_phase", $control_phase, null, getAvailableControlPhaseList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "</div>";
+    echo "<div class=\"span4\">";
+    echo $escaper->escapeHtml($lang['ControlPriority']).":";
+    create_multiple_dropdown("control_priority", $control_priority, null, getAvailableControlPriorityList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "</div>";
+    echo "<div class=\"span4\">";
+    echo $escaper->escapeHtml($lang['ControlOwner']).":";
+    create_multiple_dropdown("control_owner", $control_owner, null, getAvailableControlOwnerList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1");
+    echo "</div>";
+    echo "</div>";
+    echo "
+        <script>
+            $(document).ready( function(){
+                $('select[multiple]').multiselect({
+                    allSelectedText: '". $escaper->escapeHtml($lang['ALL'])."',
+                    enableFiltering: true,
+                    maxHeight: 250,
+                    buttonWidth: '80%',
+                    includeSelectAllOption: true,
+                    onDropdownHide: function(){
+                        $('form[name=select_report]').submit();
+                    }
+                });
+            });
+        </script>
+    ";
 
 }
 
@@ -7777,6 +7915,21 @@ function display_side_navigation($active)
 		}
 	}
 
+	// If the vulnerability management extra is enabled
+	if (vulnmgmt_extra())
+	{
+		// Include the vulnerability management extra
+		require_once(realpath(__DIR__ . '/../extras/vulnmgmt/index.php'));
+
+		// If the user has vulnerability management permissions
+		if (check_permission("vm_vulnerabilities"))
+		{
+			echo ($active == "VulnerabilityManagement" ? "<li class=\"active\">\n" : "<li>\n");
+			echo "  <a href=\"../vulnerabilities/index.php\">VM</a>\n";
+                        echo "</li>\n";
+                }
+        }
+
         echo "</div>\n";
 
 	// Display the larger side navigation
@@ -7801,6 +7954,21 @@ function display_side_navigation($active)
                 {
                         echo ($active == "IncidentManagement" ? "<li class=\"active\">\n" : "<li>\n");
                         echo "  <a href=\"../incidents/index.php\">" . $escaper->escapeHtml($lang['IncidentManagement']) . "</a>\n";
+                        echo "</li>\n";
+                }
+        }
+
+	// If the vulnerability management extra is enabled
+        if (vulnmgmt_extra())
+        {
+                // Include the vulnerability management extra
+                require_once(realpath(__DIR__ . '/../extras/vulnmgmt/index.php'));
+
+                // If the user has vulnerability management permissions
+                if (check_permission("vm_vulnerabilities"))
+                {
+                        echo ($active == "VulnerabilityManagement" ? "<li class=\"active\">\n" : "<li>\n");
+                        echo "  <a href=\"../vulnerabilities/index.php\">" . $escaper->escapeHtml($lang['VulnerabilityManagement']) . "</a>\n";
                         echo "</li>\n";
                 }
         }
@@ -8175,6 +8343,11 @@ function get_label_by_risk_field_name($field){
         'OWASP_PrivacyViolation' => js_string_escape("OWASP: ".$lang['PrivacyViolation']),
         'Contributing_Likelihood' => js_string_escape($lang['ContributingRisk'].": ".$lang['Likelihood']),
 
+        'risk_mapping_risk_grouping' => js_string_escape($lang['RiskGrouping']),
+        'risk_mapping_risk' => js_string_escape($lang['Risk']),
+        'risk_mapping_risk_event' => js_string_escape($lang['RiskEvent']),
+        'risk_mapping_description' => js_string_escape($lang['Description']),
+        'risk_mapping_function' => js_string_escape($lang['Function']),
 	);
     $contributing_risks = get_contributing_risks();
     foreach($contributing_risks as $contributing_risk){
@@ -8469,7 +8642,7 @@ function display_highcharts_javascript($scripts)
         foreach ($scripts as $script)
         {
                 // Display it as a script src
-                echo "<script src=\"" . $path . $script . "\"></script>\n";
+                echo "<script src=\"" . $path . $script . "?" . current_version("app") . "\"></script>\n";
         }
 }
 
@@ -8507,15 +8680,15 @@ function display_jquery_javascript($scripts)
         // Otherwise
         else
         {
-                // Use the HighCharts CDN as the path
-                $path = "https://code.jquery.com/";
+                // Use the Google CDN as the path
+                $path = "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/";
         }
 
         // For each script provided
         foreach ($scripts as $script)
         {
                 // Display it as a script src
-                echo "<script src=\"" . $path . $script . "\"></script>\n";
+                echo "<script src=\"" . $path . $script . "?" . current_version("app") . "\"></script>\n";
         }
 }
 
@@ -8553,16 +8726,324 @@ function display_jquery_ui_javascript($scripts)
         // Otherwise
         else
         {
-                // Use the HighCharts CDN as the path
-                $path = "https://code.jquery.com/ui/1.12.1/";
+                // Use the Google CDN as the path
+                $path = "https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/";
         }
 
         // For each script provided
         foreach ($scripts as $script)
         {
                 // Display it as a script src
-                echo "<script src=\"" . $path . $script . "\"></script>\n";
+                echo "<script src=\"" . $path . $script . "?" . current_version("app") . "\"></script>\n";
         }
+}
+
+/******************************************
+ * FUNCTION: DISPLAY BOOTSTRAP JAVASCRIPT *
+ ******************************************/
+function display_bootstrap_javascript()
+{
+        // If the global value is not already set
+        if (!isset($GLOBALS['bootstrap_delivery_method']))
+        {
+                // Set the bootstrap delivery method
+                $GLOBALS['bootstrap_delivery_method'] = get_setting("bootstrap_delivery_method");
+        }
+
+        // Set the bootstrap delivery method
+        $bootstrap_delivery_method = $GLOBALS['bootstrap_delivery_method'];
+
+        // If the bootstrap delivery method is local
+        if ($bootstrap_delivery_method == "local")
+        {
+                // Get the SimpleRisk Base URL
+                $simplerisk_base_url = get_setting('simplerisk_base_url');
+
+                // If the last character is not a /
+                if (substr($simplerisk_base_url, -1) != "/")
+                {
+                        // Append a / to the SimpleRisk Base URL
+                        $simplerisk_base_url .= "/";
+                }
+
+                // Append the path to the bootstrap code
+                $path = $simplerisk_base_url . "vendor/twbs/bootstrap/dist/js/bootstrap.min.js";
+        }
+        // Otherwise
+        else
+        {
+                // Use the jsDelivr CDN as the path
+		$path = "https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js";
+        }
+
+	// Display it as a script src
+	echo "<script src=\"{$path}?" . current_version("app") . "\" crossorigin=\"anonymous\"></script>\n";
+}
+
+/***********************************
+ * FUNCTION: DISPLAY BOOTSTRAP CSS *
+ ***********************************/
+function display_bootstrap_css()
+{
+        // If the global value is not already set
+        if (!isset($GLOBALS['bootstrap_delivery_method']))
+        {
+                // Set the bootstrap delivery method
+                $GLOBALS['bootstrap_delivery_method'] = get_setting("bootstrap_delivery_method");
+        }
+
+        // Set the bootstrap delivery method
+        $bootstrap_delivery_method = $GLOBALS['bootstrap_delivery_method'];
+
+        // If the bootstrap delivery method is local
+        if ($bootstrap_delivery_method == "local")
+        {
+                // Get the SimpleRisk Base URL
+                $simplerisk_base_url = get_setting('simplerisk_base_url');
+
+                // If the last character is not a /
+                if (substr($simplerisk_base_url, -1) != "/")
+                {
+                        // Append a / to the SimpleRisk Base URL
+                        $simplerisk_base_url .= "/";
+                }
+
+                // Append the path to the bootstrap code
+                $path = $simplerisk_base_url . "vendor/twbs/bootstrap/dist/css/bootstrap.min.css";
+        }
+        // Otherwise
+        else
+        {
+                // Use the jsDelivr CDN as the path
+		$path = "https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css";
+        }
+
+	// Display it as a stylesheet
+	echo "<link href=\"{$path}?" . current_version("app")  . "\" rel=\"stylesheet\" crossorigin=\"anonymous\">\n";
+}
+
+/********************************
+* FUNCTION: DISPLAY ADD PROJECT *
+*********************************/
+function display_add_projects($template_group_id = ""){
+    global $lang;
+    global $escaper;
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        if(!$template_group_id){
+            $group = get_default_template_group("project");
+            $template_group_id = $group["id"];
+
+        }
+        $active_fields = get_active_fields("project", $template_group_id);
+        foreach($active_fields as $field)
+        {
+            if($field['is_basic'] == 1)
+            {
+                switch($field['name']){
+                    case 'ProjectName':
+                        echo "
+                            <label for=\"\">".$escaper->escapeHtml($lang['NewProjectName'])."</label>
+                            <input type=\"text\" name=\"new_project\" id=\"project--name\" value=\"\" class=\"form-control\" required>
+                        ";
+                    break;
+                    case 'DueDate':
+                        echo "
+                            <label for=\"\">".$escaper->escapeHtml($lang['DueDate'])."</label>
+                            <input type=\"text\" name=\"due_date\" class=\"form-control datepicker\" value=\"\">
+                        ";
+                    break;
+                    case 'Consultant':
+                        echo "<label for=\"\">".$escaper->escapeHtml($lang['Consultant'])."</label>";
+                        create_dropdown("enabled_users", NULL, "consultant", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
+                    break;
+                    case 'BusinessOwner':
+                        echo "<label for=\"\">".$escaper->escapeHtml($lang['BusinessOwner'])."</label>";
+                        create_dropdown("enabled_users", NULL, "business_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
+                    break;
+                    case 'DataClassification':
+                        echo "<label for=\"\">".$escaper->escapeHtml($lang['DataClassification'])."</label>";
+                        create_dropdown("data_classification", NULL, "data_classification", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
+                    break;
+                }
+            }
+            else
+            {
+                // If customization extra is enabled
+                if(customization_extra())
+                {
+                    // Include the extra
+                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+                    display_custom_field_edit($field, [], "label");
+                }
+            }
+        }
+    } else {
+        echo "
+            <label for=\"\">".$escaper->escapeHtml($lang['NewProjectName'])."</label>
+            <input type=\"text\" name=\"new_project\" id=\"project--name\" value=\"\" class=\"form-control\" required>
+            <label for=\"\">".$escaper->escapeHtml($lang['DueDate'])."</label>
+            <input type=\"text\" name=\"due_date\" class=\"form-control datepicker\" value=\"\">
+            <label for=\"\">".$escaper->escapeHtml($lang['Consultant'])."</label>
+            ".create_dropdown("enabled_users", NULL, "consultant", true, false, true, "", $escaper->escapeHtml($lang['Unassigned']))."
+            <label for=\"\">".$escaper->escapeHtml($lang['BusinessOwner'])."</label>
+            ".create_dropdown("enabled_users", NULL, "business_owner", true, false, true, "", $escaper->escapeHtml($lang['Unassigned']))."
+            <label for=\"\">".$escaper->escapeHtml($lang['DataClassification'])."</label>
+            ".create_dropdown("data_classification", NULL, "data_classification", true, false, true, "", $escaper->escapeHtml($lang['Unassigned']))."
+        ";
+    }
+}
+/*********************************
+* FUNCTION: DISPLAY EDIT PROJECT *
+*********************************/
+function display_edit_projects($template_group_id = ""){
+    global $lang;
+    global $escaper;
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        if(!$template_group_id){
+            $group = get_default_template_group("project");
+            $template_group_id = $group["id"];
+
+        }
+        $active_fields = get_active_fields("project", $template_group_id);
+        foreach($active_fields as $field)
+        {
+            if($field['is_basic'] == 1)
+            {
+                switch($field['name']){
+                    case 'ProjectName':
+                        echo "
+                            <label for=\"\">".$escaper->escapeHtml($lang['Name'])."</label>
+                            <input type=\"text\" name=\"name\" class=\"form-control\" required>
+                        ";
+                    break;
+                    case 'DueDate':
+                        echo "
+                            <label for=\"\">".$escaper->escapeHtml($lang['DueDate'])."</label>
+                            <input type=\"text\" name=\"due_date\" class=\"form-control datepicker\" value=\"\">
+                        ";
+                    break;
+                    case 'Consultant':
+                        echo "<label for=\"\">".$escaper->escapeHtml($lang['Consultant'])."</label>";
+                        create_dropdown("enabled_users", NULL, "consultant", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
+                    break;
+                    case 'BusinessOwner':
+                        echo "<label for=\"\">".$escaper->escapeHtml($lang['BusinessOwner'])."</label>";
+                        create_dropdown("enabled_users", NULL, "business_owner", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
+                    break;
+                    case 'DataClassification':
+                        echo "<label for=\"\">".$escaper->escapeHtml($lang['DataClassification'])."</label>";
+                        create_dropdown("data_classification", NULL, "data_classification", true, false, false, "", $escaper->escapeHtml($lang['Unassigned']));
+                    break;
+                }
+            }
+            else
+            {
+                // If customization extra is enabled
+                if(customization_extra())
+                {
+                    // Include the extra
+                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+                    display_custom_field_edit($field, [], "label");
+                }
+            }
+        }
+        echo "<input type=\"hidden\" name=\"project_id\" value=\"\">";
+    } else {
+        echo "
+            <label for=\"\">".$escaper->escapeHtml($lang['Name'])."</label>
+            <input type=\"text\" name=\"name\" class=\"form-control\" required>
+            <label for=\"\">".$escaper->escapeHtml($lang['DueDate'])."</label>
+            <input type=\"text\" name=\"due_date\" class=\"form-control datepicker\" value=\"\">
+            <label for=\"\">".$escaper->escapeHtml($lang['Consultant'])."</label>
+            ".create_dropdown("enabled_users", NULL, "consultant", true, false, true, "", $escaper->escapeHtml($lang['Unassigned']))."
+            <label for=\"\">".$escaper->escapeHtml($lang['BusinessOwner'])."</label>
+            ".create_dropdown("enabled_users", NULL, "business_owner", true, false, true, "", $escaper->escapeHtml($lang['Unassigned']))."
+            <label for=\"\">".$escaper->escapeHtml($lang['DataClassification'])."</label>
+            ".create_dropdown("data_classification", NULL, "data_classification", true, false, true, "", $escaper->escapeHtml($lang['Unassigned']))."
+            <input type=\"hidden\" name=\"project_id\" value=\"\">
+        ";
+    }
+}
+/*****************************************
+* FUNCTION: DISPLAY PROJECT TABLE HEADER *
+*****************************************/
+function display_project_table_header($template_group_id = ""){
+    global $lang;
+    global $escaper;
+    // If customization extra is enabled
+    if(customization_extra())
+    {
+        // Include the extra
+        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+        if(!$template_group_id){
+            $group = get_default_template_group("project");
+            $template_group_id = $group["id"];
+
+        }
+        $active_fields = get_active_fields("project", $template_group_id);
+        echo '
+            <ul class="project-headers clearfix">
+                <li class="project-block--priority white-labels">'.$escaper->escapeHtml($lang['Priority']).'</li>
+            ';
+        foreach($active_fields as $field)
+        {
+            if($field['is_basic'] == 1)
+            {
+                switch($field['name']){
+                    case 'ProjectName':
+                        echo '<li class="project-block--name white-labels">'.$escaper->escapeHtml($lang['Name']).'</li>';
+                    break;
+                    case 'DueDate':
+                        echo '<li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['DueDate']).'</li>';
+                    break;
+                    case 'Consultant':
+                        echo '<li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['Consultant']).'</li>';
+                    break;
+                    case 'BusinessOwner':
+                        echo '<li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['BusinessOwner']).'</li>';
+                    break;
+                    case 'DataClassification':
+                        echo '<li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['DataClassification']).'</li>';
+                    break;
+                }
+            }
+            else
+            {
+                // If customization extra is enabled
+                if(customization_extra())
+                {
+                    // Include the extra
+                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+
+                    echo '<li class="project-block--field white-labels">'.$escaper->escapeHtml($field['name']).'</li>';
+                }
+            }
+        }
+        echo ' <li class="project-block--risks white-labels">'.$escaper->escapeHtml($lang['Risk']).'</li>
+            </ul>';
+    } else {
+        echo '
+            <ul class="project-headers clearfix">
+              <li class="project-block--priority white-labels">'.$escaper->escapeHtml($lang['Priority']).'</li>
+              <li class="project-block--name white-labels">'.$escaper->escapeHtml($lang['Name']).'</li>
+              <li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['DueDate']).'</li>
+              <li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['Consultant']).'</li>
+              <li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['BusinessOwner']).'</li>
+              <li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['DataClassification']).'</li>
+              <li class="project-block--risks white-labels">'.$escaper->escapeHtml($lang['Risk']).'</li>
+            </ul>
+        ';
+    }
 }
 
 ?>

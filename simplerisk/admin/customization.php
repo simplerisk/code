@@ -76,8 +76,8 @@ require_once(language_file());
                 // Display an alert
                 set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameFieldIsRequired']));
             }else{
-                update_custom_field($id, $name, $required, $encryption, $alphabetical_order);
-                set_alert(true, "good", $escaper->escapeHtml($lang['SuccessfullyUpdatedCustomField']));
+                if(update_custom_field($id, $name, $required, $encryption, $alphabetical_order))
+                    set_alert(true, "good", $escaper->escapeHtml($lang['SuccessfullyUpdatedCustomField']));
             }
             refresh();
         }
@@ -115,10 +115,13 @@ require_once(language_file());
         {
             $name = get_param("POST", "name");
             $fgroup = get_param("POST", "fgroup", "risk");
+            $old_group = get_custom_template_group_by_name($name,$fgroup);
 
             if(!$name){
                 // Display an alert
                 set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameFieldIsRequired']));
+            }elseif($old_group){ 
+                set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameAlreadyExists']));
             }else{
                 add_custom_template_group($name, $fgroup);
                 set_alert(true, "good", $escaper->escapeHtml($lang['AddedSuccess']));
@@ -131,10 +134,13 @@ require_once(language_file());
             $id = get_param("POST", "id");
             $name = get_param("POST", "name");
             $fgroup = get_param("POST", "fgroup", "risk");
+            $old_group = get_custom_template_group_by_name($name,$fgroup);
 
             if(!$id || !$name){
                 // Display an alert
                 set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameFieldIsRequired']));
+            }elseif($old_group && $name == $old_group['name']){ 
+                set_alert(true, "bad", $escaper->escapeHtml($lang['TheNameAlreadyExists']));
             }else{
                 update_custom_template_group($id, $name);
                 set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
@@ -195,7 +201,7 @@ require_once(language_file());
                     echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
                     echo "</form>\n";
                     echo "</div>\n";
-            }
+                }
                 // The extra is restricted
                 else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
             }
@@ -237,26 +243,27 @@ require_once(language_file());
 
 	// Include the jquery-ui javascript source
 	display_jquery_ui_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-        <script src="../js/bootstrap.min.js"></script>
-        <script src="../js/bootstrap-multiselect.js"></script>
-        <script src="../js/common.js"></script>
+        <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+        <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
         
         <title>SimpleRisk: Enterprise Risk Management Simplified</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-        <link rel="stylesheet" href="../css/bootstrap.css">
-        <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
-        <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+        <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
 
-        <link rel="stylesheet" href="../css/divshot-util.css">
-        <link rel="stylesheet" href="../css/divshot-canvas.css">
-        <link rel="stylesheet" href="../css/display.css">
+        <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
 
-        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-        <link rel="stylesheet" href="../css/theme.css">
-        <link rel="stylesheet" href="../css/side-navigation.css">
-        <link rel="stylesheet" href="../css/settings_tabs.css">
+        <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+        <link rel="stylesheet" href="../css/settings_tabs.css?<?php echo current_version("app"); ?>">
         
         <?php
             setup_favicon("..");

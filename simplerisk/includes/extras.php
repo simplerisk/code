@@ -39,6 +39,7 @@ function available_extras()
         array("short_name" => "separation", "long_name" => "Team-Based Separation Extra"),
         array("short_name" => "ucf", "long_name" => "Unified Compliance Framework (UCF) Extra"),
         array("short_name" => "upgrade", "long_name" => "Upgrade Extra"),
+	array("short_name" => "vulnmgmt", "long_name" => "Vulnerability Management Extra"),
     );
 
     // Return the array of available Extras
@@ -119,6 +120,8 @@ function core_extra_current_version($extra)
                     return UCF_EXTRA_VERSION;
 		case "upgrade":
 		    return UPGRADE_EXTRA_VERSION;
+		case "vulnmgmt":
+		    return VULNMGMT_EXTRA_VERSION;
 		default:
 		    return "N/A";
 			}
@@ -165,6 +168,8 @@ function core_extra_activated($extra)
                     return ucf_extra();
                 case "upgrade":
                 	return true;
+		case "vulnmgmt":
+			return vulnmgmt_extra();
                 default:
                 	return false;
         }
@@ -211,6 +216,8 @@ function core_extra_activated_link($extra)
                     return "&nbsp;&nbsp;<a href=\"ucf.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
                 case "upgrade":
                         return "";
+		case "vulnmgmt":
+		    return "&nbsp;&nbsp;<a href=\"vulnmgmt.php\">". $escaper->escapeHtml($lang['Configure']) ."</a>";
                 default:
                         return "";
         }
@@ -556,6 +563,9 @@ function core_get_action_button($extra_name, $purchased, $installed, $activated,
             $button_name = "get_organizational_hierarchy_extra";
             $action_link = "organizational_hierarchy.php";
             break;
+	case "vulnmgmt":
+	    $button_name = "get_vulnmgmt_extra";
+	    $action_link = "vulnmgmt.php";
     }
 
     // If the Extra has been purchased
@@ -980,6 +990,9 @@ function core_deactivate_extra($extra)
 					return true;
 				case "upgrade":
 					return false;
+				case "vulnmgmt":
+					disable_vulnmgmt_extra();
+					return true;
 				default:
 					return false;
                         }

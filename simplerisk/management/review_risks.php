@@ -70,33 +70,34 @@ require_once(language_file());
 
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/jquery.dataTables.js"></script>
-    <script src="../js/cve_lookup.js"></script>
-    <script src="../js/sorttable.js"></script>
-    <script src="../js/common.js"></script>
-    <script src="../js/pages/risk.js"></script>
-    <script src="../js/moment.min.js"></script>
-    <script src="../js/bootstrap-multiselect.js"></script>
-    <script src="../js/jquery.blockUI.min.js"></script>
-    <script src="../js/moment.min.js"></script>
+    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/cve_lookup.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/pages/risk.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/moment.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/jquery.blockUI.min.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/moment.min.js?<?php echo current_version("app"); ?>"></script>
 
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/jquery.dataTables.css">
+    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/style.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-    <link rel="stylesheet" href="../css/theme.css">
-    <link rel="stylesheet" href="../css/side-navigation.css">
-    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
-    <script src="../js/selectize.min.js"></script>
+    <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+    <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
 
     <?php
         setup_favicon("..");

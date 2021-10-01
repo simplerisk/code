@@ -1,0 +1,33 @@
+{
+    "name": "components/underscore",
+    "version": "1.13.1",
+    "description": "JavaScript's functional programming helper library.",
+    "keywords": ["util", "functional", "server", "client", "browser"],
+    "type": "component",
+    "homepage": "http://underscorejs.org",
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/documentcloud/underscore/issues",
+        "source": "https://github.com/documentcloud/underscore"
+    },
+    "authors": [
+        {
+            "name": "Jeremy Ashkenas",
+            "email": "jeremy@documentcloud.org"
+        }
+    ],
+    "extra": {
+        "component": {
+            "scripts": [
+                "underscore.js"
+            ],
+            "files": [
+                "underscore-min.js",
+                "underscore-min.map"
+            ],
+            "shim": {
+                "exports": "_"
+            }
+        }
+    }
+}

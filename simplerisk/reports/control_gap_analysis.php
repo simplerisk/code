@@ -46,7 +46,7 @@ if(empty($_SESSION['governance']))
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
 ?>
-    <script src="../js/jquery.easyui.min.js"></script>
+    <script src="../js/jquery.easyui.min.js?<?php echo current_version("app"); ?>"></script>
 <?php
         // Use these jquery-ui scripts
         $scripts = [
@@ -55,9 +55,10 @@ if(empty($_SESSION['governance']))
 
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/jquery.dataTables.js"></script>
+    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
 
     <?php
         // Use these HighCharts scripts
@@ -77,17 +78,17 @@ if(empty($_SESSION['governance']))
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/jquery.dataTables.css">
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
+    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-    <link rel="stylesheet" href="../css/theme.css">
-    <link rel="stylesheet" href="../css/side-navigation.css">
-    <link rel="stylesheet" href="../css/settings_tabs.css">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/settings_tabs.css?<?php echo current_version("app"); ?>">
     
     <?php
         setup_favicon("..");

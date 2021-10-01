@@ -226,7 +226,7 @@ if (isset($_POST['delete_controls']))
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
 ?>
-  <script src="../js/jquery.easyui.min.js"></script>
+  <script src="../js/jquery.easyui.min.js?<?php echo current_version("app"); ?>"></script>
 <?php
         // Use these jquery-ui scripts
         $scripts = [
@@ -236,32 +236,32 @@ if (isset($_POST['delete_controls']))
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
 ?>
-  <script src="../js/jquery.draggable.js"></script>
-  <script src="../js/jquery.droppable.js"></script>
-  <script src="../js/treegrid-dnd.js"></script>
-  <script src="../js/bootstrap.min.js"></script>
-  <script src="../js/bootstrap-multiselect.js"></script>
-  <script src="../js/jquery.dataTables.js"></script>
-  <script src="../js/pages/governance.js"></script>
-  <script src="../js/common.js"></script>
+  <script src="../js/jquery.draggable.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/jquery.droppable.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/treegrid-dnd.js?<?php echo current_version("app"); ?>"></script>
+  <?php display_bootstrap_javascript(); ?>
+  <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/pages/governance.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
 
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/easyui.css">
-  <link rel="stylesheet" href="../css/bootstrap.css">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-  <link rel="stylesheet" href="../css/jquery.dataTables.css">
-  <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
-  <link rel="stylesheet" href="../css/prioritize.css">
-  <link rel="stylesheet" href="../css/divshot-util.css">
-  <link rel="stylesheet" href="../css/divshot-canvas.css">
-  <link rel="stylesheet" href="../css/display.css">
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/easyui.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/prioritize.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/style.css?<?php echo current_version("app"); ?>">
 
-  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-  <link rel="stylesheet" href="../css/theme.css">
-  <link rel="stylesheet" href="../css/side-navigation.css">
+  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
 
   <?php
       setup_favicon("..");
@@ -336,7 +336,7 @@ if (isset($_POST['delete_controls']))
             $(tabContentId).removeClass("hide");
             $(".framework-table").treegrid('resize');
 
-            $("#filter_by_control_owner").multiselect({
+            $('select[multiple]').multiselect({
                 allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
                 enableFiltering: true,
                 maxHeight: 250,
@@ -346,63 +346,6 @@ if (isset($_POST['delete_controls']))
                     controlDatatable.draw();
                 }
             });
-
-            $("#filter_by_control_class").multiselect({
-                allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
-                enableFiltering: true,
-                maxHeight: 250,
-                buttonWidth: '100%',
-                includeSelectAllOption: true,
-                onDropdownHide: function(){
-                    controlDatatable.draw();
-                }
-            });
-
-            $("#filter_by_control_phase").multiselect({
-                allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
-                enableFiltering: true,
-                maxHeight: 250,
-                buttonWidth: '100%',
-                includeSelectAllOption: true,
-                onDropdownHide: function(){
-                    controlDatatable.draw();
-                }
-            });
-
-            $("#filter_by_control_family").multiselect({
-                allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
-                enableFiltering: true,
-                maxHeight: 250,
-                buttonWidth: '100%',
-                includeSelectAllOption: true,
-                onDropdownHide: function(){
-                    controlDatatable.draw();
-                }
-            });
-
-            $("#filter_by_control_framework").multiselect({
-                allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
-                enableFiltering: true,
-                maxHeight: 250,
-                buttonWidth: '100%',
-                includeSelectAllOption: true,
-                onDropdownHide: function(){
-                    rebuild_filters();
-//                    controlDatatable.draw();
-                }
-            });
-
-            $("#filter_by_control_priority").multiselect({
-                allSelectedText: '<?php echo $escaper->escapeHtml($lang['ALL']); ?>',
-                enableFiltering: true,
-                maxHeight: 250,
-                buttonWidth: '100%',
-                includeSelectAllOption: true,
-                onDropdownHide: function(){
-                    controlDatatable.draw();
-                }
-            });
-
         });
     </script>
 </head>
@@ -517,46 +460,19 @@ if (isset($_POST['delete_controls']))
                     <div class="span4">
                         <div class="well">
                             <h4><?php echo $escaper->escapeHtml($lang['ControlClass']); ?>:</h4>
-                            <select id="filter_by_control_class" class="" multiple="multiple">
-                                <?php 
-                                    echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
-                                    $options = getAvailableControlClassList();
-                                    is_array($options) || $options = array();
-                                    foreach($options as $option){
-                                        echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
-                                    } 
-                                ?>
-                            </select>
+                            <?php create_multiple_dropdown("filter_by_control_class", "all", null, getAvailableControlClassList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
                         </div>
                     </div>
                     <div class="span4">
                         <div class="well">
                             <h4><?php echo $escaper->escapeHtml($lang['ControlPhase']); ?>:</h4>
-                            <select id="filter_by_control_phase" class="" multiple="multiple">
-                                <?php 
-                                    echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
-                                    $options = getAvailableControlPhaseList();
-                                    is_array($options) || $options = array();
-                                    foreach($options as $option){
-                                        echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
-                                    } 
-                                ?>
-                            </select>
+                            <?php create_multiple_dropdown("filter_by_control_phase", "all", null, getAvailableControlPhaseList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
                         </div>
                     </div>
                     <div class="span4">
                         <div class="well">
                             <h4><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?>:</h4>
-                            <select id="filter_by_control_family" class="" multiple="multiple">
-                                <?php 
-                                    echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
-                                    $options = getAvailableControlFamilyList();  
-                                    is_array($options) || $options = array();
-                                    foreach($options as $option){
-                                        echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
-                                    } 
-                                ?>
-                            </select>
+                            <?php create_multiple_dropdown("filter_by_control_family", "all", null, getAvailableControlFamilyList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
                         </div>
                     </div>
                 </div>
@@ -564,50 +480,38 @@ if (isset($_POST['delete_controls']))
                     <div class="span4">
                         <div class="well">
                             <h4><?php echo $escaper->escapeHtml($lang['ControlOwner']); ?>:</h4>
-                            <select id="filter_by_control_owner" class="form-field form-control" multiple="multiple">
-                                <?php 
-                                    echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
-                                    $options = getAvailableControlOwnerList();  
-                                    is_array($options) || $options = array();
-                                    foreach($options as $option){
-                                        echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
-                                    }
-                                ?>
-                            </select>
+                            <?php create_multiple_dropdown("filter_by_control_owner", "all", null, getAvailableControlOwnerList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
                         </div>
                     </div>
                     <div class="span4">
                         <div class="well">
                             <h4><?php echo $escaper->escapeHtml($lang['ControlFramework']); ?>:</h4>
-                            <select id="filter_by_control_framework" class="form-field form-control" multiple="multiple">
-                                <?php 
-                                    echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
-                                    $options = getAvailableControlFrameworkList(true);
-                                    is_array($options) || $options = array();
-                                    foreach($options as $option){
-                                        echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
-                                    } 
-                                ?>
-                            </select>
+                            <?php create_multiple_dropdown("filter_by_control_framework", "all", null, getAvailableControlFrameworkList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
                         </div>
                     </div>
                     <div class="span4">
                         <div class="well">
                             <h4><?php echo $escaper->escapeHtml($lang['ControlPriority']); ?>:</h4>
-                            <select id="filter_by_control_priority" class="form-field form-control" multiple="multiple">
-                                <?php 
-                                    echo "<option selected value=\"-1\">".$escaper->escapeHtml($lang['Unassigned'])."</option>\n";
-                                    $options = getAvailableControlPriorityList();
-                                    is_array($options) || $options = array();
-                                    foreach($options as $option){
-                                        echo "<option selected value=\"".$escaper->escapeHtml($option['value'])."\">".$escaper->escapeHtml($option['name'])."</option>\n";
-                                    }
-                                ?>
-                            </select>
+                            <?php create_multiple_dropdown("filter_by_control_priority", "all", null, getAvailableControlPriorityList(), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
                         </div>
                     </div>
                 </div>
                 <div class="row-fluid">
+                    <div class="span4">
+                        <div class="well">
+                            <h4><?php echo $escaper->escapeHtml($lang['ControlType']); ?>:</h4>
+                            <?php create_multiple_dropdown("filter_by_control_type", "all", null, get_options_from_table("control_type"), true, $escaper->escapeHtml($lang['Unassigned']), "-1"); ?>
+                        </div>
+                    </div>
+                    <div class="span4">
+                        <div class="well">
+                            <h4><?php echo $escaper->escapeHtml($lang['ControlStatus']); ?>:</h4>
+                            <select id="filter_by_control_status" class="form-field form-control" multiple="multiple">
+                                <option selected value="1"><?php echo $escaper->escapeHtml($lang['Pass']);?></option>
+                                <option selected value="0"><?php echo $escaper->escapeHtml($lang['Fail']);?></option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="span4">
                         <div class="well">
                             <h4><?php echo $escaper->escapeHtml($lang['FilterByText']); ?>:</h4>
@@ -820,6 +724,16 @@ if (isset($_POST['delete_controls']))
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?></label>
                     <?php create_dropdown("family", NULL, "family", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
 
+                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlType']); ?></label>
+
+                    <?php create_multiple_dropdown("control_type", array(1)); ?>
+
+                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlStatus']); ?></label>
+                    <select name="control_status" class="form-field form-control">
+                        <option value="1"><?php echo $escaper->escapeHtml($lang['Pass']);?></option>
+                        <option value="0"><?php echo $escaper->escapeHtml($lang['Fail']);?></option>
+                    </select>
+
                     <label for=""><?php echo $escaper->escapeHtml($lang['MitigationPercent']); ?></label>
                     <input type="number" min="0" max="100" name="mitigation_percent" value="" class="form-control">
                 </div>
@@ -896,6 +810,16 @@ if (isset($_POST['delete_controls']))
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['ControlFamily']); ?></label>
                     <?php create_dropdown("family", NULL, "family", true, false, false, "", $escaper->escapeHtml($lang['Unassigned'])); ?>
+
+                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlType']); ?></label>
+
+                    <?php create_multiple_dropdown("control_type");?>
+
+                    <label for=""><?php echo $escaper->escapeHtml($lang['ControlStatus']); ?></label>
+                    <select name="control_status" class="form-field form-control">
+                        <option value="1"><?php echo $escaper->escapeHtml($lang['Pass']);?></option>
+                        <option value="0"><?php echo $escaper->escapeHtml($lang['Fail']);?></option>
+                    </select>
 
                     <label for=""><?php echo $escaper->escapeHtml($lang['MitigationPercent']); ?></label>
                     <input type="number" min="0" max="100" name="mitigation_percent" value="" class="form-control">

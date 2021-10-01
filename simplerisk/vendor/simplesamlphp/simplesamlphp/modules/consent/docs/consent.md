@@ -63,6 +63,21 @@ Example:
 		'store' 	=> 'consent:Cookie', 
 	),
 
+If necessary, you can set the cookie parameters in the config array using the same sematics as other cookies (default values shown):
+
+	90 => array(
+            'class'                => 'consent:Consent',
+            'identifyingAttribute' => 'uid',
+            'store'                => array(
+                'consent:Cookie',
+                'name' => '\SimpleSAML\Module\consent', # prefix for name
+                'lifetime' => 7776000,
+                'path' => '/',
+                'domain' => '',
+                'secure' => true,
+                'samesite' => null,
+            ),
+	),
 
 ### Using a database as storage ###
 

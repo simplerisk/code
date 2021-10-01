@@ -151,6 +151,8 @@ $releases = array(
 	"20210630-001",
 	"20210713-001",
 	"20210802-001",
+	"20210806-001",
+	"20210930-001",
 );
 
 /*************************
@@ -5809,6 +5811,209 @@ function upgrade_from_20210713001($db)
     if (!field_exists_in_table('threat_catalog_mapping', 'risks')) {
         echo "Adding a threat catalog mapping field to risks table.<br />\n";
         $stmt = $db->prepare("ALTER TABLE `risks` ADD `threat_catalog_mapping` VARCHAR(255) NOT NULL AFTER `risk_catalog_mapping`;");
+        $stmt->execute();
+    }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20210802-001 *
+ ***************************************/
+function upgrade_from_20210802001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20210802-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20210806-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20210806-001 *
+ ***************************************/
+function upgrade_from_20210806001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20210806-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20210930-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+
+    // Add a status field to the document_exceptions table
+    if (!field_exists_in_table('status', 'document_exceptions')) {
+        echo "Adding a status field to the document_exceptions table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `document_exceptions` ADD `status` INT(11) NOT NULL DEFAULT 1 AFTER `associated_risks`;");
+        $stmt->execute();
+    }
+
+    // Add the document_exceptions_status table
+    if (!table_exists('document_exceptions_status'))
+    {
+        echo "Adding a table for document exceptions status.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `document_exceptions_status` (`value` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(100) NOT NULL, PRIMARY KEY (`value`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+
+        echo "Adding values to the document exceptions status table.<br />\n";
+        $stmt = $db->prepare("INSERT INTO `document_exceptions_status` (`name`) VALUES ('Open'), ('Closed');");
+        $stmt->execute();
+    }
+
+    // Add the validation_files table
+    if (!table_exists('validation_files'))
+    {
+        echo "Adding a table for validation files.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `validation_files` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `mitigation_id` int(11) NOT NULL,
+          `control_id` int(11) NOT NULL,
+          `name` varchar(100) NOT NULL,
+          `type` varchar(30) NOT NULL,
+          `size` int(11) NOT NULL,
+          `timestamp` timestamp NOT NULL DEFAULT current_timestamp(),
+          `user` int(11) NOT NULL,
+          `content` longblob NOT NULL,
+          PRIMARY KEY(id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+    }
+
+    // Add the control_type table
+    if (!table_exists('control_type')) {
+        echo "Creating the control type table.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `control_type` (
+          `value` int(11) NOT NULL AUTO_INCREMENT,
+          `name` mediumtext NOT NULL,
+          PRIMARY KEY(value)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+
+        $stmt = $db->prepare("INSERT INTO `control_type` (`value`, `name`) VALUES
+            (1, 'Standalone'),
+            (2, 'Project'),
+            (3, 'Enterprise');");
+        $stmt->execute();
+    }
+
+    // Add the framework_control_type_mappings table
+    if (!table_exists('framework_control_type_mappings')) {
+        echo "Creating the framework_control_type_mappings table.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `framework_control_type_mappings` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `control_id` int(11) NOT NULL,
+          `control_type_id` int(11) NOT NULL,
+          PRIMARY KEY(id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+    }
+
+    $stmt = $db->prepare("SELECT * FROM `framework_controls` WHERE deleted=0;");
+    $stmt->execute();
+    $array = $stmt->fetchAll();
+
+    // For each item in the array
+    foreach ($array as $row)
+    {
+        $stmt = $db->prepare("INSERT INTO `framework_control_type_mappings` (`control_id`, `control_type_id`) VALUES (:control_id, 1);");
+        $stmt->bindParam(":control_id", $row['id']);
+        $stmt->execute();
+    }
+
+    // Add control_status field to framework_controls table
+    if (!field_exists_in_table('control_status', 'framework_controls')) {
+        echo "Adding control_status field to framework_controls table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `framework_controls` ADD `control_status` tinyint(1) DEFAULT 1 AFTER `control_priority`;");
+        $stmt->execute();
+    }
+
+    if (!table_exists('data_classification')) {
+        echo "Creating the data_classification table.<br />\n";
+        $stmt = $db->prepare("CREATE TABLE IF NOT EXISTS `data_classification` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `name` MEDIUMTEXT NOT NULL,
+          `order` int(11) NOT NULL,
+          PRIMARY KEY(id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+        $stmt->execute();
+
+        $stmt = $db->prepare("INSERT INTO `data_classification` (`name`, `order`) VALUES
+            ('Public', 1),
+            ('Internal', 2),
+            ('Confidential', 3),
+            ('Restricted', 4);");
+        $stmt->execute();
+    }
+    // Add a due_date field to the projects table
+    if (!field_exists_in_table('due_date', 'projects')) {
+        echo "Adding a due_date field to the projects table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `projects` ADD `due_date` TIMESTAMP NULL DEFAULT NULL AFTER `name`;");
+        $stmt->execute();
+    }
+    // Add a consultant field to the projects table
+    if (!field_exists_in_table('consultant', 'projects')) {
+        echo "Adding a consultant field to the projects table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `projects` ADD `consultant` int(11) DEFAULT NULL AFTER `due_date`;");
+        $stmt->execute();
+    }
+    // Add a business_owner field to the projects table
+    if (!field_exists_in_table('business_owner', 'projects')) {
+        echo "Adding a business_owner field to the projects table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `projects` ADD `business_owner` int(11) DEFAULT NULL AFTER `consultant`;");
+        $stmt->execute();
+    }
+    // Add a data_classification field to the projects table
+    if (!field_exists_in_table('data_classification', 'projects')) {
+        echo "Adding a data_classification field to the projects table.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `projects` ADD `data_classification` int(11) DEFAULT NULL AFTER `business_owner`;");
+        $stmt->execute();
+    }
+
+    // Add default bootstrap delivery method setting
+    echo "Adding default bootstrap delivery method setting.<br />\n";
+    update_or_insert_setting("bootstrap_delivery_method", "cdn");
+
+    // Remove unnecessary files
+    echo "Removing unnecessary files.<br />\n";
+    $remove_files = array(
+	    realpath(__DIR__ . '/../.htaccess'),
+	    realpath(__DIR__ . '/../js/bootstrap.min.js'),
+    );
+
+    foreach ($remove_files as $file)
+    {
+        // If the file exists
+        if (file_exists($file))
+        {
+            // Remove the file
+            unlink($file);
+        }
+    }
+
+    echo "Adding the default value of 300 characters for the 'Maximum risk subject length' setting.<br />\n";
+    update_or_insert_setting('maximum_risk_subject_length', 300);
+
+    // Only have to change to LONGTEXT if it's a varchar
+    if (!encryption_extra() && strtolower(getTypeOfColumn('risks', 'subject')) === 'varchar') {
+        echo "Updated risks table's subject to be a LONGTEXT.<br />\n";
+        $stmt = $db->prepare("ALTER TABLE `risks` CHANGE `subject` `subject` LONGTEXT NOT NULL;");
         $stmt->execute();
     }
 

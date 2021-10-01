@@ -105,8 +105,17 @@
     text-align: center;
   }
 
+  &--edit{
+    border-left: 1px solid $border-color;
+    width: 45px;
+    width: 45px;
+    display: block;
+    text-align: center;
+  }
+
   &--priority,
   &--name,
+  &--field,
   &--risks{
     border-right: 1px solid $border-color;
     height: 45px;
@@ -117,8 +126,9 @@
     padding-left: 10px;
   }
 
-  &--priority{ width: 8%; }
-  &--name{ width: 72%; }
+  &--priority{ width: 7%; }
+  &--name{ width: 33%; }
+  &--field{ width: 10%; }
   &--risks{ width: 20%; }
 }
 .risks{

@@ -70,7 +70,8 @@ function download_extra($name, $streamed_response = false) {
         // Require the upgrade extra file
         require_once(realpath(__DIR__ . '/../extras/upgrade/index.php'));
 
-        if(function_exists('check_app_latest_version') && !check_app_latest_version())
+	// If the application is not at the latest version and this is not the Upgrade Extra
+        if(function_exists('check_app_latest_version') && !check_app_latest_version() && $name != "upgrade")
         {
             set_alert(true, "bad", $escaper->escapeHtml($lang['ApplicationNeedsToBeUpgradeToLatestVersionToUpgradeExtras']));
             return;

@@ -100,18 +100,18 @@
 ?>
 
       <!-- build:css vendor/vendor.min.css -->
-      <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" media="screen" />
+      <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css?<?php echo current_version("app"); ?>" media="screen" />
       <!-- endbuild -->
       <!-- build:css style.min.css -->
-      <link rel="stylesheet" type="text/css" href="../css/style.css" media="screen" />
+      <link rel="stylesheet" type="text/css" href="../css/style.css?<?php echo current_version("app"); ?>" media="screen" />
       <!-- endbuild -->
 
-      <link rel="stylesheet" href="../css/bootstrap.css">
-      <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+      <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+      <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
 
-      <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-      <link rel="stylesheet" href="../css/theme.css">
-      <link rel="stylesheet" href="../css/side-navigation.css">
+      <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+      <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+      <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
       <?php
           setup_favicon("..");
           setup_alert_requirements("..");

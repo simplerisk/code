@@ -828,6 +828,7 @@ function display_active_audits(){
                 },
                 ajax: {
                     url: BASE_URL + '/api/compliance/active_audits',
+                    type: 'POST',
                     data: function(d){
                         d.filter_text = \$(\"#filter_by_text\").val();
                         d.filter_framework  = \$(\"#filter_by_framework\").val();
@@ -1131,6 +1132,25 @@ function initiate_test_audit($test_id, $initiated_audit_status) {
     $stmt->execute();
 
     $audit_id = $db->lastInsertId();
+
+    $stmt = $db->prepare("INSERT INTO framework_control_test_results (`test_audit_id`) VALUES(:test_audit_id);");
+    $stmt->bindParam(":test_audit_id", $audit_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $result_id = $db->lastInsertId();
+
+    $stmt = $db->prepare("
+        SELECT t1.* FROM `framework_control_test_results` t1
+        INNER JOIN `framework_control_test_audits` t2 ON t1.test_audit_id = t2.id
+        WHERE t2.test_id = :test_id AND t1.id != :result_id AND t1.test_result != 'Pass' 
+        ORDER By id DESC LIMIT 0,1");
+    $stmt->bindParam(":test_id", $test_id, PDO::PARAM_INT);
+    $stmt->bindParam(":result_id", $result_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $test_result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $risk_ids = get_test_result_to_risk_ids($test_result["id"]);
+    foreach($risk_ids as $risk_id) {
+        save_test_result_to_risk($result_id, $risk_id);
+    }
 
     updateTeamsOfItem($audit_id, 'audit', $test['teams']);
 
@@ -1546,16 +1566,26 @@ function display_testing()
     $test_audit_id = (int)$_GET['id'];
     
     $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
+    if(!$test_audit['id']){
+        echo $escaper->escapeHtml($lang['TestAuditDoesNotExist']);
+        return;
+    }
 
     // If test date is not set, set today as default
     $test_audit['test_date'] = format_date($test_audit['test_date'], date(get_default_date_format()));
     if(isset($_SESSION["modify_audits"]) && $_SESSION["modify_audits"] == 1){
-        $submit_button = "<button name='submit_test_result'  type='submit'>".$escaper->escapeHtml($lang['Submit'])."</button>";
+        $submit_button = "<button name='submit_test_result'  id='submit_test_result' type='button'>".$escaper->escapeHtml($lang['Submit'])."</button>";
     } else $submit_button = "";
-    
+    $risk_ids = get_test_result_to_risk_ids($test_audit["result_id"]);
+    $close_risks = isset($_SESSION["close_risks"])?$_SESSION["close_risks"]:0;
+   
     echo "
-        <form class='well' method='POST' enctype='multipart/form-data'>
+        <form id='edit-test' class='well' method='POST' enctype='multipart/form-data'>
             <h4>".$escaper->escapeHtml($test_audit['name'])."</h4>
+            <input name='origin_test_results' id='origin_test_results' value='".$test_audit['test_result']."' type='hidden' data-permission='".$close_risks."'>
+            <input name='remove_associated_risk' id='remove_associated_risk' value='0' type='hidden'>
+            <input name='associate_new_risk_id' id='associate_new_risk_id' value='' type='hidden'>
+            <input name='associate_exist_risk_ids' id='associate_exist_risk_ids' value='".implode(",", $risk_ids)."' type='hidden'>
             <table width='100%'>
                 <tr>
                     <td width='50%' valign='top'>
@@ -1621,7 +1651,7 @@ function display_testing()
                                 <td valign='top'>".$escaper->escapeHtml($lang['Attachment']).":&nbsp;&nbsp;</td>
                                 <td>
                                      <div class=\"file-uploader\">
-                                        <label for=\"file-upload\" class=\"btn\">".$escaper->escapeHtml($lang['ChooseFile'])."</label>
+                                        <label for=\"audit-file-upload\" class=\"btn\">".$escaper->escapeHtml($lang['ChooseFile'])."</label>
                                         <span class=\"file-count-html\"> <span class=\"file-count\">".count(get_compliance_files($test_audit_id, "test_audit"))."</span> ".$escaper->escapeHtml($lang['FileAdded'])."</span>
                                         <p><font size=\"2\"><strong>Max ". round(get_setting('max_upload_size')/1024/1024) ." Mb</strong></font></p>
                                         <ul class=\"exist-files\">
@@ -1632,7 +1662,7 @@ function display_testing()
                                         <ul class=\"file-list\">
                                             
                                         </ul>
-                                        <input type=\"file\" id=\"file-upload\" name=\"file[]\" class=\"hidden-file-upload active\" />
+                                        <input type=\"file\" id=\"audit-file-upload\" name=\"file[]\" class=\"hidden-file-upload active\" />
                                     </div>
                                 </td>
                             </tr>
@@ -1659,6 +1689,9 @@ function display_testing()
         </form>
     ";
     
+    // Display associated risks
+    display_associated_risks($risk_ids);
+
     // Display test audit comment
     display_test_audit_comment($test_audit_id);
     
@@ -1668,8 +1701,9 @@ function display_testing()
     echo "
         <script>
             $( document ).ready(function() {
-                $(\"[name='team[]']\").multiselect();
-                $(\".datepicker\").datepicker();
+                $(\"[name='team[]']\").multiselect({enableFiltering: true, buttonWidth: '300px'});
+                // $(\".multiselect\").multiselect({buttonWidth: '100%'});
+                // $(\".datepicker\").datepicker();
             });
         </script>
     ";
@@ -1726,77 +1760,129 @@ function display_test_audit_trail($test_audit_id)
 function display_test_audit_framework_control($framework_control_id) {
     if ($framework_control_id) {
         global $escaper, $lang;
-
-        $control = get_framework_controls($framework_control_id)[0];
-        echo "
-        <div class='row-fluid framework-control-wrapper'>
-            <div class='well'>
-                <h4 class='collapsible--toggle'><span><i class='fa fa-caret-down'></i>".$escaper->escapeHtml($lang['ControlDetails'])."</span></h4>
-                <div class='framework-control collapsible'>
-                    <table width='100%'>
-                        <tr>
-                            <td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>
-                            <td colspan='5'>".$escaper->escapeHtml($control['long_name'])."</td>
-                        </tr>
-                        <tr>
-                            <td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </td>
-                            <td width='57%' colspan='3'>".$escaper->escapeHtml($control['short_name'])."</td>
-                            <td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>
-                            <td width='17%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>
-                        </tr>
-                        <tr>
-                            <td  align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>
-                            <td>".$escaper->escapeHtml($control['control_class_name'])."</td>
-                            <td  align='right'><strong>".$escaper->escapeHtml($lang['ControlPhase'])."</strong>: </td>
-                            <td>".$escaper->escapeHtml($control['control_phase_name'])."</td>
-                            <td  align='right'><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </td>
-                            <td>".$escaper->escapeHtml($control['control_number'])."</td>
-                        </tr>
-                        <tr>
-                            <td align='right'><strong>".$escaper->escapeHtml($lang['ControlPriority'])."</strong>: </td>
-                            <td>".$escaper->escapeHtml($control['control_priority_name'])."</td>
-                            <td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </td>
-                            <td>".$escaper->escapeHtml($control['family_short_name'])."</td>
-                            <td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['MitigationPercent'])."</strong>: </td>
-                            <td>".$escaper->escapeHtml($control['mitigation_percent'])."%</td>
-                        </tr>
-                        <tr>
-                            <td align='right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </td>
-                            <td colspan='5'>".$escaper->escapeHtml($control['description'])."</td>
-                        </tr>
-                        <tr>
-                            <td align='right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </td>
-                            <td colspan='5'>".$escaper->escapeHtml($control['supplemental_guidance'])."</td>
-                        </tr>
-                    </table>\n";
-        
-        $mapped_frameworks = get_mapping_control_frameworks($control['id']);
-        echo "
-                    <div class='container-fluid'>
-                        <div class='well'>
-                            <h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>
-                            <table width='100%' class='table table-bordered'>
-                                <tr>
-                                    <th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>
-                                    <th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>
-                                </tr>";
-        foreach ($mapped_frameworks as $framework){
+        $control = get_framework_controls($framework_control_id);
+        if(count($control)){
+            $control = $control[0];
             echo "
-                                <tr>
-                                    <td>".$escaper->escapeHtml($framework['framework_name'])."</td>
-                                    <td>".$escaper->escapeHtml($framework['reference_name'])."</td>
-                                </tr>";
+            <div class='row-fluid framework-control-wrapper'>
+                <div class='well'>
+                    <h4 class='collapsible--toggle'><span><i class='fa fa-caret-down'></i>".$escaper->escapeHtml($lang['ControlDetails'])."</span></h4>
+                    <div class='framework-control collapsible'>
+                        <table width='100%'>
+                            <tr>
+                                <td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlLongName'])."</strong>: </td>
+                                <td colspan='5'>".$escaper->escapeHtml($control['long_name'])."</td>
+                            </tr>
+                            <tr>
+                                <td width='13%' align='right'><strong>".$escaper->escapeHtml($lang['ControlShortName'])."</strong>: </td>
+                                <td width='57%' colspan='3'>".$escaper->escapeHtml($control['short_name'])."</td>
+                                <td width='13%' align='right' ><strong>".$escaper->escapeHtml($lang['ControlOwner'])."</strong>: </td>
+                                <td width='17%'>".$escaper->escapeHtml($control['control_owner_name'])."</td>
+                            </tr>
+                            <tr>
+                                <td  align='right'><strong>".$escaper->escapeHtml($lang['ControlClass'])."</strong>: </td>
+                                <td>".$escaper->escapeHtml($control['control_class_name'])."</td>
+                                <td  align='right'><strong>".$escaper->escapeHtml($lang['ControlPhase'])."</strong>: </td>
+                                <td>".$escaper->escapeHtml($control['control_phase_name'])."</td>
+                                <td  align='right'><strong>".$escaper->escapeHtml($lang['ControlNumber'])."</strong>: </td>
+                                <td>".$escaper->escapeHtml($control['control_number'])."</td>
+                            </tr>
+                            <tr>
+                                <td align='right'><strong>".$escaper->escapeHtml($lang['ControlPriority'])."</strong>: </td>
+                                <td>".$escaper->escapeHtml($control['control_priority_name'])."</td>
+                                <td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['ControlFamily'])."</strong>: </td>
+                                <td>".$escaper->escapeHtml($control['family_short_name'])."</td>
+                                <td width='200px' align='right'><strong>".$escaper->escapeHtml($lang['MitigationPercent'])."</strong>: </td>
+                                <td>".$escaper->escapeHtml($control['mitigation_percent'])."%</td>
+                            </tr>
+                            <tr>
+                                <td align='right'><strong>".$escaper->escapeHtml($lang['Description'])."</strong>: </td>
+                                <td colspan='5'>".$escaper->escapeHtml($control['description'])."</td>
+                            </tr>
+                            <tr>
+                                <td align='right'><strong>".$escaper->escapeHtml($lang['SupplementalGuidance'])."</strong>: </td>
+                                <td colspan='5'>".$escaper->escapeHtml($control['supplemental_guidance'])."</td>
+                            </tr>
+                        </table>\n";
+        
+                $mapped_frameworks = get_mapping_control_frameworks($control['id']);
+                echo "
+                            <div class='container-fluid'>
+                                <div class='well'>
+                                    <h5><span>".$escaper->escapeHtml($lang['MappedControlFrameworks'])."</span></h5>
+                                    <table width='100%' class='table table-bordered'>
+                                        <tr>
+                                            <th width='50%'>".$escaper->escapeHtml($lang['Framework'])."</th>
+                                            <th width='35%'>".$escaper->escapeHtml($lang['Control'])."</th>
+                                        </tr>";
+                foreach ($mapped_frameworks as $framework){
+                    echo "
+                                        <tr>
+                                            <td>".$escaper->escapeHtml($framework['framework_name'])."</td>
+                                            <td>".$escaper->escapeHtml($framework['reference_name'])."</td>
+                                        </tr>";
+                }
+                echo "
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>";
+            }
         }
-        echo "
+}
+
+/**************************************
+ * FUNCTION: DISPLAY ASSOCIATED RISKS *
+ **************************************/
+function display_associated_risks($risk_ids){
+    global $escaper, $lang;
+
+    echo "
+        <div class=\"row-fluid comments--wrapper\" >
+            <div class=\"well\" >
+                <h4 class=\"collapsible--toggle\">
+                    <span><i class=\"fa fa-caret-right\"></i>".$escaper->escapeHtml($lang['Risks'])."</span>
+                </h4>
+                <div class=\"collapsible\" style='display:none'>
+                    <div class=\"row-fluid\">
+                        <div class=\"span12 text-right\" style='padding:0 20px;'>
+                            <button class=\"btn btn-default associate_new_risk\">".$escaper->escapeHtml($lang['NewRisk'])."</button>
+                            <button class=\"btn btn-default associate_existing_risk\">".$escaper->escapeHtml($lang['ExistingRisk'])."</button>
+                        </div>
+                    </div>
+                    <div class=\"row-fluid\">
+                        <div class=\"span12 audit-trail\">
+                            <table width='100%' class='table table-bordered mapping_framework_table'>
+                                <thead>
+                                    <tr>
+                                        <th width='5%'>".$escaper->escapeHtml($lang['ID'])."</th>
+                                        <th width='90%'>".$escaper->escapeHtml($lang['Subject'])."</th>
+                                        <th>".$escaper->escapeHtml($lang["Actions"])."</th>
+                                    </tr>
+                                </thead>
+                                <tbody>";
+                            foreach ($risk_ids as $key => $risk_id) {
+                                $risk = get_risk_by_id($risk_id + 1000);
+                                $no = $key + 1;
+                                $subject = try_decrypt($risk[0]['subject']);
+                                echo "<tr>
+                                    <td style='text-align:center'>".($risk_id + 1000)."</td>
+                                    <td>".$escaper->escapeHtml($subject)."</td>
+                                    <td style='text-align:center'><a href='javascript:void(0);' class='delete-risk' data-risk-id='".$risk_id."' data-risk-id='".$risk_id."' title='".$escaper->escapeHtml($lang["Delete"])."'><i class='fa fa-trash'></i></a></td>
+                                </tr>";
+                            }
+
+                        echo " </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>";
-    }
+        </div>
+    ";
 }
-
 
 /****************************************
  * FUNCTION: DISPLAY TEST AUDIT COMMENT *
@@ -2113,7 +2199,7 @@ function delete_compliance_file($file_id){
 function submit_test_result()
 {
     global $escaper, $lang;
-    
+
     $test_audit_id  = (int)$_GET['id'];
     $test_audit_status  = (int)$_POST['status'];
     $test_result    = $_POST['test_result'];
@@ -2160,12 +2246,70 @@ function submit_test_result()
         }else{
             // Save a test result
             save_test_result($test_audit_id, $test_audit_status, $test_result, $tester, $test_date, $teams, $summary);
-            
+            $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
+            $result_id = $test_audit["result_id"];
+
+
+            if($_POST['remove_associated_risk']) {
+                delete_test_result_to_risk_by_result_id($result_id);
+            } else {
+                // add existing risks
+                $associate_exist_risk_ids = isset($_POST['associate_exist_risk_ids']) ? $_POST['associate_exist_risk_ids'] : "";
+                delete_test_result_to_risk_by_result_id($result_id);
+                if($associate_exist_risk_ids) {
+                    $risk_ids = explode(",", $associate_exist_risk_ids);
+                    foreach($risk_ids as $risk_id) {
+                        save_test_result_to_risk($result_id, $risk_id);
+                    }
+                }
+
+                // add new risk
+                $associate_new_risk_id = isset($_POST['associate_new_risk_id']) ? $_POST['associate_new_risk_id'] : "";
+                if($associate_new_risk_id) {
+                    $new_risk_id = (int)$associate_new_risk_id - 1000;
+                    save_test_result_to_risk($result_id, $new_risk_id);
+                }
+            }
+
+           
             set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
             return true;
         }
     }
     
+}
+
+/****************************************
+ * FUNCTION: SUBMIT TEST RESULT TO RISK *
+ ****************************************/
+function submit_test_result_to_risk()
+{
+    global $escaper, $lang;
+
+    $test_audit_id  = (int)$_GET['id'];
+
+    $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
+    $result_id = $test_audit["result_id"];
+
+    // add existing risks
+    $associate_exist_risk_ids = isset($_POST['associate_exist_risk_ids']) ? $_POST['associate_exist_risk_ids'] : "";
+    delete_test_result_to_risk_by_result_id($result_id);
+    if($associate_exist_risk_ids) {
+        $risk_ids = explode(",", $associate_exist_risk_ids);
+        foreach($risk_ids as $risk_id) {
+            save_test_result_to_risk($result_id, $risk_id);
+        }
+    }
+
+    // add new risk
+    $associate_new_risk_id = isset($_POST['associate_new_risk_id']) ? $_POST['associate_new_risk_id'] : "";
+    if($associate_new_risk_id) {
+        $new_risk_id = (int)$associate_new_risk_id - 1000;
+        save_test_result_to_risk($result_id, $new_risk_id);
+    }
+   
+    set_alert(true, "good", $escaper->escapeHtml($lang['SavedSuccess']));
+    return true;
 }
 
 /**************************************
@@ -2500,6 +2644,9 @@ function display_detail_test()
     // Get attachement files
     $files = get_compliance_files($test_audit_id, "test_audit");
 
+    // Get associated risk ids
+    $risk_ids = get_test_result_to_risk_ids($test_audit["result_id"]);
+
     echo "
         <div class='well' >
             <table width='100%' id='test_detail_information'>
@@ -2652,11 +2799,20 @@ function display_detail_test()
             </table>
 
         </div>
+        <form id='edit-test' method='POST'>
+            <input name='update_associated_risks' value='1' type='hidden'/>
+            <input name='associate_new_risk_id' id='associate_new_risk_id' value='' type='hidden'>
+            <input name='associate_exist_risk_ids' id='associate_exist_risk_ids' value='".implode(",", $risk_ids)."' type='hidden'>
+        </form>
+
     ";
 
     // Display the Control Details
     display_test_audit_framework_control($test_audit['framework_control_id']);
     
+    // Display associated risks
+    display_associated_risks($risk_ids);
+
     // Display test audit comment
     display_test_audit_comment($test_audit_id);
     
@@ -2674,6 +2830,17 @@ function delete_test_audit($test_audit_id) {
 
     // Delete test audit
     $stmt = $db->prepare("DELETE FROM `framework_control_test_audits` WHERE `id`=:test_audit_id;");
+    $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Delete test audit
+    $stmt = $db->prepare("DELETE FROM `framework_control_test_comments` WHERE `test_audit_id`=:test_audit_id;");
+    $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Delete test audit
+    $stmt = $db->prepare("
+        DELETE t1,t2 FROM `framework_control_test_results_to_risks` t1 LEFT JOIN `framework_control_test_results` t2 ON t2.id = t1.test_results_id WHERE t2.`test_audit_id`=:test_audit_id");
     $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
     $stmt->execute();
 
@@ -3175,4 +3342,79 @@ function get_audit_tests($order_field=false, $order_dir=false)
     return $tests;
 }
 
+/****************************************
+ * FUNCTION: INSERT TEST RESULT TO RISK *
+ ***************************************/
+function save_test_result_to_risk($result_id, $risk_id) {
+
+    // Open the database connection
+    $db = db_open();
+
+    $stmt = $db->prepare("INSERT INTO framework_control_test_results_to_risks (`test_results_id`, `risk_id`) VALUES(:test_results_id, :risk_id);");
+    $stmt->bindParam(":test_results_id", $result_id, PDO::PARAM_INT);
+    $stmt->bindParam(":risk_id", $risk_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+    return true;
+}
+/****************************************
+ * FUNCTION: DELETE TEST RESULT TO RISK *
+ ***************************************/
+function delete_test_result_to_risk($result_id, $risk_id) {
+
+    // Open the database connection
+    $db = db_open();
+
+    // delete existing risk association
+    $stmt = $db->prepare("DELETE FROM framework_control_test_results_to_risks WHERE `test_results_id` = :test_results_id AND `risk_id` = :risk_id;");
+    $stmt->bindParam(":test_results_id", $result_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+    return true;
+}
+/*****************************************************
+ * FUNCTION: DELETE TEST RESULT TO RISK BY RESULT ID *
+ *****************************************************/
+function delete_test_result_to_risk_by_result_id($result_id) {
+
+    // Open the database connection
+    $db = db_open();
+
+    // delete existing risk association
+    $stmt = $db->prepare("DELETE FROM framework_control_test_results_to_risks WHERE `test_results_id` = :test_results_id;");
+    $stmt->bindParam(":test_results_id", $result_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Close the database connection
+    db_close($db);
+    return true;
+}
+/*****************************************
+ * FUNCTION: GET TEST RESULT TO RISK IDs *
+ *****************************************/
+function get_test_result_to_risk_ids($result_id) {
+
+    // Open the database connection
+    $db = db_open();
+
+    // delete existing risk association
+    $stmt = $db->prepare("SELECT * FROM framework_control_test_results_to_risks WHERE `test_results_id` = :test_results_id");
+    $stmt->bindParam(":test_results_id", $result_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $results = $stmt->fetchAll();
+
+    // Close the database connection
+    db_close($db);
+
+    $risk_ids = [];
+    foreach($results as $row){
+        $risk_ids[] = $row["risk_id"];
+    }
+
+    return $risk_ids;
+}
 ?>

@@ -356,188 +356,197 @@ a member of. This can be helpful for other filters to know. Below is
 a listing of all configuration options and their details.
 
 
-	50 => array(
-		'class' => 'ldap:AttributeAddUsersGroups',
+    50 => [
+        'class' => 'ldap:AttributeAddUsersGroups',
 
 
-		/**
-		 * LDAP connection settings can be retrieved from an ldap:LDAP
-		 * authsource. Specify the authsource name here to pull that
-		 * data from the authsources.php file in the config folder.
-		 *
-		 * Note: ldap:LDAPMulti is not supported as the SimpleSAMLphp
-		 *       framework does not pass any information about which
-		 *       LDAP source the user selected.
-		 *
-		 * Default: NULL
-		 * Require: No
-		 */
-		'authsource' => NULL,
-		'authsource' => 'example-ldap',
+        /**
+         * LDAP connection settings can be retrieved from an ldap:LDAP
+         * authsource. Specify the authsource name here to pull that
+         * data from the authsources.php file in the config folder.
+         *
+         * Note: ldap:LDAPMulti is not supported as the SimpleSAMLphp
+         *       framework does not pass any information about which
+         *       LDAP source the user selected.
+         *
+         * Default: NULL
+         * Require: No
+         */
+        'authsource' => null,
+        'authsource' => 'example-ldap',
 
 
-		/**
-		 * This is the attribute name which the users groups will be
-		 * added to. If the attribute exists in the request then the
-		 * filter will attempt to add them.
-		 *
-		 * Default: 'groups'
-		 * Required: No
-		 */
-		'attribute.groups' => 'groups',
+        /**
+         * This is the attribute name which the users groups will be
+         * added to. If the attribute exists in the request then the
+         * filter will attempt to add them.
+         *
+         * Default: 'groups'
+         * Required: No
+         */
+        'attribute.groups' => 'groups',
 
 
-		/**
-		 * The base DN used to search LDAP. May not be needed if searching
-		 * LDAP using the standard method, meaning that no Product is specified.
-		 * Can be listed as a single string for one base, else an array of
-		 * strings for multiple bases.
-		 *
-		 * Default: ''
-		 * Required: No
-		 * AuthSource: search.base
-		 */
-		'ldap.basedn' => '',
-		'ldap.basedn' => 'DC=example,DC=org',
-		'ldap.basedn' => array(
-			'OU=Staff,DC=example,DC=org',
-			'OU=Students,DC=example,DC=org'
-		),
+        /**
+         * The base DN used to search LDAP. May not be needed if searching
+         * LDAP using the standard method, meaning that no Product is specified.
+         * Can be listed as a single string for one base, else an array of
+         * strings for multiple bases.
+         *
+         * Default: ''
+         * Required: No
+         * AuthSource: search.base
+         */
+        'ldap.basedn' => '',
+        'ldap.basedn' => 'DC=example,DC=org',
+        'ldap.basedn' => [
+            'OU=Staff,DC=example,DC=org',
+            'OU=Students,DC=example,DC=org'
+        ],
 
 
-		/**
-		 * Set to TRUE to enable LDAP debug level. Passed to
-		 * the LDAP connection class.
-		 *
-		 * Default: FALSE
-		 * Required: No
-		 * AuthSource: debug
-		 */
-		'ldap.debug' => FALSE,
-		'ldap.debug' => TRUE,
+        /**
+         * Set to TRUE to enable LDAP debug level. Passed to
+         * the LDAP connection class.
+         *
+         * Default: FALSE
+         * Required: No
+         * AuthSource: debug
+         */
+        'ldap.debug' => false,
+        'ldap.debug' => true,
 
 
-		/**
-		 * Set to TRUE to force the LDAP connection to use TLS.
-		 *
-		 * Note: If ldaps:// is specified in the hostname then it
-		 *       will automatically use TLS.
-		 *
-		 * Default: FALSE
-		 * Required: No
-		 * AuthSource: enable_tls
-		 */
-		'ldap.enable_tls' => FALSE,
-		'ldap.enable_tls' => TRUE,
+        /**
+         * Set to TRUE to force the LDAP connection to use TLS.
+         *
+         * Note: If ldaps:// is specified in the hostname then it
+         *       will automatically use TLS.
+         *
+         * Default: FALSE
+         * Required: No
+         * AuthSource: enable_tls
+         */
+        'ldap.enable_tls' => false,
+        'ldap.enable_tls' => true,
 
 
-		/**
-		 * This is the hostname string of LDAP server(s) to try
-		 * and connect to. It should be the same format as the
-		 * LDAP authsource hostname as it is passed to that class.
-		 *
-		 * Note: Multiple servers are separated by a space.
-		 *
-		 * Default: NULL
-		 * Required: Yes, unless authsource is used
-		 * AuthSource: hostname
-		 */
-		'ldap.hostname' => 'ldap.example.org',
-		'ldap.hostname' => 'ad1.example.org ad2.example.org',
+        /**
+         * This is the hostname string of LDAP server(s) to try
+         * and connect to. It should be the same format as the
+         * LDAP authsource hostname as it is passed to that class.
+         *
+         * Note: Multiple servers are separated by a space.
+         *
+         * Default: NULL
+         * Required: Yes, unless authsource is used
+         * AuthSource: hostname
+         */
+        'ldap.hostname' => 'ldap.example.org',
+        'ldap.hostname' => 'ad1.example.org ad2.example.org',
 
 
-		/**
-		 * This is the port where the LDAP server(s) listen for
-		 * connections.
-		 *
-		 * Default: 389
-		 * Required: No
-		 * AuthSource: port
-		 */
-		'ldap.port' => 389,
+        /**
+         * This is the port where the LDAP server(s) listen for
+         * connections.
+         *
+         * Default: 389
+         * Required: No
+         * AuthSource: port
+         */
+        'ldap.port' => 389,
 
 
-		/**
-		 * This is the password used to bind to LDAP.
-		 *
-		 * Default: NULL
-		 * Required: No, only if required for binding.
-		 * AuthSource: search.password OR priv.password
-		 */
-		'ldap.password' => 'Abc123',
+        /**
+         * This is the password used to bind to LDAP.
+         *
+         * Default: NULL
+         * Required: No, only if required for binding.
+         * AuthSource: search.password OR priv.password
+         */
+        'ldap.password' => 'Abc123',
 
 
-		/**
-		 * By specifying the directory service product name, the number
-		 * of LDAP queries can be dramatically reduced. The reason is
-		 * that most products have a special query to recursively search
-		 * group membership.
-		 *
-		 * Note: Only ActiveDirectory is currently supported 
-		 * (OpenLDAP is implemented but not supported, see example below).
-		 *
-		 * Default: ''
-		 * Required: No
-		 */
-		'ldap.product' => '',
-		'ldap.product' => 'ActiveDirectory',
-		'ldap.product' => 'OpenLDAP',
+        /**
+         * By specifying the directory service product name, the number
+         * of LDAP queries can be dramatically reduced. The reason is
+         * that most products have a special query to recursively search
+         * group membership.
+         *
+         * Note: Only ActiveDirectory is currently supported 
+         * (OpenLDAP is implemented but not supported, see example below).
+         *
+         * Default: ''
+         * Required: No
+         */
+        'ldap.product' => '',
+        'ldap.product' => 'ActiveDirectory',
+        'ldap.product' => 'OpenLDAP',
 
 
-		/**
-		 * The LDAP timeout value passed to the LDAP connection class.
-		 *
-		 * Default: 0
-		 * Required: No
-		 * AuthSource: timeout
-		 */
-		'ldap.timeout' => 0,
-		'ldap.timeout' => 30,
+        /**
+         * The LDAP timeout value passed to the LDAP connection class.
+         *
+         * Default: 0
+         * Required: No
+         * AuthSource: timeout
+         */
+        'ldap.timeout' => 0,
+        'ldap.timeout' => 30,
 
 
-		/**
-		 * This is the username used to bind to LDAP with.
-		 * More than likely will need to be in the DN of
-		 * user binding to LDAP.
-		 *
-		 * Default: NULL
-		 * Required: No, only if required for binding.
-		 * AuthSource: search.username OR priv.username
-		 */
-		'ldap.username' => 'CN=LDAP User,CN=Users,DC=example,DC=org',
+        /**
+         * This is the username used to bind to LDAP with.
+         * More than likely will need to be in the DN of
+         * user binding to LDAP.
+         *
+         * Default: NULL
+         * Required: No, only if required for binding.
+         * AuthSource: search.username OR priv.username
+         */
+        'ldap.username' => 'CN=LDAP User,CN=Users,DC=example,DC=org',
 
 
-		/**
-		 * The following attribute.* and type.* configuration options
-		 * define the LDAP schema and should only be defined/modified
-		 * if the schema has been modified or the LDAP product used
-		 * uses other attribute names. By default, the schema is setup
-		 * for ActiveDirectory.
-		 *
-		 * Defaults: Listed Below
-		 * Required: No
-		 */
-		'attribute.dn' => 'distinguishedName',
-		'attribute.groups' => 'groups', // Also noted above
-		'attribute.member' => 'member',
-		'attribute.memberof' => 'memberOf',
-		'attribute.groupname' => 'name',
-		'attribute.type' => 'objectClass',
-		'attribute.username' => 'sAMAccountName',
+        /**
+         * The following attribute.* and type.* configuration options
+         * define the LDAP schema and should only be defined/modified
+         * if the schema has been modified or the LDAP product used
+         * uses other attribute names. By default, the schema is setup
+         * for ActiveDirectory.
+         *
+         * Defaults: Listed Below
+         * Required: No
+         */
+        'attribute.dn' => 'distinguishedName',
+        'attribute.groups' => 'groups', // Also noted above
+        'attribute.member' => 'member',
+        'attribute.memberof' => 'memberOf',
+        'attribute.groupname' => 'name',
+        'attribute.return' => 'distinguishedName',
+        'attribute.type' => 'objectClass',
+        'attribute.username' => 'sAMAccountName',
 
 
-		/**
-		 * As mentioned above, these can be changed if the LDAP schema
-		 * has been modified. These list the Object/Entry Type for a given
-		 * DN, in relation to the 'attribute.type' config option above.
-		 * These are used to determine the type of entry.
-		 *
-		 * Defaults: Listed Below
-		 * Required: No
-		 */
-		'type.group' => 'group',
-		'type.user' => 'user',
-	)
+        /**
+         * As mentioned above, these can be changed if the LDAP schema
+         * has been modified. These list the Object/Entry Type for a given
+         * DN, in relation to the 'attribute.type' config option above.
+         * These are used to determine the type of entry.
+         *
+         * Defaults: Listed Below
+         * Required: No
+         */
+        'type.group' => 'group',
+        'type.user' => 'user',
+
+
+        /**
+         * LDAP search filters to be added to the base filters for this authproc-filter.
+         * It's an array of key => value pairs that will be translated to (key=value) in the ldap query.
+         *
+         */
+        'additional_filters' => [],
+    ]
 
 
 ### Example ###

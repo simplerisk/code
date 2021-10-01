@@ -61,6 +61,7 @@ class ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9
             'SimpleSAML\\Module\\riak\\' => 23,
             'SimpleSAML\\Module\\radius\\' => 25,
             'SimpleSAML\\Module\\preprodwarning\\' => 33,
+            'SimpleSAML\\Module\\oauth\\' => 24,
             'SimpleSAML\\Module\\negotiate\\' => 28,
             'SimpleSAML\\Module\\metarefresh\\' => 30,
             'SimpleSAML\\Module\\ldap\\' => 23,
@@ -114,6 +115,7 @@ class ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9
         ),
         'D' => 
         array (
+            'Duo\\' => 4,
             'Doctrine\\Common\\Lexer\\' => 22,
         ),
         'C' => 
@@ -252,6 +254,10 @@ class ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9
         array (
             0 => __DIR__ . '/..' . '/simplesamlphp/simplesamlphp/modules/preprodwarning/lib',
         ),
+        'SimpleSAML\\Module\\oauth\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/simplesamlphp/simplesamlphp/modules/oauth/lib',
+        ),
         'SimpleSAML\\Module\\negotiate\\' => 
         array (
             0 => __DIR__ . '/..' . '/simplesamlphp/simplesamlphp/modules/negotiate/lib',
@@ -367,6 +373,10 @@ class ComposerStaticInit59d4e07571bbe2f12ae669f9f8611ab9
         'Egulias\\EmailValidator\\' => 
         array (
             0 => __DIR__ . '/..' . '/egulias/email-validator/src',
+        ),
+        'Duo\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/duosecurity/duo_php/src',
         ),
         'Doctrine\\Common\\Lexer\\' => 
         array (

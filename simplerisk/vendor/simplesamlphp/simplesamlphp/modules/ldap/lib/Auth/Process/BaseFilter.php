@@ -230,6 +230,7 @@ abstract class BaseFilter extends \SimpleSAML\Auth\ProcessingFilter
             'member'   => $this->config->getString('attribute.member', 'member'),
             'memberof' => $this->config->getString('attribute.memberof', 'memberOf'),
             'name'     => $this->config->getString('attribute.groupname', 'name'),
+            'return'   => $this->config->getString('attribute.return', 'distinguishedName'),
             'type'     => $this->config->getString('attribute.type', 'objectClass'),
             'username' => $this->config->getString('attribute.username', 'sAMAccountName')
         ];

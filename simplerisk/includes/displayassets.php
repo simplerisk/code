@@ -499,7 +499,7 @@ function display_main_detail_asset_fields_td_edit($fields, $asset)
         {
             switch($field['name']){
                 case 'AssetName':
-                    display_asset_name_td($asset['name']);
+                    display_asset_name_td_edit($asset['id'], $asset['name']);
                 break;
                 case 'IPAddress':
                     display_asset_ip_address_td($asset['ip']);
@@ -535,6 +535,18 @@ function display_main_detail_asset_fields_td_edit($fields, $asset)
             }
         }
     }
+}
+
+/***************************************
+* FUNCTION: DISPLAY ASSET NAME TD EDIT *
+****************************************/
+function display_asset_name_td_edit($asset_id, $asset_name)
+{
+    global $lang, $escaper;
+
+    echo "<td align=\"left\">";
+    echo "<input type='text' id='name-" . $escaper->escapeHtml($asset_id) . "' class='assert-name' value='". $escaper->escapeHtml(try_decrypt($asset_name)) ."'>";
+    echo "</td>\n";
 }
 
 /********************************************

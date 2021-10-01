@@ -157,7 +157,7 @@ $(document).ready(function(){
             cursor: 'wait'
         };
     }
-    
+   
 })
 
 /**
@@ -349,6 +349,79 @@ function setupQuestionnaireContactUserWidget(select_tag) {
         }
     });        
 }
+    function setupQuestionnaireAssetsAssetGroupsWidget(select_tag, risk_id) {
+
+        // Giving a default value here because IE can't handle
+        // function parameter default values...
+        risk_id = risk_id || 0;
+        
+        if (!select_tag.length)
+            return;
+        
+        var select = select_tag.selectize({
+            sortField: 'text',
+            plugins: ['optgroup_columns', 'remove_button', 'restore_on_backspace'],
+            delimiter: ',',
+            create: function (input){
+                return { id:'new_asset_' + input, name:input };
+            },
+            persist: false,
+            valueField: 'id',
+            labelField: 'name',
+            searchField: 'name',
+            sortField: 'name',
+            optgroups: [
+                {class: 'asset', name: 'Standard Assets'},
+                {class: 'group', name: 'Asset Groups'}
+            ],
+            optgroupField: 'class',
+            optgroupLabelField: 'name',
+            optgroupValueField: 'class',
+            preload: true,
+            render: {
+                item: function(item, escape) {
+                    return '<div class="' + item.class + '">' + escape(item.name) + '</div>';
+                }
+            },
+            onInitialize: function() {
+                if (risk_id != 0)
+                    select_tag.parent().find('.selectize-control div').block({message:'<i class="fa fa-spinner fa-spin" style="font-size:24px"></i>'});
+            },
+            load: function(query, callback) {
+                if (query.length) return callback();
+                $.ajax({
+                    url: BASE_URL + '/api/asset-group/options?risk_id=' + risk_id,
+                    type: 'GET',
+                    dataType: 'json',
+                    error: function() {
+                        callback();
+                    },
+                    success: function(res) {
+                        var data = res.data;
+                        var control = select[0].selectize;
+                        var selected_ids = [];
+                        // Have to do it this way, because addition with simple addOption() will
+                        // bug out when we deselect an option(it wouldn't be added back to the
+                        // list of selectable items)
+                        len = data.length;
+                        for (var i = 0; i < len; i++) {
+                            var item = data[i];
+                            item.id += '_' + item.class;
+                            control.registerOption(item);
+                            if (item.selected == '1') {
+                                selected_ids.push(item.id);
+                            }
+                        }
+                        if (selected_ids.length)
+                            control.setValue(selected_ids);
+                    },
+                    complete: function() {
+                        select_tag.parent().find('.selectize-control div').unblock({message:null});
+                    }
+                });
+            }
+        });        
+    }
 
 function redraw_control(){
     var template_framework = $("#template_framework").val();

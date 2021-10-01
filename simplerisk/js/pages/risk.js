@@ -42,8 +42,15 @@ function addRisk($this){
             if(data.status_message){
                 showAlertsFromArray(data.status_message);
             }
-            
+
             var risk_id = data.data.risk_id;
+            var associate_test = data.data.associate_test;
+            if(associate_test == 1) {
+                $("#modal-new-risk").modal("hide");
+                $("#associate_new_risk_id").val(risk_id);
+                $('form#edit-test').submit();
+                return;
+            }
 
             $.ajax({
                 type: "GET",
@@ -331,7 +338,7 @@ function addTabContainer(){
   	 */
   	function validFileUploadSize(container) {
   		// If both variable defined
-  		if (max_upload_size && fileTooBigMessage) {
+  		if (typeof max_upload_size != "undefined" && typeof fileTooBigMessage != "undefined" && max_upload_size && fileTooBigMessage) {
 			var filesSize = 0;
 
 			// Sum the files' sizes
@@ -1241,7 +1248,7 @@ $(document).ready(function(){
     /**** End js for view html *******/
 
     /****** start comment *******/
-    $('body').on('click', '.collapsible--toggle span', function(event) {
+    $('body').on('click', '#tab-content-container .collapsible--toggle span', function(event) {
         event.preventDefault();
         var container = $(this).parents('.well');
         $(this).parents('.collapsible--toggle').next('.collapsible').slideToggle('400');
@@ -1251,7 +1258,7 @@ $(document).ready(function(){
         }
     });
 
-    $('body').on('click', '.add-comments', function(event) {
+    $('body').on('click', '#tab-content-container .add-comments', function(event) {
         event.preventDefault();
         var container = $(this).parents('.well');
         if(!$('.collapsible', container).is(':visible')){

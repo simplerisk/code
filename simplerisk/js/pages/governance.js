@@ -62,6 +62,9 @@ jQuery(document).ready(function($){
                         $("#frameworks option[value='" + e + "']").prop("selected", true);
                     });
                     $("#frameworks").multiselect('refresh');
+
+                    if(control.control_type_ids != null) control_type_ids = control.control_type_ids;
+                    else control_type_ids = "";
                     
                     $('[name=control_class]', modal).val(Number(control.control_class) ? control.control_class : "");
                     $('[name=control_phase]', modal).val(Number(control.control_phase) ? control.control_phase : "");
@@ -70,6 +73,10 @@ jQuery(document).ready(function($){
                     $('[name=control_current_maturity]', modal).val(Number(control.control_maturity) ? control.control_maturity : 0);
                     $('[name=control_desired_maturity]', modal).val(Number(control.desired_maturity) ? control.desired_maturity : 0);
                     $('[name=control_priority]', modal).val(Number(control.control_priority) ? control.control_priority : "");
+                    $('[name="control_type[]"]', modal).multiselect('deselectAll', false);
+                    $('[name="control_type[]"]', modal).multiselect('select', control_type_ids.split(','));
+                    $('[name="control_type[]"]', modal).multiselect('refresh');
+                    $('[name=control_status]', modal).val(Number(control.control_status) ? control.control_status : 0);
                     $('[name=family]', modal).val(Number(control.family) ? control.family : "");
                     $('[name=mitigation_percent]', modal).val(Number(control.mitigation_percent) ? control.mitigation_percent : "");
                     $(".mapping_framework_table tbody", modal).html(data.mapped_frameworks);
@@ -89,6 +96,9 @@ jQuery(document).ready(function($){
                 success : function (res){
                     var data = res.data;
                     var control = data.control;
+
+                    if(control.control_type_ids != null) control_type_ids = control.control_type_ids;
+                    else control_type_ids = "";
                     
                     var modal = $('#control--add');
                     $('[name=short_name]', modal).val(control.short_name);
@@ -102,6 +112,10 @@ jQuery(document).ready(function($){
                     $('[name=control_current_maturity]', modal).val(Number(control.control_maturity) ? control.control_maturity : "");
                     $('[name=control_desired_maturity]', modal).val(Number(control.desired_maturity) ? control.desired_maturity : "");
                     $('[name=control_priority]', modal).val(Number(control.control_priority) ? control.control_priority : "");
+                    $('[name="control_type[]"]', modal).multiselect('deselectAll', false);
+                    $('[name="control_type[]"]', modal).multiselect('select', control_type_ids.split(','));
+                    $('[name="control_type[]"]', modal).multiselect('refresh');
+                    $('[name=control_status]', modal).val(Number(control.control_status) ? control.control_status : 0);
                     $('[name=family]', modal).val(Number(control.family) ? control.family : "");
                     $('[name=mitigation_percent]', modal).val(Number(control.mitigation_percent) ? control.mitigation_percent : "");
                     $(".mapping_framework_table tbody", modal).html(data.mapped_frameworks);
@@ -169,6 +183,8 @@ jQuery(document).ready(function($){
                 d.control_owner = $("#filter_by_control_owner").val();
                 d.control_framework = $("#filter_by_control_framework").val();
                 d.control_priority = $("#filter_by_control_priority").val();
+                d.control_type = $("#filter_by_control_type").val();
+                d.control_status = $("#filter_by_control_status").val();
                 d.control_text = $("#filter_by_control_text").val();
             },
             error: function(xhr,status,error){
@@ -339,6 +355,9 @@ $(document).ready(function(){
                 });
                 $("#filter_by_control_framework").multiselect("rebuild");
                 $("#add-control-form")[0].reset();
+                $('#add-control-form [name="control_type[]"]', modal).multiselect('deselectAll', false);
+                $('#add-control-form [name="control_type[]"]', modal).multiselect('select', [1]);
+                $('#add-control-form [name="control_type[]"]', modal).multiselect('refresh');
                 $('#control--add').modal('hide');
                 controlDatatable.ajax.reload(null, false);
             }

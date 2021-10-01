@@ -8,8 +8,11 @@
 if (php_sapi_name() == "cli")
 {
         // Include required files
+	require_once(realpath(__DIR__ . '/../includes/functions.php'));
 	require_once(realpath(__DIR__ . '/../includes/cron.php'));
         require_once(realpath(__DIR__ . '/../vendor/autoload.php'));
+
+	write_debug_log("Beginning Cron Run");
 
 	// Create a new instance of Jobby
 	$jobby = new Jobby\Jobby();

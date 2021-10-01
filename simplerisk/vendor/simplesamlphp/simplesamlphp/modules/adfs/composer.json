@@ -31,7 +31,9 @@
         "simplesamlphp/composer-module-installer": "~1.1"
     },
     "require-dev": {
+        "sensiolabs/security-checker": "^5.0",
         "simplesamlphp/simplesamlphp": "^1.17",
+        "simplesamlphp/simplesamlphp-test-framework": "^0.0.15",
         "webmozart/assert": "<1.7",
         "phpunit/phpunit": "~5.7"
     },

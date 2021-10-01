@@ -56,25 +56,26 @@ if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
 
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-  <script src="../js/bootstrap.min.js"></script>
-  <script src="../js/plan-project.js"></script>
+  <script src="../js/plan-project.js?<?php echo current_version("app"); ?>"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-  <link rel="stylesheet" href="../css/prioritize.css">
+  <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/prioritize.css?<?php echo current_version("app"); ?>">
 
 
-  <link rel="stylesheet" href="../css/divshot-util.css">
-  <link rel="stylesheet" href="../css/divshot-canvas.css">
-  <link rel="stylesheet" href="../css/display.css">
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/style.css?<?php echo current_version("app"); ?>">
 
-  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-  <link rel="stylesheet" href="../css/theme.css">
-  <link rel="stylesheet" href="../css/side-navigation.css">
+  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
     
   <?php
       setup_favicon("..");
@@ -200,6 +201,7 @@ if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
     });
 
     $( "#prioritize" ).disableSelection();
+    $(".datepicker").datepicker();
   });
   </script>
 </head>
@@ -259,13 +261,7 @@ if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
                   <li><a href="#closed-projects" class="status" data-status="3"><?php echo $escaper->escapeHtml($lang['CompletedProjects']); ?> (<?php get_projects_count(3) ?>)</a></li>
                   <li><a href="#canceled-projects" class="status" data-status="4"><?php echo $escaper->escapeHtml($lang['CanceledProjects']); ?> (<?php get_projects_count(4) ?>)</a></li>
                 </ul>
-
-                <ul class="project-headers clearfix">
-                  <li class="project-block--priority white-labels"><?php echo $escaper->escapeHtml($lang['Priority']); ?></li>
-                  <li class="project-block--name white-labels"><?php echo $escaper->escapeHtml($lang['ProjectName']); ?></li>
-                  <li class="project-block--risks white-labels"><?php echo $escaper->escapeHtml($lang['Risk']); ?></li>
-                </ul>
-
+                <?php display_project_table_header();?>
               </div> <!-- status-tabs -->
 
               <div id="active-projects" class="sortable">
@@ -294,22 +290,43 @@ if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
 
   <!-- MODEL WINDOW FOR ADDING PROJECT -->
 
-<div id="project--add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="project--add" aria-hidden="true">
-  <div class="modal-body">
-
-    <form class="" id="project--new" action="#" method="post">
+<div id="project--add" class="modal no-padding hide fade" tabindex="-1" role="dialog" aria-labelledby="project--add" aria-hidden="true">
+  <form class="" id="project-new" action="#" method="post">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['NewProject']); ?></h4>
+    </div>
+    <div class="modal-body">
       <div class="form-group">
-        <label for=""><?php echo $escaper->escapeHtml($lang['NewProjectName']); ?></label>
-        <input type="text" name="new_project" id="project--name" value="" class="form-control">
+        <?php display_add_projects();?>
       </div>
-
-      <div class="form-group text-right">
+    </div>
+    <div class="modal-footer">
         <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
         <button type="submit" name="add_project" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Add']); ?></button>
-      </div>
-    </form>
+    </div>
+  </form>
 
-  </div>
+</div>
+
+<!-- MODEL WINDOW FOR EDIT PROJECT -->
+
+<div id="project--edit" class="modal no-padding hide fade" tabindex="-1" role="dialog" aria-labelledby="project--add" aria-hidden="true">
+  <form class="" id="project-edit" action="#" method="post">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title"><?php echo $escaper->escapeHtml($lang['EditProject']); ?></h4>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <?php display_edit_projects();?>
+      </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-default" data-dismiss="modal" aria-hidden="true"><?php echo $escaper->escapeHtml($lang['Cancel']); ?></button>
+        <button type="submit" name="edit_project" class="btn btn-danger"><?php echo $escaper->escapeHtml($lang['Update']); ?></button>
+    </div>
+  </form>
 </div>
 
 <!-- MODEL WINDOW FOR PROJECT DELETE CONFIRM -->
@@ -317,7 +334,7 @@ if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
 <div id="project--delete" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="project--add" aria-hidden="true">
   <div class="modal-body">
 
-    <form id="project--delete" action="" method="post">
+    <form id="project-delete" action="" method="post">
       <div class="form-group text-center">
         <label for=""><?php echo $escaper->escapeHtml($lang['AreYouSureYouWantToDeleteThisProject']); ?></label>
         <input type="hidden" name="project_id" value="" />
@@ -331,7 +348,6 @@ if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
 
   </div>
 </div>
-
 
 <script type="template" id="project-template">
 

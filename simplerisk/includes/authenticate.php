@@ -148,21 +148,22 @@ function is_valid_user($user, $pass, $upgrade = false)
                 // Include the custom authentication extra
                 require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
 
-                // Set the type to LDAP
-                $type = "ldap";
-
                 // Check for a valid Active Directory user
                 list($valid_ad, $dn, $attributes) = is_valid_ad_user($user, $pass);
 
                 // If the user is a valid AD user
-                if ($valid_ad)
-                {
-                    // Add the new user
-                    $user_id = authentication_add_new_user($type, $user, $attributes);
-
-                    // Add the new team by AD group
-                    set_team_to_ldap_user($user_id, $dn, $pass);
+                if ($valid_ad) {
+                    // Get groups associated to the user
+                    $groupNames = get_ldap_group_by_dn($dn);
                     
+                    // Getting the local teams mapped to the groups of the user
+                    $attributes['teams'] = get_mapped_local_team_ids($groupNames, 'LDAP');
+                    
+                    // Add the new user
+                    authentication_add_new_user('ldap', $user, $attributes);
+
+                    // Store the groups
+                    storeRemoteTeams($groupNames, 'LDAP');
                 }
             }
             // Otherwise, return that the user is not valid
@@ -188,6 +189,25 @@ function is_valid_user($user, $pass, $upgrade = false)
 
             // Check for a valid Active Directory user
             list($valid_ad, $dn, $attributes)= is_valid_ad_user($user, $pass);
+
+            // Update the existing local version of the LDAP user if it's enabled in the settings
+            if ($valid_ad && get_setting('UPDATE_USER_WITH_DATA_FROM_IDP')) {
+                
+                // Get groups associated to the user
+                $groupNames = get_ldap_group_by_dn($dn);
+                
+                // Store whether the manager attribute was set, so we only update it if it is intended to be updated from the remote server
+                $attributes['LDAP_MANAGER_ATTRIBUTE_SET'] = !empty(get_setting('LDAP_MANAGER_ATTRIBUTE'));
+
+                // Getting the local teams mapped to the groups of the user
+                $attributes['teams'] = get_mapped_local_team_ids($groupNames, 'LDAP');
+
+                // Update user data
+                authentication_add_new_user('ldap', $user, $attributes, true);
+                
+                // Store the groups
+                storeRemoteTeams($groupNames, 'LDAP');
+            }
         }
     }
     // If the type is saml
@@ -1148,21 +1168,28 @@ function logout()
     $message = "Username \"" . $username . "\" logged out successfully.";
     write_log($uid + 1000, $uid, $message, "user");
 
-        // Deny access
-        $_SESSION["access"] = "denied";
+    // Deny access
+    $_SESSION["access"] = "denied";
 
-        // Reset the session data
-        $_SESSION = array();
+    // Reset the session data
+    $_SESSION = array();
 
-        // Send a Set-Cookie to invalidate the session cookie
-        if (ini_get("session.use_cookies"))
-        {
-                $params = session_get_cookie_params();
-                setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], isset($params['httponly']));
-        }
+    // Send a Set-Cookie to invalidate the session cookie
+    if (ini_get("session.use_cookies"))
+    {
+        $params = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], isset($params['httponly']));
+    }
 
-        // Destroy the session
-        session_destroy();
+    // Destroy the session
+    session_destroy();
+    
+    if (custom_authentication_extra() && get_setting('LOGOUT_FROM_REMOTE_SESSIONS', false)) {
+        // Include the custom authentication extra
+        require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
+
+        saml_logout();
+    }
 }
 
 /************************************

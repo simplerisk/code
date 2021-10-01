@@ -35,9 +35,22 @@ if (isset($_REQUEST['report']))
 }
 else $report = 0;
 
-$sortby = isset($_REQUEST['sortby']) ? (int)$_REQUEST['sortby'] : 0;
+$sort_by = isset($_REQUEST['sort_by']) ? (int)$_REQUEST['sort_by'] : 0;
 $asset_tags = isset($_REQUEST['asset_tags']) ? $_REQUEST['asset_tags'] : [];
 if(!isset($_REQUEST['report'])) $asset_tags = "all";
+$projects = isset($_REQUEST['projects']) ? $_REQUEST['projects'] : [];
+
+if (import_export_extra()){
+    // Include the Import-Export Extra
+    require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+
+    // if download request, download all risks
+    if (isset($_GET['option']) && $_GET['option'] == "download")
+    {
+        download_risks_and_assets_report($report, $sort_by, $asset_tags, $projects);
+    }
+}
+
 ?>
 
 <!doctype html>
@@ -52,21 +65,22 @@ if(!isset($_REQUEST['report'])) $asset_tags = "all";
 
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-  <script src="../js/bootstrap.min.js"></script>
-  <script src="../js/bootstrap-multiselect.js"></script>
-  <script src="../js/sorttable.js"></script>
-  <script src="../js/obsolete.js"></script>
-  <script src="../js/dynamic.js"></script>
+  <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/dynamic.js?<?php echo current_version("app"); ?>"></script>
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+  <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
 
-  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-  <link rel="stylesheet" href="../css/theme.css">
-  <link rel="stylesheet" href="../css/side-navigation.css">
+  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
   <?php
     setup_favicon("..");
     setup_alert_requirements("..");
@@ -79,6 +93,7 @@ if(!isset($_REQUEST['report'])) $asset_tags = "all";
             margin-right: 10px;
             width: 10px;
         }
+        .download_link{cursor: pointer;}
     </style>
     <script>
         $(document).ready(function() {
@@ -108,13 +123,31 @@ if(!isset($_REQUEST['report'])) $asset_tags = "all";
         <div class="row-fluid">
           <div id="selections" class="span12">
             <div class="well">
-              <?php view_risks_and_assets_selections($report, $sortby, $asset_tags); ?>
+              <?php view_risks_and_assets_selections($report, $sort_by, $asset_tags, $projects); ?>
             </div>
           </div>
         </div>
+        <div class="row-fluid bottom-offset-10">
+            <div class="span6 text-left top-offset-15">
+            </div>
+            <?php
+            // If the Import-Export Extra is installed
+            if (is_dir(realpath(__DIR__ . '/../extras/import-export')))
+            {
+                // And the Extra is activated
+                if (import_export_extra())
+                {
+                    // Include the Import-Export Extra
+                    require_once(realpath(__DIR__ . '/../extras/import-export/index.php'));
+                    // Display the download link
+                    display_download_link("risks-and-assets-report");
+                }
+            }
+            ?>
+        </div>
         <div class="row-fluid">
           <div class="span12">
-            <?php risks_and_assets_table($report, $sortby, $asset_tags); ?>
+            <?php risks_and_assets_table($report, $sort_by, $asset_tags, $projects); ?>
           </div>
         </div>
       </div>

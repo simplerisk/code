@@ -103,68 +103,78 @@ if (isset($_POST['add_user']))
     // If the password is valid
     if ($error_code == 1)
     {
-        // Verify that the user does not exist
-        if (!user_exist($user))
-        {
-            // Verify that it is a valid username format
-            if (valid_username($user))
+	// Verify that the email address is properly formatted
+	if (filter_var($email, FILTER_VALIDATE_EMAIL))
+	{
+            // Verify that the user does not exist
+            if (!user_exist($user))
             {
-                // Create a unique salt for the user
-                $salt = generate_token(20);
-
-                // Hash the salt
-                $salt_hash = '$2a$15$' . md5($salt);
-
-                // Generate the password hash
-                $hash = generateHash($salt_hash, $pass);
-
-                // Insert a new user
-                $user_id = add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions);
-
-		// If the encryption extra is enabled
-                if (encryption_extra())
+                // Verify that it is a valid username format
+                if (valid_username($user))
                 {
-                    // Load the extra
-                    require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+                    // Create a unique salt for the user
+                    $salt = generate_token(20);
 
-                    // If the encryption method is mcrypt
-                    if (isset($_SESSION['encryption_method']) && $_SESSION['encryption_method'] == "mcrypt")
+                    // Hash the salt
+                    $salt_hash = '$2a$15$' . md5($salt);
+
+                    // Generate the password hash
+                    $hash = generateHash($salt_hash, $pass);
+
+                    // Insert a new user
+                    $user_id = add_user($type, $user, $email, $name, $salt, $hash, $teams, $role_id, $admin, $multi_factor, $change_password, $manager, $permissions);
+
+		    // If the encryption extra is enabled
+                    if (encryption_extra())
                     {
-                        // Add the new encrypted user
-                        add_user_enc($pass, $salt, $user);
+                        // Load the extra
+                        require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
+
+                        // If the encryption method is mcrypt
+                        if (isset($_SESSION['encryption_method']) && $_SESSION['encryption_method'] == "mcrypt")
+                        {
+                            // Add the new encrypted user
+                            add_user_enc($pass, $salt, $user);
+                        }
                     }
-                }
 
-                // If ths customization extra is enabled, add new user to custom field as user multi dropdown
-                if(customization_extra())
+                    // If ths customization extra is enabled, add new user to custom field as user multi dropdown
+                    if(customization_extra())
+                    {
+                        // Include the extra
+                        require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
+                        add_user_to_custom_fields($user_id);
+                    }
+
+                    // Clear values
+                    $name = "";
+                    $email = "";
+                    $user = "";
+                    $change_password = 0;
+
+                    // Display an alert
+                    set_alert(true, "good", "The new user was added successfully.");
+                }
+                // Otherwise, an invalid username was specified
+                else
                 {
-                    // Include the extra
-                    require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
-                    add_user_to_custom_fields($user_id);
+                    // Display an alert
+                    set_alert(true, "bad", "An invalid username was specified.  Please try again with a different username.");
                 }
-
-                // Clear values
-                $name = "";
-                $email = "";
-                $user = "";
-                $change_password = 0;
-
-                // Display an alert
-                set_alert(true, "good", "The new user was added successfully.");
             }
-            // Otherwise, an invalid username was specified
+            // Otherwise, the user already exists
             else
             {
                 // Display an alert
-                set_alert(true, "bad", "An invalid username was specified.  Please try again with a different username.");
+                set_alert(true, "bad", "The username already exists.  Please try again with a different username.");
             }
-        }
-        // Otherwise, the user already exists
-        else
-        {
+	}
+        // Otherwise, the email address is invalid
+	else
+	{
             // Display an alert
-            set_alert(true, "bad", "The username already exists.  Please try again with a different username.");
-        }
+	    set_alert(true, "bad", "An invalid email address was specified.  Please try again with a different email address.");
+	}
     }
     // Otherewise, an invalid password was specified
     else
@@ -342,27 +352,28 @@ if (isset($_POST['password_policy_update']))
 
         // Include the jquery-ui javascript source
         display_jquery_ui_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/bootstrap-multiselect.js"></script>
-    <script src="../js/jquery.dataTables.js"></script>
-    <script src="../js/permissions-widget.js"></script>
+    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/jquery.dataTables.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/permissions-widget.js?<?php echo current_version("app"); ?>"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
-    <link rel="stylesheet" href="../css/settings_tabs.css">
-    <link rel="stylesheet" href="../css/jquery.dataTables.css">
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
+    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/settings_tabs.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/jquery.dataTables.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-    <link rel="stylesheet" href="../css/theme.css">
-    <link rel="stylesheet" href="../css/side-navigation.css">
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
     
     <?php
         setup_favicon("..");
@@ -818,7 +829,7 @@ if (isset($_POST['password_policy_update']))
                                     </td>
                                 </tr>
                                 <tr><td><?php echo $escaper->escapeHtml($lang['FullName']); ?>:&nbsp;</td><td><input name="name" type="text" maxlength="50" size="20" value="<?php echo isset($name) ? $escaper->escapeHtml($name) : "" ?>" /></td></tr>
-                                <tr><td><?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>:&nbsp;</td><td><input name="email" type="text" maxlength="200" value="<?php echo isset($email) ? $escaper->escapeHtml($email) : "" ?>" size="20" /></td></tr>
+                                <tr><td><?php echo $escaper->escapeHtml($lang['EmailAddress']); ?>:&nbsp;</td><td><input name="email" type="email" maxlength="200" value="<?php echo isset($email) ? $escaper->escapeHtml($email) : "" ?>" size="20" /></td></tr>
                                 <tr><td><?php echo $escaper->escapeHtml($lang['Username']); ?>:&nbsp;</td><td><input name="new_user" type="text" maxlength="200" value="<?php echo isset($user) ? $escaper->escapeHtml($user) : "" ?>" size="20" /></td></tr>
                                 <tr class="ldap_pass"><td><?php echo $escaper->escapeHtml($lang['Password']); ?>:&nbsp;</td><td><input name="password" type="password" maxlength="50" size="20" autocomplete="off" /></td></tr>
                                 <tr class="ldap_pass"><td><?php echo $escaper->escapeHtml($lang['RepeatPassword']); ?>:&nbsp;</td><td><input name="repeat_password" type="password" maxlength="50" size="20" autocomplete="off" /></td></tr>

@@ -11,6 +11,9 @@ require_once(realpath(__DIR__ . '/../../../../extras/authentication/simplesamlph
 
 // Get the SimpleRisk Base URL
 $simplerisk_base_url = get_setting("simplerisk_base_url");
+if (!endsWith($simplerisk_base_url, '/')) {
+    $simplerisk_base_url .= '/';
+}
 
 $config = [
 
@@ -33,7 +36,7 @@ $config = [
         'entityID' => null,
 
         // Set the relay state
-        'RelayState' => $simplerisk_base_url . '/extras/authentication/login.php',
+	'RelayState' => $simplerisk_base_url . 'extras/authentication/login.php',
 
         // The entity ID of the IdP this SP should contact.
         // Can be NULL/unset, in which case the user will be shown a list of available IdPs.
@@ -117,9 +120,9 @@ foreach($metadata_xmls as $idp_name => $metadata_xml)
 	$config[$idp_name] = [
 		'saml:SP',
 		'ForceAuthn' => $ForceAuthn,
-		'entityID' => null,
+		'entityID' => $simplerisk_base_url . 'extras/authentication/simplesamlphp/www/module.php/saml/sp/metadata.php/default-sp',
 		'idp' => $entity_id,
-        	'RelayState' => $simplerisk_base_url . '/extras/authentication/login.php',
+		'RelayState' => $simplerisk_base_url . 'extras/authentication/login.php',
 	];
 
 	$custom_metadata[$entity_id."_".$idp['metadata-set']] = $idp;

@@ -40,10 +40,11 @@ require_once(language_file());
 
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-  <script src="../js/bootstrap.min.js"></script>
-  <script src="../js/sorttable.js"></script>
-  <script src="../js/obsolete.js"></script>
+  <script src="../js/sorttable.js?<?php echo current_version("app"); ?>"></script>
+  <script src="../js/obsolete.js?<?php echo current_version("app"); ?>"></script>
 
     <?php
         // Use these HighCharts scripts
@@ -61,13 +62,13 @@ require_once(language_file());
   <title>SimpleRisk: Enterprise Risk Management Simplified</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <link rel="stylesheet" href="../css/bootstrap.css">
-  <link rel="stylesheet" href="../css/bootstrap-responsive.css">
-  <link rel="stylesheet" href="../css/display.css">
+  <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
 
-  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-  <link rel="stylesheet" href="../css/theme.css">
-  <link rel="stylesheet" href="../css/side-navigation.css">
+  <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+  <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
   <?php
     setup_favicon("..");
     setup_alert_requirements("..");

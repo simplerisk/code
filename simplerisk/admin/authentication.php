@@ -35,6 +35,22 @@ require_once(language_file());
         // Include the Authentication Extra
         require_once(realpath(__DIR__ . '/../extras/authentication/index.php'));
 
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            global $authenticationCRUDConfig;
+            
+            // The id isn't used on add, the name isn't used on delete so we're defaulting to something in those cases
+            $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+            $name = isset($_POST['name']) ? $_POST['name'] : '';
+            
+            $results = processCRUDAction($authenticationCRUDConfig, $_POST['action'], $_POST['table_name'], $id, $name);
+            
+            if ($results === false) {
+                json_response(400, get_alert(true), NULL);
+            } else {
+                json_response(200, get_alert(true), $results);
+            }
+        }
+        
         // If the user updated the configuration
         if (isset($_POST['update_settings']) || isset($_POST['update_ldap']) || isset($_POST['update_saml']) || isset($_POST['update_mfa']))
         {
@@ -61,47 +77,6 @@ require_once(language_file());
             disable_authentication_extra();
             refresh();
         }
-        
-        // If the user maps Team and LDAP Group
-        if (isset($_POST['map_ldap_group_and_team']))
-        {
-            $ldap_group = $_POST['ldap_group'];
-            $ldap_team = (int)$_POST['ldap_team'];
-            
-            if($ldap_group && $ldap_team)
-            {
-                // Map LDAP group and team
-                setLdapTeamAndGroup($ldap_group, $ldap_team);
-                
-                set_alert(true, "good", $escaper->escapeHtml($lang['MapSuccessTeamAndGroup']));
-            }
-            else
-            {
-                set_alert(true, "bad", $escaper->escapeHtml($lang['MappingTeamAndLDAPGroupRequired']));
-            }
-            
-            refresh();
-        }
-
-        // If the user deletes existing mappings
-        if (isset($_POST['delete_existing_mappings']))
-        {
-            $ldap_group_and_team_id = (int)$_POST['existing_mappings'];
-            
-            if($ldap_group_and_team_id)
-            {
-                // Delete existing LDAP mappings
-                deleteLdapGroupAndTeamByValue($ldap_group_and_team_id);
-                
-                set_alert(true, "good", $escaper->escapeHtml($lang['DeletedMappingSuccess']));
-            }
-            else
-            {
-                set_alert(true, "bad", $escaper->escapeHtml($lang['ExistingMappingsRequired']));
-            }
-            
-            refresh();
-        }
     }
 
     /*********************
@@ -121,10 +96,10 @@ require_once(language_file());
                 // If the extra is not restricted based on the install type
                 if (!restricted_extra("customauth"))
                 {
-                    echo "<form name=\"activate_extra\" method=\"post\" action=\"\">";
-                        echo "<input type=\"submit\" value=\"" . $escaper->escapeHtml($lang['Activate']) . "\" name=\"activate\" /><br />";
-                        echo "</form>\n";
-                        echo "</div>\n";
+                    echo "<form id='activate_extra' name='activate_extra' method='post' action=''>";
+                    echo "<input type='submit' value='" . $escaper->escapeHtml($lang['Activate']) . "' name='activate' /><br />";
+                    echo "</form>\n";
+                    echo "</div>\n";
                 }
                 // The extra is restricted
                 else echo $escaper->escapeHtml($lang['YouNeedToUpgradeYourSimpleRiskSubscription']);
@@ -159,31 +134,68 @@ require_once(language_file());
 
         // Include the jquery javascript source
         display_jquery_javascript($scripts);
+
+	display_bootstrap_javascript();
 ?>
-    <script src="../js/bootstrap.min.js"></script>
-    <script src="../js/bootstrap-multiselect.js"></script>
-    <script src="../js/common.js"></script>
+    <script src="../js/bootstrap-multiselect.js?<?php echo current_version("app"); ?>"></script>
+    <script src="../js/common.js?<?php echo current_version("app"); ?>"></script>
+  	<script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
     
     <title>SimpleRisk: Enterprise Risk Management Simplified</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-    <link rel="stylesheet" href="../css/bootstrap.css">
-    <link rel="stylesheet" href="../css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="../css/bootstrap.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-responsive.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../css/divshot-util.css">
-    <link rel="stylesheet" href="../css/divshot-canvas.css">
-    <link rel="stylesheet" href="../css/display.css">
+    <link rel="stylesheet" href="../css/divshot-util.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/divshot-canvas.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/display.css?<?php echo current_version("app"); ?>">
 
-    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css">
-    <link rel="stylesheet" href="../css/theme.css">
-    <link rel="stylesheet" href="../css/side-navigation.css">
-    <link rel="stylesheet" href="../css/bootstrap-multiselect.css">
-    <link rel="stylesheet" href="../css/settings_tabs.css">
-    
+    <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/bootstrap-multiselect.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/settings_tabs.css?<?php echo current_version("app"); ?>">
+	<link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
-    ?>    
+    ?>   
+    <style>
+        input[type='button'].saml-mapping {
+            margin: 0px 5px 10px;
+        }
+
+        div.selectize-dropdown {
+            z-index: 10000;
+        }
+
+        textarea:focus {
+            max-width: none;
+            padding: 4px 6px;
+        }
+        .ldap-user-filter-instructions {
+            display: inline-block;
+            font-size: 0.9em !important;
+            color: red;
+            position: relative;
+            top: -5px;
+            line-height: 1.2;
+            padding-bottom: 15px;
+        }
+        #manage_stored_remote_items-modal {
+            width: 800px;
+            margin-left: -400px;
+        }
+        #manage_stored_remote_items-modal.modal input[type='text'],
+        #manage_stored_remote_items-modal.modal select {
+            max-width: 250px;
+        }
+        #manage_stored_remote_items-modal .table-selection b {
+            color: white;
+        }
+    </style>
   </head>
 
   <body>
@@ -211,7 +223,7 @@ require_once(language_file());
       </div>
     </div>
     <script>
-        <?php prevent_form_double_submit_script(); ?>
+        <?php prevent_form_double_submit_script(['activate_extra', 'deactivate_extra']); ?>
     </script>    
   </body>
 </html>

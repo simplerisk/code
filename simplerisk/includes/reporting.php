@@ -1835,17 +1835,10 @@ function get_review_needed_table()
 /************************************
  * FUNCTION: RISKS AND ASSETS TABLE *
  ************************************/
-function risks_and_assets_table($report, $sortby, $asset_tags_in_array)
+function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projects_in_array)
 {
     global $lang;
     global $escaper;
-
-    if($asset_tags_in_array == "all") {
-        $tags = get_options_from_table("asset_tags");
-        $asset_tags_in_array = array_map(function($tag){ return $tag["value"];}, $tags);
-        $asset_tags_in_array[] = "-1";
-    }
-    $asset_tags = implode(",", $asset_tags_in_array);
 
     // If team separation is enabled
     if (team_separation_extra())
@@ -1863,132 +1856,10 @@ function risks_and_assets_table($report, $sortby, $asset_tags_in_array)
 
     $risk_levels = get_risk_levels();
 
-    // Open the database
-    $db = db_open();
+    $rows = get_risks_and_assets_rows($report, $sort_by, $asset_tags_in_array, $projects_in_array);
 
     // If risks by asset
     if ($report == 0) {
-        $wheres = ["0"];
-        $bind_params = [];
-        if($asset_tags){
-            $wheres[] = " FIND_IN_SET(tg.id, :asset_tags) ";
-            $bind_params[":asset_tags"] = $asset_tags;
-        }
-
-        if(in_array(-1, $asset_tags_in_array)){
-            $wheres[] = " tg.id IS NULL ";
-        }
-        if($wheres){
-            $where_in_string = " WHERE (" . implode(" OR", $wheres) . " ) ";
-        }else{
-            $where_in_string = "";
-        }
-        
-        $stmt = $db->prepare("
-            SELECT
-                CONCAT(u.id, '_', u._type) AS gr_id,
-                GROUP_CONCAT(DISTINCT `t`.`name` SEPARATOR ', ') AS asset_teams,
-                `loc`.`name` AS asset_location,
-                rsk_loc.name AS risk_location,
-                GROUP_CONCAT(DISTINCT rsk_team.name SEPARATOR ', ') AS risk_teams,
-				GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR ',') as tags,
-                u.*
-            FROM (
-                SELECT
-                    a.id AS id,
-                    r.id AS risk_id,
-                    a.id AS asset_id,
-                    a.name AS name,
-                    a.name AS asset_name,
-                    a.value AS asset_value,
-                    av.max_value AS max_value,
-                    a.location AS asst_location,
-                    a.teams AS asst_teams,
-                    r.status,
-                    r.subject,
-                    r.submission_date,
-                    rs.calculated_risk,
-                    rr.next_review,
-                    DATEDIFF(IF(r.status != 'Closed', NOW(), o.closure_date) , r.submission_date) days_open,
-                    'asset' AS _type
-                FROM
-                    risks_to_assets rta
-                    LEFT JOIN assets a ON rta.asset_id = a.id
-                    INNER JOIN `asset_values` av ON `a`.`value` = `av`.`id`
-                    LEFT JOIN risks r ON rta.risk_id = r.id
-                    LEFT JOIN closures o ON r.close_id = o.id
-                    LEFT JOIN risk_scoring rs ON r.id = rs.id
-                    LEFT JOIN mgmt_reviews rr ON r.mgmt_review = rr.id
-                WHERE
-                    status != 'Closed'
-                UNION ALL
-                SELECT
-                    ag.id AS id,
-                    r.id AS risk_id,
-                    a.id AS asset_id,
-                    ag.name AS name,
-                    a.name AS asset_name,
-                    null AS asset_value,
-                    SUM(`av`.`max_value`) as max_value,
-                    null AS asst_location,
-                    null AS asst_teams,
-                    r.status,
-                    r.subject,
-                    r.submission_date,
-                    rs.calculated_risk,
-                    rr.next_review,
-                    DATEDIFF(IF(r.status != 'Closed', NOW(), o.closure_date) , r.submission_date) days_open,
-                    'group' AS _type
-                FROM
-                    risks_to_asset_groups rtag
-                    LEFT JOIN asset_groups ag ON ag.id = rtag.asset_group_id
-                    LEFT JOIN risks r ON rtag.risk_id = r.id
-                    LEFT JOIN closures o ON r.close_id = o.id
-                    LEFT JOIN risk_scoring rs ON r.id = rs.id
-                    LEFT JOIN mgmt_reviews rr ON r.mgmt_review = rr.id
-                    LEFT JOIN `assets_asset_groups` aag on aag.asset_group_id = ag.id
-                    INNER JOIN `assets` a ON `aag`.`asset_id` = `a`.`id`
-                    INNER JOIN `asset_values` av ON `a`.`value` = `av`.`id`
-                WHERE
-                    status != 'Closed'
-                GROUP BY
-                    name, risk_id
-            ) u
-                LEFT JOIN `location` loc ON `loc`.`value` = `u`.`asst_location`
-                LEFT JOIN `team` t ON FIND_IN_SET(`t`.`value`, `u`.`asst_teams`)
-                LEFT JOIN risk_to_location rtl on u.risk_id = rtl.risk_id
-                LEFT JOIN location rsk_loc on rtl.location_id = rsk_loc.value
-                LEFT JOIN risk_to_team rtt on u.risk_id = rtt.risk_id
-                LEFT JOIN team rsk_team on rtt.team_id = rsk_team.value
-				LEFT JOIN tags_taggees tt ON tt.taggee_id = u.asset_id AND tt.type = 'asset'
-				LEFT JOIN tags tg on tg.id = tt.tag_id
-		{$where_in_string}
-            GROUP BY
-                gr_id, u.risk_id
-            ORDER BY
-                u.max_value DESC,
-                u.name,
-                u.calculated_risk DESC,
-                u.risk_id;
-        ");
-        foreach($bind_params as $key => $value){
-            $stmt->bindParam($key, $value, PDO::PARAM_STR);
-        }
-        $stmt->execute();
-
-        // Store the results in the rows array
-        $rows = $stmt->fetchAll(PDO::FETCH_GROUP);
-
-        if($sortby == 0){
-            uasort($rows, function($a, $b) {
-                 return strcmp(try_decrypt($a[0]['asset_name']), try_decrypt($b[0]['asset_name']));
-            });
-        } else {
-            uasort($rows, function($a, $b) {
-                 return ($a[0]['calculated_risk'] > $b[0]['calculated_risk'])?-1:1;
-            });
-        }
-
         foreach($rows as $gr_id => $group) {
 
             if ($separation) {
@@ -2004,13 +1875,55 @@ function risks_and_assets_table($report, $sortby, $asset_tags_in_array)
                 $group = $tmp;
             }
             
+            $total_calculated_risk = 0;
+            $total_residual_risk = 0;
+            $array_residual_risk = [];
+
+            $risk_html = "";
+            foreach($group as $row) {
+
+                // Get the variables for the row
+                $risk_id = (int)$row['risk_id'];
+                $risk_location = (isset($row['risk_location']) ? $row['risk_location'] : "N/A");
+                $risk_teams = (isset($row['risk_teams']) ? $row['risk_teams'] : "N/A");
+                $status = $row['status'];
+                $subject = try_decrypt($row['subject']);
+                $calculated_risk = $row['calculated_risk'];
+                $color1 = get_risk_color_from_levels($calculated_risk, $risk_levels);
+                $dayssince = $row['days_open'];
+                $residual_risk = round($row['calculated_risk'] * (100-$row['mitigation_percent']) / 100, 2);
+                $color2 = get_risk_color_from_levels($residual_risk, $risk_levels);
+                $mitigation_percent = $row['mitigation_percent'];
+
+                // Get the variables for total
+                $total_calculated_risk += $row['calculated_risk'];
+                $total_residual_risk += $residual_risk;
+                $array_residual_risk[] = $residual_risk;
+
+                // Display the individual asset/asset group information
+                $risk_html .= "<tr>\n";
+                $risk_html .= "<td align=\"left\" width=\"50px\"><a target='_blank' href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
+                $risk_html .= "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
+                $risk_html .= "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
+                $risk_html .= "<td align=\"left\" width=\"200px\">" . $escaper->escapeHtml($risk_location) . "</td>\n";
+                $risk_html .= "<td align=\"left\" width=\"200px\">" . $escaper->escapeHtml($risk_teams) . "</td>\n";
+                $risk_html .= "<td align=\"center\" class=\"risk-cell\" bgcolor=\"" . $escaper->escapeHtml($color1) . "\" width=\"100px\">" . $escaper->escapeHtml($calculated_risk) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color1) . "\"></span></td>\n";
+                $risk_html .= "<td align=\"center\" class=\"risk-cell\" bgcolor=\"" . $escaper->escapeHtml($color2) . "\" width=\"100px\">" . $escaper->escapeHtml($residual_risk) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color2) . "\"></span></td>\n";
+                $risk_html .= "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($mitigation_percent) . "</td>\n";
+                $risk_html .= "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($dayssince) . "</td>\n";
+                $risk_html .= "</tr>\n";
+            }
+
+            $average_calculated_risk = round($total_calculated_risk / count($group),2);
+            $average_residual_risk = round($total_residual_risk / count($group),2);
+
             preg_match('/^([\d]+)_(group|asset)$/', $gr_id, $matches);
             list(, $id, $type) = $matches;
 
             $name = $type == 'asset' ? try_decrypt($group[0]['name']) : $group[0]['name'];
             $calculated_risk = $group[0]['calculated_risk'];
             $color = get_risk_color_from_levels($calculated_risk, $risk_levels);
-			$tags = $group[0]['tags'];
+            $tags = $group[0]['tags'];
             
             // Display the table header
             echo "<table class=\"table table-bordered table-condensed sortable\">\n";
@@ -2020,24 +1933,30 @@ function risks_and_assets_table($report, $sortby, $asset_tags_in_array)
                 $asset_value = $group[0]['asset_value'];
                 $asset_location = isset($group[0]['asset_location']) ? $group[0]['asset_location'] : "N/A";
                 $asset_teams = isset($group[0]['asset_teams']) ? $group[0]['asset_teams'] : "N/A";
-                echo "<th style=\"background-color: " .$escaper->escapeHtml($color). "\" colspan=\"7\">
+                echo "<th style=\"background-color: " .$escaper->escapeHtml($color). "\" colspan=\"9\">
                         <center>
                             " . $escaper->escapeHtml($lang['AssetName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($name) . "<br />
                             " . $escaper->escapeHtml($lang['AssetTags']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($tags) . "<br />
                             " . $escaper->escapeHtml($lang['AssetValue']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml(get_asset_value_by_id($asset_value)) . "<br />
-                            " . $escaper->escapeHtml($lang['AssetRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($calculated_risk) ."<br />
+                            " . $escaper->escapeHtml($lang['HighestInherentRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($calculated_risk) ."<br />
+                            " . $escaper->escapeHtml($lang['AverageInherentRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($average_calculated_risk) ."<br />
+                            " . $escaper->escapeHtml($lang['HighestResidualRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml(max($array_residual_risk)) ."<br />
+                            " . $escaper->escapeHtml($lang['AverageResidualRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($average_residual_risk) ."<br />
                             " . $escaper->escapeHtml($lang['AssetSiteLocation']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_location) . "<br />
                             " . $escaper->escapeHtml($lang['AssetTeams']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($asset_teams) . "<br />
                         </center>
                     </th>\n";
             } else {
                 $max_value = $group[0]['max_value'];
-                echo "<th style=\"background-color: " .$escaper->escapeHtml($color). "\" colspan=\"7\">
+                echo "<th style=\"background-color: " .$escaper->escapeHtml($color). "\" colspan=\"9\">
                         <center>
                             " . $escaper->escapeHtml($lang['AssetGroupName']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($name) . "<br />
                             " . $escaper->escapeHtml($lang['AssetTags']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($tags) . "<br />
                             " . $escaper->escapeHtml($lang['GroupMaximumQuantitativeLoss']) . ":&nbsp;&nbsp;$" . $escaper->escapeHtml(number_format($max_value)) . "<br />
-                            " . $escaper->escapeHtml($lang['AssetGroupRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($calculated_risk) ."
+                            " . $escaper->escapeHtml($lang['HighestInherentRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($calculated_risk) ."<br />
+                            " . $escaper->escapeHtml($lang['AverageInherentRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($average_calculated_risk) ."<br />
+                            " . $escaper->escapeHtml($lang['HighestResidualRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml(max($array_residual_risk)) ."<br />
+                            " . $escaper->escapeHtml($lang['AverageResidualRisk']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($average_residual_risk) ."<br />
                         </center>
                     </th>\n";
             }
@@ -2049,145 +1968,21 @@ function risks_and_assets_table($report, $sortby, $asset_tags_in_array)
             echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['SiteLocation']) ."</th>\n";
             echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['Teams']) ."</th>\n";
             echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['InherentRisk']) ."</th>\n";
+            echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['ResidualRisk']) ."</th>\n";
+            echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['MitigationPercent']) ."</th>\n";
             echo "<th align=\"left\" width=\"100px\">". $escaper->escapeHtml($lang['DaysOpen']) ."</th>\n";
             echo "</tr>\n";
             echo "</thead>\n";
             echo "<tbody>\n";
-            
-            foreach($group as $row) {
-                
-                // Get the variables for the row
-                $risk_id = (int)$row['risk_id'];
-                $risk_location = (isset($row['risk_location']) ? $row['risk_location'] : "N/A");
-                $risk_teams = (isset($row['risk_teams']) ? $row['risk_teams'] : "N/A");
-                $status = $row['status'];
-                $subject = try_decrypt($row['subject']);
-                $calculated_risk = $row['calculated_risk'];
-                $color = get_risk_color_from_levels($calculated_risk, $risk_levels);
-                $dayssince = $row['days_open'];
 
-                // Display the individual asset/asset group information
-                echo "<tr>\n";
-                echo "<td align=\"left\" width=\"50px\"><a target='_blank' href=\"../management/view.php?id=" . $escaper->escapeHtml(convert_id($risk_id)) . "\">" . $escaper->escapeHtml(convert_id($risk_id)) . "</a></td>\n";
-                echo "<td align=\"left\" width=\"150px\">" . $escaper->escapeHtml($status) . "</td>\n";
-                echo "<td align=\"left\" width=\"300px\">" . $escaper->escapeHtml($subject) . "</td>\n";
-                echo "<td align=\"left\" width=\"200px\">" . $escaper->escapeHtml($risk_location) . "</td>\n";
-                echo "<td align=\"left\" width=\"200px\">" . $escaper->escapeHtml($risk_teams) . "</td>\n";
-                echo "<td align=\"center\" class=\"risk-cell\" bgcolor=\"" . $escaper->escapeHtml($color) . "\" width=\"100px\">" . $escaper->escapeHtml($calculated_risk) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color) . "\"></span></td>\n";
-                echo "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($dayssince) . "</td>\n";
-                echo "</tr>\n";
-            }
+            echo $risk_html;            
 
             echo "</tbody>\n";
             echo "</table>\n";
         }
     }
-
     // If assets by risk
     elseif ($report == 1) {
-        
-        $where_in_string = $separation ? get_user_teams_query("rsk", true) : " WHERE 1 ";
-
-        // Set where for asset_tags
-        $wheres = ["0"];
-        $bind_params = [];
-        if($asset_tags){
-            $wheres[] = " FIND_IN_SET(tg.id, :asset_tags) ";
-            $bind_params[":asset_tags"] = $asset_tags;
-        }
-
-        if(in_array(-1, $asset_tags_in_array)){
-            $wheres[] = " tg.id IS NULL ";
-        }
-        if($wheres){
-            $where_in_string .= " AND (" . implode(" OR", $wheres) . " ) ";
-        }
-        
-//        $separation_query .= $asset_tags?" AND tg.id IN ({$asset_tags})":"";
-
-        $sql = "
-            SELECT
-                `u`.`risk_id`,
-                `u`.`asset_id`,
-                `u`.`asset_ip`,
-                `u`.`asset_name`,
-                `u`.`asset_value`,
-                `loc`.`name` as asset_location,
-                `u`.`status`,
-                `u`.`subject`,
-                `u`.`calculated_risk`,
-                `u`.`calculated_risk`,
-                GROUP_CONCAT(DISTINCT `t`.`name` SEPARATOR ', ') AS asset_teams,
-                GROUP_CONCAT(DISTINCT `ag`.`name` SEPARATOR ', ') AS asset_groups,
-				GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR ',') as tags
-            from (
-                SELECT
-                    `r`.`id` as risk_id,
-                    `asst`.`id` AS asset_id,
-                    `asst`.`ip` AS asset_ip,
-                    `asst`.`name` AS asset_name,
-                    `asst`.`value` AS asset_value,
-                    `asst`.`location` AS asst_location,
-                    `asst`.`teams` AS asst_teams,
-                    `r`.`status`,
-                    `r`.`subject`,
-                    `rs`.`calculated_risk`
-                FROM
-                    `risks_to_assets` rta
-                    INNER JOIN `assets` asst ON `rta`.`asset_id` = `asst`.`id`
-                    INNER JOIN `risks` r ON `rta`.`risk_id` = `r`.`id`
-                    INNER JOIN `risk_scoring` rs ON `r`.`id` = `rs`.`id`
-                WHERE
-                    `r`.`status` != 'Closed'
-                UNION ALL
-                SELECT
-                    `r`.`id` as risk_id,
-                    `asst`.`id` AS asset_id,
-                    `asst`.`ip` AS asset_ip,
-                    `asst`.`name` AS asset_name,
-                    `asst`.`value` AS asset_value,
-                    `asst`.`location` AS asst_location,
-                    `asst`.`teams` AS asst_teams,
-                    `r`.`status`,
-                    `r`.`subject`,
-                    `rs`.`calculated_risk`
-                FROM
-                    `risks_to_asset_groups` rtag
-                    INNER JOIN `assets_asset_groups` aag ON `aag`.`asset_group_id` = `rtag`.`asset_group_id`
-                    LEFT JOIN `assets` asst ON `aag`.`asset_id` = `asst`.`id`
-                    LEFT JOIN `risks` r ON `rtag`.`risk_id` = `r`.`id`
-                    LEFT JOIN `risk_scoring` rs ON `r`.`id` = `rs`.`id`
-                WHERE
-                    `r`.`status` != 'Closed'
-                ) u
-                INNER JOIN `risks` rsk ON `rsk`.`id` = `u`.`risk_id`
-                LEFT JOIN `location` loc ON `loc`.`value` = `u`.`asst_location`
-                LEFT JOIN `team` t ON FIND_IN_SET(`t`.`value`, `u`.`asst_teams`)
-                LEFT JOIN `risk_to_team` rtt ON u.risk_id = `rtt`.`risk_id`
-                LEFT JOIN `risk_to_additional_stakeholder` rtas ON u.risk_id = `rtas`.`risk_id`
-                LEFT JOIN `assets_asset_groups` aag ON `aag`.`asset_id` = `u`.`asset_id`
-                LEFT JOIN `asset_groups` ag ON `ag`.`id` = `aag`.`asset_group_id`
-				LEFT JOIN `tags_taggees` tt ON tt.taggee_id = `u`.`asset_id` AND tt.type = 'asset'
-				LEFT JOIN `tags` tg on tg.id = tt.tag_id
-            {$where_in_string}
-            GROUP BY
-                `u`.`risk_id`, `u`.`asset_id`
-            ORDER BY
-                `u`.`calculated_risk` DESC,
-                `u`.`risk_id`,
-                `u`.`asset_value` DESC,
-                `u`.`asset_id`;
-        ";
-        
-        $stmt = $db->prepare($sql);
-        foreach($bind_params as $key => $value){
-            $stmt->bindParam($key, $value, PDO::PARAM_STR);
-        }
-        $stmt->execute();
-
-        // Store the results in the rows array
-        $rows = $stmt->fetchAll(PDO::FETCH_GROUP);    
-
         foreach($rows as $risk_id => $group){
 
             $status = $group[0]['status'];
@@ -2260,9 +2055,300 @@ function risks_and_assets_table($report, $sortby, $asset_tags_in_array)
             echo "</table>\n";
         }
     }
+}
+/************************************************
+ * FUNCTION: RETURN RISKS AND ASSETS REPORT SQL *
+ ************************************************/
+function get_risks_and_assets_rows($report=0, $sort_by=0, $asset_tags_in_array, $projects_in_array)
+{
+    global $lang;
+    if($asset_tags_in_array == "all") {
+        $tags = get_options_from_table("asset_tags");
+        $asset_tags_in_array = array_map(function($tag){ return $tag["value"];}, $tags);
+        $asset_tags_in_array[] = "-1";
+    }
+    $asset_tags = implode(",", $asset_tags_in_array);
+
+    $projects = implode(",", $projects_in_array);
+
+    // If team separation is enabled
+    if (team_separation_extra())
+    {
+        // Include the team separation extra
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+
+        // Just setting it true so we can later remove the risks
+        // the user doesn't have permission to.
+        // It's because all grouping type has different logic where its risk id is stored
+        $separation = true;
+    } else {
+        $separation = false;
+    }
+    // Query the database
+    $db = db_open();
+
+    if($report == 0){
+        $where_in_string = "WHERE 1";
+        $bind_params = [];
+        if($asset_tags){
+            $wheres = [];
+            $wheres[] = " FIND_IN_SET(tg.id, :asset_tags) ";
+            $bind_params[":asset_tags"] = $asset_tags;
+            if(in_array(-1, $asset_tags_in_array)){
+                $wheres[] = " tg.id IS NULL ";
+            }
+            $where_in_string .= " AND (" . implode(" OR", $wheres) . " ) ";
+        }
+        if($projects){
+            $wheres = [];
+            $wheres[] = " FIND_IN_SET(u.project_id, :projects) ";
+            $bind_params[":projects"] = $projects;
+            if(in_array(-1, $projects_in_array)){
+                $wheres[] = " u.project_id IS NULL ";
+            }
+            $where_in_string .= " AND (" . implode(" OR", $wheres) . " ) ";
+        }
+        $sql = "
+            SELECT
+                CONCAT(u.id, '_', u._type) AS gr_id,
+                GROUP_CONCAT(DISTINCT `t`.`name` SEPARATOR ', ') AS asset_teams,
+                `loc`.`name` AS asset_location,
+                rsk_loc.name AS risk_location,
+                GROUP_CONCAT(DISTINCT rsk_team.name SEPARATOR ', ') AS risk_teams,
+                GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR ',') as tags,
+                GREATEST(IFNULL(m.mitigation_percent, 0), IFNULL(MAX(fc.mitigation_percent), 0)) AS mitigation_percent,
+                p.name AS project, 
+                p.status AS project_status_value,
+                CASE p.status
+                    WHEN 1 THEN '".$lang['ActiveProjects']."'
+                    WHEN 2 THEN '".$lang['OnHoldProjects']."'
+                    WHEN 3 THEN '".$lang['CompletedProjects']."'
+                    WHEN 4 THEN '".$lang['CanceledProjects']."'
+                END project_status,
+                u.*
+            FROM (
+                SELECT
+                    a.id AS id,
+                    r.id AS risk_id,
+                    a.id AS asset_id,
+                    a.name AS name,
+                    a.name AS asset_name,
+                    a.value AS asset_value,
+                    av.max_value AS max_value,
+                    a.location AS asst_location,
+                    a.teams AS asst_teams,
+                    r.status,
+                    r.subject,
+                    r.submission_date,
+                    r.project_id,
+                    rs.calculated_risk,
+                    rr.next_review,
+                    DATEDIFF(IF(r.status != 'Closed', NOW(), o.closure_date) , r.submission_date) days_open,
+                    'asset' AS _type
+                FROM
+                    risks_to_assets rta
+                    LEFT JOIN assets a ON rta.asset_id = a.id
+                    INNER JOIN `asset_values` av ON `a`.`value` = `av`.`id`
+                    LEFT JOIN risks r ON rta.risk_id = r.id
+                    LEFT JOIN closures o ON r.close_id = o.id
+                    LEFT JOIN risk_scoring rs ON r.id = rs.id
+                    LEFT JOIN mgmt_reviews rr ON r.mgmt_review = rr.id
+                WHERE
+                    status != 'Closed'
+                UNION ALL
+                SELECT
+                    ag.id AS id,
+                    r.id AS risk_id,
+                    a.id AS asset_id,
+                    ag.name AS name,
+                    a.name AS asset_name,
+                    null AS asset_value,
+                    SUM(`av`.`max_value`) as max_value,
+                    null AS asst_location,
+                    null AS asst_teams,
+                    r.status,
+                    r.subject,
+                    r.submission_date,
+                    r.project_id,
+                    rs.calculated_risk,
+                    rr.next_review,
+                    DATEDIFF(IF(r.status != 'Closed', NOW(), o.closure_date) , r.submission_date) days_open,
+                    'group' AS _type
+                FROM
+                    risks_to_asset_groups rtag
+                    LEFT JOIN asset_groups ag ON ag.id = rtag.asset_group_id
+                    LEFT JOIN risks r ON rtag.risk_id = r.id
+                    LEFT JOIN closures o ON r.close_id = o.id
+                    LEFT JOIN risk_scoring rs ON r.id = rs.id
+                    LEFT JOIN mgmt_reviews rr ON r.mgmt_review = rr.id
+                    LEFT JOIN `assets_asset_groups` aag on aag.asset_group_id = ag.id
+                    INNER JOIN `assets` a ON `aag`.`asset_id` = `a`.`id`
+                    INNER JOIN `asset_values` av ON `a`.`value` = `av`.`id`
+                WHERE
+                    status != 'Closed'
+                GROUP BY
+                    name, risk_id
+            ) u
+                LEFT JOIN `location` loc ON `loc`.`value` = `u`.`asst_location`
+                LEFT JOIN `team` t ON FIND_IN_SET(`t`.`value`, `u`.`asst_teams`)
+                LEFT JOIN risk_to_location rtl on u.risk_id = rtl.risk_id
+                LEFT JOIN location rsk_loc on rtl.location_id = rsk_loc.value
+                LEFT JOIN risk_to_team rtt on u.risk_id = rtt.risk_id
+                LEFT JOIN team rsk_team on rtt.team_id = rsk_team.value
+                LEFT JOIN tags_taggees tt ON tt.taggee_id = u.asset_id AND tt.type = 'asset'
+                LEFT JOIN tags tg on tg.id = tt.tag_id
+                LEFT JOIN mitigations m ON u.risk_id=m.risk_id
+                LEFT JOIN mitigation_to_controls mtc ON m.id=mtc.mitigation_id
+                LEFT JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+                LEFT JOIN projects p FORCE INDEX(PRIMARY) ON u.project_id = p.value
+        {$where_in_string}
+            GROUP BY
+                gr_id, u.risk_id
+            ORDER BY
+                u.max_value DESC,
+                u.name,
+                u.calculated_risk DESC,
+                u.risk_id;
+        ";
+        $stmt = $db->prepare($sql);
+        foreach($bind_params as $key => $value){
+            $stmt->bindParam($key, $value, PDO::PARAM_STR);
+        }
+        $stmt->execute();
+
+        // Store the results in the rows array
+        $rows = $stmt->fetchAll(PDO::FETCH_GROUP);
+
+        if($sort_by == 0){
+            uasort($rows, function($a, $b) {
+                 return strcmp(try_decrypt($a[0]['asset_name']), try_decrypt($b[0]['asset_name']));
+            });
+        } else {
+            uasort($rows, function($a, $b) {
+                 return ($a[0]['calculated_risk'] > $b[0]['calculated_risk'])?-1:1;
+            });
+        }
+    } else {
+        $where_in_string = $separation ? get_user_teams_query("rsk", true) : " WHERE 1 ";
+
+        $bind_params = [];
+        if($asset_tags){
+            $wheres = [];
+            $wheres[] = " FIND_IN_SET(tg.id, :asset_tags) ";
+            $bind_params[":asset_tags"] = $asset_tags;
+            if(in_array(-1, $asset_tags_in_array)){
+                $wheres[] = " tg.id IS NULL ";
+            }
+            $where_in_string .= " AND (" . implode(" OR", $wheres) . " ) ";
+        }
+        if($projects){
+            $wheres = [];
+            $wheres[] = " FIND_IN_SET(u.project_id, :projects) ";
+            $bind_params[":projects"] = $projects;
+            if(in_array(-1, $projects_in_array)){
+                $wheres[] = " u.project_id IS NULL ";
+            }
+            $where_in_string .= " AND (" . implode(" OR", $wheres) . " ) ";
+        }
+
+        $sql = "
+            SELECT
+                `u`.`risk_id`,
+                `u`.`asset_id`,
+                `u`.`asset_ip`,
+                `u`.`asset_name`,
+                `u`.`asset_value`,
+                `loc`.`name` as asset_location,
+                `u`.`status`,
+                `u`.`subject`,
+                `u`.`calculated_risk`,
+                `u`.`calculated_risk`,
+                p.name AS project, 
+                p.status AS project_status_value,
+                CASE p.status
+                    WHEN 1 THEN '".$lang['ActiveProjects']."'
+                    WHEN 2 THEN '".$lang['OnHoldProjects']."'
+                    WHEN 3 THEN '".$lang['CompletedProjects']."'
+                    WHEN 4 THEN '".$lang['CanceledProjects']."'
+                END project_status,
+                GROUP_CONCAT(DISTINCT `t`.`name` SEPARATOR ', ') AS asset_teams,
+                GROUP_CONCAT(DISTINCT `ag`.`name` SEPARATOR ', ') AS asset_groups,
+                GROUP_CONCAT(DISTINCT tg.tag ORDER BY tg.tag ASC SEPARATOR ',') as tags
+            from (
+                SELECT
+                    `r`.`id` as risk_id,
+                    `asst`.`id` AS asset_id,
+                    `asst`.`ip` AS asset_ip,
+                    `asst`.`name` AS asset_name,
+                    `asst`.`value` AS asset_value,
+                    `asst`.`location` AS asst_location,
+                    `asst`.`teams` AS asst_teams,
+                    `r`.`status`,
+                    `r`.`subject`,
+                    `r`.`project_id`,
+                    `rs`.`calculated_risk`
+                FROM
+                    `risks_to_assets` rta
+                    INNER JOIN `assets` asst ON `rta`.`asset_id` = `asst`.`id`
+                    INNER JOIN `risks` r ON `rta`.`risk_id` = `r`.`id`
+                    INNER JOIN `risk_scoring` rs ON `r`.`id` = `rs`.`id`
+                WHERE
+                    `r`.`status` != 'Closed'
+                UNION ALL
+                SELECT
+                    `r`.`id` as risk_id,
+                    `asst`.`id` AS asset_id,
+                    `asst`.`ip` AS asset_ip,
+                    `asst`.`name` AS asset_name,
+                    `asst`.`value` AS asset_value,
+                    `asst`.`location` AS asst_location,
+                    `asst`.`teams` AS asst_teams,
+                    `r`.`status`,
+                    `r`.`subject`,
+                    `r`.`project_id`,
+                    `rs`.`calculated_risk`
+                FROM
+                    `risks_to_asset_groups` rtag
+                    INNER JOIN `assets_asset_groups` aag ON `aag`.`asset_group_id` = `rtag`.`asset_group_id`
+                    LEFT JOIN `assets` asst ON `aag`.`asset_id` = `asst`.`id`
+                    LEFT JOIN `risks` r ON `rtag`.`risk_id` = `r`.`id`
+                    LEFT JOIN `risk_scoring` rs ON `r`.`id` = `rs`.`id`
+                WHERE
+                    `r`.`status` != 'Closed'
+                ) u
+                INNER JOIN `risks` rsk ON `rsk`.`id` = `u`.`risk_id`
+                LEFT JOIN `location` loc ON `loc`.`value` = `u`.`asst_location`
+                LEFT JOIN `team` t ON FIND_IN_SET(`t`.`value`, `u`.`asst_teams`)
+                LEFT JOIN `risk_to_team` rtt ON u.risk_id = `rtt`.`risk_id`
+                LEFT JOIN `risk_to_additional_stakeholder` rtas ON u.risk_id = `rtas`.`risk_id`
+                LEFT JOIN `assets_asset_groups` aag ON `aag`.`asset_id` = `u`.`asset_id`
+                LEFT JOIN `asset_groups` ag ON `ag`.`id` = `aag`.`asset_group_id`
+                LEFT JOIN `tags_taggees` tt ON tt.taggee_id = `u`.`asset_id` AND tt.type = 'asset'
+                LEFT JOIN `tags` tg on tg.id = tt.tag_id
+                LEFT JOIN projects p FORCE INDEX(PRIMARY) ON u.project_id = p.value
+            {$where_in_string}
+            GROUP BY
+                `u`.`risk_id`, `u`.`asset_id`
+            ORDER BY
+                `u`.`calculated_risk` DESC,
+                `u`.`risk_id`,
+                `u`.`asset_value` DESC,
+                `u`.`asset_id`;
+        ";
+
+        $stmt = $db->prepare($sql);
+        foreach($bind_params as $key => $value){
+            $stmt->bindParam($key, $value, PDO::PARAM_STR);
+        }
+        $stmt->execute();
+
+        // Store the results in the rows array
+        $rows = $stmt->fetchAll(PDO::FETCH_GROUP);    
+    }
 
     // Close the database
     db_close($db);
+    return $rows;
 }
 
 /*********************************************
@@ -3249,6 +3335,11 @@ function risks_query_select($column_filters)
                 tt.tag_id = t.id AND tt.taggee_id=a.id AND tt.type='risk'
         ) AS risk_tags,
         DATEDIFF(IF(a.status != 'Closed', NOW(), o.closure_date) , a.submission_date) days_open,
+        rc.number risk_mapping_risk,
+        rc.name risk_mapping_risk_event,
+        rc.description risk_mapping_description,
+        rg.name risk_mapping_risk_grouping,
+        rf.name risk_mapping_function,
     ";
     $contributing_risks = get_contributing_risks();
     foreach($contributing_risks as $contributing_risk){
@@ -3498,6 +3589,8 @@ function risks_query_from($column_filters=[], $risks_by_team=0, $orderColumnName
                 (SELECT id FROM residual_risk_scoring_history sh WHERE sh.risk_id = a.id AND DATEDIFF(NOW(), sh.last_update) >= 90 ORDER BY sh.last_update DESC LIMIT 1)
             LEFT JOIN risk_catalog rc ON FIND_IN_SET(rc.id, a.risk_catalog_mapping) > 0
             LEFT JOIN threat_catalog tc ON FIND_IN_SET(tc.id, a.threat_catalog_mapping) > 0
+            LEFT JOIN risk_grouping rg ON rc.grouping = rg.value
+            LEFT JOIN risk_function rf ON rc.function = rf.value
     ";
     // If the team separation extra is enabled
     $team_separation_extra = team_separation_extra();
@@ -3698,6 +3791,9 @@ function make_full_risks_sql($query_type, $status, $sort, $group, $column_filter
             break;
         case "mitigation_controls":
             $sort_name = " mitigation_control_names {$orderDir} ";
+            break;
+        case "next_review_date":
+            $sort_name = " next_review {$orderDir} ";
             break;
         case "comments":
             if (!encryption_extra())
@@ -4110,6 +4206,10 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
                     $bind_params[$bind_param_name] = $column_filter;
                 } else if(stripos($name, "CVSS_") !== false || stripos($name, "DREAD_") !== false || stripos($name, "OWASP_") !== false) {
                     $wheres[] = " b.{$name} like :{$bind_param_name} ";
+                    $bind_params[$bind_param_name] = "%{$column_filter}%";
+                }
+                if(stripos($name, "risk_mapping_") !== false) {
+                    $havings[] = " {$name} like :{$bind_param_name} ";
                     $bind_params[$bind_param_name] = "%{$column_filter}%";
                 }
             }
@@ -5089,64 +5189,40 @@ function encode_data_before_display($array)
 /************************************
  * FUNCTION: RISKS AND CONTROLS TABLE *
  ************************************/
-function risks_and_control_table($report)
+function risks_and_control_table($report, $sort_by=0, $projects)
 {
     global $lang;
     global $escaper;
 
+    if(count($_POST) > 3) {
+        $control_framework = isset($_POST['control_framework']) ? $_POST['control_framework'] : [];
+        $control_family = isset($_POST['control_family']) ? $_POST['control_family'] : [];
+        $control_class = isset($_POST['control_class']) ? $_POST['control_class'] : [];
+        $control_phase = isset($_POST['control_phase']) ? $_POST['control_phase'] : [];
+        $control_priority = isset($_POST['control_priority']) ? $_POST['control_priority'] : [];
+        $control_owner = isset($_POST['control_owner']) ? $_POST['control_owner'] : [];
+    } else {
+        $control_framework = "all";
+        $control_family = "all";
+        $control_class = "all";
+        $control_phase = "all";
+        $control_priority = "all";
+        $control_owner = "all";
+    }
+
     $data = array();
 
-    // Open the database
-    $db = db_open();
-    
-    // Risks by Controls
-    if($report == 0)
-    {
-        $select = "SELECT fc.id gr_id, b.*, c.calculated_risk, fc.short_name control_short_name, fc.long_name control_long_name, fc.id control_id
-               , GROUP_CONCAT(DISTINCT l.name) location
-               , GROUP_CONCAT(DISTINCT t.name) team
-               , DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open
-        ";
-    }
-    // Controls by Risks
-    elseif($report == 1)
-    {
-        $select = "SELECT b.id gr_id, b.*, c.calculated_risk, fc.short_name control_short_name, fc.long_name control_long_name, fc.id control_id
-                , GROUP_CONCAT(DISTINCT l.name) location
-                , GROUP_CONCAT(DISTINCT t.name) team
-                , DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open
-        ";
-    }
-    // Check the report
-    $query = $select."
-        FROM mitigations a 
-            INNER JOIN risks b ON a.risk_id = b.id 
-            INNER JOIN `mitigation_to_controls` mtc ON a.id=mtc.mitigation_id
-            INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
-            LEFT JOIN risk_scoring c ON b.id = c.id 
-            LEFT JOIN risk_to_location rtl ON b.id=rtl.risk_id
-            LEFT JOIN location l ON rtl.location_id=l.value
-            LEFT JOIN risk_to_team rtt ON b.id=rtt.risk_id
-            LEFT JOIN team t ON rtt.team_id=t.value
-            LEFT JOIN closures o ON b.close_id = o.id
-        GROUP BY 
-            b.id, fc.id
-	ORDER BY
-	    c.calculated_risk DESC
-        ;
-    ";
 
-//    if ( $report == 0 ) {
-//        $query .= "ORDER BY a.risk_id DESC";
-//    } else {
-//        $query .= "ORDER BY a.risk_id ASC";
-//    }
+    $filters = array(
+      'control_framework' => $control_framework,
+      'control_family' => $control_family,
+      'control_class' => $control_class,
+      'control_phase' => $control_phase,
+      'control_priority' => $control_priority,
+      'control_owner' => $control_owner,
+    );
 
-    $stmt = $db->prepare($query);
-    $stmt->execute();
-
-    // Store the results in the rows array
-    $rows = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+    $rows = get_risks_and_controls_rows($report, $sort_by, $projects, $filters);
     
 
     // If team separation is enabled
@@ -5173,13 +5249,47 @@ function risks_and_control_table($report)
         {
             $risks = $row;
         }
-        
         // Risks by Controls
         if ( $report == 0 ) {
+            $header_color = get_risk_color($risks[0]['calculated_risk']);
+            $control_frameworks = get_mapping_control_frameworks($gr_id);
+            if(count($control_frameworks)) {
+                $cf_table = "<table border='1px' class='table table-bordered' style=\"background-color:" . $escaper->escapeHtml($header_color) . "\">\n";
+                $cf_table .= "<tr>\n";
+                $cf_table .= "<th width='50%' style=\"background-color:" . $escaper->escapeHtml($header_color) . "\">".$escaper->escapeHtml($lang['Framework'])."</th>\n";
+                $cf_table .= "<th width='35%' style=\"background-color:" . $escaper->escapeHtml($header_color) . "\">".$escaper->escapeHtml($lang['Control'])."</th>\n";
+                $cf_table .= "</tr>\n";
+                foreach ($control_frameworks as $framework){
+                    $cf_table .= "<tr>\n";
+                        $cf_table .= "<td style=\"background-color:" . $escaper->escapeHtml($header_color) . "\">".$escaper->escapeHtml($framework['framework_name'])."</td>\n";
+                        $cf_table .= "<td style=\"background-color:" . $escaper->escapeHtml($header_color) . "\">".$escaper->escapeHtml($framework['reference_name'])."</td>\n";
+                    $cf_table .= "</tr>\n";
+                }
+                $cf_table .= "</table>\n";
+            } else {
+                $cf_table = "";
+            }
+            $control_detail = "<div class='moreellipses hide'>
+                " . $escaper->escapeHtml($lang['ControlNumber']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_number']) . "
+                </br>" . $escaper->escapeHtml($lang['ControlFrameworks']) . ":&nbsp;&nbsp;" . $cf_table. "
+                </br>" . $escaper->escapeHtml($lang['ControlFamily']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_family_name']) . "
+                </br>" . $escaper->escapeHtml($lang['ControlClass']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_class_name']) . "
+                </br>" . $escaper->escapeHtml($lang['ControlPhase']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_phase_name']) . "
+                </br>" . $escaper->escapeHtml($lang['ControlPriority']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_priority_name']) . "
+                </br>" . $escaper->escapeHtml($lang['MitigationPercent']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['mitigation_percent']) . " %
+                </br>" . $escaper->escapeHtml($lang['ControlOwner']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_owner_name']) . "
+                </br>" . $escaper->escapeHtml($lang['Description']) . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_number']) . "
+                </br>" . $escaper->escapeHtml($lang['SupplementalGuidance']) . ":&nbsp;&nbsp;". $escaper->escapeHtml($risks[0]['supplemental_guidance']) . "
+                </div>
+                </br><a href='javascript:void(0)' class='morelink'>".$escaper->escapeHtml($lang['ShowMore'])."</a>";
             echo "<table class=\"table table-bordered table-condensed sortable\">\n";
             echo "<thead>\n";
             echo "<tr>\n";
-                echo "<th colspan=\"5\"><center>" . $escaper->escapeHtml($lang['ControlLongName'])  . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_long_name']) ."</br>" . $escaper->escapeHtml($lang['ControlShortName']) . ":&nbsp;&nbsp;". $escaper->escapeHtml($risks[0]['control_short_name']) ."</center></th>\n";
+                echo "<th colspan=\"7\" style=\"background-color:" . $escaper->escapeHtml($header_color) . "\">
+                    <center>" . $escaper->escapeHtml($lang['ControlLongName'])  . ":&nbsp;&nbsp;" . $escaper->escapeHtml($risks[0]['control_long_name']) ."
+                    </br>" . $escaper->escapeHtml($lang['ControlShortName']) . ":&nbsp;&nbsp;". $escaper->escapeHtml($risks[0]['control_short_name']) ."
+                    </br>" . $escaper->escapeHtml($lang['ControlRisk']) . ":&nbsp;&nbsp;". $escaper->escapeHtml($risks[0]['calculated_risk']) . $control_detail ."
+                    </center></th>\n";
                 echo "</tr>\n";
                 echo "<tr>\n";
                 echo "<th align=\"left\" width=\"50px\">". $escaper->escapeHtml($lang['ID']) ."</th>\n";
@@ -5290,6 +5400,8 @@ function risks_and_control_table($report)
 
     echo '
         <script>
+            var moretext = "' . $escaper->escapeHtml($lang['ShowMore']) . '";
+            var lesstext = "' . $escaper->escapeHtml($lang['ShowLess']) . '";
             $(document).ready( function(){
                 $(".hide-score").css("display","none");
                 $(".show-score").click(function(e){
@@ -5297,14 +5409,26 @@ function risks_and_control_table($report)
                     var control_id = $(this).data("control-id")
                     var risk_id = $(this).data("risk-id")
                     showControlDetails(control_id, risk_id)
-                })
+                });
                 
                 $(".hide-score").click(function(e){
                     e.preventDefault()
                     var control_id = $(this).data("control-id")
                     var risk_id = $(this).data("risk-id")
                     hideControlDetails(control_id, risk_id)
-                })
+                });
+                $(".morelink").click(function(){
+                    if($(this).hasClass("less")) {
+                        $(this).removeClass("less");
+                        $(this).html(moretext);
+                    } else {
+                        $(this).addClass("less");
+                        $(this).html(lesstext);
+                    }
+                    $(this).parent().find(".moreellipses").toggle();
+                    // $(this).prev().toggle();
+                    return false;
+                });
             });
             
             function showControlDetails( control_id , risk_id ){
@@ -5334,10 +5458,284 @@ function risks_and_control_table($report)
       </script>
     ';
 
+}
+/**************************************************
+ * FUNCTION: RETURN RISKS AND CONTROLS REPORT SQL *
+ **************************************************/
+function get_risks_and_controls_rows($report, $sort_by, $projects, $filters)
+{
+
+    $control_framework = $filters['control_framework'];
+    $control_family = $filters['control_family'];
+    $control_class = $filters['control_class'];
+    $control_phase = $filters['control_phase'];
+    $control_priority = $filters['control_priority'];
+    $control_owner = $filters['control_owner'];
+    // Open the database
+    $db = db_open();
+    $order = "c.calculated_risk DESC";
+    $where_sql = " ";
+
+    if($projects && is_array($projects)){
+        $where = [0];
+        $where_ids = [];
+        foreach($projects as $val){
+            $val = (int)$val;
+            if($val)
+            {
+                // If unassigned option.
+                if($val == -1)
+                {
+                    $where[] = "(b.project_id is NULL OR b.project_id='')";
+                }
+                else
+                {
+                    $where_ids[] = $val;
+                }
+            }
+        }
+        $where[] = "FIND_IN_SET(b.project_id, '".implode(",", $where_ids)."')";
+        $where_sql .= " AND (". implode(" OR ", $where) . ")";
+    }
+    
+    // Risks by Controls
+    if($report == 0)
+    {
+        $select = "SELECT fc.id gr_id, b.*, c.calculated_risk, fc.short_name control_short_name, fc.long_name control_long_name, fc.id control_id
+                , fc.control_number, fc.mitigation_percent, fc.supplemental_guidance, GROUP_CONCAT(DISTINCT f.name) framework_names, cc.name control_class_name
+                , cph.name control_phase_name, cpr.name control_priority_name, cf.name control_family_name, cu.name control_owner_name 
+                , GROUP_CONCAT(DISTINCT l.name) location
+                , GROUP_CONCAT(DISTINCT t.name) team
+                , DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open
+        ";
+        if($sort_by == 0) $order = "fc.long_name";
+        else $order = "c.calculated_risk DESC";
+
+        // If control class ID is requested.
+        if($control_class && is_array($control_class)){
+            $where = [0];
+            $where_ids = [];
+            foreach($control_class as $val){
+                $val = (int)$val;
+                if($val)
+                {
+                    // If unassigned option.
+                    if($val == -1)
+                    {
+                        $where[] = "(cc.value is NULL OR cc.value='')";
+                    }
+                    else
+                    {
+                        $where_ids[] = $val;
+                    }
+                }
+            }
+            $where[] = "FIND_IN_SET(cc.value, '".implode(",", $where_ids)."')";
+            
+            $where_sql .= " AND (". implode(" OR ", $where) . ")";
+        }
+        elseif($control_class == "all"){
+            $where_sql .= " AND 1 ";
+        }
+        else{
+            $where_sql .= " AND 0 ";
+        }
+
+        // If control phase ID is requested.
+        if($control_phase && is_array($control_phase)){
+            $where = [0];
+            $where_ids = [];
+            foreach($control_phase as $val){
+                $val = (int)$val;
+                if($val)
+                {
+                    // If unassigned option.
+                    if($val == -1)
+                    {
+                        $where[] = "(cph.value is NULL OR cph.value='')";
+                    }
+                    else
+                    {
+                        $where_ids[] = $val;
+                    }
+                }
+            }
+            $where[] = "FIND_IN_SET(cph.value, '".implode(",", $where_ids)."')";
+            $where_sql .= " AND (". implode(" OR ", $where) . ")";
+        }
+        elseif($control_class == "all"){
+            $where_sql .= " AND 1 ";
+        }
+        else{
+            $where_sql .= " AND 0 ";
+        }
+
+        // If control priority ID is requested.
+        if($control_priority && is_array($control_priority)){
+            $where = [0];
+            $where_ids = [];
+            foreach($control_priority as $val){
+                $val = (int)$val;
+                if($val)
+                {
+                    // If unassigned option.
+                    if($val == -1)
+                    {
+                        $where[] = "(cpr.value is NULL OR cpr.value='')";
+                    }
+                    else
+                    {
+                        $where_ids[] = $val;
+                    }
+                }
+            }
+            $where[] = "FIND_IN_SET(cpr.value, '".implode(",", $where_ids)."')";
+            $where_sql .= " AND (". implode(" OR ", $where) . ")";
+        }
+        elseif($control_priority == "all"){
+            $where_sql .= " AND 1 ";
+        }
+        else{
+            $where_sql .= " AND 0 ";
+        }
+        
+        // If control family ID is requested.
+        if($control_family && is_array($control_family)){
+            $where = [0];
+            $where_ids = [];
+            foreach($control_family as $val){
+                $val = (int)$val;
+                if($val)
+                {
+                    // If unassigned option.
+                    if($val == -1)
+                    {
+                        $where[] = "(cf.value is NULL OR cf.value='')";
+                    }
+                    else
+                    {
+                        $where_ids[] = $val;
+                    }
+                }
+            }
+            $where[] = "FIND_IN_SET(cf.value, '".implode(",", $where_ids)."')";
+            $where_sql .= " AND (". implode(" OR ", $where) . ")";
+        }
+        elseif($control_family == "all"){
+            $where_sql .= " AND 1 ";
+        }
+        else{
+            $where_sql .= " AND 0 ";
+        }
+        
+        // If control owner ID is requested.
+        if($control_owner && is_array($control_owner)){
+            $where = [0];
+            $where_or_ids = [];
+            foreach($control_owner as $val){
+                $val = (int)$val;
+                if($val)
+                {
+                    // If unassigned option.
+                    if($val == -1)
+                    {
+                        $where[] = "(cu.value is NULL OR cu.value='')";
+                    }
+                    else
+                    {
+                        $where_or_ids[] = $val;
+                    }
+                }
+            }
+            $where[] = "FIND_IN_SET(cu.value, '".implode(",", $where_or_ids)."')";
+            
+            $where_sql .= " AND (". implode(" OR ", $where) . ")";
+        }
+        elseif($control_owner == "all"){
+            $where_sql .= " AND 1 ";
+        }
+        else{
+            $where_sql .= " AND 0 ";
+        }
+        
+        // If control framework ID is requested.
+        if($control_framework && is_array($control_framework)){
+            $where = [0];
+            $where_or_ids = [];
+            foreach($control_framework as $val){
+                $val = (int)$val;
+                if($val)
+                {
+                    // If unassigned option.
+                    if($val == -1)
+                    {
+                        $where[] = "m.control_id is NULL";
+                    }
+                    else
+                    {
+                        $where_or_ids[] = $val;
+                    }
+                }
+            }
+            $where[] = "FIND_IN_SET(m_1.framework, '".implode(",", $where_or_ids)."')";
+            $where_sql .= " AND (". implode(" OR ", $where) . ")";
+        }
+        elseif($control_framework == "all"){
+            $where_sql .= " AND 1 ";
+        }
+        else{
+            $where_sql .= " AND 0 ";
+        }
+
+    }
+    // Controls by Risks
+    elseif($report == 1)
+    {
+        $select = "SELECT b.id gr_id, b.*, c.calculated_risk, fc.short_name control_short_name, fc.long_name control_long_name, fc.id control_id
+                , GROUP_CONCAT(DISTINCT l.name) location
+                , GROUP_CONCAT(DISTINCT t.name) team
+                , DATEDIFF(IF(b.status != 'Closed', NOW(), o.closure_date) , b.submission_date) days_open
+        ";
+    }
+    // Check the report
+    $query = $select."
+        FROM mitigations a 
+            INNER JOIN risks b ON a.risk_id = b.id 
+            INNER JOIN `mitigation_to_controls` mtc ON a.id=mtc.mitigation_id
+            INNER JOIN framework_controls fc ON mtc.control_id=fc.id AND fc.deleted=0
+            LEFT JOIN risk_scoring c ON b.id = c.id 
+            LEFT JOIN risk_to_location rtl ON b.id=rtl.risk_id
+            LEFT JOIN location l ON rtl.location_id=l.value
+            LEFT JOIN risk_to_team rtt ON b.id=rtt.risk_id
+            LEFT JOIN team t ON rtt.team_id=t.value
+            LEFT JOIN closures o ON b.close_id = o.id
+            LEFT JOIN `framework_control_mappings` m on fc.id=m.control_id
+            LEFT JOIN `framework_control_mappings` m_1 on fc.id=m_1.control_id
+            LEFT JOIN `frameworks` f on m.framework=f.value AND f.status=1
+            LEFT JOIN `control_phase` cph on fc.control_phase=cph.value
+            LEFT JOIN `control_class` cc on fc.control_class=cc.value
+            LEFT JOIN `control_priority` cpr on fc.control_priority=cpr.value
+            LEFT JOIN `family` cf on fc.family=cf.value
+            LEFT JOIN `user` cu on fc.control_owner=cu.value
+            LEFT JOIN projects p FORCE INDEX(PRIMARY) ON b.project_id = p.value
+        WHERE 1 {$where_sql}
+           GROUP BY 
+            b.id, fc.id
+    ORDER BY
+        {$order}, c.calculated_risk DESC
+        ;
+    ";
+
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    // Store the results in the rows array
+    $rows = $stmt->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC);
+
     // Close the database
     db_close($db);
-}
 
+    return $rows;
+}
 /*******************************
  * FUNCTION: GET CONTROLS NAME *
  *******************************/

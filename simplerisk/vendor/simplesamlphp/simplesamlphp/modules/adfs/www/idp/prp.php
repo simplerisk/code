@@ -19,4 +19,4 @@ $request = Request::createFromGlobals();
 
 $controller = new AdfsController($config, $session);
 $t = $controller->prp($request);
-$t->send();
+$t->show();

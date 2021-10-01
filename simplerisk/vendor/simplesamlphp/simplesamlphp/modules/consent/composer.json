@@ -33,7 +33,7 @@
     "require-dev": {
         "simplesamlphp/simplesamlphp": "^1.17",
         "phpunit/phpunit": "~5.7",
-        "webmozart/assert": "<1.7"
+        "webmozart/assert": "<1.6"
     },
     "support": {
         "issues": "https://github.com/tvdijen/simplesamlphp-module-consent/issues",

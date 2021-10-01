@@ -821,10 +821,13 @@ function get_entered_assets($verified=null)
     $params = [];
 
     if ($verified !== null) {
-        $verified_check = "WHERE `a`.`verified`=:verified ";
+        $where = " WHERE `a`.`verified`=:verified";
         $params['verified'] = $verified;
-    } else {
-        $verified_check = "";
+    } else $where = " WHERE 1";
+
+    if(team_separation_extra()){
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $where .= get_user_teams_query_for_assets("a", false, true);
     }
 
     if (encryption_extra()) {
@@ -839,7 +842,7 @@ function get_entered_assets($verified=null)
             `assets` a
             LEFT JOIN tags_taggees tt ON tt.taggee_id = a.id AND tt.type = 'asset'
             LEFT JOIN tags tg on tg.id = tt.tag_id
-        {$verified_check}
+        {$where}
         GROUP BY
             a.id
         ORDER BY
@@ -1076,7 +1079,7 @@ function display_edit_asset_table()
         }
         else
         {
-            display_asset_name_td($asset['name']);
+            display_asset_name_td_edit($asset['id'], $asset['name']);
             display_asset_ip_address_td($asset['ip']);
             display_asset_valuation_td_edit($asset['id'], $asset['value']);
             display_asset_site_location_td_edit($asset['id'], $asset['location']);
@@ -1126,6 +1129,10 @@ function edit_asset($id, $value, $location, $team, $details)
 function update_asset_field_value_by_field_name($id, $fieldName, $fieldValue)
 {
     switch($fieldName){
+        case "name":
+            $fieldName = "name";
+            $fieldValue = try_encrypt($fieldValue);
+        break;
         case "value":
             $fieldName = "value";
         break;
@@ -1194,8 +1201,12 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
 
     $asset_id   = asset_exists($name);
 
-    if (!$asset_id)
-        return add_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, true);
+    if ($asset_id == false)
+    {
+	    write_debug_log("An asset named \"{$name} was not found so adding a new asset.");
+
+	    return add_asset($ip, $name, $value, $location, $teams, $details, $tags, $verified, true);
+    }
 
     if (asset_exists_exact($ip, $name, $value, $location, $teams, $details, $verified)
         && areTagsEqual($asset_id, 'asset', $tags)) {
@@ -1234,7 +1245,7 @@ function import_asset($ip, $name, $value, $location, $teams, $details, $tags, $v
         return $asset_id;
     }
 
-    return false;
+    return $asset_id;
 }
 
 /*****************************
@@ -2179,6 +2190,12 @@ function process_selected_assets_asset_groups_of_type($type_id, $assets_and_grou
             $junction_id_name = 'assessment_answer_id';
             $forced_asset_verification_state = true;
         break;
+        case 'questionnaire_risk':
+            $assets_junction_name = 'questionnaire_risk_to_assets';
+            $asset_groups_junction_name = 'questionnaire_risk_to_asset_groups';
+            $junction_id_name = 'questionnaire_id';
+            $forced_asset_verification_state = true;
+        break;
         case 'questionnaire_answer':
             if(!assessments_extra() || !assessments_extra("questionnaire_answers_to_assets") || !assessments_extra("questionnaire_answers_to_asset_groups"))
             {
@@ -2553,15 +2570,12 @@ function get_assets_and_asset_groups_for_dropdown($risk_id = false) {
     if (encryption_extra()) {
         require_once(realpath(__DIR__ . '/../extras/encryption/index.php'));
     }
-    if (!is_admin() && team_separation_extra()) {
-        $user_id = $_SESSION['uid'];
-        $teams = get_user_teams($user_id);
-        if(get_setting('allow_all_to_asset_noassign_team')){
-            $where = "(`teams` = '' OR `teams` IN (" . implode(",", $teams) . "))";
-        } else {
-            $where = "`teams` IN (" . implode(",", $teams) . ")";
-        }
-    } else $where = "1";
+    if(team_separation_extra()){
+        require_once(realpath(__DIR__ . '/../extras/separation/index.php'));
+        $team_based_separation_where_condition = " AND " . get_user_teams_query_for_assets('', false);
+    } else {
+        $team_based_separation_where_condition = '';
+    }
 
     if ($risk_id)
         $risk_id -= 1000;
@@ -2580,7 +2594,7 @@ function get_assets_and_asset_groups_for_dropdown($risk_id = false) {
                 `assets` a " .
     ($risk_id ? "LEFT OUTER JOIN `risks_to_assets` rta ON `rta`.`asset_id` = `a`.`id` and `rta`.`risk_id` = :risk_id" : "") . "
             WHERE
-                `a`.`verified` = 1" . ($risk_id ? " or `rta`.`asset_id` IS NOT NULL" : "") . " AND " . $where . "
+                `a`.`verified` = 1" . ($risk_id ? " or `rta`.`asset_id` IS NOT NULL" : "") . " {$team_based_separation_where_condition}
         UNION ALL
             SELECT
                 `ag`.`id`,
@@ -2637,6 +2651,13 @@ function get_assets_and_asset_groups_of_type_as_string($id, $type) {
             $assets_junction_name = 'questionnaire_answers_to_assets';
             $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
             $junction_id_name = 'questionnaire_answer_id';
+        break;
+        case 'questionnaire_risk':
+            if(!assessments_extra()) return;
+            $assets_junction_name = 'questionnaire_risk_to_assets';
+            $asset_groups_junction_name = 'questionnaire_risk_to_asset_groups';
+            $junction_id_name = 'questionnaire_id';
+            $forced_asset_verification_state = true;
         break;
         default:
             return;
@@ -2705,6 +2726,13 @@ function get_assets_and_asset_groups_of_type($id, $type) {
             $assets_junction_name = 'questionnaire_answers_to_assets';
             $asset_groups_junction_name = 'questionnaire_answers_to_asset_groups';
             $junction_id_name = 'questionnaire_answer_id';
+        break;
+        case 'questionnaire_risk':
+            if(!assessments_extra()) return;
+            $assets_junction_name = 'questionnaire_risk_to_assets';
+            $asset_groups_junction_name = 'questionnaire_risk_to_asset_groups';
+            $junction_id_name = 'questionnaire_id';
+            $forced_asset_verification_state = true;
         break;
         default:
             return;

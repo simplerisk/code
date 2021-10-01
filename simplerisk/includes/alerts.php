@@ -32,6 +32,7 @@ function set_alert($alert = false, $type = "good", $message = "")
         ));
     
     $_SESSION['alerts'] = $alerts;
+    write_debug_log("Core: [set_alert]: Alert with type '{$type}' and message '{$message}' was added.");
 }
 
 /***********************
@@ -121,8 +122,8 @@ function setup_alert_requirements($path_to_root = "")
         $path_to_root = $escaper->escapeHtml($path_to_root);
     }
 
-    echo "<script src='{$path_to_root}js/alerts/toastr.min.js'></script>\n";
-    echo "<script src='{$path_to_root}js/alerts/alert-helper.js'></script>\n";
+    echo "<script src='{$path_to_root}js/alerts/toastr.min.js?" . current_version("app") . "'></script>\n";
+    echo "<script src='{$path_to_root}js/alerts/alert-helper.js?" . current_version("app") . "'></script>\n";
     $timeOut = get_setting("alert_timeout");
     if ($timeOut || $timeOut === "0") {
         $timeOut = (int)$timeOut;
@@ -134,7 +135,7 @@ function setup_alert_requirements($path_to_root = "")
         echo "</script>\n";
     }
 
-    echo "<link rel='stylesheet' href='{$path_to_root}css/toastr.min.css' />\n";
+    echo "<link rel='stylesheet' href='{$path_to_root}css/toastr.min.css?" . current_version("app") . "' />\n";
     echo "<style>\n";
     echo "    .toast-top-right {\n";
     echo "        top: 75px;\n";

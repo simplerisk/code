@@ -1,0 +1,23 @@
+{
+  "name": "underscore",
+  "repo": "components/underscore",
+  "description": "JavaScript's functional programming helper library.",
+  "homepage": "http://documentcloud.github.com/underscore/",
+  "keywords": [
+    "util",
+    "functional",
+    "server",
+    "client",
+    "browser"
+  ],
+  "author": "Jeremy Ashkenas <jeremy@documentcloud.org>",
+  "version": "1.13.1",
+  "main": "underscore.js",
+  "scripts": [
+    "underscore.js"
+  ],
+  "files": [
+    "underscore-min.js",
+    "underscore-min.map"
+  ]
+}

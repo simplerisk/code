@@ -25,6 +25,83 @@ namespace SimpleSAML\Module\consent\Consent\Store;
 class Cookie extends \SimpleSAML\Module\consent\Store
 {
     /**
+     * @var string Cookie name prefix
+     */
+    private $name;
+
+    /**
+     * @var int Cookie lifetime
+     */
+    private $lifetime;
+
+    /**
+     * @var string Cookie path
+     */
+    private $path;
+
+    /**
+     * @var string Cookie domain
+     */
+    private $domain = '';
+
+    /**
+     * @var bool Cookie secure flag
+     */
+    private $secure;
+
+    /**
+     * @var string|null Cookie samesite flag
+     */
+    private $samesite = null;
+
+    /**
+     * Parse configuration.
+     *
+     * This constructor parses the configuration.
+     *
+     * @param array $config Configuration for database consent store.
+     *
+     * @throws \Exception in case of a configuration error.
+     */
+    public function __construct(array $config)
+    {
+        parent::__construct($config);
+
+        if (array_key_exists('name', $config)) {
+            $this->name = $config['name'];
+        } else {
+            $this->name = '\SimpleSAML\Module\consent';
+        }
+
+        if (array_key_exists('lifetime', $config)) {
+            $this->lifetime = (int) $config['lifetime'];
+        } else {
+            $this->lifetime = 7776000; // (90*24*60*60)
+        }
+
+        if (array_key_exists('path', $config)) {
+            $this->path = $config['path'];
+        } else {
+            $globalConfig = \SimpleSAML\Configuration::getInstance();
+            $this->path = $globalConfig->getBasePath();
+        }
+
+        if (array_key_exists('domain', $config)) {
+            $this->domain = $config['domain'];
+        }
+
+        if (array_key_exists('secure', $config)) {
+            $this->secure = (bool) $config['secure'];
+        } else {
+            $this->secure = \SimpleSAML\Utils\HTTP::isHTTPS();
+        }
+
+        if (array_key_exists('samesite', $config)) {
+            $this->samesite = $config['samesite'];
+        }
+    }
+
+    /**
      * Check for consent.
      *
      * This function checks whether a given user has authorized the release of the attributes identified by
@@ -42,7 +119,7 @@ class Cookie extends \SimpleSAML\Module\consent\Store
         assert(is_string($destinationId));
         assert(is_string($attributeSet));
 
-        $cookieName = self::getCookieName($userId, $destinationId);
+        $cookieName = $this->getCookieName($userId, $destinationId);
 
         $data = $userId.':'.$attributeSet.':'.$destinationId;
 
@@ -97,7 +174,7 @@ class Cookie extends \SimpleSAML\Module\consent\Store
         assert(is_string($destinationId));
         assert(is_string($attributeSet));
 
-        $name = self::getCookieName($userId, $destinationId);
+        $name = $this->getCookieName($userId, $destinationId);
         $value = $userId.':'.$attributeSet.':'.$destinationId;
 
         \SimpleSAML\Logger::debug('Consent cookie - Set ['.$value.']');
@@ -122,7 +199,7 @@ class Cookie extends \SimpleSAML\Module\consent\Store
         assert(is_string($userId));
         assert(is_string($destinationId));
 
-        $name = self::getCookieName($userId, $destinationId);
+        $name = $this->getCookieName($userId, $destinationId);
         $this->setConsentCookie($name, null);
     }
 
@@ -162,7 +239,7 @@ class Cookie extends \SimpleSAML\Module\consent\Store
 
         $ret = [];
 
-        $cookieNameStart = '\SimpleSAML\Module\consent:';
+        $cookieNameStart = $this->name . ':';
         $cookieNameStartLen = strlen($cookieNameStart);
         foreach ($_COOKIE as $name => $value) {
             if (substr($name, 0, $cookieNameStartLen) !== $cookieNameStart) {
@@ -254,12 +331,12 @@ class Cookie extends \SimpleSAML\Module\consent\Store
      *
      * @return string The cookie name
      */
-    private static function getCookieName($userId, $destinationId)
+    private function getCookieName($userId, $destinationId)
     {
         assert(is_string($userId));
         assert(is_string($destinationId));
 
-        return '\SimpleSAML\Module\consent:'.sha1($userId.':'.$destinationId);
+        return $this->name . ':' . sha1($userId . ':' . $destinationId);
     }
 
 
@@ -277,11 +354,13 @@ class Cookie extends \SimpleSAML\Module\consent\Store
         assert(is_string($value) || is_null($value));
 
         $globalConfig = \SimpleSAML\Configuration::getInstance();
-        $params = [
-            'lifetime' => 7776000, // (90*24*60*60)
-            'path' => ($globalConfig->getBasePath()),
+	$params = [
+            'lifetime' => $this->lifetime,
+            'path' => $this->path,
+            'domain' => $this->domain,
             'httponly' => true,
-            'secure' => \SimpleSAML\Utils\HTTP::isHTTPS(),
+            'secure' => $this->secure,
+            'samesite' => $this->samesite,
         ];
 
         try {
