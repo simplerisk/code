@@ -47,6 +47,7 @@ $available_extras = array(
     'separation',
     'ucf',
     'upgrade',
+    'vulnmgmt',
 );
 
 

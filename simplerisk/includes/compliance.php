@@ -430,7 +430,7 @@ function get_framework_control_test_audit_by_id($test_audit_id){
             LEFT JOIN `framework_control_test_results` results ON audits.id=results.test_audit_id
             LEFT JOIN `framework_control_tests` tests ON tests.id=audits.test_id
             LEFT JOIN `items_to_teams` itt ON `itt`.`item_id` = `audits`.`id` and `itt`.`type` = 'audit'
-        WHERE audits.id=:test_audit_id
+        WHERE audits.id=:test_audit_id and ctrl.deleted = 0
     ");
     $stmt->bindParam(":test_audit_id", $test_audit_id, PDO::PARAM_INT);
     $stmt->execute();
@@ -1353,7 +1353,7 @@ function get_framework_control_test_audits($active, $columnName=false, $columnDi
         }
     }
 
-    $sql .= " WHERE ".implode(" AND ", $wheres);
+    $sql .= " WHERE t3.deleted = 0 AND ".implode(" AND ", $wheres);
 
     $sql .= " GROUP BY t1.id ";
     

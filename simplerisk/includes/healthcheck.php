@@ -958,35 +958,49 @@ function check_php_memory_limit()
 	// Get the currently set memory limit
 	$memory_limit = ini_get('memory_limit');
 
-	// If the memory limit is a number followed by characters
-	if (preg_match('/^(\d+)(.)$/', $memory_limit, $matches))
+	// If the memory limit is not set
+	if ($memory_limit === false)
 	{
-		// If the memory limit is in megabytes
-		if ($matches[2] == 'M')
-		{
-			// Get the memory limit in bytes
-			$memory_limit_bytes = $matches[1] * 1024 * 1024;
-		}
-		// If the memory limit is in kilobytes
-		else if ($matches[2] == 'K')
-		{
-			// Get the memory limit in bytes
-			$memory_limit_bytes = $matches[1] * 1024;
-		}
+		return array("result" => 0, "text" => "No memory_limit value is set in the php.ini file and PHP is likely using the default value which is less than the current size of the SimpleRisk application.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the memory_limit value to 256M or higher.");
 	}
-
-	// Set the current SimpleRisk size in bytes
-	$simplerisk_size_bytes = 180 * 1024 * 1024;
-
-	// If the memory limit is less than the SimpleRisk size
-	if ($memory_limit_bytes < $simplerisk_size_bytes)
+	// If the memory limit is set to unlimited
+	else if ($memory_limit == -1)
 	{
-		return array("result" => 0, "text" => "The memory_limit value in the php.ini file is set to " . $memory_limit . ", which is less than the current size of the SimpleRisk application.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the memory_limit value to 256M or higher.");
+		return array("result" => 1, "text" => "The memory_limit value in the php.ini file is set to -1.  This provides unlimited memory to PHP, which should be acceptable for the SimpleRisk application.");
 	}
-	// The memory limit is higher than the SimpleRisk size
+	// Otherwise
 	else
 	{
-		return array("result" => 1, "text" => "The memory_limit value in the php.ini file is set to " . $memory_limit . ".");
+		// If the memory limit is a number followed by characters
+		if (preg_match('/^(\d+)(.)$/', $memory_limit, $matches))
+		{
+			// If the memory limit is in megabytes
+			if ($matches[2] == 'M')
+			{
+				// Get the memory limit in bytes
+				$memory_limit_bytes = $matches[1] * 1024 * 1024;
+			}
+			// If the memory limit is in kilobytes
+			else if ($matches[2] == 'K')
+			{
+				// Get the memory limit in bytes
+				$memory_limit_bytes = $matches[1] * 1024;
+			}
+		}
+
+		// Set the current SimpleRisk size in bytes
+		$simplerisk_size_bytes = 180 * 1024 * 1024;
+
+		// If the memory limit is less than the SimpleRisk size
+		if ($memory_limit_bytes < $simplerisk_size_bytes)
+		{
+			return array("result" => 0, "text" => "The memory_limit value in the php.ini file is set to " . $memory_limit . ", which is less than the current size of the SimpleRisk application.  SimpleRisk will function normally, however, this creates an issue with the one-click upgrade process.  We recommend setting the memory_limit value to 256M or higher.");
+		}
+		// The memory limit is higher than the SimpleRisk size
+		else
+		{
+			return array("result" => 1, "text" => "The memory_limit value in the php.ini file is set to " . $memory_limit . ".");
+		}
 	}
 }
 

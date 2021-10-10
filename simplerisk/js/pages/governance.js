@@ -355,9 +355,9 @@ $(document).ready(function(){
                 });
                 $("#filter_by_control_framework").multiselect("rebuild");
                 $("#add-control-form")[0].reset();
-                $('#add-control-form [name="control_type[]"]', modal).multiselect('deselectAll', false);
-                $('#add-control-form [name="control_type[]"]', modal).multiselect('select', [1]);
-                $('#add-control-form [name="control_type[]"]', modal).multiselect('refresh');
+                $('#add-control-form [name="control_type[]"]').multiselect('deselectAll', false);
+                $('#add-control-form [name="control_type[]"]').multiselect('select', [1]);
+                $('#add-control-form [name="control_type[]"]').multiselect('refresh');
                 $('#control--add').modal('hide');
                 controlDatatable.ajax.reload(null, false);
             }

@@ -246,6 +246,12 @@ require_once(language_file());
 			// Download the extra
 			$result = download_extra("incident_management");
 		}
+		// If the user wants to install the Vulnerability Management Extra
+		else if (isset($_POST['get_vulnmgmt_extra']))
+		{
+			// Download the extra
+			$result = download_extra("vulnmgmt");
+		}
 	}
 ?>
 
