@@ -106,11 +106,22 @@ function view_top_table($risk_id, $calculated_risk, $subject, $status, $show_det
                             echo "<li><a class='change-status' href=\"#\">" . $escaper->escapeHtml($lang['ChangeStatus']) . "</a></li>\n";
 			}
 
-			// If the user has permission to comment on risk management
-			if (has_permission("comment_risk_management"))
-			{
+            // If the user has permission to comment on risk management
+            if (has_permission("comment_risk_management"))
+            {
                             echo "<li><a href=\"#comment\" class='add-comment-menu'>". $escaper->escapeHtml($lang['AddAComment']) ."</a></li>\n";
-			}
+            }
+                // If the user has permission to plan mitigations
+                if (has_permission("plan_mitigations"))
+                {
+                    echo "<li><a class='mark-unmitigation' href=\"#\">". $escaper->escapeHtml($lang['MarkAsUnmitigated']) ."</a></li>\n";
+                }
+
+                // If the user has permission to plan mitigations
+                if (has_permission("modify_risks"))
+                {
+                    echo "<li><a class='mark-unreview' href=\"#\">". $escaper->escapeHtml($lang['MarkAsUnreviewed']) ."</a></li>\n";
+                }
 
                         echo "<li><a class='printable-veiw' href=\"print_view.php?id=" . $escaper->escapeHtml($risk_id) . "\" target=\"_blank\">". $escaper->escapeHtml($lang['PrintableView']) ."</a></li>\n";
                         echo "</ul>\n";
@@ -8980,6 +8991,8 @@ function display_edit_projects($template_group_id = ""){
 function display_project_table_header($template_group_id = ""){
     global $lang;
     global $escaper;
+    $header_html = "";
+    $header_width = "1301";
     // If customization extra is enabled
     if(customization_extra())
     {
@@ -8991,29 +9004,29 @@ function display_project_table_header($template_group_id = ""){
 
         }
         $active_fields = get_active_fields("project", $template_group_id);
-        echo '
-            <ul class="project-headers clearfix">
-                <li class="project-block--priority white-labels">'.$escaper->escapeHtml($lang['Priority']).'</li>
+        $header_html .= '
+                <div class="project-block--priority white-labels">'.$escaper->escapeHtml($lang['Priority']).'</div>
             ';
+        $custom_field_count = 0;
         foreach($active_fields as $field)
         {
             if($field['is_basic'] == 1)
             {
                 switch($field['name']){
                     case 'ProjectName':
-                        echo '<li class="project-block--name white-labels">'.$escaper->escapeHtml($lang['Name']).'</li>';
+                        $header_html .= '<div class="project-block--name white-labels">'.$escaper->escapeHtml($lang['Name']).'</div>';
                     break;
                     case 'DueDate':
-                        echo '<li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['DueDate']).'</li>';
+                        $header_html .= '<div class="project-block--field white-labels">'.$escaper->escapeHtml($lang['DueDate']).'</div>';
                     break;
                     case 'Consultant':
-                        echo '<li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['Consultant']).'</li>';
+                        $header_html .= '<div class="project-block--field white-labels">'.$escaper->escapeHtml($lang['Consultant']).'</div>';
                     break;
                     case 'BusinessOwner':
-                        echo '<li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['BusinessOwner']).'</li>';
+                        $header_html .= '<div class="project-block--field white-labels">'.$escaper->escapeHtml($lang['BusinessOwner']).'</div>';
                     break;
                     case 'DataClassification':
-                        echo '<li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['DataClassification']).'</li>';
+                        $header_html .= '<div class="project-block--field white-labels">'.$escaper->escapeHtml($lang['DataClassification']).'</div>';
                     break;
                 }
             }
@@ -9025,25 +9038,29 @@ function display_project_table_header($template_group_id = ""){
                     // Include the extra
                     require_once(realpath(__DIR__ . '/../extras/customization/index.php'));
 
-                    echo '<li class="project-block--field white-labels">'.$escaper->escapeHtml($field['name']).'</li>';
+                    $custom_field_count++;
+                    $header_html .= '<div class="project-block--field white-labels">'.$escaper->escapeHtml($field['name']).'</div>';
                 }
             }
         }
-        echo ' <li class="project-block--risks white-labels">'.$escaper->escapeHtml($lang['Risk']).'</li>
-            </ul>';
+        $header_html .= ' <div class="project-block--risks white-labels">'.$escaper->escapeHtml($lang['Risk']).'</div>';
+        $header_width += $custom_field_count * 150;
+        $header_html = '<div class="project-headers clearfix" style="width:'.$header_width.'px">'.$header_html.'</div>';
+        //$header_html .= ' <div class="project-block--risks white-labels">'.$escaper->escapeHtml($lang['Risk']).'</div>           </div>';
     } else {
-        echo '
-            <ul class="project-headers clearfix">
-              <li class="project-block--priority white-labels">'.$escaper->escapeHtml($lang['Priority']).'</li>
-              <li class="project-block--name white-labels">'.$escaper->escapeHtml($lang['Name']).'</li>
-              <li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['DueDate']).'</li>
-              <li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['Consultant']).'</li>
-              <li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['BusinessOwner']).'</li>
-              <li class="project-block--field white-labels">'.$escaper->escapeHtml($lang['DataClassification']).'</li>
-              <li class="project-block--risks white-labels">'.$escaper->escapeHtml($lang['Risk']).'</li>
-            </ul>
+        $header_html .= '
+            <div class="project-headers clearfix" style="width:'.$header_width.'px">
+              <div class="project-block--priority white-labels">'.$escaper->escapeHtml($lang['Priority']).'</div>
+              <div class="project-block--name white-labels">'.$escaper->escapeHtml($lang['Name']).'</div>
+              <div class="project-block--field white-labels">'.$escaper->escapeHtml($lang['DueDate']).'</div>
+              <div class="project-block--field white-labels">'.$escaper->escapeHtml($lang['Consultant']).'</div>
+              <div class="project-block--field white-labels">'.$escaper->escapeHtml($lang['BusinessOwner']).'</div>
+              <div class="project-block--field white-labels">'.$escaper->escapeHtml($lang['DataClassification']).'</div>
+              <div class="project-block--risks white-labels">'.$escaper->escapeHtml($lang['Risk']).'</div>
+            </div>
         ';
     }
+    echo $header_html;
 }
 
 ?>

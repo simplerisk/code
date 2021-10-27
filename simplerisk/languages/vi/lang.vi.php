@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'Chủ đề rủi ro quá dài và bị cắt ngắn còn {$limit} ký tự.',
     'BootstrapDeliveryMethod' => 'Phương thức phân phối Bootstrap',
     'TestAuditDoesNotExist' => 'Kiểm tra thử nghiệm không tồn tại',
+    'MarkAsUnmitigated' => 'Đánh dấu là Không điều chỉnh',
+    'MarkAsUnreviewed' => 'Đánh dấu là Chưa được đánh giá',
+    'NoDataToUpdate' => 'Không có dữ liệu để cập nhật',
 
     '' => ''
 );

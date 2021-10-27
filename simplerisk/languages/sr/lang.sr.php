@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'Предмет ризика је предугачак и скраћен је на {$limit} знакова.',
     'BootstrapDeliveryMethod' => 'Боотстрап Метода испоруке',
     'TestAuditDoesNotExist' => 'Ревизија теста не постоји',
+    'MarkAsUnmitigated' => 'Означи као неометано',
+    'MarkAsUnreviewed' => 'Означи као непрегледано',
+    'NoDataToUpdate' => 'Nema podataka za ažuriranje',
 
     '' => ''
 );

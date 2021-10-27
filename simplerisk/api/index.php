@@ -80,6 +80,11 @@
         getRoute()->get('/management/risk/changestatus', 'changestatusForm');
         getRoute()->post('/management/risk/updateStatus', 'updateStatusForm');
 
+        getRoute()->get('/management/risk/mark-unmitigation', 'markUnmitigationForm');
+        getRoute()->post('/management/risk/saveMarkUnmitigation', 'saveMarkUnmitigationForm');
+        getRoute()->get('/management/risk/mark-unreview', 'markUnreviewForm');
+        getRoute()->post('/management/risk/saveMarkUnreview', 'saveMarkUnreviewForm');
+
         getRoute()->get('/management/risk/scoreaction', 'scoreactionForm');
         getRoute()->post('/management/risk/saveScore', 'saveScoreForm');
 

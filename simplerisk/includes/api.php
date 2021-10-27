@@ -985,9 +985,24 @@ function dynamicriskForm()
                         }
                     }
                     $data_row[] = $custom_data_row;
+                    $row["custom_field_".$field_id] = strip_tags($custom_data_row);
                 }
             }
+            $data_row['risk'] = $row;
             $datas[] = $data_row;
+        }
+        if(($pos = stripos($orderColumnName, "custom_field_")) !== false){
+            usort($datas, function($a, $b) use ($orderDir, $orderColumnName){
+                // For identical custom fields we're sorting on the id, so the results' order is not changing
+                if ($a['risk'][$orderColumnName] === $b['risk'][$orderColumnName]) {
+                    return (int)$a['risk']['id'] - (int)$b['risk']['id'];
+                }
+                if($orderDir == "asc") {
+                    return strcmp($a['risk'][$orderColumnName], $b['risk'][$orderColumnName]);
+                } else {
+                    return strcmp($b['risk'][$orderColumnName], $a['risk'][$orderColumnName]);
+                }
+            });
         }
 
         $results = array(
@@ -2299,6 +2314,177 @@ function updateStatusForm()
 
     }
 
+}
+
+/********************************************************
+ * FUNCTION: MANAGEMENT - GET MARK AS UNMITIGATION HTML *
+ ********************************************************/
+function markUnmitigationForm()
+{
+    global $lang, $escaper;
+
+    // If the id is not sent
+    if (!isset($_GET['id']))
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+
+    $id = $_GET['id'];
+
+    ob_start();
+    include(realpath(__DIR__ . '/../management/partials/unmitigation.php'));
+    $html = ob_get_contents();
+    ob_end_clean();
+
+    // Add token to form tag
+    $html = addCSRTToken($html);
+
+    json_response(200, get_alert(true), $html);
+}
+
+/***************************************************
+ * FUNCTION: MANAGEMENT - UPDATE UNMITIGATION RISK *
+ ***************************************************/
+function saveMarkUnmitigationForm()
+{
+    global $lang, $escaper;
+
+    // If the id is not sent
+    if (!isset($_GET['id']))
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+    $id = $_GET['id'];
+    $access = check_access_for_risk($id);
+
+    // Check if the user has access to plan mitigations
+    if (!isset($_SESSION["plan_mitigations"]) || $_SESSION["plan_mitigations"] != 1 || !$access)
+    {
+        global $lang;
+
+        set_alert(true, "bad", $lang['MitigationPermissionMessage']);
+        json_response(400, get_alert(true), null);
+    }
+    // If user has permission for plan mitigation.
+    else
+    {
+        $risk = get_risk_by_id($id);
+        if (count($risk) != 0){
+            $mitigation_id = $risk[0]['mitigation_id'];
+        }else{
+            $mitigation_id = "";
+        }
+
+        if ($mitigation_id)
+        {
+            // Submit Unmitigation
+            $error = submit_unmitigation($id);
+        }
+        else
+        {
+            $error = "There is no Mitigation."; 
+        }
+        if ($error == 1)
+        {
+          // Display an alert
+          set_alert(true, "good", "The Mitigation has been successfully deleted.");
+        }
+        else
+        {
+          // Display an alert
+          set_alert(true, "bad", $error);
+        }
+
+        $html = getTabHtml($id, 'viewhtml');
+
+        json_response(200, get_alert(true), $html);
+
+    }
+}
+
+/****************************************************
+ * FUNCTION: MANAGEMENT - GET MARK AS UNREVIEW HTML *
+ ****************************************************/
+function markUnreviewForm()
+{
+    global $lang, $escaper;
+
+    // If the id is not sent
+    if (!isset($_GET['id']))
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+
+    $id = $_GET['id'];
+
+    ob_start();
+    include(realpath(__DIR__ . '/../management/partials/unreview.php'));
+    $html = ob_get_contents();
+    ob_end_clean();
+
+    // Add token to form tag
+    $html = addCSRTToken($html);
+
+    json_response(200, get_alert(true), $html);
+}
+/***********************************************
+ * FUNCTION: MANAGEMENT - UPDATE UNREVIEW RISK *
+ ***********************************************/
+function saveMarkUnreviewForm()
+{
+    global $lang, $escaper;
+
+    // If the id is not sent
+    if (!isset($_GET['id']))
+    {
+        set_alert(true, "bad", $escaper->escapeHtml($lang['YouNeedToSpecifyAnIdParameter']));
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
+    $id = $_GET['id'];
+    $risk = get_risk_by_id($id);
+
+    // If a risk was returned
+    if (count($risk) != 0)
+    {
+        // Check that the user has access to this risk id
+        $access = check_access_for_risk($id);
+
+        // Check that the user has permission to review this risk level
+        $review = check_review_permission_by_risk_id($id);
+
+        // If the user has permission to the risk and permission to review
+        if ($access && $review)
+        {
+            submit_management_unreview($id);
+            set_alert(true, "good", $lang['SavedSuccess']);
+
+            $html = getTabHtml($id, 'viewhtml');
+
+            json_response(200, get_alert(true), $html);
+        }
+        else
+        {
+                // Display an alert
+                set_alert(true, "bad", "You do not have permission to review risks at this risk level.  Any reviews that you attempt to submit will not be recorded.  Please contact an administrator if you feel that you have reached this message in error.");
+        }
+    }else{
+
+        set_alert(true, "bad", $lang['RiskUpdatePermissionMessage']);
+
+        // Return a JSON response
+        json_response(400, get_alert(true), NULL);
+    }
 }
 
 /*****************************************
@@ -5736,12 +5922,9 @@ function getPlanMitigationsDatatableResponse()
             });
         }
 
-
-
-        $data = array();
-        
         $review_levels = get_review_levels();
-
+        
+        $risks_data = [];
         foreach ($risks as $key=>$risk)
         {
             $color = get_risk_color($risk['calculated_risk']);
@@ -5781,6 +5964,7 @@ function getPlanMitigationsDatatableResponse()
                                     }
                                 }
                                 $data_row[] = $text;
+                                $risk[$column] = strip_tags($text);
                             }
                         } else {
                             $data_row[] = $escaper->escapeHtml($risk[$column]);
@@ -5888,7 +6072,27 @@ function getPlanMitigationsDatatableResponse()
                         break;
                 }
             }
+            $risk["data_row"] = $data_row;
+            $risks_data[] = $risk;
+        }
+        if(($pos = stripos($orderColumnName, "custom_field_")) !== false){
+            // Sorting by the custom field review text as the normal 'management_review' field contains html
+            usort($risks_data, function($a, $b) use ($orderDir, $orderColumnName){
+                // For identical custom fields we're sorting on the id, so the results' order is not changing
+                if ($a[$orderColumnName] === $b[$orderColumnName]) {
+                    return (int)$a['id'] - (int)$b['id'];
+                }
+                if($orderDir == "asc") {
+                    return strcmp($a[$orderColumnName], $b[$orderColumnName]);
+                } else {
+                    return strcmp($b[$orderColumnName], $a[$orderColumnName]);
+                }
+            });
+        }
 
+        $data = array();
+        foreach ($risks_data as $key=>$risk)
+        {
             // column filter 
             $success = true;
             foreach($column_filters as $column_name => $val){
@@ -6015,7 +6219,7 @@ function getPlanMitigationsDatatableResponse()
                         break;
                 }
             }
-            if($success == true) $data[] = $data_row;
+            if($success == true) $data[] = $risk["data_row"];
         }
         $risks_by_page = [];
 
@@ -6183,10 +6387,10 @@ function getManagementReviewsDatatableResponse()
             });
         }
 
-        $data = array();
-        
+       
         $review_levels = get_review_levels();
 
+        $risks_data = [];
         foreach ($risks as $key=>$risk)
         {
             $color = get_risk_color($risk['calculated_risk']);
@@ -6226,6 +6430,7 @@ function getManagementReviewsDatatableResponse()
                                     }
                                 }
                                 $data_row[] = $text;
+                                $risk[$column] = strip_tags($text);
                             }
                         } else {
                             $data_row[] = $escaper->escapeHtml($risk[$column]);
@@ -6333,7 +6538,28 @@ function getManagementReviewsDatatableResponse()
                         break;
                 }
             }
+            $risk["data_row"] = $data_row;
+            $risks_data[] = $risk;
+        }
 
+        if(($pos = stripos($orderColumnName, "custom_field_")) !== false){
+            // Sorting by the custom field review text as the normal 'management_review' field contains html
+            usort($risks_data, function($a, $b) use ($orderDir, $orderColumnName){
+                // For identical custom fields we're sorting on the id, so the results' order is not changing
+                if ($a[$orderColumnName] === $b[$orderColumnName]) {
+                    return (int)$a['id'] - (int)$b['id'];
+                }
+                if($orderDir == "asc") {
+                    return strcmp($a[$orderColumnName], $b[$orderColumnName]);
+                } else {
+                    return strcmp($b[$orderColumnName], $a[$orderColumnName]);
+                }
+            });
+        }
+
+        $data = array();
+        foreach ($risks_data as $key=>$risk)
+        {
             // column filter 
             $success = true;
             foreach($column_filters as $column_name => $val){
@@ -6460,7 +6686,7 @@ function getManagementReviewsDatatableResponse()
                         break;
                 }
             }
-            if($success == true) $data[] = $data_row;
+            if($success == true) $data[] = $risk["data_row"];
         }
         $risks_by_page = [];
         
@@ -6669,9 +6895,7 @@ function getReviewRisksDatatableResponse()
             $reviews = $sorted_reviews;
         }
         
-
-        $data = array();
-
+        $reviews_data = [];
         foreach ($reviews as $key=>$review)
         {
             $risk = $review["risk"];
@@ -6705,6 +6929,7 @@ function getReviewRisksDatatableResponse()
                                     }
                                 }
                                 $data_row[] = $text;
+                                $risk[$column] = strip_tags($text);
                             }
                         } else {
                             $data_row[] = $escaper->escapeHtml($risk[$column]);
@@ -6815,6 +7040,30 @@ function getReviewRisksDatatableResponse()
                         break;
                 }
             }
+            $review["data_row"] = $data_row;
+            $review["risk"] = $risk;
+            $reviews_data[] = $review;
+        }
+
+        if(($pos = stripos($orderColumnName, "custom_field_")) !== false){
+            // Sorting by the custom field review text as the normal 'management_review' field contains html
+            usort($reviews_data, function($a, $b) use ($orderDir, $orderColumnName){
+                // For identical custom fields we're sorting on the id, so the results' order is not changing
+                if ($a["risk"][$orderColumnName] === $b["risk"][$orderColumnName]) {
+                    return (int)$a["risk"]['id'] - (int)$b["risk"]['id'];
+                }
+                if($orderDir == "asc") {
+                    return strcmp($a["risk"][$orderColumnName], $b["risk"][$orderColumnName]);
+                } else {
+                    return strcmp($b["risk"][$orderColumnName], $a["risk"][$orderColumnName]);
+                }
+            });
+        }
+
+        $data = array();
+        foreach ($reviews_data as $key=>$review)
+        {
+            $risk = $review["risk"];
             // column filter 
             $success = true;
             foreach($column_filters as $column_name => $val){
@@ -6941,7 +7190,7 @@ function getReviewRisksDatatableResponse()
                         break;
                 }
             }
-            if($success == true) $data[] = $data_row;
+            if($success == true) $data[] = $review["data_row"];
         }
 
         $risks_by_page = [];

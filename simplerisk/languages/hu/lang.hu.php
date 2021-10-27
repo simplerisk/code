@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'A kockázati tárgy túl hosszú volt, és {$limit} karakterre csonkították.',
     'BootstrapDeliveryMethod' => 'Bootstrap kézbesítési módszer',
     'TestAuditDoesNotExist' => 'A tesztellenőrzés nem létezik',
+    'MarkAsUnmitigated' => 'Megjelölés nem módosítottként',
+    'MarkAsUnreviewed' => 'Megjelölés felülvizsgálat nélkül',
+    'NoDataToUpdate' => 'Nincsenek frissítendő adatok',
 
     '' => ''
 );

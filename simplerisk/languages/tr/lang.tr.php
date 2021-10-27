@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'Risk konusu çok uzundu ve {$limit} karaktere düşürüldü.',
     'BootstrapDeliveryMethod' => 'Önyükleme Dağıtım Yöntemi',
     'TestAuditDoesNotExist' => 'Test Denetimi Yok',
+    'MarkAsUnmitigated' => 'Azaltılmamış Olarak İşaretle',
+    'MarkAsUnreviewed' => 'İncelenmedi Olarak İşaretle',
+    'NoDataToUpdate' => 'Güncellenecek veri yok',
 
     '' => ''
 );

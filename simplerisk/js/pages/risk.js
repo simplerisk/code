@@ -1478,7 +1478,115 @@ $(document).ready(function(){
             }
         })
     })
-    
+
+    /********* Start mark as unmitigation **********/
+    $('body').on('click', '.mark-unmitigation', function(e){
+        e.preventDefault();
+        var tabContainer = $(this).parents('.tab-data');
+        var risk_id = $('.large-text', tabContainer).html();
+        $.ajax({
+            type: "GET",
+            url: BASE_URL + "/api/management/risk/mark-unmitigation?id=" + risk_id,
+            success: function(data){
+                $('.content-container', tabContainer).html(data.data);
+            },
+            error: function(xhr,status,error){
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    showAlertsFromArray(xhr.responseJSON.status_message);
+                }
+            }
+        })
+    })
+    $('body').on('click', '.save-unmitigation-risk', function(e){
+        e.preventDefault();
+        var tabContainer = $(this).parents('.tab-data');
+        var risk_id = $('.large-text', tabContainer).html();
+        var action = $(this).attr('name');
+        
+        var getForm = $(this).parents('form', tabContainer);
+        var form = new FormData($(getForm)[0]);
+
+        $.ajax({
+            type: "POST",
+            url: BASE_URL + "/api/management/risk/saveMarkUnmitigation?id=" + risk_id,
+            data: form,
+            async: true,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function(data){
+                tabContainer.html(data.data);
+                callbackAfterRefreshTab(tabContainer);
+                if(data.status_message){
+                    showAlertsFromArray(data.status_message);
+                }
+            }
+        })
+        .fail(function(xhr, textStatus){
+            if(!retryCSRF(xhr, this))
+            {
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    showAlertsFromArray(xhr.responseJSON.status_message);
+                }
+            }
+        });
+    });    
+    /*********** End mark as unmitigation ***********/
+
+    /********* Start mark as unreview **********/
+    $('body').on('click', '.mark-unreview', function(e){
+        e.preventDefault();
+        var tabContainer = $(this).parents('.tab-data');
+        var risk_id = $('.large-text', tabContainer).html();
+        $.ajax({
+            type: "GET",
+            url: BASE_URL + "/api/management/risk/mark-unreview?id=" + risk_id,
+            success: function(data){
+                $('.content-container', tabContainer).html(data.data);
+            },
+            error: function(xhr,status,error){
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    showAlertsFromArray(xhr.responseJSON.status_message);
+                }
+            }
+        })
+    });
+    $('body').on('click', '.save-unreview-risk', function(e){
+        e.preventDefault();
+        var tabContainer = $(this).parents('.tab-data');
+        var risk_id = $('.large-text', tabContainer).html();
+        var action = $(this).attr('name');
+        
+        var getForm = $(this).parents('form', tabContainer);
+        var form = new FormData($(getForm)[0]);
+
+        $.ajax({
+            type: "POST",
+            url: BASE_URL + "/api/management/risk/saveMarkUnreview?id=" + risk_id,
+            data: form,
+            async: true,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function(data){
+                tabContainer.html(data.data);
+                callbackAfterRefreshTab(tabContainer);
+                if(data.status_message){
+                    showAlertsFromArray(data.status_message);
+                }
+            }
+        })
+        .fail(function(xhr, textStatus){
+            if(!retryCSRF(xhr, this))
+            {
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    showAlertsFromArray(xhr.responseJSON.status_message);
+                }
+            }
+        });
+    });    
+    /*********** End mark as unreview ***********/
+   
 })
 
 

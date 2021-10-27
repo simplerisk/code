@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'Riskin aihe oli liian pitkä ja katkaistiin {$limit} merkiksi.',
     'BootstrapDeliveryMethod' => 'Bootstrap -toimitusmenetelmä',
     'TestAuditDoesNotExist' => 'Testitarkastusta ei ole olemassa',
+    'MarkAsUnmitigated' => 'Merkitse peruuttamattomaksi',
+    'MarkAsUnreviewed' => 'Merkitse tarkistamattomaksi',
+    'NoDataToUpdate' => 'Ei päivitettäviä tietoja',
 
     '' => ''
 );

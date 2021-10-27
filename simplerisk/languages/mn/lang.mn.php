@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'Эрсдлийн сэдэв хэт урт байсан тул {$limit} тэмдэгт хүртэл таслав.',
     'BootstrapDeliveryMethod' => 'Bootstrap хүргэх арга',
     'TestAuditDoesNotExist' => 'Туршилтын аудит байхгүй байна',
+    'MarkAsUnmitigated' => 'Цуцлагдаагүй гэж тэмдэглэх',
+    'MarkAsUnreviewed' => 'Шалгаагүй гэж тэмдэглэх',
+    'NoDataToUpdate' => 'Шинэчлэх өгөгдөл алга',
 
     '' => ''
 );

@@ -104,14 +104,14 @@ function display_framework_controls_in_compliance()
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
                 enableFiltering: true,
                 maxHeight: 250,
-                buttonWidth: '400px',
+                buttonWidth: '100%',
                 includeSelectAllOption: true
             });
             $('#filter_by_control_family').multiselect({
                 allSelectedText: '".$escaper->escapeHtml($lang['ALL'])."',
                 enableFiltering: true,
                 maxHeight: 250,
-                buttonWidth: '400px',
+                buttonWidth: '100%',
                 includeSelectAllOption: true
             });
            

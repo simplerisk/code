@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'Temat ryzyka był za długi i został obcięty do {$limit} znaków.',
     'BootstrapDeliveryMethod' => 'Metoda dostawy Bootstrap',
     'TestAuditDoesNotExist' => 'Audyt testowy nie istnieje',
+    'MarkAsUnmitigated' => 'Oznacz jako nieograniczony',
+    'MarkAsUnreviewed' => 'Oznacz jako niesprawdzone',
+    'NoDataToUpdate' => 'Brak danych do aktualizacji',
 
     '' => ''
 );

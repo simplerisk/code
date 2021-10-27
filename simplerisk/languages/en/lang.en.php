@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'Risk subject was too long and got truncated to {$limit} characters.',
     'BootstrapDeliveryMethod' => 'Bootstrap Delivery Method',
     'TestAuditDoesNotExist' => 'Test Audit Does Not Exist',
+    'MarkAsUnmitigated' => 'Mark as Unmitigated',
+    'MarkAsUnreviewed' => 'Mark as Unreviewed',
+    'NoDataToUpdate' => 'No data to update',
 
     '' => ''
 );

@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'Subiectul riscului a fost prea lung și a fost trunchiat la {$limit} caractere.',
     'BootstrapDeliveryMethod' => 'Metoda de livrare Bootstrap',
     'TestAuditDoesNotExist' => 'Auditul testului nu există',
+    'MarkAsUnmitigated' => 'Marcați ca nelimitat',
+    'MarkAsUnreviewed' => 'Marcați ca fără revizuire',
+    'NoDataToUpdate' => 'Nu există date de actualizat',
 
     '' => ''
 );

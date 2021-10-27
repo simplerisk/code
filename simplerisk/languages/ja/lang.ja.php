@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'リスク対象が長すぎて、 {$limit} 文字に切り捨てられました。',
     'BootstrapDeliveryMethod' => 'ブートストラップ配信方法',
     'TestAuditDoesNotExist' => 'テスト監査が存在しない',
+    'MarkAsUnmitigated' => '軽減されていないものとしてマークする',
+    'MarkAsUnreviewed' => '未レビューとしてマーク',
+    'NoDataToUpdate' => '更新するデータがありません',
 
     '' => ''
 );

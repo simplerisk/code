@@ -1410,7 +1410,10 @@ function open_mitigation_pie($title = null)
                 }
                 else
                 {
+                    if(!isset($grouped_array[$counter]['num'])) $grouped_array[$counter]['num'] = 0;
+
                         // Add the value to the grouped array
+                        $grouped_array[$counter]['name'] = $row['name'];
                         $grouped_array[$counter]['num'] = $grouped_array[$counter]['num'] + 1;
                 }
         }
@@ -1528,7 +1531,9 @@ function open_review_pie($title = null)
                 }
                 else
                 {
+                    if(!isset($grouped_array[$counter]['num'])) $grouped_array[$counter]['num'] = 0;
                         // Add the value to the grouped array
+                        $grouped_array[$counter]['name'] = $row['name'];
                         $grouped_array[$counter]['num'] = $grouped_array[$counter]['num'] + 1;
                 }
         }
@@ -1646,7 +1651,9 @@ function open_closed_pie($title = null)
         }
         else
         {
+            if(!isset($grouped_array[$counter]['num'])) $grouped_array[$counter]['num'] = 0;
             // Add the value to the grouped array
+            $grouped_array[$counter]['name'] = $row['name'];
             $grouped_array[$counter]['num'] = $grouped_array[$counter]['num'] + 1;
         }
     }
@@ -2706,7 +2713,7 @@ function get_risks_by_table($status, $sort=0, $group=0, $table_columns=[])
 /********************************
  * FUNCTION: GET RISKS BY GROUP *
  ********************************/
-function get_risks_by_group($status, $group, $sort, $group_value, $display_columns, $column_filters=[], $order_column=null, $order_dir="asc")
+function get_risks_by_group($status, $group, $sort, $group_value, $display_columns, $column_filters=[], $orderColumnName=null, $orderDir="asc")
 {
     global $lang, $escaper;
     $rowCount = 0;
@@ -2736,7 +2743,7 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
             }
         }
     }
-    $risks = risks_query($status, $sort, $group, $column_filters, $rowCount, 0, -1, $group_value, "", [], $order_column, $order_dir);
+    $risks = risks_query($status, $sort, $group, $column_filters, $rowCount, 0, -1, $group_value, "", [], $orderColumnName, $orderDir);
     // if ($group_value == "")
     // {
     //     // Current group is Unassigned
@@ -2759,9 +2766,8 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
     $str .= "<tbody>\n";
     $risk_levels = get_risk_levels();
     $rowCount = 0;
+    $tr = array();
     foreach($risks as $index=>$row){
-        $class = $index%2?"odd":"even";
-        $str .= "<tr class='{$class}'>\n";
         $row['id'] = (int)$row['id'] + 1000;
         
         $tags = "";
@@ -2834,12 +2840,35 @@ function get_risks_by_group($status, $group, $sort, $group_value, $display_colum
                     }
                 }
                 $data_row[] = $custom_data_row;
+                $row["custom_field_".$field_id] = strip_tags($custom_data_row);
             }
         }
-
+        $td = "";
         foreach($data_row as $col){
-            $str .= "<td class=\"risk-cell\">".$col."</td>\n";
+            $td .= "<td class=\"risk-cell\">".$col."</td>\n";
         }
+        $tr[] = array(
+            'td' => $td,
+            'risk' => $row,
+        );
+    }
+    if(($pos = stripos($orderColumnName, "custom_field_")) !== false){
+        usort($tr, function($a, $b) use ($orderDir, $orderColumnName){
+            // For identical custom fields we're sorting on the id, so the results' order is not changing
+            if ($a['risk'][$orderColumnName] === $b['risk'][$orderColumnName]) {
+                return (int)$a['risk']['id'] - (int)$b['risk']['id'];
+            }
+            if($orderDir == "asc") {
+                return strcmp($a['risk'][$orderColumnName], $b['risk'][$orderColumnName]);
+            } else {
+                return strcmp($b['risk'][$orderColumnName], $a['risk'][$orderColumnName]);
+            }
+        });
+    }
+    foreach($tr as $index=>$row){
+        $class = $index%2?"odd":"even";
+        $str .= "<tr class='{$class}'>\n";
+        $str .= $row['td'];
         $str .= "</tr>\n";
     }
     // End the table
@@ -4404,7 +4433,7 @@ function get_risks_only_dynamic($need_total_count, $status, $sort, $group, $colu
             foreach($requested_manual_column_filters as $column_name => $val){
                 if(stripos($column_name, "custom_field") !== false)
                 {
-                    if($custom_date_filter[$column_name] == true){
+                    if(isset($custom_date_filter[$column_name]) && $custom_date_filter[$column_name] == true){
                         $date_str = format_datetime($risk[$column_name],"","");
                         if( stripos($date_str, $val) === false ){
                             $success = false;

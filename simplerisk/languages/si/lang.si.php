@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'අවදානම් විෂය ඉතා දිගු වූ අතර අක්ෂර {$limit}',
     'BootstrapDeliveryMethod' => 'ඇරඹුම් පටි බෙදා හැරීමේ ක්‍රමය',
     'TestAuditDoesNotExist' => 'පරීක්ෂණ විගණනය නොපවතී',
+    'MarkAsUnmitigated' => 'අසීමිත ලෙස ලකුණු කරන්න',
+    'MarkAsUnreviewed' => 'සමාලෝචනය නොකළ ලෙස ලකුණු කරන්න',
+    'NoDataToUpdate' => 'යාවත්කාලීන කිරීමට දත්ත නැත',
 
     '' => ''
 );

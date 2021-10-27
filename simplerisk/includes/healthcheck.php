@@ -1039,7 +1039,7 @@ function check_php_max_input_vars()
 				return array("result" => 1, "text" => "The max_input_vars value in the php.ini file is set to {$max_input_vars}.");
 			}
 		}
-        }
+	}
 }
 
 ?>

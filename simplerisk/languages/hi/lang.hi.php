@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'जोखिम विषय बहुत लंबा था और इसे {$limit} वर्णों तक छोटा कर दिया गया था।',
     'BootstrapDeliveryMethod' => 'बूटस्ट्रैप वितरण विधि',
     'TestAuditDoesNotExist' => 'टेस्ट ऑडिट मौजूद नहीं है',
+    'MarkAsUnmitigated' => 'अमिट के रूप में चिह्नित करें',
+    'MarkAsUnreviewed' => 'समीक्षा न किए गए के रूप में चिह्नित करें',
+    'NoDataToUpdate' => 'अपडेट करने के लिए कोई डेटा नहीं',
 
     '' => ''
 );

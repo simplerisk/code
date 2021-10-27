@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'Predmet rizika bol príliš dlhý a bol skrátený na {$limit} znakov.',
     'BootstrapDeliveryMethod' => 'Spôsob doručenia bootstrapu',
     'TestAuditDoesNotExist' => 'Testovací audit neexistuje',
+    'MarkAsUnmitigated' => 'Označiť ako neobmedzené',
+    'MarkAsUnreviewed' => 'Označiť ako neskontrolované',
+    'NoDataToUpdate' => 'Žiadne údaje na aktualizáciu',
 
     '' => ''
 );

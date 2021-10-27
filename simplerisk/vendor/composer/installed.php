@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '14f11f9a9ba3e1e2751157f950e7b3995e34d764',
+    'reference' => '037a1ae03d4131d73c1b3a884d88da5e9f14cae0',
     'name' => 'simplerisk/code',
   ),
   'versions' => 
@@ -104,12 +104,12 @@
     ),
     'gettext/gettext' => 
     array (
-      'pretty_version' => 'v4.8.5',
-      'version' => '4.8.5.0',
+      'pretty_version' => 'v4.8.6',
+      'version' => '4.8.6.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'ef2e312dff383fc0e4cd62dd39042e1157f137d4',
+      'reference' => 'bbeb8f4d3077663739aecb4551b22e720c0e9efe',
     ),
     'gettext/languages' => 
     array (
@@ -247,7 +247,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => '14f11f9a9ba3e1e2751157f950e7b3995e34d764',
+      'reference' => '037a1ae03d4131d73c1b3a884d88da5e9f14cae0',
     ),
     'simplerisk/csrf-magic' => 
     array (
@@ -549,12 +549,12 @@
     ),
     'swiftmailer/swiftmailer' => 
     array (
-      'pretty_version' => 'v6.2.7',
-      'version' => '6.2.7.0',
+      'pretty_version' => 'v6.3.0',
+      'version' => '6.3.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => '15f7faf8508e04471f666633addacf54c0ab5933',
+      'reference' => '8a5d5072dca8f48460fce2f4131fcc495eec654c',
     ),
     'symfony/config' => 
     array (
@@ -720,12 +720,12 @@
     ),
     'tinymce/tinymce' => 
     array (
-      'pretty_version' => '5.8.2',
-      'version' => '5.8.2.0',
+      'pretty_version' => '5.10.0',
+      'version' => '5.10.0.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'dbf8c9ab481e11b660a957257c73f55e2af83b20',
+      'reference' => 'dbd8fefb0bbe96ed15f9af4518b078ae2c20e020',
     ),
     'twbs/bootstrap' => 
     array (

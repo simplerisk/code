@@ -4684,6 +4684,64 @@ function submit_mitigation($risk_id, $status, $post, $submitted_by_id=false)
 
     return $error;
 }
+/*********************************
+ * FUNCTION: SUBMIT UNMITIGATION *
+ *********************************/
+function submit_unmitigation($risk_id)
+{
+    // Subtract 1000 from id
+    $id = (int)$risk_id - 1000;
+
+    // Get current datetime for last_update
+    $current_datetime = date('Y-m-d H:i:s');
+    $error = 1;
+
+    // Open the database connection
+    $db = db_open();
+
+    // Query the database
+    $stmt = $db->prepare("SELECT * FROM mitigations WHERE risk_id=:risk_id");
+    $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $mitigation_id = $row?$row["id"]:"";
+
+    // Delete existing mitigation by risk ID
+    $stmt = $db->prepare("DELETE FROM mitigations WHERE risk_id = :risk_id");
+    $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Delete mitigation controls
+    $stmt = $db->prepare("DELETE FROM `mitigation_to_controls` WHERE mitigation_id = :mitigation_id");
+    $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Delete mitigation teams
+    $stmt = $db->prepare("DELETE FROM `mitigation_to_team` WHERE mitigation_id = :mitigation_id");
+    $stmt->bindParam(":mitigation_id", $mitigation_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $current_status = get_risk_status($risk_id);
+    if($current_status == "Mitigation Planned") $status = "New";
+    else $status = $current_status;
+   
+    // Update the risk status and last_update
+    $stmt = $db->prepare("UPDATE risks SET status=:status, last_update=:last_update, mitigation_id='' WHERE id = :risk_id");
+    $stmt->bindParam(":status", $status, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":last_update", $current_datetime, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+
+    $stmt->execute();
+
+    // Audit log
+    $message = "A mitigation was deleted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+    write_log($risk_id, $_SESSION['uid'], $message);
+
+    // Close the database connection
+    db_close($db);
+
+    return $error;
+}
 
 /**************************************
  * FUNCTION: SUBMIT MANAGEMENT REVIEW *
@@ -4786,6 +4844,46 @@ function submit_management_review($risk_id, $status, $review, $next_step, $revie
     db_close($db);
 
     return $review_id;
+}
+/****************************************
+ * FUNCTION: SUBMIT MANAGEMENT UNREVIEW *
+ ****************************************/
+function submit_management_unreview($risk_id)
+{
+    // Get current datetime for last_update
+    $current_datetime = date('Y-m-d H:i:s');
+
+    // Open the database connection
+    $db = db_open();
+
+    // Subtract 1000 from risk_id
+    $id = (int)$risk_id - 1000;
+
+    // Delete existing reivew by risk ID
+    $stmt = $db->prepare("DELETE FROM mgmt_reviews WHERE risk_id = :risk_id");
+    $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $current_status = get_risk_status($risk_id);
+    if($current_status == "Mgmt Reviewed") $status = "New";
+    else $status = $current_status;
+
+    // Update the risk status and last_update
+    $stmt = $db->prepare("UPDATE risks SET status=:status, last_update=:last_update, review_date=:review_date, mgmt_review=0 WHERE id = :risk_id");
+    $stmt->bindParam(":status", $status, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":last_update", $current_datetime, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":review_date", $current_datetime, PDO::PARAM_STR, 20);
+    $stmt->bindParam(":risk_id", $id, PDO::PARAM_INT);
+
+    $stmt->execute();
+   
+    // Audit log
+    $message = "A management review was deleted for risk ID \"" . $risk_id . "\" by username \"" . $_SESSION['user'] . "\".";
+    write_log($risk_id, $_SESSION['uid'], $message);
+    // Close the database connection
+    db_close($db);
+
+    return true;
 }
 
 /*************************
@@ -8581,6 +8679,8 @@ function get_project_tabs($status, $template_group_id="")
     global $lang;
     global $escaper;
 
+    display_project_table_header();
+
     $projects = get_projects();
 
     if ($status == 1)
@@ -8590,6 +8690,8 @@ function get_project_tabs($status, $template_group_id="")
     
     $index = 0;
     $str = "";
+    $row_width = "1301";
+    $custom_field_count = 0;
     // If customization extra is enabled
     if(customization_extra())
     {
@@ -8602,7 +8704,11 @@ function get_project_tabs($status, $template_group_id="")
 
         }
         $active_fields = get_active_fields("project", $template_group_id);
+        foreach($active_fields as $field){
+            if($field['is_basic'] != 1) $custom_field_count++;
+        }
     } else $customization = false;
+    $row_width += $custom_field_count * 150;
     foreach ($projects as $project)
     {
         if ($project['status'] == $status)
@@ -8649,7 +8755,7 @@ function get_project_tabs($status, $template_group_id="")
             // Get count of risks for this project
             $count = count($risks);
 
-            $str .= '<div class="project-block clearfix" '.$no_sort.'>';
+            $str .= '<div class="project-block clearfix" '.$no_sort.' style="width:'.$row_width.'px">';
                 $str .= '<div class="project-block--header clearfix" data-project="'.$escaper->escapeHtml($id).'">
                 <div class="project-block--priority pull-left">'.$escaper->escapeHtml($priority).'</div>';
                 if($customization == true){
@@ -8676,6 +8782,7 @@ function get_project_tabs($status, $template_group_id="")
                             }
                         } 
                         else {
+                            $custom_field_count++;
                             $text = get_plan_custom_field_name_by_field_id($field, $id, "project");
                             $str .= '<div class="project-block--field pull-left">'. $text .'</div>';
                         }

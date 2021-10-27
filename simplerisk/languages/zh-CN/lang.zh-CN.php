@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => '风险主题太长，被截断为 {$limit} 字符。',
     'BootstrapDeliveryMethod' => 'Bootstrap 交付方式',
     'TestAuditDoesNotExist' => '测试审核不存在',
+    'MarkAsUnmitigated' => '标记为未缓解',
+    'MarkAsUnreviewed' => '标记为未审核',
+    'NoDataToUpdate' => '没有要更新的数据',
 
     '' => ''
 );

@@ -441,6 +441,7 @@ div.doc-link {
 @media screen and (min-width:1025px) {
   #assets, #assessment, #notes, #current_solution, #security_requirements, #security_recommendations, #active-textfield, #comments, .custom-longtext{
       width:100%;
+      height:100%;
 /*      max-width:300px;*/
       transition: all 1s ease;
   }

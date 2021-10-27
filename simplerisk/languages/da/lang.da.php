@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'Risikoemnet var for langt og blev afkortet til {$limit} tegn.',
     'BootstrapDeliveryMethod' => 'Bootstrap leveringsmetode',
     'TestAuditDoesNotExist' => 'Testrevision findes ikke',
+    'MarkAsUnmitigated' => 'Marker som Uformindsket',
+    'MarkAsUnreviewed' => 'Marker som uanmeldt',
+    'NoDataToUpdate' => 'Ingen data at opdatere',
 
     '' => ''
 );

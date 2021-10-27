@@ -76,6 +76,12 @@ if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
   <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
   <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+
+  <style>
+    .plan-projects .sortable{
+      overflow: auto;
+    }
+  </style>
     
   <?php
       setup_favicon("..");
@@ -261,7 +267,6 @@ if(isset($_SESSION["manage_projects"]) && $_SESSION["manage_projects"] == 1){
                   <li><a href="#closed-projects" class="status" data-status="3"><?php echo $escaper->escapeHtml($lang['CompletedProjects']); ?> (<?php get_projects_count(3) ?>)</a></li>
                   <li><a href="#canceled-projects" class="status" data-status="4"><?php echo $escaper->escapeHtml($lang['CanceledProjects']); ?> (<?php get_projects_count(4) ?>)</a></li>
                 </ul>
-                <?php display_project_table_header();?>
               </div> <!-- status-tabs -->
 
               <div id="active-projects" class="sortable">

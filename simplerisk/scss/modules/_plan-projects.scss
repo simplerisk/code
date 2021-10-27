@@ -74,6 +74,11 @@
 
 }
 
+.plan-projects{
+  .project-headers{
+    background-color: $color-2;
+  }
+}
 
 
 .white-labels{
@@ -124,12 +129,15 @@
     float: left;
     font-weight: 600;
     padding-left: 10px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
-  &--priority{ width: 7%; }
-  &--name{ width: 33%; }
-  &--field{ width: 10%; }
-  &--risks{ width: 20%; }
+  &--priority{ width: 100px; }
+  &--name{ width: 350px; }
+  &--field{ width: 150px; }
+  &--risks{ width: 250px; }
 }
 .risks{
   margin: 10px 0px 10px 8%;

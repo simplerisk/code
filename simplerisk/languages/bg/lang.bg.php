@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => 'Темата за риска е твърде дълга и е отрязана до {$limit} знака.',
     'BootstrapDeliveryMethod' => 'Bootstrap Метод за доставка',
     'TestAuditDoesNotExist' => 'Тестовият одит не съществува',
+    'MarkAsUnmitigated' => 'Маркирайте като неограничен',
+    'MarkAsUnreviewed' => 'Маркирайте като Непрегледани',
+    'NoDataToUpdate' => 'Няма данни за актуализиране',
 
     '' => ''
 );

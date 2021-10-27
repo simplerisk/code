@@ -2158,6 +2158,9 @@ $lang = array(
     'RiskSubjectTruncated' => '위험 주제가 너무 길어 {$limit} 자로 잘렸습니다.',
     'BootstrapDeliveryMethod' => '부트스트랩 전달 방법',
     'TestAuditDoesNotExist' => '테스트 감사가 존재하지 않습니다',
+    'MarkAsUnmitigated' => '완화되지 않은 것으로 표시',
+    'MarkAsUnreviewed' => '미검토로 표시',
+    'NoDataToUpdate' => '업데이트할 데이터가 없습니다.',
 
     '' => ''
 );
