@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => '标记为未缓解',
     'MarkAsUnreviewed' => '标记为未审核',
     'NoDataToUpdate' => '没有要更新的数据',
+    'SelectedQuestions' => '精选问题',
+    'CreateTabs' => '创建标签',
+    'Previous' => '以前的',
 
     '' => ''
 );

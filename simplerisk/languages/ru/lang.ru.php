@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Отметить как неподтвержденное',
     'MarkAsUnreviewed' => 'Отметить как непроверенный',
     'NoDataToUpdate' => 'Нет данных для обновления',
+    'SelectedQuestions' => 'Избранные вопросы',
+    'CreateTabs' => 'Создать вкладки',
+    'Previous' => 'Предыдущий',
 
     '' => ''
 );

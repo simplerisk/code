@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Megjelölés nem módosítottként',
     'MarkAsUnreviewed' => 'Megjelölés felülvizsgálat nélkül',
     'NoDataToUpdate' => 'Nincsenek frissítendő adatok',
+    'SelectedQuestions' => 'Kiválasztott kérdések',
+    'CreateTabs' => 'Lapok létrehozása',
+    'Previous' => 'Előző',
 
     '' => ''
 );

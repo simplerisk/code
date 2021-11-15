@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Contrassegna come non attenuato',
     'MarkAsUnreviewed' => 'Segna come non recensito',
     'NoDataToUpdate' => 'Nessun dato da aggiornare',
+    'SelectedQuestions' => 'Domande selezionate',
+    'CreateTabs' => 'Crea schede',
+    'Previous' => 'Precedente',
 
     '' => ''
 );

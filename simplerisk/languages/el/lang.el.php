@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Επισήμανση ως μη κατεβασμένο',
     'MarkAsUnreviewed' => 'Επισήμανση ως μη ελεγμένο',
     'NoDataToUpdate' => 'Δεν υπάρχουν δεδομένα για ενημέρωση',
+    'SelectedQuestions' => 'Επιλεγμένες ερωτήσεις',
+    'CreateTabs' => 'Δημιουργία καρτελών',
+    'Previous' => 'Προηγούμενος',
 
     '' => ''
 );

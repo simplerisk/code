@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Позначити як Незмінний',
     'MarkAsUnreviewed' => 'Позначити як непереглянуте',
     'NoDataToUpdate' => 'Немає даних для оновлення',
+    'SelectedQuestions' => 'Вибрані запитання',
+    'CreateTabs' => 'Створення вкладок',
+    'Previous' => 'Попередній',
 
     '' => ''
 );

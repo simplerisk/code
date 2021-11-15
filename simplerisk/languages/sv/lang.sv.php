@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Markera som obegränsad',
     'MarkAsUnreviewed' => 'Markera som okänd',
     'NoDataToUpdate' => 'Ingen data att uppdatera',
+    'SelectedQuestions' => 'Valda frågor',
+    'CreateTabs' => 'Skapa flikar',
+    'Previous' => 'Tidigare',
 
     '' => ''
 );

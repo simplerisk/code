@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'סמן כבלתי מוגבל',
     'MarkAsUnreviewed' => 'סמן כבלתי נבדק',
     'NoDataToUpdate' => 'אין נתונים לעדכן',
+    'SelectedQuestions' => 'שאלות נבחרות',
+    'CreateTabs' => 'צור כרטיסיות',
+    'Previous' => 'קודם',
 
     '' => ''
 );

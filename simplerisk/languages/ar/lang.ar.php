@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'وضع علامة "غير مخفف"',
     'MarkAsUnreviewed' => 'وضع علامة "لم تتم مراجعته"',
     'NoDataToUpdate' => 'لا توجد بيانات للتحديث',
+    'SelectedQuestions' => 'أسئلة مختارة',
+    'CreateTabs' => 'إنشاء علامات التبويب',
+    'Previous' => 'سابق',
 
     '' => ''
 );

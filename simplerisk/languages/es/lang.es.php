@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Marcar como no mitigado',
     'MarkAsUnreviewed' => 'Marcar como no revisado',
     'NoDataToUpdate' => 'No hay datos para actualizar',
+    'SelectedQuestions' => 'Preguntas seleccionadas',
+    'CreateTabs' => 'Crear pestañas',
+    'Previous' => 'Anterior',
 
     '' => ''
 );

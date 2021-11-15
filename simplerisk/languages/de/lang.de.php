@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Als uneingeschränkt markieren',
     'MarkAsUnreviewed' => 'Als ungeprüft markieren',
     'NoDataToUpdate' => 'Keine Daten zum Aktualisieren',
+    'SelectedQuestions' => 'Ausgewählte Fragen',
+    'CreateTabs' => 'Registerkarten erstellen',
+    'Previous' => 'Vorherige',
 
     '' => ''
 );

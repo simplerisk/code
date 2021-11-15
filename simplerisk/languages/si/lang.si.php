@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'අසීමිත ලෙස ලකුණු කරන්න',
     'MarkAsUnreviewed' => 'සමාලෝචනය නොකළ ලෙස ලකුණු කරන්න',
     'NoDataToUpdate' => 'යාවත්කාලීන කිරීමට දත්ත නැත',
+    'SelectedQuestions' => 'තෝරාගත් ප්රශ්න',
+    'CreateTabs' => 'ටැබ් සාදන්න',
+    'Previous' => 'කලින්',
 
     '' => ''
 );

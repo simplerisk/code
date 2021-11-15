@@ -91,6 +91,8 @@ if(process_assessment_questionnaire_templates()){
     <link rel="stylesheet" href="../vendor/components/font-awesome/css/fontawesome.min.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/prioritize.css?<?php echo current_version("app"); ?>">
+
     <?php
         setup_favicon("..");
         setup_alert_requirements("..");
@@ -131,6 +133,8 @@ if(process_assessment_questionnaire_templates()){
                         <?php display_questionnaire_template_edit($_GET['id']); ?>
                     </div>
                 <?php } ?>
+
+
             </div>
         </div>
     </div>
@@ -153,3 +157,4 @@ if(process_assessment_questionnaire_templates()){
 </body>
 
 </html>
+

@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Маркирайте като неограничен',
     'MarkAsUnreviewed' => 'Маркирайте като Непрегледани',
     'NoDataToUpdate' => 'Няма данни за актуализиране',
+    'SelectedQuestions' => 'Избрани въпроси',
+    'CreateTabs' => 'Създаване на раздели',
+    'Previous' => 'Предишна',
 
     '' => ''
 );

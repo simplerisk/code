@@ -133,6 +133,7 @@ if(process_questionnaire_pending_risks()){
     <link rel="stylesheet" href="../css/theme.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/side-navigation.css?<?php echo current_version("app"); ?>">
     <link rel="stylesheet" href="../css/selectize.bootstrap3.css?<?php echo current_version("app"); ?>">
+    <link rel="stylesheet" href="../css/assessments_tabs.css?<?php echo current_version("app"); ?>">
     <script src="../js/selectize.min.js?<?php echo current_version("app"); ?>"></script>
     <link rel="stylesheet" href="../css/jquery.datetimepicker.min.css?<?php echo current_version("app"); ?>">
 

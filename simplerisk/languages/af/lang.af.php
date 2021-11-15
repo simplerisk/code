@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Merk as ongegrond',
     'MarkAsUnreviewed' => 'Merk as nie hersien nie',
     'NoDataToUpdate' => 'Geen data om op te dateer nie',
+    'SelectedQuestions' => 'Geselekteerde vrae',
+    'CreateTabs' => 'Skep oortjies',
+    'Previous' => 'Vorige',
 
     '' => ''
 );

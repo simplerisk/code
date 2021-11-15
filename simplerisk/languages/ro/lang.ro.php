@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Marcați ca nelimitat',
     'MarkAsUnreviewed' => 'Marcați ca fără revizuire',
     'NoDataToUpdate' => 'Nu există date de actualizat',
+    'SelectedQuestions' => 'Întrebări selectate',
+    'CreateTabs' => 'Creați file',
+    'Previous' => 'Anterior',
 
     '' => ''
 );

@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => '軽減されていないものとしてマークする',
     'MarkAsUnreviewed' => '未レビューとしてマーク',
     'NoDataToUpdate' => '更新するデータがありません',
+    'SelectedQuestions' => '選択した質問',
+    'CreateTabs' => 'タブを作成する',
+    'Previous' => '前',
 
     '' => ''
 );

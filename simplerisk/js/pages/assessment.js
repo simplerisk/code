@@ -542,3 +542,219 @@ function refreshSelectizeOptions(selector, data) {
         }
     });
 }
+
+/************ Script for Questionnaire Template ****************/
+var table_str;
+var tab_cnt = 1;
+var tabs;
+var dropOptions = {
+    tolerance: 'pointer',
+    drop: function( event, ui ) {
+        var item = $( this );
+        var list = $(item.find('a.tab_link').attr('href')).find('.selected_questions .question_list');
+        var label = item.find('a.tab_link .tab-label').text();
+        var message = "The question has been moved to the '"+label+"' tab."
+
+        ui.draggable.hide('fast', function() {
+            // tabs.tabs('option', 'active', tab_items.index(item) );
+            $( this ).css('width','100%').appendTo( list ).show('fast');
+            active_tab_func();
+            showAlertFromMessage(message, true);
+        });
+    }
+};
+$(document).ready(function(){
+    table_str = $('#selected_questions_list').html();
+    tabs = $('#template-tabs').tabs({
+        activate: active_tab_func,
+    });
+    initSortable();
+    // click create template tab
+    $('#create-template-tab').click(function() {create_template_tab();});
+    $('#template-tabs').on('click', '.edit-tab-name', function(){
+        $(this).hide();
+        $(this).parent().find('span.tab-label').hide();
+        $(this).parent().find('input.tab-name').show().select();
+    });
+    $('#template-tabs').on('blur change', '.tab-name', function(){
+        if(!$(this).val()) return false;
+        var label = $(this).parent().find('span.tab-label');
+        $(this).hide();
+        label.text($(this).val());
+        label.show();
+        $(this).closest('li').find('.edit-tab-name').show()
+    });
+    // click add tab
+    $('#tab-add-btn').click(function(){add_template_tab();});
+    var tab_items = $('#template-tabs ul:first li').droppable(dropOptions);
+
+    // save questionnaire template
+    $('.questionnaire_template_form').submit(function(){
+        $('.hero-unit:first').block({
+            message: 'Processing',
+            css: { border: '1px solid black', background: '#ffffff' }
+        });
+        var selected_questions = [];
+        $('.tab_link').each(function(i, obj) {
+            var data_index = $(this).attr('data-index');
+            var tab_questions = [];
+            $('#tab-content-'+data_index+' ul.selected_questions li.selected_question').each(function(i, obj) {
+                var data_id = $(this).attr('data-id');
+                tab_questions.push(data_id);
+            });
+            selected_questions.push(tab_questions);
+        });
+        var form = $(this);
+        var form_data = new FormData(form[0]);
+        for (var i = 0; i < selected_questions.length; i++) {
+            form_data.append('selected_questions[]', selected_questions[i]);
+        }
+        $.ajax({
+            type: 'POST',
+            url: BASE_URL + '/api/assessment/questionnaire/template_questions/save_template',
+            data: form_data,
+            async: true,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function(result){
+                if(result.status_message){
+                    showAlertsFromArray(result.status_message);
+                }
+                $('.hero-unit:first').unblock();
+                location.reload();
+            }
+        })
+        .fail(function(xhr, textStatus){
+            if(!retryCSRF(xhr, this))
+            {
+                if(xhr.responseJSON && xhr.responseJSON.status_message){
+                    showAlertsFromArray(xhr.responseJSON.status_message);
+                }
+            }
+        });
+
+        return false;
+    });
+});
+// initSort
+function initSortable(){
+    $('.sortable').sortable({
+        items: 'li:not(.list-header)',
+        cursor: 'move',
+    });
+}
+function create_template_tab(tab_id){
+    if(typeof(tab_id) == 'undefined') {
+        tab_id = '';
+    }
+    $("#create-template-tab").parent().remove();
+    $('#tab-content-1').append($('#selected_questions_list').html());
+    $('#selected_questions_list').detach();
+    $('#template-tabs').fadeIn();
+    initSortable();
+    $('#template-tabs ul.tabs-nav li:first').attr('data-id', tab_id);
+    return true;
+}
+// active tab event
+function active_tab_func(event, ui){
+    var active_index = $("#template-tabs li.ui-tabs-active").index();
+    var active_ids = []; // selected question ids in active tabs
+    var data_ids = []; // selected question ids in not active tabs
+    $('ul.selected_questions').each(function(index, obj) {
+        $(obj).find('li.selected_question').each(function(i, obj) {
+            if(index == active_index) {
+                active_ids.push($(this).attr('data-id'));
+            } else {
+                data_ids.push($(this).attr('data-id'));
+            }
+        });
+    });
+    $('.hero-unit:first').block();
+    $.ajax({
+        url: BASE_URL + '/api/assessment/questionnaire/template_questions/questions_list',
+        type: 'POST',
+        data: {
+            selected_ids : data_ids,
+            active_ids : active_ids,
+        },
+        success : function (response) {
+            $('#template_questions').html(response).multiselect('rebuild');
+            $('.hero-unit:first').unblock();
+        },
+        error: function(xhr,status,error) {
+            if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                showAlertsFromArray(xhr.responseJSON.status_message);
+            }
+        }
+    });
+    return true;
+}
+function add_template_tab(tab_name, tab_id){
+    tab_cnt++;
+    if(tab_cnt > 8) {
+        return false;
+    }
+    if(typeof(tab_name) == 'undefined') {
+        tab_name = tab_name_str + '(' + tab_cnt + ')';
+    }
+    if(typeof(tab_id) == 'undefined') {
+        tab_id = '';
+    }
+    var element_id = 'tab-content-' + tab_cnt;
+    $('#template-tabs .tabs-nav').append('<li data-id="'+tab_id+'"><a class="tab_link" href="#'+element_id+'" data-index="'+tab_cnt+'"><span class="tab-label">'+tab_name+'</span><input type="text" name="tab_name[]" class="tab-name" value="'+tab_name+'"></a><a class="edit-tab-name" href="#"><i class="fa fa-edit"></a></i></li>');
+    $('#template-tabs').append('<div id="'+element_id+'" class="template_tab_contents"></div>');
+    $('#'+element_id).append(table_str);
+
+    $('#template-tabs').tabs('refresh');
+
+    initSortable();
+
+    tab_items = $('#template-tabs ul:first li').droppable(dropOptions);
+    return true;
+}
+// redraw selected questions when change dropdown
+function redraw_selected_questions() {
+    // tabs.tabs({active: 0});
+    var active_index = $("#template-tabs li.ui-tabs-active").index();
+    var selected_ids = $('#template_questions').val();
+    var template_id = $("#template_id").val();
+    $.ajax({
+        url: BASE_URL + '/api/assessment/questionnaire/template_questions/selected_questions',
+        type: 'POST',
+        data: {
+            template_id : template_id,
+            selected_ids : selected_ids,
+        },
+        success : function (response) {
+            $('ul.selected_questions').eq(active_index).find('.question_list').html(response);
+            initSortable();
+        },
+        error: function(xhr,status,error) {
+            if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                showAlertsFromArray(xhr.responseJSON.status_message);
+            }
+        }
+    });
+}
+// draw selected questions by tab
+function draw_selected_questions(tab_id, tab_index){
+    var template_id = $("#template_id").val();
+    $.ajax({
+        url: BASE_URL + '/api/assessment/questionnaire/template_questions/selected_questions_tab',
+        type: 'POST',
+        data: {
+            template_id : template_id,
+            tab_id : tab_id,
+        },
+        success : function (response) {
+            $('ul.selected_questions').eq(tab_index-1).find('.question_list').html(response);
+            initSortable();
+        },
+        error: function(xhr,status,error) {
+            if(xhr.responseJSON && xhr.responseJSON.status_message) {
+                showAlertsFromArray(xhr.responseJSON.status_message);
+            }
+        }
+    });
+}

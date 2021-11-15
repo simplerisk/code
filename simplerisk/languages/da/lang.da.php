@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Marker som Uformindsket',
     'MarkAsUnreviewed' => 'Marker som uanmeldt',
     'NoDataToUpdate' => 'Ingen data at opdatere',
+    'SelectedQuestions' => 'Udvalgte spørgsmål',
+    'CreateTabs' => 'Opret faner',
+    'Previous' => 'Tidligere',
 
     '' => ''
 );

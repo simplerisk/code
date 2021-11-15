@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Означи као неометано',
     'MarkAsUnreviewed' => 'Означи као непрегледано',
     'NoDataToUpdate' => 'Nema podataka za ažuriranje',
+    'SelectedQuestions' => 'Изабрана питања',
+    'CreateTabs' => 'Креирајте картице',
+    'Previous' => 'Претходна',
 
     '' => ''
 );

@@ -7377,6 +7377,83 @@ textarea[name='reject_comment'] {
   margin-bottom: 0px;
 }
 
+#template-tabs {
+  position: relative;
+  margin-top: 20px;
+}
+#template-tabs .tabs-nav {
+  margin-left: 70px;
+}
+#template-tabs .ui-tab {
+  float: left;
+  margin-left: 5px;
+  padding: 0 20px;
+  line-height: 40px;
+  background-color: #3a3a3a;
+  text-align: center;
+}
+#template-tabs .ui-tab a {
+  display: block;
+  color: #fff;
+  float: left;
+  margin: 0 5px;
+}
+#template-tabs .ui-state-active {
+  background-color: #6f6f6f;
+}
+#template-tabs li input.tab-name, #template-tabs li textarea.tab-name:disabled, #template-tabs li textarea.tab-name:focus {
+  width: 88px;
+  display: none;
+  margin: 0px;
+}
+#template-tabs ul.sortable {
+  list-style: none;
+}
+
+#tab-add-btn {
+  width: 40px;
+  height: 40px;
+  background-color: #3a3a3a;
+  text-align: center;
+  color: #fff;
+  display: block;
+  line-height: 40px;
+  position: absolute;
+  left: 30px;
+}
+
+.selected_questions .list-header {
+  background-color: #6f6f6f;
+  color: #fff;
+}
+.selected_questions li {
+  display: block;
+  list-style-type: none;
+  clear: both;
+  background-color: #f5f5f5;
+}
+.selected_questions li span {
+  line-height: 40px;
+  height: 45px;
+  padding: 0 10px;
+  border: 1px solid #d1d3d4;
+  display: block;
+  float: left;
+}
+.selected_questions li span.question_id {
+  width: 5%;
+  text-align: center;
+}
+.selected_questions li span.question_name {
+  width: 90%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.selected_questions li span.question_open {
+  width: 5%;
+}
+
 /*--------------------------------------------------------------
  ## Button Styles
  --------------------------------------------------------------*/
@@ -9299,7 +9376,7 @@ div.doc-link.edit-mode {
   }
 
   .ui-widget-content {
-    z-index: 9999;
+    z-index: 999;
   }
 }
 /*------------------------------------------------------------

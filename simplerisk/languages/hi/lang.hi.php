@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'अमिट के रूप में चिह्नित करें',
     'MarkAsUnreviewed' => 'समीक्षा न किए गए के रूप में चिह्नित करें',
     'NoDataToUpdate' => 'अपडेट करने के लिए कोई डेटा नहीं',
+    'SelectedQuestions' => 'चयनित प्रश्न',
+    'CreateTabs' => 'टैब बनाएं',
+    'Previous' => 'पहले का',
 
     '' => ''
 );

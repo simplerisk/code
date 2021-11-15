@@ -155,6 +155,7 @@ $releases = array(
 	"20210930-001",
 	"20211010-001",
 	"20211027-001",
+	"20211115-001",
 );
 
 /*************************
@@ -6073,6 +6074,28 @@ function upgrade_from_20211010001($db)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
         $stmt->execute();
     }
+
+    // To make sure page loads won't fail after the upgrade
+    // as this session variable is not set by the previous version of the login logic
+    $_SESSION['latest_version_app'] = latest_version('app');
+
+    // Update the database version
+    update_database_version($db, $version_to_upgrade, $version_upgrading_to);
+    echo "Finished SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
+}
+
+/***************************************
+ * FUNCTION: UPGRADE FROM 20211027-001 *
+ ***************************************/
+function upgrade_from_20211027001($db)
+{
+    // Database version to upgrade
+    $version_to_upgrade = '20211027-001';
+
+    // Database version upgrading to
+    $version_upgrading_to = '20211115-001';
+
+    echo "Beginning SimpleRisk database upgrade from version " . $version_to_upgrade . " to version " . $version_upgrading_to . "<br />\n";
 
     // To make sure page loads won't fail after the upgrade
     // as this session variable is not set by the previous version of the login logic

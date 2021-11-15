@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => '완화되지 않은 것으로 표시',
     'MarkAsUnreviewed' => '미검토로 표시',
     'NoDataToUpdate' => '업데이트할 데이터가 없습니다.',
+    'SelectedQuestions' => '선택한 질문',
+    'CreateTabs' => '탭 만들기',
+    'Previous' => '이전의',
 
     '' => ''
 );

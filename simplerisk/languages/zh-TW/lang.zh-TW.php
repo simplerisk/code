@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => '標記為未緩解',
     'MarkAsUnreviewed' => '標記為未審核',
     'NoDataToUpdate' => '沒有要更新的數據',
+    'SelectedQuestions' => '精選問題',
+    'CreateTabs' => '創建標籤',
+    'Previous' => '以前的',
 
     '' => ''
 );

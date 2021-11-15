@@ -3598,9 +3598,9 @@ function submit_risk_scoring($last_insert_id, $scoring_method="5", $CLASSIC_like
         
         // Set default Contributing Likelihood value
         $ContributingLikelihood = $ContributingLikelihood ? $ContributingLikelihood : $max_likelihood;
-        $ContributingLikelihood = $ContributingLikelihood * 5 / $max_likelihood;
+        $LikelihoodSum = $ContributingLikelihood * 5 / $max_likelihood;
         
-        $calculated_risk = round($ContributingLikelihood + $ImpactSum, 2);
+        $calculated_risk = round($LikelihoodSum + $ImpactSum, 2);
         
         // Create the database query
         $stmt = $db->prepare("INSERT INTO risk_scoring (`id`, `scoring_method`, `calculated_risk`, `Contributing_Likelihood`) VALUES (:last_insert_id, :scoring_method, :calculated_risk, :Contributing_Likelihood)");
@@ -4109,9 +4109,9 @@ function update_contributing_risk_score($risk_id, $ContributingLikelihood="", $C
     
     // Set default Contributing Likelihood value
     $ContributingLikelihood = $ContributingLikelihood ? $ContributingLikelihood : $max_likelihood;
-    $ContributingLikelihood = $ContributingLikelihood * 5 / $max_likelihood;
+    $LikelihoodSum = $ContributingLikelihood * 5 / $max_likelihood;
     
-    $calculated_risk = round($ContributingLikelihood + $ImpactSum, 2);
+    $calculated_risk = round($LikelihoodSum + $ImpactSum, 2);
 
     // Create the database query
     $stmt = $db->prepare("UPDATE risk_scoring SET calculated_risk=:calculated_risk, Contributing_Likelihood=:Contributing_Likelihood WHERE id=:id; ");

@@ -2251,6 +2251,7 @@ function submit_test_result()
 
 
             if($_POST['remove_associated_risk']) {
+                close_risks_by_test_result_id($result_id, $test_result);
                 delete_test_result_to_risk_by_result_id($result_id);
             } else {
                 // add existing risks
@@ -3416,5 +3417,35 @@ function get_test_result_to_risk_ids($result_id) {
     }
 
     return $risk_ids;
+}
+
+/*******************************************
+ * FUNCTION: CLOSE RISKS BY TEST RESULT ID *
+ *******************************************/
+function close_risks_by_test_result_id($result_id, $test_result) {
+
+    // Open the database connection
+    $db = db_open();
+
+    // delete existing risk association
+    $stmt = $db->prepare("SELECT * FROM framework_control_test_results_to_risks WHERE `test_results_id` = :test_results_id");
+    $stmt->bindParam(":test_results_id", $result_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $results = $stmt->fetchAll();
+
+    // Close the database connection
+    db_close($db);
+
+    foreach($results as $row){
+        $id = (int)$row['risk_id'] + 1000;
+        $status = "Closed";
+        $close_reason = 1;
+        $note = "Risk was closed when the \"" . $result_id . "\" test was marked as \"" . $test_result . "\".";
+
+        // Close the risk
+        close_risk($id, $_SESSION['uid'], $status, $close_reason, $note);
+    }
+
+    return true;
 }
 ?>

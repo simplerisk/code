@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Mark as Unmitigated',
     'MarkAsUnreviewed' => 'Mark as Unreviewed',
     'NoDataToUpdate' => 'No data to update',
+    'SelectedQuestions' => 'Selected Questions',
+    'CreateTabs' => 'Create Tabs',
+    'Previous' => 'Previous',
 
     '' => ''
 );

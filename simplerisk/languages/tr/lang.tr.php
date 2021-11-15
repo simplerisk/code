@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Azaltılmamış Olarak İşaretle',
     'MarkAsUnreviewed' => 'İncelenmedi Olarak İşaretle',
     'NoDataToUpdate' => 'Güncellenecek veri yok',
+    'SelectedQuestions' => 'Seçilmiş Sorular',
+    'CreateTabs' => 'Sekmeler Oluştur',
+    'Previous' => 'Öncesi',
 
     '' => ''
 );

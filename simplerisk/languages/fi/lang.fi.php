@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Merkitse peruuttamattomaksi',
     'MarkAsUnreviewed' => 'Merkitse tarkistamattomaksi',
     'NoDataToUpdate' => 'Ei päivitettäviä tietoja',
+    'SelectedQuestions' => 'Valitut kysymykset',
+    'CreateTabs' => 'Luo välilehtiä',
+    'Previous' => 'Edellinen',
 
     '' => ''
 );

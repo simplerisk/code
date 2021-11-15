@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Označiť ako neobmedzené',
     'MarkAsUnreviewed' => 'Označiť ako neskontrolované',
     'NoDataToUpdate' => 'Žiadne údaje na aktualizáciu',
+    'SelectedQuestions' => 'Vybrané otázky',
+    'CreateTabs' => 'Vytvoriť karty',
+    'Previous' => 'Predchádzajúce',
 
     '' => ''
 );

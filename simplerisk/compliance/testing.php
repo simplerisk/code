@@ -241,10 +241,13 @@ $test_audit = get_framework_control_test_audit_by_id($test_audit_id);
             });
 
             $(document).on("click", "#submit_test_result", function(){
-                if($("#test_result").val() == "Fail") {
+                var test_result = $("#test_result").val();
+                if(test_result == "Fail") {
                     $("#associate-risk").modal();
                 } else {
-                    if($("#origin_test_results").val() == "Fail" && $("#origin_test_results").attr("data-permission") == 1) {
+                    var origin_test_results = $("#origin_test_results").val();
+                    var risk_permission = $("#origin_test_results").attr("data-permission");
+                    if((origin_test_results == "" || origin_test_results == "Fail") && (test_result == "Inconclusive" || test_result == "Pass") &&  risk_permission == 1 && $("#associate_exist_risk_ids").val() != "") {
                         $("#remove-associate-risk").modal();
                     } else{
                         $('#edit-test').submit();

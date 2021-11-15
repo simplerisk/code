@@ -6580,8 +6580,8 @@ function view_risks_and_controls_selections($report, $sort_by=0, $projects)
         echo "<div class=\"span3\">";
         echo $escaper->escapeHtml($lang['SortBy']).": ";
         echo "<select id=\"sortby\" name=\"sort_by\" onchange=\"javascript: submit()\">\n";
-        echo "<option value=\"0\"" . ($sort_by == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetName']) . "</option>\n";
-        echo "<option value=\"1\"" . ($sort_by == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['AssetRisk']) . "</option>\n";
+        echo "<option value=\"0\"" . ($sort_by == 0 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ControlName']) . "</option>\n";
+        echo "<option value=\"1\"" . ($sort_by == 1 ? " selected" : "") . ">" . $escaper->escapeHtml($lang['ControlRisk']) . "</option>\n";
         echo "</select>\n";
         echo "</div>\n";
     }

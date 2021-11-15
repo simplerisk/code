@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Markeren als onmiskenbaar',
     'MarkAsUnreviewed' => 'Markeren als niet beoordeeld',
     'NoDataToUpdate' => 'Geen gegevens om bij te werken',
+    'SelectedQuestions' => 'Geselecteerde vragen',
+    'CreateTabs' => 'Tabbladen maken',
+    'Previous' => 'Vorig',
 
     '' => ''
 );

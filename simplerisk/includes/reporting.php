@@ -1916,7 +1916,7 @@ function risks_and_assets_table($report, $sort_by, $asset_tags_in_array, $projec
                 $risk_html .= "<td align=\"left\" width=\"200px\">" . $escaper->escapeHtml($risk_teams) . "</td>\n";
                 $risk_html .= "<td align=\"center\" class=\"risk-cell\" bgcolor=\"" . $escaper->escapeHtml($color1) . "\" width=\"100px\">" . $escaper->escapeHtml($calculated_risk) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color1) . "\"></span></td>\n";
                 $risk_html .= "<td align=\"center\" class=\"risk-cell\" bgcolor=\"" . $escaper->escapeHtml($color2) . "\" width=\"100px\">" . $escaper->escapeHtml($residual_risk) . "<span class=\"risk-color\" style=\"background-color:" . $escaper->escapeHtml($color2) . "\"></span></td>\n";
-                $risk_html .= "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($mitigation_percent) . "</td>\n";
+                $risk_html .= "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($mitigation_percent) . " %</td>\n";
                 $risk_html .= "<td align=\"center\" width=\"100px\">" . $escaper->escapeHtml($dayssince) . "</td>\n";
                 $risk_html .= "</tr>\n";
             }

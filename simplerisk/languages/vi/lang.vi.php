@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Đánh dấu là Không điều chỉnh',
     'MarkAsUnreviewed' => 'Đánh dấu là Chưa được đánh giá',
     'NoDataToUpdate' => 'Không có dữ liệu để cập nhật',
+    'SelectedQuestions' => 'Các câu hỏi đã chọn',
+    'CreateTabs' => 'Tạo tab',
+    'Previous' => 'Trước',
 
     '' => ''
 );

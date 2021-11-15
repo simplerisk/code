@@ -2161,6 +2161,9 @@ $lang = array(
     'MarkAsUnmitigated' => 'Цуцлагдаагүй гэж тэмдэглэх',
     'MarkAsUnreviewed' => 'Шалгаагүй гэж тэмдэглэх',
     'NoDataToUpdate' => 'Шинэчлэх өгөгдөл алга',
+    'SelectedQuestions' => 'Сонгосон асуултууд',
+    'CreateTabs' => 'Таб үүсгэх',
+    'Previous' => 'Өмнөх',
 
     '' => ''
 );
